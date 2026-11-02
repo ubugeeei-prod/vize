@@ -32,7 +32,7 @@ impl<'a> Visit<'a> for Declarations {
     }
 
     fn visit_ts_type_alias_declaration(&mut self, declaration: &TSTypeAliasDeclaration<'a>) {
-        if declaration.id.name == "__el_badge_Props_0" {
+        if declaration.id.name == "__ElBadge_Props_0" {
             self.props.push(declaration.span);
         }
         walk_ts_type_alias_declaration(self, declaration);
@@ -71,7 +71,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
             ""
         };
         let pair = cstr!(
-            "const __vize_slot_host_1_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {{ readonly withoutArguments: __Z; readonly withArguments: __P }})(new (undefined as unknown as {prefix}$SlotConstructorWithoutArguments<{prefix}$SlotConstructor<typeof el_badge>>)(), new (undefined as unknown as {prefix}$SlotConstructorWithArguments<{prefix}$SlotConstructor<typeof el_badge>>)({{\n    \"value\": 1,\n  }}, ...([] as unknown as {prefix}$SlotConstructorArgs<{prefix}$SlotConstructor<typeof el_badge>>)));"
+            "const __vize_slot_host_1_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {{ readonly withoutArguments: __Z; readonly withArguments: __P }})(new (undefined as unknown as {prefix}$SlotConstructorWithoutArguments<{prefix}$SlotConstructor<typeof ElBadge>>)(), new (undefined as unknown as {prefix}$SlotConstructorWithArguments<{prefix}$SlotConstructor<typeof ElBadge>>)({{\n    \"value\": 1,\n  }}, ...([] as unknown as {prefix}$SlotConstructorArgs<{prefix}$SlotConstructor<typeof ElBadge>>)));"
         );
         assert_eq!(
             declarations
@@ -84,7 +84,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
         );
         let selected = "(typeof __vize_slot_host_1_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_1_instances.withArguments : typeof __vize_slot_host_1_instances.withoutArguments)";
         let raw = cstr!(
-            "typeof el_badge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentRawProps<typeof el_badge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof el_badge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof el_badge>"
+            "typeof ElBadge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentRawProps<typeof ElBadge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof ElBadge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof ElBadge>"
         );
         let is_any = if hoisted {
             "import(\"vize:virtual-ts\").IsAny"
@@ -92,7 +92,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
             "$IsAny"
         };
         let props = cstr!(
-            "type __el_badge_Props_0 = typeof el_badge extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
+            "type __ElBadge_Props_0 = typeof ElBadge extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
         );
         assert_eq!(
             declarations

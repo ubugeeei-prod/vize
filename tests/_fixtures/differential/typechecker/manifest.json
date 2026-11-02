@@ -12572,12 +12572,12 @@
         "batch"
       ],
       "test": "virtual_ts::expressions::constructor_instance::standalone_tests::standalone_and_shared_props_use_the_actual_constructor_pair",
-      "sourceRevision": "cc63a97d8b9642930b2c44a306db9e8479040ab3",
+      "sourceRevision": "f9841297edcadfe77ee0862b38840dfe41d81682",
       "inputs": [
         {
           "file": "Template.html",
           "path": "standalone-constructor-correlation-11023/Template.html.txt",
-          "sha256": "b634a11a8079bd9997de5e7b12e988f3e15760c16dcca2ac0f61bcffefa509f3"
+          "sha256": "40c112798e619e78aa77ef915ef71fdd483419162dae104f5f9a62ab77dc95a8"
         }
       ],
       "dialectCoverage": {
