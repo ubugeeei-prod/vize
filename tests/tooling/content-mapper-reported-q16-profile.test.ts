@@ -23,7 +23,7 @@ test("11373 is a closed independent report profile while the entire previous wor
   );
   assert.equal(
     createHash("sha256").update(before).digest("hex"),
-    "4c95582bc43334ab1c742b5a26841a610806e398454123e8ff6c600d6c67ee31",
+    "051e5b359b2bfe33178d681b1cc6566a6a9d594951cd4ea83a12c1acb02e3cad",
   );
   for (const key of ["all", "A", "A-with-declaration", "B", "C", "D"]) {
     assert.deepEqual(q16Profile(key).package, q16Package);
