@@ -6,9 +6,7 @@ use std::time::Duration;
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use super::{
-    SharedTypeSources, TRANSFORM_WORKER_STACK_BYTES, WorkerPoolReceipt, serve_with_worker_plan,
-};
+use super::{TRANSFORM_WORKER_STACK_BYTES, WorkerPoolReceipt, serve_with_worker_plan};
 
 const IMPOSSIBLE_STACK: usize = usize::MAX / 4;
 
@@ -123,20 +121,4 @@ fn partial_worker_pool_preserves_complete_transform_replies() {
     }
     assert!(super::read_frame(&mut reader).unwrap().is_none());
     println!("partial pool: requested=2 effective=1; complete transform replies match normal pool");
-}
-
-#[test]
-fn overlapping_transforms_share_type_sources_until_idle() {
-    let shared = SharedTypeSources::default();
-    let first = shared.acquire();
-    let overlapping = shared.acquire();
-    assert_eq!(first, overlapping);
-    shared.release();
-    let joined = shared.acquire();
-    assert_eq!(first, joined);
-    shared.release();
-    shared.release();
-    let after_idle = shared.acquire();
-    assert_ne!(first, after_idle);
-    shared.release();
 }

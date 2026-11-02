@@ -466,3 +466,24 @@ fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 mod tests;
+
+#[cfg(test)]
+mod type_source_tests {
+    use super::SharedTypeSources;
+
+    #[test]
+    fn overlapping_transforms_share_type_sources_until_idle() {
+        let shared = SharedTypeSources::default();
+        let first = shared.acquire();
+        let overlapping = shared.acquire();
+        assert_eq!(first, overlapping);
+        shared.release();
+        let joined = shared.acquire();
+        assert_eq!(first, joined);
+        shared.release();
+        shared.release();
+        let after_idle = shared.acquire();
+        assert_ne!(first, after_idle);
+        shared.release();
+    }
+}
