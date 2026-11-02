@@ -12152,6 +12152,40 @@
       }
     },
     {
+      "id": "typechecker/regression/misskey-let-anchor-assignment",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-let-anchor-assignment/Bad.vue.txt",
+          "sha256": "daa7d2780c9acddfb5f63e74545a8b3ae352cd3dd3ff4b00cf1f327bab69b5fb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-let-anchor-assignment/Media.vue.txt",
+          "sha256": "e0d87623ac59ba62fa0d6dc75635eabfcc3c88838ee1d52f388a17f564b3408a",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::let_anchor_assignment::callback_assigned_lets_keep_only_authored_errors; misskey MkMediaAudio-shaped callback-assigned lets with never-assigned, unused and implicit-any controls, with and without noUnusedLocals. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-setup-local-public-types",
       "state": "active",
       "targets": [
