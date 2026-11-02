@@ -30,6 +30,7 @@ struct Case {
 enum Expected {
     Clean,
     Error(u64, &'static str),
+    ErrorPrefix(u64, &'static str),
 }
 
 fn changed(source: &str, from: &str, to: &str) -> String {
@@ -46,7 +47,7 @@ fn fixture(name: &str) -> (Value, BTreeMap<String, String>) {
         .iter()
         .map(|file| {
             let text = file["content"].as_str().unwrap();
-            assert_eq!(file["sha256"], capture::hash(text.as_bytes()));
+            assert_eq!(file["sha256"], capture::hash(text.as_bytes()).as_str());
             assert_eq!(file["utf8Bytes"], text.len());
             (
                 String::from(file["file"].as_str().unwrap()),
@@ -190,6 +191,30 @@ fn cases() -> (Vec<Value>, Vec<Case>) {
     ] {
         push_case(&mut cases, 11367, role, &files, probe, expected);
     }
+    // A separate derived control proves the original authored indexing error
+    // survives homogeneous target normalization; the original eighteen stay exact.
+    let (_, files) = fixture("generic-index-model.json");
+    let original = &files["src/Probe.vue"];
+    let missing_key = changed(
+        original,
+        "const map = { a: Child, b: Child };",
+        "const map = { a: Child };",
+    );
+    for (role, probe, expected) in [
+        (
+            "invalid-key-error",
+            missing_key.clone(),
+            Expected::ErrorPrefix(2536, "Type 'TKey' cannot be used to index type"),
+        ),
+        ("invalid-key-repair", original.clone(), Expected::Clean),
+        (
+            "invalid-key-restored",
+            missing_key,
+            Expected::ErrorPrefix(2536, "Type 'TKey' cannot be used to index type"),
+        ),
+    ] {
+        push_case(&mut cases, 11366, role, &files, probe, expected);
+    }
     (inputs, cases)
 }
 
@@ -208,7 +233,7 @@ fn assert_case(case: &Case, packet: &Value) {
             assert_eq!(output["status"], 0, "{packet}");
             assert_eq!(stdout, "", "{packet}");
         }
-        Expected::Error(code, message) => {
+        Expected::Error(code, message) | Expected::ErrorPrefix(code, message) => {
             assert_ne!(output["status"], 0, "{packet}");
             assert!(output["status"].is_i64(), "{packet}");
             assert_eq!(diagnostics.len(), 1, "{packet}");
