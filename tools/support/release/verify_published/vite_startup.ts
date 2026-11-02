@@ -1,6 +1,8 @@
 import {
   authenticateCapsule,
   contract,
+  collectorRefusal,
+  evidencePrefix,
   hash,
   image,
   inputPacketName,
@@ -208,7 +210,7 @@ export async function run() {
   const temp = process.env.RUNNER_TEMP;
   assert(temp && isAbsolute(temp));
   const stamp = process.env.GITHUB_RUN_ID + "-" + process.env.GITHUB_RUN_ATTEMPT;
-  const out = join(temp, "vite-startup-evidence-" + stamp),
+  const out = join(temp, evidencePrefix + stamp),
     projects = join(temp, "vite-startup-projects-" + stamp);
   mkdirSync(out);
   mkdirSync(projects);
@@ -482,12 +484,12 @@ export async function run() {
       "one or more source-owned published predicates failed",
     );
   } catch (error) {
-    save("failure", {
-      name: error instanceof Error ? error.name : "UNKNOWN",
-      message: "bounded collector refusal; inspect preceding retained evidence",
-      publicAcceptance: false,
-    });
-    throw new Error("published Vite startup collector refused; retained evidence precedes verdict");
+    const failure = collectorRefusal(error);
+    save("failure", failure.record);
+    throw new Error(
+      "published Vite startup collector refused; retained evidence precedes verdict",
+      { cause: failure.cause },
+    );
   }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)

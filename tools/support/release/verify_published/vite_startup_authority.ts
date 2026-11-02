@@ -247,3 +247,34 @@ export function authenticateProvenance(name: string, dist: ObjectValue, value: u
 export function inputPacketName(issue: number, state?: string) {
   return state === undefined ? `${issue}-reported-inputs` : `${issue}-${state}-inputs`;
 }
+
+export const evidencePrefix = "vite-startup-evidence-";
+export function collectorRefusal(error: unknown) {
+  const name = error instanceof Error ? error.name : "UNKNOWN";
+  const code =
+    error instanceof Error &&
+    "code" in error &&
+    typeof error.code === "string" &&
+    /^E[A-Z0-9_]+$/u.test(error.code)
+      ? error.code
+      : null;
+  const frames =
+    error instanceof Error
+      ? (error.stack ?? "")
+          .split("\n")
+          .filter((line) => /^\s+at /u.test(line))
+          .slice(0, 3)
+          .map((line) => line.replace(/\?[^\s)]*/gu, "?<redacted>"))
+          .join("\n")
+          .slice(0, 2048)
+      : null;
+  const cause = { name, code, frames };
+  return {
+    record: {
+      ...cause,
+      message: "bounded collector refusal; inspect preceding retained evidence",
+      publicAcceptance: false,
+    },
+    cause,
+  };
+}
