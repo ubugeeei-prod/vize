@@ -89,8 +89,17 @@ impl TypeSourceSnapshot {
     }
 
     fn exists(&self, candidate: &Path) -> Option<PathBuf> {
+        if let Ok(existing) = self.existing.lock()
+            && let Some(found) = existing.get(candidate)
+        {
+            return Some(found.clone());
+        }
         let path = source_path(candidate);
-        (self.overlays.contains_key(&path) || path.is_file()).then_some(path)
+        let found = (self.overlays.contains_key(&path) || path.is_file()).then_some(path)?;
+        if let Ok(mut existing) = self.existing.lock() {
+            existing.insert(candidate.to_path_buf(), found.clone());
+        }
+        Some(found)
     }
 
     fn resolve_candidate(&self, candidate: &Path) -> Option<PathBuf> {

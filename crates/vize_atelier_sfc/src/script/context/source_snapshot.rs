@@ -34,6 +34,9 @@ pub struct TypeSourceSnapshot {
     overlays: FxHashMap<PathBuf, Arc<str>>,
     disk: Mutex<FxHashMap<PathBuf, Option<Arc<str>>>>,
     resolutions: Mutex<FxHashMap<(ResolutionScope, String), ResolutionCell>>,
+    /// Candidate paths found to exist, with their identity. Importers in
+    /// different directories probe the same modules. Misses are probed again.
+    existing: Mutex<FxHashMap<PathBuf, PathBuf>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
     /// resolved against it, plus the modules a world walk follows from them.
