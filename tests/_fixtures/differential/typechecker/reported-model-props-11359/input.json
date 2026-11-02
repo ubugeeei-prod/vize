@@ -1,0 +1,45 @@
+{
+  "issue": 11359,
+  "originalBodySha256": "f918c804895d954c89bf6d6b1b196ae6a3f2459cbd60a944cf9ca9b13b5030f2",
+  "originalPackageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+  "tsconfig": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+  "cases": [
+    {
+      "id": "original",
+      "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    },
+    {
+      "id": "renamed-interface",
+      "source": "<script setup lang=\"ts\">\ninterface FooProps {\n  foo: string;\n}\n\ndefineFooProps<FooProps>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    },
+    {
+      "id": "generic",
+      "source": "<script setup lang=\"ts\" generic=\"T extends string\">\ninterface Props {\n  foo: T;\n}\n\ndefineProps<Props>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    },
+    {
+      "id": "named-model",
+      "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\nconst modelValue = defineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    },
+    {
+      "id": "inline-props",
+      "source": "<script setup lang=\"ts\">\ndefineProps<{ foo: string }>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    },
+    {
+      "id": "wrong-model-assignment",
+      "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\nconst bar = defineModel<boolean>();\nbar.value = \"baz\";\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": [
+        2322
+      ]
+    },
+    {
+      "id": "repaired-model-assignment",
+      "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\nconst bar = defineModel<boolean>();\nbar.value = true;\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "codes": []
+    }
+  ]
+}
