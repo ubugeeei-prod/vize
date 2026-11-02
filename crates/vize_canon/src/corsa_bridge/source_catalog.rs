@@ -64,10 +64,33 @@ impl CorsaSourceCatalog {
     /// Synchronize the admitted live project, while keeping the query's own
     /// closure and projection packet unchanged. Opening a sibling's already
     /// materialized dependency later must not change the native document view.
+    #[cfg(test)]
     pub(crate) fn extend_native_project_documents(
         &self,
         project_root: &Path,
         documents: &mut Vec<(String, String)>,
+    ) {
+        let mut opened = documents
+            .iter()
+            .map(|(uri, _)| uri.clone())
+            .collect::<FxHashSet<_>>();
+        for source in self.native_members.iter().filter(|source| {
+            source.materialized_path.starts_with(project_root)
+                && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
+        }) {
+            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
+            if opened.insert(uri.clone()) {
+                documents.push((uri, source.code.clone()));
+            }
+        }
+    }
+
+    /// Borrow the cached base payload in the worker; additions keep the old
+    /// owned-code behavior, never a mapping/catalog Arc or unrelated member.
+    pub(crate) fn extend_native_project_document_batch(
+        &self,
+        project_root: &Path,
+        documents: &mut super::vue_document::CorsaNativeDocumentBatch,
     ) {
         let mut opened = documents
             .iter()

@@ -233,7 +233,7 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
     current
         .host
         .source_catalog
-        .extend_native_project_documents(canon_root, &mut current.documents);
+        .extend_native_project_document_batch(canon_root, &mut current.documents);
     let bytes = read_config(&current).unwrap();
     assert!(receipt.matches(&current, &bytes));
     assert!(
