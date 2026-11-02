@@ -8,6 +8,9 @@ use super::{Block, Container, ContainerError, ContainerErrorCode, ContainerForma
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Vue;
 
+#[doc(hidden)]
+pub mod compat;
+
 mod descriptor;
 mod scan;
 
