@@ -154,12 +154,14 @@ function referenceIds() {
   });
 }
 export function independentOracles(record: Recorder, project: string, installed: Installed) {
+  installed.verifyNative();
   const h = capture(
     record,
     "stock-h",
     [process.execPath, installed.stock, "--pretty", "false", "--project", "tsconfig.h.json"],
     project,
   );
+  installed.verifyNative();
   const official = capture(
     record,
     "official-vue-tsc",

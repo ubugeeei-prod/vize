@@ -2,21 +2,59 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { copyFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { pathToFileURL } from "node:url";
 import { asRecord, asString, readJsonRecord } from "../../json-value.ts";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import { assertNativeIdentity, findNpmCli } from "../computed_event_names.ts";
 import {
   assertCustody,
+  assertDeclarationCustody,
   captureDeclarationGraph,
   fileImage,
   inside,
+  sha256,
 } from "../computed_event_custody.ts";
 import { assertLockedPackage, validateNativeReceipt, type authenticate } from "./authority.ts";
-import { installedManifest, type loadOriginal27 } from "./fixtures.ts";
+import { installedManifest, type loadOriginal27, type Inputs } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
 import { assertVueProviderLineage, captureVueNamespace } from "./host-versions.ts";
 import { nativePrerequisite } from "./native-prerequisite.ts";
+
+/** The original27 role already supplies an explicit checker. Rebase only its
+ * frozen historical image; no public resolver module is imported or executed. */
+export function originalChecker(root: string, historical: Inputs["historical"]) {
+  const target = "@typescript/typescript-linux-x64";
+  const owned = "node_modules/" + target + "/lib/tsc";
+  assert.ok(
+    historical.checker.path.endsWith("/" + owned),
+    "exact historical checker suffix required",
+  );
+  const aliases = historical.identities.filter(
+    (row) => row.file === "node_modules/typescript-native/package.json",
+  );
+  assert.equal(aliases.length, 1);
+  const raw = readFileSync(join(root, aliases[0].file));
+  assert.equal(raw.length, aliases[0].bytes);
+  assert.equal(sha256(raw), aliases[0].sha256);
+  const alias = asRecord(JSON.parse(raw.toString("utf8")));
+  assert.equal(alias.name, "typescript");
+  assert.equal(alias.version, "7.1.0-beta");
+  assert.equal(asRecord(alias.optionalDependencies)[target], "7.1.0-beta");
+  const targetManifest = readJsonRecord(join(root, "node_modules", target, "package.json"));
+  assert.equal(targetManifest.name, target);
+  assert.equal(targetManifest.version, "7.1.0-beta");
+  const image = fileImage(join(root, owned));
+  assert.ok(inside(realpathSync(join(root, "node_modules", target)), image.path));
+  assert.ok(inside(realpathSync(join(root, "node_modules")), image.path));
+  assert.equal(image.bytes, historical.checker.bytes);
+  assert.equal(image.sha256, historical.checker.sha256);
+  return {
+    image,
+    historicalPath: historical.checker.path,
+    optionalTarget: target,
+    resolverExecuted: false,
+    defaultResolverSelectionObserved: false,
+  };
+}
 
 export async function install(
   root: string,
@@ -156,10 +194,9 @@ export async function install(
     hostImages.push(
       fileImage(pkg(name, expected, name === "typescript-native" ? "typescript" : name).file),
     );
-  const resolver = join(modules, "typescript-native/lib/getExePath.js");
-  const nativeChecker = asRecord(await import(pathToFileURL(resolver).href));
-  assert.equal(typeof nativeChecker.default, "function");
-  const checker = asString(Reflect.apply(nativeChecker.default as () => unknown, undefined, []));
+  const selectedChecker = originalChecker(root, original.inputs.historical);
+  record.json("explicit-original27-checker.json", selectedChecker);
+  const checker = selectedChecker.image.path;
   const stock = join(modules, "typescript/lib/tsc.js"),
     official = join(modules, "vue-tsc/bin/vue-tsc.js");
   assert.ok(inside(modules, realpathSync(checker)));
@@ -196,7 +233,7 @@ export async function install(
     fileImage(checker),
     fileImage(stock),
     fileImage(official),
-    fileImage(resolver),
+    fileImage(join(modules, "@typescript/typescript-linux-x64/package.json")),
     fileImage(npm),
     fileImage(nativeEntry),
     ...["native-binding.js", "native-targets.js", "native-binding-identity.js"].map((name) =>
@@ -229,6 +266,11 @@ export async function install(
     declarations: graph,
     custody: images,
   });
+  const verifyNative = () => {
+    assertCustody(images);
+    assertDeclarationCustody(cliRoot, graph.files, graph.edges);
+    prerequisite.verify();
+  };
   return {
     root,
     modules,
@@ -241,6 +283,6 @@ export async function install(
     official,
     images,
     graph,
-    verifyNative: prerequisite.verify,
+    verifyNative,
   };
 }

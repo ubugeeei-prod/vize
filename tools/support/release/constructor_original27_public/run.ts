@@ -6,6 +6,7 @@ import { assertCustody, inside } from "../computed_event_custody.ts";
 import { authenticate } from "./authority.ts";
 import { loadOriginal27, fixturePath, assertInputs } from "./fixtures.ts";
 import { install } from "./install.ts";
+import { childEnvironment } from "./capture.ts";
 import { independentOracles, observe, repairCopy, writeProject } from "./observe.ts";
 
 assert.equal(process.env.GITHUB_ACTIONS, "true", "public products run only in Actions");
@@ -58,7 +59,7 @@ const result: Record<string, unknown> = {
   arch: process.arch,
   scope: "original27 zero generated debt with all fourteen authored negatives conserved",
   capsuleTrust:
-    "release owner supplies the exact immutable blob after whole producer ZIP authentication; this role joins receipt bytes to installed identity without duplicate archive download",
+    "release owner supplies the immutable blob after selected producer receipt/source-member authentication under retained archive-digest custody; this role joins those receipt bytes to installed identity without rereading native archive bodies",
   umbrella11023Closed: false,
   publicInstanceNoAnyQualified: false,
   timingUsable: false,
@@ -73,6 +74,10 @@ try {
     join(output, "historical-public-summary.json"),
   );
   const authority = await authenticate(version, releaseRun, blob, record);
+  // All controller API reads are complete; public JS and native probes need no credential.
+  const publicEnvironment = childEnvironment(process.env);
+  for (const name of Object.keys(process.env))
+    if (!Object.hasOwn(publicEnvironment, name)) delete process.env[name];
   result.producer = authority.ownership;
   const installed = await install(
     join(output, "registry-installation"),

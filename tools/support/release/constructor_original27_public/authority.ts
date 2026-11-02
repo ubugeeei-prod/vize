@@ -50,9 +50,9 @@ export function validateNativeReceipt(
   candidate: string,
   run: string,
 ) {
-  // The manual release owner pins a reviewed capsule after authenticating whole
-  // producer ZIPs. This role binds those retained receipt bytes to the installed
-  // image; it does not independently download the platform archives again.
+  // The release owner pins selected producer receipt/source members under
+  // retained archive-digest custody. This role binds those receipt bytes to the
+  // installed image without independently rereading native archive bodies.
   let matched = 0;
   for (const value of asArray(capsule.receipts)) {
     const item = asRecord(value),

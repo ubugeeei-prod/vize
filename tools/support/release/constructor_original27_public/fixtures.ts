@@ -30,7 +30,7 @@ export type Inputs = {
   manifest: { file: string; bytes: number; sha256: string }[];
   historical: {
     identities: { file: string; bytes: number; sha256: string }[];
-    checker: { bytes: number; sha256: string };
+    checker: { path: string; bytes: number; sha256: string };
     stock: { bytes: number; sha256: string };
     vueTsc: { bytes: number; sha256: string };
   };

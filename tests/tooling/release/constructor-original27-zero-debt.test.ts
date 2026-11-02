@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -18,6 +27,14 @@ import {
   sdkFiles,
 } from "../../../tools/support/release/constructor_original27_public/authority.ts";
 import { shippedImages } from "../../../tools/support/release/constructor_original27_public/native-prerequisite.ts";
+
+import { Recorder } from "../../../tools/support/config/windows_consumer/common.ts";
+import {
+  capture,
+  completed,
+} from "../../../tools/support/release/constructor_original27_public/capture.ts";
+
+import { originalChecker } from "../../../tools/support/release/constructor_original27_public/install.ts";
 
 const version = "0.650.0";
 test("independent pre-native intent removes exactly two whole synthetic records and preserves both authored orders", () => {
@@ -99,6 +116,107 @@ test("actual shipped-byte authentication rejects changed payload, installed muta
     rmSync(join(root, "index.js"));
     symlinkSync(join(root, "package.json"), join(root, "index.js"));
     assert.throws(() => shippedImages(root, payload, integrity));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("actual capture strips credential names while preserving safe journal values and never persists the canary", () => {
+  const root = mkdtempSync(join(tmpdir(), "original27-credential-"));
+  const canary = "inert-original27-credential-canary-650";
+  const env = {
+    PATH: process.env.PATH,
+    GITHUB_TOKEN: canary,
+    NPM_CONFIG__AUTH: canary,
+    example_secret: canary,
+    VIZE_PUBLIC_NATIVE_CUSTODY: "inert-journal-retained",
+  };
+  try {
+    const code =
+      "process.stdout.write(JSON.stringify({ token: !!process.env.GITHUB_TOKEN, auth: !!process.env.NPM_CONFIG__AUTH, secret: !!process.env.example_secret, journal: process.env.VIZE_PUBLIC_NATIVE_CUSTODY }))";
+    const row = capture(new Recorder(root), "canary", [process.execPath, "-e", code], root, env);
+    completed(row, 0);
+    assert.deepEqual(JSON.parse(row.stdout.toString("utf8")), {
+      token: false,
+      auth: false,
+      secret: false,
+      journal: "inert-journal-retained",
+    });
+    assert.equal(env.GITHUB_TOKEN, canary);
+    for (const name of readdirSync(root)) assert(!readFileSync(join(root, name)).includes(canary));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("explicit historical checker is selected without resolver execution and refuses altered declarations or image", () => {
+  const root = mkdtempSync(join(tmpdir(), "original27-checker-"));
+  const target = "@typescript/typescript-linux-x64";
+  const imagePath = join(root, "node_modules", target, "lib/tsc");
+  const aliasPath = join(root, "node_modules/typescript-native/package.json");
+  const body = Buffer.from("inert historical checker bytes; never executed");
+  const digest = (data: Buffer) => createHash("sha256").update(data).digest("hex");
+  const alias = Buffer.from(
+    JSON.stringify({
+      name: "typescript",
+      version: "7.1.0-beta",
+      optionalDependencies: { [target]: "7.1.0-beta" },
+    }),
+  );
+  try {
+    mkdirSync(join(imagePath, ".."), { recursive: true });
+    mkdirSync(join(aliasPath, ".."), { recursive: true });
+    writeFileSync(aliasPath, alias);
+    writeFileSync(
+      join(root, "node_modules", target, "package.json"),
+      JSON.stringify({ name: target, version: "7.1.0-beta" }),
+    );
+    writeFileSync(imagePath, body);
+    const historical = {
+      identities: [
+        {
+          file: "node_modules/typescript-native/package.json",
+          bytes: alias.length,
+          sha256: digest(alias),
+        },
+      ],
+      checker: {
+        path: "/historical/node_modules/" + target + "/lib/tsc",
+        bytes: body.length,
+        sha256: digest(body),
+      },
+      stock: { bytes: 1, sha256: "unused" },
+      vueTsc: { bytes: 1, sha256: "unused" },
+    };
+    const proof = originalChecker(root, historical);
+    assert.equal(proof.image.path, realpathSync(imagePath));
+    assert.equal(proof.resolverExecuted, false);
+    assert.equal(proof.defaultResolverSelectionObserved, false);
+    assert.throws(() =>
+      originalChecker(root, {
+        ...historical,
+        checker: { ...historical.checker, path: "/unknown" },
+      }),
+    );
+    writeFileSync(imagePath, "changed");
+    assert.throws(() => originalChecker(root, historical));
+    writeFileSync(imagePath, body);
+    writeFileSync(aliasPath, Buffer.concat([alias, Buffer.from(" ")]));
+    assert.throws(() => originalChecker(root, historical));
+    const wrong = Buffer.from(
+      JSON.stringify({
+        name: "typescript",
+        version: "7.1.0-beta",
+        optionalDependencies: { [target]: "wrong" },
+      }),
+    );
+    writeFileSync(aliasPath, wrong);
+    assert.throws(() =>
+      originalChecker(root, {
+        ...historical,
+        identities: [{ ...historical.identities[0], bytes: wrong.length, sha256: digest(wrong) }],
+      }),
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
