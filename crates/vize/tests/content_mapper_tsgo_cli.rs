@@ -37,6 +37,7 @@ mod support;
 mod surplus_defaults;
 mod template_callback_event_navigation;
 mod template_expression_syntax;
+mod tsx_script_syntax;
 mod type_only_import_use;
 mod typed_context_undefined;
 mod unicode_prop_bindings;

@@ -1,0 +1,6 @@
+<script lang="ts">
+export const helper = <T>(value: T) => value;
+const root = <HTMLElement>document.body;
+export default { name: 'Plain', data: () => ({ root }) };
+</script>
+<template><div>{{ root.tagName }}</div></template>

@@ -48,6 +48,7 @@ fn options() -> VueCodegenOptions<'static> {
         hoist_shared_preamble: false,
         inline_auto_import_stubs: false,
         omit_vite_client_reference: false,
+        tsx_module: false,
         runtime_prop_resolve_cache: None,
     }
 }

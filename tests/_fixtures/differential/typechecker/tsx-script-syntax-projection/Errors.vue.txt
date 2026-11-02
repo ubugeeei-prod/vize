@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const identity = <T>(value: T): T => value;
+const wrong: string = identity(1);
+const element = <HTMLElement>document.body;
+element.missing;
+const mistaken = <string>1;
+</script>
+<template>{{ (<number>wrong).toFixed() }}</template>
