@@ -9,7 +9,7 @@ use crate::virtual_ts::semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
-use super::component_props::named_dynamic_reference;
+use super::component_props::named_dynamic_navigation_reference;
 use super::context::ComponentPropsContext;
 
 pub(super) fn emit_references(
@@ -33,7 +33,7 @@ pub(super) fn emit_usage_references(
     idx: usize,
     usage: &ComponentUsage,
 ) {
-    let named_dynamic_ref = named_dynamic_reference(ctx, usage);
+    let named_dynamic_ref = named_dynamic_navigation_reference(ctx, usage);
     let inference_only = named_dynamic_ref.is_some();
     let component_ref = named_dynamic_ref.unwrap_or_else(|| {
         component_binding_reference(

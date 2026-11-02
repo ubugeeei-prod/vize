@@ -12189,6 +12189,93 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-dotted-component-11363",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-dynamic-targets-11362/dotted-tag.json",
+          "sha256": "e349ddd91435f9cecf168670ed04d235fc54fecb38692d7fe569a35e759e6a27",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11363; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-dynamic-guard-11362",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-dynamic-targets-11362/guarded-member.json",
+          "sha256": "40123b02bd69a6a0cd602c40e67f4772bc1313227e4608baaec43404bad0a992",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11362; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-generic-index-model-11366",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-dynamic-targets-11362/generic-index-model.json",
+          "sha256": "c1f5b582ab7914a3fa680b45ac8b0b74beeea8a4472c5820a7c126f4029478b9",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11366; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-model-props-11359",
       "state": "active",
       "targets": [
@@ -12252,6 +12339,35 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::nested_callback_11361::nested_callback_keeps_original_acceptance_and_checked_body_errors; physically consumes exact reported input at d9b005407f31de8ed5b51138c77aaca17e6df1b9 for #11361; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-slot-index-event-11367",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-dynamic-targets-11362/slot-index-event.json",
+          "sha256": "4242c9d58ab31f00a228f1f917e251435a0e6ff243334d248eeaf61a1e9aa246",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11367; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
           }
         ]
       }

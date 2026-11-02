@@ -242,7 +242,7 @@ crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	10
 crates/vize_canon/src/virtual_ts/expressions/native_props_tests.rs	7
 crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	6
 crates/vize_canon/src/virtual_ts/expressions/sequence_prop_tests.rs	3
-crates/vize_canon/src/virtual_ts/generator/global_components/tests.rs	9
+crates/vize_canon/src/virtual_ts/generator/global_components/tests.rs	8
 crates/vize_canon/src/virtual_ts/generator/global_components/tests/dynamic_props.rs	14
 crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	7
 crates/vize_canon/src/virtual_ts/interface_extends_tests.rs	1

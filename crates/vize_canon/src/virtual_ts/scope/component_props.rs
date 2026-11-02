@@ -12,7 +12,7 @@ pub(super) use bindings::{
     component_usage_has_checkable_binding, has_script_binding,
 };
 use duplicate_listeners::append_duplicate_listener_checks;
-pub(super) use dynamic_reference::named_dynamic_reference;
+pub(super) use dynamic_reference::{named_dynamic_navigation_reference, named_dynamic_reference};
 use shared_contracts::{SharedComponentContract, shared_component_contracts};
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;

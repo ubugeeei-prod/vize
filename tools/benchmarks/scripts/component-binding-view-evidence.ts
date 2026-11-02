@@ -5,6 +5,11 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { TextDecoder } from "node:util";
+import {
+  auditBindingViewCorrectness,
+  bindingViewMode,
+  bindingViewCorrectnessReport,
+} from "./component-binding-view-eligibility.ts";
 type ObjectValue = Record<string, unknown>;
 function isRecord(value: unknown): value is ObjectValue {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -74,8 +79,7 @@ function span(value: ObjectValue, name: string): ObjectValue {
   return result;
 }
 export function main(args: string[]): void {
-  const [root] = args;
-  assert.ok(root && args.length === 1);
+  const { root, purpose } = bindingViewMode(args);
   const provenance = read(path.join(root, "provenance.json"));
   const binaries = read(path.join(root, "binaries.json"));
   const baseline = record(binaries.base),
@@ -106,6 +110,14 @@ export function main(args: string[]): void {
     const binary = record(binaries[role]);
     assert.equal(sha(fs.readFileSync(string(binary.file))), binary.sha256);
     assert.equal(binary.fresh, false);
+  }
+  if (purpose === "correctness") {
+    const observed = auditBindingViewCorrectness(root, provenance);
+    save(
+      path.join(root, "comparison.json"),
+      bindingViewCorrectnessReport(provenance, binaries, observed),
+    );
+    return;
   }
   const profiles: ObjectValue[] = [];
   for (const shape of ["camel", "missing", "dynamic", "empty"])
