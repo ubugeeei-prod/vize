@@ -1,7 +1,7 @@
 //! `<script>` boundary scanning that hides closing tags inside JavaScript
 //! comments, strings and regex literals, e.g. ``const x = `</script>` ``.
 
-use std::borrow::Cow;
+use alloc::borrow::Cow;
 
 use memchr::{memchr2, memchr3, memmem};
 
