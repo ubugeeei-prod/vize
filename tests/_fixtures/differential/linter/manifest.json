@@ -3322,7 +3322,7 @@
               "vue3-sfc",
               "ts"
             ],
-            "selector": "whole original script-SFC and authored Typeof controls; no native/shared history promotion"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
