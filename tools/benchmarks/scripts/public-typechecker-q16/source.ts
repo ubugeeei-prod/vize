@@ -4,6 +4,7 @@ import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { fileImage } from "../../../support/release/computed_event_custody.ts";
 import { fixtureNames } from "./fixtures.ts";
+import { declarationFileName } from "./declaration-data.ts";
 
 export function sourceCustody() {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
@@ -14,6 +15,7 @@ export function sourceCustody() {
     queue = [
       ns + "run.ts",
       ...fixtureNames.map((name) => ns + name),
+      ns + declarationFileName,
       ".github/workflows/public-typechecker-consumer.yml",
     ],
     seen = new Set<string>(),

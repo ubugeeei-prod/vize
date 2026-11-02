@@ -78,7 +78,7 @@ function temporary(run: (root: string) => void) {
     rmSync(root, { recursive: true });
   }
 }
-test("only supplied closed subsets and genuine D binding retain unknown-profile refusal", () => {
+test("closed regression data and noncausal A64 binding retain unknown-profile refusal", () => {
   assert.equal(subsetFor("D61").projects[0]!.states.length, 8);
   assert.equal(subsetFor("C62").projects[0]!.states.length, 4);
   assert.equal(
@@ -88,14 +88,23 @@ test("only supplied closed subsets and genuine D binding retain unknown-profile 
   for (const id of ["A59-65", "all-ten", "D", "unknown"])
     assert.throws(() => subsetFor(id), assert.AssertionError);
   assert.deepEqual(profileFor(), {
-    subset: "D61",
-    fix: "f6f94688127f72fbc1cc1f349df4d66327705985",
+    subset: "A64",
+    knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
+    causalFix: null,
     version: "0.643.0",
     source: "f6f94688127f72fbc1cc1f349df4d66327705985",
     candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
     run: "41417714586",
     capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
   });
+  assert.throws(
+    () =>
+      Reflect.apply(requireProfile, null, [
+        { ...profileFor(), fix: "f6f94688127f72fbc1cc1f349df4d66327705985" },
+      ]),
+    assert.AssertionError,
+  );
+  assert.throws(() => subsetFor("A64"), assert.AssertionError);
   const invalid: (Profile | null)[] = [
     null,
     { ...mock, source: "UNKNOWN" },

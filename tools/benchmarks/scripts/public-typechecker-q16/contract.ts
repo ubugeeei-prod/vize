@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { overrides } from "../../../support/release/public_install/identity.ts";
 import { suppliedSubsets } from "./fixtures.ts";
+import { declarationData } from "./declaration-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "C62";
+export type Subset = "D61" | "B60-68" | "A59" | "C62" | "A64";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -30,19 +31,25 @@ export interface SuppliedSubset {
   projects: Project[];
   sourceAuthority: unknown;
 }
-export interface Profile {
-  subset: Subset;
-  fix: string;
+interface PublishedProfile {
   version: string;
   source: string;
   candidate: string;
   run: string;
   capsule: string;
 }
+export type RegressionProfile = PublishedProfile & { subset: Exclude<Subset, "A64">; fix: string };
+export type DeclarationProfile = PublishedProfile & {
+  subset: "A64";
+  knownGoodSource: string;
+  causalFix: null;
+};
+export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "D61",
-  fix: "f6f94688127f72fbc1cc1f349df4d66327705985",
+  subset: "A64",
+  knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
+  causalFix: null,
   version: "0.643.0",
   source: "f6f94688127f72fbc1cc1f349df4d66327705985",
   candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
@@ -74,8 +81,17 @@ export function subsetFor(id: string): SuppliedSubset {
 }
 export function requireProfile(profile: Profile | null): Profile {
   assert(profile !== null, "genuine containing AFTER release is UNKNOWN");
-  subsetFor(profile.subset);
-  for (const sha of [profile.fix, profile.source, profile.candidate, profile.capsule])
+  if (profile.subset === "A64") {
+    assert.equal(profile.causalFix, null);
+    assert(!Object.hasOwn(profile, "fix"), "A64 has no causal fix claim");
+    assert.equal(profile.knownGoodSource, declarationData.knownGoodSource);
+  } else subsetFor(profile.subset);
+  for (const sha of [
+    profile.subset === "A64" ? profile.knownGoodSource : profile.fix,
+    profile.source,
+    profile.candidate,
+    profile.capsule,
+  ])
     assert(/^[a-f0-9]{40}$/u.test(sha), "literal source binding required");
   assert(/^0\.\d+\.0$/u.test(profile.version) && /^\d+$/u.test(profile.run));
   return profile;

@@ -25,6 +25,7 @@ import {
 } from "./execute.ts";
 import { install } from "./install.ts";
 import { sourceCustody } from "./source.ts";
+import { runDeclaration } from "./declaration.ts";
 
 export function argumentsFor(argv: string[]) {
   assert.equal(argv.length, 6);
@@ -52,10 +53,11 @@ export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
 }
 export async function main(argv: string[]) {
   const options = argumentsFor(argv),
-    profile = profileFor(),
-    selected = subsetFor(profile.subset);
+    profile = profileFor();
   // UNKNOWN release/fix/subset authority refuses before output allocation, network or install.
   requireOwnedDispatch(process.env);
+  if (profile.subset === "A64") return runDeclaration(options, profile);
+  const selected = subsetFor(profile.subset);
   assert.equal(realpathSync(dirname(options.out)), dirname(options.out));
   mkdirSync(options.out);
   const record = recorder(options.out),

@@ -35,7 +35,7 @@ import {
 import { authenticateProvenance, type authenticate } from "./authority.ts";
 import { profileFor, requireEnvironment, limitations, type SourceFile } from "./contract.ts";
 import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
-import { sourceBin, tsrsRoute } from "./routes.ts";
+import { sourceBin, tsrsRoute, type CommandBin } from "./routes.ts";
 
 function physical(path: string) {
   const stat = lstatSync(path);
@@ -68,6 +68,7 @@ export async function install(
   authority: Awaited<ReturnType<typeof authenticate>>,
   record: Recorder,
   cache: Map<string, Buffer>,
+  commandBins: readonly CommandBin[] = ["tsrs", "vue-tsc"],
 ) {
   const checkEnvironment = () => requireEnvironment(process.env);
   checkEnvironment();
@@ -276,7 +277,7 @@ export async function install(
   );
   // This is non-executing route/image proof. No companion probe is attributed to the original compiler.
   const route = tsrsRoute(root, packages),
-    bindings = [sourceBin(root, "tsrs", images), sourceBin(root, "vue-tsc", images)];
+    bindings = commandBins.map((name) => sourceBin(root, name, images));
   const custody = [
     ...new Map(
       [
@@ -294,7 +295,7 @@ export async function install(
     checkManager();
     assertCustody(custody);
     assert.deepEqual(
-      [sourceBin(root, "tsrs", images), sourceBin(root, "vue-tsc", images)],
+      commandBins.map((name) => sourceBin(root, name, images)),
       bindings,
     );
     assert.deepEqual(tsrsRoute(root, packages), route);

@@ -135,13 +135,16 @@ export async function authenticate(role: Role, record: Recorder) {
       rawBase64: body.toString("base64"),
     });
   }
-  const ancestry = asRecord(await read("compare/" + profile.fix + "..." + profile.source));
+  const sourceAnchor = profile.subset === "A64" ? profile.knownGoodSource : profile.fix;
+  const ancestry = asRecord(await read("compare/" + sourceAnchor + "..." + profile.source));
   assert(
     ["ahead", "identical"].includes(asString(ancestry.status)),
-    "release must contain the selected fix",
+    profile.subset === "A64"
+      ? "published source must contain the known-good source anchor"
+      : "release must contain the selected fix",
   );
-  assert.equal(asRecord(ancestry.base_commit).sha, profile.fix);
-  assert.equal(asRecord(ancestry.merge_base_commit).sha, profile.fix);
+  assert.equal(asRecord(ancestry.base_commit).sha, sourceAnchor);
+  assert.equal(asRecord(ancestry.merge_base_commit).sha, sourceAnchor);
   record.json("release-authority.json", {
     role,
     profile,
@@ -150,6 +153,9 @@ export async function authenticate(role: Role, record: Recorder) {
     ancestry,
     actualProducerRun: run,
     githubReleaseObservation,
+    ...(profile.subset === "A64"
+      ? { knownGoodSource: profile.knownGoodSource, causalFix: null, productRepairClaimed: false }
+      : {}),
     fullProducerTailRequired: false,
   });
   return { capsule, ownership, sourceFiles };
