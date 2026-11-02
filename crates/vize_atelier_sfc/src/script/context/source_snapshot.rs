@@ -83,6 +83,18 @@ pub(super) fn source_path(path: &Path) -> PathBuf {
     if let Ok(canonical) = path.canonicalize() {
         return canonical;
     }
+    let normalized = lexical_path(path);
+    if let Some(parent) = normalized.parent()
+        && let Ok(canonical_parent) = parent.canonicalize()
+        && let Some(name) = normalized.file_name()
+    {
+        return canonical_parent.join(name);
+    }
+    normalized
+}
+
+/// The absolute path with `.` and `..` applied lexically.
+pub(super) fn lexical_path(path: &Path) -> PathBuf {
     let absolute = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -97,12 +109,6 @@ pub(super) fn source_path(path: &Path) -> PathBuf {
             }
             component => normalized.push(component.as_os_str()),
         }
-    }
-    if let Some(parent) = normalized.parent()
-        && let Ok(canonical_parent) = parent.canonicalize()
-        && let Some(name) = normalized.file_name()
-    {
-        return canonical_parent.join(name);
     }
     normalized
 }

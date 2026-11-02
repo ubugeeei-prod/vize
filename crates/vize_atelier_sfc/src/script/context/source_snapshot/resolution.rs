@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use vize_carton::ToCompactString;
 
-use super::{ResolutionScope, TypeSourceSnapshot, source_path};
+use super::{ResolutionScope, TypeSourceSnapshot, lexical_path, source_path};
 use crate::script::context::external_types::resolution::resolve_import_path;
 
 const EXTENSIONS: &[&str] = &[
@@ -93,6 +93,15 @@ impl TypeSourceSnapshot {
             && let Some(found) = existing.get(candidate)
         {
             return Some(found.clone());
+        }
+        // Without overlays, a probe that is no file under either its physical or
+        // its lexical spelling resolves to nothing. `source_path` would spend
+        // two `realpath` calls to reach the same miss.
+        if self.overlays.is_empty() && !candidate.is_file() {
+            let lexical = lexical_path(candidate);
+            if lexical == candidate || !lexical.is_file() {
+                return None;
+            }
         }
         let path = source_path(candidate);
         let found = (self.overlays.contains_key(&path) || path.is_file()).then_some(path)?;

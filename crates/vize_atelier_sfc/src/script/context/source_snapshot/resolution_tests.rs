@@ -299,3 +299,22 @@ fn relative_importers_refresh_current_directory_in_an_isolated_process() {
     );
     assert!(String::from_utf8_lossy(&child.stdout).contains("1 passed"));
 }
+
+#[cfg(unix)]
+#[test]
+fn lexical_parent_fallback_survives_the_physical_miss_probe() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("real/sub")).unwrap();
+    std::os::unix::fs::symlink(root.join("real/sub"), root.join("link")).unwrap();
+    let lexical = root.join("x.ts");
+    fs::write(&lexical, "export type X = string").unwrap();
+    // Physically `link/..` is `real`, which has no `x.ts`; lexically it is the root.
+    let sources = TypeSourceSnapshot::default();
+    let importer = root.join("App.vue");
+    assert_eq!(
+        sources.resolve_import(&importer, "./link/../x"),
+        Some(lexical)
+    );
+    assert_eq!(sources.resolve_import(&importer, "./link/../missing"), None);
+}
