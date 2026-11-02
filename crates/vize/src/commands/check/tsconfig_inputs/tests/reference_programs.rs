@@ -228,21 +228,27 @@ fn later_reference_keeps_its_implicit_inputs_independent_of_reference_order() {
         );
         assert_eq!(relative_paths(&case_dir, &files), expected);
     }
-    // An explicit empty include suppresses this project's default, even when
-    // another referenced project's explicit files have already been selected.
+    // Explicit empty files and include each suppress the later project's
+    // implicit default even after the first reference has selected inputs.
     fs::write(
-        case_dir.join("beta/tsconfig.json"),
-        r#"{"extends":"../base.json","include":[],"exclude":["src/excluded"]}"#,
+        case_dir.join("tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"./alpha"},{"path":"./beta"}]}"#,
     )
     .unwrap();
-    let files = collect_default_check_files_with_jsx(
-        &case_dir,
-        Some(&case_dir.join("tsconfig.json")),
-        true,
-    );
-    assert_eq!(
-        relative_paths(&case_dir, &files),
-        vec!["alpha/src/owned.ts"]
-    );
+    for beta_config in [
+        r#"{"extends":"../base.json","include":[],"exclude":["src/excluded"]}"#,
+        r#"{"extends":"../base.json","files":[],"exclude":["src/excluded"]}"#,
+    ] {
+        fs::write(case_dir.join("beta/tsconfig.json"), beta_config).unwrap();
+        let files = collect_default_check_files_with_jsx(
+            &case_dir,
+            Some(&case_dir.join("tsconfig.json")),
+            true,
+        );
+        assert_eq!(
+            relative_paths(&case_dir, &files),
+            vec!["alpha/src/owned.ts"]
+        );
+    }
     let _ = fs::remove_dir_all(&case_dir);
 }

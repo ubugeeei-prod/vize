@@ -31,7 +31,15 @@ const standardCommand =
 const standardRoleCommand =
   'VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE=standard-go-d6-vue35 VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR="$GITHUB_WORKSPACE/target/vize-tests/content-mapper-directive-owners/reported-dynamic-targets" ' +
   standardCommand;
-const workflow = actualWorkflow.replace(standardRoleCommand, standardCommand);
+const syntaxCommand =
+  "cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: --nocapture";
+const modelEventsCommand = syntaxCommand.replace(
+  " --nocapture",
+  " content_mapper_tsgo_cli::reported_model_events_11390_11391:: --nocapture",
+);
+const workflow = actualWorkflow
+  .replace(standardRoleCommand, standardCommand)
+  .replace(modelEventsCommand, syntaxCommand);
 const data = parse(workflow);
 const childWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
@@ -211,6 +219,7 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
 
 test("dynamic-target printer roles are declared before capture and retain standard whole packets", () => {
   assert.equal(actualWorkflow.split(standardRoleCommand).length, 2);
+  assert.equal(actualWorkflow.split(modelEventsCommand).length, 2);
   const actual = parse(actualWorkflow);
   const steps = actual.jobs["exact-tsgo-project"].steps;
   const standard = steps.find(

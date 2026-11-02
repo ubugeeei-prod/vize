@@ -30,7 +30,7 @@ fn later_default_reference_checks_vue_template_and_repair() {
         complete_diagnostics(&broken),
         vec![(
             "beta/src/App.vue".to_owned(),
-            "error:6:20 [TS2339] Property 'missing' does not exist on type 'string'.".to_owned(),
+            "error:6:20 [TS2339] Property 'missing' does not exist on type 'string'. (source: <template>{{ title.missing }} {{ label }}</template>)".to_owned(),
         )]
     );
     let repaired = original.replace("title.missing", "title");
@@ -84,7 +84,17 @@ fn check(project: &ProjectCase, corsa_path: &str, state: &str) -> Value {
         "inputs":INPUT,"currentApp":fs::read(project.root.join("beta/src/App.vue")).unwrap()}),
     );
     assert_eq!(signal, None);
-    assert_eq!(output.stderr.as_slice(), b"");
+    let expected_progress = format!(
+        concat!(
+            "Building Corsa virtual project for 1 files under {}...\n",
+            "Running Corsa diagnostics for 1 files...\n",
+            "Building Corsa virtual project for 3 files under {}...\n",
+            "Running Corsa diagnostics for 3 files...\n",
+        ),
+        project.root.join("alpha").display(),
+        project.root.join("beta").display(),
+    );
+    assert_eq!(output.stderr.as_slice(), expected_progress.as_bytes());
     assert_eq!(
         output.status.code(),
         Some(if state == "repair" { 0 } else { 1 })
