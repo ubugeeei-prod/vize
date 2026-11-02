@@ -1,0 +1,54 @@
+{
+  "schema": "vize.reportedContentMapperInputs.v1",
+  "version": 1,
+  "issue": 11362,
+  "case": "guarded-member",
+  "report": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11362",
+    "bodySha256": "86c50fa006e2f524fbf92ba59753bbe8b789a80b83e00995de2be79707142379",
+    "originalReportSha256": "f43d59da3b13457d6e40feb7816e9476e0c7c5bf146c691edace4612ded1d1fc",
+    "originalFencesSha256": "17f6201e9ee307b72fa63ffcbd459966d9eabe7013efb7d7598d15c42409726e",
+    "authorLogin": "Q16solver",
+    "authorPublicNodeId": "MDQ6VXNlcjUwNzg2Mjg3"
+  },
+  "reportedEnvironment": {
+    "vize": "0.638.0",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "vue": "3.5.44",
+    "vueTsc": "3.3.11",
+    "typescript": "6.0.3",
+    "node": "26.13.0",
+    "os": "Windows 11",
+    "nuxtMentionedInProse": "5.0.0-2611010234-c709ec8",
+    "minimalPackageIncludesNuxt": false,
+    "lockfileProvided": false
+  },
+  "reportedCommands": [
+    "npm i && npx tsrs --runExternalCode --noEmit -p tsconfig.json",
+    "npx vue-tsc --noEmit -p tsconfig.json"
+  ],
+  "files": [
+    {
+      "file": "package.json",
+      "content": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+      "utf8Bytes": 200,
+      "sha256": "6bd44e5f4250fd98b039fc323a4ccfe902d58ece8cc0a160c97dc1238b213b00",
+      "sourceFenceIndex": 0
+    },
+    {
+      "file": "tsconfig.json",
+      "content": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+      "utf8Bytes": 279,
+      "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297",
+      "sourceFenceIndex": 1
+    },
+    {
+      "file": "src/Probe.vue",
+      "content": "<script setup lang=\"ts\">\nconst foo = undefined as { bar: string } | undefined;\n</script>\n\n<template>\n  <component :is=\"foo.bar\" v-if=\"foo\" />\n</template>\n",
+      "utf8Bytes": 154,
+      "sha256": "8d06df2b661061cb9d92da12538e67fa16afdea148833f878261d53392e88a7b",
+      "sourceFenceIndex": 2
+    }
+  ],
+  "scope": "Verbatim named original fences only; input data, not execution or acceptance evidence."
+}

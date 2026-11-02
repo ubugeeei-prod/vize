@@ -1,0 +1,61 @@
+{
+  "schema": "vize.reportedContentMapperInputs.v1",
+  "version": 1,
+  "issue": 11366,
+  "case": "generic-index-model",
+  "report": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11366",
+    "bodySha256": "7e3a2b8adbbb5438b9cae71836dd612434d2fa5b74be81484351e143c7378313",
+    "originalReportSha256": "864ae955587783f6526c2dd5e92afdcc0e974700213ceaed1ac261396c53bcca",
+    "originalFencesSha256": "3ee585adb1c1381e0ea42af31ad4ed822f8e94ebca96af87a26707cd851ca9d6",
+    "authorLogin": "Q16solver",
+    "authorPublicNodeId": "MDQ6VXNlcjUwNzg2Mjg3"
+  },
+  "reportedEnvironment": {
+    "vize": "0.638.0",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "vue": "3.5.44",
+    "vueTsc": "3.3.11",
+    "typescript": "6.0.3",
+    "node": "26.13.0",
+    "os": "Windows 11",
+    "nuxtMentionedInProse": "5.0.0-2611010234-c709ec8",
+    "minimalPackageIncludesNuxt": false,
+    "lockfileProvided": false
+  },
+  "reportedCommands": [
+    "npm i && npx tsrs --runExternalCode --noEmit -p tsconfig.json",
+    "npx vue-tsc --noEmit -p tsconfig.json"
+  ],
+  "files": [
+    {
+      "file": "package.json",
+      "content": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+      "utf8Bytes": 200,
+      "sha256": "6bd44e5f4250fd98b039fc323a4ccfe902d58ece8cc0a160c97dc1238b213b00",
+      "sourceFenceIndex": 0
+    },
+    {
+      "file": "tsconfig.json",
+      "content": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+      "utf8Bytes": 279,
+      "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297",
+      "sourceFenceIndex": 1
+    },
+    {
+      "file": "src/Child.vue",
+      "content": "<script setup lang=\"ts\">\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <div>{{ model }}</div>\n</template>\n",
+      "utf8Bytes": 139,
+      "sha256": "afb7820c46d02a0ea22f4fdc62ea5ea3c07acb680b1f75f514d139e7eda9b9b9",
+      "sourceFenceIndex": 2
+    },
+    {
+      "file": "src/Probe.vue",
+      "content": "<script setup lang=\"ts\" generic=\"TKey extends 'a' | 'b'\">\nimport Child from \"./Child.vue\";\n\nconst { foo } = defineProps<{ foo: TKey }>();\nconst map = { a: Child, b: Child };\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <component :is=\"map[foo]\" v-model=\"model\" />\n</template>\n",
+      "utf8Bytes": 310,
+      "sha256": "4059a404ae05203da5fae9b87fc31950aaa7b8b9eff615eae49bf7a6c887b801",
+      "sourceFenceIndex": 3
+    }
+  ],
+  "scope": "Verbatim named original fences only; input data, not execution or acceptance evidence."
+}
