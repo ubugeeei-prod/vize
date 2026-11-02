@@ -1,3 +1,6 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { performance } from "node:perf_hooks";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { Packet } from "./content-mapper-instance-globals-10617.ts";
@@ -78,6 +81,37 @@ export function createTs59ContextReferences() {
     )
       references.set(caseId, { inputs: identity, packet });
     else references.delete(caseId);
+    return packet;
+  };
+}
+
+// Original process capture, shared without changing any command or failure law.
+export function createInstanceGlobalsRunner(recordProcess: (packet: Packet) => void) {
+  return (label: string, command: string, args: string[], cwd: string, input?: Buffer) => {
+    const started = performance.now();
+    const raw = spawnSync(command, args, {
+      cwd,
+      input,
+      encoding: "utf8",
+      timeout: 120_000,
+      maxBuffer: 32 * 1024 * 1024,
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+    });
+    const packet: Packet = {
+      label,
+      command,
+      args,
+      cwd,
+      status: raw.status,
+      signal: raw.signal,
+      error: raw.error?.message ?? null,
+      stdout: raw.stdout ?? "",
+      stderr: raw.stderr ?? "",
+      elapsedMs: performance.now() - started,
+    };
+    recordProcess(packet);
+    assert.equal(packet.error, null, label);
+    assert.equal(packet.signal, null, label);
     return packet;
   };
 }

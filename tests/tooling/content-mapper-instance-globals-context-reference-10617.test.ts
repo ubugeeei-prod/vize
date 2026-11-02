@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import {
+  createInstanceGlobalsRunner,
   createTs59ContextReferences,
   isFlatTs59Context,
   type Ts59ContextInputs,
@@ -21,7 +22,7 @@ const config = JSON.parse(fs.readFileSync(new URL("project/tsconfig.json.txt", f
 delete config.contentMappers;
 delete config.include;
 config.files = ["src/globals.d.ts", "oracle/Context.ts"];
-function input(entry = cases[0]): Ts59ContextInputs {
+function input(entry = cases[0]!): Ts59ContextInputs {
   return {
     command: "/runtime/node",
     args: [
@@ -180,4 +181,45 @@ test("unproven input invalidates earlier references and failed processes are nev
     const second = reference("original", original, () => packet("second"));
     assert.notStrictEqual(first, second);
   }
+});
+
+test("the moved runner retains whole nonzero packets and logs spawn failure before asserting", () => {
+  const recorded: Packet[] = [];
+  const run = createInstanceGlobalsRunner((packet) => {
+    recorded.push(packet);
+  });
+  const input = Buffer.from("日本語🍣\r\n");
+  const args = [
+    "-e",
+    'process.stdout.write(require("fs").readFileSync(0)); process.stderr.write("retained stderr\\n"); process.exit(2)',
+  ];
+  const result = run("authored-error", process.execPath, args, process.cwd(), input);
+  assert.strictEqual(recorded[0], result);
+  assert.deepEqual(
+    { ...result, elapsedMs: 0 },
+    {
+      label: "authored-error",
+      command: process.execPath,
+      args,
+      cwd: process.cwd(),
+      status: 2,
+      signal: null,
+      error: null,
+      stdout: input.toString(),
+      stderr: "retained stderr\n",
+      elapsedMs: 0,
+    },
+  );
+  assert.throws(
+    () => run("missing", `${process.execPath}.missing-10617`, [], process.cwd()),
+    assert.AssertionError,
+  );
+  assert.equal(recorded.length, 2);
+  const failed = recorded[1]!;
+  assert.equal(failed.label, "missing");
+  assert.equal(failed.status, null);
+  assert.equal(failed.signal, null);
+  assert.match(failed.error ?? "", /ENOENT/);
+  assert.equal(failed.stdout, "");
+  assert.equal(failed.stderr, "");
 });
