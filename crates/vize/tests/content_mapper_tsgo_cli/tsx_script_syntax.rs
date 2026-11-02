@@ -23,57 +23,26 @@ use crate::content_mapper_lsp_support::{
     install_packages, position, pull_diagnostics, rename,
 };
 
-const CLEAN: &str = r#"<script setup lang="ts">
-const identity = <T>(value: T): T => value;
-const run = async <T>(value: T) => value;
-const constant = <const T>(value: T) => value;
-const defaulted = <T = string>(value: T) => value;
-const trailing = <T,>(value: T) => value;
-const bounded = <T extends unknown>(value: T) => value;
-const box = { make: <T>(value: T) => [value] };
-class Holder { map = <T>(value: T) => value; }
-function withPick(pick = <T>(value: T) => value) { return pick; }
-const element = <HTMLElement>document.body;
-const loose = <any>element;
-const nested = <string><unknown>1;
-const name = (<HTMLElement>element).tagName;
-const tuple = <const>['a', 'b'];
-const boxed = () => <{ value: number }>{ value: 1 };
-const cast = <T,>(value: unknown) => <T>value;
-const count = identity(1);
-void [run, constant, defaulted, trailing, bounded, box, Holder, withPick, loose, nested, name, tuple, boxed, cast];
-</script>
-<template>
-  <button @click="(<HTMLElement>$event.target).focus()">{{ (<number>count).toFixed() }}</button>
-</template>
-"#;
+const CLEAN: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-script-syntax-projection/Clean.vue.txt"
+));
 
-const PLAIN: &str = r#"<script lang="ts">
-export const helper = <T>(value: T) => value;
-const root = <HTMLElement>document.body;
-export default { name: 'Plain', data: () => ({ root }) };
-</script>
-<template><div>{{ root.tagName }}</div></template>
-"#;
+const PLAIN: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-script-syntax-projection/Plain.vue.txt"
+));
 
-const GENERIC: &str = r#"<script setup lang="ts" generic="T extends string">
-const props = defineProps<{ value: T }>();
-const echo = <U>(input: U) => input;
-const typed = <T>props.value;
-</script>
-<template>{{ echo(typed) }}</template>
-"#;
+const GENERIC: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-script-syntax-projection/Generic.vue.txt"
+));
 
 /// Positions match `@vue/content-mapper`, which projects `.ts`.
-const ERRORS: &str = r#"<script setup lang="ts">
-const identity = <T>(value: T): T => value;
-const wrong: string = identity(1);
-const element = <HTMLElement>document.body;
-element.missing;
-const mistaken = <string>1;
-</script>
-<template>{{ (<number>wrong).toFixed() }}</template>
-"#;
+const ERRORS: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-script-syntax-projection/Errors.vue.txt"
+));
 
 const CONVERSION: &str = "may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.";
 
