@@ -12467,6 +12467,66 @@
       }
     },
     {
+      "id": "typechecker/reported-model-events-11390",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "inputs": [
+        {
+          "path": "reported-model-events-11390-11391/input.json",
+          "sha256": "d9ee0ab0f0c5be0bf56fed8913f7c910076bc6f08d8166e42d7c6a55f611658f",
+          "role": "physically-consumed-original-and-event-payload-boundary-controls-11390"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_events_11390_11391::original_model_event_maps_preserve_boundaries_and_payload_errors; physically consumes the original issue 11390 input plus valid/wrong payload controls; input-only registration, no source/native/public or diagnostic oracle qualification"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-model-events-11391",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "inputs": [
+        {
+          "path": "reported-model-events-11390-11391/input.json",
+          "sha256": "d9ee0ab0f0c5be0bf56fed8913f7c910076bc6f08d8166e42d7c6a55f611658f",
+          "role": "physically-consumed-original-and-event-payload-boundary-controls-11391"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_events_11390_11391::original_model_event_maps_preserve_boundaries_and_payload_errors; physically consumes the original issue 11391 input plus valid/wrong payload controls; input-only registration, no source/native/public or diagnostic oracle qualification"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
       "state": "active",
       "targets": ["batch"],

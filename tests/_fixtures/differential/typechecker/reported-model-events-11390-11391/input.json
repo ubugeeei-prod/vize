@@ -1,0 +1,6 @@
+{
+  "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n",
+  "tsconfig": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n",
+  "typedSeventeen": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "runtimeArray": "<script setup lang=\"ts\">\ndefineEmits([\"a\"]);\ndefineModel();\n</script>\n"
+}
