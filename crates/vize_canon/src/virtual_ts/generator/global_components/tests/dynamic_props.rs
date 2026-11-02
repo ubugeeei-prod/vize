@@ -37,7 +37,7 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
         let template = vize_carton::cstr!("<component :is=\"{expression}\" count=\"wrong\" />");
         for checked in [true, false] {
             let output = generate(&script, &template, checked);
-            let captured = reference != "_as.Choice";
+            let captured = matches!(expression, "registry.Choice" | "registry.nested.Choice");
             let constructor = if captured {
                 "__vize_dynamic_is_0"
             } else {
@@ -51,9 +51,13 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
                 output.code
             );
             if captured {
-                assert!(output.code.contains(
-                    vize_carton::cstr!("const __vize_dynamic_is_0 = ({expression});").as_str()
-                ));
+                let initializers = output
+                    .code
+                    .lines()
+                    .filter_map(|line| line.strip_prefix("  const __vize_dynamic_is_0 = "))
+                    .collect::<Vec<_>>();
+                let expected_initializer = vize_carton::cstr!("({expression});");
+                assert_eq!(initializers, vec![expected_initializer.as_str()]);
             }
             assert!(output.code.contains("\"count\": \"wrong\""));
             assert!(!output.code.contains("typeof registry_Choice extends "));
