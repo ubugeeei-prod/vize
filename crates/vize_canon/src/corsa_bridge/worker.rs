@@ -63,6 +63,19 @@ pub(crate) struct BoundedWorker<T> {
 }
 
 impl<T: Send + 'static> BoundedWorker<T> {
+    /// Irrevocably queue owner cleanup behind entered IPC without waiting or
+    /// starting a new deadline. Used by nonblocking outer shutdown only.
+    pub(in crate::corsa_bridge) fn enqueue_retirement<F>(&self, f: F) -> Result<(), WorkerError>
+    where
+        F: FnOnce(&mut T) + Send + 'static,
+    {
+        self.jobs
+            .as_ref()
+            .ok_or(WorkerError::Stopped)?
+            .send(Box::new(f))
+            .map_err(|_| WorkerError::Stopped)
+    }
+
     pub(crate) fn is_draining(&self) -> bool {
         self.abandoned.load(Ordering::Acquire) > 0
     }
@@ -86,7 +99,7 @@ impl<T: Send + 'static> BoundedWorker<T> {
     /// when the [`BoundedWorker`] handle itself is dropped.
     pub(super) fn new_with_keepalive<K: Send + 'static>(
         name: &str,
-        mut state: T,
+        state: T,
         keepalive: K,
     ) -> Self {
         let (sender, receiver) = mpsc::channel::<Job<T>>();
@@ -94,6 +107,9 @@ impl<T: Send + 'static> BoundedWorker<T> {
             .name(std::string::String::from(name))
             .spawn(move || {
                 let _keepalive = keepalive;
+                // Body locals drop in reverse declaration order, on return
+                // and unwind. Keep native-state destruction before its files.
+                let mut state = state;
                 while let Ok(job) = receiver.recv() {
                     job(&mut state);
                 }
@@ -291,6 +307,69 @@ mod tests {
         dropped
             .recv_timeout(SETTLE)
             .expect("worker must release keepalive after draining");
+    }
+
+    #[test]
+    fn native_state_destructor_keeps_owned_files_on_return_and_unwind() {
+        struct State {
+            path: std::path::PathBuf,
+            read: mpsc::Sender<std::io::Result<std::string::String>>,
+        }
+        impl Drop for State {
+            fn drop(&mut self) {
+                let _ = self.read.send(std::fs::read_to_string(&self.path));
+            }
+        }
+        struct Owner {
+            directory: Option<tempfile::TempDir>,
+            dropped: mpsc::Sender<()>,
+        }
+        impl Drop for Owner {
+            fn drop(&mut self) {
+                drop(self.directory.take());
+                let _ = self.dropped.send(());
+            }
+        }
+        for unwind in [false, true] {
+            let directory = tempfile::tempdir().unwrap();
+            let path = directory.path().join("still-owned-native-input");
+            std::fs::write(&path, "complete native-owned bytes").unwrap();
+            let (read_tx, read) = mpsc::channel();
+            let (dropped_tx, dropped) = mpsc::channel();
+            let worker = BoundedWorker::new_with_keepalive(
+                "vize-test-state-drop",
+                State {
+                    path: path.clone(),
+                    read: read_tx,
+                },
+                Owner {
+                    directory: Some(directory),
+                    dropped: dropped_tx,
+                },
+            );
+            let (entered_tx, entered) = mpsc::channel();
+            let (release, hold) = mpsc::channel();
+            assert_eq!(
+                worker.submit(DEADLINE, move |_| {
+                    entered_tx.send(()).unwrap();
+                    hold.recv_timeout(SETTLE).unwrap();
+                    assert!(!unwind, "intentional worker unwind control");
+                }),
+                Err(WorkerError::TimedOut)
+            );
+            entered.recv_timeout(SETTLE).unwrap();
+            drop(worker);
+            assert!(read.try_recv().is_err());
+            assert!(dropped.try_recv().is_err());
+            release.send(()).unwrap();
+            assert_eq!(
+                read.recv_timeout(SETTLE).unwrap().unwrap(),
+                "complete native-owned bytes",
+                "native destructor needs its files: unwind={unwind}"
+            );
+            dropped.recv_timeout(SETTLE).unwrap();
+            assert!(!path.exists(), "owner eventually removes its own files");
+        }
     }
 
     #[test]
