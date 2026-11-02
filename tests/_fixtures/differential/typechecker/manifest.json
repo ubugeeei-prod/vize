@@ -12152,6 +12152,45 @@
       }
     },
     {
+      "id": "typechecker/regression/misskey-setup-local-public-types",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-setup-local-public-types/Use.vue.txt",
+          "sha256": "db7a8f6e360a01b75029507175279979a782b64a82238e0ecc97031b61da8039",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-setup-local-public-types/Widget.vue.txt",
+          "sha256": "c62d4b097199cea475d76ae71ce56ffe68fe21b43c20182fc7f0f5e3fb3bff37",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-setup-local-public-types/types.ts.txt",
+          "sha256": "22174d5928ff60bd095d9f2ebb9405366131ff9fdd77fe0a6643f05a096bd29d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::setup_local_public_types::setup_local_emits_and_expose_types_keep_only_authored_errors; misskey widget-shaped defineEmits/defineExpose types over setup-local aliases, with an authored-error variant matching Vue's positions. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
       "targets": ["batch"],
