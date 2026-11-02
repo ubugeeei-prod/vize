@@ -6,7 +6,7 @@ use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaInitialVueDocument};
 
 use super::IdeContext;
-use crate::server::state::CorsaRequestStamp;
+use crate::server::CorsaRequestStamp;
 
 pub(super) type OwnedInitialDocument = InitialCanonicalDocument<CorsaInitialVueDocument>;
 
