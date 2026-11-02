@@ -224,6 +224,10 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
       const vueTscStartedAt = Date.now();
       const vueTsc = runVueTsc(fixture.workspaceDir, vueTscPath);
       const vueTscDurationMs = Date.now() - vueTscStartedAt;
+      console.log(
+        "vize-compat-probe-observation " +
+          JSON.stringify({ fixtureId: probe.fixtureId, revision: fixture.entry.revision, vize, vueTsc }),
+      );
       assert.ok(
         vueTsc.status === 0 || vueTsc.status === 1 || vueTsc.status === 2,
         `vue-tsc must complete for ${probe.fixtureId}: exit ${vueTsc.status}\n${vueTsc.stderr}`,
