@@ -629,7 +629,7 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
         output
             .code
             .matches(
-                "declare const AutoCard: $GlobalComponentFallback & $GlobalComponent<\"AutoCard\">;"
+                "declare const AutoCard: $GlobalComponentFallback & ($GlobalComponent<\"AutoCard\"> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);"
             )
             .count(),
         1

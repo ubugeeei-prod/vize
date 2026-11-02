@@ -30,48 +30,45 @@ const childWorkflow = fs.readFileSync(
   "utf8",
 );
 const childData = parse(childWorkflow);
-const jointCall =
-  "  reported-q16:\n    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'\n    uses: ./.github/workflows/content-mapper-reported-q16.yml\n    with:\n      request: ${{ toJSON(inputs) }}\n";
-function restoreJointJob(value: string) {
-  let body = childWorkflow.slice(childWorkflow.indexOf("  reported-q16:\n"));
-  for (const key of [
-    "expected-source-sha",
-    "targeted-test",
-    "router-experimental-only",
-    "event-rename-only",
-    "official-css-options-only",
-    "published-defaults-only",
-    "cut",
-    "head",
-    "tag",
-    "source_pr",
-    "release_run",
-    "reported-q16-cases",
-  ])
-    body = body.replaceAll("fromJSON(inputs.request)." + key, "inputs." + key);
-  assert.equal(value.split(jointCall).length, 2);
-  value = value.replace(jointCall, body);
-  value = value
-    .replace('  schedule: [{ cron: "21 4 * * *" }]', '  schedule:\n    - cron: "21 4 * * *"')
-    .replace("permissions: { contents: read }", "permissions:\n  contents: read");
-  for (const key of [
-    "on:",
-    "concurrency:",
-    "permissions:",
-    "env:",
-    "jobs:",
-    "  exact-tsgo-project:",
-    "  event-rename:",
-    "  official-css-options:",
-    "  router-experimental:",
-  ]) {
-    assert.equal(value.split("\n" + key).length, 2);
-    value = value.replace("\n" + key, "\n\n" + key);
+const delegatedCalls = {
+  "reported-q16":
+    "  reported-q16:\n    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'\n    uses: ./.github/workflows/content-mapper-reported-q16.yml\n    with:\n      request: ${{ toJSON(inputs) }}\n\n",
+  "router-experimental":
+    "  router-experimental:\n    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)\n    uses: ./.github/workflows/content-mapper-reported-q16.yml\n    with:\n      request: ${{ toJSON(inputs) }}\n",
+};
+function restoreDelegatedJobs(value: string) {
+  const names = Object.keys(delegatedCalls) as (keyof typeof delegatedCalls)[];
+  for (const [i, name] of names.entries()) {
+    const start = childWorkflow.indexOf("  " + name + ":\n"),
+      end =
+        i + 1 < names.length
+          ? childWorkflow.indexOf("  " + names[i + 1] + ":\n", start)
+          : childWorkflow.length;
+    assert(start > 0 && end > start);
+    let body = childWorkflow.slice(start, end);
+    for (const key of [
+      "targeted-test",
+      "expected-source-sha",
+      "router-experimental-only",
+      "event-rename-only",
+      "official-css-options-only",
+      "published-defaults-only",
+      "cut",
+      "head",
+      "tag",
+      "source_pr",
+      "release_run",
+      "reported-q",
+    ])
+      body = body.replaceAll("fromJSON(inputs.request)." + key, "inputs." + key);
+    assert.equal(value.split(delegatedCalls[name]).length, 2);
+    value = value.replace(delegatedCalls[name], body);
   }
   return value;
 }
+
 function stripSelectedAfter(value: string) {
-  value = restoreJointJob(value);
+  value = restoreDelegatedJobs(value);
   const input =
       '      reported-q16-cases:\n        description: "Closed source After case set; all retains the original six tests"\n        type: choice\n        options: [all, A, A-with-declaration, B, C, D]\n        default: all\n',
     from =
@@ -419,8 +416,8 @@ test("post-compile CLI image is attested from the normal Cargo binary while pres
   );
 });
 
-test("the factored report job preserves its entire former body, inputs and global environment", () => {
-  const restored = restoreJointJob(workflow);
+test("cohesive job extraction preserves whole former jobs, inputs and global environment without header minification", () => {
+  const restored = restoreDelegatedJobs(workflow);
   assert.equal(
     createHash("sha256").update(restored).digest("hex"),
     "8c86c4c3f1a1eb8a0521f46365307e497618309ace637bf222e77871d07bc411",
@@ -434,13 +431,17 @@ test("the factored report job preserves its entire former body, inputs and globa
   assert.deepEqual(childData.on.workflow_call.inputs, {
     request: { type: "string", required: true },
   });
-  assert.deepEqual(data.jobs["reported-q16"].with, { request: "${{ toJSON(inputs) }}" });
-  assert.equal(
-    data.jobs["reported-q16"].uses,
-    "./.github/workflows/content-mapper-reported-q16.yml",
-  );
-  assert.equal(workflow.split("\n").length - 1, 726);
+  for (const name of Object.keys(delegatedCalls) as (keyof typeof delegatedCalls)[]) {
+    assert.deepEqual(data.jobs[name].with, { request: "${{ toJSON(inputs) }}" });
+    assert.equal(data.jobs[name].uses, "./.github/workflows/content-mapper-reported-q16.yml");
+    assert.equal(data.jobs[name].if, original.jobs[name].if);
+  }
+  assert(workflow.split("\n").length - 1 <= 726);
   assert(childWorkflow.split("\n").length - 1 < 500);
-  for (const job of Object.keys(original.jobs).filter((key) => key !== "reported-q16"))
+  assert.equal(
+    workflow.slice(0, workflow.indexOf("  reported-q16:\n")),
+    restored.slice(0, restored.indexOf("  reported-q16:\n")),
+  );
+  for (const job of Object.keys(original.jobs).filter((key) => !(key in delegatedCalls)))
     assert.deepEqual(data.jobs[job], original.jobs[job]);
 });

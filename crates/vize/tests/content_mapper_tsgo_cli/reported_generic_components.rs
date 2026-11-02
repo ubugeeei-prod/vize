@@ -132,6 +132,53 @@ fn collect_refs(tsgo: &Path, project: &Path, input: &Value, outcomes: &mut Vec<V
     }
 }
 
+// A published declaration has no Vize-only resolver metadata. Its generic
+// value prop must still determine the exposed method's argument type.
+fn collect_bound_external_refs(tsgo: &Path, project: &Path, input: &Value) -> Vec<Value> {
+    let mut external = input.clone();
+    external["files"].as_array_mut().unwrap().push(json!({
+        "path":"src/External.d.ts",
+        "source":"declare const External: <T>(props: { value: T }, ctx?: unknown, expose?: (exposed: { foo: (value: T) => void }) => void) => { __ctx?: { expose: (exposed: { foo: (value: T) => void }) => void } };\nexport default External;\n",
+    }));
+    input_files(&external, project);
+    let registry = input["files"][3]["source"]
+        .as_str()
+        .unwrap()
+        .replace("./Child.vue", "./External");
+    std::fs::write(project.join("src/components.d.ts"), registry).unwrap();
+    let original = input["files"][4]["source"]
+        .as_str()
+        .unwrap()
+        .replace("foo()", "foo(123)")
+        .replace(
+            "<Child ref=\"child\"",
+            "<Child :value=\"123\" ref=\"child\"",
+        );
+    let mut outcomes = Vec::new();
+    for (phase, replacement, bad, code) in [
+        ("original", "foo(123)", false, 0),
+        ("wrong", "foo('wrong')", true, 2345),
+        ("repair", "foo(123)", false, 0),
+        ("missing-member", "nope()", true, 2339),
+    ] {
+        std::fs::write(
+            project.join("src/Probe.vue"),
+            original.replace("foo(123)", replacement),
+        )
+        .unwrap();
+        outcomes.push(observe(
+            tsgo,
+            project,
+            &external,
+            json!({
+                "issue":11368,"variant":"external-declaration-bound-prop-control",
+                "phase":phase,"bad":bad,"expectedCode":code,
+            }),
+        ));
+    }
+    outcomes
+}
+
 #[test]
 fn reported_generic_slots_and_global_refs_keep_authored_members() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
@@ -170,13 +217,14 @@ fn reported_generic_slots_and_global_refs_keep_authored_members() {
     install_mapper_manifest(ref_project.path());
     install_vue_package(ref_project.path());
     collect_refs(&tsgo, ref_project.path(), &refs, &mut outcomes);
+    let external_bound = collect_bound_external_refs(&tsgo, ref_project.path(), &refs);
     let capture = json!({
         "schema":"vize.reported-generic-component-source-observations.v1",
         "originalInputs":[slots,refs],"requestedProvider":tsgo,
         "actualVueManifest":std::fs::read_to_string(project.path().join("node_modules/vue/package.json")).unwrap(),
         "actualMapperManifest":std::fs::read_to_string(project.path().join("node_modules/vize/package.json")).unwrap(),
         "scope":"Compiled source CLI Content Mapper with actual selected provider; not installed vize0.638, reporter tsrs tuple or Windows acceptance.",
-        "observations":outcomes,
+        "observations":outcomes,"externalBoundObservations":external_bound,
     });
     let evidence = std::env::var_os("VIZE_REPORTED_GENERIC_EVIDENCE_DIR")
         .map(PathBuf::from)
@@ -214,4 +262,22 @@ fn reported_generic_slots_and_global_refs_keep_authored_members() {
         })
         .collect::<Vec<_>>();
     assert_eq!(json!(actual), expected);
+    let external_expected: Value = serde_json::from_str(include_str!(
+        "reported_generic_components/external-bound-expected-results.json"
+    ))
+    .unwrap();
+    let external_actual = capture["externalBoundObservations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|observation| {
+            json!({
+                "identity":observation["identity"],"status":observation["status"],
+                "success":observation["success"],"stdout":observation["stdout"],
+                "stderr":observation["stderr"],"stdoutBytes":observation["stdoutBytes"],
+                "stderrBytes":observation["stderrBytes"],
+            })
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(json!(external_actual), external_expected);
 }
