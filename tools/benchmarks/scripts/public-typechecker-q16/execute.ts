@@ -232,13 +232,10 @@ export function assessTsrs(state: State, packet: Packet) {
       stdout.startsWith(header + ": ") && stdout.endsWith("\n"),
       "one compact owned diagnostic required",
     );
-    assert(
-      [...stdout].every((character) => {
-        const code = character.codePointAt(0)!;
-        return (code === 10 || code >= 32) && code !== 127;
-      }),
-      "printer control bytes refuse",
-    );
+    for (const character of stdout) {
+      const code = character.charCodeAt(0);
+      assert((code === 10 || code >= 32) && code !== 127, "printer control bytes refuse");
+    }
     const body = stdout.slice(header.length + 2, -1).split("\n");
     assert(
       body[0]!.length > 0 && body.slice(1).every((line) => /^ {2,}\S.*$/u.test(line)),
