@@ -1,0 +1,235 @@
+{
+  "id": "B60-68",
+  "projects": [
+    {
+      "id": "issue-11360",
+      "issue": 11360,
+      "states": [
+        {
+          "id": "11360/faithful-default-original/original",
+          "phase": "faithful-default-original/original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TExtra = unknown\">\ntype Foo = TExtra & { bar: string };\n\ndefineProps<{ items: Foo[] }>();\ndefineSlots<{ default: (props: { item: Foo }) => unknown }>();\n</script>\n\n<template>\n  <slot :item=\"{ bar: 'a' } as Foo\" />\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ bar: \"a\", baz: 1 }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.baz }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/faithful-default-original/wrong",
+          "phase": "faithful-default-original/wrong",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TExtra = unknown\">\ntype Foo = TExtra & { bar: string };\n\ndefineProps<{ items: Foo[] }>();\ndefineSlots<{ default: (props: { item: Foo }) => unknown }>();\n</script>\n\n<template>\n  <slot :item=\"{ bar: 'a' } as Foo\" />\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ bar: \"a\", baz: 1 }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.nope }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,15): error TS2339: Property 'nope' does not exist on type '$HoistedGeneric0<{ bar: string; baz: number; }>'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/faithful-default-original/repair",
+          "phase": "faithful-default-original/repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TExtra = unknown\">\ntype Foo = TExtra & { bar: string };\n\ndefineProps<{ items: Foo[] }>();\ndefineSlots<{ default: (props: { item: Foo }) => unknown }>();\n</script>\n\n<template>\n  <slot :item=\"{ bar: 'a' } as Foo\" />\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ bar: \"a\", baz: 1 }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.baz }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/faithful-default-original/restore",
+          "phase": "faithful-default-original/restore",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TExtra = unknown\">\ntype Foo = TExtra & { bar: string };\n\ndefineProps<{ items: Foo[] }>();\ndefineSlots<{ default: (props: { item: Foo }) => unknown }>();\n</script>\n\n<template>\n  <slot :item=\"{ bar: 'a' } as Foo\" />\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ bar: \"a\", baz: 1 }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.nope }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,15): error TS2339: Property 'nope' does not exist on type '$HoistedGeneric0<{ bar: string; baz: number; }>'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/constrained-no-default-control/original",
+          "phase": "constrained-no-default-control/original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"T extends string\">\ntype Item = { foo: T };\ndefineProps<{ items: Item[] }>();\ndefineSlots<{ default: (props: { item: Item }) => unknown }>();\n</script>\n<template><slot :item=\"{ foo: 'a' } as Item\" /></template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ foo: \"a\" }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.foo }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/constrained-no-default-control/wrong",
+          "phase": "constrained-no-default-control/wrong",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"T extends string\">\ntype Item = { foo: T };\ndefineProps<{ items: Item[] }>();\ndefineSlots<{ default: (props: { item: Item }) => unknown }>();\n</script>\n<template><slot :item=\"{ foo: 'a' } as Item\" /></template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ foo: \"a\" }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.foo.bar }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,19): error TS2339: Property 'bar' does not exist on type 'string'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/constrained-no-default-control/repair",
+          "phase": "constrained-no-default-control/repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"T extends string\">\ntype Item = { foo: T };\ndefineProps<{ items: Item[] }>();\ndefineSlots<{ default: (props: { item: Item }) => unknown }>();\n</script>\n<template><slot :item=\"{ foo: 'a' } as Item\" /></template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ foo: \"a\" }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.foo }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11360/constrained-no-default-control/restore",
+          "phase": "constrained-no-default-control/restore",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\" generic=\"T extends string\">\ntype Item = { foo: T };\ndefineProps<{ items: Item[] }>();\ndefineSlots<{ default: (props: { item: Item }) => unknown }>();\n</script>\n<template><slot :item=\"{ foo: 'a' } as Item\" /></template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ foo: \"a\" }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.foo.bar }}\n    </template>\n  </Child>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,19): error TS2339: Property 'bar' does not exist on type 'string'.\n",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ],
+  "sourceAuthority": {
+    "manifestSha256": "79c59fcc5ff56604dbe7e665cf439ae5a94f2b42e81af2e7975a280fda7f679f",
+    "expectedSha256": "c4108384b60fddf3a1210aeb75426ef20326e5af07280a4ac3f848d1c4638548",
+    "ownerReviewSha256": "9df510c1b7ae3f8bae81e00019e0f4eeee60a95e1472233261cc770aff5f9b77",
+    "sourceFixture": "b29f160c2f3b6293bc5f3ff3d226307d753c52d7",
+    "vueTscOracle": null,
+    "sourceBeforeIsPublicRemeasurement": false
+  }
+}

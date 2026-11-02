@@ -1,0 +1,110 @@
+{
+  "id": "C62",
+  "projects": [
+    {
+      "id": "issue-11362",
+      "issue": 11362,
+      "states": [
+        {
+          "id": "11362/original",
+          "phase": "original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nconst foo = undefined as { bar: string } | undefined;\n</script>\n\n<template>\n  <component :is=\"foo.bar\" v-if=\"foo\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11362/unguarded-error",
+          "phase": "unguarded-error",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nconst foo = undefined as { bar: string } | undefined;\n</script>\n\n<template>\n  <component :is=\"foo.bar\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(6,19): error TS18048: 'foo' is possibly 'undefined'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11362/guard-repair",
+          "phase": "guard-repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nconst foo = undefined as { bar: string } | undefined;\n</script>\n\n<template>\n  <component :is=\"foo.bar\" v-if=\"foo\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11362/unguarded-restored",
+          "phase": "unguarded-restored",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\nconst foo = undefined as { bar: string } | undefined;\n</script>\n\n<template>\n  <component :is=\"foo.bar\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(6,19): error TS18048: 'foo' is possibly 'undefined'.\n",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ],
+  "sourceAuthority": {
+    "manifestSha256": "541525579a7b4a4cda7d1d64af0372b1c24add3a6fcbe752c2c69eb9f12568ed",
+    "sourceOwnerReviewSha256": "713b131dbe678458e240ff55dd526ad2dc110fca203c9b63914b6ff8c9617eea",
+    "excludedIssues": [11363, 11366, 11367],
+    "vueTscOracle": null,
+    "sourceBeforeIsPublicRemeasurement": false
+  }
+}

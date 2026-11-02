@@ -1,0 +1,65 @@
+{
+  "schema": "vize.q16.public.declaration11364.v1",
+  "sourceProtocolSha256": "50e5431858b0e5e0aa360b7db5f0602572c211e4ce045a1d11e325d59fc38d55",
+  "knownGoodSource": "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
+  "causalFix": null,
+  "packageJsonOriginal": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+  "configOriginal": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+  "producerSource": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "consumerSource": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" disabled />\n</template>\n",
+  "producerArgs": [
+    "npx",
+    "vize",
+    "check",
+    "--declaration",
+    "--declaration-dir",
+    "../out",
+    "src/Foo.vue"
+  ],
+  "consumerArgs": ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
+  "outputFiles": ["Foo.vue.d.ts", "__vize_helpers.d.ts"],
+  "producerStreamsOwned": false,
+  "sourceDeclarationsUsedAsPublicGolden": false,
+  "states": [
+    {
+      "id": "original-disabled",
+      "phase": "original",
+      "source": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" disabled />\n</template>\n",
+      "expected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "wrong-owned-value",
+      "phase": "wrong",
+      "source": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo bar=\"baz\" disabled />\n</template>\n",
+      "expected": {
+        "status": 2,
+        "stdout": "src/Probe.vue(6,8): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "missing-owned-value",
+      "phase": "missing",
+      "source": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo disabled />\n</template>\n",
+      "expected": {
+        "status": 2,
+        "stdout": "src/Probe.vue(6,4): error TS2345: Argument of type '{ disabled: boolean; }' is not assignable to parameter of type '$AuthoredKeyWitness<{ disabled: boolean; }> & Partial<Props> & Partial<$KebabProps<Props>> & { class?: unknown; style?: unknown; } & ... 7 more ... & Record<...>'.\n  Property '__vizeInvalidComponentProps' is missing in type '{ disabled: boolean; }' but required in type '{ readonly __vizeInvalidComponentProps: { readonly missing: \"bar\"; readonly extra: never; }; }'.\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "repaired-disabled",
+      "phase": "repair",
+      "source": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" disabled />\n</template>\n",
+      "expected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ]
+}
