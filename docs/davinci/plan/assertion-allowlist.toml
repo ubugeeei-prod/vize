@@ -92,6 +92,7 @@ paths = [
   "crates/vize/tests/content_mapper_lsp_support/mod.rs",
   "crates/vize/tests/content_mapper_tsgo_build.rs",
   "crates/vize/tests/content_mapper_tsgo_cli.rs",
+  "crates/vize/tests/content_mapper_tsgo_cli/project_declarations.rs",
   "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs",
   "crates/vize/tests/doctor_cli.rs",
   "crates/vize/tests/doctor_filter_cli.rs",

@@ -1,4 +1,9 @@
-use super::*;
+use super::{
+    JAVASCRIPT_TSC_ENV, TSGO_ENV, assert_success, check_project, copy_fixture,
+    emitted_vue_declaration, install_mapper_manifest, install_vue_package, options_api_diagnostics,
+    output_text, run_tsgo, workspace_root,
+};
+use std::path::{Path, PathBuf};
 
 pub(super) fn check_project_and_declarations() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {

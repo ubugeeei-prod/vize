@@ -51,8 +51,11 @@ pub(in crate::virtual_ts) fn define_slots_type_requires_setup_scope(summary: &Cr
         .define_slots()
         .and_then(|call| call.type_args.as_deref())
         .is_some_and(|args| {
-            super::generics::setup_signature(summary).1.is_some()
-                || macro_type_requires_setup_scope(summary, args)
+            macro_type_requires_setup_scope_with_generic_aliases(
+                summary,
+                args,
+                super::generics::setup_signature(summary).1.is_some(),
+            )
         })
 }
 
@@ -61,6 +64,14 @@ pub(in crate::virtual_ts) fn define_slots_type_requires_setup_scope(summary: &Cr
 /// types must be evaluated inside setup. The AST query excludes property names,
 /// comments, string literals, generic parameters, mapped keys and infer locals.
 pub(super) fn macro_type_requires_setup_scope(summary: &Croquis, type_args: &str) -> bool {
+    macro_type_requires_setup_scope_with_generic_aliases(summary, type_args, false)
+}
+
+fn macro_type_requires_setup_scope_with_generic_aliases(
+    summary: &Croquis,
+    type_args: &str,
+    generic_aliases: bool,
+) -> bool {
     let inner = type_args
         .strip_prefix('<')
         .and_then(|text| text.strip_suffix('>'))
@@ -79,7 +90,13 @@ pub(super) fn macro_type_requires_setup_scope(summary: &Croquis, type_args: &str
             .iter()
             .find(|export| export.name == *name)
         {
-            return !export.hoisted;
+            // Local aliases in a generic setup must bind that invocation's
+            // arguments instead of the hoisted declaration's defaults. Keep
+            // imported and independent inline contracts on their existing path.
+            return !export.hoisted
+                || (generic_aliases
+                    && (summary.types.definitions().interfaces.contains_key(name)
+                        || summary.types.definitions().type_aliases.contains_key(name)));
         }
         super::super::script_facts::contains_binding(summary, name)
             || summary.types.definitions().interfaces.contains_key(name)
