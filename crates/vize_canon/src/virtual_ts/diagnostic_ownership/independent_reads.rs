@@ -25,7 +25,7 @@ pub(crate) struct ReadValue {
     reads: Vec<ReadCandidate>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(super) struct PreparedReads {
     raw: String,
     value_start: u32,
@@ -210,6 +210,17 @@ fn independent_owner(
 }
 
 impl DiagnosticOwnership {
+    /// A proven root callback buffer keeps only its own usage's ephemeral facts.
+    pub(crate) fn inherit_independent_reads(&mut self, from: &Self, usage: &ComponentUsage) {
+        for prop in &usage.props {
+            if let Some(owner) = InputOwner::for_expected_projection(usage, prop)
+                && !from.unproven.contains(&owner)
+                && let Some(value) = from.independent_reads.get(&owner)
+            {
+                self.independent_reads.insert(owner, value.clone());
+            }
+        }
+    }
     // Keep the base owner compact for every ordinary scalar projection.
     // A late refusal of a whole prop must also revoke its narrow read proofs.
     pub(super) fn refuse_independent_reads(&mut self, owner: InputOwner) {

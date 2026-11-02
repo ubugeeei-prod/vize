@@ -162,6 +162,12 @@ impl RootCallbackOwners {
                     continue;
                 }
                 let mut buffer = RootOwnerBuffer::default();
+                if let Some(ownership) = ctx.diagnostic_ownership {
+                    buffer
+                        .diagnostic_ownership
+                        .borrow_mut()
+                        .inherit_independent_reads(&ownership.borrow(), usage);
+                }
                 let owner_ctx = ComponentPropsContext {
                     inference_prelude: None,
                     diagnostic_ownership: ctx
