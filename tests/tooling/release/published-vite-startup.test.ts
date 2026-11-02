@@ -280,7 +280,7 @@ test("published workflow dependencies, guards, permissions and artifacts belong 
     /^    if: github\.event_name == 'workflow_dispatch' && inputs\.mode == 'published-startup-75-76'$/mu,
   );
   assert.match(startup, /^    permissions: \{ contents: read, actions: read \}$/mu);
-  const artifactPath = startup.split("\n").find((line) => /^          path:/u.test(line));
+  const artifactPath = startup.split("\n").find((line) => line.startsWith("          path:"));
   assert.equal(
     artifactPath?.trim(),
     "path: ${{ runner.temp }}/" + evidencePrefix + "${{ github.run_id }}-${{ github.run_attempt }}",
