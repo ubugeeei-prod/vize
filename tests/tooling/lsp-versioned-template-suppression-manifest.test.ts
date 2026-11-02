@@ -15,6 +15,7 @@ import {
 } from "../differential/lsp-versioned-template-suppression.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
+import { MODEL_BINDING_UNIT_ID } from "../differential/lsp-model-binding-source-unit.ts";
 const root = new URL("../_fixtures/differential/lsp/", import.meta.url);
 const loaded = loadLspManifest(fileURLToPath(new URL("manifest.json", root)));
 const current = loaded.cases.find((x) => x.id === VERSIONED_TEMPLATE_SUPPRESSION_ID);
@@ -66,7 +67,8 @@ void test("selected no-fix suppression preserves the whole original diagnostic a
     workspace: { workspaceEdit: { documentChanges: true } },
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, capabilities);
-  assert.equal(loaded.cases.length, 82);
+  assert.equal(loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID).length, 82);
+  assert.equal(loaded.cases.length, 83);
 });
 
 void test("closed one-suppression loader refuses altered identity, diagnostic, pin and whole-response metadata", () => {

@@ -7,6 +7,10 @@ import { readPinnedArtifact, sha256 } from "./harness.mjs";
 import { decodeFrames } from "./lsp-wire.ts";
 import type { FixtureData, LspRow } from "./lsp-types.ts";
 import {
+  MODEL_BINDING_UNIT_REASON,
+  type ModelBindingSourceUnit,
+} from "./lsp-model-binding-source-unit.ts";
+import {
   NATIVE_CAPACITY_UNSUPPORTED_REASON,
   type NativeCapacitySourceSession,
 } from "./lsp-native-capacity-contract.ts";
@@ -30,9 +34,20 @@ type LocalResolveSourceSession = {
   capabilities: "protocol/initialize-capabilities.json";
 };
 
-export type LspSourceSession = LocalResolveSourceSession | NativeCapacitySourceSession;
+export type LspSourceSession =
+  | LocalResolveSourceSession
+  | NativeCapacitySourceSession
+  | ModelBindingSourceUnit;
 
 export function sourceSessionUnsupportedLegacy(session?: LspSourceSession): LspRow["legacy"] {
+  if (session?.kind === "reported-model-binding-source-unit-v1") {
+    return {
+      state: "unsupported",
+      verdict: "unsupported-source-unit",
+      comparator: "source-inspected-unit",
+      reason: MODEL_BINDING_UNIT_REASON,
+    };
+  }
   assert.ok(
     session === undefined ||
       session.kind === "local-completion-resolve-v1" ||

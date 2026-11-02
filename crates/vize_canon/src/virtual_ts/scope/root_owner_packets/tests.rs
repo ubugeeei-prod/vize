@@ -34,6 +34,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
         0,
         (
             ScopeGenerationOptions {
+                component_props_contract: "Props",
                 diagnostic_ownership: None,
                 generic_parameters: None,
                 check_options: VirtualTsCheckOptions {

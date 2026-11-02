@@ -14,7 +14,7 @@ use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier_frag
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 /// Whether `prop` is the prop half of a `v-model` on `usage`.
-pub(super) fn is_model_prop(usage: &ComponentUsage, prop: &PassedProp) -> bool {
+pub(in crate::virtual_ts) fn is_model_prop(usage: &ComponentUsage, prop: &PassedProp) -> bool {
     !prop.name_is_dynamic
         && usage.events.iter().any(|event| {
             event.start == prop.start

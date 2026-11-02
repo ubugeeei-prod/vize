@@ -26,6 +26,7 @@ import { loadAutoImportSymlink } from "../differential/lsp-auto-import-manifest.
 import { VERSIONED_AUTO_IMPORT_ID } from "../differential/lsp-versioned-auto-import-manifest.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
+import { MODEL_BINDING_UNIT_ID } from "../differential/lsp-model-binding-source-unit.ts";
 const manifest = fileURLToPath(
   new URL("../_fixtures/differential/lsp/manifest.json", import.meta.url),
 );
@@ -123,6 +124,7 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
   assert.deepEqual(fixture.data, before);
   let originals = 0;
   for (const row of loaded.cases) {
+    if (row.id === MODEL_BINDING_UNIT_ID) continue; // This unit has no stdio workspace.
     if (row.id === fixture.id || row.id === VERSIONED_AUTO_IMPORT_ID) continue;
     originals += 1;
     assert.equal(row.data.workspaceSymlinks, undefined);
@@ -134,6 +136,7 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
     ]);
   }
   assert.equal(originals, 80);
+  assert.equal(loaded.cases.length, 83);
 });
 
 void test("link layout rejects unknown, unpinned, cyclic, colliding and escaping source metadata", () => {
