@@ -204,18 +204,6 @@ tests/_fixtures/differential/linter/slot-existence-conditions-10822/Field.vue.tx
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/source-provenance.json -text
 
-# Preserve the original Typeof SFC and explicit semantic-successor custody bytes.
-tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt -text
-tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json -text
-tests/_fixtures/differential/linter/slot-typeof-presence-10822/semantic-successors.json -text
-tests/_fixtures/differential/linter/slot-typeof-presence-10822/source-provenance.json -text
-
-# Preserve the original conditional-arm SFC and named semantic-successor custody.
-tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.txt -text
-tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json -text
-tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json -text
-tests/_fixtures/differential/linter/slot-conditional-arms-10822/source-provenance.json -text
-
 # Exact original #11373 sources and settings.
 tests/_fixtures/differential/typechecker/global-component-listener-11373/package.json.txt -text
 tests/_fixtures/differential/typechecker/global-component-listener-11373/tsconfig.json.txt -text
@@ -243,3 +231,15 @@ tests/_fixtures/differential/typechecker/global-component-listener-11373/authore
 tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-marked.vue.txt -text
 tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-sibling.vue.txt -text
 tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-unmarked.vue.txt -text
+
+# Preserve the original Typeof SFC and explicit semantic-successor custody bytes.
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/semantic-successors.json -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/source-provenance.json -text
+
+# Preserve the original conditional-arm SFC and named semantic-successor custody.
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.txt -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/source-provenance.json -text
