@@ -299,8 +299,8 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/vtext.rs	0	0	1	2	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/constant_expression.rs	1	5	2	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/template_complexity.rs	1	2	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/template_complexity/print.rs	0	0	1	4	0	0	0	0
-l1_to_l2	-	davinci/vize_l1_to_l2/src/pass/hoist/consts.rs	0	0	2	0	0	0	0	0
-l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/hoist/lattice.rs	1	3	2	0	0	0	0	0
+l2	-	davinci/vize_l2/src/analysis/static_facts/consts.rs	0	0	2	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/analysis/static_facts/lattice.rs	1	3	2	0	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize.rs	1	0	1	1	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter.rs	1	4	1	11	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter/compound.rs	1	1	1	1	0	0	0	0
@@ -425,3 +425,5 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/native_vue2/element.rs	0	0	0	0	1	1	0	0
 l1	analysis	davinci/vize_l1/src/markup/native/operand/model/tests.rs	1	4	1	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/binding/model.rs	0	0	0	0	1	0	0	0
 l2	analysis	davinci/vize_l2/src/file/model.rs	4	0	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/analysis/static_facts/tests.rs	1	0	1	6	1	3	0	0
+l2	analysis	davinci/vize_l2/src/analysis/static_facts.rs	1	2	0	0	0	0	0	0
