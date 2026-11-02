@@ -112,12 +112,14 @@ fn reopening_nested_branches_preserves_every_prior_body_offset() {
     assert_eq!(
         conditions,
         [
-            "  if (!(hidden) && (ready && enabled)) {",
+            "  if (!(hidden)) {",
+            "  if ((ready && enabled)) {",
             "  if ((a)) {",
             "  }",
             "  else if ((b)) {",
             "  }",
             "  else {",
+            "  }",
             "  }",
             "  }",
         ]
@@ -254,5 +256,52 @@ fn a_suspended_body_does_not_steal_the_outer_chain() {
     assert_eq!(ts.matches("else if ((b))").count(), 1, "{ts}");
     let kept_outer = ts.split("void outer").nth(1).is_some();
     assert!(kept_outer, "{ts}");
+    assert_eq!(ts.matches('{').count(), ts.matches('}').count(), "{ts}");
+}
+
+#[test]
+fn nested_and_sibling_guards_share_their_common_levels() {
+    let ts = emit(&[
+        "!(a) && (b)",
+        "!(a) && (b) && (icon)",
+        "!(a) && (b) && (avatar)",
+        "!(a) && (b)",
+        "!(a) && !(b) && (c)",
+        "!(a) && !(b) && (c) && (icon)",
+        "!(a) && !(b) && !(c)",
+    ]);
+    let conditions: Vec<&str> = ts
+        .lines()
+        .filter(|line| !line.contains("//") && !line.contains("void"))
+        .map(str::trim)
+        .collect();
+    assert_eq!(
+        conditions,
+        [
+            "if (!(a)) {",
+            "if ((b)) {",
+            "if ((icon)) {",
+            "}",
+            "if ((avatar)) {",
+            "}",
+            "}",
+            "else if ((c)) {",
+            "if ((icon)) {",
+            "}",
+            "}",
+            "else {",
+            "}",
+            "}",
+        ]
+    );
+    assert_eq!(ts.matches("void check").count(), 7);
+}
+
+#[test]
+fn an_else_only_continues_a_single_positive_condition() {
+    // `if (!(a) && (b))` was never emitted as one level, but a guard whose
+    // first level is a compound exclusion run must not grow an `else`.
+    let ts = emit(&["!(a) && !(b)", "(b)"]);
+    assert_eq!(ts.matches("else").count(), 0, "{ts}");
     assert_eq!(ts.matches('{').count(), ts.matches('}').count(), "{ts}");
 }
