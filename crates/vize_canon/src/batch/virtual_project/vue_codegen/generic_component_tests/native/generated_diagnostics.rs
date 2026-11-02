@@ -179,16 +179,12 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
                 .unwrap();
             let mut expected_raw = Vec::new();
             if case == "inferred-data-attribute" {
-                let needle = "./Child.vue.ts";
-                let start = app.content.find(needle).unwrap() - 1;
-                expected_raw.push(native_diagnostic(
-                    &app.content,
-                    start,
-                    start + needle.len() + 2,
-                    5097,
-                    1,
-                    "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.",
-                ));
+                // The owned import keeps its target through extension substitution.
+                // The source-bound generated-error witness remains the exact
+                // synthetic tuple replay above; authored tuple/property rows below
+                // and the complete raw/mapped vector comparisons are unchanged.
+                assert_eq!(app.content.matches("./Child.vue.js").count(), 1);
+                assert!(!app.content.contains("./Child.vue.ts"));
             }
             if let Some((code, message)) = expected {
                 let (needle, relative, length) = if code == 2493 {
