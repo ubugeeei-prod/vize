@@ -1,0 +1,6 @@
+<script setup lang="ts">
+let never: number;
+const read = never + 1;
+let unusedLet = 1;
+</script>
+<template><div>{{ read }}</div></template>
