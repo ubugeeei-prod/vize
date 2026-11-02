@@ -58,3 +58,29 @@ fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
         r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#
     ));
 }
+
+#[test]
+fn guarded_script_member_uses_one_owned_capture_and_preserves_its_guard() {
+    let allocator = Allocator::new();
+    for template in [
+        r#"<component :is="foo.bar" v-if="foo" />"#,
+        r#"<template v-if="foo"><component :is="foo.bar" /></template>"#,
+    ] {
+        let (root, errors) = parse(&allocator, template);
+        assert!(errors.is_empty(), "{errors:?}");
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_script_setup("const foo = undefined as { bar: string } | undefined;");
+        drawer.draw_template(&root);
+        let summary = drawer.finish();
+        assert_eq!(summary.component_usages.len(), 1);
+        let usage = &summary.component_usages[0];
+        assert!(super::is_dynamic_component_alias(usage.name.as_str()));
+        assert_eq!(usage.vif_guard.as_deref(), Some("foo"));
+        assert!(
+            summary
+                .template_expressions
+                .iter()
+                .any(|expression| expression.content == "foo.bar")
+        );
+    }
+}

@@ -46,6 +46,20 @@ impl Drawer {
                 })
     }
 
+    pub(super) fn dynamic_target_has_script_root(&self, target: &str) -> bool {
+        let Some(root) = target.split('.').next() else {
+            return false;
+        };
+        self.croquis.bindings.is_script_setup
+            && self.croquis.bindings.contains(root)
+            && self.croquis.scopes.lookup(root).is_some_and(|(scope, _)| {
+                matches!(
+                    scope.kind,
+                    ScopeKind::Module | ScopeKind::ScriptSetup | ScopeKind::ExternalModule
+                )
+            })
+    }
+
     /// Whether the current template position is outside every scope that
     /// introduces bindings an alias declared at the template root could not
     /// see: loops, slots, pattern arms and handler or callback bodies.

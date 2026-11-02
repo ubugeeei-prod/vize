@@ -67,12 +67,22 @@ pub(super) fn emit_dynamic_component_aliases(
         };
         // The authored `v-bind` statement owns the expression's own
         // diagnostics; the alias only has to carry its type.
-        append!(
-            *ts,
-            "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {} = ({});\n",
-            usage.name,
-            expression.trim()
-        );
+        if let Some(guard) = &usage.vif_guard {
+            append!(
+                *ts,
+                "  // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\n  const {} = ({}) ? ({}) : (undefined as never);\n",
+                usage.name,
+                guard,
+                expression.trim()
+            );
+        } else {
+            append!(
+                *ts,
+                "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {} = ({});\n",
+                usage.name,
+                expression.trim()
+            );
+        }
     }
 }
 

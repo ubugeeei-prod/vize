@@ -234,6 +234,18 @@ impl Drawer {
             }
             let exp = dir.exp.as_ref()?;
             if let Some(target) = expression_identifier(exp, &self.template_source) {
+                // A guarded member's type must be captured while the same guard
+                // narrows its actual script root, not queried again at root.
+                let guarded = self.current_vif_guard().is_some()
+                    || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else")));
+                let owns_scope = !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "scope"));
+                if target.contains('.') && guarded && owns_scope
+                    && self.in_template_root_scope()
+                    && self.dynamic_target_has_script_root(target.as_str())
+                    && !dynamic_is_captures_same_element_for_alias(el, target.as_str(), &self.template_source)
+                {
+                    return Some(CompactString::new(dynamic_component_alias(el.loc.span.start)));
+                }
                 return dynamic_component_target_is_known(self, target.as_str()).then_some(target);
             }
             // Root-owned script values keep their identity under a slot/loop
