@@ -238,36 +238,82 @@ test("missing targets stay absent and authored bytes remain exact", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
-test("published mode needs same-run contracts while the source job remains explicit", () => {
+test("published workflow dependencies, guards, permissions and artifacts belong to their jobs", async () => {
+  const { evidencePrefix } =
+    await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
   const workflow = readFileSync(
     new URL("../../../.github/workflows/viteplus-config-consumers.yml", import.meta.url),
     "utf8",
   );
-  assert(workflow.includes("options: [source, published-startup-75-76]"));
-  assert(workflow.includes("needs: published-contracts"));
-  assert(
-    workflow.includes(
-      "github.event_name != 'workflow_dispatch' || inputs.mode != 'published-startup-75-76'",
-    ),
+  const job = (name: string) => {
+    const match = new RegExp("^  " + name + ":\\n((?:    .*\\n|\\n)*)", "mu").exec(workflow);
+    assert(match, "missing job " + name);
+    return match[1]!;
+  };
+  const mode = /^      mode:\n((?:        .*\n|\n)*)/mu.exec(workflow)?.[1];
+  assert(mode, "missing mode input");
+  assert.match(mode, /^        type: choice$/mu);
+  assert.match(mode, /^        default: source$/mu);
+  const optionText = /^        options:\s*(\[[^\]]+\]|(?:\n\s*-\s*[\w-]+)+)/mu.exec(mode)?.[1];
+  assert(optionText);
+  const options = optionText.startsWith("[")
+    ? optionText.slice(1, -1).split(",")
+    : optionText
+        .trim()
+        .split(/\n/u)
+        .map((row) => row.replace(/^\s*-\s*/u, ""));
+  assert.deepEqual(
+    options.map((value) => value.trim().replace(/^["']|["']$/gu, "")),
+    ["source", "published-startup-75-76"],
   );
-  assert(workflow.includes("uses: ./.github/workflows/full-source-cli.yml"));
-  assert(workflow.includes("node --test tests/tooling/release/published-vite-startup.test.ts"));
+  const contracts = job("published-contracts"),
+    startup = job("published-startup"),
+    cli = job("cli");
+  assert.match(
+    contracts,
+    /^    if: github\.event_name == 'pull_request' \|\| inputs\.mode == 'published-startup-75-76'$/mu,
+  );
+  assert.match(contracts, /node --test tests\/tooling\/release\/published-vite-startup\.test\.ts/u);
+  assert.match(startup, /^    needs: published-contracts$/mu);
+  assert.match(
+    startup,
+    /^    if: github\.event_name == 'workflow_dispatch' && inputs\.mode == 'published-startup-75-76'$/mu,
+  );
+  assert.match(startup, /^    permissions: \{ contents: read, actions: read \}$/mu);
+  const artifactPath = startup.split("\n").find((line) => /^          path:/u.test(line));
+  assert.equal(
+    artifactPath?.trim(),
+    "path: ${{ runner.temp }}/" + evidencePrefix + "${{ github.run_id }}-${{ github.run_attempt }}",
+  );
+  assert.match(cli, /^    uses: \.\/\.github\/workflows\/full-source-cli\.yml$/mu);
+  assert.match(
+    cli,
+    /^    if: github\.event_name != 'workflow_dispatch' \|\| inputs\.mode != 'published-startup-75-76'$/mu,
+  );
 });
 
-test("pnpm12 manager executable follows its actual root bin declaration", async () => {
+test("pnpm12 declared-bin negatives reach the actual manifest boundary", async () => {
   const { managerRoute } =
     await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
-  const root = mkdtempSync(join(tmpdir(), "pnpm-declared-bin-"));
-  try {
+  const work = mkdtempSync(join(tmpdir(), "pnpm-declared-bin-")),
+    root = join(work, "package");
+  mkdirSync(root);
+  const manifest = (bin: string) =>
     writeFileSync(
       join(root, "package.json"),
-      JSON.stringify({ name: "pnpm", version: "12.16.1", bin: { pnpm: "pnpm" } }),
+      JSON.stringify({ name: "pnpm", version: "12.16.1", bin: { pnpm: bin } }),
     );
+  try {
     writeFileSync(join(root, "pnpm"), "declared executable fixture");
+    writeFileSync(join(work, "outside-pnpm"), "existing unowned executable fixture");
+    manifest("pnpm");
     assert.equal(managerRoute(root).executable, realpathSync(join(root, "pnpm")));
-    assert.throws(() => managerRoute(join(root, "bin/pnpm.cjs")));
+    manifest("bin/pnpm.cjs");
+    assert.throws(() => managerRoute(root));
+    manifest("../outside-pnpm");
+    assert.throws(() => managerRoute(root));
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(work, { recursive: true, force: true });
   }
 });
 
@@ -336,4 +382,25 @@ test("initial reported inputs cannot collide with the original state packet", as
   assert.equal(new Set(labels).size, 10);
   assert.equal(inputPacketName(11376), "11376-reported-inputs");
   assert.equal(inputPacketName(11376, "original"), "11376-original-inputs");
+});
+
+test("refusal diagnostics preserve bounded callsites and errno without raw secret messages", async () => {
+  const { collectorRefusal } =
+    await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
+  const error = Object.assign(new Error("private-token-value"), { code: "ENOENT" });
+  error.stack =
+    "Error: private-token-value\n    at managerRoute (file:///collector.ts:12:3)\n    at fetch (https://public.invalid/file?private-token-value)\n    at run (file:///collector.ts:20:1)\n    at extra (file:///ignored.ts:99:1)";
+  const failure = collectorRefusal(error),
+    serialized = JSON.stringify(failure);
+  assert.equal(failure.record.name, "Error");
+  assert.equal(failure.record.code, "ENOENT");
+  assert.match(failure.record.frames!, /collector\.ts:12:3/u);
+  assert(!serialized.includes("private-token-value"));
+  assert(!serialized.includes("ignored.ts"));
+  assert(failure.record.frames!.length <= 2048);
+  assert.deepEqual(failure.cause, {
+    name: failure.record.name,
+    code: failure.record.code,
+    frames: failure.record.frames,
+  });
 });
