@@ -6,13 +6,14 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import {
   selectCandidatePlan,
+  loadCandidatePlan,
   validateCandidatePlan,
   type CandidatePlan,
   type ReadyCandidate,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-plan.ts";
 
 const literalPlan = () =>
-  JSON.parse(
+  loadCandidatePlan(
     fs.readFileSync(
       new URL(
         "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json",
@@ -25,8 +26,8 @@ const pending = (): CandidatePlan => ({
   schemaVersion: 1,
   optionsFix: null,
   historicalSourceFix: "0eb2f8db16f6541cd422ee610ab3e554bf041e0d",
-  cases: ["type-work", "route-move"].map((kind) => ({
-    kind: kind as "type-work" | "route-move",
+  cases: ["type-work", "route-move", "import-value-anchors"].map((kind) => ({
+    kind: kind as "type-work" | "route-move" | "import-value-anchors",
     state: "pending",
     sources: null,
     allocation: null,
@@ -75,10 +76,10 @@ test("synthetic pending plan has null unknowns and refuses any candidate before 
 });
 test("each source-bound controller case selects only its own exact pair", () => {
   const verify = (plan: CandidatePlan) => {
-    const rows = plan.cases.filter((row) => row.state === "ready");
+    const rows = plan.cases.filter((row) => row.state === "ready" || row.state === "source-bound");
     assert.deepEqual(
       rows.map((row) => row.kind),
-      ["type-work", "route-move"],
+      ["type-work", "route-move", "import-value-anchors"],
       "both checked-in source-bound cases must be ready",
     );
     for (const row of rows) {
@@ -100,7 +101,7 @@ test("each source-bound controller case selects only its own exact pair", () => 
   const plan = validateCandidatePlan(literalPlan());
   verify(plan);
   assert.throws(() => verify(validateCandidatePlan(pending())), /both checked-in/u);
-  for (const index of [0, 1]) {
+  for (const index of [0, 1, 2]) {
     const missing = structuredClone(plan);
     missing.cases[index] = pending().cases[index];
     assert.throws(() => verify(validateCandidatePlan(missing)), /both checked-in/u);
@@ -133,7 +134,7 @@ test("one frozen ready case selects only its exact pair; both cases remain indep
       (p.cases[0] as ReadyCandidate).sourceCi.headSha = id("a");
     },
     (p: CandidatePlan) => {
-      (p.cases[0] as ReadyCandidate).allocation.base.cli.bytes = 0;
+      (p.cases[0] as ReadyCandidate).allocation!.base.cli.bytes = 0;
     },
     (p: CandidatePlan) => {
       Object.assign(p.cases[1], { sources: (p.cases[0] as ReadyCandidate).sources });

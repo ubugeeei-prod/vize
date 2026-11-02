@@ -6,10 +6,7 @@ import { parseArgs } from "node:util";
 import { pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
 import { verifyCandidateSources } from "./cold-typechecker-scale-candidate-source.ts";
-import {
-  selectCandidatePlan,
-  type CandidatePlan,
-} from "./cold-typechecker-scale-candidate-plan.ts";
+import { selectCandidatePlan, loadCandidatePlan } from "./cold-typechecker-scale-candidate-plan.ts";
 import { prepareCandidateAllocation } from "./cold-typechecker-scale-candidate-allocation.ts";
 import { verifyColdScaleBuildPair } from "./cold-typechecker-scale-build.ts";
 
@@ -28,7 +25,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   for (const key of ["stage", "plan", "base", "head", "provider", "out"] as const)
     assert(typeof values[key] === "string");
   assert(values.stage === "verify" || values.stage === "allocation");
-  const plan = JSON.parse(fs.readFileSync(values.plan!, "utf8")) as CandidatePlan;
+  const plan = loadCandidatePlan(fs.readFileSync(values.plan!, "utf8"));
   const selected = selectCandidatePlan(plan, process.env.BASE_SHA!, process.env.HEAD_SHA!, "2500");
   assert.equal(selected.route, "candidate");
   assert(selected.route === "candidate");
@@ -65,6 +62,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     );
   } else {
     assert(values.role === "base" || values.role === "head");
+    assert(selected.selected.allocation, "no observation overlays for this normal-only cohort");
+    assert(selected.selected.kind !== "import-value-anchors");
     const role = values.role;
     verifyColdScaleBuildPair(
       path.join(out, "builds/base.json"),

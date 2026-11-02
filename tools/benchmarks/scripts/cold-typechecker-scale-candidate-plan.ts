@@ -12,7 +12,7 @@ export interface ReadyCandidate {
   kind: Kind;
   state: "ready";
   sources: CandidateSources;
-  allocation: Record<Role, { cli: BodyPin; execution: BodyPin }>;
+  allocation: Record<Role, { cli: BodyPin; execution: BodyPin }> | null;
   sourceCi: {
     headSha: string;
     runId: string;
@@ -20,6 +20,15 @@ export interface ReadyCandidate {
     executedTreeSha: string;
     requiredChecks: "success";
   };
+}
+export interface SourceBoundCandidate extends Omit<
+  ReadyCandidate,
+  "state" | "allocation" | "sourceCi"
+> {
+  kind: "import-value-anchors";
+  state: "source-bound";
+  allocation: null;
+  sourceCi: null;
 }
 type PendingCandidate = {
   kind: Kind;
@@ -32,7 +41,7 @@ export interface CandidatePlan {
   schemaVersion: 1;
   optionsFix: { sha: string; tree: string } | null;
   historicalSourceFix: "0eb2f8db16f6541cd422ee610ab3e554bf041e0d";
-  cases: (ReadyCandidate | PendingCandidate)[];
+  cases: (ReadyCandidate | PendingCandidate | SourceBoundCandidate)[];
 }
 const oid = (value: unknown) => assert(typeof value === "string" && /^[a-f0-9]{40}$/u.test(value));
 const keys = (value: object, expected: string[]) =>
@@ -43,6 +52,28 @@ const pin = (value: BodyPin) => {
   assert.match(value.sha256, /^[a-f0-9]{64}$/u);
   oid(value.gitBlob);
 };
+/** One fixed additive source fixture keeps historical case bytes and their admission laws intact. */
+export function loadCandidatePlan(text: string): CandidatePlan {
+  const plan = JSON.parse(text) as CandidatePlan;
+  if (Array.isArray(plan.cases) && plan.cases.length === 2) {
+    assert.deepEqual(
+      plan.cases.map((row) => row.kind),
+      ["type-work", "route-move"],
+    );
+    plan.cases.push(
+      JSON.parse(
+        fs.readFileSync(
+          new URL(
+            "../../../tests/_fixtures/tooling/import-value-anchor-pair.json",
+            import.meta.url,
+          ),
+          "utf8",
+        ),
+      ),
+    );
+  }
+  return plan;
+}
 export function validateCandidatePlan(plan: CandidatePlan) {
   keys(plan, ["schemaVersion", "optionsFix", "historicalSourceFix", "cases"]);
   assert.equal(plan.schemaVersion, 1);
@@ -55,7 +86,7 @@ export function validateCandidatePlan(plan: CandidatePlan) {
   }
   assert.deepEqual(
     plan.cases.map((row) => row.kind),
-    ["type-work", "route-move"],
+    ["type-work", "route-move", "import-value-anchors"],
   );
   for (const row of plan.cases) {
     keys(row, ["kind", "state", "sources", "allocation", "sourceCi"]);
@@ -65,7 +96,11 @@ export function validateCandidatePlan(plan: CandidatePlan) {
       assert.equal(row.sourceCi, null);
       continue;
     }
-    assert.equal(row.state, "ready");
+    const sourceBound = row.state === "source-bound";
+    if (sourceBound) {
+      assert.equal(row.kind, "import-value-anchors");
+      assert.equal(row.sourceCi, null);
+    } else assert.equal(row.state, "ready");
     assert(plan.optionsFix !== null, "actual merged Options fix is required before any ready case");
     assert.equal(row.sources.kind, row.kind);
     assert.deepEqual(row.sources.containing, {
@@ -75,12 +110,21 @@ export function validateCandidatePlan(plan: CandidatePlan) {
     for (const role of ["base", "head"] as const) {
       oid(row.sources[role].sha);
       oid(row.sources[role].tree);
-      keys(row.allocation[role], ["cli", "execution"]);
-      pin(row.allocation[role].cli);
-      pin(row.allocation[role].execution);
+      if (row.kind !== "import-value-anchors") {
+        assert(row.allocation);
+        keys(row.allocation[role], ["cli", "execution"]);
+        pin(row.allocation[role].cli);
+        pin(row.allocation[role].execution);
+      }
     }
     assert.notEqual(row.sources.base.sha, row.sources.head.sha);
-    keys(row.allocation, ["base", "head"]);
+    if (row.kind === "import-value-anchors") assert.equal(row.allocation, null);
+    else {
+      assert(row.allocation);
+      keys(row.allocation, ["base", "head"]);
+    }
+    if (sourceBound) continue;
+    assert(row.sourceCi);
     keys(row.sourceCi, [
       "headSha",
       "runId",
@@ -107,7 +151,10 @@ export function selectCandidatePlan(plan: CandidatePlan, base: string, head: str
     head === "d440bf04becabbb71d916915c640d39c8d8c6450"
   )
     return { route: "legacy" as const };
-  const ready = plan.cases.filter((row): row is ReadyCandidate => row.state === "ready");
+  const ready = plan.cases.filter(
+    (row): row is ReadyCandidate | SourceBoundCandidate =>
+      row.state === "ready" || row.state === "source-bound",
+  );
   const matches = ready.filter(
     (row) => row.sources.base.sha === base && row.sources.head.sha === head,
   );
@@ -136,12 +183,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const raw = fs.readFileSync(values.plan!);
   fs.writeFileSync(path.join(out, "plan.raw.json"), raw, { flag: "wx" });
   try {
-    const selected = selectCandidatePlan(
-      JSON.parse(raw.toString("utf8")),
-      values.base!,
-      values.head!,
-      values.sfcs!,
+    const expanded = loadCandidatePlan(raw.toString("utf8"));
+    fs.writeFileSync(
+      path.join(out, "plan.expanded.json"),
+      JSON.stringify(expanded, null, 2) + "\n",
+      { flag: "wx" },
     );
+    const selected = selectCandidatePlan(expanded, values.base!, values.head!, values.sfcs!);
     fs.writeFileSync(path.join(out, "selection.json"), JSON.stringify(selected, null, 2) + "\n", {
       flag: "wx",
     });

@@ -27,19 +27,20 @@ export async function pairedCandidateComparison(options: {
   out: string;
   sourceManifest: string;
   normal: Record<Role, string>;
-  allocation: Record<Role, string>;
-  custody: Record<Role, string>;
+  allocation?: Record<Role, string>;
+  custody?: Record<Role, string>;
 }) {
   const { provider, out } = options;
   prepareStrictOutput(out);
   const ids: string[] = [];
+  let normalOnly = false;
   const write = (name: string, value: unknown, fresh = true) =>
     fs.writeFileSync(path.join(out, name), JSON.stringify(value, null, 2) + "\n", {
       flag: fresh ? "wx" : "w",
     });
   const enter = (id: string) => {
     ids.push(id);
-    const population = verifyCandidateCommandPopulation(ids, false);
+    const population = verifyCandidateCommandPopulation(ids, false, normalOnly);
     write(
       "command-population.json",
       {
@@ -55,6 +56,7 @@ export async function pairedCandidateComparison(options: {
     assert.equal(process.arch, "x64");
     fs.copyFileSync(options.sourceManifest, path.join(out, "source-manifest.json"));
     const frozen = read(path.join(out, "source-manifest.json")) as CandidateSources;
+    normalOnly = frozen.kind === "import-value-anchors";
     assert.equal(
       hash(path.join(provider, "package-lock.json")),
       "9c2974672b5f5358e643276e6ec98c6084681ef609e8f25922ba4aa7adb0f0a6",
@@ -82,11 +84,14 @@ export async function pairedCandidateComparison(options: {
     const allocation = {} as Record<Role, { directory: string; build: CandidateBuild }>;
     for (const role of ["base", "head"] as const) {
       normal[role] = { ...read(options.normal[role]), receipt: options.normal[role] };
-      custody[role] = { ...read(options.custody[role]), receipt: options.custody[role] };
-      allocation[role] = {
-        directory: path.dirname(options.allocation[role]),
-        build: read(options.allocation[role]),
-      };
+      if (!normalOnly) {
+        assert(options.custody && options.allocation);
+        custody[role] = { ...read(options.custody[role]), receipt: options.custody[role] };
+        allocation[role] = {
+          directory: path.dirname(options.allocation[role]),
+          build: read(options.allocation[role]),
+        };
+      }
       assert.equal(normal[role].sourceSha, frozen[role].sha);
       assert.equal(normal[role].treeSha, frozen[role].tree);
       assert.equal(normal[role].allocation, false);
@@ -110,35 +115,42 @@ export async function pairedCandidateComparison(options: {
       out,
       frozen,
       normal,
-      allocation,
+      allocation: normalOnly ? null : allocation,
       assets: source.assets,
       enter,
     });
     if (!first.eligible) {
       write("ineligible.json", {
         ...first,
-        population: verifyCandidateCommandPopulation(ids, false),
+        population: verifyCandidateCommandPopulation(ids, false, normalOnly),
         comparisonQualified: false,
         primaryTimings: 0,
       });
       return { comparisonQualified: false, reason: first.reason };
     }
-    const native = candidateProfileCommands({
-      provider,
-      out,
-      common: first.common,
-      corpus: first.corpus,
-      frozen,
-      normal,
-      custody,
-      helpers: first.helperTransition,
-      primaryRaw: first.primaryRaw,
-      enter,
-    });
+    const native = normalOnly
+      ? {
+          profiles: [],
+          scope: "no extra native profiling or observation builds in this normal-only cohort",
+        }
+      : candidateProfileCommands({
+          provider,
+          out,
+          common: first.common,
+          corpus: first.corpus,
+          frozen,
+          normal,
+          custody,
+          helpers: first.helperTransition,
+          primaryRaw: first.primaryRaw,
+          enter,
+        });
     for (const role of ["base", "head"] as const) {
       assert.equal(hash(normal[role].binary), normal[role].binarySha256);
-      assert.equal(hash(custody[role].binary), custody[role].binarySha256);
-      assert.equal(hash(allocation[role].build.binary), allocation[role].build.binarySha256);
+      if (!normalOnly) {
+        assert.equal(hash(custody[role].binary), custody[role].binarySha256);
+        assert.equal(hash(allocation[role].build.binary), allocation[role].build.binarySha256);
+      }
     }
     assert.equal(
       hash(path.join(provider, "package-lock.json")),
@@ -147,10 +159,12 @@ export async function pairedCandidateComparison(options: {
     const summary = {
       source,
       native,
+      applicability: first.anchorTransition,
+      normalNativePreflight: first.nativeProof,
       allocation: first.allocationReports,
       samples: first.samples,
       statistics: first.statistics,
-      population: verifyCandidateCommandPopulation(ids, true),
+      population: verifyCandidateCommandPopulation(ids, true, normalOnly),
       order: ["AB", "BA", "BA", "AB"],
       comparisonQualified: true,
       osPageCache: "uncontrolled; no flush; fixture/build/setup warm pages",
@@ -161,8 +175,9 @@ export async function pairedCandidateComparison(options: {
         "GNU reported command user+system CPU at10ms resolution, not root-vs-native ownership",
       rssScopes:
         "GNU child HWM, sampled actual CLI root and concurrent live descendant windows are distinct; never sum PID peaks",
-      goMemoryScope:
-        "alloc_objects/alloc_space/inuse_objects/inuse_space sampled weights, not RSS/live heap/forcedGC",
+      goMemoryScope: normalOnly
+        ? "unobserved; no Go profile in this normal-only cohort"
+        : "alloc_objects/alloc_space/inuse_objects/inuse_space sampled weights, not RSS/live heap/forcedGC",
       nativeLoadedFiles: "unobserved",
       noDiagnosticNormalization: true,
       oldBufferExperimentRepeated: false,
@@ -174,7 +189,7 @@ export async function pairedCandidateComparison(options: {
       error: String(error),
       stack: error instanceof Error ? error.stack : null,
       population: ids.length
-        ? verifyCandidateCommandPopulation(ids, false)
+        ? verifyCandidateCommandPopulation(ids, false, normalOnly)
         : { outerTargetStages: 0 },
       comparisonQualified: false,
       scope:
@@ -200,17 +215,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
       ].map((key) => [key, { type: "string" as const }]),
     ),
   });
-  for (const key of [
-    "provider",
-    "out",
-    "case",
-    "base",
-    "head",
-    "allocation-base",
-    "allocation-head",
-    "custody-base",
-    "custody-head",
-  ])
+  for (const key of ["provider", "out", "case", "base", "head"])
     assert(typeof values[key] === "string");
   const absolute = (key: string) => path.resolve(values[key] as string);
   await pairedCandidateComparison({
@@ -218,7 +223,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     out: absolute("out"),
     sourceManifest: absolute("case"),
     normal: { base: absolute("base"), head: absolute("head") },
-    allocation: { base: absolute("allocation-base"), head: absolute("allocation-head") },
-    custody: { base: absolute("custody-base"), head: absolute("custody-head") },
+    ...(values["allocation-base"]
+      ? { allocation: { base: absolute("allocation-base"), head: absolute("allocation-head") } }
+      : {}),
+    ...(values["custody-base"]
+      ? { custody: { base: absolute("custody-base"), head: absolute("custody-head") } }
+      : {}),
   });
 }

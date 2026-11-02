@@ -155,3 +155,50 @@ test("type-work source roster includes its exact source-custody tests without an
   x.actual.changedPaths = [...names, "crates/vize/src/commands/check/runner.rs"];
   assert.throws(() => verifyCandidateSourceInputs(x.frozen, x.actual));
 });
+
+test("import anchors bind exactly their product and source-control roster without a mixed effect", () => {
+  const x = fixture();
+  const names = [
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_component_prop_checks_respect_same_element_vif_guard.snap",
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap",
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap",
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_in_scope.snap",
+    "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing.snap",
+    "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__reexported_vue_interface_props_virtual_ts.snap",
+    "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__register_vue_file_rewrites_child_imports.snap",
+    "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap",
+    "crates/vize_canon/src/virtual_ts/generator.rs",
+    "crates/vize_canon/src/virtual_ts/generator/anchors.rs",
+    "crates/vize_canon/src/virtual_ts/generator/anchors/component_value_reads.rs",
+    "crates/vize_canon/src/virtual_ts/generator/anchors/value_import_names.rs",
+    "crates/vize_canon/src/virtual_ts/generator/unresolved_components.rs",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__computed_component_event_name_0_Child.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__dynamic_component_names_keep_runtime_keys_open.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_fallthrough_listener_modes.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_local_import_shadow_keeps_the_original_strict_check_tail.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_dollar_event_alias_stays_scoped.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_fallback_stays_permissive.snap",
+    "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_unresolved_component_event_payloads_stay_variadic.snap",
+    "crates/vize_canon/tests/patterned_typechecking/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
+    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+    "tests/_fixtures/differential/typechecker/component-value-anchor-reuse/input.json",
+    "tests/_fixtures/differential/typechecker/manifest.json",
+    "tests/tooling/differential-dialect-coverage.test.ts",
+  ];
+  x.frozen.kind = "import-value-anchors";
+  x.actual.bodies = {
+    base: names.map((name) => Buffer.from("whole before " + name)),
+    head: names.map((name) => Buffer.from("whole after " + name)),
+  };
+  x.frozen.changed = names.map((path, index) => ({
+    path,
+    base: pin(x.actual.bodies.base[index]),
+    head: pin(x.actual.bodies.head[index]),
+  }));
+  x.actual.changedPaths = names;
+  assert.doesNotThrow(() => verifyCandidateSourceInputs(x.frozen, x.actual));
+  x.actual.changedPaths = [...names, "crates/vize/src/commands/check/runner.rs"];
+  assert.throws(() => verifyCandidateSourceInputs(x.frozen, x.actual));
+  x.actual.changedPaths = names.slice(0, -1);
+  assert.throws(() => verifyCandidateSourceInputs(x.frozen, x.actual));
+});

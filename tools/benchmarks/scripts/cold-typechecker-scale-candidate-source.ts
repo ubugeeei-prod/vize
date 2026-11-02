@@ -17,6 +17,11 @@ export const candidateProducerPaths = [
 ] as const;
 const productPaths = {
   "type-work": [componentChecksPath],
+  "import-value-anchors": [
+    "crates/vize_canon/src/virtual_ts/generator.rs",
+    "crates/vize_canon/src/virtual_ts/generator/anchors.rs",
+    "crates/vize_canon/src/virtual_ts/generator/unresolved_components.rs",
+  ],
   "route-move": [
     "crates/vize/src/commands/check/runner.rs",
     "crates/vize/src/commands/check/runner/execution.rs",
@@ -30,6 +35,30 @@ const typeWorkControls = [
   "tests/tooling/canon-instance-prop-ambient.test.ts",
   "tests/tooling/canon-instance-prop-metadata.test.ts",
   "tests/tooling/fixtures/canon-instance-prop-metadata-before.json",
+];
+const importAnchorControls = [
+  "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_component_prop_checks_respect_same_element_vif_guard.snap",
+  "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap",
+  "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap",
+  "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_in_scope.snap",
+  "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing.snap",
+  "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__reexported_vue_interface_props_virtual_ts.snap",
+  "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__register_vue_file_rewrites_child_imports.snap",
+  "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap",
+  "crates/vize_canon/src/virtual_ts/generator/anchors/component_value_reads.rs",
+  "crates/vize_canon/src/virtual_ts/generator/anchors/value_import_names.rs",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__computed_component_event_name_0_Child.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__dynamic_component_names_keep_runtime_keys_open.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_fallthrough_listener_modes.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_local_import_shadow_keeps_the_original_strict_check_tail.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_dollar_event_alias_stays_scoped.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_fallback_stays_permissive.snap",
+  "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_unresolved_component_event_payloads_stay_variadic.snap",
+  "crates/vize_canon/tests/patterned_typechecking/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
+  "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+  "tests/_fixtures/differential/typechecker/component-value-anchor-reuse/input.json",
+  "tests/_fixtures/differential/typechecker/manifest.json",
+  "tests/tooling/differential-dialect-coverage.test.ts",
 ];
 type Kind = keyof typeof productPaths;
 type Role = "base" | "head";
@@ -153,7 +182,7 @@ export function verifyCandidateNativeLibraries(backend: string) {
 
 /** Pure checks; the caller supplies the separately frozen, reviewed literal source manifest. */
 export function verifyCandidateSourceInputs(frozen: CandidateSources, actual: SourceInput) {
-  assert(frozen.kind === "type-work" || frozen.kind === "route-move");
+  assert(["type-work", "route-move", "import-value-anchors"].includes(frozen.kind));
   for (const role of ["base", "head"] as const) {
     oid(frozen[role].sha);
     oid(frozen[role].tree);
@@ -180,9 +209,14 @@ export function verifyCandidateSourceInputs(frozen: CandidateSources, actual: So
   assert.deepEqual(actual.changedPaths, names, "unrelated or omitted source change");
   assert.deepEqual(
     names,
-    [...productPaths[frozen.kind], ...(frozen.kind === "type-work" ? typeWorkControls : [])].sort(
-      byteOrder,
-    ),
+    [
+      ...productPaths[frozen.kind],
+      ...(frozen.kind === "type-work"
+        ? typeWorkControls
+        : frozen.kind === "import-value-anchors"
+          ? importAnchorControls
+          : []),
+    ].sort(byteOrder),
     "candidate effect and source controls must stay in the closed owned roster",
   );
   for (const name of productPaths[frozen.kind]) {

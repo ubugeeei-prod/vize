@@ -41,6 +41,11 @@ import {
   type CandidateSources,
 } from "./cold-typechecker-scale-candidate-source.ts";
 
+import {
+  verifyImportAnchorTransition,
+  anchorTransitionMetadata,
+} from "./cold-typechecker-scale-import-anchors.ts";
+
 export interface CandidateBuild {
   sourceSha: string;
   treeSha: string;
@@ -95,7 +100,7 @@ export async function candidateNormalCommands(options: {
   out: string;
   frozen: CandidateSources;
   normal: Record<Role, CandidateBuild>;
-  allocation: Record<Role, { directory: string; build: CandidateBuild }>;
+  allocation: Record<Role, { directory: string; build: CandidateBuild }> | null;
   assets: { before: Buffer; after: Buffer } | null;
   enter: (id: string) => void;
 }) {
@@ -198,6 +203,25 @@ export async function candidateNormalCommands(options: {
       helper: strictDebugParts(result.stderr!, value, corpus.app).helper,
     };
   }
+  let anchorTransition: ReturnType<typeof verifyImportAnchorTransition> | undefined;
+  if (frozen.kind === "import-value-anchors") {
+    anchorTransition = verifyImportAnchorTransition(
+      preflights.base.raw,
+      preflights.head.raw,
+      corpus.app,
+      corpus.entries.map((row) => ({
+        path: path.relative(corpus.app, path.join(common, "project", row.path)),
+        body: fs.readFileSync(path.join(common, "project", row.path), "utf8"),
+      })),
+    );
+    write(path.join(out, "anchor-transition.json"), anchorTransitionMetadata(anchorTransition));
+    if (anchorTransition.removedAnchors === 0)
+      return {
+        eligible: false as const,
+        reason: "no exact imported Child type-query anchor removed in the unchanged real corpus",
+        allocationReports: [],
+      };
+  }
   let helperTransition: { before: Buffer; after: Buffer } | undefined;
   if (frozen.kind === "type-work") {
     assert(options.assets);
@@ -223,7 +247,8 @@ export async function candidateNormalCommands(options: {
       { before: preflights.base.helper, after: preflights.head.helper },
       helper[0],
     );
-  } else compareInheritedOptionsRaw(preflights.base.raw, preflights.head.raw);
+  } else if (!anchorTransition)
+    compareInheritedOptionsRaw(preflights.base.raw, preflights.head.raw);
   const expected = {
     executable: backend,
     sha256: nativeSha,
@@ -236,13 +261,14 @@ export async function candidateNormalCommands(options: {
   const nativeProof = compareNativePreflights(preflights.base.native, preflights.head.native, {
     ...expected,
     materializedHelperBodies: helperTransition,
+    materializedModuleBodies: anchorTransition?.modules,
   });
   write(path.join(out, "normal-native-proof.json"), nativeProof);
   const allocationPackets = {} as Record<Role, Raw>,
     allocationReports = [];
   let routePopulation: unknown;
-  for (const role of ["base", "head"] as const) {
-    const observation = options.allocation[role],
+  for (const role of options.allocation ? (["base", "head"] as const) : []) {
+    const observation = options.allocation![role],
       build = observation.build,
       source = read(path.join(observation.directory, "source.json"));
     assert.equal(source.productSource, normal[role].sourceSha);
@@ -368,7 +394,7 @@ export async function candidateNormalCommands(options: {
       assert.equal(observed.report.corpusSha256, corpus.corpusSha256);
       const raw = { status: 0, stdout: observed.stdout, stderr: observed.stderr };
       if (primaryRaw[role] === undefined) primaryRaw[role] = raw;
-      compareInheritedOptionsRaw(allocationPackets[role], raw); // Full primary-argv parity closes here, after this raw measured command.
+      if (options.allocation) compareInheritedOptionsRaw(allocationPackets[role], raw); // Full primary-argv parity closes here, after this raw measured command.
       if (completeRaw) compareInheritedOptionsRaw(completeRaw, raw);
       else completeRaw = raw;
       samples.push({
@@ -423,6 +449,7 @@ export async function candidateNormalCommands(options: {
     corpus,
     backend,
     helperTransition,
+    anchorTransition: anchorTransition ? anchorTransitionMetadata(anchorTransition) : null,
     preflights,
     nativeProof,
     allocationReports,

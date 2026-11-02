@@ -42,14 +42,21 @@ export const candidateCommandIds = [
 ] as const;
 
 /** A refused attempt retains a prefix, never a successful smaller sample population. */
-export function verifyCandidateCommandPopulation(actualIds: string[], complete: boolean) {
-  assert(actualIds.length <= candidateCommandIds.length);
-  assert.deepEqual(actualIds, candidateCommandIds.slice(0, actualIds.length));
-  if (complete) assert.equal(actualIds.length, 30, "all outer commands required");
+export function verifyCandidateCommandPopulation(
+  actualIds: string[],
+  complete: boolean,
+  normalOnly = false,
+) {
+  const planned = normalOnly
+    ? candidateCommandIds.filter((id) => !id.startsWith("allocation-") && !id.startsWith("native-"))
+    : candidateCommandIds;
+  assert(actualIds.length <= planned.length);
+  assert.deepEqual(actualIds, planned.slice(0, actualIds.length));
+  if (complete) assert.equal(actualIds.length, planned.length, "all outer commands required");
   return {
     outerCommandsObserved: actualIds.length,
     primaryCommandsObserved: actualIds.filter((id) => id.startsWith("primary-")).length,
-    plannedOuterCommands: 30,
+    plannedOuterCommands: planned.length,
     plannedPrimaryCommands: 8,
     completedPopulation: complete,
     nativeProcessCount: "unobserved",

@@ -9,6 +9,11 @@ import {
   type CandidateInputSeal,
 } from "./cold-typechecker-scale-candidate-inputs.ts";
 
+import {
+  verifyAnchorMaterializedRows,
+  type AnchorModuleTransition,
+} from "./cold-typechecker-scale-import-anchors.ts";
+
 const closure = [
   "cold-typechecker-scale-native-forward.ts",
   "cold-typechecker-scale-native-inputs.ts",
@@ -248,6 +253,7 @@ export function compareNativePreflights(
     authoredCwd: string;
     /** Complete source-authenticated debug helper bodies; absent keeps the original equality law. */
     materializedHelperBodies?: { before: Buffer; after: Buffer };
+    materializedModuleBodies?: AnchorModuleTransition[];
     /** Reuse an already retained normal preflight without rewriting its classification record. */
     persistClasses?: boolean;
   },
@@ -282,17 +288,25 @@ export function compareNativePreflights(
           : [expected.project, expected.provider, cwd],
       );
     }
-    const materialized = expected.materializedHelperBodies
-      ? verifyCandidateInputSeals(
-          oldInputs as unknown as CandidateInputSeal,
-          currentInputs as unknown as CandidateInputSeal,
-          old.request.kind === "version" ? null : (old.request.cwd as string),
-          expected.materializedHelperBodies,
-          old.request.kind === "main-cli",
-        )
-      : old.request.kind === "version"
-        ? null
-        : assertSameMaterializedProgram(oldInputs, currentInputs, old.request.cwd as string);
+    const materialized =
+      expected.materializedModuleBodies && old.request.kind === "main-cli"
+        ? verifyAnchorMaterializedRows(
+            oldInputs,
+            currentInputs,
+            old.request.cwd as string,
+            expected.materializedModuleBodies,
+          )
+        : expected.materializedHelperBodies
+          ? verifyCandidateInputSeals(
+              oldInputs as unknown as CandidateInputSeal,
+              currentInputs as unknown as CandidateInputSeal,
+              old.request.kind === "version" ? null : (old.request.cwd as string),
+              expected.materializedHelperBodies,
+              old.request.kind === "main-cli",
+            )
+          : old.request.kind === "version"
+            ? null
+            : assertSameMaterializedProgram(oldInputs, currentInputs, old.request.cwd as string);
     assertSameObservedNative(old, current);
     const classes =
       old.request.kind === "main-cli"

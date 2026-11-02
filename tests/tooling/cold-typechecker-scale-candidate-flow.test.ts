@@ -36,7 +36,11 @@ test("paired source requires original+debug+census before primaries and all nati
       assert(body.indexOf(before) >= 0 && body.indexOf(after) > body.indexOf(before));
     };
     ordered(p, "verifyCandidateSources(", "await candidateNormalCommands(");
-    ordered(p, "candidateProfileCommands(", "verifyCandidateCommandPopulation(ids, true)");
+    ordered(
+      p,
+      "candidateProfileCommands(",
+      "verifyCandidateCommandPopulation(ids, true, normalOnly)",
+    );
     assert(p.includes("comparisonQualified: false"));
     ordered(q, "reportCpuProfile(capture)", "archiveCandidateNativeBlock(capture");
     ordered(q, "reportMemoryProfile(capture)", "archiveCandidateNativeBlock(capture");

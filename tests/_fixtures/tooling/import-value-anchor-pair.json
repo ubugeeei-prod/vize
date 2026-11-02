@@ -1,0 +1,376 @@
+{
+  "kind": "import-value-anchors",
+  "state": "source-bound",
+  "sources": {
+    "kind": "import-value-anchors",
+    "base": {
+      "sha": "a321c37109d86c03afeacc833b1760c85ad4a32c",
+      "tree": "4b0faf79f921c1c02d4241e903e160f14287ee9b"
+    },
+    "head": {
+      "sha": "60bf1bf601f7cc86682ebe309de25b96dd9a94bf",
+      "tree": "ed5ddc307b0c8a5ce3cf8da0cc9cc93f699b4314"
+    },
+    "containing": {
+      "optionsFix": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+      "historicalSourceFix": "0eb2f8db16f6541cd422ee610ab3e554bf041e0d"
+    },
+    "changed": [
+      {
+        "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_component_prop_checks_respect_same_element_vif_guard.snap",
+        "base": {
+          "bytes": 26195,
+          "sha256": "05a1309d3a39d2203c55ef328304bb515451140796c3bdbe96ab9fcf5d5de2a2",
+          "gitBlob": "61eb1f15d65a1445c9b670a772041ee3a6bafe90"
+        },
+        "head": {
+          "bytes": 26146,
+          "sha256": "d1f5251568a518d797a098512cddd7c30a9fec3598340451a8c19d8fb3b1d8c8",
+          "gitBlob": "44849ddc30a9df84a5ec9bc0a2bdf3ab592c4c3f"
+        }
+      },
+      {
+        "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap",
+        "base": {
+          "bytes": 32750,
+          "sha256": "adf8fc62b8031b331e13576dfa7784e27783bb7da93bbff64393fde9b2dd1bcf",
+          "gitBlob": "0d77893cac65b7f3244c077d4917fdcc0d0fb0b9"
+        },
+        "head": {
+          "bytes": 32699,
+          "sha256": "f99012561e5e459aab0ab8bb9c3a17e5414342f36344720e6cec0fc7623c0d7b",
+          "gitBlob": "8d481094e546b1a755dfd91e9492a0f101079aef"
+        }
+      },
+      {
+        "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap",
+        "base": {
+          "bytes": 32119,
+          "sha256": "52cd1a3d4a6c30eca22651a5fd6abba8e2b80b4ea35b59e9ee36e17af96a5f6c",
+          "gitBlob": "4af7d201faafc8f2cc6e043e273cd52795c78a2b"
+        },
+        "head": {
+          "bytes": 32072,
+          "sha256": "c5377605ccf6d6a55c3c63f19e25f5f858b04baec965323d617e049f4721b8ae",
+          "gitBlob": "fee5ab9e535ab2fa0db3197ceb0595e53a391b48"
+        }
+      },
+      {
+        "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_in_scope.snap",
+        "base": {
+          "bytes": 26405,
+          "sha256": "3e26827ee45dd3de511678eda61db78d7063e2613d45ae43e777d6432298f747",
+          "gitBlob": "80c0a89dbe891f897d2b327b151ee726f7f5fe8b"
+        },
+        "head": {
+          "bytes": 26356,
+          "sha256": "7dd23c86050b126eb7082a4175a71e68f4f12aeae9c5d14555242cf6b7a19595",
+          "gitBlob": "262688f3243fc030dc086b05a5c56df244147102"
+        }
+      },
+      {
+        "path": "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing.snap",
+        "base": {
+          "bytes": 26100,
+          "sha256": "1705008b6937fc53c4269bb46a8614a0963df4fb05433ca68ca104fc7478d226",
+          "gitBlob": "65f5cf62c0f3025315b84e8818337d5da94a2d8d"
+        },
+        "head": {
+          "bytes": 26055,
+          "sha256": "ac4f4fdad80db7503e048c8fecdc503cccb75bf7b219e673fcaf75c876f946b3",
+          "gitBlob": "1fc98811bf13f4f146d31abb973f2a2869086f47"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__reexported_vue_interface_props_virtual_ts.snap",
+        "base": {
+          "bytes": 7663,
+          "sha256": "5fea300cb2be6ae088d47a64bf9e982c74e33a4a9fae50979945108a000ea311",
+          "gitBlob": "fe696bf0f532e852b9291e5ef81127192afd28fe"
+        },
+        "head": {
+          "bytes": 7617,
+          "sha256": "59f44cb54482c15b46349caf3c750300ea54a005d4361efdef31383dd4a51a91",
+          "gitBlob": "08001daa4fad8149b7e7d648e64e78df9c6b85c9"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__register_vue_file_rewrites_child_imports.snap",
+        "base": {
+          "bytes": 6565,
+          "sha256": "6000c0e8134e477adb5a6a2ae21ee25c5242edafd82bb40cc76eedc02bb97b87",
+          "gitBlob": "7867ddd16cfe8b01f74bf19287b05a136a283fa7"
+        },
+        "head": {
+          "bytes": 6519,
+          "sha256": "095763f1139b9dacd7f5768525f6298da8250921c433ab1734f6e49adb476e40",
+          "gitBlob": "262fba77d85ba7e81f937cc86f6f81157856d084"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap",
+        "base": {
+          "bytes": 34663,
+          "sha256": "26c4e6e642a51204ed62db34f996dd8cb61ef6e0e0f7d9b910833c1e9c85604b",
+          "gitBlob": "3e71627aacd540f2b78412d3f14d894373546e9f"
+        },
+        "head": {
+          "bytes": 34616,
+          "sha256": "46cc45ed6c4fe9155eddca1938989df88b6f3a0381b8dd1da7f4e0ae086a7c2e",
+          "gitBlob": "190dd5ebd59118e130d67a355f360ed2023a077f"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+        "base": {
+          "bytes": 37433,
+          "sha256": "e8bd5b31bf27ba032f58c3f23fe13fdcbaab874dab4cd4f2e444065f5a4748cc",
+          "gitBlob": "246c853021fa4477268944648a98799e414d0b83"
+        },
+        "head": {
+          "bytes": 37267,
+          "sha256": "91345c777a27ef513f32cd8b1fb8cadb9adebfa528c58a763e9f0ad3504110af",
+          "gitBlob": "e1837c60d8a17a17c7202573154902dc41d513a6"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/generator/anchors.rs",
+        "base": {
+          "bytes": 12098,
+          "sha256": "f66b09931f2af16cbb3e8eccd353736965bed51dcdac7b3f21a229b5044db132",
+          "gitBlob": "8b0a81b887775870c375cb9f75855dff59645266"
+        },
+        "head": {
+          "bytes": 13774,
+          "sha256": "b6d4122ebec0cc06b7556aa1201e6330fb83d3212e52ad5ce400ebe34a50a40d",
+          "gitBlob": "2617ecbef6f1d8422ac8d058e5cc6ce466cfa638"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/generator/anchors/component_value_reads.rs",
+        "base": null,
+        "head": {
+          "bytes": 2562,
+          "sha256": "bd32723cb92481298ae5066f775489ae130595279c69af1874e02150a2f9fd6a",
+          "gitBlob": "fd7b7c245b9d20b2105bf33b78b82cf84f1c812c"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/generator/anchors/value_import_names.rs",
+        "base": {
+          "bytes": 5711,
+          "sha256": "798eef9c92d1755fd8df1f76b4c67afc905e74a2270ed34785bf88a1d1c1dd5b",
+          "gitBlob": "550611c202250ff193eed16828f469e91096d930"
+        },
+        "head": {
+          "bytes": 5725,
+          "sha256": "37a5f5df1b927a48fb0b7b21d9d8c75a66930595570775dfe9834263342e86d1",
+          "gitBlob": "8b93d8b27cc69b05d6a0e1a5161567ef5daaa6ce"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/generator/unresolved_components.rs",
+        "base": {
+          "bytes": 3641,
+          "sha256": "b9824acb73f3d019ae2663a28d786ecf911eccac9c0a8e560547bb4ea6809e7c",
+          "gitBlob": "e50ec59dd3b3fbe9acb3db31a15ef3ab83479393"
+        },
+        "head": {
+          "bytes": 3823,
+          "sha256": "8b40963e58561f0826845d2608fc57d92b31367ca3b66efaac9a9db04735c0ed",
+          "gitBlob": "746fe5af09c80abfbe254dc9a03916f9ca7419ee"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__computed_component_event_name_0_Child.snap",
+        "base": {
+          "bytes": 28700,
+          "sha256": "377af67427435c925de46bbc794623b1d4deb12436af67ea3d1c3f6b255c64b5",
+          "gitBlob": "e2e84b61fda379f5ea1cd45525bde593b8530f96"
+        },
+        "head": {
+          "bytes": 28654,
+          "sha256": "d374e3355167fbbe1cf2b7877d7eb474409d62bb7af3b6f8e6d6836dab60105e",
+          "gitBlob": "450aeb51b2fb0769879bde88da62254ec363c990"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__dynamic_component_names_tests__dynamic_component_names_keep_runtime_keys_open.snap",
+        "base": {
+          "bytes": 36000,
+          "sha256": "73335f9dddec89cfc4479e47311a95c304a2e93b88dda0fbc268929bfaa560dd",
+          "gitBlob": "2cf14cae46068c67e5d11508952604b1961791d6"
+        },
+        "head": {
+          "bytes": 35954,
+          "sha256": "af23683bd3cf89930e88020671dd65ec04a1031745aeee199e11c09b6c375fa7",
+          "gitBlob": "41155b7359d5a6495c698f9e80771afbd51c3c65"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_fallthrough_listener_modes.snap",
+        "base": {
+          "bytes": 69877,
+          "sha256": "6206c0dee942365c45054428ad72d4e6346fbd38d9e04579d886210447c1eacf",
+          "gitBlob": "1a43e1a1d330bd99c9649c9b280a9ac6a0e0accb"
+        },
+        "head": {
+          "bytes": 69736,
+          "sha256": "bab0438999ce495d9ac3e64454b25a9467643dc1f3812c93e68bccd66a950360",
+          "gitBlob": "b9bb32ef94fd2a31458b1110c75324a6f522fe11"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_local_import_shadow_keeps_the_original_strict_check_tail.snap",
+        "base": {
+          "bytes": 18239,
+          "sha256": "e6c85e40e5c039385a4ee654db6bdb6f78f6f2aab87395f92a879ce6feee4880",
+          "gitBlob": "b98023b625e4e94247a5b823b948a329e1cc9ad7"
+        },
+        "head": {
+          "bytes": 18122,
+          "sha256": "9141a5ba2e92e7870f24f6eb625c21c3d0314125a9c8d1781dc0b0f297f786a6",
+          "gitBlob": "5fab83ff4c3603a2dea6611da8342ae1b3858534"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_dollar_event_alias_stays_scoped.snap",
+        "base": {
+          "bytes": 23327,
+          "sha256": "94bfd6f5e0d8a2f5f48e920c698900756153bc5fb667e10f4c158d2f0d4344c5",
+          "gitBlob": "49a7edc1b7611209fc30a9b6bd1415a799ff3648"
+        },
+        "head": {
+          "bytes": 23275,
+          "sha256": "59301b08309ef01d572eb407b4a95bf0fdcd094db317c4924443975c550e3df6",
+          "gitBlob": "a51e43373edca5a0d2f38595adc5589b1e5332b8"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_component_event_fallback_stays_permissive.snap",
+        "base": {
+          "bytes": 57705,
+          "sha256": "298bd49949b6975abd7d7e2f51dcd41748e5c2febb20b4fd7553df595fc90c45",
+          "gitBlob": "fae5537bdcd6c3b8f4b12347e4cff9be7609bcac"
+        },
+        "head": {
+          "bytes": 57601,
+          "sha256": "be87012f5d7b6d2175ec8b9a931124c56a94c52d189e3c12fe6985c2a107073f",
+          "gitBlob": "7c00ec5c2119307642903d874850eab3d727178c"
+        }
+      },
+      {
+        "path": "crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_unresolved_component_event_payloads_stay_variadic.snap",
+        "base": {
+          "bytes": 27351,
+          "sha256": "e370875487d652502ddc14598ba667223b6a19ab631b31a74e21884c84d6764b",
+          "gitBlob": "a7d4ed45d95717faaa31d3c96e9efeaf3578546f"
+        },
+        "head": {
+          "bytes": 27297,
+          "sha256": "7fc6464a33745e681c46a2cb95326976fbfb436ce6127c6d27af50aeb7f62328",
+          "gitBlob": "752d48667731bf8a76bb38ce95ca222bb1116ddc"
+        }
+      },
+      {
+        "path": "crates/vize_canon/tests/patterned_typechecking/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
+        "base": {
+          "bytes": 40779,
+          "sha256": "879f2bcab784f505803384db846b222dfbd947cb5b6feb4aa05ea4ed1369513a",
+          "gitBlob": "c5b429a555d277b47ecc72dfae0244d4491c8cdf"
+        },
+        "head": {
+          "bytes": 40733,
+          "sha256": "315fb332f31eb64c90e3e2e5ccd1647298dc72140f0542b9e42fc7240dcabcb5",
+          "gitBlob": "3ce49a23a772b68e39d1b4ed1710a5c134929477"
+        }
+      },
+      {
+        "path": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+        "base": {
+          "bytes": 2390,
+          "sha256": "1fa365f62f1b2f0ae105406a85116b108be731591166d3d4b134655a08e00d76",
+          "gitBlob": "e7de677e83be55c1d6f2b739fa577ce755ef1021"
+        },
+        "head": {
+          "bytes": 2390,
+          "sha256": "ef7996ab3b253393797b8bef1f5126054100d3a54b8abe1a5c68fb47ec79134e",
+          "gitBlob": "ca49be0d4df3b2a30c2c251f8c5104938bea1c65"
+        }
+      },
+      {
+        "path": "tests/_fixtures/differential/typechecker/component-value-anchor-reuse/input.json",
+        "base": null,
+        "head": {
+          "bytes": 1924,
+          "sha256": "940dca34f66c56d367bedd7e5d1547b4baa3b508cd820752587c5e4057b3a708",
+          "gitBlob": "8edfdeef61182aa7bc5d478e7a51eab8c9d4c7e7"
+        }
+      },
+      {
+        "path": "tests/_fixtures/differential/typechecker/manifest.json",
+        "base": {
+          "bytes": 541882,
+          "sha256": "bf95cc3883992cd5a05761711443758ae4750317dfda4c6f6abe76cbafd1696a",
+          "gitBlob": "d63e6d9600d3299af38d2ac13573134f78957dd4"
+        },
+        "head": {
+          "bytes": 542950,
+          "sha256": "cf2d4e20dcb189a5a40ee895690e172ab33e8ff7463a2500da8c1829bc61a616",
+          "gitBlob": "96896d568666afada84edd7bbab3a0229c562f29"
+        }
+      },
+      {
+        "path": "tests/tooling/differential-dialect-coverage.test.ts",
+        "base": {
+          "bytes": 14732,
+          "sha256": "37719a4f2b6d84991de0f84f56206d97b82a91ba9575740ab8da118141fda642",
+          "gitBlob": "989fc226574e31b2e710d71de25932d8eb2f3a08"
+        },
+        "head": {
+          "bytes": 14732,
+          "sha256": "796b97342e1375729465ae7d608dd465a12b22dbc5f5167607c8cb361288d36e",
+          "gitBlob": "f816bb5beaf5096e6e0e929a2e540ede4a180989"
+        }
+      }
+    ],
+    "cargo": [
+      {
+        "file": "Cargo.toml",
+        "pin": {
+          "bytes": 13168,
+          "sha256": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+          "gitBlob": "679d57dd112ec6cac98ede4d1481787eaeef5397"
+        }
+      },
+      {
+        "file": "Cargo.lock",
+        "pin": {
+          "bytes": 128818,
+          "sha256": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+          "gitBlob": "c95d868c4a6ab932a918a4399f5a78d4e1633e27"
+        }
+      }
+    ],
+    "protocol": [
+      {
+        "file": "crates/vize/src/commands/check/runner/output.rs",
+        "pin": {
+          "bytes": 9574,
+          "sha256": "4348cbf296120a240f593b7b2291fb2ac7824a6732452b869a992ea75d9c3fc5",
+          "gitBlob": "aa6ad6dae0756689e3bcd86fc7d225e42e3040bb"
+        }
+      },
+      {
+        "file": "crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs",
+        "pin": {
+          "bytes": 8309,
+          "sha256": "a862ffb5cd5d1ef30982eef15122156bd9c559f9586a5c3f0c5a7e5a95c6675f",
+          "gitBlob": "76c80e31d7e67156ff12f2d879ed50d7b0ddc94c"
+        }
+      }
+    ]
+  },
+  "allocation": null,
+  "sourceCi": null
+}
