@@ -8,7 +8,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use vize_carton::FxHashMap;
-use vize_l0::{FxHashSet, String};
+use vize_l0::FxHashSet;
+#[cfg(test)]
+use vize_l0::String;
 
 use super::CorsaMaterializedSource;
 use super::vue_dependencies_alias::recover_lock;

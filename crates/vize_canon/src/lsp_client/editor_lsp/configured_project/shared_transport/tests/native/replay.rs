@@ -256,7 +256,7 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
             prior
                 .host
                 .source_catalog
-                .extend_native_project_documents(prior_root, &mut prior.documents);
+                .extend_native_project_document_batch(prior_root, &mut prior.documents);
             client
                 .synchronize_materialized_project(
                     prior_root,
@@ -294,7 +294,7 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         project
             .host
             .source_catalog
-            .extend_native_project_documents(materialized_root, &mut project.documents);
+            .extend_native_project_document_batch(materialized_root, &mut project.documents);
         client
             .synchronize_materialized_project(
                 materialized_root,
@@ -447,7 +447,7 @@ fn capture_prepared_world(
     let session = client.session.as_ref().unwrap();
     fs::write(capture.join("world.json"), serde_json::to_vec_pretty(&serde_json::json!({
         "project":session.project(),"snapshot":session.snapshot().handle,
-        "documents":project.documents,"clientDocuments":client.document_texts,
+        "documents":project.documents.to_vec(),"clientDocuments":client.document_texts,
         "delta":{"changed":project.materialized_changes.changed,"created":project.materialized_changes.created,
             "deleted":project.materialized_changes.deleted,"topologyChanged":project.materialized_changes.topology_changed},
         "catalog":project.host.materialized_sources.iter().map(|source| serde_json::json!({

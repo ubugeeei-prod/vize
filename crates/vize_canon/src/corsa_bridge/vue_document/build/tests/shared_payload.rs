@@ -186,7 +186,7 @@ fn dropped_query_and_failed_worker_keep_only_selected_bytes_until_the_same_job_f
             } else {
                 release.send(()).unwrap();
                 assert_eq!(
-                    crate::runtime::block_on(job),
+                    futures::executor::block_on(job),
                     Ok(if fail {
                         Err("original sync error")
                     } else {
