@@ -148,7 +148,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
           cargo test -p vize_canon --lib -- virtual_ts::diagnostic_ownership:: virtual_ts::scope::vif_guard::tests:: --nocapture
-          cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: content_mapper_tsgo_cli::reported_expression_duplicates_11374:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: content_mapper_tsgo_cli::reported_model_events_11390_11391:: content_mapper_tsgo_cli::reported_expression_duplicates_11374:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::const_enum_import:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::type_only_import_use:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::standard_tsgo_reports_each_component_prop_problem_once --nocapture
@@ -200,7 +200,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
         run: |
-          cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture
+          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE=standard-go-d6-vue35 VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR="$GITHUB_WORKSPACE/target/vize-tests/content-mapper-directive-owners/reported-dynamic-targets" cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_directives:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_build:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_incremental:: --nocapture
