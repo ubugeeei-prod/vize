@@ -3,12 +3,11 @@
 use serde_json::Value;
 #[expect(clippy::disallowed_types, reason = "shared across threads")]
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 use vize_carton::cstr;
 use vize_carton::profiler::{CacheStats, Profiler};
 
-use super::session::build_client;
 use super::types::{CorsaBridgeConfig, CorsaBridgeError, LspDefinitionResponse, LspLocation};
 use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
@@ -26,6 +25,7 @@ pub use initial_diagnostics::{
 };
 mod inlay_hint;
 mod language_features;
+pub(in crate::corsa_bridge) mod startup;
 pub(super) use documents::normalize_document_uri;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
@@ -38,7 +38,11 @@ pub struct CorsaBridge {
     /// Read-only initial diagnostics never occupy the mutable foreground lane.
     initial_diagnostics_worker: BoundedWorker<()>,
     /// Whether the bridge is initialized
-    initialized: Arc<AtomicBool>,
+    pub(super) initialized: Arc<AtomicBool>,
+    /// Conservative mutable-worker operation identity, including reads/errors.
+    pub(super) client_operation_epoch: Arc<AtomicU64>,
+    /// Startup admission and retained unpublished owner fence.
+    pub(super) startup: Arc<startup::StartupState>,
     /// Whether the reusable editor LSP session may have read stale disk state.
     disk_project_state_dirty: AtomicBool,
     /// Profiler for performance tracking
@@ -51,7 +55,7 @@ pub struct CorsaBridge {
     /// Private materialized mirrors and cache for this native session.
     pub(super) editor_session: Arc<super::EditorMirrorSession>,
     /// Editor owners can attach their project API to their own LSP process.
-    shared_editor_transport: bool,
+    pub(super) shared_editor_transport: bool,
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -112,6 +116,8 @@ impl CorsaBridge {
             ),
             config,
             initialized: Arc::new(AtomicBool::new(false)),
+            client_operation_epoch: Arc::new(AtomicU64::new(0)),
+            startup: Arc::new(startup::StartupState::default()),
             disk_project_state_dirty: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
@@ -119,71 +125,6 @@ impl CorsaBridge {
             editor_session,
             shared_editor_transport: true,
         }
-    }
-
-    /// Spawn and initialize the Corsa process, bounded by `timeout_ms`. The
-    /// handshake is synchronous IPC: a backend that accepts stdio and never
-    /// answers otherwise blocks until `corsa`'s own 30s backstop gives up.
-    pub async fn spawn(&self) -> Result<(), CorsaBridgeError> {
-        let _timer = self.profiler.timer("corsa_spawn");
-
-        if self.initialized.load(Ordering::SeqCst) {
-            return Ok(());
-        }
-
-        let config = self.config.clone();
-        let shared_editor_transport = self.shared_editor_transport;
-        let initialized = Arc::clone(&self.initialized);
-        self.submit_async(move |slot| {
-            if slot.is_some() {
-                initialized.store(true, Ordering::SeqCst);
-                return Ok(());
-            }
-            *slot = Some(build_client(&config, shared_editor_transport)?);
-            // The worker owns completion even if the awaiting caller cancels.
-            initialized.store(true, Ordering::SeqCst);
-            Ok(())
-        })
-        .await?;
-
-        if let Some(timer) = _timer {
-            timer.record(&self.profiler);
-        }
-
-        Ok(())
-    }
-
-    /// Shutdown the bridge.
-    pub async fn shutdown(&self) -> Result<(), CorsaBridgeError> {
-        if !self.initialized.load(Ordering::SeqCst) {
-            return Ok(());
-        }
-
-        let initialized = Arc::clone(&self.initialized);
-        let editor_session = Arc::clone(&self.editor_session);
-        let result = self
-            .submit_async(move |slot| {
-                let outcome = match slot.as_mut() {
-                    Some(client) => client
-                        .shutdown()
-                        .map_err(CorsaBridgeError::CommunicationError),
-                    None => Ok(()),
-                };
-                *slot = None;
-                editor_session.clear();
-                initialized.store(false, Ordering::SeqCst);
-                outcome
-            })
-            .await;
-
-        // Entered shutdown owns this state on the worker. Clearing it again
-        // here could overwrite a later successful spawn before we are polled.
-        // A stopped worker cannot run that cleanup or a competing spawn.
-        if matches!(&result, Err(CorsaBridgeError::ProcessTerminated)) {
-            self.editor_session.clear();
-            self.initialized.store(false, Ordering::SeqCst);
-        }
-        result
     }
 
     /// Check if bridge is initialized.
@@ -245,7 +186,11 @@ impl CorsaBridge {
         // Clamped so a misconfigured `0` stays loud instead of silently
         // disabling the bridge; no value turns the bound off.
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
-        match self.worker.submit(deadline, f) {
+        let epoch = Arc::clone(&self.client_operation_epoch);
+        match self.worker.submit(deadline, move |slot| {
+            epoch.fetch_add(1, Ordering::SeqCst);
+            f(slot)
+        }) {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;
@@ -256,13 +201,21 @@ impl CorsaBridge {
         }
     }
 
-    async fn submit_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    pub(super) async fn submit_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
         R: Send + 'static,
     {
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
-        match self.worker.submit_async(deadline, f).await {
+        let epoch = Arc::clone(&self.client_operation_epoch);
+        match self
+            .worker
+            .submit_async(deadline, move |slot| {
+                epoch.fetch_add(1, Ordering::SeqCst);
+                f(slot)
+            })
+            .await
+        {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;
@@ -273,13 +226,21 @@ impl CorsaBridge {
         }
     }
 
-    async fn submit_ready_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    pub(super) async fn submit_ready_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
         R: Send + 'static,
     {
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
-        match self.worker.submit_ready_async(deadline, f).await {
+        let epoch = Arc::clone(&self.client_operation_epoch);
+        match self
+            .worker
+            .submit_ready_async(deadline, move |slot| {
+                epoch.fetch_add(1, Ordering::SeqCst);
+                f(slot)
+            })
+            .await
+        {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;

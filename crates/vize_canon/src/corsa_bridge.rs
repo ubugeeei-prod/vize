@@ -87,8 +87,9 @@ pub use types::{
     LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 pub use vue_document::{
-    CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
-    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
+    CorsaInitialVueDocument, CorsaInitialVueProject, CorsaMaterializedMappingKind,
+    CorsaMaterializedSource, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
+    CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
 };
 pub(crate) use vue_document::{
     CorsaProjectEnvironment, CorsaVueVirtualProject,
@@ -222,5 +223,23 @@ mod tests {
             bridge::normalize_document_uri(path.to_str().unwrap()),
             path_to_file_uri(path)
         );
+    }
+}
+
+impl CorsaBridge {
+    /// Selection-only preflight for the optional cold editor path. Success is
+    /// neither a loaded-provider witness nor an initialized native process.
+    pub fn can_resolve_initial_editor_runtime(&self) -> bool {
+        let Some(authored) = self.config.working_dir.as_ref() else {
+            return false;
+        };
+        let authored = authored.canonicalize().unwrap_or_else(|_| authored.clone());
+        vize_carton::corsa_resolver::resolve_corsa_executable(
+            vize_carton::corsa_resolver::CorsaResolveRequest {
+                explicit_path: self.config.corsa_path.as_deref(),
+                project_root: Some(&authored),
+            },
+        )
+        .is_ok()
     }
 }
