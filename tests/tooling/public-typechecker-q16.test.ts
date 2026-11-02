@@ -13,6 +13,7 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   filesFor,
+  afterProfile,
   profileFor,
   requireProfile,
   reportedCommands,
@@ -87,7 +88,7 @@ test("closed regression data and noncausal A64 binding retain unknown-profile re
   );
   for (const id of ["A59-65", "all-ten", "D", "unknown"])
     assert.throws(() => subsetFor(id), assert.AssertionError);
-  assert.deepEqual(profileFor(), {
+  const declarationProfile: Profile = {
     subset: "A64",
     knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
     causalFix: null,
@@ -96,11 +97,14 @@ test("closed regression data and noncausal A64 binding retain unknown-profile re
     candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
     run: "41417714586",
     capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
-  });
+  };
+  assert.equal(requireProfile(declarationProfile), declarationProfile);
+  if (afterProfile === null) assert.throws(() => profileFor(), assert.AssertionError);
+  else assert.equal(profileFor(), afterProfile);
   assert.throws(
     () =>
       Reflect.apply(requireProfile, null, [
-        { ...profileFor(), fix: "f6f94688127f72fbc1cc1f349df4d66327705985" },
+        { ...declarationProfile, fix: "f6f94688127f72fbc1cc1f349df4d66327705985" },
       ]),
     assert.AssertionError,
   );

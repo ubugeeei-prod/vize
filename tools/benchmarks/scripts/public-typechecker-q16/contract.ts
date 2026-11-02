@@ -4,7 +4,7 @@ import { overrides } from "../../../support/release/public_install/identity.ts";
 import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "C62" | "A64";
+export type Subset = "D61" | "B60-68" | "A59" | "C62" | "C4" | "A64";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -46,16 +46,7 @@ export type DeclarationProfile = PublishedProfile & {
 };
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
-export const afterProfile: Profile | null = {
-  subset: "A64",
-  knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
-  causalFix: null,
-  version: "0.643.0",
-  source: "f6f94688127f72fbc1cc1f349df4d66327705985",
-  candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
-  run: "41417714586",
-  capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
-};
+export const afterProfile: Profile | null = null;
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
   scope:
@@ -73,7 +64,10 @@ export const reportedCommands = {
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
 export function subsetFor(id: string): SuppliedSubset {
-  assert(["D61", "B60-68", "A59", "C62"].includes(id), "closed source-qualified subset required");
+  assert(
+    ["D61", "B60-68", "A59", "C62", "C4"].includes(id),
+    "closed source-qualified subset required",
+  );
   const rows: SuppliedSubset[] = suppliedSubsets;
   const matches = rows.filter((row) => row.id === id);
   assert.equal(matches.length, 1, "subset source data has not been supplied");

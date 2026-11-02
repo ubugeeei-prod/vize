@@ -12,7 +12,10 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { profileFor } from "../../tools/benchmarks/scripts/public-typechecker-q16/contract.ts";
+import {
+  requireProfile,
+  type DeclarationProfile,
+} from "../../tools/benchmarks/scripts/public-typechecker-q16/contract.ts";
 import {
   declarationData,
   declarationInputs,
@@ -29,6 +32,16 @@ import {
   type ProcessOutput,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/execute.ts";
 
+const declarationProfile: DeclarationProfile = {
+  subset: "A64",
+  knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
+  causalFix: null,
+  version: "0.643.0",
+  source: "f6f94688127f72fbc1cc1f349df4d66327705985",
+  candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
+  run: "41417714586",
+  capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
+};
 function temporary(run: (root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "q16-declaration-")));
   try {
@@ -47,7 +60,7 @@ function setup(root: string) {
     Buffer.from("export type Helper = unknown;\n"),
   ];
   declarationData.outputFiles.forEach((name, i) => writeFileSync(join(output, name), bytes[i]!));
-  const inputs = declarationInputs(profileFor(), false);
+  const inputs = declarationInputs(declarationProfile, false);
   for (const file of inputs) writeFileSync(join(consumer, file.path), file.source);
   return { output, consumer, evidence, bytes, inputs };
 }
@@ -62,7 +75,7 @@ const processOutput = (status: number, stdout: string, stderr: string): ProcessO
 });
 
 test("A64 binds noncausal known-good source and exact original commands/four intended states", () => {
-  const profile = profileFor();
+  const profile = requireProfile(declarationProfile);
   assert.equal(profile.subset, "A64");
   assert.equal(declarationData.knownGoodSource, "07d1feb1bb19d862b30aea10fe3465a08a8b1239");
   assert.deepEqual(declarationData.producerArgs, [

@@ -7,6 +7,9 @@ export const fixtureNames = [
   "fixtures-b60-68-issue-11360.json",
   "fixtures-b60-68-issue-11368.json",
   "fixtures-c62-issue-11362.json",
+  "fixtures-c4-issue-11363.json",
+  "fixtures-c4-issue-11366.json",
+  "fixtures-c4-issue-11367.json",
 ] as const;
 const raw: unknown[] = fixtureNames.map((name) =>
   JSON.parse(readFileSync(new URL(name, import.meta.url), "utf8")),
@@ -14,7 +17,7 @@ const raw: unknown[] = fixtureNames.map((name) =>
 const parts: SuppliedSubset[] = asArray(raw).map((value) => {
   const row = asRecord(value),
     id = asString(row.id);
-  assert(["D61", "B60-68", "A59", "C62"].includes(id));
+  assert(["D61", "B60-68", "A59", "C62", "C4"].includes(id));
   return {
     id: id as Subset,
     sourceAuthority: row.sourceAuthority,
@@ -55,3 +58,12 @@ for (const part of parts) {
     previous.projects.push(...part.projects);
   } else suppliedSubsets.push(part);
 }
+const c4 = suppliedSubsets.find((row) => row.id === "C4"),
+  c62 = suppliedSubsets.find((row) => row.id === "C62");
+assert(c4 && c62);
+c4.projects.unshift(...c62.projects);
+assert.deepEqual(
+  c4.projects.map((row) => row.issue),
+  [11362, 11363, 11366, 11367],
+);
+assert(c4.projects.every((row) => row.states.length === 4));
