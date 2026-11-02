@@ -42,20 +42,34 @@ fn warm_dependencies_preserve_root_buffers_and_private_lexical_bindings() {
             TypeLookup::Unknown(_)
         ));
     }
-    // Target filling must not mutate the reusable unresolved module facts.
-    let modules = sources.modules.lock().unwrap();
-    let (api, _) = modules
+    // Targets are filled once per snapshot; the shared resolved facts carry
+    // them to every world, while the three root buffers never enter the cache.
+    let resolved = sources.resolved.lock().unwrap();
+    assert_eq!(resolved.len(), 2);
+    let api = resolved
         .get(&api.canonicalize().unwrap())
         .unwrap()
         .get()
         .unwrap()
         .as_ref()
         .unwrap();
-    assert!(api.exports.values().all(|export| match export {
+    assert!(api.module.exports.values().all(|export| match export {
         vize_croquis::types::world::TypeExportBinding::Forward { target, .. } =>
-            target.module.is_none(),
+            target.module.is_some(),
         _ => true,
     }));
+}
+
+/// Sorted facts of every dependency module, with the private root left out.
+fn dependency_signature(world: &ResolvedTypeWorld) -> Vec<vize_carton::String> {
+    let mut rows: Vec<_> = world
+        .modules
+        .iter()
+        .filter(|(key, _)| **key != world.root_module)
+        .map(|(key, module)| cstr!("{key}: {module:?}"))
+        .collect();
+    rows.sort();
+    rows
 }
 
 #[test]
@@ -209,4 +223,151 @@ fn warmed_dependency_facts_do_not_expand_the_world_admission_limit() {
             .count(),
         2
     );
+}
+
+#[test]
+fn dependency_modules_are_resolved_once_per_snapshot_and_shared_between_worlds() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("api.ts"),
+        "export type { Other } from './other'; export * from './models'; export type Public = { item: Other }",
+    )
+    .unwrap();
+    std::fs::write(dir.path().join("other.ts"), "export type Other = boolean").unwrap();
+    std::fs::write(
+        dir.path().join("models.ts"),
+        "export interface Model { id: number }",
+    )
+    .unwrap();
+    let sources = TypeSourceSnapshot::default();
+    let resolve = |name: &str, sources: &TypeSourceSnapshot| {
+        let source = cstr!(
+            "import type {{ Public, Model }} from './api'; type Props{name} = {{ item: Public; model: Model }}"
+        );
+        ScriptCompileContext::new(&source).resolve_type_world_with_sources(
+            dir.path().join(cstr!("{name}.vue")).to_str().unwrap(),
+            None,
+            false,
+            sources,
+        )
+    };
+    let first = resolve("First", &sources);
+    let second = resolve("Second", &sources);
+
+    // Both roots see the same declarations through the shared dependencies.
+    for world in [&first, &second] {
+        assert_eq!(body(world, "Public"), "{ item: Other }");
+        let TypeLookup::Found(model) = world.resolve(&world.root_module, "Model") else {
+            panic!("star-exported interface resolves")
+        };
+        assert!(model.module.ends_with("models.ts"), "{}", model.module);
+        assert_eq!(world.modules.len(), 4);
+    }
+    assert_ne!(first.root_module, second.root_module);
+
+    // Dependencies are resolved once per snapshot and shared; roots never are.
+    for dependency in ["api.ts", "other.ts", "models.ts"] {
+        let key = first
+            .modules
+            .keys()
+            .find(|key| key.ends_with(dependency))
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&first.modules[key], &second.modules[key]),
+            "{dependency} must be resolved once per snapshot"
+        );
+    }
+    let resolved = sources.resolved.lock().unwrap();
+    assert_eq!(resolved.len(), 3);
+    assert!(
+        resolved
+            .keys()
+            .all(|path| path.extension().is_some_and(|ext| ext == "ts")),
+        "root components never enter the resolved dependency cache: {resolved:?}"
+    );
+    drop(resolved);
+
+    // A new snapshot resolves again with identical facts: nothing is shared
+    // across snapshots, and sharing changes no fact.
+    let fresh = TypeSourceSnapshot::default();
+    let third = resolve("Third", &fresh);
+    let api = first
+        .modules
+        .keys()
+        .find(|key| key.ends_with("api.ts"))
+        .unwrap();
+    assert!(!Arc::ptr_eq(&first.modules[api], &third.modules[api]));
+    assert_eq!(body(&third, "Public"), "{ item: Other }");
+    assert_eq!(dependency_signature(&first), dependency_signature(&third));
+    assert_eq!(dependency_signature(&first), dependency_signature(&second));
+}
+
+#[test]
+fn barrel_dependencies_are_resolved_once_however_many_worlds_import_them() {
+    let dir = tempfile::tempdir().unwrap();
+    let models = dir.path().join("models");
+    std::fs::create_dir(&models).unwrap();
+    std::fs::write(
+        dir.path().join("runtime.ts"),
+        "export function request(path: string): Promise<unknown> { return fetch(path) }",
+    )
+    .unwrap();
+    let mut barrel = vize_carton::String::default();
+    for index in 0..32 {
+        std::fs::write(
+            models.join(cstr!("m{index}.ts").as_str()),
+            cstr!(
+                "import {{ request }} from '../runtime'; export interface Model{index} {{ id: number }} export function fetch{index}() {{ return request('/m{index}') }}"
+            ),
+        )
+        .unwrap();
+        barrel.push_str(&cstr!("export * from './models/m{index}';\n"));
+    }
+    std::fs::write(dir.path().join("api.ts"), barrel.as_str()).unwrap();
+
+    let sources = TypeSourceSnapshot::default();
+    let worlds: Vec<_> = (0..8)
+        .map(|index| {
+            let source = cstr!(
+                "import type {{ Model{index} }} from './api'; defineProps<{{ item: Model{index} }}>()"
+            );
+            ScriptCompileContext::new(&source).resolve_type_world_with_sources(
+                dir.path()
+                    .join(cstr!("Host{index}.vue").as_str())
+                    .to_str()
+                    .unwrap(),
+                None,
+                false,
+                &sources,
+            )
+        })
+        .collect();
+
+    // Each component reaches the whole barrel through `export *`: its root,
+    // the barrel and all 32 models; the value-only runtime import is not a
+    // type reference and stays out.
+    for (index, world) in worlds.iter().enumerate() {
+        let TypeLookup::Found(id) = world.resolve(&world.root_module, &cstr!("Model{index}"))
+        else {
+            panic!("barrel export resolves")
+        };
+        assert!(
+            id.module.ends_with(cstr!("m{index}.ts").as_str()),
+            "{}",
+            id.module
+        );
+        assert_eq!(world.modules.len(), 34);
+    }
+    // The 33 dependencies were resolved exactly once for all eight worlds.
+    assert_eq!(sources.resolved.lock().unwrap().len(), 33);
+    let first = &worlds[0];
+    for world in &worlds[1..] {
+        for (key, module) in &first.modules {
+            if *key == first.root_module {
+                continue;
+            }
+            assert!(Arc::ptr_eq(module, &world.modules[key]), "{key}");
+        }
+        assert_eq!(dependency_signature(first), dependency_signature(world));
+    }
 }

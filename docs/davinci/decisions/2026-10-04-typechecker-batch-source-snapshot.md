@@ -168,3 +168,11 @@ Leaf-parity fixtures and their provenance remain owned by that later child.
 Previously measured sources remain historical; all five fresh source heads and
 the final whole-command ordered parity and controlled pairs must pass again
 before protected Stack admission. No individual prefix merge is allowed.
+
+## Amended
+
+The clause "Dependency facts are unresolved until each world's own clone
+resolves its imports" is superseded by
+[shared resolved type world dependencies](./2026-11-02-11370-typechecker-shared-resolved-dependencies.md)
+([#11370](https://github.com/ubugeeei-prod/vize/issues/11370)). The snapshot
+lifetime and admission policy decided here are unchanged.

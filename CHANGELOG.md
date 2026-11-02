@@ -8,6 +8,11 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 
 ### Changed
 
+- Resolve type world dependency modules once per `TypeSourceSnapshot` and
+  share them across the worlds of every component.
+  `vize_croquis::types::world::ResolvedTypeWorld::modules` now holds
+  `Arc<TypeModule>` values: readers borrow through `Deref`, hand-built worlds
+  wrap their modules in `Arc::new` (#11370).
 - Make `vize_l0::ErrorCode` the explicit compiler-wide error vocabulary used
   by Armature while preserving the existing Armature and Relief public paths,
   discriminants, messages and stable code names (#6835).

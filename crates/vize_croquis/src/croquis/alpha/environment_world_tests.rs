@@ -5,6 +5,7 @@ use crate::types::world::{
     ResolvedTypeWorld, TypeDeclaration, TypeDeclarationKind, TypeExportBinding, TypeImport,
     TypeModule, TypeModuleReference,
 };
+use std::sync::Arc;
 use vize_carton::{CompactString, cstr};
 use vize_l2::summary::{Facet, SfcSummary};
 
@@ -54,8 +55,8 @@ fn world(helper: &str) -> ResolvedTypeWorld {
     ResolvedTypeWorld {
         root_module: "/Component.vue".into(),
         modules: [
-            ("/Component.vue".into(), root),
-            ("/types.ts".into(), external),
+            ("/Component.vue".into(), Arc::new(root)),
+            ("/types.ts".into(), Arc::new(external)),
         ]
         .into_iter()
         .collect(),
@@ -126,15 +127,17 @@ fn imported_alias_fingerprints_follow_the_declaring_modules_own_helpers() {
             .any(|dependency| dependency.module.as_deref() == Some("/Component.vue"))
     );
     let mut private_edit = world("string");
-    private_edit
-        .modules
-        .get_mut("/Component.vue")
-        .expect("root")
-        .declarations
-        .insert(
-            "Helper".into(),
-            declaration("Helper", "'unrelated private edit'"),
-        );
+    Arc::make_mut(
+        private_edit
+            .modules
+            .get_mut("/Component.vue")
+            .expect("root"),
+    )
+    .declarations
+    .insert(
+        "Helper".into(),
+        declaration("Helper", "'unrelated private edit'"),
+    );
     assert!(
         summary(&before)
             .changed(&summary(&croquis(source, private_edit)))
@@ -183,10 +186,7 @@ fn direct_import_type_changes_and_opaque_macro_arguments_reach_their_contracts()
 #[test]
 fn imported_declarations_do_not_capture_sfc_generic_parameters() {
     let mut type_world = world("T");
-    type_world
-        .modules
-        .get_mut("/types.ts")
-        .expect("external")
+    Arc::make_mut(type_world.modules.get_mut("/types.ts").expect("external"))
         .declarations
         .insert("T".into(), declaration("T", "'external literal'"));
     let croquis = croquis(
@@ -252,7 +252,7 @@ fn unsupported_merge_parts_and_their_helpers_remain_observable() {
         const item: Alias = null as Alias; defineExpose({ item });";
     let merged_world = |first: &str, helper: &str| {
         let mut result = world(helper);
-        let module = result.modules.get_mut("/types.ts").expect("types");
+        let module = Arc::make_mut(result.modules.get_mut("/types.ts").expect("types"));
         module.unsupported_declarations.insert("Internal".into());
         module.unsupported_contracts.insert(
             "Internal".into(),
