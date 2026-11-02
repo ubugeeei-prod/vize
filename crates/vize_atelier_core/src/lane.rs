@@ -135,8 +135,6 @@ pub struct TransformContext<'a> {
     pub source: &'a str,
     /// Atoms for names this pass synthesizes rather than slices (P1-10).
     pub interner: Interner<'a>,
-    /// Root node reference
-    pub(crate) root: Option<*mut RootNode<'a>>,
     /// Parent node stack
     pub(crate) parent: Option<ParentNode<'a>>,
     /// Grandparent node
@@ -318,7 +316,6 @@ pub(crate) fn transform_inner<'a>(
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.custom_elements = custom_elements;
     ctx.frozen_elements = frozen_elements;
-    ctx.root = Some(root as *mut _);
 
     // Legacy (Vue 2 / 2.7) template-sugar pre-transform. Resolved once per file
     // from the dialect; a no-op for the default Vue 3 dialect (the resolved

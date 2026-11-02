@@ -33,7 +33,6 @@ impl<'a> TransformContext<'a> {
             in_ssr: options.ssr,
             options,
             custom_elements: Default::default(),
-            root: None,
             parent: None,
             grandparent: None,
             current_node: None,
