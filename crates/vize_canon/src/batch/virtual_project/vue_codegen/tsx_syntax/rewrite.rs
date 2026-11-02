@@ -129,6 +129,10 @@ fn within(edits: &[Edit], range: &Range<usize>) -> Vec<Edit> {
         .collect()
 }
 
+fn is_linear(generated: &Range<usize>, source: &Range<usize>) -> bool {
+    !generated.is_empty() && generated.len() == source.len()
+}
+
 impl Rewrite {
     pub(super) fn build(code: &str, edits: &[Edit]) -> Option<Self> {
         let mut builder = Builder {
@@ -187,9 +191,10 @@ impl Rewrite {
         *code = self.text;
     }
 
-    /// A linear row is split into its copied runs; dropped `<`/`>` bytes and
-    /// inserted text stay unmapped except for diagnostic-only anchors. Other
-    /// rows keep their authored range.
+    /// A row moved as one run shifts. A linear row is split into its copied
+    /// runs, and a row with sub-spans splits each linear sub-span; dropped
+    /// `<`/`>` bytes and inserted text stay unmapped except for
+    /// diagnostic-only anchors. Any other row keeps its authored range.
     fn move_row(
         &self,
         row: VizeMapping,
@@ -197,65 +202,98 @@ impl Rewrite {
         rows: &mut Vec<VizeMapping>,
         meta: &mut Vec<ProjectionMeta>,
     ) {
-        let linear = !row.gen_range.is_empty() && row.gen_range.len() == row.src_range.len();
-        if !linear || self.exact(&row.gen_range).is_some() {
+        let linear = is_linear(&row.gen_range, &row.src_range);
+        let mut anchors = Vec::new();
+        if self.exact(&row.gen_range).is_some() || (!linear && row.sub_spans.is_empty()) {
             rows.push(VizeMapping {
                 gen_range: self.range(&row.gen_range).0,
-                sub_spans: self.sub_spans(&row, &row.gen_range),
+                sub_spans: row
+                    .sub_spans
+                    .iter()
+                    .filter_map(|span| self.exact_sub_span(span))
+                    .collect(),
                 src_range: row.src_range,
             });
             meta.push(row_meta);
-            return;
-        }
-        let first = rows.len();
-        let anchors = self
-            .anchors
-            .iter()
-            .skip(
-                self.anchors
-                    .partition_point(|(old, _)| *old < row.gen_range.start),
-            )
-            .take_while(|(old, _)| *old < row.gen_range.end);
-        for &(old, new) in anchors {
-            let source = row.src_range.start + (old - row.gen_range.start);
-            rows.push(VizeMapping::new(new..new + 1, source..source + 1));
-        }
-        let anchored = rows.len() - first;
-        let start = self
-            .pieces
-            .partition_point(|piece| piece.old.end <= row.gen_range.start);
-        for piece in self.pieces.iter().skip(start) {
-            if piece.old.start >= row.gen_range.end {
-                break;
+        } else if row.sub_spans.is_empty() {
+            self.anchor_rows(&row.gen_range, row.src_range.start, &mut anchors);
+            let pieces = self.split(&row.gen_range, row.src_range.start);
+            meta.resize(meta.len() + pieces.len(), row_meta);
+            rows.extend(
+                pieces
+                    .into_iter()
+                    .map(|(generated, source)| VizeMapping::new(generated, source)),
+            );
+        } else {
+            let mut sub_spans = Vec::with_capacity(row.sub_spans.len() + 2);
+            for span in &row.sub_spans {
+                if is_linear(&span.gen_range, &span.src_range) {
+                    self.anchor_rows(&span.gen_range, span.src_range.start, &mut anchors);
+                    sub_spans.extend(
+                        self.split(&span.gen_range, span.src_range.start)
+                            .into_iter()
+                            .map(|(gen_range, src_range)| VizeSubSpan {
+                                gen_range,
+                                src_range,
+                            }),
+                    );
+                } else {
+                    sub_spans.extend(self.exact_sub_span(span));
+                }
             }
-            let part =
-                piece.old.start.max(row.gen_range.start)..piece.old.end.min(row.gen_range.end);
-            let source = row.src_range.start + (part.start - row.gen_range.start);
             rows.push(VizeMapping {
-                gen_range: piece.place(&part),
-                src_range: source..source + part.len(),
-                sub_spans: self.sub_spans(&row, &part),
+                gen_range: self.range(&row.gen_range).0,
+                src_range: row.src_range,
+                sub_spans,
             });
+            meta.push(row_meta);
         }
         let diagnostics = ProjectionMeta {
             features: ProjectionFeatures::DIAGNOSTICS,
             ..row_meta
         };
-        meta.resize(meta.len() + anchored, diagnostics);
-        meta.resize(meta.len() + (rows.len() - first - anchored), row_meta);
+        meta.resize(meta.len() + anchors.len(), diagnostics);
+        rows.extend(anchors);
     }
 
-    fn sub_spans(&self, row: &VizeMapping, part: &Range<usize>) -> Vec<VizeSubSpan> {
-        row.sub_spans
+    /// The copied runs of a linear old range, with their authored bytes.
+    fn split(&self, old: &Range<usize>, source: usize) -> Vec<(Range<usize>, Range<usize>)> {
+        let first = self
+            .pieces
+            .partition_point(|piece| piece.old.end <= old.start);
+        self.pieces
             .iter()
-            .filter(|span| part.start <= span.gen_range.start && span.gen_range.end <= part.end)
-            .filter_map(|span| {
-                Some(VizeSubSpan {
-                    gen_range: self.exact(&span.gen_range)?,
-                    src_range: span.src_range.clone(),
-                })
+            .skip(first)
+            .take_while(|piece| piece.old.start < old.end)
+            .map(|piece| {
+                let part = piece.old.start.max(old.start)..piece.old.end.min(old.end);
+                let authored = source + (part.start - old.start);
+                (piece.place(&part), authored..authored + part.len())
             })
             .collect()
+    }
+
+    /// One-byte rows from each assertion's new `(` to its authored `<`.
+    fn anchor_rows(&self, old: &Range<usize>, source: usize, rows: &mut Vec<VizeMapping>) {
+        let first = self
+            .anchors
+            .partition_point(|(anchor, _)| *anchor < old.start);
+        for &(anchor, new) in self
+            .anchors
+            .iter()
+            .skip(first)
+            .take_while(|(anchor, _)| *anchor < old.end)
+        {
+            let authored = source + (anchor - old.start);
+            rows.push(VizeMapping::new(new..new + 1, authored..authored + 1));
+        }
+    }
+
+    fn exact_sub_span(&self, span: &VizeSubSpan) -> Option<VizeSubSpan> {
+        Some(VizeSubSpan {
+            gen_range: self.exact(&span.gen_range)?,
+            src_range: span.src_range.clone(),
+        })
     }
 
     /// The new range of a range copied as one run.

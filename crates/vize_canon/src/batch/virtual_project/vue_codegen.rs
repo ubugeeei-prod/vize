@@ -43,6 +43,8 @@ mod editor_script_tests;
 mod generic_component_tests;
 #[cfg(test)]
 mod malformed_setup_tests;
+#[cfg(test)]
+mod tsx_syntax_tests;
 
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
