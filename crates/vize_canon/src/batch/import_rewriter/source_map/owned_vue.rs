@@ -6,6 +6,32 @@ use super::{ImportSourceMap, RewriteResult};
 use crate::batch::virtual_specifier_message::MISSING_VUE_IMPORT_SENTINEL;
 
 impl ImportSourceMap {
+    /// Read an actual atomic `.vue` to `.vue.js` projection, never a suffix guess.
+    pub(crate) fn owned_relative_vue_import_source<'a>(
+        &self,
+        pristine: &'a str,
+        current: &str,
+        reported: &str,
+    ) -> Option<&'a str> {
+        if !self.adjustments.is_empty() {
+            return None;
+        }
+        self.replacement_ranges.iter().find_map(|range| {
+            let original =
+                pristine.get(range.original_start as usize..range.original_end as usize)?;
+            let existing = current.get(range.virtual_start as usize..range.virtual_end as usize)?;
+            (existing == reported
+                && reported.strip_suffix(".js") == Some(original)
+                && (original.starts_with("./") || original.starts_with("../"))
+                && original.ends_with(".vue")
+                && !original
+                    .bytes()
+                    .any(|byte| matches!(byte, b'\\' | b'\'' | b'"') || byte < 0x20)
+                && !original.contains(['\u{2028}', '\u{2029}']))
+            .then_some(original)
+        })
+    }
+
     /// Keep unrelated bytes and all original coordinates exactly as registered.
     /// The callback rechecks graph ownership on each finalization; no resolution
     /// decision survives a target removal, replacement or project change.

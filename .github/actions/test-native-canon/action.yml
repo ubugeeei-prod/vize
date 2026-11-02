@@ -398,6 +398,24 @@ runs:
         if(before===null||after===null)throw Error('successful controls did not retain both native image observations');
         if(JSON.stringify(before)!==JSON.stringify(after))throw Error('native image changed during owned Vue import controls');
         NODE
+        export CORSA_PATH="$(node -p 'JSON.parse(require("fs").readFileSync(process.env.VIZE_OWNED_VUE_CAPTURE+"/provider-after.json","utf8")).binary')"
+        export VIZE_UNKNOWN_COMPAT_CAPTURE="$VIZE_OWNED_VUE_CAPTURE/authored-message"
+        cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::type_checker::tests::package_exports_types::module_member_diagnostics_report_the_authored_specifier -- --exact --nocapture --color never
+        node --input-type=module - "$VIZE_OWNED_VUE_CAPTURE" <<'NODE'
+        import assert from 'node:assert/strict';
+        import fs from 'node:fs';
+        import path from 'node:path';
+        import {createHash} from 'node:crypto';
+        import {execFileSync} from 'node:child_process';
+        const root=process.argv[2],batch=path.join(root,'authored-message/batch');
+        const cases=fs.readdirSync(batch);assert.equal(cases.length,1);
+        const packet=JSON.parse(fs.readFileSync(path.join(batch,cases[0],'check/check.json'),'utf8'));
+        const provider=JSON.parse(fs.readFileSync(path.join(root,'provider-after.json'),'utf8'));
+        const after=createHash('sha256').update(fs.readFileSync(provider.binary)).digest('hex');
+        fs.writeFileSync(path.join(root,'authored-message-result.json'),JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),packet,nativeAfter:after,scope:'Actual public checker result and authored fixtures; internal native transport is not captured'},null,2)+'\n');
+        assert.equal(packet.nativeSha256,provider.sha256);assert.equal(after,provider.sha256);
+        assert.equal(packet.result.status,'success');assert.equal(packet.result.diagnostics.length,3);
+        NODE
     - name: Preserve owned Vue import complete observations
       if: ${{ always() && steps.owned-vue-imports.outcome != 'skipped' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

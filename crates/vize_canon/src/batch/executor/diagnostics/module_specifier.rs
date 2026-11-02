@@ -28,6 +28,7 @@ use vize_carton::{String, cstr};
 /// inside a quoted sentence (`Module '"./Panel.vue.ts"' ...`,
 /// `... 'import Panel from "./Panel.vue.ts"' ...`), both of which the shared
 /// [`quoted_specifiers`] scan covers.
+#[cfg(test)]
 fn quoted_mirror_specifiers(message: &str) -> Vec<&str> {
     quoted_specifiers(message)
         .into_iter()
@@ -52,12 +53,20 @@ impl DiagnosticMapper<'_> {
         } else {
             message
         };
-        let rewrites: Vec<(String, String)> = quoted_mirror_specifiers(&rewritten)
+        let rewrites: Vec<(String, String)> = quoted_specifiers(&rewritten)
             .into_iter()
             .filter_map(|reported| {
-                let authored = mirror_module_specifier_source(reported)?;
-                self.author_wrote_the_vue_spelling(original, reported, authored)
-                    .then(|| (String::from(reported), String::from(authored)))
+                let authored = mirror_module_specifier_source(reported)
+                    .map(String::from)
+                    .or_else(|| {
+                        if !reported.ends_with(".vue.js") {
+                            return None;
+                        }
+                        let file = self.project.find_by_original(&original.path)?;
+                        self.project.authored_owned_vue_js_specifier(file, reported)
+                    })?;
+                self.author_wrote_the_vue_spelling(original, reported, &authored)
+                    .then(|| (String::from(reported), authored))
             })
             .collect();
         for (reported, authored) in rewrites {
@@ -148,6 +157,9 @@ mod tests {
         assert_eq!(mirror_module_specifier_source("./Panel.vue"), None);
         assert_eq!(mirror_module_specifier_source("./types.d.ts"), None);
         assert_eq!(mirror_module_specifier_source("vue-router"), None);
+        // JavaScript spellings need actual project/import-map ownership.
+        assert_eq!(mirror_module_specifier_source("./Panel.vue.js"), None);
+        assert_eq!(mirror_module_specifier_source("./Panel.vue.jsx"), None);
     }
 
     #[test]

@@ -61,6 +61,30 @@ impl VirtualProject {
         }
     }
 
+    /// Diagnostic text may undo only a projection still owned by this program.
+    pub(crate) fn authored_owned_vue_js_specifier(
+        &self,
+        importer: &VirtualFile,
+        reported: &str,
+    ) -> Option<String> {
+        if !reported.ends_with(".vue.js")
+            || importer.source_map.sfc_map.is_none()
+            || self
+                .source_artifacts
+                .get(&importer.original_path)
+                .is_some_and(|owner| owner.star_projection.is_some())
+        {
+            return None;
+        }
+        let pristine = self.pre_rewrite_code.get(&importer.virtual_path)?;
+        let authored = importer
+            .source_map
+            .import_map
+            .owned_relative_vue_import_source(pristine, &importer.content, reported)?;
+        let projected = self.owned_relative_vue_specifier(importer, authored)?;
+        (projected == reported).then(|| authored.into())
+    }
+
     fn owned_relative_vue_specifier(
         &self,
         importer: &VirtualFile,

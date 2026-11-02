@@ -79,6 +79,8 @@ import Literal from "./Literal.vue.ts";
 /// The second consumer pins the other direction: a hand-written `.vue.ts`
 /// specifier must not resolve through the generated mirror, and its `TS2307`
 /// must keep the exact spelling the author wrote (#3482).
+/// An explicitly authored `.vue.js` spelling also stays literal, even when
+/// TypeScript resolves it to the same generated SFC target.
 #[test]
 fn module_member_diagnostics_report_the_authored_specifier() {
     if resolve_test_tsgo_binary().is_none() {
@@ -120,6 +122,15 @@ const label: string = Bare.label + real + directory;
 "#,
             ),
             (
+                "src/pages/JsLiteralConsumer.vue",
+                r#"<script setup lang="ts">
+import { Bare } from "../components/Local.vue.js";
+
+const label: string = Bare.label;
+</script>
+"#,
+            ),
+            (
                 "src/components/Authored.vue.ts",
                 r#"export const real: string = "authored";
 "#,
@@ -147,6 +158,13 @@ const label: string = Bare.label + real + directory;
     assert_eq!(
         snapshot,
         vec![
+            (
+                String::from("src/pages/JsLiteralConsumer.vue"),
+                Some(2614),
+                String::from(
+                    "2:10:error Module '\"../components/Local.vue.js\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue.js\"' instead?"
+                ),
+            ),
             (
                 String::from("src/pages/LiteralConsumer.vue"),
                 Some(2307),

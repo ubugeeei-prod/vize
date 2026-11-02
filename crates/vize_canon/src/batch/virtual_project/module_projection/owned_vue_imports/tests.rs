@@ -62,6 +62,19 @@ fn owned_relative_edge_changes_only_extension_and_preserves_every_map_offset() {
         .into();
     assert_eq!(after, expected);
     assert_ne!(after["code"], before["code"]);
+    let importer = project
+        .find_by_original(&root.path().join("Parent.vue"))
+        .unwrap();
+    assert_eq!(
+        project
+            .authored_owned_vue_js_specifier(importer, "./Child.vue.js")
+            .as_deref(),
+        Some("./Child.vue")
+    );
+    assert_eq!(
+        project.authored_owned_vue_js_specifier(importer, "./Unowned.vue.js"),
+        None
+    );
     project.finalize_module_imports();
     assert_eq!(packet(&project, "Parent.vue"), after);
     project.materialize().unwrap();
@@ -98,6 +111,10 @@ fn authored_ts_alias_package_and_bare_star_packets_keep_existing_authority() {
             "<script setup lang=\"ts\">import C from '@/Child.vue';</script><template />",
         ),
         (
+            "AuthoredJs.vue",
+            "<script setup lang=\"ts\">import C from './Child.vue.js';</script><template />",
+        ),
+        (
             "Package.vue",
             "<script setup lang=\"ts\">import C from 'package/Child.vue';</script><template />",
         ),
@@ -111,6 +128,11 @@ fn authored_ts_alias_package_and_bare_star_packets_keep_existing_authority() {
         let before = packet(&project, name);
         project.finalize_module_imports();
         assert_eq!(packet(&project, name), before, "{name}");
+        let importer = project.find_by_original(&root.path().join(name)).unwrap();
+        assert_eq!(
+            project.authored_owned_vue_js_specifier(importer, "./Child.vue.js"),
+            None
+        );
     }
 }
 
@@ -208,6 +230,13 @@ fn target_shape_remove_readd_and_second_project_never_reuse_previous_resolution(
     let target = project.project_root().join("Child.vue");
     project.remove_registered_source(&target);
     fs::remove_file(&target).unwrap();
+    let importer = project
+        .find_by_original(&root.path().join("Parent.vue"))
+        .unwrap();
+    assert_eq!(
+        project.authored_owned_vue_js_specifier(importer, "./Child.vue.js"),
+        None
+    );
     project.finalize_module_imports();
     let removed = packet(&project, "Parent.vue");
     let mut missing_reference = self::project(
