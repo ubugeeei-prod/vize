@@ -1,0 +1,388 @@
+[
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "faithful-default-original",
+      "phase": "original",
+      "bad": false,
+      "line": 10,
+      "column": 15,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "faithful-default-original",
+      "phase": "wrong",
+      "bad": true,
+      "line": 10,
+      "column": 15,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(10,15): error TS2339: Property 'nope' does not exist on type '$HoistedGeneric0<{ bar: string; baz: number; }>'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 49, 48, 44, 49, 53, 41, 58,
+      32, 101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114,
+      116, 121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101,
+      120, 105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 36, 72, 111, 105, 115, 116,
+      101, 100, 71, 101, 110, 101, 114, 105, 99, 48, 60, 123, 32, 98, 97, 114, 58, 32, 115, 116,
+      114, 105, 110, 103, 59, 32, 98, 97, 122, 58, 32, 110, 117, 109, 98, 101, 114, 59, 32, 125, 62,
+      39, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "faithful-default-original",
+      "phase": "repair",
+      "bad": false,
+      "line": 10,
+      "column": 15,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "faithful-default-original",
+      "phase": "restore",
+      "bad": true,
+      "line": 10,
+      "column": 15,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(10,15): error TS2339: Property 'nope' does not exist on type '$HoistedGeneric0<{ bar: string; baz: number; }>'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 49, 48, 44, 49, 53, 41, 58,
+      32, 101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114,
+      116, 121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101,
+      120, 105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 36, 72, 111, 105, 115, 116,
+      101, 100, 71, 101, 110, 101, 114, 105, 99, 48, 60, 123, 32, 98, 97, 114, 58, 32, 115, 116,
+      114, 105, 110, 103, 59, 32, 98, 97, 122, 58, 32, 110, 117, 109, 98, 101, 114, 59, 32, 125, 62,
+      39, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "constrained-no-default-control",
+      "phase": "original",
+      "bad": false,
+      "line": 10,
+      "column": 19,
+      "expectedCode": 2339,
+      "expectedProperty": "bar"
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "constrained-no-default-control",
+      "phase": "wrong",
+      "bad": true,
+      "line": 10,
+      "column": 19,
+      "expectedCode": 2339,
+      "expectedProperty": "bar"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(10,19): error TS2339: Property 'bar' does not exist on type 'string'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 49, 48, 44, 49, 57, 41, 58,
+      32, 101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114,
+      116, 121, 32, 39, 98, 97, 114, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 115, 116, 114, 105, 110, 103, 39,
+      46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "constrained-no-default-control",
+      "phase": "repair",
+      "bad": false,
+      "line": 10,
+      "column": 19,
+      "expectedCode": 2339,
+      "expectedProperty": "bar"
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11360,
+      "variant": "constrained-no-default-control",
+      "phase": "restore",
+      "bad": true,
+      "line": 10,
+      "column": 19,
+      "expectedCode": 2339,
+      "expectedProperty": "bar"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(10,19): error TS2339: Property 'bar' does not exist on type 'string'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 49, 48, 44, 49, 57, 41, 58,
+      32, 101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114,
+      116, 121, 32, 39, 98, 97, 114, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 115, 116, 114, 105, 110, 103, 39,
+      46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "faithful-generic-original",
+      "phase": "original",
+      "bad": false,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 0,
+      "expectedProperty": ""
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "faithful-generic-original",
+      "phase": "wrong",
+      "bad": true,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,14): error TS2339: Property 'nope' does not exist on type '{ foo: () => void; }'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 52, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114, 116,
+      121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 123, 32, 102, 111, 111, 58, 32,
+      40, 41, 32, 61, 62, 32, 118, 111, 105, 100, 59, 32, 125, 39, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "faithful-generic-original",
+      "phase": "repair",
+      "bad": false,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 0,
+      "expectedProperty": ""
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "faithful-generic-original",
+      "phase": "wrong-argument",
+      "bad": true,
+      "line": 5,
+      "column": 18,
+      "expectedCode": 2554,
+      "expectedProperty": ""
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,18): error TS2554: Expected 0 arguments, but got 1.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 56, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 53, 53, 52, 58, 32, 69, 120, 112, 101, 99, 116, 101,
+      100, 32, 48, 32, 97, 114, 103, 117, 109, 101, 110, 116, 115, 44, 32, 98, 117, 116, 32, 103,
+      111, 116, 32, 49, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "faithful-generic-original",
+      "phase": "restore",
+      "bad": true,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,14): error TS2339: Property 'nope' does not exist on type '{ foo: () => void; }'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 52, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114, 116,
+      121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 123, 32, 102, 111, 111, 58, 32,
+      40, 41, 32, 61, 62, 32, 118, 111, 105, 100, 59, 32, 125, 39, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "non-generic-control",
+      "phase": "original",
+      "bad": false,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 0,
+      "expectedProperty": ""
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "non-generic-control",
+      "phase": "wrong",
+      "bad": true,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,14): error TS2339: Property 'nope' does not exist on type '$ComponentInstance'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 52, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114, 116,
+      121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 36, 67, 111, 109, 112, 111, 110,
+      101, 110, 116, 73, 110, 115, 116, 97, 110, 99, 101, 39, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "non-generic-control",
+      "phase": "repair",
+      "bad": false,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 0,
+      "expectedProperty": ""
+    },
+    "status": 0,
+    "success": true,
+    "stdout": "",
+    "stderr": "",
+    "stdoutBytes": [],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "non-generic-control",
+      "phase": "wrong-argument",
+      "bad": true,
+      "line": 5,
+      "column": 18,
+      "expectedCode": 2554,
+      "expectedProperty": ""
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,18): error TS2554: Expected 0 arguments, but got 1.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 56, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 53, 53, 52, 58, 32, 69, 120, 112, 101, 99, 116, 101,
+      100, 32, 48, 32, 97, 114, 103, 117, 109, 101, 110, 116, 115, 44, 32, 98, 117, 116, 32, 103,
+      111, 116, 32, 49, 46, 10
+    ],
+    "stderrBytes": []
+  },
+  {
+    "identity": {
+      "issue": 11368,
+      "variant": "non-generic-control",
+      "phase": "restore",
+      "bad": true,
+      "line": 5,
+      "column": 14,
+      "expectedCode": 2339,
+      "expectedProperty": "nope"
+    },
+    "status": 2,
+    "success": false,
+    "stdout": "src/Probe.vue(5,14): error TS2339: Property 'nope' does not exist on type '$ComponentInstance'.\n",
+    "stderr": "",
+    "stdoutBytes": [
+      115, 114, 99, 47, 80, 114, 111, 98, 101, 46, 118, 117, 101, 40, 53, 44, 49, 52, 41, 58, 32,
+      101, 114, 114, 111, 114, 32, 84, 83, 50, 51, 51, 57, 58, 32, 80, 114, 111, 112, 101, 114, 116,
+      121, 32, 39, 110, 111, 112, 101, 39, 32, 100, 111, 101, 115, 32, 110, 111, 116, 32, 101, 120,
+      105, 115, 116, 32, 111, 110, 32, 116, 121, 112, 101, 32, 39, 36, 67, 111, 109, 112, 111, 110,
+      101, 110, 116, 73, 110, 115, 116, 97, 110, 99, 101, 39, 46, 10
+    ],
+    "stderrBytes": []
+  }
+]
