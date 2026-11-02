@@ -1,5 +1,5 @@
 {
-  "scope": "Synthetic source-owned controls for #11374 receiver ownership. These are not additional original reporter inputs or an installed-public reproduction. End positions and exact diagnostic formatting are not preclaimed. The fallthrough pair uses an actual generated Child.vue root forwarding Leaf.vue optional props, rather than unqualified handwritten external markers.",
+  "scope": "Synthetic source-owned contextual controls for #11374 receiver ownership, separate from the original reporter inputs. The optional fallthrough probe has no established admitted native contract and remains explicitly unqualified data.",
   "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n",
   "states": [
     {
@@ -45,30 +45,39 @@
       "expectedStatus": 0,
       "expectedCodes": [],
       "expectedMessage": null
-    },
-    {
-      "id": "typed-fallthrough-wrong",
-      "sources": {
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.value;}}\" />\n</template>\n",
-        "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
-        "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
-      },
-      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
-      "expectedStatus": 2,
-      "expectedCodes": [2322],
-      "expectedMessage": "Type 'number' is not assignable to type 'string'."
-    },
-    {
-      "id": "typed-fallthrough-repair",
-      "sources": {
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.text;}}\" />\n</template>\n",
-        "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
-        "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
-      },
-      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
-      "expectedStatus": 0,
-      "expectedCodes": [],
-      "expectedMessage": null
     }
-  ]
+  ],
+  "unqualifiedFallthrough": {
+    "state": "UNQUALIFIED",
+    "reason": "Both the unchanged actual85 producer and candidate accept the wrong-value probe. Its desired TS2322 remains unchanged; this is neither a qualified preserved contract nor a demonstrated regression of #11374.",
+    "baselineSource": "85ab7600097035afa060ca03f8a77108cdc5e337",
+    "baselineRun": "41512687567",
+    "candidateRun": "41511124586",
+    "states": [
+      {
+        "id": "typed-fallthrough-wrong",
+        "sources": {
+          "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.value;}}\" />\n</template>\n",
+          "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
+          "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
+        },
+        "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
+        "expectedStatus": 2,
+        "expectedCodes": [2322],
+        "expectedMessage": "Type 'number' is not assignable to type 'string'."
+      },
+      {
+        "id": "typed-fallthrough-repair",
+        "sources": {
+          "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.text;}}\" />\n</template>\n",
+          "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
+          "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
+        },
+        "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
+        "expectedStatus": 0,
+        "expectedCodes": [],
+        "expectedMessage": null
+      }
+    ]
+  }
 }
