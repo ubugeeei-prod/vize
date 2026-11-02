@@ -76,7 +76,7 @@ void test("reported withVue files and ignores select only App during actual star
       );
       if (row.name === "original") assert.deepEqual(observed.calls.warn, []);
     } finally {
-      host.close();
+      await host.close();
       project.cleanup();
     }
   }
@@ -99,7 +99,7 @@ void test("direct plugin precedence stays per-field and explicit empty arrays su
       true,
     );
     const observed = await observeConsole(() => host.start());
-    host.close();
+    await host.close();
     retainObservation("plugin-overrides", {
       scoped,
       options,
@@ -137,7 +137,7 @@ void test("withVue composition retains its existing undefined overlay and empty 
         true,
       );
       const observed = await observeConsole(() => host.start());
-      host.close();
+      await host.close();
       retainObservation("composition", { override, candidates: host.candidates, observed });
       assert.equal(observed.error, null);
       // Undefined does not erase an earlier explicit value; [] intentionally disables scanning.

@@ -60,7 +60,7 @@ void test("reported unimported SFC diagnostics defer in build and serve, imports
         assert.ok(imported.value);
       }
     } finally {
-      host.close();
+      await host.close();
       project.cleanup();
     }
   }
@@ -187,14 +187,14 @@ void test("startup preserves owner exceptions and missing external source failur
       plugins: [...vize({ configMode: false }), companion],
     });
     const owner = await observeConsole(() => host.start());
-    host.close();
+    await host.close();
     fs.writeFileSync(
       project.file("src/Placeholder.vue"),
       '<template src="./missing.html"></template>\n',
     );
     const missing = await startupHost(project.root, { plugins: vize({ configMode: false }) });
     const source = await observeConsole(() => missing.start());
-    missing.close();
+    await missing.close();
     retainObservation("fatal-nondiagnostics", { owner, source });
     assert.equal(owner.error, sentinel);
     assert.ok(source.error instanceof Error);
@@ -239,7 +239,7 @@ void test("a read race mixed with known compiler diagnostics remains a fatal who
       plugins: [...vize({ configMode: false }), race],
     });
     const observed = await observeConsole(() => host.start());
-    host.close();
+    await host.close();
     retainObservation("mixed-read-failure", { removed, observed });
     assert.ok(removed);
     assert.ok(observed.error instanceof Error);
