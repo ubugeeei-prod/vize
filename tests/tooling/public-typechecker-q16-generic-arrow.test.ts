@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
+  afterProfile,
   requireProfile,
   sha256,
   subsetFor,
@@ -94,6 +95,16 @@ test("the exact five lines and all ten independent syntax and typed controls rem
   assert.equal(genericArrowLimitations.sourceDev71OrOtherVueOutputsTransferred, false);
 });
 test("only Vize changes in the explicitly constructed TSC project and unknown profiles refuse", () => {
+  assert.deepEqual(afterProfile, {
+    subset: "GArrowTsc",
+    fix: "ba01953b4429fabdd652d3497d89a8cf1737697b",
+    version: "0.652.0",
+    source: "ba01953b4429fabdd652d3497d89a8cf1737697b",
+    candidate: "6a9b36fbb8c21b0d928583e3732410f5c2afb12a",
+    run: "41523763531",
+    capsule: "b567cd114991ae7a9d3b3f6a398bf78246e50182",
+  });
+  assert.equal(requireProfile(afterProfile), afterProfile);
   assert.equal(requireProfile(mock), mock);
   assert.throws(() => requireProfile(null), assert.AssertionError);
   assert.throws(() => requireProfile({ ...mock, fix: "f".repeat(40) }), assert.AssertionError);
