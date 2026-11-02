@@ -3,14 +3,14 @@
 //! This module provides the transform context, traversal, and base transform traits.
 
 mod context;
-pub mod element;
+pub(crate) mod element;
 mod extensions;
 mod frozen;
 mod options;
 pub mod patterned_template;
-pub mod structural;
+pub(crate) mod structural;
 mod structural_keys;
-pub mod traverse;
+pub(crate) mod traverse;
 
 use vize_croquis::{Croquis, ScopeChain};
 use vize_l0::{Allocator, Box, SmallVec, Span, String, Vec, interner::Interner, profile};
@@ -19,8 +19,8 @@ use crate::errors::CompilerError;
 use crate::options::TransformOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{
-    CacheExpression, DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode, JsChildNode,
-    PropNode, RootNode, RuntimeHelper, TemplateChildNode,
+    CacheExpression, DirectiveNode, ElementNode, ForNode, IfBranchNode, JsChildNode, PropNode,
+    RootNode, RuntimeHelper, TemplateChildNode,
 };
 
 #[doc(hidden)]
@@ -64,7 +64,67 @@ pub struct DirectiveTransformResult<'a> {
 pub type StructuralDirectiveTransform<'a> =
     fn(&mut TransformContext<'a>, &mut ElementNode<'a>, &DirectiveNode<'a>) -> Option<ExitFn<'a>>;
 
-/// Transform context for AST traversal
+/// Transform context for AST traversal.
+///
+/// Raw traversal cursors are internal capabilities. The public context can be
+/// constructed independently, but it cannot acquire or inject pointers into a
+/// tree whose borrow has ended. Use [`transform`] to traverse an owned root.
+///
+/// Parent handles are not part of the public API:
+///
+/// ```compile_fail
+/// use vize_atelier_core::ParentNode;
+/// ```
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::ParentNode;
+/// ```
+///
+/// Each raw cursor is inaccessible to a safe external caller:
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.root = Some(std::ptr::null_mut());
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.parent = None;
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.grandparent = None;
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.current_node = Some(std::ptr::null_mut());
+/// }
+/// ```
+///
+/// Internal traversal entries cannot leave raw cursors in a public context:
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::traverse::traverse_children;
+/// ```
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::traverse::traverse_node;
+/// ```
+///
+/// An independently created context has no active tree cursor:
+///
+/// ```
+/// use vize_atelier_core::{Allocator, TransformContext, TransformOptions};
+/// let allocator = Allocator::default();
+/// let mut context = TransformContext::new(&allocator, "", TransformOptions::default());
+/// assert!(context.take_current_node().is_none());
+/// context.remove_node_at(0);
+/// ```
 pub struct TransformContext<'a> {
     /// Arena allocator
     pub allocator: &'a Allocator,
@@ -76,13 +136,13 @@ pub struct TransformContext<'a> {
     /// Atoms for names this pass synthesizes rather than slices (P1-10).
     pub interner: Interner<'a>,
     /// Root node reference
-    pub root: Option<*mut RootNode<'a>>,
+    pub(crate) root: Option<*mut RootNode<'a>>,
     /// Parent node stack
-    pub parent: Option<ParentNode<'a>>,
+    pub(crate) parent: Option<ParentNode<'a>>,
     /// Grandparent node
-    pub grandparent: Option<ParentNode<'a>>,
+    pub(crate) grandparent: Option<ParentNode<'a>>,
     /// Current node being transformed
-    pub current_node: Option<*mut TemplateChildNode<'a>>,
+    pub(crate) current_node: Option<*mut TemplateChildNode<'a>>,
     /// Child index in parent
     pub child_index: usize,
     /// Helpers used
@@ -135,10 +195,9 @@ impl TransformContext<'_> {
 
 /// Enum for parent node types
 #[derive(Clone, Copy)]
-pub enum ParentNode<'a> {
+pub(crate) enum ParentNode<'a> {
     Root(*mut RootNode<'a>),
     Element(*mut ElementNode<'a>),
-    If(*mut IfNode<'a>),
     IfBranch(*mut IfBranchNode<'a>),
     For(*mut ForNode<'a>),
 }
@@ -153,22 +212,17 @@ impl<'a> ParentNode<'a> {
     /// parent, and nested calls only use descendants created from that slice.
     /// Keeping the invariant here avoids an allocation-heavy zipper structure in
     /// the hottest template transform path.
-    ///
-    /// Returns `None` for `ParentNode::If`: an `IfNode` is only a container of
-    /// branches, so callers traverse its `ParentNode::IfBranch` children.
     #[expect(clippy::mut_from_ref, reason = "the parent pointer owns the children")]
-    pub fn children_mut(&self) -> Option<&mut Vec<'a, TemplateChildNode<'a>>> {
+    pub(crate) fn children_mut(&self) -> Option<&mut Vec<'a, TemplateChildNode<'a>>> {
         // SAFETY: every pointer is produced from a live `RootNode`, `ElementNode`,
         // `IfBranchNode`, or `ForNode` borrowed by the transform driver. The
         // transform is single-threaded and never keeps two active mutable child
         // slices for the same parent; sibling traversal advances only after the
-        // previous borrow has been consumed. `ParentNode::If` intentionally has no
-        // children slice, so that variant is rejected before any pointer deref.
+        // previous borrow has been consumed.
         unsafe {
             match self {
                 ParentNode::Root(r) => Some(&mut (*(*r)).children),
                 ParentNode::Element(e) => Some(&mut (*(*e)).children),
-                ParentNode::If(_) => None,
                 ParentNode::IfBranch(b) => Some(&mut (*(*b)).children),
                 ParentNode::For(f) => Some(&mut (*(*f)).children),
             }
