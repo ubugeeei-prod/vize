@@ -384,6 +384,25 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         })
         .unwrap();
     let directory = parent.path.parent().unwrap();
+    // The existing native Actions install the tests workspace's real Vue.
+    // The repository root package intentionally has no direct Vue dependency.
+    let consumer_modules = workspace.join("tests/node_modules");
+    let vue_package = consumer_modules.join("vue/package.json");
+    save(
+        &capture,
+        "consumer-vue-provider.json",
+        serde_json::json!({"modules":consumer_modules,
+            "package":vue_package,"canonicalPackage":vue_package.canonicalize().map_err(|error|error.to_compact_string()),
+            "packageBytes":std::fs::read(&vue_package).map_err(|error|error.to_compact_string())}),
+    );
+    assert!(
+        vue_package.is_file(),
+        "existing installed tests Vue is required"
+    );
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(&consumer_modules, directory.join("node_modules")).unwrap();
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(&consumer_modules, directory.join("node_modules")).unwrap();
     let consumer_source = "import type { PublicCounterProps } from './Parent.vue.js'; export const wrong: PublicCounterProps = { count: 'wrong' };\n";
     std::fs::write(directory.join("consumer.ts"), consumer_source).unwrap();
     let config = directory.join("tsconfig.consumer.json");
