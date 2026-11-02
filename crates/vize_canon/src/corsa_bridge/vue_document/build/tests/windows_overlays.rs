@@ -112,10 +112,14 @@ fn verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes() {
         assert_eq!(dependency.source.as_str(), expected_child);
         assert_eq!(dependency.code, child_member.code);
         let child_uri = crate::file_uri::path_to_file_uri(&child_member.materialized_path);
-        document(&project.documents, &child_uri, child_member.code.as_str());
+        document(
+            &project.documents.to_vec(),
+            &child_uri,
+            child_member.code.as_str(),
+        );
         if support_overlay.is_some() {
             let uri = crate::file_uri::path_to_file_uri(&support_member.materialized_path);
-            document(&project.documents, &uri, expected_support);
+            document(&project.documents.to_vec(), &uri, expected_support);
         }
         let request_path = crate::file_uri::path_to_file_uri(&script);
         let (_, script_documents, script_root, _) =

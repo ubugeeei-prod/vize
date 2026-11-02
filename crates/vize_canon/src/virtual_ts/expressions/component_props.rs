@@ -11,8 +11,8 @@ use super::super::scope::{
 };
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{
-    PropSpan, append_prop_value, generated_prop_span, generated_prop_span_preserving_comments,
-    prop_name_source_range, prop_value_source_range,
+    PropSpan, append_prop_value, generated_diagnostic_prop_span,
+    generated_prop_span_preserving_comments, prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::String;
@@ -263,7 +263,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 if crate::virtual_ts::scope::is_inline_ref_callback_prop(prop) {
                     generated_prop_span_preserving_comments(prop, template_binding_access)
                 } else {
-                    generated_prop_span(prop, template_binding_access)
+                    generated_diagnostic_prop_span(prop, template_binding_access)
                 }
                 .unwrap_or_else(|| PropSpan::plain(String::default()))
             );

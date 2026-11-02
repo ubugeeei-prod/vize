@@ -7,13 +7,16 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 import {
-  q16Package,
+  q16Profile,
+  verifyQ16ProviderNode,
   declaredBin,
   verifyQ16Lock,
   verifyQ16PublishedLauncher,
 } from "./reported-q16-provider.ts";
 export {
   q16Package,
+  q16Profile,
+  verifyQ16ProviderNode,
   declaredBin,
   verifyQ16Lock,
   verifyQ16PublishedLauncher,
@@ -21,6 +24,7 @@ export {
 } from "./reported-q16-provider.ts";
 
 import {
+  verifyQ16RequiredEnvironment,
   selectQ16Cases,
   verifyQ16List,
   verifyQ16Execution,
@@ -29,6 +33,7 @@ import {
 } from "./reported-q16-cases.ts";
 export {
   q16Cases,
+  verifyQ16RequiredEnvironment,
   selectQ16Cases,
   verifyQ16List,
   verifyQ16Execution,
@@ -48,28 +53,6 @@ export function verifyQ16Inputs(e: NodeJS.ProcessEnv, actual: string) {
     assert.equal(source, e.EXPECTED_SOURCE_SHA);
   for (const key of ["VIZE_TEST_DISABLE_TSGO", "NODE_OPTIONS", "NODE_PATH"])
     assert.equal(e[key], undefined, `unexpected inherited ${key}`);
-}
-export function verifyQ16RequiredEnvironment(e: NodeJS.ProcessEnv) {
-  assert.equal(e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE, "reported-tsrs-vue44");
-  for (const key of [
-    "VIZE_TEST_REQUIRE_TSGO",
-    "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
-    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED",
-    "VIZE_TEST_REQUIRE_NESTED_CALLBACK",
-  ])
-    assert.equal(e[key], "1", key);
-  for (const key of [
-    "CORSA_PATH",
-    "VIZE_TEST_CONTENT_MAPPER_TSGO",
-    "VIZE_TEST_CONTENT_MAPPER_VUE",
-    "VIZE_REPORTED_MODEL_CAPTURE",
-    "VIZE_REPORTED_GENERIC_EVIDENCE_DIR",
-    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR",
-    "VIZE_NESTED_CALLBACK_CAPTURE",
-    "VIZE_REPORTED_DECLARATIONS_CAPTURE",
-  ])
-    assert(path.isAbsolute(e[key] || ""), key);
-  assert.equal(e.VIZE_TEST_DISABLE_TSGO, undefined);
 }
 const hash = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const read = (p: string) => JSON.parse(fs.readFileSync(p, "utf8"));
@@ -119,6 +102,12 @@ function record(
         "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED",
         "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE",
         "VIZE_TEST_REQUIRE_NESTED_CALLBACK",
+        ...(env.Q16_CASE_SET === "11373"
+          ? [
+              "VIZE_TEST_REQUIRE_GLOBAL_COMPONENT_LISTENER",
+              "VIZE_REPORTED_GLOBAL_COMPONENT_LISTENER_CAPTURE",
+            ]
+          : []),
         "GOGC",
         "GOMEMLIMIT",
         "GOMAXPROCS",
@@ -199,19 +188,20 @@ export async function runQ16(stage: string) {
   });
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
-  const selected = selectQ16Cases(process.env.Q16_CASE_SET);
+  const selected = selectQ16Cases(process.env.Q16_CASE_SET),
+    profile = q16Profile(process.env.Q16_CASE_SET);
   if (stage === "prepare") {
     save(path.join(out, "case-selection.json"), { set: process.env.Q16_CASE_SET, cases: selected });
     fs.mkdirSync(provider);
     fs.writeFileSync(
       path.join(provider, "package.json"),
-      JSON.stringify(q16Package, null, 2) + "\n",
+      JSON.stringify(profile.package, null, 2) + "\n",
       { flag: "wx" },
     );
     save(path.join(out, "scope.json"), {
       source: ids[0],
       tree: ids[1],
-      reported: { vize: "0.638.0", node: "26.13.0", platform: "Windows 11", lock: "not supplied" },
+      reported: profile.reported,
       actual: {
         role: "current source CLI + source NAPI companion, published report host/oracles",
         platform: "Linux x64",
@@ -219,8 +209,12 @@ export async function runQ16(stage: string) {
         publishedVizeInstalled: false,
       },
       nativeSourceRevision: "unobserved for published tsrs; not borrowed d6c/a183",
-      noWindowsQualification: true,
+      ...(profile.id === "q16"
+        ? { noWindowsQualification: true }
+        : { noReportedPlatformQualification: true }),
     });
+    assert(path.isAbsolute(process.env.GITHUB_ENV || ""));
+    fs.appendFileSync(process.env.GITHUB_ENV!, `Q16_PROVIDER_NODE=${profile.reported.node}\n`);
     return;
   }
   if (stage === "build") {
@@ -247,14 +241,14 @@ export async function runQ16(stage: string) {
     });
     return;
   }
-  assert.equal(process.version, "v26.13.0");
+  verifyQ16ProviderNode(process.version, process.env.Q16_CASE_SET);
   if (stage === "provider") {
     const lock = read(path.join(provider, "package-lock.json"));
     save(path.join(out, "generated-lock.json"), lock);
     manifests(path.join(provider, "node_modules"), out);
-    verifyQ16Lock(lock);
+    verifyQ16Lock(lock, profile.package.dependencies);
     const packages: Record<string, unknown> = {};
-    for (const [name, version] of Object.entries(q16Package.dependencies)) {
+    for (const [name, version] of Object.entries(profile.package.dependencies)) {
       const p = read(path.join(provider, "node_modules", name, "package.json"));
       packages[name] = p;
       assert.equal(p.name, name);
@@ -332,8 +326,17 @@ export async function runQ16(stage: string) {
     VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: path.join(out, "cases/dynamic"),
     VIZE_NESTED_CALLBACK_CAPTURE: path.join(out, "cases/nested"),
     VIZE_REPORTED_DECLARATIONS_CAPTURE: path.join(out, "cases/declarations"),
+    ...(profile.id === "11373"
+      ? {
+          VIZE_TEST_REQUIRE_GLOBAL_COMPONENT_LISTENER: "1",
+          VIZE_REPORTED_GLOBAL_COMPONENT_LISTENER_CAPTURE: path.join(
+            out,
+            "cases/global-component-listener",
+          ),
+        }
+      : {}),
   };
-  verifyQ16RequiredEnvironment(env);
+  verifyQ16RequiredEnvironment(env, process.env.Q16_CASE_SET);
   assert.equal(identity(host.bin.path).sha256, host.bin.sha256);
   assert.equal(identity(source.cli.path).sha256, source.cli.sha256);
   assert.equal(identity(source.napi.path).sha256, source.napi.sha256);

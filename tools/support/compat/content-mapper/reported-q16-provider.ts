@@ -14,6 +14,35 @@ export const q16Package = {
     "vue-tsc": "3.3.11",
   },
 };
+/** One case-set selects one immutable report profile; no caller-supplied version override. */
+export function q16Profile(caseSet: unknown) {
+  assert(
+    typeof caseSet === "string" &&
+      ["all", "A", "A-with-declaration", "B", "C", "D", "11373"].includes(caseSet),
+  );
+  if (caseSet === "11373")
+    return {
+      id: "11373",
+      package: {
+        ...q16Package,
+        dependencies: {
+          ...q16Package.dependencies,
+          typescript: "5.9.3",
+          vue: "3.5.43",
+          "vue-tsc": "3.2.6",
+        },
+      },
+      reported: { vize: "0.640.0", node: "26.12.1", platform: "macOS", lock: "not supplied" },
+    };
+  return {
+    id: "q16",
+    package: q16Package,
+    reported: { vize: "0.638.0", node: "26.13.0", platform: "Windows 11", lock: "not supplied" },
+  };
+}
+export function verifyQ16ProviderNode(version: string, caseSet: unknown) {
+  assert.equal(version, "v" + q16Profile(caseSet).reported.node);
+}
 export function declaredBin(
   manifest: { name: string; bin?: string | Record<string, string> },
   key: string,
@@ -50,15 +79,18 @@ export function verifyQ16PublishedLauncher(
     backendIdentity: "unclaimed; launcher version PID is not a backend image/PID attestation",
   };
 }
-export function verifyQ16Lock(lock: {
-  lockfileVersion: number;
-  packages: Record<
-    string,
-    { dependencies?: unknown; link?: boolean; integrity?: string; resolved?: string }
-  >;
-}) {
+export function verifyQ16Lock(
+  lock: {
+    lockfileVersion: number;
+    packages: Record<
+      string,
+      { dependencies?: unknown; link?: boolean; integrity?: string; resolved?: string }
+    >;
+  },
+  expected = q16Package.dependencies,
+) {
   assert.equal(lock.lockfileVersion, 3);
-  assert.deepEqual(lock.packages[""].dependencies, q16Package.dependencies);
+  assert.deepEqual(lock.packages[""].dependencies, expected);
   for (const [relative, p] of Object.entries(lock.packages))
     if (relative && !p.link) {
       assert.match(p.integrity || "", /^sha(?:256|384|512)-[A-Za-z0-9+/=]+$/u);

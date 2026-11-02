@@ -359,7 +359,7 @@ fn closing_and_reopening_a_package_owner_removes_and_restores_its_support_facts(
     // A new overlay epoch refreshes the still-open Other document alongside
     // the reopened importer. Retain the complete original importer vector and
     // the independently generated import-free document, in host-first order.
-    let mut reopened_documents = host.documents.clone();
+    let mut reopened_documents = host.documents.to_vec();
     reopened_documents.extend(closed_documents);
     assert_eq!(reopened.documents, reopened_documents);
     let restored_config: serde_json::Value =

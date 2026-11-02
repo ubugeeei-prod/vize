@@ -233,7 +233,7 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
     current
         .host
         .source_catalog
-        .extend_native_project_documents(canon_root, &mut current.documents);
+        .extend_native_project_document_batch(canon_root, &mut current.documents);
     let bytes = read_config(&current).unwrap();
     assert!(receipt.matches(&current, &bytes));
     assert!(
@@ -241,22 +241,26 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
         "a graph receipt is not a native handshake"
     );
 
-    let original = current.documents[0].1.clone();
-    current.documents[0].1.push_str("\n// changed input");
+    let mut documents = current.documents.to_vec();
+    let original = documents[0].1.clone();
+    documents[0].1.push_str("\n// changed input");
+    current.documents = documents.clone().into();
     assert!(!receipt.matches(&current, &bytes));
-    current.documents[0].1 = original;
-    current
-        .documents
-        .push(("file:///unadmitted.ts".into(), "export {}".into()));
+    documents[0].1 = original;
+    documents.push(("file:///unadmitted.ts".into(), "export {}".into()));
+    current.documents = documents.clone().into();
     assert!(!receipt.matches(&current, &bytes));
-    current.documents.pop();
+    documents.pop();
+    current.documents = documents.clone().into();
     assert!(
         current.documents.len() > 1,
         "closed support is part of the native graph"
     );
-    current.documents.swap(0, 1);
+    documents.swap(0, 1);
+    current.documents = documents.clone().into();
     assert!(!receipt.matches(&current, &bytes));
-    current.documents.swap(0, 1);
+    documents.swap(0, 1);
+    current.documents = documents.into();
     let old_config = current.session_config_path.take();
     assert!(!receipt.matches(&current, &bytes));
     current.session_config_path = old_config;

@@ -18,12 +18,12 @@ mod initial_project;
 mod model;
 pub use initial_project::{CorsaInitialVueDocument, CorsaInitialVueProject};
 mod prepare;
-pub(crate) use model::CorsaVueVirtualProject;
 pub(super) use model::GeneratedVueDocument;
 pub use model::{
     CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
     CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
+pub(crate) use model::{CorsaNativeDocumentBatch, CorsaVueVirtualProject};
 pub use prepare::CorsaVueWorkspaceRequest;
 
 pub(crate) use model::CorsaProjectEnvironment;
@@ -162,7 +162,7 @@ impl CorsaBridge {
         } = project;
         if let Some(project_root) = session_project_root.as_deref() {
             host.source_catalog
-                .extend_native_project_documents(project_root, &mut documents);
+                .extend_native_project_document_batch(project_root, &mut documents);
         }
         self.open_canon_project_documents(
             documents,
@@ -176,11 +176,12 @@ impl CorsaBridge {
 
     pub(super) async fn open_canon_project_documents(
         &self,
-        documents: Vec<(String, String)>,
+        documents: impl Into<CorsaNativeDocumentBatch>,
         session_project_root: Option<PathBuf>,
         session_config_path: Option<PathBuf>,
         materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
     ) -> Result<(), CorsaBridgeError> {
+        let documents = documents.into();
         let phase = super::preparation_trace::Phase::start("project_synchronize", documents.len());
         let timer = self.profiler().timer("corsa_project_synchronize");
         if let Some(project_root) = session_project_root {
@@ -195,7 +196,7 @@ impl CorsaBridge {
             })
             .await?;
         }
-        self.open_owned_virtual_documents_batch(documents).await?;
+        self.open_native_document_batch(documents).await?;
         phase.finish();
         if let Some(timer) = timer {
             timer.record(self.profiler());

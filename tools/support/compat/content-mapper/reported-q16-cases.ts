@@ -27,7 +27,12 @@ export const q16Cases = [
     "check_reported_declarations_11364_11365_cli::emitted_component_declarations_accept_fallthrough_and_reject_owned_prop_errors",
   ],
 ] as const;
+export const q16GlobalListenerCase = [
+  "global-component-listener",
+  "content_mapper_tsgo_cli::global_component_listener_11373::reported_components_and_typed_controls_keep_real_diagnostics",
+] as const;
 export function selectQ16Cases(value: unknown) {
+  if (value === "11373") return [q16GlobalListenerCase];
   const ids: Record<string, readonly string[]> = {
     all: q16Cases.map((r) => r[0]),
     A: ["model", "declaration-unused"],
@@ -110,4 +115,41 @@ export function attestQ16CompiledCli(
     scope:
       "compiled Cargo normal-bin artifact consumed by CARGO_BIN_EXE_vize; actual post-compile image guarded, initial build retained as separate provenance",
   };
+}
+
+export function verifyQ16RequiredEnvironment(e: NodeJS.ProcessEnv, caseSet: unknown = "all") {
+  selectQ16Cases(caseSet);
+  if (caseSet === "11373") {
+    for (const key of ["VIZE_TEST_REQUIRE_TSGO", "VIZE_TEST_REQUIRE_GLOBAL_COMPONENT_LISTENER"])
+      assert.equal(e[key], "1", key);
+    for (const key of [
+      "CORSA_PATH",
+      "VIZE_TEST_CONTENT_MAPPER_TSGO",
+      "VIZE_TEST_CONTENT_MAPPER_VUE",
+      "VIZE_REPORTED_GLOBAL_COMPONENT_LISTENER_CAPTURE",
+    ])
+      assert(path.isAbsolute(e[key] || ""), key);
+    assert.equal(e.VIZE_TEST_DISABLE_TSGO, undefined);
+    return;
+  }
+  assert.equal(e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE, "reported-tsrs-vue44");
+  for (const key of [
+    "VIZE_TEST_REQUIRE_TSGO",
+    "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
+    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED",
+    "VIZE_TEST_REQUIRE_NESTED_CALLBACK",
+  ])
+    assert.equal(e[key], "1", key);
+  for (const key of [
+    "CORSA_PATH",
+    "VIZE_TEST_CONTENT_MAPPER_TSGO",
+    "VIZE_TEST_CONTENT_MAPPER_VUE",
+    "VIZE_REPORTED_MODEL_CAPTURE",
+    "VIZE_REPORTED_GENERIC_EVIDENCE_DIR",
+    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR",
+    "VIZE_NESTED_CALLBACK_CAPTURE",
+    "VIZE_REPORTED_DECLARATIONS_CAPTURE",
+  ])
+    assert(path.isAbsolute(e[key] || ""), key);
+  assert.equal(e.VIZE_TEST_DISABLE_TSGO, undefined);
 }

@@ -1,0 +1,6 @@
+<template>
+  <suppression-probe :value="{
+    count: '@ts-expect-error',
+    sibling: 1,
+  }" />
+</template>

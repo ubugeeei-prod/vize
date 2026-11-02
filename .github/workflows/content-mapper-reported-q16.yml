@@ -57,7 +57,7 @@ jobs:
         run: node tools/support/compat/content-mapper/reported-q16.ts build
       - name: Setup reported Node for the published host and oracle role
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with: { node-version: "26.13.0", package-manager-cache: false }
+        with: { node-version: "${{ env.Q16_PROVIDER_NODE }}", package-manager-cache: false }
       - name: Install the exact report host and oracle versions and retain the generated lock
         shell: bash
         run: |

@@ -307,3 +307,5 @@ mod native_union;
 
 #[cfg(windows)]
 mod windows_overlays;
+
+mod shared_payload;

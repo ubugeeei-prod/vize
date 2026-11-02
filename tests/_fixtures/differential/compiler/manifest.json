@@ -2163,6 +2163,48 @@
       }
     },
     {
+      "id": "compiler/sfc/template-only-ssr-context-11406",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-only-ssr-context-11406",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "a70dc1b13c07ab8ed1cec8f9018bba5facc7e8403fa4daf09ba87429d114b171",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-only-ssr-context-11406/module.expected.txt",
+        "sha256": "b69cf41b8d47d300eefa54ada509c4110640373b8c8ab535317465ebf03cf516",
+        "source": "crates/vize_atelier_sfc/src/compile/tests.rs:test_template_only_sfc_ssr_exports_default_component; whole result.code snapshot at 747ae3988b78dbd95c922f19b0e6022fdd3e2a43:crates/vize_atelier_sfc/src/compile/snapshots/vize_atelier_sfc__compile__tests__template_only_sfc_ssr_exports_default_component.snap; producer trim_trailing_newlines preserved"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SSR has not been qualified for this input; this row guards the existing legacy Root/Element transform only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/uppercase-native-event-keys-10826",
       "state": "active",
       "targets": ["ssr"],

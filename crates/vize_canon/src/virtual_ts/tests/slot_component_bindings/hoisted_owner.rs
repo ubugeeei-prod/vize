@@ -11,7 +11,7 @@ impl<'a> Visit<'a> for Selectors {
     fn visit_variable_declaration(&mut self, declaration: &VariableDeclaration<'a>) {
         if declaration.declarations.iter().any(|declarator| {
             matches!(&declarator.id, BindingPattern::BindingIdentifier(name)
-                if name.name == "__vize_slot_host_1")
+                if name.name == "__vize_slot_host_1" || name.name == "__vize_slot_props_host_1")
         }) {
             self.0.push(declaration.span);
         }
@@ -26,16 +26,19 @@ pub(super) fn assert_selector(code: &str, constructor: &str) {
     assert_eq!(parsed.diagnostics.len(), 0);
     let mut selectors = Selectors::default();
     selectors.visit_program(&parsed.program);
-    let selector = format!(
-        "const __vize_slot_host_1 = (undefined as unknown as import(\"vize:virtual-ts\").$SlotHostSelector<typeof el_badge>)((undefined as unknown as import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, typeof __vize_slot_host_1_instances.withoutArguments, typeof __vize_slot_host_1_instances.withArguments>), (undefined as unknown as import(\"vize:virtual-ts\").$SlotsFactory<typeof el_badge>)(el_badge)({{\n    \"value\": 1,\n  }}));",
-    );
+    let selectors_expected = ["__vize_slot_host_1", "__vize_slot_props_host_1"].map(|owner| format!(
+        "const {owner} = (undefined as unknown as import(\"vize:virtual-ts\").$SlotHostSelector<typeof el_badge>)((undefined as unknown as import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, typeof {owner}_instances.withoutArguments, typeof {owner}_instances.withArguments>), (undefined as unknown as import(\"vize:virtual-ts\").$SlotsFactory<typeof el_badge>)(el_badge)({{\n    \"value\": 1,\n  }}));",
+    ));
     assert_eq!(
         selectors
             .0
             .iter()
             .map(|span| code.get(span.start as usize..span.end as usize))
             .collect::<Vec<_>>(),
-        vec![Some(selector.as_str())],
-        "one complete AST declaration must preserve both constructor results and its exact owner",
+        selectors_expected
+            .iter()
+            .map(|selector| Some(selector.as_str()))
+            .collect::<Vec<_>>(),
+        "both complete AST declarations preserve constructor results and their distinct template/props owners",
     );
 }
