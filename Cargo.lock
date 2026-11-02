@@ -4417,6 +4417,7 @@ dependencies = [
  "junction",
  "libc",
  "lsp-types 0.97.0",
+ "memchr",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
