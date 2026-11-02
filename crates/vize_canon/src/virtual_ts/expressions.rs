@@ -22,7 +22,7 @@ mod dynamic_arguments;
 mod generic_props_call;
 mod incomplete;
 mod model_modifiers;
-mod model_update;
+pub(super) mod model_update;
 mod native_props;
 #[cfg(test)]
 mod native_props_tests;

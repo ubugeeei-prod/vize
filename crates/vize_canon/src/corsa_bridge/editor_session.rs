@@ -1,7 +1,9 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
 use std::fs::{File, OpenOptions, TryLockError};
+use std::io::Write;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, SystemTime};
 
@@ -24,8 +26,11 @@ pub(crate) struct EditorMirrorSession {
 }
 
 struct EditorStorage {
+    // Remove the directory before releasing its lifetime lock.
+    directory: Option<tempfile::TempDir>,
     _lifetime_lock: File,
-    directory: tempfile::TempDir,
+    retain_after_failure: AtomicBool,
+    retention_armed: AtomicBool,
 }
 
 /// One preparation identity and the signal its worker thread resolves.
@@ -68,10 +73,63 @@ impl EditorMirrorSession {
     }
 
     pub(crate) fn root(&self) -> Result<&Path, CorsaBridgeError> {
-        self.storage
+        let storage = self
+            .storage
             .as_ref()
-            .map(|storage| storage.directory.path())
-            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))
+            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))?;
+        storage
+            .directory
+            .as_ref()
+            .map(tempfile::TempDir::path)
+            .ok_or_else(|| {
+                CorsaBridgeError::CommunicationError("editor mirror storage was retired".into())
+            })
+    }
+
+    /// An incomplete native retirement can still be reading these exact files.
+    /// This flag is sticky even if a later cleanup attempt appears successful.
+    pub(in crate::corsa_bridge) fn retain_after_failed_shutdown(&self) {
+        // Both physical bridge entrypoints must arm first. An unarmed mirror
+        // is still pre-native (or has completed normal cleanup), so it must not
+        // acquire an invented unknown-live retention claim.
+        if let Ok(storage) = &self.storage
+            && storage.retention_armed.load(Ordering::Acquire)
+        {
+            storage.retain_after_failure.store(true, Ordering::Release);
+        }
+    }
+
+    /// Both bridge factories call this on their owning worker before physical
+    /// startup. Failure is still an unstarted admission, never unknown-live.
+    pub(in crate::corsa_bridge) fn arm_retention_before_startup(
+        &self,
+    ) -> Result<(), CorsaBridgeError> {
+        let storage = self
+            .storage
+            .as_ref()
+            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))?;
+        if storage.retention_armed.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let root = self.root()?;
+        let outcome = (|| -> std::io::Result<()> {
+            let mut marker = OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .open(root.join(RETAINED_FAILURE))?;
+            marker.write_all(b"unknown native retirement\n")?;
+            marker.sync_all()?;
+            #[cfg(unix)]
+            File::open(root)?.sync_all()?;
+            Ok(())
+        })();
+        outcome.map_err(|error| {
+            CorsaBridgeError::CommunicationError(vize_carton::cstr!(
+                "Failed to arm editor mirror retention: {error}"
+            ))
+        })?;
+        storage.retention_armed.store(true, Ordering::Release);
+        Ok(())
     }
 
     pub(in crate::corsa_bridge) fn cache(&self) -> MutexGuard<'_, SessionCache> {
@@ -91,6 +149,13 @@ impl EditorMirrorSession {
     }
 
     pub(crate) fn clear(&self) {
+        if self
+            .storage
+            .as_ref()
+            .is_ok_and(|storage| storage.retain_after_failure.load(Ordering::Acquire))
+        {
+            return;
+        }
         self.cache().clear();
         let Ok(root) = self.root() else {
             return;
@@ -109,8 +174,29 @@ impl EditorMirrorSession {
                 let _ = std::fs::remove_file(path);
             }
         }
+        if let Ok(storage) = &self.storage {
+            storage.retention_armed.store(false, Ordering::Release);
+        }
     }
 }
+
+const RETAINED_FAILURE: &str = ".retained-after-failed-shutdown";
+
+impl Drop for EditorStorage {
+    fn drop(&mut self) {
+        if self.retain_after_failure.load(Ordering::Acquire)
+            && let Some(directory) = self.directory.take()
+        {
+            // The marker was created and flushed before either physical
+            // factory could enter. Drop performs no fallible marker write.
+            let retained = directory.keep();
+            tracing::warn!(path = %retained.display(), "retaining editor mirror after incomplete native shutdown");
+        }
+    }
+}
+
+#[cfg(test)]
+mod retained_tests;
 
 impl Default for EditorMirrorSession {
     fn default() -> Self {
@@ -159,8 +245,10 @@ fn create_storage() -> std::io::Result<EditorStorage> {
         std::fs::set_permissions(directory.path(), std::fs::Permissions::from_mode(0o700))?;
     }
     Ok(EditorStorage {
+        directory: Some(directory),
         _lifetime_lock: lifetime_lock,
-        directory,
+        retain_after_failure: AtomicBool::new(false),
+        retention_armed: AtomicBool::new(false),
     })
 }
 
@@ -171,6 +259,11 @@ fn open_lock(path: &Path) -> std::io::Result<File> {
         .truncate(false)
         .write(true)
         .open(path)
+}
+
+// A stale directory entry must never recreate a lock during owner cleanup.
+fn open_existing_session_lock(path: &Path) -> std::io::Result<File> {
+    OpenOptions::new().read(true).write(true).open(path)
 }
 
 fn reap_abandoned_sessions(base: &Path) {
@@ -185,9 +278,13 @@ fn reap_abandoned_sessions(base: &Path) {
         {
             continue;
         }
+        // No lock/PID inference can prove an unknown native reader stopped.
+        if path.join(RETAINED_FAILURE).exists() {
+            continue;
+        }
         let lock_path = path.join(".session.lock");
         let removable = if lock_path.exists() {
-            match open_lock(&lock_path) {
+            match open_existing_session_lock(&lock_path) {
                 Ok(lock) => match lock.try_lock() {
                     Ok(()) => true,
                     Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,

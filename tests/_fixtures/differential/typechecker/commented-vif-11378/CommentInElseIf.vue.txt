@@ -1,0 +1,17 @@
+<script setup lang="ts">
+type Kind = "a" | "b" | "c";
+const props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();
+</script>
+
+<template>
+  <div v-if="props.item">
+    <template v-if="props.flag">flag</template>
+    <span
+      v-else-if="
+        props.item.kind !== 'a' &&
+        // comment
+        props.item.kind !== 'b'
+      "
+    >c</span>
+  </div>
+</template>

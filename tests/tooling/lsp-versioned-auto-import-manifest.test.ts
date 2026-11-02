@@ -16,6 +16,7 @@ import {
 import { lspWorkspace } from "../differential/lsp-workspace.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
+import { MODEL_BINDING_UNIT_ID } from "../differential/lsp-model-binding-source-unit.ts";
 const pack = new URL("../_fixtures/differential/lsp/", import.meta.url);
 const loaded = loadLspManifest(fileURLToPath(new URL("manifest.json", pack)));
 const current = loaded.cases.find((row) => row.id === VERSIONED_AUTO_IMPORT_ID);
@@ -71,8 +72,10 @@ void test("only the exact supporting-client profile changes initialization witho
     workspace: { workspaceEdit: { documentChanges: true } },
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, before);
-  assert.equal(loaded.cases.length, 82);
-  assert.equal(loaded.cases.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 81);
+  const earlier = loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
+  assert.equal(earlier.length, 82);
+  assert.equal(earlier.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 81);
+  assert.equal(loaded.cases.length, 83);
 });
 
 void test("the closed whole import contract refuses foreign metadata, altered pins and partial responses", () => {

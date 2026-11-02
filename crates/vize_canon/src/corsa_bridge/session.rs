@@ -45,3 +45,29 @@ pub(super) fn build_client(
     }
     .map_err(CorsaBridgeError::SpawnFailed)
 }
+
+/// First editor activation retains authored executable/storage selection while
+/// the physical handshake opens the already materialized Canon project.
+pub(super) fn build_initial_project_client(
+    config: &CorsaBridgeConfig,
+    root: &std::path::Path,
+    config_path: &std::path::Path,
+    changes: &crate::batch::virtual_project::MaterializedFileDelta,
+) -> Result<CorsaProjectClient, CorsaBridgeError> {
+    let authored_root = config
+        .working_dir
+        .as_deref()
+        .ok_or(CorsaBridgeError::NotInitialized)?;
+    let executable = config
+        .corsa_path
+        .as_ref()
+        .map(|path| path.to_string_lossy().into_owned());
+    CorsaProjectClient::new_for_editor_materialized_workspace(
+        executable.as_deref(),
+        authored_root,
+        root,
+        config_path,
+        changes,
+    )
+    .map_err(CorsaBridgeError::SpawnFailed)
+}

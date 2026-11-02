@@ -12160,6 +12160,69 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-commented-vif-11378",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "commented-vif-11378/CommentInElseIf.vue.txt",
+          "sha256": "12431907921914f26d5329bcf7fea4e98991f59ba7289a1eb8c4ab619d8537d7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "commented-vif-11378/tsconfig.json.txt",
+          "sha256": "72d5cdcc3b73d0dd1ba930a08b6d835568019876d0247024624f7099cba606c2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::commented_vif_11378::commented_else_if_checks_authored_condition_once; exact cached #11378 source/config physically consumed with comment-free, wrong-member and repair controls. Input-only registration, no diagnostic pack or original macOS/provider qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-declarations-11364-11365/input.json",
+          "sha256": "36707b0c34eda5929ba17a98ff107b6ac7cbc3904432ae6bb914bcac0c133e73",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; physically consumes exact reported input at 858f6ce28e4d9b1c91ea41859eed3fbecf17b64e for #11365; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-dotted-component-11363",
       "state": "active",
       "targets": [
@@ -12242,6 +12305,35 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11366; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-model-props-11359",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-model-props-11359/input.json",
+          "sha256": "971ef1b19e4e25634c5709f784d2656d19390945d86cf858f5c385da705ede2e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_props_11359::resolved_model_props_preserve_authored_contract_and_assignment_errors; physically consumes exact reported input at e9289c9933caefaf7e713dc665be9f811e1cbf4d for #11359; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
           }
         ]
       }
@@ -12473,6 +12565,46 @@
             ]
           }
         },
+    {
+      "id": "typechecker/static-template-ref-runtime-11377",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::dynamic_template_refs::native_cli_static_template_refs_keep_unused_and_shadow_diagnostics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "static-template-ref-runtime-11377/tsconfig.json.txt",
+          "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+        },
+        {
+          "file": "src/useBox.ts",
+          "path": "static-template-ref-runtime-11377/useBox.ts.txt",
+          "sha256": "8b69196f7909119360e50ac2d72dba8705c29d50155b8d7e6843c27884ec5387"
+        },
+        {
+          "file": "src/StaticRef.vue",
+          "path": "static-template-ref-runtime-11377/StaticRef.vue.txt",
+          "sha256": "a439b4747a8cc8b5c1adf9562d5412d61bbfdfe605886c945f9c2ecd0bf4c7c6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/template-callback-listener-11023/parent-beside-quit",
       "state": "active",

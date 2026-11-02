@@ -83,6 +83,29 @@ impl EditorLspSession {
     }
 }
 
+/// A functional control observes the already-diagnosing editor, never creates one.
+#[cfg(all(test, target_os = "linux"))]
+impl crate::lsp_client::CorsaProjectClient {
+    pub(in crate::lsp_client) fn diagnosing_project_info_for_test(
+        &mut self,
+        document_uri: &str,
+    ) -> Result<Value, String> {
+        let editor = self
+            .editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("The first native report has no existing diagnosing editor"))?;
+        let uri = editor.ready_document_uri(document_uri)?;
+        editor
+            .request_project_info(serde_json::json!(uri))
+            .map_err(|error| match error {
+                ProjectIdentityError::Communication(error) => error,
+                ProjectIdentityError::Unconfigured => {
+                    cstr!("The diagnosing editor is unconfigured")
+                }
+            })
+    }
+}
+
 fn configured_path(result: &Value) -> Result<PathBuf, ProjectIdentityError> {
     result
         .get("configFilePath")

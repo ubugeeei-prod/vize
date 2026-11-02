@@ -11,7 +11,9 @@ import {
 } from "../../editors/vscode/test/css-hover-foreground-source.ts";
 import { assertExactCssTree } from "../../editors/vscode/test/css-hover-source-custody.mjs";
 
-const source = fs.readFileSync(new URL(`../../${typedSourcePath}`, import.meta.url));
+const source = fs.readFileSync(
+  new URL("./fixtures/css-hover-initial-project/foreground-before.rs.txt", import.meta.url),
+);
 const row = (
   oid: string,
   extra: Partial<SourceTreeEntry> & { unreviewed?: boolean } = {},

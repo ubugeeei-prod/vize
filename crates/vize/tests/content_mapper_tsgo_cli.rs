@@ -9,6 +9,7 @@ const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
+mod commented_vif_11378;
 mod const_enum_import;
 mod contextual_prop_anchors;
 mod dynamic_component_event_names;
@@ -27,6 +28,7 @@ mod pug_refusal;
 mod quoted_generic_parameters;
 mod reported_dynamic_targets;
 mod reported_generic_components;
+mod reported_model_props_11359;
 mod runtime_null_prop;
 mod support;
 mod surplus_defaults;

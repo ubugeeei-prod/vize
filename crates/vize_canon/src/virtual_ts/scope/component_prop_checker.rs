@@ -95,22 +95,18 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
     (relax_required, hoist_shared_preamble, loose_legacy_attrs): (bool, bool, bool),
-    sharing: (Option<usize>, bool),
+    sharing: (Option<usize>, bool, bool),
 ) {
-    let (shared_idx, force_value_props) = sharing;
+    let (shared_idx, force_value_props, needs_component_alias) = sharing;
     if let Some(shared_idx) = shared_idx {
-        append!(
-            *ts,
-            "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
-        );
-        append!(
-            *ts,
-            "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_CheckProps_{shared_idx};\n",
-        );
-        append!(
-            *ts,
-            "  type __{component_type_name}_CheckTail_{idx} = __{component_type_name}_CheckTail_{shared_idx};\n",
-        );
+        // The shared checker already owns its props and tail. Only model
+        // writeback and typed spread checks read a per-usage component alias.
+        if needs_component_alias {
+            append!(
+                *ts,
+                "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
+            );
+        }
         if usage_needs_per_prop_aliases(usage) {
             append!(
                 *ts,

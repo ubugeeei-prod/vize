@@ -19,6 +19,11 @@ import {
   NATIVE_CAPACITY_UNSUPPORTED_REASON,
 } from "../differential/lsp-native-capacity-contract.ts";
 
+import {
+  MODEL_BINDING_UNIT_ID,
+  MODEL_BINDING_UNIT_SESSION,
+} from "../differential/lsp-model-binding-source-unit.ts";
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = readLocalResolveSourceSession(root);
 const plan = JSON.parse(
@@ -123,7 +128,15 @@ test("unsupported transitions get no synthetic wire, reference match or native c
   const row = report.rows.find(({ id }) => id === LOCAL_RESOLVE_SESSION_ID)!;
   assert.deepEqual(row.legacy, sourceSessionUnsupportedLegacy());
   const summary = validateLspReport(loaded, report, build);
-  const unsupportedIds = [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID];
+  const unsupportedIds = [MODEL_BINDING_UNIT_ID, LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID];
+  const sourceUnit = loaded.cases.find(({ id }) => id === MODEL_BINDING_UNIT_ID);
+  assert.ok(sourceUnit);
+  assert.deepEqual(sourceUnit.requests, []);
+  assert.throws(() => referenceObservation(sourceUnit), /cannot use synthetic/);
+  assert.deepEqual(
+    report.rows.find(({ id }) => id === MODEL_BINDING_UNIT_ID)?.legacy,
+    sourceSessionUnsupportedLegacy(MODEL_BINDING_UNIT_SESSION),
+  );
   assert.deepEqual(
     report.rows.filter(({ legacy }) => legacy.state === "unsupported").map(({ id }) => id),
     unsupportedIds,
