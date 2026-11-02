@@ -233,6 +233,17 @@ function requireSplitRustRecipes(
   const products = productWorkflow.jobs;
   assert.deepEqual(Object.keys(source), [...sourceJobs, "rust-source-report"]);
   assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
+  const legacySteps = source["pr-rust-build"].steps;
+  const legacyName = "Test shared legacy transform capabilities";
+  assert.equal(legacySteps.filter((step) => step.name === legacyName).length, 1);
+  const legacyIndex = legacySteps.findIndex((step) => step.name === legacyName);
+  assert.deepEqual(legacySteps[legacyIndex], {
+    name: legacyName,
+    if: "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_atelier_core') }}",
+    run: "cargo test --locked --profile ci -p vize_atelier_core --features legacy --lib legacy -- --nocapture",
+  });
+  assert.equal(legacySteps[legacyIndex - 1]?.name, "Native L1 markup parity");
+  assert.equal(legacySteps[legacyIndex + 1]?.name, "Test L1 feature-enabled surface corpus");
   const oldHashes = {
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
     "pr-rust-build": "86f6f06586d5cf26e5d6c38d361816467053d003f4fb1d7b069f26cd54fb5b13",
@@ -249,6 +260,11 @@ function requireSplitRustRecipes(
       );
       assert.notEqual(ratchet, -1);
       job.steps.splice(ratchet, 1);
+      // Reverse only the complete, separately authenticated legacy acceptance step.
+      job.steps.splice(
+        job.steps.findIndex((step) => step.name === legacyName),
+        1,
+      );
     }
     assert.equal(digest(job), expected, id);
   }
@@ -299,6 +315,12 @@ test("whole split preservation refuses changed current policy and unrelated prod
     "timeout",
     "hidden",
     "evidence-extra",
+    "legacy-missing",
+    "legacy-command",
+    "legacy-guard",
+    "legacy-extra",
+    "legacy-position",
+    "legacy-duplicate",
   ]) {
     const changed = rustWorkflow("pr-rust-checks.yml");
     const job = changed.jobs["pr-rust-build"];
@@ -320,6 +342,17 @@ test("whole split preservation refuses changed current policy and unrelated prod
     if (mutation === "timeout") Reflect.set(job, "timeout-minutes", 999);
     if (mutation === "hidden") job.steps[contracts + 1].with!["include-hidden-files"] = false;
     if (mutation === "evidence-extra") job.steps[contracts + 1]["continue-on-error"] = true;
+    const legacyIndex = job.steps.findIndex(
+      (step) => step.name === "Test shared legacy transform capabilities",
+    );
+    const legacy = job.steps[legacyIndex];
+    if (mutation === "legacy-missing") job.steps.splice(legacyIndex, 1);
+    if (mutation === "legacy-command")
+      legacy.run = legacy.run?.replace("--features legacy", "--features legacy-differential");
+    if (mutation === "legacy-guard") legacy.if = "${{ false }}";
+    if (mutation === "legacy-extra") legacy["continue-on-error"] = true;
+    if (mutation === "legacy-position") job.steps.unshift(...job.steps.splice(legacyIndex, 1));
+    if (mutation === "legacy-duplicate") job.steps.push(structuredClone(legacy));
     assert.throws(() => requireSplitRustRecipes(changed), assert.AssertionError, mutation);
   }
 });
