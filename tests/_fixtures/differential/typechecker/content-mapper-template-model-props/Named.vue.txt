@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const count = defineModel<number>('count', { required: true });
+void count;
+</script>
+<template><div>{{ count.toFixed() }} {{ modelValue }} {{ count.nope }}</div></template>

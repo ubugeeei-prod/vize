@@ -12225,6 +12225,45 @@
       }
     },
     {
+      "id": "typechecker/regression/misskey-template-model-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-template-model-props/Named.vue.txt",
+          "sha256": "937f65478280ac91f9aba1e738258eb9ffc93071ffe7fedfb04a7ff705477014",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-template-model-props/Only.vue.txt",
+          "sha256": "33764cee29b436c13ccd42a0958b87df9c1e529c2ab1ee638b53f2f8f04619de",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-template-model-props/Tab.vue.txt",
+          "sha256": "ff12953604adf58d86d4dc606ea270e1153b86d003c240768749a1a46f790f69",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_model_props::template_model_props_keep_only_authored_errors; misskey MkTab-shaped generic defineModel prop read in the template, with renamed-model and typo controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
       "targets": ["batch"],
