@@ -2,7 +2,7 @@
 
 use vize_carton::{Allocator, CompactString};
 
-use super::{
+use super::access::{
     component_usage_list, component_usage_slice, used_component_contains, used_component_name_list,
     used_components_empty,
 };

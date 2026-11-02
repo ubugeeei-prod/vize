@@ -56,7 +56,3 @@ impl Croquis {
         self.component_usages.push(usage);
     }
 }
-
-#[cfg(test)]
-#[path = "access_tests.rs"]
-mod tests;
