@@ -120,12 +120,10 @@ async function main() {
         authored.source,
       ),
     );
-    // Under the retained checkUnknownComponents:false config, the existing
-    // PascalCase policy emits a props scope for RegistryChild. The authored
-    // registry-child controls have one template scope and no props scope.
-    // This describes emission roles, never the provider's any/error identity.
-    const expectedScopes =
-      authored.source === "source-fallback-any.txt" ? ["template"] : ["template", "props"];
+    // The default typed registry policy now admits PascalCase and authored kebab
+    // spellings. Both retain template and props slot scopes; provider identity
+    // and every original diagnostic contract below remain independently checked.
+    const expectedScopes = ["template", "props"];
     const actualScopes = bindings.map((row) => {
       const owner = /^_slot_(props_)?default_([0-9]+)$/u.exec(row.ownerFunction ?? "");
       assert.ok(owner, `${stage.id}: each item binding must belong to an actual slot function`);

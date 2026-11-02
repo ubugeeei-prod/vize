@@ -752,7 +752,6 @@
       "tools/support/compat/github/native-lexical-javascript-source.mjs",
       "tools/support/compat/github/native-phase-artifact-files.mjs",
       "tools/support/compat/github/native-phase-artifact.mjs",
-      "tools/support/compat/github/native-scoped-capture.mjs",
       "tools/support/compat/github/native-setup-capture.mjs",
       "tools/support/compat/github/native-ssr-capture.mjs",
       "tools/support/compat/github/native-vapor-capture.mjs",

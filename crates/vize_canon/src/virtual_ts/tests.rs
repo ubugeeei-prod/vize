@@ -794,7 +794,7 @@ function handleUpdate(value: string) {
     );
 
     assert_virtual_ts_snapshot(
-        "virtual_ts_kebab_case_component_names",
+        "virtual_ts_kebab_case_component_names_typed_registry",
         output.code.as_str(),
     );
 }

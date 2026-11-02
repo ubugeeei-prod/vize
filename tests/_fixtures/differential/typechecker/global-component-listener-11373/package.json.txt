@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "typescript": "5.9.3",
+    "vize": "0.640.0",
+    "vue": "3.5.43",
+    "vue-tsc": "3.2.6"
+  }
+}

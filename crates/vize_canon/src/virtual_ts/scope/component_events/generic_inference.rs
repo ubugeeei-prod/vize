@@ -322,8 +322,8 @@ pub(super) fn find_component_usage_for_event(
     data: &EventHandlerScopeData,
     scope: &Scope,
 ) -> Option<(usize, ComponentUsage)> {
-    vize_croquis::facts::component_usage_list(summary)
-        .into_iter()
+    vize_croquis::facts::component_usage_slice(summary)
+        .iter()
         .enumerate()
         .find(|(_, usage)| {
             usage.name.as_str() == component_name
@@ -333,6 +333,7 @@ pub(super) fn find_component_usage_for_event(
                         && event_matches_scope(usage, event.start, event.end, data, scope)
                 })
         })
+        .map(|(index, usage)| (index, usage.clone()))
 }
 
 fn event_matches_scope(

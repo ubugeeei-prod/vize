@@ -48,7 +48,7 @@ pub(super) fn emit_forwarded_root_probes(
     root_starts: &[u32],
 ) -> Option<String> {
     let mut forwarded = String::default();
-    for (index, usage) in vize_croquis::facts::component_usage_list(ctx.summary)
+    for (index, usage) in vize_croquis::facts::component_usage_slice(ctx.summary)
         .iter()
         .filter(|usage| root_starts.contains(&usage.start))
         .enumerate()

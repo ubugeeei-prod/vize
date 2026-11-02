@@ -206,7 +206,7 @@ mod tests {
                 source_catalog: Default::default(),
                 session_project_root: None,
             },
-            documents: Vec::new(),
+            documents: Vec::new().into(),
             session_project_root: None,
             session_config_path: None,
             materialized_changes: Default::default(),

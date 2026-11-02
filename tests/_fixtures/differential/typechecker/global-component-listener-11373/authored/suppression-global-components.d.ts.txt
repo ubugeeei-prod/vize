@@ -1,0 +1,7 @@
+import type { DefineComponent } from "vue";
+
+declare module "vue" {
+  export interface GlobalComponents {
+    SuppressionProbe: DefineComponent<{ value: { count: number; sibling: number } }>;
+  }
+}

@@ -15,6 +15,7 @@ mod contextual_prop_anchors;
 mod dynamic_component_event_names;
 mod dynamic_template_refs;
 mod generic_constructor_slots;
+mod global_component_listener_11373;
 mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;

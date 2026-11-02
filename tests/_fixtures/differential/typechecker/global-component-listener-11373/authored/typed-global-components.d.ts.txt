@@ -1,0 +1,11 @@
+import type { DefineComponent, ComponentOptionsMixin } from "vue";
+
+declare module "vue" {
+  export interface GlobalComponents {
+    TypedGlobalLink: DefineComponent<
+      { to: string }, {}, {}, {}, {},
+      ComponentOptionsMixin, ComponentOptionsMixin,
+      { navigate: (payload: number) => void }
+    >;
+  }
+}

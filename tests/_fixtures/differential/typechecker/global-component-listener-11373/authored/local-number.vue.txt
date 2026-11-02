@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const GlobalLink = (props: { to: number }) => props.to;
+function onNavigate() {}
+</script>
+
+<template>
+  <global-link :to="1" @click="onNavigate">home</global-link>
+</template>

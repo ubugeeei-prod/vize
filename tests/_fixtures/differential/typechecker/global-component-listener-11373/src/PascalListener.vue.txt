@@ -1,0 +1,7 @@
+<script setup lang="ts">
+function onNavigate() {}
+</script>
+
+<template>
+  <GlobalLink to="/" @click="onNavigate">home</GlobalLink>
+</template>

@@ -2,12 +2,10 @@
 
 use super::*;
 use serde_json::{Value, json};
-use std::{
-    cell::RefCell,
-    io::{self, Write},
-    path::Path,
-};
+use std::{cell::RefCell, path::Path};
 use tower_lsp::lsp_types::NumberOrString;
+use tracing_subscriber::{Layer, layer::SubscriberExt};
+use vize_l0::{String as CompactString, cstr};
 
 const RULE: &str = "vue/v-bind-style";
 const CORPUS: &str = include_str!(concat!(
@@ -69,19 +67,32 @@ fn requests(server: &MaestroServer, uri: &Url) -> [Option<Vec<TextEdit>>; 3] {
     ]
 }
 
+type CapturedEvent = (CompactString, Vec<(CompactString, CompactString)>);
+
 thread_local! {
-    static CAPTURED_LOGS: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
+    static CAPTURED_LOGS: RefCell<Vec<CapturedEvent>> = const { RefCell::new(Vec::new()) };
 }
 
-struct LogWriter;
+struct CapturedWarnings;
+struct Fields(Vec<(CompactString, CompactString)>);
 
-impl Write for LogWriter {
-    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
-        CAPTURED_LOGS.with_borrow_mut(|buffer| buffer.extend_from_slice(bytes));
-        Ok(bytes.len())
+impl tracing::field::Visit for Fields {
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        self.0.push((field.name().into(), cstr!("{value:?}")));
     }
-    fn flush(&mut self) -> io::Result<()> {
-        Ok(())
+}
+
+impl<S: tracing::Subscriber> Layer<S> for CapturedWarnings {
+    fn on_event(
+        &self,
+        event: &tracing::Event<'_>,
+        _context: tracing_subscriber::layer::Context<'_, S>,
+    ) {
+        let mut fields = Fields(Vec::new());
+        event.record(&mut fields);
+        CAPTURED_LOGS.with_borrow_mut(|rows| {
+            rows.push((cstr!("{}", event.metadata().level()), fields.0));
+        });
     }
 }
 
@@ -108,27 +119,23 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
         }
         let config_before = std::fs::read(root.join("vite.config.mjs")).unwrap();
         CAPTURED_LOGS.with_borrow_mut(Vec::clear);
-        let subscriber = tracing_subscriber::fmt()
-            .without_time()
-            .with_ansi(false)
-            .with_max_level(tracing::Level::WARN)
-            .with_writer(|| LogWriter)
-            .finish();
+        let subscriber = tracing_subscriber::registry()
+            .with(CapturedWarnings.with_filter(tracing_subscriber::filter::LevelFilter::WARN));
         let result = tracing::subscriber::with_default(subscriber, || requests(server, &uri));
+        let logs = CAPTURED_LOGS.with_borrow(Clone::clone);
+        println!("bind-style formatter capture: {normalize:?} {result:?} {logs:?}");
         assert_eq!(result, [None, None, None]);
-        CAPTURED_LOGS.with_borrow(|bytes| {
-            let logs = std::str::from_utf8(bytes).unwrap();
-            assert_eq!(logs.matches("Refusing formatter request").count(), 3);
-            assert_eq!(
-                logs.matches(
-                    "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform"
-                )
-                .count(),
-                3
-            );
-            let reasons = logs.lines().map(|line| line.split_once(": normalizeDirectiveShorthands=").unwrap().1).collect::<Vec<_>>();
-            assert_eq!(reasons, ["true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style"; 3]);
-        });
+        let expected = (
+            CompactString::from("WARN"),
+            vec![(
+                CompactString::from("message"),
+                cstr!(
+                    "Refusing formatter request for {}: normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style",
+                    file.display()
+                ),
+            )],
+        );
+        assert_eq!(logs, vec![expected; 3]);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
         assert_eq!(
             std::fs::read(root.join("vite.config.mjs")).unwrap(),

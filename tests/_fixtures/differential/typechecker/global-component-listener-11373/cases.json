@@ -1,0 +1,37 @@
+{
+  "historicalIssue": 11373,
+  "sourceRevision": "83433431f96dd514f2de4c835a3b25ab6c67f416",
+  "referenceOrigin": "Reported vue-tsc acceptance; authored post-fix source contract, not a captured current source/backend result.",
+  "cases": [
+    {
+      "id": "original-three-components",
+      "inputs": [
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "src/global-components.d.ts.txt"
+        },
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "src/GlobalComponentListener.vue.txt"
+        },
+        {
+          "file": "src/PascalListener.vue",
+          "source": "src/PascalListener.vue.txt"
+        },
+        {
+          "file": "src/NoListener.vue",
+          "source": "src/NoListener.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

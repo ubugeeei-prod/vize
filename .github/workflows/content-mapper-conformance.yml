@@ -13,7 +13,7 @@ on:
       reported-q16-cases:
         description: "Closed source After case set; all retains the original six tests"
         type: choice
-        options: [all, A, A-with-declaration, B, C, D]
+        options: [all, A, A-with-declaration, B, C, D, "11373"]
         default: all
       event-rename-only:
         description: "Qualify both Vize-owned event rename targets with exact upstream tsgo"

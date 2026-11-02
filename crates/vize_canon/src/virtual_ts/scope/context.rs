@@ -62,7 +62,7 @@ mod event_contract_key_tests {
 #[derive(Clone, Copy)]
 pub(crate) enum GlobalComponentCheck {
     None,
-    PascalCase,
+    PascalOrKebabCase,
     All,
 }
 
@@ -71,13 +71,25 @@ impl GlobalComponentCheck {
         match self {
             Self::None => false,
             Self::All => true,
-            // Authored PascalCase tags are already safe TypeScript references.
-            Self::PascalCase => {
-                vize_croquis::builtins::is_runtime_builtin_component(name)
+            // The global emitter conditionally resolves registry keys. Unknown
+            // kebab tags keep its existing fallback; diagnostics still require All.
+            Self::PascalOrKebabCase => {
+                if vize_croquis::builtins::is_runtime_builtin_component(name)
                     || name
                         .as_bytes()
                         .first()
                         .is_some_and(|first| first.is_ascii_uppercase())
+                {
+                    return true;
+                }
+                if !name.contains('-') {
+                    return false;
+                }
+                let canonical = vize_carton::capitalize(&vize_carton::camelize(name));
+                canonical
+                    .as_bytes()
+                    .first()
+                    .is_some_and(|first| first.is_ascii_uppercase())
             }
         }
     }

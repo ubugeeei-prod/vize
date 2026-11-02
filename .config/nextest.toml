@@ -12,6 +12,11 @@ filter = """(package(=vize_patina) & test(~require_slots_as_functions::typeof_te
 (package(=vize) & binary(=integration) & test(=lint_slot_typeof_presence_cli::original_and_boundaries_keep_complete_cli_json))"""
 junit.store-success-output = true
 
+# Retain complete #11373 mapper and policy observations; no selection changes.
+[[profile.default.overrides]]
+filter = 'package(=vize_canon) & test(~global_components::tests::kebab_listener_11373::)'
+junit.store-success-output = true
+
 # Retain complete direct-condition API and original CLI packets.
 [[profile.default.overrides]]
 filter = """(package(=vize_patina) & test(~require_slots_as_functions::condition_tests::)) |

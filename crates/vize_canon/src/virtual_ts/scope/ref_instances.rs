@@ -40,7 +40,7 @@ pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $RefInstanceFactory<_C> = 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
 pub(crate) fn instantiated_ref_starts(summary: &Croquis) -> Vec<u32> {
-    vize_croquis::facts::component_usage_list(summary)
+    vize_croquis::facts::component_usage_slice(summary)
         .iter()
         .filter(|usage| {
             let mut has_ref = false;
@@ -104,7 +104,7 @@ pub(super) fn emit_ref_instance_probes(
         {
             #(" ")
             #{
-                for usage in vize_croquis::facts::component_usage_list(ctx.summary) {
+                for usage in vize_croquis::facts::component_usage_slice(ctx.summary) {
                     if !starts.contains(&usage.start) {
                         continue;
                     }
@@ -114,9 +114,9 @@ pub(super) fn emit_ref_instance_probes(
                         ctx.syntactic_type_only_imported_names,
                         usage.name.as_str(),
                     )
-                    .zip(enclosing_loops(ctx.summary, &usage))
+                    .zip(enclosing_loops(ctx.summary, usage))
                     .map(|(component, loops)| {
-                        emit_probe(ts, ctx, &usage, component.as_str(), &loops)
+                        emit_probe(ts, ctx, usage, component.as_str(), &loops)
                     });
                     match probe {
                         Some(name) => append!(*__ts, "\"{}\": () => {name}, ", usage.start),

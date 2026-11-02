@@ -15,7 +15,7 @@ pub(in crate::virtual_ts::scope) fn collect_checkable_usages(
         .iter()
         .map(|name| name.as_str())
         .collect();
-    let usages = vize_croquis::facts::component_usage_list(ctx.summary);
+    let usages = vize_croquis::facts::component_usage_slice(ctx.summary);
     if usages.is_empty() {
         return Vec::new();
     }
@@ -25,7 +25,7 @@ pub(in crate::virtual_ts::scope) fn collect_checkable_usages(
     );
     script_facts::with_bindings(ctx.summary, |bindings| {
         usages
-            .into_iter()
+            .iter()
             .enumerate()
             .filter(|(_, usage)| {
                 component_usage_has_checkable_binding(
@@ -37,6 +37,7 @@ pub(in crate::virtual_ts::scope) fn collect_checkable_usages(
                     &callbacks,
                 ) || named_dynamic_reference(ctx, usage).is_some()
             })
+            .map(|(index, usage)| (index, usage.clone()))
             .collect()
     })
 }
