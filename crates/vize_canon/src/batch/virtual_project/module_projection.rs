@@ -9,6 +9,8 @@ use super::{VirtualFile, VirtualProject};
 use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_vue_stars};
 use crate::{PackageResolutionContext, PackageResolutionMode};
 
+mod owned_vue_imports;
+
 impl VirtualProject {
     /// Module graph edges are resolved from the pre-rewrite projection. A
     /// previous materialized path must never become the next source identity.
@@ -29,6 +31,7 @@ impl VirtualProject {
         }
         if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
             self.finalize_declaration_imports();
+            self.finalize_owned_vue_imports();
             return;
         }
 

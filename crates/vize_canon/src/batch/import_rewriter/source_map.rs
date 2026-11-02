@@ -2,6 +2,8 @@
 
 use vize_carton::String;
 
+mod owned_vue;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OffsetAdjustment {
     pub original_offset: u32,
