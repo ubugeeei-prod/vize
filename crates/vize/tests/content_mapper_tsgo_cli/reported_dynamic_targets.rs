@@ -46,7 +46,7 @@ fn fixture(name: &str) -> (Value, BTreeMap<String, String>) {
         .iter()
         .map(|file| {
             let text = file["content"].as_str().unwrap();
-            assert_eq!(file["sha256"], capture::hash(text.as_bytes()));
+            assert_eq!(file["sha256"], capture::hash(text.as_bytes()).as_str());
             assert_eq!(file["utf8Bytes"], text.len());
             (
                 String::from(file["file"].as_str().unwrap()),
