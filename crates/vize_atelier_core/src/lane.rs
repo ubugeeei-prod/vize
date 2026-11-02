@@ -3,7 +3,7 @@
 //! This module provides the transform context, traversal, and base transform traits.
 
 mod context;
-pub(crate) mod element;
+pub mod element;
 mod extensions;
 mod frozen;
 mod options;
