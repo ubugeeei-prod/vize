@@ -2,7 +2,7 @@
 //! arguments naming setup values or non-hoisted aliases must resolve through
 //! the setup return instead (misskey `WidgetComponentEmits<WidgetProps>`).
 
-use super::generate_virtual_ts_with_offsets;
+use super::super::generate_virtual_ts_with_offsets;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 fn generate(script: &str, generic: Option<&str>) -> vize_carton::String {
