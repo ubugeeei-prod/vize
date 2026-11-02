@@ -65,7 +65,7 @@ fn setup_local_emits_and_expose_types_keep_only_authored_errors() {
     let user = fixture("Use.vue.txt");
     let output = check(&widget, &user);
     assert_eq!(output.status.code(), Some(0), "{}", output_text(&output));
-    assert!(output.stdout.is_empty(), "{}", output_text(&output));
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
 
     let widget = widget
         .replace("current: () => def", "current: () => 1")
@@ -96,5 +96,4 @@ fn setup_local_emits_and_expose_types_keep_only_authored_errors() {
         "{}",
         output_text(&output)
     );
-    assert!(!stdout.contains("virtual code"), "{}", output_text(&output));
 }

@@ -21,6 +21,14 @@ fn module_tail(code: &str) -> &str {
         .1
 }
 
+/// Trimmed lines naming `needle`, in emission order.
+fn lines_naming<'a>(code: &'a str, needle: &str) -> Vec<&'a str> {
+    code.lines()
+        .map(str::trim)
+        .filter(|line| line.contains(needle))
+        .collect()
+}
+
 const WIDGET: &str = r#"import type { WidgetEmits, WidgetExpose } from './types';
 const def = { size: 1 };
 type WidgetProps = typeof def;
@@ -33,29 +41,27 @@ emit('update', def);
 fn setup_local_emits_and_expose_types_resolve_through_setup() {
     let code = generate(WIDGET, None);
     let tail = module_tail(&code);
-    assert!(!tail.contains("WidgetProps"), "{code}");
-    assert!(
-        tail.contains(
-            "export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_emits\"];"
-        ),
+    assert_eq!(
+        lines_naming(tail, "WidgetProps"),
+        Vec::<&str>::new(),
         "{code}"
     );
-    assert!(
-        tail.contains(
-            "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_exposed\"];"
-        ),
+    assert_eq!(
+        lines_naming(tail, "export type Emits"),
+        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_emits\"];"],
         "{code}"
     );
-    assert!(
-        code.contains(
-            "const __vize_typed_emits = undefined as unknown as WidgetEmits<WidgetProps>;"
-        ),
+    assert_eq!(
+        lines_naming(tail, "export type Exposed"),
+        ["export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_exposed\"];"],
         "{code}"
     );
-    assert!(
-        code.contains(
-            "const __vize_typed_exposed = undefined as unknown as WidgetExpose<WidgetProps>;"
-        ),
+    assert_eq!(
+        lines_naming(&code, "const __vize_typed_"),
+        [
+            "const __vize_typed_exposed = undefined as unknown as WidgetExpose<WidgetProps>;",
+            "const __vize_typed_emits = undefined as unknown as WidgetEmits<WidgetProps>;",
+        ],
         "{code}"
     );
 }
@@ -67,8 +73,16 @@ const emit = defineEmits<{ update: [value: typeof def] }>();
 "#;
     let code = generate(script, None);
     let tail = module_tail(&code);
-    assert!(!tail.contains("typeof def"), "{code}");
-    assert!(tail.contains("[\"__vize_typed_emits\"]"), "{code}");
+    assert_eq!(
+        lines_naming(tail, "typeof def"),
+        Vec::<&str>::new(),
+        "{code}"
+    );
+    assert_eq!(
+        lines_naming(tail, "export type Emits"),
+        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_emits\"];"],
+        "{code}"
+    );
 }
 
 #[test]
@@ -78,11 +92,11 @@ type Local = { item: T };
 defineExpose<{ current: () => Local }>({ current: () => ({ item: props.item }) });
 "#;
     let code = generate(script, Some("T extends string"));
-    let tail = module_tail(&code);
-    assert!(
-        tail.contains(
+    assert_eq!(
+        lines_naming(module_tail(&code), "export type Exposed"),
+        [
             "export type Exposed<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_exposed\"];"
-        ),
+        ],
         "{code}"
     );
 }
@@ -96,8 +110,19 @@ defineExpose<Api>();
 "#;
     let code = generate(script, None);
     let tail = module_tail(&code);
-    assert!(tail.contains("export type Emits = Events;"), "{code}");
-    assert!(tail.contains("export type Exposed = Api;"), "{code}");
-    assert!(!code.contains("__vize_typed_emits"), "{code}");
-    assert!(!code.contains("__vize_typed_exposed"), "{code}");
+    assert_eq!(
+        lines_naming(tail, "export type Emits"),
+        ["export type Emits = Events;"],
+        "{code}"
+    );
+    assert_eq!(
+        lines_naming(tail, "export type Exposed"),
+        ["export type Exposed = Api;"],
+        "{code}"
+    );
+    assert_eq!(
+        lines_naming(&code, "__vize_typed_"),
+        Vec::<&str>::new(),
+        "{code}"
+    );
 }
