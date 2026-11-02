@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use serde::Deserialize;
-use vize_carton::String;
+use vize_l0::String;
 
 use super::{ContentMapperSpanKind, SpanCandidate, normalize, ranges_overlap};
 
