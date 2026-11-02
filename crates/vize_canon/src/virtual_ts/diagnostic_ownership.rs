@@ -10,7 +10,8 @@ use vize_carton::FxHashSet;
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 mod contextual;
-pub(crate) use contextual::unproven_prop_ranges;
+pub(crate) use contextual::contextual_prop_facts;
+mod independent_reads;
 
 pub(crate) type DiagnosticOwnershipCollector = RefCell<DiagnosticOwnership>;
 
@@ -18,6 +19,7 @@ pub(crate) type DiagnosticOwnershipCollector = RefCell<DiagnosticOwnership>;
 pub(crate) enum InputRole {
     Value,
     Name,
+    IndependentRead,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -88,6 +90,7 @@ pub(crate) struct DiagnosticOwnership {
     rows: Vec<Projection>,
     unproven: FxHashSet<InputOwner>,
     callback_primaries: Vec<Range<usize>>,
+    independent_reads: vize_carton::FxHashMap<InputOwner, independent_reads::PreparedReads>,
 }
 
 impl DiagnosticOwnership {
@@ -104,6 +107,7 @@ impl DiagnosticOwnership {
     }
     pub(crate) fn refuse_owner(&mut self, owner: InputOwner) {
         self.unproven.insert(owner.with_role(InputRole::Value));
+        self.refuse_independent_reads(owner);
     }
     pub(crate) fn record(
         &mut self,

@@ -51,13 +51,13 @@ pub(super) fn collect_component_prop_expression_ranges(
         0,
         &summary.scopes,
     );
-    let unproven = if options.diagnostic_ownership.is_some() {
+    let contextual = if options.diagnostic_ownership.is_some() {
         options
             .template_ast
-            .map(crate::virtual_ts::diagnostic_ownership::unproven_prop_ranges)
+            .map(crate::virtual_ts::diagnostic_ownership::contextual_prop_facts)
             .unwrap_or_default()
     } else {
-        FxHashSet::default()
+        Default::default()
     };
     let external_template_bindings: FxHashSet<&str> = options
         .virtual_ts_options
@@ -111,7 +111,21 @@ pub(super) fn collect_component_prop_expression_ranges(
                 }
             }
             for prop in &usage.props {
-                if unproven.contains(&(prop.start, prop.end))
+                if has_checkable_binding
+                    && !legacy_external
+                    && let Some(collector) = options.diagnostic_ownership
+                    && let Some(reads) = contextual.reads.get(&(prop.start, prop.end))
+                    && let Some(value_range) = source.value_source_range(prop)
+                    && source
+                        .template
+                        .and_then(|text| text.get(value_range.clone()))
+                        .is_some_and(|text| text == reads.raw.as_str())
+                {
+                    collector
+                        .borrow_mut()
+                        .prepare_independent_reads(summary, bindings, &usage, prop, reads);
+                }
+                if contextual.unproven.contains(&(prop.start, prop.end))
                     && let Some(collector) = options.diagnostic_ownership
                     && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
                 {

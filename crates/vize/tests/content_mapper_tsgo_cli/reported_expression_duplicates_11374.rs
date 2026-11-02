@@ -140,3 +140,5 @@ fn authored_errors_survive_without_synthetic_expression_echoes() {
         assert_eq!(output.stderr, b"", "{id}");
     }
 }
+
+mod receiver_contracts;

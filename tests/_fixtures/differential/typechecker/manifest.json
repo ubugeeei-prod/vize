@@ -12291,6 +12291,11 @@
           "path": "reported-expression-duplicates-11374/input.json",
           "sha256": "4ded26eb8ddf497b6f45764aba0293dca4bfe5df4e468a58a0f3b2e0e7df17da",
           "role": "regression-reproduction"
+        },
+        {
+          "path": "reported-expression-duplicates-11374/receiver-controls.json",
+          "sha256": "dbad54d3440a5a5e84b5dba8c738979bb46edeed51fadedc74020b78fe5ce844",
+          "role": "regression-reproduction"
         }
       ],
       "dialectCoverage": {
@@ -12304,7 +12309,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "content_mapper_tsgo_cli::reported_expression_duplicates_11374::authored_errors_survive_without_synthetic_expression_echoes; physically consumes exact cached #11374 six-file input at b89beb46605e7c3dad05045b6fa5932509349320; seven original/individual-repair/all-repair/independent-error/restoration states preserve the three authored TS2532 diagnostics exactly once. Input-only registration; no diagnostic pack, native admission or original reported macOS/provider qualification."
+            "selector": "content_mapper_tsgo_cli::reported_expression_duplicates_11374::authored_errors_survive_without_synthetic_expression_echoes; physically consumes exact cached #11374 six-file input at b89beb46605e7c3dad05045b6fa5932509349320; seven original/individual-repair/all-repair/independent-error/restoration states preserve the three authored TS2532 diagnostics exactly once. Input-only registration; no diagnostic pack, native admission or original reported macOS/provider qualification. The sibling receiver_contracts::receiver_echoes_preserve_contextual_and_typed_fallthrough_contracts physically consumes six separately labeled synthetic wrong/repair states at 4421820c63f2c27726737d69143f474a26926c38; no original-input expansion."
           }
         ]
       }

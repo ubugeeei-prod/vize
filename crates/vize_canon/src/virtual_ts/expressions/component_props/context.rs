@@ -56,3 +56,37 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
         self
     }
 }
+
+impl super::ComponentPropSource<'_> {
+    /// Only byte-identical parser-owned receivers can share a diagnostic row.
+    /// The contextual function and both of its whole contracts stay untouched.
+    pub(crate) fn record_independent_receivers(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        generated: &str,
+        range: std::ops::Range<usize>,
+        primary: bool,
+    ) {
+        if self.expected_packet
+            || self.inference_only
+            || self.inert
+            || prop
+                .value
+                .as_ref()
+                .is_none_or(|value| !value.as_str().contains("=>"))
+        {
+            return;
+        }
+        let (Some(collector), Some(authored), Some(value)) = (
+            self.diagnostic_ownership,
+            self.value_source_range(prop),
+            generated.get(range.clone()),
+        ) else {
+            return;
+        };
+        collector
+            .borrow_mut()
+            .record_independent_receivers(usage, prop, value, range, authored, !primary);
+    }
+}

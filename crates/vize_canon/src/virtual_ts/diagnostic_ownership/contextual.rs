@@ -1,20 +1,27 @@
 //! Reuse the parser-owned expression AST to refuse contextual echo proofs.
 
+use super::independent_reads::{ReadValue, collect_candidates};
 use oxc_ast::ast::{ArrowFunctionExpression, Class, Function};
 use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::{FxHashSet, profile};
+use vize_carton::{FxHashMap, FxHashSet, profile};
+
+#[derive(Default)]
+pub(crate) struct ContextualPropFacts {
+    pub(crate) unproven: FxHashSet<(u32, u32)>,
+    pub(crate) reads: FxHashMap<(u32, u32), ReadValue>,
+}
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
-pub(crate) fn unproven_prop_ranges(root: &RootNode<'_>) -> FxHashSet<(u32, u32)> {
+pub(crate) fn contextual_prop_facts(root: &RootNode<'_>) -> ContextualPropFacts {
     profile!("canon.virtual_ts.input_ownership.retained_context", {
-        let mut unproven = FxHashSet::default();
-        visit_children(&root.children, &mut unproven);
-        unproven
+        let mut facts = ContextualPropFacts::default();
+        visit_children(&root.children, &mut facts);
+        facts
     })
 }
 
-fn visit_children(children: &[TemplateChildNode<'_>], unproven: &mut FxHashSet<(u32, u32)>) {
+fn visit_children(children: &[TemplateChildNode<'_>], facts: &mut ContextualPropFacts) {
     for child in children {
         match child {
             TemplateChildNode::Element(element) => {
@@ -35,6 +42,16 @@ fn visit_children(children: &[TemplateChildNode<'_>], unproven: &mut FxHashSet<(
                         if crate::virtual_ts::scope::contains_inline_function_prop_value(
                             simple.content,
                         ) {
+                            if let Some(retained) =
+                                simple.js_ast.and_then(|ast| ast.as_expression())
+                                && retained.raw == simple.content
+                                && let Some(reads) = collect_candidates(retained.ast, retained.raw)
+                            {
+                                facts.reads.insert(
+                                    (directive.loc.span.start, directive.loc.span.end),
+                                    reads,
+                                );
+                            }
                             return true;
                         }
                         let Some(retained) = simple.js_ast.and_then(|ast| ast.as_expression())
@@ -49,17 +66,19 @@ fn visit_children(children: &[TemplateChildNode<'_>], unproven: &mut FxHashSet<(
                         !contextual.0
                     });
                     if !safe {
-                        unproven.insert((directive.loc.span.start, directive.loc.span.end));
+                        facts
+                            .unproven
+                            .insert((directive.loc.span.start, directive.loc.span.end));
                     }
                 }
-                visit_children(&element.children, unproven);
+                visit_children(&element.children, facts);
             }
             TemplateChildNode::If(node) => {
                 for branch in &node.branches {
-                    visit_children(&branch.children, unproven);
+                    visit_children(&branch.children, facts);
                 }
             }
-            TemplateChildNode::For(node) => visit_children(&node.children, unproven),
+            TemplateChildNode::For(node) => visit_children(&node.children, facts),
             _ => {}
         }
     }
@@ -103,7 +122,7 @@ mod tests {
                 })
                 .collect::<Vec<_>>();
             assert_eq!(
-                unproven_prop_ranges(&root),
+                contextual_prop_facts(&root).unproven,
                 expected.iter().take(2).copied().collect::<FxHashSet<_>>()
             );
             for child in &mut root.children {
@@ -118,7 +137,7 @@ mod tests {
                 }
             }
             assert_eq!(
-                unproven_prop_ranges(&root),
+                contextual_prop_facts(&root).unproven,
                 expected.into_iter().collect::<FxHashSet<_>>()
             );
         }

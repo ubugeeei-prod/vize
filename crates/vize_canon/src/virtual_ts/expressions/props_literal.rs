@@ -142,6 +142,7 @@ pub(crate) fn append_props_literal(
             continue;
         };
         if !rows.merged && (!rows.ignored_primary || source_context.is_inference_only()) {
+            source_context.record_independent_receivers(usage, prop, ts, rows.value.clone(), false);
             source_context.record_prop_projection(usage, prop, rows.name, rows.value);
         }
         for (binding, value) in rows.merged_values {
