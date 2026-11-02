@@ -79,7 +79,7 @@ fn head_text_ancestry_borrows_the_original_single_lexer_owner() {
         .collect();
     assert_eq!(entities.len(), 1);
     assert_eq!(entities[0].source(), Some("&amp;"));
-    let mut decoded = String::new();
+    let mut decoded = String::default();
     entities[0]
         .decoded_entity()
         .expect("title entity")
