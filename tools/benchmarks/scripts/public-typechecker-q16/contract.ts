@@ -5,7 +5,7 @@ import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
 import { a65Data } from "./a-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64";
+export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64" | "F78";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -48,13 +48,13 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "A59-65",
-  fix: "a321c37109d86c03afeacc833b1760c85ad4a32c",
-  version: "0.646.0",
-  source: "a321c37109d86c03afeacc833b1760c85ad4a32c",
-  candidate: "46f7f273d05bb7ea9d94bfdfb22bd792f6075f95",
-  run: "41438403319",
-  capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac",
+  subset: "F78",
+  fix: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+  version: "0.647.0",
+  source: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+  candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
+  run: "41443199914",
+  capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
@@ -72,9 +72,18 @@ export const reportedCommands = {
   tsrs: ["npx", "tsrs", "--runExternalCode", "--noEmit", "-p", "tsconfig.json"],
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
+export function commandsFor(subset: Subset) {
+  if (subset === "F78")
+    return {
+      install: ["npm", "i"],
+      tsrs: ["npx", "tsrs", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
+      reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
+    } as const;
+  return reportedCommands;
+}
 export function subsetFor(id: string): SuppliedSubset {
   assert(
-    ["D61", "B60-68", "A59", "C62", "C4"].includes(id),
+    ["D61", "B60-68", "A59", "C62", "C4", "F78"].includes(id),
     "closed source-qualified subset required",
   );
   const rows: SuppliedSubset[] = suppliedSubsets;
@@ -91,7 +100,11 @@ export function requireProfile(profile: Profile | null): Profile {
   } else if (profile.subset === "A59-65") {
     subsetFor("A59");
     assert.equal(profile.fix, a65Data.fixMerge);
-  } else subsetFor(profile.subset);
+  } else {
+    subsetFor(profile.subset);
+    if (profile.subset === "F78")
+      assert.equal(profile.fix, "d1ef6f2200afaf18922a052c114bb9ed366846e5");
+  }
   for (const sha of [
     profile.subset === "A64" ? profile.knownGoodSource : profile.fix,
     profile.source,
@@ -109,10 +122,12 @@ export function filesFor(state: State, profile: Profile): SourceFile[] {
   return state.files.map((file) => {
     assert(/^(package\.json|tsconfig\.json|src\/[A-Za-z0-9_.-]+)$/u.test(file.path));
     if (file.path !== "package.json") return { ...file };
-    assert.equal(file.source.split('"vize": "0.638.0"').length, 2);
+    const before = profile.subset === "F78" ? "0.641.0" : "0.638.0",
+      needle = '"vize": "' + before + '"';
+    assert.equal(file.source.split(needle).length, 2);
     return {
       path: file.path,
-      source: file.source.replace('"vize": "0.638.0"', '"vize": "' + profile.version + '"'),
+      source: file.source.replace(needle, '"vize": "' + profile.version + '"'),
     };
   });
 }

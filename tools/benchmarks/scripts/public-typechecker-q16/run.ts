@@ -9,7 +9,7 @@ import {
   filesFor,
   limitations,
   profileFor,
-  reportedCommands,
+  commandsFor,
   requireEnvironment,
   subsetFor,
 } from "./contract.ts";
@@ -46,9 +46,11 @@ export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
     "owned manual event required",
   );
   assert(
-    ["refs/heads/main", "refs/heads/test/published-q16-first-subset-20261102"].includes(
-      environment.GITHUB_REF ?? "",
-    ),
+    [
+      "refs/heads/main",
+      "refs/heads/test/published-q16-first-subset-20261102",
+      "refs/heads/test/published-commented-vif-11378-20261102",
+    ].includes(environment.GITHUB_REF ?? ""),
     "owned source ref required",
   );
 }
@@ -59,7 +61,8 @@ export async function main(argv: string[]) {
   requireOwnedDispatch(process.env);
   if (profile.subset === "A64") return runDeclaration(options, profile);
   if (profile.subset === "A59-65") return runA(options, profile);
-  const selected = subsetFor(profile.subset);
+  const selected = subsetFor(profile.subset),
+    commands = commandsFor(profile.subset);
   assert.equal(realpathSync(dirname(options.out)), dirname(options.out));
   mkdirSync(options.out);
   const record = recorder(options.out),
@@ -88,7 +91,7 @@ export async function main(argv: string[]) {
       sourceAuthority: selected.sourceAuthority,
       own,
       environment: requireEnvironment(process.env),
-      reportedCommands,
+      reportedCommands: commands,
       limitations,
     });
     const authorityOut = join(options.out, "authority");
@@ -140,14 +143,14 @@ export async function main(argv: string[]) {
           const tsrs = capture(
             owned,
             label + ".tsrs",
-            [process.execPath, options.npx, ...reportedCommands.tsrs.slice(1)],
+            [process.execPath, options.npx, ...commands.tsrs.slice(1)],
             root,
             verify,
           );
           const reference = capture(
             owned,
             label + ".vue-tsc",
-            [process.execPath, options.npx, ...reportedCommands.reference.slice(1)],
+            [process.execPath, options.npx, ...commands.reference.slice(1)],
             root,
             verify,
           );
