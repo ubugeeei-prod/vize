@@ -188,7 +188,14 @@ pub(crate) fn generate_slot_host_binding(
     let captured =
         constructor_instance::root_slot_scope(source_context.scopes, usage, hoist_shared_preamble)
             .map(|_| constructor_instance::instance_pair_name(binding_name, source_context.scopes));
-    if usage.vif_guard.is_some() {
+    if captured.is_some() {
+        // Private constructor inputs are not Vue's public $props. The mapped
+        // props check owns diagnostics; this line only captures real results.
+        append!(
+            *ts,
+            "{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\n"
+        );
+    } else if usage.vif_guard.is_some() {
         append!(
             *ts,
             "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"

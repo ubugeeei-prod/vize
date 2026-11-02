@@ -1,19 +1,19 @@
 //! The hoist-static pass's lattice walk — the post-order region
 //! recursion computing [`StaticFacts`] per owner, split from
-//! `pass/hoist.rs` under the source budget. The rules live in
-//! `hoist.rs`'s module docs; this file is their single implementation.
+//! `analysis/static_facts.rs` under the source budget. The rules live
+//! beside the L2 fact schema; this file is their single implementation.
 
 use alloc::vec::Vec as StdVec;
 
+use crate::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
+use crate::provenance::ProvenanceRecord;
 use vize_l0::pass::RemarkSink;
 use vize_l0::side_table::SideTable;
 use vize_l0::{cstr, ensure_sufficient_stack};
-use vize_l2::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
-use vize_l2::provenance::ProvenanceRecord;
 
 use super::consts::{props_all_hoistable, slot_props_static};
 use super::{StaticFacts, StaticLevel};
-use crate::pass::walk::PageWalk;
+use crate::walk::PageWalk;
 
 /// What one child op contributes to its parent's three predicates.
 pub(super) struct Contribution {

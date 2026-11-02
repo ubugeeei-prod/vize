@@ -136,6 +136,34 @@ function restoreHistoryToolchainSelection(job: Job, original: Job) {
   current.run = command;
 }
 
+function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
+  const producer = "affected-tooling-cli";
+  assert.deepEqual(workflow.jobs[producer], {
+    ...original.jobs[producer],
+    needs: "pr-source-plan",
+    if: "${{ github.event_name != 'pull_request' || needs.pr-source-plan.outputs.affected-tooling != 'false' }}",
+  });
+  workflow.jobs[producer] = structuredClone(original.jobs[producer]);
+  const report = workflow.jobs["affected-tooling-report"];
+  const before = original.jobs["affected-tooling-report"];
+  assert(report.steps && report.steps.length === 1);
+  const step = report.steps[0];
+  const previous = before.steps?.[0];
+  assert(step && previous && typeof step.run === "string");
+  assert.deepEqual(step.env, {
+    EVENT_NAME: "${{ github.event_name }}",
+    ...(previous.env as Record<string, string>),
+  });
+  assert.equal(
+    createHash("sha256").update(step.run).digest("hex"),
+    "411d4d38167ab8f1a4a506a15cf2556ca6d5a0411659d885fe63d2f7bee7970e",
+    "only the separately executed four-state report is reviewed",
+  );
+  step.env = structuredClone(previous.env);
+  step.run = previous.run;
+  assert.deepEqual(report, before);
+}
+
 test("the seven runner selectors and exact runtime steps preserve every original job", () => {
   let changed = 0,
     protectedJobs = 0;
@@ -143,11 +171,13 @@ test("the seven runner selectors and exact runtime steps preserve every original
     const restored = structuredClone(after);
     if (specification.name === "check")
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
-    if (specification.name === "pr-source-checks")
+    if (specification.name === "pr-source-checks") {
       restoreHistoryToolchainSelection(
         restored.jobs["ci-selection-tests"],
         before.jobs["ci-selection-tests"],
       );
+      restoreEmptyPrToolingBuild(restored, before);
+    }
     for (const id of specification.jobs) {
       const original = before.jobs[id],
         updated = after.jobs[id],
@@ -176,6 +206,36 @@ test("the seven runner selectors and exact runtime steps preserve every original
   }
   assert.equal(changed, 7);
   assert.equal(protectedJobs, 25);
+});
+
+test("empty PR tooling inversion rejects unknown producer and report changes", () => {
+  const workflow = workflows.find((entry) => entry.specification.name === "pr-source-checks");
+  assert(workflow);
+  for (const mutate of [
+    (current: Workflow) => {
+      current.jobs["affected-tooling-cli"].if = "${{ true }}";
+    },
+    (current: Workflow) => {
+      delete current.jobs["affected-tooling-cli"].needs;
+    },
+    (current: Workflow) => {
+      const step = current.jobs["affected-tooling-report"].steps?.[0];
+      assert(step && typeof step.run === "string");
+      step.run += "true\n";
+    },
+    (current: Workflow) => {
+      const step = current.jobs["affected-tooling-report"].steps?.[0];
+      assert(step);
+      step.if = "${{ always() }}";
+    },
+  ]) {
+    const current = structuredClone(workflow.after);
+    mutate(current);
+    assert.throws(
+      () => restoreEmptyPrToolingBuild(current, workflow.before),
+      assert.AssertionError,
+    );
+  }
 });
 
 test("history selection refuses missing, duplicate, moved and unknown command changes", () => {

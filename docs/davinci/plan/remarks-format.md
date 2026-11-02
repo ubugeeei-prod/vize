@@ -137,7 +137,7 @@ Every remark name a pass may emit, with its arguments in emission order —
 subject first. Adding a name or an argument key is a registry change in the
 same PR.
 
-### `s2.hoist-static` (`davinci/vize_l1_to_l2/src/pass/hoist/remarks.rs`)
+### `s2.hoist-static` (`davinci/vize_l2/src/analysis/static_facts/remarks.rs`)
 
 An analysis pass: `applied` means the hoist-licensing fact holds; whether
 DOM realization then hoists is position/option-dependent and not claimed.

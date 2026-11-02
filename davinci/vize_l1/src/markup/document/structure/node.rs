@@ -37,7 +37,10 @@ pub(super) fn children<'s, 'o, 'a>(
     tree: &'s DocumentHtmlStructure<'o, 'a>,
     parent: &'s Element,
 ) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, Refusal> {
-    if matches!(parent.name, "html" | "head" | "base" | "link" | "meta") {
+    if matches!(
+        parent.name,
+        "html" | "head" | "base" | "link" | "meta" | "title" | "style"
+    ) {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
     if let Some(span) = tree.body_tail_text

@@ -59,7 +59,8 @@ pub enum DocumentHtmlRefusal {
 /// Actual element ancestry for a strict explicit no-quirks HTML envelope.
 ///
 /// Supported envelope: exactly `<!DOCTYPE html>`, `html`, `head`, then `body`,
-/// with explicit ends. Head children are `base`, `link` and `meta`; body
+/// with explicit ends. Head children are `base`, `link`, `meta`, and explicitly
+/// closed, unslashed `title`/`style` elements; body
 /// elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
 /// `source`, `track`, `wbr`, `article`, `aside`, `footer`, `header`, `main`, `nav`
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
@@ -79,10 +80,10 @@ pub enum DocumentHtmlRefusal {
 ///
 /// Select content is bounded to options, groups, `hr`, text and comments;
 /// other nested elements refuse instead of borrowing obsolete HTML rules.
-/// Foreign content, raw-text elements, formatting, templates, Vue
+/// Foreign content, other raw-text elements, formatting, templates, Vue
 /// directive/interpolation syntax and implicit envelopes refuse this provider.
 /// Direct body-subtree child nodes retain original text/comment callbacks;
-/// outer insertion-mode text is a separate typed refusal. Petite-vue remains
+/// head text readback and outer insertion-mode text retain typed refusals. Petite-vue remains
 /// unfinished. This view borrows the actual original lexer owner and arena.
 ///
 /// ```compile_fail

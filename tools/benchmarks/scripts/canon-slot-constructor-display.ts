@@ -43,6 +43,25 @@ function observedCase(row: SlotCase) {
 }
 
 export function assertAuthoredNativeDiagnostics(row: SlotCase, before: unknown, after: unknown) {
+  if (row.id === "overload-last-zero") {
+    assert.equal(hash(row.source), propsCorrection.sourceSha256);
+    assert.equal(hash(row.component), propsCorrection.componentSha256);
+    assert.deepEqual(
+      before,
+      [
+        {
+          file: "src/Tiny.vue",
+          line: 12,
+          column: 18,
+          code: 2322,
+          message: "Type 'number' is not assignable to type 'string'.",
+        },
+      ],
+      "the complete published false authored error stays exact",
+    );
+    assert.deepEqual(after, [], "both independent oracles accept this numeric overload usage");
+    return;
+  }
   if (row.id !== "missing-symbol") {
     assert.deepEqual(after, before, "every authored native diagnostic stays exact");
     return;
