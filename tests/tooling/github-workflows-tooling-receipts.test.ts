@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -145,16 +145,20 @@ test("the real tooling report permits only an empty PR producer skip and retains
     for (const selected of ["true", "false", ""])
       for (const cli of ["success", "skipped", "failure", "cancelled", ""])
         for (const workers of ["success", "skipped", "failure", "cancelled", ""]) {
-          const result = spawnSync("bash", ["-euo", "pipefail", "-c", step.run], {
-            encoding: "utf8",
-            env: {
-              ...process.env,
-              EVENT_NAME: event,
-              SELECTED: selected,
-              CLI: cli,
-              WORKERS: workers,
+          const result: SpawnSyncReturns<string> = spawnSync(
+            "bash",
+            ["-euo", "pipefail", "-c", step.run],
+            {
+              encoding: "utf8",
+              env: {
+                ...process.env,
+                EVENT_NAME: event,
+                SELECTED: selected,
+                CLI: cli,
+                WORKERS: workers,
+              },
             },
-          });
+          );
           assert.ifError(result.error);
           const key = [event, selected, cli, workers].join("/");
           assert.equal(result.status === 0, accepted.has(key), `${key}: ${result.stderr}`);
