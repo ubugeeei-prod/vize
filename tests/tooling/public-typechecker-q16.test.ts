@@ -25,6 +25,7 @@ import {
   finalCustodiesBeforeAssessment,
   inputImages,
   recorder,
+  spawnOptions,
   type ProcessOutput,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/execute.ts";
 import { requireOwnedDispatch } from "../../tools/benchmarks/scripts/public-typechecker-q16/run.ts";
@@ -46,6 +47,27 @@ const output = (status = 0, stdout = "", stderr = ""): ProcessOutput => ({
   pid: 123,
   error: null,
   capacityLimited: false,
+});
+test("actual process options omit credential values while retaining original route environment", () => {
+  const canary = "PRIVATE_CREDENTIAL_CANARY";
+  const options = spawnOptions("/owned", {
+    GITHUB_TOKEN: canary,
+    npm_TOKEN: canary,
+    PRIVATE_SECRET: canary,
+    PASSWORD: canary,
+    CREDENTIAL: canary,
+    PATH: "/declared/path",
+    HOME: "/declared/home",
+    TSRS_BINARY: "",
+  });
+  assert.deepEqual(options.env, {
+    PATH: "/declared/path",
+    HOME: "/declared/home",
+    TSRS_BINARY: "",
+  });
+  assert(!JSON.stringify(options).includes(canary));
+  assert.equal(options.cwd, "/owned");
+  assert.equal(options.encoding, "buffer");
 });
 function temporary(run: (root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "q16-pure-")));

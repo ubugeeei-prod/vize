@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { fileImage } from "../../../support/release/computed_event_custody.ts";
+import { fixtureNames } from "./fixtures.ts";
 
 export function sourceCustody() {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
@@ -12,7 +13,7 @@ export function sourceCustody() {
   const ns = "tools/benchmarks/scripts/public-typechecker-q16/",
     queue = [
       ns + "run.ts",
-      ns + "fixtures.json",
+      ...fixtureNames.map((name) => ns + name),
       ".github/workflows/public-typechecker-consumer.yml",
     ],
     seen = new Set<string>(),

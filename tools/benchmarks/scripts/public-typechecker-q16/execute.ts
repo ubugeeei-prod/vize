@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncOptionsWithBufferEncoding } from "node:child_process";
 import { lstatSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join, sep } from "node:path";
 import { sha256, type SourceFile, type State } from "./contract.ts";
+import { childEnvironment } from "../public-typechecker-11317/execute.ts";
 
 export interface Image {
   path: string;
@@ -93,13 +94,21 @@ export interface ProcessOutput {
   capacityLimited: boolean;
 }
 export type Runner = (argv: string[], cwd: string) => ProcessOutput;
-export const runProcess: Runner = (argv, cwd) => {
-  const output = spawnSync(argv[0]!, argv.slice(1), {
+export function spawnOptions(
+  cwd: string,
+  environment: NodeJS.ProcessEnv = process.env,
+): SpawnSyncOptionsWithBufferEncoding {
+  return {
     cwd,
+    env: childEnvironment(environment),
+    timeout: 600_000,
     maxBuffer: 4 * 1024 ** 2,
     encoding: "buffer",
     stdio: ["ignore", "pipe", "pipe"],
-  });
+  };
+}
+export const runProcess: Runner = (argv, cwd) => {
+  const output = spawnSync(argv[0]!, argv.slice(1), spawnOptions(cwd));
   const capacityLimited =
     output.error !== undefined && "code" in output.error && output.error.code === "ENOBUFS";
   return {
@@ -170,7 +179,7 @@ export function capture(
     stderr: decode(output.stderr),
     stdoutImage,
     stderrImage,
-    wholeStreamsRetained: !output.capacityLimited,
+    wholeStreamsRetained: !output.capacityLimited && output.error === null,
     capacityLimited: output.capacityLimited,
     selectedCompilerPid: null,
     selectedCompilerImage: "UNKNOWN",

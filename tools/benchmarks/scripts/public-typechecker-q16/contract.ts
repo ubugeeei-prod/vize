@@ -58,10 +58,7 @@ export const reportedCommands = {
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
 export function subsetFor(id: string): SuppliedSubset {
-  assert(
-    ["D61", "B60-68", "A59", "C62"].includes(id),
-    "closed source-qualified subset required",
-  );
+  assert(["D61", "B60-68", "A59", "C62"].includes(id), "closed source-qualified subset required");
   const rows: SuppliedSubset[] = suppliedSubsets;
   const matches = rows.filter((row) => row.id === id);
   assert.equal(matches.length, 1, "subset source data has not been supplied");

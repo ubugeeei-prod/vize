@@ -2,8 +2,16 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { asArray, asRecord, asString } from "../../../support/json-value.ts";
 import type { SuppliedSubset, Subset } from "./contract.ts";
-const raw: unknown = JSON.parse(readFileSync(new URL("./fixtures.json", import.meta.url), "utf8"));
-export const suppliedSubsets: SuppliedSubset[] = asArray(raw).map((value) => {
+export const fixtureNames = [
+  "fixtures-d61-issue-11361.json",
+  "fixtures-b60-68-issue-11360.json",
+  "fixtures-b60-68-issue-11368.json",
+  "fixtures-c62-issue-11362.json",
+] as const;
+const raw: unknown[] = fixtureNames.map((name) =>
+  JSON.parse(readFileSync(new URL(name, import.meta.url), "utf8")),
+);
+const parts: SuppliedSubset[] = asArray(raw).map((value) => {
   const row = asRecord(value),
     id = asString(row.id);
   assert(["D61", "B60-68", "A59", "C62"].includes(id));
@@ -38,3 +46,12 @@ export const suppliedSubsets: SuppliedSubset[] = asArray(raw).map((value) => {
     }),
   };
 });
+
+export const suppliedSubsets: SuppliedSubset[] = [];
+for (const part of parts) {
+  const previous = suppliedSubsets.find((row) => row.id === part.id);
+  if (previous) {
+    assert.deepEqual(previous.sourceAuthority, part.sourceAuthority);
+    previous.projects.push(...part.projects);
+  } else suppliedSubsets.push(part);
+}
