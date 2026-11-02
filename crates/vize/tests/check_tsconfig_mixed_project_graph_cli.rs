@@ -12,6 +12,8 @@ use std::{
 
 use vize_l0::cstr;
 
+mod default_reference;
+
 #[test]
 fn default_check_reports_mixed_tsconfig_program_graph_and_repair() {
     let Some(corsa_path) = resolve_test_corsa_path() else {

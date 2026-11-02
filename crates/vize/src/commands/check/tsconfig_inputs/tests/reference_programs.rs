@@ -191,3 +191,58 @@ fn ambient_collection_stays_inside_the_root_program() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn later_reference_keeps_its_implicit_inputs_independent_of_reference_order() {
+    let case_dir = unique_case_dir("tsconfig-later-reference-default-inputs");
+    let _ = fs::remove_dir_all(&case_dir);
+    let input: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/tsconfig-reference-defaults-3984/input.json"
+    )))
+    .unwrap();
+    for (name, body) in input["files"].as_object().unwrap() {
+        let path = case_dir.join(name);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, body.as_str().unwrap()).unwrap();
+    }
+    let expected = vec![
+        "alpha/src/owned.ts",
+        "beta/src/App.vue",
+        "beta/src/contracts.ts",
+        "beta/src/entry.tsx",
+    ];
+    for references in [
+        r#"[{"path":"./alpha"},{"path":"./beta"}]"#,
+        r#"[{"path":"./beta"},{"path":"./alpha"}]"#,
+    ] {
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            format!(r#"{{"files":[],"references":{references}}}"#),
+        )
+        .unwrap();
+        let files = collect_default_check_files_with_jsx(
+            &case_dir,
+            Some(&case_dir.join("tsconfig.json")),
+            true,
+        );
+        assert_eq!(relative_paths(&case_dir, &files), expected);
+    }
+    // An explicit empty include suppresses this project's default, even when
+    // another referenced project's explicit files have already been selected.
+    fs::write(
+        case_dir.join("beta/tsconfig.json"),
+        r#"{"extends":"../base.json","include":[],"exclude":["src/excluded"]}"#,
+    )
+    .unwrap();
+    let files = collect_default_check_files_with_jsx(
+        &case_dir,
+        Some(&case_dir.join("tsconfig.json")),
+        true,
+    );
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["alpha/src/owned.ts"]
+    );
+    let _ = fs::remove_dir_all(&case_dir);
+}
