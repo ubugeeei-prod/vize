@@ -24,18 +24,14 @@ const actualWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
-// These additive standard-host fields are independent of the historical route
-// inverses below; verify their actual values before restoring those old bytes.
-const standardRoleLine =
-  "          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: standard-go-d6-vue35\n";
-const standardCaptureLine =
-  "          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets\n";
-const standardArtifactLine =
-  "            target/vize-tests/content-mapper-reported-dynamic-targets\n";
-const workflow = actualWorkflow
-  .replace(standardRoleLine, "")
-  .replace(standardCaptureLine, "")
-  .replace(standardArtifactLine, "");
+// Keep the historical whole-workflow inverses independent of this command-local
+// provider declaration and its child under the existing owner artifact path.
+const standardCommand =
+  "cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture";
+const standardRoleCommand =
+  'VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE=standard-go-d6-vue35 VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR="$GITHUB_WORKSPACE/target/vize-tests/content-mapper-directive-owners/reported-dynamic-targets" ' +
+  standardCommand;
+const workflow = actualWorkflow.replace(standardRoleCommand, standardCommand);
 const data = parse(workflow);
 const childWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
@@ -214,26 +210,16 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
 });
 
 test("dynamic-target printer roles are declared before capture and retain standard whole packets", () => {
-  for (const line of [standardRoleLine, standardCaptureLine, standardArtifactLine])
-    assert.equal(actualWorkflow.split(line).length, 2);
+  assert.equal(actualWorkflow.split(standardRoleCommand).length, 2);
   const actual = parse(actualWorkflow);
   const steps = actual.jobs["exact-tsgo-project"].steps;
   const standard = steps.find(
     (step: { name?: string }) => step.name === "Run standard project and declaration conformance",
   );
-  assert.equal(
-    standard.env.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE,
-    "standard-go-d6-vue35",
-  );
-  assert.equal(
-    standard.env.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR,
-    "${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets",
-  );
+  assert.equal(standard.run.split("\n")[0], standardRoleCommand);
   assert(
     steps.some((step: { with?: { path?: string } }) =>
-      step.with?.path
-        ?.split("\n")
-        .includes("target/vize-tests/content-mapper-reported-dynamic-targets"),
+      step.with?.path?.split("\n").includes("target/vize-tests/content-mapper-directive-owners"),
     ),
   );
   const runner = fs.readFileSync(
