@@ -8,7 +8,7 @@ mod extensions;
 mod frozen;
 mod options;
 pub mod patterned_template;
-pub(crate) mod structural;
+pub mod structural;
 mod structural_keys;
 pub(crate) mod traverse;
 
