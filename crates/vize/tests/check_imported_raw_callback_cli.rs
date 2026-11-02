@@ -141,8 +141,9 @@ fn imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_contro
         &json!({"derivedFixture":true,"historical118Resolved":false,"timingUsable":false,
         "workspaceRole":"Linux x64 observed image4f2de/7.0.2, tests Vuebeta10/TS6/vue-tsc3.3.11",
         "historicalRole":"Rc13/provider3.3.13 plus MisskeyVue3.5.28 is separate","phases":7,"compilerOuterCommands":14,"metadataAstNodeHelpers":2,
-        "nativeClean":false,"nativeKnownDebt":{"code":5097,"status":1,"file":"src/Parent.vue.ts","line":11,"column":23,"sourceReceipt":"f45/41346587952/artifact13099392298"},
-        "debtPolicy":"assert the whole current buffer; removal is a future correctness change, not a permanent public contract or an error filter",
+        "nativeOriginalClean":true,"negativeNativeStatus":1,"nativeKnownDebt":null,
+        "historicalNativeDebt":{"code":5097,"status":1,"file":"src/Parent.vue.ts","line":11,"column":23,"sourceReceipt":"f45/41346587952/artifact13099392298"},
+        "debtPolicy":"owned relative Vue import uses .vue.js; assert exact declaration, AST geometry and whole native buffers; authored negative diagnostics remain required without filtering",
         "loadedNativeFiles":"UNOBSERVED","nativeCompilerSource":"UNJOINED","cacheScope":"same physical context across source mutation/repair/restore"}),
     );
     // Every source, complete stream, native config/body/status and AST observation is durable before semantics.

@@ -136,13 +136,22 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
         actual_owner,
         fs::canonicalize(cwd.join("src/Parent.vue.ts")).unwrap()
     );
+    let generated = body(calls, "src/Parent.vue.ts");
+    assert_eq!(
+        generated
+            .matches("import Formatter from './Formatter.vue.js';")
+            .count(),
+        1
+    );
+    assert!(!generated.contains("'./Formatter.vue.ts'"));
     assert_eq!(
         geometry["imports"],
-        json!([{"line":11,"column":23,"text":"./Formatter.vue.ts"}])
+        json!([{"line":11,"column":23,"text":"./Formatter.vue.js"}])
     );
     assert_eq!(geometry["parseDiagnostics"], json!([]));
-    // CURRENT image4f2de/7.0.2 fixture debt, proven by f45's full body/config/raw; never native-clean.
-    let mut expected:CompactString="src/Parent.vue.ts(11,23): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\n".into();
+    // The owned import resolves without a generated extension diagnostic.
+    // Preserve every authored native diagnostic, including guarded inference copies.
+    let mut expected = CompactString::default();
     let negatives = geometry["negative"].as_array().unwrap();
     let owners = negatives
         .iter()
@@ -197,7 +206,11 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
             .as_str(),
         );
     }
-    assert_eq!(call["status"]["status"], 1, "{calls}");
+    assert_eq!(
+        call["status"]["status"],
+        if kind.is_empty() { 0 } else { 1 },
+        "{calls}"
+    );
     assert_eq!(call["status"]["signal"], Value::Null, "{calls}");
     assert_eq!(call["status"]["error"], Value::Null, "{calls}");
     assert_eq!(bytes(&call["stdout"]), expected.as_bytes(), "{calls}");

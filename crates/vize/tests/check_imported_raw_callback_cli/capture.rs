@@ -185,7 +185,7 @@ const rows=inputs.map(input=>{
   return 'inference-only';
  };
  function visit(node){
-  if(ts.isImportDeclaration(node)&&node.moduleSpecifier.text==='./Formatter.vue.ts')imports.push({...point(node.moduleSpecifier),text:node.moduleSpecifier.text});
+  if(ts.isImportDeclaration(node)&&node.moduleSpecifier.text==='./Formatter.vue.js')imports.push({...point(node.moduleSpecifier),text:node.moduleSpecifier.text});
   if(ts.isStringLiteral(node)&&stringMarkers.has(node.text)&&ts.isCallExpression(node.parent)&&ts.isPropertyAccessExpression(node.parent.expression)&&node.parent.expression.name.text==='repeat')negative.push({...point(node),owner:owner(node),marker:"'"+node.text+"'",code:2345,message:"Argument of type 'string' is not assignable to parameter of type 'number'."});
   if(ts.isPropertyAccessExpression(node)&&missingMarkers.has(node.name.text))negative.push({...point(node.name),owner:owner(node),marker:node.name.text,code:2339,message:"Property '"+node.name.text+"' does not exist on type 'Priority'."});
   ts.forEachChild(node,visit);
