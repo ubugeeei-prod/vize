@@ -1,0 +1,1 @@
+<script setup lang="ts">import Child from './Child.vue'; const count: string = 1;</script><template><Child :count="count" /></template>
