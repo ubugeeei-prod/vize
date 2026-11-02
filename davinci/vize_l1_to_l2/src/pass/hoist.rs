@@ -73,39 +73,26 @@
 //! and ends at the same accounting assertion. Every fact leaves a
 //! provenance record (`pass.hoist-static.fact`).
 
-use vize_l0::pass::{NoRemarks, RemarkSink};
+use vize_l0::pass::RemarkSink;
 use vize_l0::side_table::SideTable;
-use vize_l2::op::Namespace;
 
-use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 
-mod consts;
-mod lattice;
-mod remarks;
+pub use vize_l2::analysis::static_facts::{
+    DESC, NAME, STATIC_PROPS, STATIC_SUBTREE, StaticFacts, StaticLevel, constant_for_hoist,
+};
 
-pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
-pub use vize_l2::analysis::constant_expression::is_self_bound_constant as constant_for_hoist;
-pub use vize_l2::analysis::static_facts::{DESC, NAME, StaticFacts, StaticLevel};
-
-/// Run the pass over `lowered`.
-///
-/// One post-order walk in page order; the tree is not touched, facts
-/// publish beside it, provenance appends to `lowered`'s own channel.
+/// Run the L2-owned analysis over the transitional lowering result.
 ///
 /// # Panics
 ///
-/// Panics only on broken id accounting — a compiler bug by the id law,
-/// never an input property.
+/// Panics only on mismatched page accounting, which is a producer invariant.
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_>) -> SideTable<StaticFacts> {
-    run_remarked(lowered, &mut NoRemarks)
+    vize_l2::analysis::static_facts::run(&lowered.root, lowered.op_count, &mut lowered.provenance)
 }
 
-/// [`run`], explaining each owner's hoist eligibility through `remarks`
-/// (the P3-13 vocabulary in `remarks.rs`). Under a detached sink
-/// ([`NoRemarks`], or a pass-manager channel whose observer consumes no
-/// remarks) this is [`run`] exactly: the remark path is compiled out.
+/// [`run`] with the unchanged static-subtree and static-props remarks.
 ///
 /// # Panics
 ///
@@ -115,22 +102,10 @@ pub fn run_remarked<R: RemarkSink>(
     lowered: &mut Lowered<'_>,
     remarks: &mut R,
 ) -> SideTable<StaticFacts> {
-    let Lowered {
-        root,
-        op_count,
-        provenance,
-        ..
-    } = lowered;
-    let mut facts = SideTable::new();
-    let mut walk = PageWalk::new();
-    lattice::visit_region(
-        &mut walk,
-        &root.ops,
-        Namespace::Html,
-        provenance,
-        &mut facts,
+    vize_l2::analysis::static_facts::run_remarked(
+        &lowered.root,
+        lowered.op_count,
+        &mut lowered.provenance,
         remarks,
-    );
-    assert_accounting(&walk, *op_count, NAME);
-    facts
+    )
 }
