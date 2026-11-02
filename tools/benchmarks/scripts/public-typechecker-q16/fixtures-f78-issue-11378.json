@@ -1,0 +1,161 @@
+{
+  "id": "F78",
+  "sourceAuthority": {
+    "sourceData": {
+      "sha256": "3da6196afb4427b6b90127b9b264829ccdab712695ec01c5e33dfa8ccaed9a18",
+      "schema": "vize.closed-public-consumer-data.11378.v1"
+    },
+    "actualSourceMerge": "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+    "originalReportedCommands": "pnpm add -D vize@0.641.0 tsrs@0.20.1-ts7.1.0-beta vue@3.5.43 vue-tsc@3.2.6 typescript@5.9.3\npnpm exec tsrs --runExternalCode -p tsconfig.json --pretty false\npnpm exec vue-tsc --noEmit -p tsconfig.json --pretty false\n",
+    "packageJsonOriginalFence": null,
+    "constructedPackageFromReportedAddPins": true,
+    "originalPnpmExecutionClaimed": false,
+    "publicAdaptation": "Linux x64 Node26.13.0 npm11.19.1/npx; reported macOS26.4.1 arm64 Node26.12.1 pnpm12.3.4 not remeasured",
+    "reportedCompilerImageOrPid": "UNKNOWN",
+    "sourceNativeRoleIsPublicOracle": false,
+    "vueTscSemanticOracleOwned": false
+  },
+  "projects": [
+    {
+      "id": "issue-11378",
+      "issue": 11378,
+      "states": [
+        {
+          "id": "11378/original",
+          "phase": "original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/CommentInElseIf.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        // comment\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            },
+            {
+              "path": "src/NoComment.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11378/wrong-member",
+          "phase": "wrong-member",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/CommentInElseIf.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        // comment\n        props.item.kind !== 'b' && Number(0).nope\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            },
+            {
+              "path": "src/NoComment.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/CommentInElseIf.vue(13,46): error TS2339: Property 'nope' does not exist on type 'number'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11378/repair",
+          "phase": "repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/CommentInElseIf.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        // comment\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            },
+            {
+              "path": "src/NoComment.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11378/restored-wrong",
+          "phase": "restored-wrong",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/CommentInElseIf.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        // comment\n        props.item.kind !== 'b' && Number(0).nope\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            },
+            {
+              "path": "src/NoComment.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/CommentInElseIf.vue(13,46): error TS2339: Property 'nope' does not exist on type 'number'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11378/restored-original",
+          "phase": "restored-original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/CommentInElseIf.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        // comment\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            },
+            {
+              "path": "src/NoComment.vue",
+              "source": "<script setup lang=\"ts\">\ntype Kind = \"a\" | \"b\" | \"c\";\nconst props = defineProps<{ item: { kind: Kind } | null; flag: boolean }>();\n</script>\n\n<template>\n  <div v-if=\"props.item\">\n    <template v-if=\"props.flag\">flag</template>\n    <span\n      v-else-if=\"\n        props.item.kind !== 'a' &&\n        props.item.kind !== 'b'\n      \"\n    >c</span>\n  </div>\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}
