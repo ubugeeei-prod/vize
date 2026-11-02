@@ -22,6 +22,8 @@ use super::project::{
 use super::{InitializeParams, Request, TransformParams, read_frame};
 
 mod wire;
+#[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
+use wire::encode_frame;
 use wire::{encode_error, encode_result, encode_transform};
 
 // Actions measured both closure shapes at 4,094 levels in the optimized

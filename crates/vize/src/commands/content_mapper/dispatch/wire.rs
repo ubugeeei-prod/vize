@@ -68,7 +68,7 @@ pub(super) fn encode_error(id: &Value, code: i32, message: &str) -> io::Result<V
 
 /// Serialize the body once, behind reserved header room, instead of copying
 /// it into a second frame buffer.
-fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
+pub(super) fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
     encode_frame_with_capacity(value, 0)
 }
 
