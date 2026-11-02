@@ -5,14 +5,14 @@ use serde_json::{Value, json};
 const PATH: &str = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
 const BEFORE: &str = r#"type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn)> : TAccumulated;
 "#;
-const AFTER: &str = r#"type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never, TStalled = false> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TStalled extends true ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated, TLast, true> : $OverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn, false> : TAccumulated;
+const AFTER: &str = r#"type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;
 "#;
-const DELTA: usize = 391;
+const DELTA: usize = 219;
 const ASSET_BEFORE_SHA: &str = "084a0e36a868685e7a42532eb1c7d961f05725db32daa88c6be47b98de103540";
-const ASSET_AFTER_SHA: &str = "c6f56093aaf00542757fcd96031ac872b5241e643de4516b8186469158f6a0ec";
+const ASSET_AFTER_SHA: &str = "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5";
 const PREAMBLE_BEFORE_SHA: &str =
     "0e5c9ee5c5ee3278da0a5ded6609f7202d031167e6306a6577082413455d26e4";
-const PREAMBLE_AFTER_SHA: &str = "1bf3fb3a3a3ce15e3c0f8695083af7530f18b079dc9c049bbac65f2cf0aaa0ed";
+const PREAMBLE_AFTER_SHA: &str = "298f0dd19a3114ee2fc55f67b598a5a3b1649c356b4f453be52312b854e65816";
 
 const PUBLIC_PATH: &str = "npm/cli/virtual-ts-globals.d.ts";
 const PUBLIC_BEFORE: &str = r#"  type $OverloadUnionRecursive<
@@ -33,15 +33,13 @@ const PUBLIC_BEFORE: &str = r#"  type $OverloadUnionRecursive<
           >
       : TAccumulated;
 "#;
-const PUBLIC_AFTER: &str = r#"  // Peeling infers each signature twice. A third identical inference means a
-  // generic overload cannot be peeled, so stop instead of recursing to 900.
+const PUBLIC_AFTER: &str = r#"  // One inference per step; repeating one means a generic overload is stuck.
   type $OverloadUnionRecursive<
     TOverload,
     TPartialOverload = unknown,
     TDepth extends unknown[] = [],
     TAccumulated = never,
     TLast = never,
-    TStalled = false,
   > = TDepth["length"] extends 900
     ? TAccumulated
     : TOverload extends (...args: infer TArgs) => infer TReturn
@@ -50,29 +48,22 @@ const PUBLIC_AFTER: &str = r#"  // Peeling infers each signature twice. A third 
         : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast
               ? 1
               : 2
-          ? TStalled extends true
-            ? TAccumulated
-            : $OverloadUnionRecursive<
-                TPartialOverload & TOverload,
-                TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
-                [...TDepth, unknown],
-                TAccumulated,
-                TLast,
-                true
-              >
+          ? TAccumulated
           : $OverloadUnionRecursive<
-              TPartialOverload & TOverload,
+              TPartialOverload &
+                ((...args: TArgs) => TReturn) &
+                $OverloadProps<TOverload> &
+                TOverload,
               TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
               [...TDepth, unknown],
               TAccumulated | ((...args: TArgs) => TReturn),
-              (...args: TArgs) => TReturn,
-              false
+              (...args: TArgs) => TReturn
             >
       : TAccumulated;
 "#;
-const PUBLIC_AFTER_BYTES: usize = 19_774;
+const PUBLIC_AFTER_BYTES: usize = 19_419;
 const PUBLIC_BEFORE_SHA: &str = "14f9a36105a2d72aa6ddcbf25cef6c24839eb792cfa09f28450e3e22bf6fc234";
-const PUBLIC_AFTER_SHA: &str = "94519d695e2eca5632a76f49cbd5ee0a38b6b000cb660cf23e5f4bad1f31affb";
+const PUBLIC_AFTER_SHA: &str = "0ad1f8a8892956b693732431fc6a1e277ee1c1b929d750cadf846248ae1a981e";
 
 fn previous(current: &str, before_bytes: usize, before_sha: &str, after_sha: &str) -> String {
     assert_eq!(current.len(), before_bytes + DELTA);
