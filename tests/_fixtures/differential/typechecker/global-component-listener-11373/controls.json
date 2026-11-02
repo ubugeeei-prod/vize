@@ -44,7 +44,7 @@
           "file": "src/GlobalComponentListener.vue",
           "code": 2345,
           "sourceNeedle": "<global-link",
-          "messageContains": "Property 'to' is missing"
+          "missingRequiredProperty": "to"
         }
       ]
     },

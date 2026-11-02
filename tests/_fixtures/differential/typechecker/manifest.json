@@ -6335,74 +6335,6 @@
       ]
     },
     {
-      "id": "typechecker/global-component-listener-11373/original-three-components",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "adapters": {
-        "legacy": "batch-typechecker-fixture-v1",
-        "native": null
-      },
-      "pack": "global-component-listener-11373",
-      "case": "original-three-components",
-      "test": "original_mapper_outputs_keep_typed_global_declarations_before_values",
-      "regressionCommit": "52b5c66387abb753df149dac96fa3477708bc364",
-      "sourceRevision": "83433431f96dd514f2de4c835a3b25ab6c67f416",
-      "packReference": {
-        "path": "global-component-listener-11373/cases.json",
-        "sha256": "73fe1ca0a6d6331abcd75b5c7c8bb0c7a162f90e71e0926a9041898848a401f3"
-      },
-      "inputs": [
-        {
-          "file": "package.json",
-          "path": "global-component-listener-11373/package.json.txt",
-          "sha256": "0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3"
-        },
-        {
-          "file": "tsconfig.json",
-          "path": "global-component-listener-11373/tsconfig.json.txt",
-          "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
-        },
-        {
-          "file": "src/global-components.d.ts",
-          "path": "global-component-listener-11373/src/global-components.d.ts.txt",
-          "sha256": "58b604d66bf532e0923a2efda34db10a577105683fcf1c47092a93849627798a"
-        },
-        {
-          "file": "src/GlobalComponentListener.vue",
-          "path": "global-component-listener-11373/src/GlobalComponentListener.vue.txt",
-          "sha256": "9f7661b8691673eaed9357ac86372f384e2ccbc06c378483b4525a50d3900a48"
-        },
-        {
-          "file": "src/PascalListener.vue",
-          "path": "global-component-listener-11373/src/PascalListener.vue.txt",
-          "sha256": "4646e0dc67bffcef92ceb1ee44d2a6701049a55edb864572c8d723d4dd0c2b68"
-        },
-        {
-          "file": "src/NoListener.vue",
-          "path": "global-component-listener-11373/src/NoListener.vue.txt",
-          "sha256": "d16626074222e1eea198f4a23e60700ae7370c0e9b2df3cc9fa7a5bb8858af71"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      },
-      "diagnostics": []
-    },
-    {
       "id": "typechecker/global-scope-build-info-10819/imported-global-declaration",
       "state": "active",
       "targets": [
@@ -11712,6 +11644,67 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/global-component-listener-11373/original-three-components",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": null,
+        "native": null
+      },
+      "test": "content_mapper_tsgo_cli::global_component_listener_11373::reported_components_and_typed_controls_keep_real_diagnostics",
+      "sourceRevision": "83433431f96dd514f2de4c835a3b25ab6c67f416",
+      "inputs": [
+        {
+          "file": "package.json",
+          "path": "global-component-listener-11373/package.json.txt",
+          "sha256": "0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "global-component-listener-11373/tsconfig.json.txt",
+          "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "path": "global-component-listener-11373/src/global-components.d.ts.txt",
+          "sha256": "58b604d66bf532e0923a2efda34db10a577105683fcf1c47092a93849627798a"
+        },
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "path": "global-component-listener-11373/src/GlobalComponentListener.vue.txt",
+          "sha256": "9f7661b8691673eaed9357ac86372f384e2ccbc06c378483b4525a50d3900a48"
+        },
+        {
+          "file": "src/PascalListener.vue",
+          "path": "global-component-listener-11373/src/PascalListener.vue.txt",
+          "sha256": "4646e0dc67bffcef92ceb1ee44d2a6701049a55edb864572c8d723d4dd0c2b68"
+        },
+        {
+          "file": "src/NoListener.vue",
+          "path": "global-component-listener-11373/src/NoListener.vue.txt",
+          "sha256": "d16626074222e1eea198f4a23e60700ae7370c0e9b2df3cc9fa7a5bb8858af71"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "reported_components_and_typed_controls_keep_real_diagnostics; original six files physically copied into source mapper project with exact selected provider; input registration only, no batch diagnostic-pack or native adapter admission"
+          }
+        ]
+      },
+      "diagnostics": []
     },
     {
       "id": "typechecker/jsx-child-expression-control-6890",

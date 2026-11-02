@@ -47,7 +47,7 @@ struct Diagnostic {
     code: u32,
     source_needle: String,
     message: Option<String>,
-    message_contains: Option<String>,
+    missing_required_property: Option<String>,
 }
 
 fn write_capture(path: &std::path::Path, value: &serde_json::Value) {
@@ -222,12 +222,8 @@ fn reported_components_and_typed_controls_keep_real_diagnostics() {
         );
         assert!(output.stderr.is_empty(), "{}: {output:?}", case.id);
         let stdout = std::str::from_utf8(&output.stdout).unwrap();
-        assert!(!stdout.contains("error TS2448:"), "{}: {stdout}", case.id);
-        assert!(
-            !stdout.contains("has no corresponding location"),
-            "{}: {stdout}",
-            case.id
-        );
+        // Exact expected codes plus authored file/position ownership below reject
+        // generated TDZ errors; every original stream remains in its full packet.
         let diagnostics = stdout
             .lines()
             .filter(|line| line.contains(": error TS"))
@@ -253,8 +249,17 @@ fn reported_components_and_typed_controls_keep_real_diagnostics() {
             if let Some(exact) = &expected.message {
                 assert_eq!(message, exact, "{}: {stdout}", case.id);
             }
-            if let Some(fragment) = &expected.message_contains {
-                assert!(stdout.contains(fragment), "{}: {stdout}", case.id);
+            if let Some(property) = &expected.missing_required_property {
+                let required = stdout
+                    .lines()
+                    .filter_map(|line| {
+                        line.trim_start()
+                            .strip_prefix("Property '")
+                            .and_then(|tail| tail.split_once("' is missing in type "))
+                            .map(|(name, _)| name)
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(required, vec![property.as_str()], "{}: {stdout}", case.id);
             }
             let prefix = format!("{}(", expected.file);
             let position = location
@@ -287,7 +292,7 @@ fn reported_components_and_typed_controls_keep_real_diagnostics() {
                 })
                 .unwrap();
             assert!(
-                (start..=end).contains(&actual_byte),
+                start <= actual_byte && actual_byte <= end,
                 "{}: authored owner {start}..{end}, actual {actual_byte}: {stdout}",
                 case.id
             );

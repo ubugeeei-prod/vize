@@ -215,8 +215,13 @@ defineProps<Props>()
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    let previous = include_str!(
+        "snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__legacy_vue2_unresolved_keyed_props_are_unchecked.snap"
+    );
+    let (_, previous_legacy) = previous.split_once("\n=== legacy ===\n").unwrap();
+    assert_eq!(legacy, previous_legacy, "Vue 2 output stays byte-exact");
     insta::assert_snapshot!(
-        "legacy_vue2_unresolved_keyed_props_are_unchecked",
+        "legacy_vue2_unresolved_keyed_props_are_unchecked_kebab_registry",
         format!("=== standard ===\n{standard}\n=== legacy ===\n{legacy}")
     );
 }

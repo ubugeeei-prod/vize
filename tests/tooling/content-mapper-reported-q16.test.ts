@@ -53,6 +53,10 @@ const delegatedCalls = {
     "  router-experimental:\n    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)\n    uses: ./.github/workflows/content-mapper-reported-q16.yml\n    with:\n      request: ${{ toJSON(inputs) }}\n",
 };
 function restoreDelegatedJobs(value: string) {
+  value = value.replace(
+    'options: [all, A, A-with-declaration, B, C, D, "11373"]',
+    "options: [all, A, A-with-declaration, B, C, D]",
+  );
   const names = Object.keys(delegatedCalls) as (keyof typeof delegatedCalls)[];
   for (const [i, name] of names.entries()) {
     const start = childWorkflow.indexOf("  " + name + ":\n"),
@@ -61,7 +65,12 @@ function restoreDelegatedJobs(value: string) {
           ? childWorkflow.indexOf("  " + names[i + 1] + ":\n", start)
           : childWorkflow.length;
     assert(start > 0 && end > start);
-    let body = childWorkflow.slice(start, end);
+    let body = childWorkflow
+      .slice(start, end)
+      .replace(
+        'with: { node-version: "${{ env.Q16_PROVIDER_NODE }}", package-manager-cache: false }',
+        'with: { node-version: "26.13.0", package-manager-cache: false }',
+      );
     for (const key of [
       "targeted-test",
       "expected-source-sha",
@@ -109,6 +118,7 @@ test("the selected After additions invert to the whole current 9fef workflow inc
     "B",
     "C",
     "D",
+    "11373",
   ]);
   assert.equal(data.on.workflow_dispatch.inputs["reported-q16-cases"].default, "all");
 });
@@ -213,7 +223,10 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
   assert.equal(steps.at(-1).if, "always()");
   assert.equal(steps.at(-1).with["if-no-files-found"], "error");
   assert(
-    steps.some((s: { with?: { [key: string]: string } }) => s.with?.["node-version"] === "26.13.0"),
+    steps.some(
+      (s: { with?: { [key: string]: string } }) =>
+        s.with?.["node-version"] === "${{ env.Q16_PROVIDER_NODE }}",
+    ),
   );
 });
 
@@ -387,6 +400,7 @@ test("closed subsets require exactly their declared compiled cases and leave ori
     B: ["generic"],
     C: ["dynamic"],
     D: ["nested"],
+    "11373": ["global-component-listener"],
   };
   for (const [key, ids] of Object.entries(expected)) {
     const selected = selectQ16Cases(key);
@@ -399,7 +413,7 @@ test("closed subsets require exactly their declared compiled cases and leave ori
     assert.throws(() => verifyQ16List(list.replace(selected[0][1] + ": test", ""), selected));
   }
   assert.deepEqual(selectQ16Cases("all"), q16Cases);
-  for (const bad of [undefined, null, "", "a", "all,B", "11373", "unknown"])
+  for (const bad of [undefined, null, "", "a", "all,B", "73", "unknown"])
     assert.throws(() => selectQ16Cases(bad));
   assert.throws(() => verifyQ16Inputs({ ...valid, Q16_CASE_SET: undefined }, source));
 });
@@ -466,7 +480,9 @@ test("cohesive job extraction preserves whole former jobs, inputs and global env
     "8c86c4c3f1a1eb8a0521f46365307e497618309ace637bf222e77871d07bc411",
   );
   const original = parse(restored);
-  assert.deepEqual(data.on, original.on);
+  const unchangedOn = structuredClone(data.on);
+  assert.equal(unchangedOn.workflow_dispatch.inputs["reported-q16-cases"].options.pop(), "11373");
+  assert.deepEqual(unchangedOn, original.on);
   assert.deepEqual(data.env, original.env);
   assert.deepEqual(childData.env, data.env);
   assert.deepEqual(childData.permissions, data.permissions);
@@ -482,7 +498,12 @@ test("cohesive job extraction preserves whole former jobs, inputs and global env
   assert(workflow.split("\n").length - 1 <= 726);
   assert(childWorkflow.split("\n").length - 1 < 500);
   assert.equal(
-    workflow.slice(0, workflow.indexOf("  reported-q16:\n")),
+    workflow
+      .slice(0, workflow.indexOf("  reported-q16:\n"))
+      .replace(
+        'options: [all, A, A-with-declaration, B, C, D, "11373"]',
+        "options: [all, A, A-with-declaration, B, C, D]",
+      ),
     restored.slice(0, restored.indexOf("  reported-q16:\n")),
   );
   for (const job of Object.keys(original.jobs).filter((key) => !(key in delegatedCalls)))

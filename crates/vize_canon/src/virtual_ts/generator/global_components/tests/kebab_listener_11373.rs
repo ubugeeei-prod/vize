@@ -64,11 +64,21 @@ fn original_mapper_outputs_keep_typed_global_declarations_before_values() {
         } else {
             "$GlobalComponent<\"GlobalLink\", \"globalLink\", \"global-link\">"
         };
-        assert!(line.contains(expected), "{id}: {line}");
-        assert!(
-            !transform
-                .text
-                .contains(&format!("const {reference}: any = undefined as any")),
+        assert_eq!(
+            line,
+            format!("{declaration} $GlobalComponentFallback & {expected};"),
+            "{id}"
+        );
+        let late = format!("const {reference}:");
+        let late_bindings = transform
+            .text
+            .lines()
+            .map(str::trim_start)
+            .filter(|line| line.starts_with(&late))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            late_bindings,
+            Vec::<&str>::new(),
             "{id}: {}",
             transform.text
         );
@@ -110,20 +120,31 @@ fn default_unknown_and_local_component_policies_remain_separate() {
     ] {
         println!("vize-global-listener-policy id={id} result={result:#?}");
     }
-    assert!(
-        !default.code.contains("__vize_global_component_"),
+    let probes = |code: &str| {
+        code.lines()
+            .filter(|line| {
+                line.starts_with("const { \"unregistered-link\":")
+                    || line.starts_with("void __vize_global_component_")
+            })
+            .map(str::to_owned)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        probes(&default.code),
+        Vec::<String>::new(),
         "{}",
         default.code
     );
-    assert!(
-        checked.code.contains("__vize_global_component_"),
-        "{}",
-        checked.code
-    );
-    assert!(
-        !local.code.contains("declare const global_link:"),
-        "{}",
-        local.code
-    );
-    assert!(!local.code.contains("$GlobalComponent<"), "{}", local.code);
+    assert_eq!(probes(&checked.code), vec![
+        "const { \"unregistered-link\": __vize_global_component_0 } = {} as (\"UnregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregistered-link\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : {});".to_owned(),
+        "void __vize_global_component_0;".to_owned(),
+    ], "{}", checked.code);
+    let local_registry = local
+        .code
+        .lines()
+        .filter(|line| {
+            line.starts_with("declare const ") || line.starts_with("type $GlobalComponent<")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(local_registry, Vec::<&str>::new(), "{}", local.code);
 }
