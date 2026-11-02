@@ -1,0 +1,22 @@
+<template>
+	<div>{{ kind }} {{ table.a }}</div>
+</template>
+
+<script lang="ts">
+import { computed } from 'vue';
+
+export type Info = { a: number; b: string };
+
+export const table = computed(() => ({ a: 1 }));
+const wrong: number = 'x';
+export function pick(value) { return value; }
+
+export default {
+	inheritAttrs: false,
+	name: 1 as unknown as boolean & string,
+};
+</script>
+
+<script lang="ts" setup generic="T extends keyof Info">
+defineProps<{ kind: T }>();
+</script>

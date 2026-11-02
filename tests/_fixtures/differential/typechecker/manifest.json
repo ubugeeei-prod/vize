@@ -12235,6 +12235,40 @@
       }
     },
     {
+      "id": "typechecker/regression/misskey-module-default-export",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-module-default-export/Label.vue.txt",
+          "sha256": "49f527e8b0f1bcef4927381e88ad152ca841c66eb42fe9866159a5c4984b3635",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-module-default-export/Picker.vue.txt",
+          "sha256": "ea90e59666625032a60a33bb09d71b0ee341963354ede4b66cb43b189829500f",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::module_default_export::module_default_export_rewrite_keeps_authored_positions; misskey MkAutocomplete-shaped paired script with a generic setup and a rewritten default export, plus a quoted export-default control. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-setup-local-public-types",
       "state": "active",
       "targets": [

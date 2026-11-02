@@ -10,6 +10,8 @@ tests/_fixtures/differential/typechecker/content-mapper-let-anchor-assignment/*.
 tests/_fixtures/differential/typechecker/content-mapper-template-model-props/*.txt text eol=lf
 # Directive table inputs are consumed by Content Mapper tests.
 tests/_fixtures/differential/typechecker/content-mapper-directive-tables/*.txt text eol=lf
+# Module default-export inputs are consumed by Content Mapper tests.
+tests/_fixtures/differential/typechecker/content-mapper-module-default-export/*.txt text eol=lf
 # Original commented else-if report inputs are consumed by Content Mapper tests.
 tests/_fixtures/differential/typechecker/commented-vif-11378/*.txt text eol=lf
 # Original nested callback report inputs are physically consumed by Content Mapper tests.
