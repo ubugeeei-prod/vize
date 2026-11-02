@@ -3,6 +3,7 @@ import {
   contract,
   hash,
   image,
+  inputPacketName,
   json,
   managerRoute,
   object,
@@ -360,7 +361,7 @@ export async function run() {
         verifyInputs(project, files);
       };
       writeInputs(current);
-      save(issue + "-original-inputs", current);
+      save(inputPacketName(issue), current);
       const installed = execute(issue + "-original-install", project, ["install"]);
       assert.equal(installed.status, 0);
       assert.equal(installed.error, null);
@@ -450,7 +451,7 @@ export async function run() {
       for (const state of states) {
         await custody(issue + "-" + state + "-prior");
         writeInputs(stateFiles(issue, state));
-        save(issue + "-" + state + "-inputs", current);
+        save(inputPacketName(issue, state), current);
         await custody(issue + "-" + state + "-pre");
         const result = execute(issue + "-" + state, project, argumentsFor(issue, state));
         observations.push({ issue, state, result, cwd: project });

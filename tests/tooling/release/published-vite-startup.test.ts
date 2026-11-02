@@ -318,3 +318,22 @@ test("actual 644 main-producer attestation binds exact scoped subject and reject
     object((p.subject as unknown[])[0]).digest = { sha512: "0".repeat(128) };
   });
 });
+
+test("initial reported inputs cannot collide with the original state packet", async () => {
+  const { inputPacketName } =
+    await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
+  const labels = [inputPacketName(11375), inputPacketName(11376)];
+  for (const state of ["original-vize", "original-official", "import-invalid", "import-repaired"])
+    labels.push(inputPacketName(11375, state));
+  for (const state of [
+    "original",
+    "sentinel-canonical",
+    "sentinel-ignore-override",
+    "sentinel-scan-override",
+  ])
+    labels.push(inputPacketName(11376, state));
+  assert.equal(labels.length, 10);
+  assert.equal(new Set(labels).size, 10);
+  assert.equal(inputPacketName(11376), "11376-reported-inputs");
+  assert.equal(inputPacketName(11376, "original"), "11376-original-inputs");
+});

@@ -243,3 +243,7 @@ export function authenticateProvenance(name: string, dist: ObjectValue, value: u
     cryptographicSignatureVerificationPerformed: false,
   };
 }
+
+export function inputPacketName(issue: number, state?: string) {
+  return state === undefined ? `${issue}-reported-inputs` : `${issue}-${state}-inputs`;
+}
