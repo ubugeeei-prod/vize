@@ -46,6 +46,14 @@ impl Drawer {
                 })
     }
 
+    /// New admissions must not shadow an authored value or be captured by
+    /// an already active template binding with the generated alias spelling.
+    pub(super) fn new_dynamic_alias_is_unbound(&self, start: u32) -> bool {
+        let alias = dynamic_component_alias(start);
+        !self.croquis.bindings.contains(alias.as_str())
+            && self.croquis.scopes.lookup(alias.as_str()).is_none()
+    }
+
     pub(super) fn dynamic_target_has_script_root(&self, target: &str) -> bool {
         let Some(root) = target.split('.').next() else {
             return false;

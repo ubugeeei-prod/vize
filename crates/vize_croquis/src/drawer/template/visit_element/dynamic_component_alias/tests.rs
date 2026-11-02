@@ -84,3 +84,14 @@ fn guarded_script_member_uses_one_owned_capture_and_preserves_its_guard() {
         );
     }
 }
+
+#[test]
+fn new_computed_admission_does_not_shadow_an_existing_script_value() {
+    let template = r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#;
+    let start = template.find("<component").expect("authored component") as u32;
+    let alias = super::dynamic_component_alias(start);
+    let script = vize_carton::cstr!(
+        "import Child from './Child.vue'; const map = {{ foo: Child }}; const key = 'foo'; const {alias} = 1;"
+    );
+    assert!(!captured_target(script.as_str(), template));
+}

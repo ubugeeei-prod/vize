@@ -238,10 +238,11 @@ impl Drawer {
                 // narrows its actual script root, not queried again at root.
                 let guarded = self.current_vif_guard().is_some()
                     || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else")));
-                let owns_scope = !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "scope"));
+                let owns_scope = !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "scope" | "for")));
                 if target.contains('.') && guarded && owns_scope
                     && self.in_template_root_scope()
                     && self.dynamic_target_has_script_root(target.as_str())
+                    && self.new_dynamic_alias_is_unbound(el.loc.span.start)
                     && !dynamic_is_captures_same_element_for_alias(el, target.as_str(), &self.template_source)
                 {
                     return Some(CompactString::new(dynamic_component_alias(el.loc.span.start)));
@@ -253,7 +254,8 @@ impl Drawer {
             // globals and same-element v-for captures still cannot be hoisted.
             ((self.in_template_root_scope()
                 || (self.current_vif_guard().is_none()
-                    && !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else")))
+                    && !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else" | "for" | "scope")))
+                    && self.new_dynamic_alias_is_unbound(el.loc.span.start)
                     && self.dynamic_index_has_only_script_values(exp)))
                 && !dynamic_is_captures_same_element_for_alias(
                     el,
