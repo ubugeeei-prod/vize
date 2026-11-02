@@ -255,12 +255,13 @@ fn dependency_modules_are_resolved_once_per_snapshot_and_shared_between_worlds()
     let second = resolve("Second", &sources);
 
     // Both roots see the same declarations through the shared dependencies.
+    let models_key = super::path_key(&super::source_path(&dir.path().join("models.ts")));
     for world in [&first, &second] {
         assert_eq!(body(world, "Public"), "{ item: Other }");
         let TypeLookup::Found(model) = world.resolve(&world.root_module, "Model") else {
             panic!("star-exported interface resolves")
         };
-        assert!(model.module.ends_with("models.ts"), "{}", model.module);
+        assert_eq!(model.module, models_key);
         assert_eq!(world.modules.len(), 4);
     }
     assert_ne!(first.root_module, second.root_module);
@@ -351,11 +352,10 @@ fn barrel_dependencies_are_resolved_once_however_many_worlds_import_them() {
         else {
             panic!("barrel export resolves")
         };
-        assert!(
-            id.module.ends_with(cstr!("m{index}.ts").as_str()),
-            "{}",
-            id.module
-        );
+        let model_key = super::path_key(&super::source_path(
+            &models.join(cstr!("m{index}.ts").as_str()),
+        ));
+        assert_eq!(id.module, model_key);
         assert_eq!(world.modules.len(), 34);
     }
     // The 33 dependencies were resolved exactly once for all eight worlds.
