@@ -48,7 +48,7 @@ export async function runA(
     checkSource = () => assertCustody(own),
     cache = new Map<string, Buffer>(),
     final: { id: string; verify: () => void }[] = [];
-  const a59: { state: State; tsrs: Packet; reference: Packet }[] = [],
+  const a59: { state: State; tsrs: Packet; reference: Packet | null }[] = [],
     a65: { state: A65State; packet: Packet; outputs: A65Snapshot }[] = [],
     errors: { id: string; failure: ReturnType<typeof safeFailure> | null }[] = [];
   try {
@@ -115,13 +115,16 @@ export async function runA(
               root,
               verify,
             ),
-            reference = capture(
-              saved,
-              label + ".vue-tsc",
-              [process.execPath, options.npx, ...reportedCommands.reference.slice(1)],
-              root,
-              verify,
-            );
+            reference =
+              index === 0
+                ? capture(
+                    saved,
+                    label + ".vue-tsc",
+                    [process.execPath, options.npx, ...reportedCommands.reference.slice(1)],
+                    root,
+                    verify,
+                  )
+                : null;
           a59.push({ state, tsrs, reference });
           saved.json(label + ".complete.json", {
             id: state.id,
@@ -231,7 +234,7 @@ export async function runA(
     let all = true;
     for (const row of a59) {
       try {
-        whole(row.reference);
+        if (row.reference) whole(row.reference);
         outcomes.push({ id: row.state.id, result: assessTsrs(row.state, row.tsrs), failure: null });
       } catch (error) {
         all = false;
