@@ -50,8 +50,8 @@ export function mergeCompilerOptions(
     runtimeGlobalName: options.runtimeGlobalName ?? compilerConfig.runtimeGlobalName ?? "Vue",
     include: options.include ?? viteConfig.include,
     exclude: options.exclude ?? viteConfig.exclude,
-    scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
+    scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns ?? sharedConfig?.files,
     precompileBatchSize: options.precompileBatchSize ?? viteConfig.precompileBatchSize,
-    ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns,
+    ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns ?? sharedConfig?.ignores,
   };
 }

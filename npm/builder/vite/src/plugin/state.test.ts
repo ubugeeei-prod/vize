@@ -130,7 +130,7 @@ const brokenPrecompileState: VizePluginState = {
 await assert.rejects(
   () => compileAll(brokenPrecompileState),
   /Pre-compilation failed for 1 file\(s\)[\s\S]*Broken\.vue/,
-  "Pre-compilation errors should fail buildStart instead of continuing with a partial cache",
+  "Direct pre-compilation must retain its error; startup decides whether diagnostics can defer",
 );
 assert.equal(
   brokenPrecompileState.cache.has(path.join(brokenPrecompileRoot, "Broken.vue")),
