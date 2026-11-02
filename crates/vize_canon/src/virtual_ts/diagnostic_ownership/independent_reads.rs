@@ -486,9 +486,11 @@ mod tests {
     fn mixed_script_programs_do_not_prove_one_setup_binding_frame() {
         let mut analyzer =
             vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
-        analyzer.analyze_script_plain("export const outer = 1;");
         analyzer.analyze_script_setup(SCRIPT);
-        let summary = analyzer.finish();
+        let mut summary = analyzer.finish();
+        summary.merge_plain_script(
+            vize_croquis::script_parser::parse_script("export const outer = 1;").into_croquis(),
+        );
         assert!(!vize_croquis::facts::bindings::has_single_setup_binding_frame(&summary));
     }
 }
