@@ -51,6 +51,8 @@ pub(crate) use module_target::{
 };
 #[cfg(feature = "native")]
 pub use state::BatchTypeCheckCache;
+#[cfg(feature = "native")]
+pub(crate) use state::CorsaRequestStamp;
 pub use state::{LspFeatureConfig, ServerState};
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use state::{

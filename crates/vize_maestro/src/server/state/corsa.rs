@@ -9,6 +9,14 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError};
 
 use super::ServerState;
 
+mod initial_project;
+use initial_project::InitialCanonicalSource;
+
+type InitialBridge = (
+    Arc<CorsaBridge>,
+    Option<vize_canon::CorsaInitialVueDocument>,
+);
+
 impl ServerState {
     /// `extends` entries the admitted compiler configuration skipped.
     pub(crate) fn unresolved_tsconfig_extends(&self) -> Vec<vize_canon::UnresolvedExtends> {
@@ -45,6 +53,15 @@ impl ServerState {
     ///
     /// Returns `None` if Corsa is not available or failed to initialize.
     pub async fn get_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
+        self.get_corsa_bridge_with_initial_source(None)
+            .await
+            .map(|(bridge, _)| bridge)
+    }
+
+    async fn get_corsa_bridge_with_initial_source(
+        &self,
+        initial: Option<InitialCanonicalSource<'_>>,
+    ) -> Option<InitialBridge> {
         if self.project_context_retired() || !self.is_lsp_typecheck_enabled() {
             tracing::info!(
                 "Skipping Corsa bridge initialization because LSP typecheck is disabled"
@@ -59,7 +76,7 @@ impl ServerState {
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {
-                return Some(bridge);
+                return Some((bridge, None));
             }
             if bridge.is_initialized() {
                 self.retire_corsa_bridge(&bridge);
@@ -84,7 +101,7 @@ impl ServerState {
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {
-                return Some(bridge);
+                return Some((bridge, None));
             }
             if bridge.is_initialized() {
                 self.retire_corsa_bridge(&bridge);
@@ -129,7 +146,13 @@ impl ServerState {
 
         // The bridge's worker-owned async reply yields while its synchronous
         // handshake drains, and enforces the configured deadline (#8012).
-        let spawned = bridge.spawn().await;
+        let Some((spawned, initial_document)) = self
+            .spawn_initial_corsa_bridge(&bridge, initial.as_ref(), generation)
+            .await
+        else {
+            self.discard_corsa_startup(&bridge);
+            return None;
+        };
         if self.project_context_retired()
             || self.corsa_environment_changes.load(Ordering::Acquire) != 0
             || generation != self.corsa_environment_revision.load(Ordering::Acquire)
@@ -142,7 +165,7 @@ impl ServerState {
             Ok(()) => {
                 tracing::info!("corsa bridge initialized successfully");
                 if self.flush_corsa_disk_state_if_dirty(&bridge).await {
-                    Some(bridge)
+                    Some((bridge, initial_document))
                 } else {
                     self.retire_corsa_bridge(&bridge);
                     None
@@ -291,7 +314,10 @@ impl ServerState {
     /// Configuration owns the cached process. Retire without waiting for IPC;
     /// worker keepalive lets an abandoned old session finish on its own lane.
     pub(super) fn retire_corsa_configuration(&self) {
-        *self.corsa_bridge.write() = None;
+        let previous = self.corsa_bridge.write().take();
+        if let Some(bridge) = previous {
+            bridge.stop_pending_startup();
+        }
         self.corsa_init_failed.store(false, Ordering::SeqCst);
         *self.corsa_init_failure_reason.write() = None;
         self.typecheck_unavailable_notified
