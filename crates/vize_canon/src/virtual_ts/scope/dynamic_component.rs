@@ -71,7 +71,7 @@ pub(super) fn emit_dynamic_component_aliases(
         // diagnostics; the alias only has to carry its type.
         // The original Program proves equal declared entry types. Select an
         // actual constant-key property to retain ordinary literal widening.
-        let annotation = homogeneous_index::value(summary, root, usage)
+        let annotation = homogeneous_index::value(summary, root, &usage)
             .map(|value| vize_carton::cstr!(": {value}"))
             .unwrap_or_default();
         if let Some(guard) = &usage.vif_guard {
