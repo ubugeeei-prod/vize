@@ -12201,6 +12201,40 @@
       }
     },
     {
+      "id": "typechecker/regression/misskey-component-v-for-source",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-component-v-for-source/Child.vue.txt",
+          "sha256": "ac05e4daeed3a5890344f176827e887c009f09a04934615e507e4df6a682ffeb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-component-v-for-source/Rows.vue.txt",
+          "sha256": "d50b422e856ef19bfee2ce659ed2e1a71c146c58655048b53c8c5b59be4a6f76",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::component_v_for_source::component_v_for_source_reports_once; misskey roles.vue-shaped component v-for whose source callback is implicitly any, with a genuine prop error control. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-let-anchor-assignment",
       "state": "active",
       "targets": [
