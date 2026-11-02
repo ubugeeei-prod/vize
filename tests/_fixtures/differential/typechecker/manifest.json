@@ -12848,6 +12848,51 @@
       }
     },
     {
+      "id": "typechecker/tsx-script-syntax-projection/typescript-only-syntax",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "55a59792b3105654031c577bb2fa93ce913d8ad7",
+      "inputs": [
+        {
+          "path": "tsx-script-syntax-projection/Clean.vue.txt",
+          "sha256": "ea20c1f7dd1e1bcbdb6da3d27d5f96ee412c67a03066408abfdfca4190851cfc",
+          "role": "physically-consumed-generic-arrows-and-assertions-across-script-template-and-tsx-safe-controls"
+        },
+        {
+          "path": "tsx-script-syntax-projection/Plain.vue.txt",
+          "sha256": "ae855ba820e16b59346fc64152ac07f0085ed9bfe64afabb3995890a203fbecb",
+          "role": "physically-consumed-plain-script-generic-arrow-and-assertion"
+        },
+        {
+          "path": "tsx-script-syntax-projection/Generic.vue.txt",
+          "sha256": "817c4bd7f33bbbbbd1f8d7ebedff165d0100581a3ff09d4905f0e0b46fbb4cc9",
+          "role": "physically-consumed-generic-setup-arrow-and-assertion"
+        },
+        {
+          "path": "tsx-script-syntax-projection/Errors.vue.txt",
+          "sha256": "a5c21009a741313bc8458763b5c8750c06661cb4feea6bcf69497683dc4101d4",
+          "role": "physically-consumed-authored-error-positions-matching-official-mapper"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::tsx_script_syntax::standard_tsgo_checks_ts_only_generic_arrows_and_assertions; input-only registration, source/native/public qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"

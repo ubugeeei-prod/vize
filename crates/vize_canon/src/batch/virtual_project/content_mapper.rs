@@ -162,6 +162,7 @@ fn transform_with_diagnostic_ownership(
             hoist_shared_preamble: transform_options.shared_virtual_module(),
             inline_auto_import_stubs: true,
             omit_vite_client_reference: true,
+            tsx_module: true,
             runtime_prop_resolve_cache: None,
         },
     )?;

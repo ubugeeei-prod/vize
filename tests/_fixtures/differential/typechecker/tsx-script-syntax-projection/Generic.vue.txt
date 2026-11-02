@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T extends string">
+const props = defineProps<{ value: T }>();
+const echo = <U>(input: U) => input;
+const typed = <T>props.value;
+</script>
+<template>{{ echo(typed) }}</template>
