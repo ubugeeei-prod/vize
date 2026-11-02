@@ -1,0 +1,287 @@
+{
+  "id": "E90-91",
+  "sourceAuthority": {
+    "input": {
+      "source": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "path": "tests/_fixtures/differential/typechecker/reported-model-events-11390-11391/input.json",
+      "sha256": "d9ee0ab0f0c5be0bf56fed8913f7c910076bc6f08d8166e42d7c6a55f611658f"
+    },
+    "independentProducer": {
+      "source": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "path": "crates/vize/tests/content_mapper_tsgo_cli/reported_model_events_11390_11391.rs",
+      "sha256": "ccf081ac3ea96055aa93eacca9d547b8dc68dc94038a9a1fcbf75f9095620ddb"
+    },
+    "sourceAfterOrMergeQualified": false,
+    "sourceFixMerge": null,
+    "publicTarget": null,
+    "originalArgv": [
+      "npm",
+      "i",
+      "&&",
+      "npx",
+      "tsrs",
+      "--fast",
+      "--runExternalCode",
+      "-p",
+      "tsconfig.json"
+    ],
+    "vueTscCommandOrOracleOwned": false,
+    "reporterWindowsOrNativeCompilerPidClaimed": false,
+    "reportedNativeAliasIsNotPhysicalCompilerProof": true,
+    "report91WebExampleIsNotAnOriginalApplicationClaim": true,
+    "fullPrinterTextUnknownForTwoListenerCases": true,
+    "captureOrder": "two report projects; frozen source case order preserved within each report"
+  },
+  "projects": [
+    {
+      "id": "issue-11390",
+      "issue": 11390,
+      "states": [
+        {
+          "id": "11390/typed-original-17",
+          "phase": "typed-original-17",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-boundary-16",
+          "phase": "typed-boundary-16",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-no-model-24",
+          "phase": "typed-no-model-24",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{\ne0: [value: number];\ne1: [value: number];\ne2: [value: number];\ne3: [value: number];\ne4: [value: number];\ne5: [value: number];\ne6: [value: number];\ne7: [value: number];\ne8: [value: number];\ne9: [value: number];\ne10: [value: number];\ne11: [value: number];\ne12: [value: number];\ne13: [value: number];\ne14: [value: number];\ne15: [value: number];\ne16: [value: number];\ne17: [value: number];\ne18: [value: number];\ne19: [value: number];\ne20: [value: number];\ne21: [value: number];\ne22: [value: number];\ne23: [value: number];\n}>();\n</script>\n<template><div /></template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-generic-17",
+          "phase": "typed-generic-17",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\" generic=\"T\">\ndefineEmits<{ e0: [value: T] }>();\ndefineModel<T>(\"m0\");\ndefineModel<T>(\"m1\");\ndefineModel<T>(\"m2\");\ndefineModel<T>(\"m3\");\ndefineModel<T>(\"m4\");\ndefineModel<T>(\"m5\");\ndefineModel<T>(\"m6\");\ndefineModel<T>(\"m7\");\ndefineModel<T>(\"m8\");\ndefineModel<T>(\"m9\");\ndefineModel<T>(\"m10\");\ndefineModel<T>(\"m11\");\ndefineModel<T>(\"m12\");\ndefineModel<T>(\"m13\");\ndefineModel<T>(\"m14\");\ndefineModel<T>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-payload-right",
+          "phase": "typed-payload-right",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\", \"src/Listener.ts\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            },
+            {
+              "path": "src/Listener.ts",
+              "source": "import Probe from './Probe.vue';\nconst handler = (value: number) => { void value; };\nconst listener: InstanceType<typeof Probe>[\"$props\"][\"onE0\"] = handler;\nvoid listener;\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-payload-wrong",
+          "phase": "typed-payload-wrong",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\", \"src/Listener.ts\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            },
+            {
+              "path": "src/Listener.ts",
+              "source": "import Probe from './Probe.vue';\nconst handler = (value: string) => { void value; };\nconst listener: InstanceType<typeof Probe>[\"$props\"][\"onE0\"] = handler;\nvoid listener;\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Listener.ts(3,7): error TS2322",
+            "stderr": "",
+            "stdoutKind": "OWNED_HEADER_OPAQUE_PRINTER",
+            "sourceInputSha256": "9135e54398a06920714a10736504841e50648be8eedb14f4c22c73ee1505ef07"
+          }
+        },
+        {
+          "id": "11390/typed-payload-repaired",
+          "phase": "typed-payload-repaired",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\", \"src/Listener.ts\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            },
+            {
+              "path": "src/Listener.ts",
+              "source": "import Probe from './Probe.vue';\nconst handler = (value: number) => { void value; };\nconst listener: InstanceType<typeof Probe>[\"$props\"][\"onE0\"] = handler;\nvoid listener;\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-authored-error",
+          "phase": "typed-authored-error",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\nconst probeText: number = \"a\"; void probeText;\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(3,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/typed-representative-100",
+          "phase": "typed-representative-100",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{\ne0: [value: number];\ne1: [value: number];\ne2: [value: number];\ne3: [value: number];\ne4: [value: number];\ne5: [value: number];\ne6: [value: number];\ne7: [value: number];\ne8: [value: number];\ne9: [value: number];\ne10: [value: number];\ne11: [value: number];\ne12: [value: number];\ne13: [value: number];\ne14: [value: number];\ne15: [value: number];\ne16: [value: number];\ne17: [value: number];\ne18: [value: number];\ne19: [value: number];\ne20: [value: number];\ne21: [value: number];\ne22: [value: number];\ne23: [value: number];\ne24: [value: number];\ne25: [value: number];\ne26: [value: number];\ne27: [value: number];\ne28: [value: number];\ne29: [value: number];\ne30: [value: number];\ne31: [value: number];\ne32: [value: number];\ne33: [value: number];\ne34: [value: number];\ne35: [value: number];\ne36: [value: number];\ne37: [value: number];\ne38: [value: number];\ne39: [value: number];\ne40: [value: number];\ne41: [value: number];\ne42: [value: number];\ne43: [value: number];\ne44: [value: number];\ne45: [value: number];\ne46: [value: number];\ne47: [value: number];\ne48: [value: number];\ne49: [value: number];\n}>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\ndefineModel<number>(\"m16\");\ndefineModel<number>(\"m17\");\ndefineModel<number>(\"m18\");\ndefineModel<number>(\"m19\");\ndefineModel<number>(\"m20\");\ndefineModel<number>(\"m21\");\ndefineModel<number>(\"m22\");\ndefineModel<number>(\"m23\");\ndefineModel<number>(\"m24\");\ndefineModel<number>(\"m25\");\ndefineModel<number>(\"m26\");\ndefineModel<number>(\"m27\");\ndefineModel<number>(\"m28\");\ndefineModel<number>(\"m29\");\ndefineModel<number>(\"m30\");\ndefineModel<number>(\"m31\");\ndefineModel<number>(\"m32\");\ndefineModel<number>(\"m33\");\ndefineModel<number>(\"m34\");\ndefineModel<number>(\"m35\");\ndefineModel<number>(\"m36\");\ndefineModel<number>(\"m37\");\ndefineModel<number>(\"m38\");\ndefineModel<number>(\"m39\");\ndefineModel<number>(\"m40\");\ndefineModel<number>(\"m41\");\ndefineModel<number>(\"m42\");\ndefineModel<number>(\"m43\");\ndefineModel<number>(\"m44\");\ndefineModel<number>(\"m45\");\ndefineModel<number>(\"m46\");\ndefineModel<number>(\"m47\");\ndefineModel<number>(\"m48\");\ndefineModel<number>(\"m49\");\n</script>\n<template><div /></template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11390/restored-typed-original",
+          "phase": "restored-typed-original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"7.1.0-beta\", \"vize\": \"0.645.0\", \"vue\": \"3.5.44\" }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/Probe.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ndefineEmits<{ e0: [value: number] }>();\ndefineModel<number>(\"m0\");\ndefineModel<number>(\"m1\");\ndefineModel<number>(\"m2\");\ndefineModel<number>(\"m3\");\ndefineModel<number>(\"m4\");\ndefineModel<number>(\"m5\");\ndefineModel<number>(\"m6\");\ndefineModel<number>(\"m7\");\ndefineModel<number>(\"m8\");\ndefineModel<number>(\"m9\");\ndefineModel<number>(\"m10\");\ndefineModel<number>(\"m11\");\ndefineModel<number>(\"m12\");\ndefineModel<number>(\"m13\");\ndefineModel<number>(\"m14\");\ndefineModel<number>(\"m15\");\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}
