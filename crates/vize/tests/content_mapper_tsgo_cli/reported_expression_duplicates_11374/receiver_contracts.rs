@@ -55,8 +55,10 @@ fn receiver_echoes_preserve_contextual_and_typed_fallthrough_contracts() {
         let vue_manifest =
             std::fs::canonicalize(root.join("node_modules/vue/package.json")).unwrap();
         let output = check_project(&tsgo, root, "tsconfig.json");
+        let companion = (id == "typed-fallthrough-wrong").then(|| mapper_companion(root, state));
         observations.push(json!({
             "id": id,
+            "mapperCompanion": companion,
             "scope": input["scope"],
             "cwd": root,
             "sources": state["sources"],
@@ -123,6 +125,54 @@ fn receiver_echoes_preserve_contextual_and_typed_fallthrough_contracts() {
                 stdout.contains(state["expectedMessage"].as_str().unwrap()),
                 "{id}: {stdout}"
             );
+        }
+    }
+}
+
+// This is a separate source-CLI protocol observation, not the checker process's
+// mapper PID. Preserve the complete request and response without an oracle.
+fn mapper_companion(root: &std::path::Path, state: &Value) -> Value {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    let config: Value = serde_json::from_str(state["config"].as_str().unwrap()).unwrap();
+    let mut requests = vec![
+        json!({"jsonrpc":"2.0","id":0,"method":"initialize","params":{"positionEncodings":["utf-8"]}}),
+        json!({"jsonrpc":"2.0","id":1,"method":"openProject","params":{"projectHandle":"receiver-11374","configFileName":root.join("tsconfig.json"),"options":{},"compilerOptions":config["compilerOptions"]}}),
+    ];
+    for (name, text) in state["sources"].as_object().unwrap() {
+        if name.ends_with(".vue") {
+            requests.push(json!({"jsonrpc":"2.0","id":requests.len(),"method":"transform","params":{"projectHandle":"receiver-11374","fileName":root.join("src").join(name),"content":text}}));
+        }
+    }
+    let mut input = Vec::new();
+    for request in &requests {
+        let body = serde_json::to_vec(request).unwrap();
+        write!(&mut input, "Content-Length: {}\r\n\r\n", body.len()).unwrap();
+        input.extend_from_slice(&body);
+    }
+    let mut child = match Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(root)
+        .arg("content-mapper")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+    {
+        Ok(child) => child,
+        Err(error) => {
+            return json!({"requests":requests,"stdin":input,"spawnError":error.to_string()});
+        }
+    };
+    let write_error = child
+        .stdin
+        .take()
+        .and_then(|mut stdin| stdin.write_all(&input).err());
+    match child.wait_with_output() {
+        Ok(output) => {
+            json!({"requests":requests,"stdin":input,"writeError":write_error.map(|error|error.to_string()),"status":output.status.code(),"stdout":output.stdout,"stderr":output.stderr})
+        }
+        Err(error) => {
+            json!({"requests":requests,"stdin":input,"writeError":write_error.map(|error|error.to_string()),"waitError":error.to_string()})
         }
     }
 }
