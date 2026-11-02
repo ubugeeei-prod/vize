@@ -112,7 +112,7 @@ pub(super) fn source_before(path: &str) -> String {
     let before_instance = if index < 3 {
         public_instance::source_before(path, &actual)
     } else {
-        actual
+        emit_overloads::source_before(path, actual)
     };
     previous(&before_instance, &load()["files"][index])
 }

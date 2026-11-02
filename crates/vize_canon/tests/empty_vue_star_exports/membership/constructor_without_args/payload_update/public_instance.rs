@@ -176,7 +176,9 @@ fn authenticate(bodies: &[String], update: &Value) {
     metadata(update);
     assert_eq!(bodies.len(), PATHS.len());
     for (body, record) in bodies.iter().zip(update["files"].as_array().unwrap()) {
-        image(body, record);
+        let historical =
+            super::emit_overloads::source_before(record["path"].as_str().unwrap(), body.clone());
+        image(&historical, record);
     }
     for record in update["sourceOwners"]
         .as_array()
