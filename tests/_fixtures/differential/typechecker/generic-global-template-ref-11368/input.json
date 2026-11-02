@@ -1,0 +1,33 @@
+{
+  "schema": "vize.reported-generic-component-input.v1",
+  "issue": 11368,
+  "originalReport": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11368",
+    "sha256": "05ad6bcb1ce7f40920ff232d3204cb323282ac2990a77e738a90c7ab9f95259b",
+    "bodySha256": "30a30ad6c2dcdb5ffaa271c63abf21dee32050bbc528d84cd88175ee5882fa44",
+    "inputsSha256": "c133d76b42e91cf7f127373aa9c5352e900b6007e9cc01fc7860ad018821d7b7"
+  },
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+    },
+    {
+      "path": "src/Child.vue",
+      "source": "<script setup lang=\"ts\" generic=\"T\">\nconst foo = () => {};\n\ndefineExpose({ foo });\n</script>\n\n<template>\n  <div />\n</template>\n"
+    },
+    {
+      "path": "src/components.d.ts",
+      "source": "declare module \"vue\" {\n  export interface GlobalComponents {\n    Child: typeof import(\"./Child.vue\").default;\n  }\n}\n\nexport {};\n"
+    },
+    {
+      "path": "src/Probe.vue",
+      "source": "<script setup lang=\"ts\">\nimport { useTemplateRef } from \"vue\";\n\nconst child = useTemplateRef(\"child\");\nchild.value?.foo();\n</script>\n\n<template>\n  <Child ref=\"child\" />\n</template>\n"
+    }
+  ],
+  "scope": "Faithful original code-fence bodies. Source Actions use the compiled source CLI and actual selected Vue/native provider, recorded separately; no installed0.638 or Windows acceptance claim."
+}
