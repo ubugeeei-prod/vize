@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   filesFor,
+  profileFor,
   reportedCommands,
   subsetFor,
   type RegressionProfile,
@@ -26,6 +27,17 @@ const profile: RegressionProfile = {
   run: "123",
   capsule: "3".repeat(40),
 };
+test("C4 literal profile binds the genuine published 645 source candidate run and fetched role capsule", () => {
+  assert.deepEqual(profileFor(), {
+    subset: "C4",
+    fix: "8497bf74c5719c9bdb979b6664edcaa37fd50c54",
+    version: "0.645.0",
+    source: "8497bf74c5719c9bdb979b6664edcaa37fd50c54",
+    candidate: "d51d2ebcde3fe02a6ba661de44e52518db14d114",
+    run: "41429234609",
+    capsule: "62465861260a3ba82ead39bada8c255b6f34e8e9",
+  });
+});
 function temporary(run: (root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "q16-c4-")));
   try {
