@@ -358,30 +358,29 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         mkdir -p "$VIZE_OWNED_VUE_CAPTURE"
-        sha256sum "$CORSA_PATH" >"$VIZE_OWNED_VUE_CAPTURE/native.before.sha256"
-        "$CORSA_PATH" --version >"$VIZE_OWNED_VUE_CAPTURE/native.version"
         set +e
         cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::virtual_project::module_projection::owned_vue_imports::tests:: -- --nocapture --color never >"$VIZE_OWNED_VUE_CAPTURE/test.stdout" 2>"$VIZE_OWNED_VUE_CAPTURE/test.stderr"
         status=$?
         set -e
         printf '%s\n' "$status" >"$VIZE_OWNED_VUE_CAPTURE/test.status"
-        sha256sum "$CORSA_PATH" >"$VIZE_OWNED_VUE_CAPTURE/native.after.sha256"
         cat "$VIZE_OWNED_VUE_CAPTURE/test.stdout"
         cat "$VIZE_OWNED_VUE_CAPTURE/test.stderr" >&2
         node --input-type=module - "$VIZE_OWNED_VUE_CAPTURE" <<'NODE'
-        import {readFileSync,writeFileSync} from 'node:fs';
+        import {readFileSync,writeFileSync,existsSync} from 'node:fs';
         import {createHash} from 'node:crypto';
         import {execFileSync} from 'node:child_process';
         import {join} from 'node:path';
         const out=process.argv[2],stdout=readFileSync(join(out,'test.stdout')),stderr=readFileSync(join(out,'test.stderr'));
         const status=Number(readFileSync(join(out,'test.status'),'utf8').trim());
         const executed=/^test result: ok\. 6 passed; 0 failed; 0 ignored; /m.test(stdout.toString('utf8'))?6:0;
-        const before=readFileSync(join(out,'native.before.sha256'),'utf8'),after=readFileSync(join(out,'native.after.sha256'),'utf8');
+        const observation=name=>existsSync(join(out,name))?JSON.parse(readFileSync(join(out,name),'utf8')):null;
+        const before=observation('provider-before.json'),after=observation('provider-after.json');
         const sha=b=>createHash('sha256').update(b).digest('hex');
         writeFileSync(join(out,'test-run.json'),JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,status,executed,stdoutSha256:sha(stdout),stderrSha256:sha(stderr),nativeBefore:before,nativeAfter:after,scope:'Owned ordinary batch relative Vue imports; no performance or TSX/alias/package adoption claim'},null,2)+'\n');
         if(status!==0)process.exit(status);
         if(executed!==6)throw Error('owned Vue import controls did not execute exactly six tests');
-        if(before!==after)throw Error('native image changed during owned Vue import controls');
+        if(before===null||after===null)throw Error('successful controls did not retain both native image observations');
+        if(JSON.stringify(before)!==JSON.stringify(after))throw Error('native image changed during owned Vue import controls');
         NODE
     - name: Preserve owned Vue import complete observations
       if: ${{ always() && steps.owned-vue-imports.outcome != 'skipped' }}

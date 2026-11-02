@@ -5,11 +5,12 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_carton::{ToCompactString, cstr};
+use sha2::{Digest, Sha256};
+use vize_carton::{String, ToCompactString, cstr};
 
 use super::{CHILD, packet, project, register};
 use crate::batch::virtual_project::VirtualProject;
-use crate::batch::{BatchTypeChecker, DeclarationEmitOptions};
+use crate::batch::{BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions};
 
 fn save(directory: &Path, name: &str, value: serde_json::Value) {
     std::fs::create_dir_all(directory).unwrap();
@@ -74,6 +75,16 @@ fn snapshot(project: &VirtualProject, directory: &Path, phase: &str) {
     );
 }
 
+fn native_image(native: &Path) -> serde_json::Value {
+    let bytes = std::fs::read(native).unwrap();
+    let digest: String = Sha256::digest(&bytes)
+        .iter()
+        .map(|byte| cstr!("{byte:02x}"))
+        .collect();
+    serde_json::json!({"binary":native,"canonicalBinary":native.canonicalize().unwrap(),
+        "bytes":bytes.len(),"sha256":digest})
+}
+
 fn diagnostic_file_ids(text: &str, config: &Path) -> Vec<PathBuf> {
     text.lines()
         .map(|line| {
@@ -107,9 +118,14 @@ fn link_node_modules(root: &Path) {
 fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     let required = std::env::var("VIZE_TEST_REQUIRE_TSGO").is_ok_and(|value| value == "1");
     let disabled = std::env::var("VIZE_TEST_DISABLE_TSGO").is_ok_and(|value| value == "1");
-    let native = std::env::var_os("CORSA_PATH")
-        .map(PathBuf::from)
-        .filter(|path| path.is_file());
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .unwrap();
+    let native = match std::env::var_os("CORSA_PATH") {
+        Some(path) => Some(PathBuf::from(path)).filter(|path| path.is_file()),
+        None => vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace),
+    };
     if disabled || native.is_none() {
         assert!(
             !required,
@@ -123,6 +139,18 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         .unwrap_or_else(|| {
             std::env::temp_dir().join(cstr!("owned-vue-native-{}", std::process::id()).as_str())
         });
+    let before = native_image(&native);
+    save(&capture, "provider-before.json", before.clone());
+    let version = Command::new(&native).arg("--version").output();
+    let version_packet = match &version {
+        Ok(output) => serde_json::json!({"provider":before,"argv":["--version"],
+            "status":output.status.code(),"stdout":output.stdout,"stderr":output.stderr}),
+        Err(error) => {
+            serde_json::json!({"provider":before,"argv":["--version"],"error":error.to_compact_string()})
+        }
+    };
+    save(&capture, "provider-version.json", version_packet);
+    assert!(version.unwrap().status.success());
     for (mode, module) in [("bundler", "ESNext"), ("Node16", "Node16")] {
         let root = tempfile::tempdir().unwrap();
         link_node_modules(root.path());
@@ -268,7 +296,12 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     assert_eq!(text.matches("error TS").count(), 0, "{text}");
     assert!(direct_outputs.iter().all(|(present, _)| *present));
 
-    let mut checker = BatchTypeChecker::new(root.path()).unwrap();
+    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+        root.path(),
+        BatchTypeCheckerOptions::default(),
+        Some(&native),
+    )
+    .unwrap();
     checker.scan_project().unwrap();
     let out = root.path().join("types");
     save(
@@ -319,4 +352,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         diagnostic_file_ids(text, &config),
         [directory.join("consumer.ts")]
     );
+    let after = native_image(&native);
+    save(&capture, "provider-after.json", after.clone());
+    assert_eq!(after, before);
 }
