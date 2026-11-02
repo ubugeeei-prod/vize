@@ -68,17 +68,20 @@ fn added_echoes(before: &Value, after: &Value) -> Vec<[usize; 6]> {
 fn each_slot_inference_copy_has_an_expression_owner_without_changing_navigation() {
     for newline in ["\n", "\r\n"] {
         for prefix in ["", "<!-- 日本 🧭 -->"] {
-            for (children, slots) in [
-                ("", 0),
-                ("<span>x</span>", 0),
-                ("<template #header><span>x</span></template>", 1),
+            // (children, slots, slots with a binding)
+            for (children, slots, bound) in [
+                ("", 0, 0),
+                ("<span>x</span>", 0, 0),
+                ("<template #header><span>x</span></template>", 1, 0),
                 (
                     "<template #footer=\"{ total }\"><span>{{total}}</span></template>",
+                    1,
                     1,
                 ),
                 (
                     "<template #header><span>x</span></template><template #footer=\"{ total }\"><span>{{total}}</span></template>",
                     2,
+                    1,
                 ),
             ] {
                 let source = MIN
@@ -88,10 +91,12 @@ fn each_slot_inference_copy_has_an_expression_owner_without_changing_navigation(
                 let before = packet("src/Min.vue", &source, false);
                 let after = packet("src/Min.vue", &source, true);
                 let echoes = added_echoes(&before, &after);
+                // Each slot's template pass copies both fields twice; the props
+                // pass only infers a host when the slot has a binding to type.
                 assert_eq!(
                     echoes.len(),
-                    1 + 8 * slots,
-                    "one bare navigation echo and four per-field slot copies"
+                    1 + 4 * slots + 4 * bound,
+                    "one bare navigation echo and the per-field slot host copies"
                 );
                 for [original, length, generated, end, policy, _] in echoes {
                     assert_eq!(policy, 0);
@@ -404,7 +409,8 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
         authored[2] = start.into();
         authored[3] = end.into();
         let echoes = added_echoes(&before, &after);
-        assert_eq!(echoes.len(), 9);
+        // `#header` has no binding, so only its template pass infers a host.
+        assert_eq!(echoes.len(), 5);
         for [_, _, echo_start, echo_end, _, _] in echoes {
             let generated = text
                 .get(echo_start..echo_end)
