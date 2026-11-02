@@ -12281,6 +12281,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-expression-duplicates-11374",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-expression-duplicates-11374/input.json",
+          "sha256": "4ded26eb8ddf497b6f45764aba0293dca4bfe5df4e468a58a0f3b2e0e7df17da",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "reported-expression-duplicates-11374/receiver-controls.json",
+          "sha256": "9a4cbe4358b9924f581b8e58ceaf2ca9be5e7c76abeca5b302493c97b1d9b939",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_expression_duplicates_11374::authored_errors_survive_without_synthetic_expression_echoes; physically consumes exact cached #11374 six-file input at b89beb46605e7c3dad05045b6fa5932509349320; seven original/individual-repair/all-repair/independent-error/restoration states preserve the three authored TS2532 diagnostics exactly once. Input-only registration; no diagnostic pack, native admission or original reported macOS/provider qualification. The sibling receiver_contracts::receiver_echoes_preserve_contextual_and_typed_fallthrough_contracts physically consumes six separately labeled synthetic wrong/repair states at c79788329576df1f1230689074e45787a3dab851; no original-input expansion."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-generic-index-model-11366",
       "state": "active",
       "targets": [

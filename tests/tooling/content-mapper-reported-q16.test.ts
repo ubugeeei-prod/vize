@@ -37,7 +37,13 @@ const modelEventsCommand = syntaxCommand.replace(
   " --nocapture",
   " content_mapper_tsgo_cli::reported_model_events_11390_11391:: --nocapture",
 );
-const workflow = actualWorkflow
+const receiverFilter = " content_mapper_tsgo_cli::reported_expression_duplicates_11374::";
+const receiverUnitCommand =
+  "          cargo test -p vize_canon --lib -- virtual_ts::diagnostic_ownership:: virtual_ts::scope::vif_guard::tests:: --nocapture\n";
+const receiverAdjustedWorkflow = actualWorkflow
+  .replace(receiverFilter, "")
+  .replace(receiverUnitCommand, "");
+const workflow = receiverAdjustedWorkflow
   .replace(standardRoleCommand, standardCommand)
   .replace(modelEventsCommand, syntaxCommand);
 const data = parse(workflow);
@@ -219,7 +225,9 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
 
 test("dynamic-target printer roles are declared before capture and retain standard whole packets", () => {
   assert.equal(actualWorkflow.split(standardRoleCommand).length, 2);
-  assert.equal(actualWorkflow.split(modelEventsCommand).length, 2);
+  assert.equal(receiverAdjustedWorkflow.split(modelEventsCommand).length, 2);
+  assert.equal(actualWorkflow.split(receiverFilter).length, 2);
+  assert.equal(actualWorkflow.split(receiverUnitCommand).length, 2);
   const actual = parse(actualWorkflow);
   const steps = actual.jobs["exact-tsgo-project"].steps;
   const standard = steps.find(
