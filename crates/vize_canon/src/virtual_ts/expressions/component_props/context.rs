@@ -68,14 +68,7 @@ impl super::ComponentPropSource<'_> {
         range: std::ops::Range<usize>,
         primary: bool,
     ) {
-        if self.expected_packet
-            || self.inference_only
-            || self.inert
-            || prop
-                .value
-                .as_ref()
-                .is_none_or(|value| !value.as_str().contains("=>"))
-        {
+        if self.expected_packet || self.inference_only || self.inert {
             return;
         }
         let (Some(collector), Some(authored), Some(value)) = (

@@ -150,12 +150,16 @@ impl<'a> ComponentPropSource<'a> {
         prop: &PassedProp,
         name: std::ops::Range<usize>,
         value: std::ops::Range<usize>,
+        generated: (&str, bool),
     ) {
         use crate::virtual_ts::diagnostic_ownership::{InputOwner, InputRole};
         let Some(collector) = self.diagnostic_ownership else {
             return;
         };
         let ordinary_owner = InputOwner::for_prop(usage, prop);
+        if ordinary_owner.is_none() {
+            self.record_independent_receivers(usage, prop, generated.0, value.clone(), generated.1);
+        }
         let Some(owner) = ordinary_owner.or_else(|| {
             (self.expected_packet || self.inert)
                 .then(|| InputOwner::for_expected_projection(usage, prop))
@@ -412,18 +416,12 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             if inline_callback {
                 source_context.protect_callback_primary(gen_stmt_start..statement_end);
             }
-            source_context.record_independent_receivers(
-                usage,
-                prop,
-                ts,
-                diagnostic_value_span.clone(),
-                true,
-            );
             source_context.record_prop_projection(
                 usage,
                 prop,
                 check_name_start..check_name_end,
                 diagnostic_value_span,
+                (ts, true),
             );
             if let Some(source) = value_src_range.as_ref() {
                 generated_value.map_instance_binding(
