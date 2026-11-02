@@ -1,11 +1,10 @@
 name: Current-source LSP baseline
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
 on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+        description: Exact reviewed private workflow SHA, including the functional helper
         required: true
         type: string
 
@@ -22,35 +21,37 @@ env:
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
 
 jobs:
-  misskey:
+  functional:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 180
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      EXPECTED_WORKFLOW: ${{ inputs.source_sha }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "16"
+      RAYON_NUM_THREADS: "8"
+      RUSTFLAGS: ""
+      CARGO_ENCODED_RUSTFLAGS: ""
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.source_sha }}
+          fetch-depth: 2
           persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+      - name: Authenticate the exact private workflow commit
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
+          [[ "$EXPECTED_WORKFLOW" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_WORKFLOW"
+          test "$GITHUB_SHA" = "$EXPECTED_WORKFLOW"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
           cache: true
           run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
+      - name: Install only locked repository dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+      - name: Install the repository Rust toolchain
         run: |
           rustup toolchain install || rustup show active-toolchain
           cargo --version
@@ -61,20 +62,23 @@ jobs:
         with:
           key: lsp-current-baseline
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+      - name: Stage the reviewed helper and run its pure controls
+        shell: bash
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
+          set -euo pipefail
+          destination="$RUNNER_TEMP/initial-canon-helper-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$destination"
+          cp -R .github/actions/lsp-initial-canon-functional "$destination"
+          node --test "$destination/controls.test.ts"
+      - name: Preserve first release CLI and qualify two exact native laws
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$RUNNER_TEMP/initial-canon-helper-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/controller.ts"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
-          path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+          name: initial-canon-functional-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/initial-canon-functional-${{ github.run_id }}-${{ github.run_attempt }}/
           if-no-files-found: error
           retention-days: 3
