@@ -1,0 +1,83 @@
+{
+  "schema": "vize.slot-typeof-semantic-successors.v1",
+  "version": 1,
+  "feature": "immediate-authenticated-typeof-operand-v1",
+  "beforeRuleSha256": "0673f14ce68018c1636dd398d0c36108af8f5a17a90140cb10ad3b6c503f2118",
+  "scope": "Only these two exact predecessor rows gain current direct-Typeof semantics. All original corpus bytes and historical complete packets remain authority; no generic expected-result override.",
+  "successors": [
+    {
+      "predecessorCorpus": "slot-existence-negation-10822",
+      "predecessorCorpusSha256": "683a9b923ca916109703e44c3f4c67b1a71ac27abcdfc2872add504334a2dd0d",
+      "caseId": "typeof-outside-slice",
+      "inputSha256": "c6e36cba3622128867b0883f50ef8bc20a7dcc34d00018cbb1af6ae044c251aa",
+      "historicalCase": {
+        "id": "typeof-outside-slice",
+        "script": "export default { render() { return typeof this.$slots.default } }",
+        "nativeSpans": [
+          {
+            "needle": "this.$slots.default",
+            "shift": 0,
+            "length": 19
+          }
+        ],
+        "officialSpans": []
+      },
+      "historicalNativeCapture": {
+        "head": "f3019898edd17fbc9f98874f7aa783c0e4697e54",
+        "executionMerge": "ec289815d36c2b456105ed63c9c1ec11ac03c081",
+        "run": 41363891599,
+        "job": 125020159708,
+        "captureFile": "f301-old54-api36.stdout.txt",
+        "captureSha256": "3d6b2eb4bc51d95ee7ce77f24fbdafc680f30f6cce70021b4547218471d2d299",
+        "observations": [
+          {
+            "offset": 0,
+            "completeResultDebug": "ScriptLintResult {\n    diagnostics: [\n        LintDiagnostic {\n            rule_name: \"script/require-slots-as-functions\",\n            severity: Error,\n            message: \"`$slots` properties are functions in Vue 3 and must be called.\",\n            start: 42,\n            end: 61,\n            help: None,\n            labels: [],\n            fix: None,\n        },\n    ],\n    error_count: 1,\n    warning_count: 0,\n}"
+          },
+          {
+            "offset": 17,
+            "completeResultDebug": "ScriptLintResult {\n    diagnostics: [\n        LintDiagnostic {\n            rule_name: \"script/require-slots-as-functions\",\n            severity: Error,\n            message: \"`$slots` properties are functions in Vue 3 and must be called.\",\n            start: 59,\n            end: 78,\n            help: None,\n            labels: [],\n            fix: None,\n        },\n    ],\n    error_count: 1,\n    warning_count: 0,\n}"
+          }
+        ]
+      },
+      "currentNativeSpans": []
+    },
+    {
+      "predecessorCorpus": "slot-existence-conditions-10822",
+      "predecessorCorpusSha256": "49fe9e0fe0544c6b41f047bb2c67eabcb067f7c5f8e62430085a65b038055da7",
+      "caseId": "typeof-outside-slice",
+      "inputSha256": "0cdee3a87f6d80d660000805550eb6b032e2cf2b4b61f5a2029ca6630d650836",
+      "historicalCase": {
+        "id": "typeof-outside-slice",
+        "script": "export default { render() { if (typeof this.$slots.default === \"function\") return []; return [] } }",
+        "nativeSpans": [
+          {
+            "needle": "this.$slots.default",
+            "shift": 0,
+            "length": 19
+          }
+        ],
+        "officialSpans": []
+      },
+      "historicalNativeCapture": {
+        "head": "f3019898edd17fbc9f98874f7aa783c0e4697e54",
+        "executionMerge": "ec289815d36c2b456105ed63c9c1ec11ac03c081",
+        "run": 41363891599,
+        "job": 125020159708,
+        "captureFile": "f301-new-api36.stdout.txt",
+        "captureSha256": "89c84473a75abd41cbf56ecdc6a92c0e054ce756f808c45cd3f410b1ce245d09",
+        "observations": [
+          {
+            "offset": 0,
+            "completeResultDebug": "ScriptLintResult {\n    diagnostics: [\n        LintDiagnostic {\n            rule_name: \"script/require-slots-as-functions\",\n            severity: Error,\n            message: \"`$slots` properties are functions in Vue 3 and must be called.\",\n            start: 39,\n            end: 58,\n            help: None,\n            labels: [],\n            fix: None,\n        },\n    ],\n    error_count: 1,\n    warning_count: 0,\n}"
+          },
+          {
+            "offset": 17,
+            "completeResultDebug": "ScriptLintResult {\n    diagnostics: [\n        LintDiagnostic {\n            rule_name: \"script/require-slots-as-functions\",\n            severity: Error,\n            message: \"`$slots` properties are functions in Vue 3 and must be called.\",\n            start: 56,\n            end: 75,\n            help: None,\n            labels: [],\n            fix: None,\n        },\n    ],\n    error_count: 1,\n    warning_count: 0,\n}"
+          }
+        ]
+      },
+      "currentNativeSpans": []
+    }
+  ]
+}
