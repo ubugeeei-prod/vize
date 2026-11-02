@@ -1,0 +1,19 @@
+<script setup lang="ts">
+interface Foo {
+  bar: (callback: (baz: number) => void) => void;
+}
+
+function Child(props: { onQux?: (foo: Foo) => void }) {
+  return null;
+}
+</script>
+
+<template>
+  <Child
+    :on-qux="
+      (foo) => {
+        foo.bar((baz) => console.log(baz));
+      }
+    "
+  />
+</template>

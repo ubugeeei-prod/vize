@@ -37,6 +37,7 @@ fn cancelled_outer_query_keeps_the_exact_bridge_until_the_entered_read_finishes(
         weak.upgrade().is_none(),
         "completed closure cannot leave a bridge cycle"
     );
-    block_on(peer.client.close()).unwrap();
-    peer.worker.join().unwrap();
+    // The peer closes after the final expected release; joining observes that EOF
+    // without racing an explicit client close against its completed reader.
+    assert_eq!(peer.worker.join().unwrap(), vec![OLD]);
 }

@@ -4,6 +4,7 @@ use vize_carton::String;
 use vize_croquis::drawer::strip_js_comments;
 
 mod callback_line_suppression;
+mod nested_callbacks;
 use callback_line_suppression::{CallbackLineRewrite, rewrite_callback_branches};
 
 pub(crate) struct CallbackParameterRewrite {
@@ -15,6 +16,14 @@ pub(crate) struct CallbackParameterRewrite {
 /// Keep inference-only callback parameters on a line covered by a generated
 /// `@ts-ignore` without changing the authored diagnostic owner.
 ///
+/// Only the unmapped prop-inference copy may suppress nested parameter echoes.
+/// Other callback consumers retain their original rewriting and mapping law.
+pub(super) fn inference_callback_parameters_on_ignored_lines(value: &str) -> Option<String> {
+    let outer = callback_parameters_on_ignored_line(value);
+    let input = outer.as_ref().map_or(value, |text| text.as_str());
+    nested_callbacks::rewrite(input).or(outer)
+}
+
 /// Ordinary arrows use the allocation-free lexical path. Rare generic,
 /// sequence, conditional and function shapes delegate to parser-derived
 /// branch-local suppression ranges. `None` leaves borrowed input unchanged.

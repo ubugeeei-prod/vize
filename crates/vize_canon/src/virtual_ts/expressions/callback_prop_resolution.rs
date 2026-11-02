@@ -6,7 +6,7 @@ use super::component_prop_bindings::{
 use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
-use super::ts_suppression_comments::callback_parameters_on_ignored_line;
+use super::ts_suppression_comments::inference_callback_parameters_on_ignored_lines;
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
@@ -184,7 +184,7 @@ fn append_props_object(
         let owned;
         let value = if inline_callback {
             let value = value.trim_start();
-            owned = callback_parameters_on_ignored_line(value);
+            owned = inference_callback_parameters_on_ignored_lines(value);
             owned.as_ref().map_or(value, |owned| owned.as_str())
         } else {
             value.as_str()

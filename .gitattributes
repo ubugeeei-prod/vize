@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf
+# Original nested callback report inputs are physically consumed by Content Mapper tests.
+tests/_fixtures/differential/typechecker/nested-callback-inference-11361/*.txt text eol=lf
 # Derived imported markRaw callback inputs are physically consumed by native tests.
 tests/_fixtures/differential/typechecker/imported-mark-raw-callback/** text eol=lf
 # Byte-pinned untimed owned read-buffer observer and Node-only refusal fixture.
