@@ -41,14 +41,14 @@ pub(super) fn collect(
         callbacks: FxHashMap::default(),
     };
     script_facts::with_bindings(ctx.summary, |bindings| {
-        for (idx, usage) in vize_croquis::facts::component_usage_list(ctx.summary)
-            .into_iter()
+        for (idx, usage) in vize_croquis::facts::component_usage_slice(ctx.summary)
+            .iter()
             .enumerate()
         {
             if already_checked.contains(&usage.start)
-                || has_script_binding(bindings, &usage)
+                || has_script_binding(bindings, usage)
                 || !component_name_matches_external_template_binding(usage.name.as_str(), &external)
-                || super::named_dynamic_reference(ctx, &usage).is_some()
+                || super::named_dynamic_reference(ctx, usage).is_some()
                 || usage.props.len() < 2
             {
                 continue;
@@ -115,7 +115,7 @@ pub(super) fn collect(
                 continue;
             }
             result.callbacks.insert(usage.start, callbacks);
-            result.rows.push((idx, usage));
+            result.rows.push((idx, usage.clone()));
         }
     });
     (!result.rows.is_empty()).then_some(result)

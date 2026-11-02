@@ -73,7 +73,8 @@ pub use reactivity::{
 
 mod access;
 pub use access::{
-    component_usage_list, used_component_contains, used_component_name_list, used_components_empty,
+    component_usage_list, component_usage_slice, used_component_contains, used_component_name_list,
+    used_components_empty,
 };
 pub use undefined_refs::UndefinedRefs;
 pub use unused_bindings::{UnusedBindingFact, UnusedBindings};

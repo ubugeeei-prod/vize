@@ -111,7 +111,7 @@ impl<'a> GlobalComponentPlan<'a> {
         syntactic_type_only_imported_names: &FxHashSet<CompactString>,
         mut diagnostics: Option<GlobalComponentDiagnostics<'_>>,
     ) {
-        if !self.enabled() || vize_croquis::facts::component_usage_list(summary).is_empty() {
+        if !self.enabled() || vize_croquis::facts::component_usage_slice(summary).is_empty() {
             return;
         }
 
@@ -128,7 +128,7 @@ impl<'a> GlobalComponentPlan<'a> {
 
         let mut emitted_refs = FxHashSet::default();
         let mut has_header = false;
-        for (index, usage) in vize_croquis::facts::component_usage_list(summary)
+        for (index, usage) in vize_croquis::facts::component_usage_slice(summary)
             .iter()
             .enumerate()
         {

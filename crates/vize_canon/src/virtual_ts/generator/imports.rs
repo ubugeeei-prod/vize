@@ -28,7 +28,7 @@ pub(super) fn collect_component_imported_names<'a>(
     let needed = !options.auto_import_stubs.is_empty()
         || !options.auto_import_bindings.is_empty()
         || (global_components_enabled
-            && !vize_croquis::facts::component_usage_list(summary).is_empty())
+            && !vize_croquis::facts::component_usage_slice(summary).is_empty())
         || super::super::component_aliases::needs_imported_names(summary, type_only);
     if needed {
         vize_carton::profile!(
