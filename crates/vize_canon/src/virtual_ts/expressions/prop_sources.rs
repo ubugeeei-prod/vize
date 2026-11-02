@@ -276,7 +276,7 @@ pub(crate) fn prop_value_source_range(
     let prop_start = prop.start as usize;
     let prop_end = prop.end as usize;
     let raw_prop = source.get(prop_start..prop_end)?;
-    if let Some(relative_start) = raw_prop.rfind(value) {
+    if let Some(relative_start) = rfind_trailing(raw_prop, value) {
         let source_start = source_context.offset as usize + prop_start + relative_start;
         return Some(source_start..source_start + value.len());
     }
@@ -297,6 +297,20 @@ pub(crate) fn prop_value_source_range(
         return None;
     }
     prop_name_source_range(source_context, prop)
+}
+
+/// `haystack.rfind(needle)`. An attribute value usually ends the attribute or
+/// precedes its closing quote, and no later start fits after those two.
+fn rfind_trailing(haystack: &str, needle: &str) -> Option<usize> {
+    if haystack.ends_with(needle) {
+        return Some(haystack.len() - needle.len());
+    }
+    if let Some(head) = haystack.get(..haystack.len().saturating_sub(1))
+        && head.ends_with(needle)
+    {
+        return Some(head.len() - needle.len());
+    }
+    haystack.rfind(needle)
 }
 
 /// The authored token a prop-type diagnostic anchors at — `msg` inside
@@ -353,7 +367,7 @@ fn anchor_token(name_region: &str, name: &str) -> Option<(usize, usize)> {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
-    use super::{anchor_token, append_prop_value};
+    use super::{anchor_token, append_prop_value, rfind_trailing};
 
     mod instance_bindings;
 
@@ -372,6 +386,41 @@ mod tests {
             assert_eq!(generated, expected, "unexpected grouping for `{source}`");
             assert_eq!(range, expected_range, "unexpected range for `{source}`");
             assert_eq!(&generated[range], source);
+        }
+    }
+
+    #[test]
+    fn trailing_value_search_matches_rfind() {
+        for haystack in [
+            "",
+            "a",
+            ":msg=\"value\"",
+            ":msg=\"value\"value",
+            "x=\"\"",
+            "x=\"a\"\"",
+            "v=\"雪\"",
+            "v=\"雪",
+            "aaaa",
+            "ab\"",
+        ] {
+            for needle in [
+                "",
+                "a",
+                "aa",
+                "value",
+                "\"",
+                "a\"",
+                "雪",
+                "雪\"",
+                "value\"value",
+                "zz",
+            ] {
+                assert_eq!(
+                    rfind_trailing(haystack, needle),
+                    haystack.rfind(needle),
+                    "{haystack:?} {needle:?}"
+                );
+            }
         }
     }
 

@@ -27,36 +27,45 @@ pub(in crate::virtual_ts) fn define_props_type_requires_setup_scope(summary: &Cr
 /// A generic setup's local aliases are rebound to that invocation's type
 /// parameters. Copying their bare names into a module-level `Emits<T>` would
 /// instead instantiate the hoisted aliases with their fallback defaults.
+/// Setup values and non-hoisted aliases are invisible at module scope.
 pub(super) fn define_emits_type_requires_setup_scope(summary: &Croquis) -> bool {
-    super::generics::setup_signature(summary).1.is_some()
-        && summary
+    public_macro_type_requires_setup_scope(
+        summary,
+        summary
             .macros
             .define_emits()
-            .and_then(|call| call.type_args.as_deref())
-            .is_some_and(|args| {
-                let inner = super::emits::inner_type_of(args);
-                type_dependencies::free_names(inner).is_none_or(|names| {
-                    names.iter().any(|name| {
-                        !binding_is_import(summary, name)
-                            && (summary.types.definitions().interfaces.contains_key(name)
-                                || summary.types.definitions().type_aliases.contains_key(name))
-                    })
-                })
-            })
+            .and_then(|call| call.type_args.as_deref()),
+    )
+}
+
+pub(super) fn define_expose_type_requires_setup_scope(summary: &Croquis) -> bool {
+    public_macro_type_requires_setup_scope(
+        summary,
+        summary
+            .macros
+            .define_expose()
+            .and_then(|call| call.type_args.as_deref()),
+    )
 }
 
 pub(in crate::virtual_ts) fn define_slots_type_requires_setup_scope(summary: &Croquis) -> bool {
-    summary
-        .macros
-        .define_slots()
-        .and_then(|call| call.type_args.as_deref())
-        .is_some_and(|args| {
-            macro_type_requires_setup_scope_with_generic_aliases(
-                summary,
-                args,
-                super::generics::setup_signature(summary).1.is_some(),
-            )
-        })
+    public_macro_type_requires_setup_scope(
+        summary,
+        summary
+            .macros
+            .define_slots()
+            .and_then(|call| call.type_args.as_deref()),
+    )
+}
+
+fn public_macro_type_requires_setup_scope(summary: &Croquis, type_args: Option<&str>) -> bool {
+    type_args.is_some_and(|args| {
+        macro_type_requires_setup_scope_with_generic_aliases(
+            summary,
+            args,
+            super::generics::setup_signature(summary).1.is_some(),
+        )
+    })
 }
 
 /// Imports and hoisted declarations are visible to module-level aliases.

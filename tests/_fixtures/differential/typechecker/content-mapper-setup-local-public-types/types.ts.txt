@@ -1,0 +1,2 @@
+export type WidgetEmits<T> = { (event: 'update', value: T): void };
+export type WidgetExpose<T> = { current: () => T };

@@ -1,9 +1,35 @@
 //! Legacy file-only entrypoints and project-owned context entrypoint.
 
-use std::path::Path;
+#![expect(
+    clippy::disallowed_types,
+    reason = "overlapping transforms share one immutable dependency snapshot"
+)]
 
+use std::path::Path;
+use std::sync::Arc;
+
+use vize_atelier_sfc::script::TypeSourceSnapshot;
+
+use super::super::setup_props::RuntimePropResolveCache;
 use super::{ContentMapperTransform, ContentMapperTransformOptions, transform_with_router_context};
 use crate::batch::error::CorsaResult;
+
+/// Imported type modules shared by transforms that overlap in time.
+///
+/// Each dependency is read, resolved and parsed once per value rather than
+/// once per transform, as a `register_paths` batch does. Root text always
+/// comes from the request. Drop the value to observe the filesystem again.
+#[derive(Clone, Debug, Default)]
+pub struct ContentMapperTypeSources(Arc<TypeSourceSnapshot>);
+
+/// Equal values read through one snapshot.
+impl PartialEq for ContentMapperTypeSources {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+
+impl Eq for ContentMapperTypeSources {}
 
 /// Generate self-contained TypeScript and protocol-v1 mappings for one Vue SFC.
 ///
@@ -48,6 +74,7 @@ pub fn generate_vue_content_mapper_transform_with_project_options(
         content,
         transform_options,
         typed_router_root.map(super::super::typed_router::Config::files_only),
+        None,
     )
 }
 
@@ -59,5 +86,30 @@ pub fn generate_vue_content_mapper_transform_with_project_context(
     transform_options: ContentMapperTransformOptions,
     project_context: &super::super::content_mapper_config::ContentMapperProjectContext,
 ) -> CorsaResult<ContentMapperTransform> {
-    transform_with_router_context(path, content, transform_options, project_context.config())
+    transform_with_router_context(
+        path,
+        content,
+        transform_options,
+        project_context.config(),
+        None,
+    )
+}
+
+/// [`generate_vue_content_mapper_transform_with_project_context`] reading
+/// imported type modules through `type_sources`.
+pub fn generate_vue_content_mapper_transform_with_type_sources(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    project_context: &super::super::content_mapper_config::ContentMapperProjectContext,
+    type_sources: &ContentMapperTypeSources,
+) -> CorsaResult<ContentMapperTransform> {
+    let cache = RuntimePropResolveCache::with_type_sources(Arc::clone(&type_sources.0));
+    transform_with_router_context(
+        path,
+        content,
+        transform_options,
+        project_context.config(),
+        Some(&cache),
+    )
 }

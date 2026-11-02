@@ -12,6 +12,7 @@ use super::super::vue_codegen::generic_attribute::GenericCopies;
 const PRIVATE_MODULE: &str = "vize:virtual-ts";
 const PUBLISHED_MODULE: &str = "vize/virtual-ts";
 const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
+const REFERENCE_TYPES_DIRECTIVE: &str = "/// <reference types=";
 
 pub(super) fn publish_content_mapper_text(
     code: &mut CompactString,
@@ -34,10 +35,7 @@ pub(super) fn publish_content_mapper_text(
         return;
     }
     debug_assert_eq!(PRIVATE_MODULE.len(), PUBLISHED_MODULE.len());
-    let starts = code
-        .match_indices(PRIVATE_MODULE)
-        .map(|(start, _)| start)
-        .collect::<Vec<_>>();
+    let starts = memchr::memmem::find_iter(code.as_bytes(), PRIVATE_MODULE).collect::<Vec<_>>();
     for start in starts.into_iter().rev() {
         let end = start + PRIVATE_MODULE.len();
         code.replace_range(start..end, PUBLISHED_MODULE);
@@ -107,10 +105,7 @@ fn publicize_generated_diagnostic_helpers(
         ("$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
     ] {
         debug_assert!(display.len() > internal.len());
-        let occurrences = code
-            .match_indices(internal)
-            .map(|(start, _)| start)
-            .collect::<Vec<_>>();
+        let occurrences = memchr::memmem::find_iter(code.as_bytes(), internal).collect::<Vec<_>>();
         for start in occurrences.into_iter().rev() {
             let old_len = internal.len();
             let end = start + old_len;
@@ -188,15 +183,45 @@ fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize,
     }
 }
 
+/// Complete lines whose first non-whitespace text is a types reference.
 fn reference_type_directive_ranges(code: &str) -> Vec<Range<usize>> {
-    let mut start = 0;
-    code.split_inclusive('\n')
-        .filter_map(|line| {
-            let range = start..start + line.len();
-            start = range.end;
-            line.trim_start()
-                .starts_with("/// <reference types=")
-                .then_some(range)
+    let bytes = code.as_bytes();
+    memchr::memmem::find_iter(bytes, REFERENCE_TYPES_DIRECTIVE)
+        .filter_map(|at| {
+            let start = memchr::memrchr(b'\n', bytes.get(..at)?).map_or(0, |newline| newline + 1);
+            code.get(start..at)?
+                .chars()
+                .all(char::is_whitespace)
+                .then(|| {
+                    let end = bytes
+                        .get(at..)
+                        .and_then(|rest| memchr::memchr(b'\n', rest))
+                        .map_or(code.len(), |newline| at + newline + 1);
+                    start..end
+                })
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::reference_type_directive_ranges;
+
+    #[test]
+    fn reference_directive_lines_match_a_line_scan() {
+        let code = "/// <reference types=\"a\" />\n  /// <reference types=\"b\" />\r\nx /// <reference types=\"c\" />\n\u{3000}/// <reference types=\"d\" /> /// <reference types=\"e\" />\n/// <reference path=\"f\" />\n\t/// <reference types=\"g\" />";
+        let mut start = 0;
+        let expected = code
+            .split_inclusive('\n')
+            .filter_map(|line| {
+                let range = start..start + line.len();
+                start = range.end;
+                line.trim_start()
+                    .starts_with("/// <reference types=")
+                    .then_some(range)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(expected.len(), 4);
+        assert_eq!(reference_type_directive_ranges(code), expected);
+    }
 }

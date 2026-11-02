@@ -8,6 +8,10 @@ use oxc_span::SourceType;
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
 pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
+    // A callback is an arrow or function expression, which spells one of these.
+    if !content.contains("=>") && !content.contains("function") {
+        return None;
+    }
     match classify_event_handler(content) {
         EventHandlerExpression::Callback { accepts_event, .. } => {
             Some(if accepts_event { "$event" } else { "" })

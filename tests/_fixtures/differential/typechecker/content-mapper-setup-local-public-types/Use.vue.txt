@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import Widget from './Widget.vue';
+const widget = ref<InstanceType<typeof Widget>>();
+const size: number = widget.value!.current().size;
+function onUpdate(value: { size: number; label: string }) { void value; }
+void size;
+</script>
+<template><Widget ref="widget" @update="onUpdate" /></template>

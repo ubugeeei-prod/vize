@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue';
+const el = ref<HTMLElement>();
+let stop: () => void;
+let ro: ResizeObserver;
+let timer: number | null;
+let untyped;
+let counter = 0;
+onMounted(() => {
+  stop = watch(el, () => {});
+  ro = new ResizeObserver(() => {});
+  timer = window.setTimeout(() => {}, 1);
+  untyped = 1;
+});
+onBeforeUnmount(() => { stop(); ro.disconnect(); if (timer) clearTimeout(timer); counter++; void untyped; });
+</script>
+<template><div ref="el">{{ counter }}</div></template>

@@ -72,6 +72,7 @@ lsp-types = { workspace = true, optional = true }
 
 # Utilities
 dashmap.workspace = true
+memchr.workspace = true
 rayon.workspace = true
 tracing.workspace = true
 dirs = { workspace = true, optional = true }
