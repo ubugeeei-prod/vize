@@ -50,6 +50,7 @@ export function verifyQ16Inputs(e: NodeJS.ProcessEnv, actual: string) {
     assert.equal(e[key], undefined, `unexpected inherited ${key}`);
 }
 export function verifyQ16RequiredEnvironment(e: NodeJS.ProcessEnv) {
+  assert.equal(e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE, "reported-tsrs-vue44");
   for (const key of [
     "VIZE_TEST_REQUIRE_TSGO",
     "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
@@ -116,6 +117,7 @@ function record(
         "VIZE_TEST_REQUIRE_TSGO",
         "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
         "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED",
+        "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE",
         "VIZE_TEST_REQUIRE_NESTED_CALLBACK",
         "GOGC",
         "GOMEMLIMIT",
@@ -323,6 +325,7 @@ export async function runQ16(stage: string) {
     VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: path.join(provider, "node_modules/.bin/tsc"),
     VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS: "1",
     VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED: "1",
+    VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: "reported-tsrs-vue44",
     VIZE_TEST_REQUIRE_NESTED_CALLBACK: "1",
     VIZE_REPORTED_MODEL_CAPTURE: path.join(out, "cases/model"),
     VIZE_REPORTED_GENERIC_EVIDENCE_DIR: path.join(out, "cases/generic"),
