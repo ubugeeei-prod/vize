@@ -12566,6 +12566,35 @@
           }
         },
     {
+      "id": "typechecker/standalone-constructor-correlation-11023/actual-instance-public-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "virtual_ts::expressions::constructor_instance::standalone_tests::standalone_and_shared_props_use_the_actual_constructor_pair",
+      "sourceRevision": "cc63a97d8b9642930b2c44a306db9e8479040ab3",
+      "inputs": [
+        {
+          "file": "Template.html",
+          "path": "standalone-constructor-correlation-11023/Template.html.txt",
+          "sha256": "b634a11a8079bd9997de5e7b12e988f3e15760c16dcca2ac0f61bcffefa509f3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template"
+            ],
+            "selector": "standalone_and_shared_props_use_the_actual_constructor_pair; full emitted constructor pair and public-props declarations in both helper modes"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/static-template-ref-runtime-11377",
       "state": "active",
       "targets": [
