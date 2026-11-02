@@ -1,0 +1,104 @@
+{
+  "schema": "vize.reportedComponentContracts.originalInputs.v1",
+  "cases": [
+    {
+      "issue": 11445,
+      "reportSha256": "7c72eaea9ddaba878cf10948ea86b2f6077784a007e90c44a7fe50a56d1d8428",
+      "inputsSha256": "78b7fe8f4a89ae425fbfaa6f965eddb415cfe51b4774e8050fb42ea4411c75c6",
+      "files": [
+        {
+          "path": "package.json",
+          "text": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+          "bytes": 200,
+          "sha256": "5fd563a7cc4254a3337dd0e02a175915ad23311fa6c813ac3507af091b9f1de6"
+        },
+        {
+          "path": "tsconfig.json",
+          "text": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+          "bytes": 294,
+          "sha256": "8640fb996f9fa23059a5a60e7a897863c448e2e4287b6054127dd6a200514308"
+        },
+        {
+          "path": "src/augment.d.ts",
+          "text": "import \"vue\";\n\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    [key: `$${string}`]: unknown;\n  }\n}\n",
+          "bytes": 118,
+          "sha256": "48735ef88cd494e75b8be2245f68e2da96a321b81bde655ffcc70d6a8d6c5acb"
+        },
+        {
+          "path": "src/Foo.vue",
+          "text": "<template>\n  <div />\n</template>\n",
+          "bytes": 33,
+          "sha256": "acc43dd168ab619a55bc1ef7fc708c685a2e2eed9474d6bf4e27261fafbb1c75"
+        },
+        {
+          "path": "src/Probe.ts",
+          "text": "import { defineComponent } from \"vue\";\nimport Foo from \"./Foo.vue\";\n\nexport const Bar = defineComponent({}) as typeof Foo;\n",
+          "bytes": 123,
+          "sha256": "42351a2754e7702f47a41d43a2022b1ba6e5f1e63c3a6a5539dd818508151fdc"
+        }
+      ]
+    },
+    {
+      "issue": 11446,
+      "reportSha256": "b22689b6dc94a857630f4f7679add74e0402b4014411026c78a8faedf6d1ec67",
+      "inputsSha256": "d2132a448e9b05fc9dbe0ab2dd11a41b13fb48ed7da72b89e91a83d29f52b33b",
+      "files": [
+        {
+          "path": "package.json",
+          "text": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+          "bytes": 200,
+          "sha256": "5fd563a7cc4254a3337dd0e02a175915ad23311fa6c813ac3507af091b9f1de6"
+        },
+        {
+          "path": "tsconfig.json",
+          "text": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+          "bytes": 279,
+          "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297"
+        },
+        {
+          "path": "src/Foo.vue",
+          "text": "<script setup lang=\"ts\" generic=\"T extends string\">\ndefineOptions({ inheritAttrs: false });\ndefineProps<{ bar: T }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+          "bytes": 163,
+          "sha256": "0855f381ed0e7f9fe781f676e57aaf5c3f92d8aafc95a2dd035e8ad15a651742"
+        },
+        {
+          "path": "src/Probe.vue",
+          "text": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo bar=\"a\" p0 />\n</template>\n",
+          "bytes": 109,
+          "sha256": "364da0d7916dbbae8909e916d7219bbc289e3645c090a89f1cc177422181efab"
+        }
+      ]
+    },
+    {
+      "issue": 11453,
+      "reportSha256": "521a95081cdf8d53bd6c5fff6d805f260c51e04c8f274d8401a5eb18a7cad4e7",
+      "inputsSha256": "6aede7d8087510812c393bdb61798bf741eaf4f3d4624a18ba020fd0bf860adc",
+      "files": [
+        {
+          "path": "package.json",
+          "text": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+          "bytes": 200,
+          "sha256": "5fd563a7cc4254a3337dd0e02a175915ad23311fa6c813ac3507af091b9f1de6"
+        },
+        {
+          "path": "tsconfig.json",
+          "text": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+          "bytes": 294,
+          "sha256": "8640fb996f9fa23059a5a60e7a897863c448e2e4287b6054127dd6a200514308"
+        },
+        {
+          "path": "src/Foo.vue",
+          "text": "<script setup lang=\"ts\">\ndefineEmits<{ barBaz: [value: number]; \"bar-baz\": [value: number] }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+          "bytes": 141,
+          "sha256": "2a8e3353c9e67d222447408413f8844c57c4ff24b3786e853742dbf4f4646aed"
+        },
+        {
+          "path": "src/Probe.vue",
+          "text": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo @bar-baz=\"(value) => value.toFixed()\" />\n</template>\n",
+          "bytes": 136,
+          "sha256": "0307f050b87ed535a39f00d08a120176f6cd9e34f13a583dd7b650046d1f8614"
+        }
+      ]
+    }
+  ]
+}
