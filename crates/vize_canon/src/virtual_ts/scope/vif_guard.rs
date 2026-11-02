@@ -1,10 +1,17 @@
+use std::borrow::Cow;
+
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{
+    ArrowFunctionExpression, Class, Expression, Function, StringLiteral, TemplateLiteral,
+};
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{String, append};
 use vize_croquis::{
-    Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
+    Scope, ScopeData, TemplateExpression, VForScopeData,
+    drawer::{extract_identifiers_oxc, strip_js_comments},
 };
 
 pub(crate) fn append_ignored_vif_guard_open(
@@ -14,11 +21,79 @@ pub(crate) fn append_ignored_vif_guard_open(
     purpose: &str,
 ) {
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
-    let guard = isolated.as_str();
+    let one_line = guard_on_ignored_line(isolated.as_str());
+    let guard = one_line.as_ref();
     append!(
         *ts,
         "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n{indent}if ({guard}) {{\n"
     );
+}
+
+/// Only expression whitespace may move onto the ignored physical line.
+/// Function/class bodies can contain ASI; templates and continued strings carry
+/// newline-sensitive token values. Preserve those and every uncertain parse.
+fn guard_on_ignored_line(guard: &str) -> Cow<'_, str> {
+    if !guard.contains(['\n', '\r', '\u{2028}', '\u{2029}'])
+        || !vize_l0::expression_guard::expression_is_safe_to_parse(guard)
+    {
+        return Cow::Borrowed(guard);
+    }
+    let stripped = strip_js_comments(guard);
+    let source = stripped.trim();
+    let allocator = Allocator::new();
+    let Ok(expression) = Parser::new(&allocator, source, SourceType::ts()).parse_expression()
+    else {
+        return Cow::Borrowed(guard);
+    };
+    let span = expression.span();
+    if source.get(span.start as usize..span.end as usize) != Some(source) {
+        return Cow::Borrowed(guard);
+    }
+    let mut safety = GuardLineSafety {
+        source,
+        uncertain: false,
+    };
+    safety.visit_expression(&expression);
+    if safety.uncertain {
+        return Cow::Borrowed(guard);
+    }
+    Cow::Owned(
+        source
+            .chars()
+            .map(|ch| {
+                if matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}') {
+                    ' '
+                } else {
+                    ch
+                }
+            })
+            .collect(),
+    )
+}
+
+struct GuardLineSafety<'s> {
+    source: &'s str,
+    uncertain: bool,
+}
+impl<'a> Visit<'a> for GuardLineSafety<'_> {
+    fn visit_function(&mut self, _: &Function<'a>, _: ScopeFlags) {
+        self.uncertain = true;
+    }
+    fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {
+        self.uncertain = true;
+    }
+    fn visit_class(&mut self, _: &Class<'a>) {
+        self.uncertain = true;
+    }
+    fn visit_template_literal(&mut self, _: &TemplateLiteral<'a>) {
+        self.uncertain = true;
+    }
+    fn visit_string_literal(&mut self, value: &StringLiteral<'a>) {
+        self.uncertain |= self
+            .source
+            .get(value.span.start as usize..value.span.end as usize)
+            .is_none_or(|raw| raw.contains(['\n', '\r', '\u{2028}', '\u{2029}']));
+    }
 }
 
 /// Compute the enclosing v-if guard shared by all expressions in a v-for scope.
@@ -195,7 +270,28 @@ fn references_any_alias(term: &str, aliases: &[&str]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{callback_vif_guard, remove_enclosing_vif_guard_prefix, split_guard_terms};
+    use super::{
+        callback_vif_guard, guard_on_ignored_line, remove_enclosing_vif_guard_prefix,
+        split_guard_terms,
+    };
+
+    #[test]
+    fn multiline_narrowing_copy_preserves_asi_and_literal_semantics() {
+        assert_eq!(
+            guard_on_ignored_line("enabled &&\n items[0].label === 'x'"),
+            "enabled &&  items[0].label === 'x'"
+        );
+        for source in [
+            "(() => { return\n true })()",
+            "(function*() { yield\n value })()",
+            "(() => { value\n ++other; return true })()",
+            "String.raw`first\nsecond` === value",
+            "value === 'first\\\nsecond'",
+            "ready\n trailing",
+        ] {
+            assert_eq!(guard_on_ignored_line(source), source, "{source}");
+        }
+    }
 
     #[test]
     fn branch_boundaries_come_from_parsed_expressions() {

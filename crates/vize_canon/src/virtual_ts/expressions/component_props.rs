@@ -26,6 +26,7 @@ use vize_croquis::{
 };
 
 mod context;
+mod value_ownership;
 pub(crate) use context::ComponentPropCheckContext;
 
 pub(super) fn is_checkable_prop(prop: &PassedProp) -> bool {
@@ -297,6 +298,18 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
         // Static attribute values are checked exactly like dynamic bindings:
         // a static `msg="text"` must still satisfy the child's prop type
         // (vue-tsc reports TS2322 here; skipping them was a false negative).
+        if !LEGACY_SCALARS
+            && value_ownership::whole_literal_owns_value(usage, prop, ctx.typed_fallthrough_values)
+        {
+            // The complete mapped literal keeps this value's contextual check.
+            // Retain its type alias use without evaluating the authored body again.
+            let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
+            append!(
+                *ts,
+                "{indent}void (undefined as unknown as __{component_type_name}_{idx}_prop_{safe_prop_name});\n",
+            );
+            continue;
+        }
         if has_per_prop_value_check(prop) {
             let prop_src_start = (source_context.offset + prop.start) as usize;
             let prop_src_end = (source_context.offset + prop.end) as usize;
