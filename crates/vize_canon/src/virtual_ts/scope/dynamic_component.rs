@@ -12,6 +12,8 @@ use vize_carton::{String, append};
 use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+mod homogeneous_index;
+
 /// A named value of the built-in `component`, not an authored registry tag.
 /// Match the existing Croquis retained-AST authority without reparsing.
 pub(crate) fn is_owned_named_dynamic_component(
@@ -67,19 +69,26 @@ pub(super) fn emit_dynamic_component_aliases(
         };
         // The authored `v-bind` statement owns the expression's own
         // diagnostics; the alias only has to carry its type.
+        // This exact imported value type is proven by the original Program's
+        // homogeneous immutable entries, never by a key-union approximation.
+        let annotation = homogeneous_index::value(summary, root, usage)
+            .map(|value| vize_carton::cstr!(": typeof {value}"))
+            .unwrap_or_default();
         if let Some(guard) = &usage.vif_guard {
             append!(
                 *ts,
-                "  // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\n  const {} = ({}) ? ({}) : (undefined as never);\n",
+                "  // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\n  const {}{} = ({}) ? ({}) : (undefined as never);\n",
                 usage.name,
+                annotation,
                 guard,
                 expression.trim()
             );
         } else {
             append!(
                 *ts,
-                "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {} = ({});\n",
+                "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {}{} = ({});\n",
                 usage.name,
+                annotation,
                 expression.trim()
             );
         }

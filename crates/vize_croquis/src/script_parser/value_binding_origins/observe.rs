@@ -11,8 +11,12 @@ impl crate::script_parser::ScriptParseResult {
         kind: VariableDeclarationKind,
     ) {
         let scope = self.scopes.current_id();
+        let generic_setup = matches!(self.scopes.current_scope().data(), crate::scope::ScopeData::ScriptSetup(data) if data.generic.is_some());
         if let Some(origins) = self.value_binding_origins.as_mut() {
             origins.note_declaration(scope, &declaration.id, kind, declaration.init.as_ref());
+            if generic_setup {
+                origins.note_homogeneous_object(scope, declaration, kind);
+            }
         }
     }
 

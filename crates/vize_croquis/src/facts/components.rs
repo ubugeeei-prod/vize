@@ -275,6 +275,34 @@ pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> O
         .or_else(|| metadata_binding_name(croquis, tag))
 }
 
+/// One generic setup's const-object declaration has the same original value-import
+/// identity in every declared entry. This is value-type equality, not Vue
+/// component authority, a key-union approximation, or module resolution.
+pub fn homogeneous_index_value<'a>(
+    croquis: &'a Croquis,
+    object: &str,
+    scope_id: crate::ScopeId,
+) -> Option<&'a str> {
+    if croquis.source_program_count != 1 || !croquis.bindings.is_script_setup {
+        return None;
+    }
+    let origins = croquis.value_binding_origins.as_deref()?;
+    let mut current = Some(scope_id);
+    let mut seen = vize_carton::SmallVec::<[crate::ScopeId; 8]>::new();
+    while let Some(id) = current {
+        if seen.contains(&id) {
+            return None;
+        }
+        seen.push(id);
+        let scope = croquis.scopes.get_scope(id)?;
+        if scope.get_binding(object).is_some() {
+            return origins.homogeneous_import_value(object, id);
+        }
+        current = scope.parent();
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::ComponentUsages;

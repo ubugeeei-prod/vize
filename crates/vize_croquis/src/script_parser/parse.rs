@@ -245,7 +245,11 @@ fn analyze_script_setup_program_demand_capture<const BUILTIN_TYPES: bool>(
 
     if !skip_diagnostics {
         super::extract::prepare_race_analysis(&mut result, program);
-        if force_value_origins || super::async_components::has_top_level_component_call(program) {
+        if force_value_origins
+            || super::async_components::has_top_level_component_call(program)
+            || (generic.is_some()
+                && super::value_binding_origins::ValueBindingOrigins::has_homogeneous_object_candidate(program))
+        {
             result.value_binding_origins = Some(Box::new(
                 super::value_binding_origins::ValueBindingOrigins::new(
                     result.scopes.current_id(),
