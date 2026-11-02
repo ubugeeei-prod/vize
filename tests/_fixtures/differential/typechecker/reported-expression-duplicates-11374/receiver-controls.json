@@ -11,7 +11,8 @@
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
       "expectedStatus": 2,
       "expectedCodes": [2322],
-      "expectedMessage": "Type 'string' is not assignable to type 'number'."
+      "expectedMessage": "Type 'string' is not assignable to type 'number'.",
+      "expectedStdout": "src/Parent.vue(6,39): error TS2322: Type 'string' is not assignable to type 'number'.\n"
     },
     {
       "id": "context-expression-repair",
@@ -22,7 +23,8 @@
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
       "expectedStatus": 0,
       "expectedCodes": [],
-      "expectedMessage": null
+      "expectedMessage": null,
+      "expectedStdout": ""
     },
     {
       "id": "context-block-wrong",
@@ -33,7 +35,8 @@
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
       "expectedStatus": 2,
       "expectedCodes": [2322],
-      "expectedMessage": "Type 'string' is not assignable to type 'number'."
+      "expectedMessage": "Type 'string' is not assignable to type 'number'.",
+      "expectedStdout": "src/Parent.vue(6,31): error TS2322: Type '() => string' is not assignable to type '() => number'.\n  Type 'string' is not assignable to type 'number'.\n"
     },
     {
       "id": "context-block-repair",
@@ -44,7 +47,8 @@
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
       "expectedStatus": 0,
       "expectedCodes": [],
-      "expectedMessage": null
+      "expectedMessage": null,
+      "expectedStdout": ""
     }
   ],
   "unqualifiedFallthrough": {
