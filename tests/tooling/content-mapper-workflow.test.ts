@@ -560,7 +560,7 @@ test("official-host fixtures preserve every original reported input and referenc
 });
 
 test("experimental Router campaign preserves each independent outcome before its final gate", () => {
-  const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
+  const workflow = readRepoFile(".github", "workflows", "content-mapper-reported-q16.yml");
   const steps = jobSteps(workflow, "router-experimental") as Array<
     WorkflowStep & { "continue-on-error"?: boolean }
   >;
