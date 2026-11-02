@@ -15,7 +15,7 @@ export function genericArrowData() {
   const raw = readFileSync(new URL(genericArrowFileName, import.meta.url));
   assert.equal(
     sha256(raw),
-    "5bd8b3eae075f64551ed5a0bd492baaeff3faeb8598a3e6d0436163382b15eac",
+    "4c1c3ea8fe2d54690183df463d74fc67a54ee381f5d7d24b2f8ad91fbf8403b8",
     "source intent bytes differ",
   );
   const value = asRecord(JSON.parse(raw.toString("utf8")));

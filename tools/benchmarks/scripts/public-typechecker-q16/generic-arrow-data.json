@@ -16,22 +16,12 @@
       "vue": "3.5.44",
       "node": "22.23.3",
       "os": "macOS15.6.1 arm64 Apple M4 Max",
-      "commandPrefix": [
-        "tsc",
-        "--runExternalCode"
-      ],
+      "commandPrefix": ["tsc", "--runExternalCode"],
       "completePackageConfigAndArgvSupplied": false
     },
     "authored": {
       "minimalPackageAndStrictConfig": true,
-      "command": [
-        "tsc",
-        "--runExternalCode",
-        "-p",
-        "tsconfig.json",
-        "--pretty",
-        "false"
-      ],
+      "command": ["tsc", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
       "npmManagerControl": "11.19.1",
       "host": "Linux x64 Node26.13.0 adaptation",
       "compilerExecution": "Authentic installed bin/tsc under the controlled Node; no npx/TSRS frontend adaptation",
