@@ -12102,6 +12102,64 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-declarations-11364-11365/input.json",
+          "sha256": "36707b0c34eda5929ba17a98ff107b6ac7cbc3904432ae6bb914bcac0c133e73",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; physically consumes exact reported input at 858f6ce28e4d9b1c91ea41859eed3fbecf17b64e for #11365; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-model-props-11359",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-model-props-11359/input.json",
+          "sha256": "971ef1b19e4e25634c5709f784d2656d19390945d86cf858f5c385da705ede2e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_props_11359::resolved_model_props_preserve_authored_contract_and_assignment_errors; physically consumes exact reported input at e9289c9933caefaf7e713dc665be9f811e1cbf4d for #11359; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],

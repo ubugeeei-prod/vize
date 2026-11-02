@@ -54,6 +54,14 @@ pub(crate) struct TemplatePropsModel {
 
 impl TemplatePropsModel {
     pub(crate) fn new(summary: &Croquis, generic_param: Option<&GenericParameters>) -> Self {
+        Self::for_component_contract(summary, generic_param, None)
+    }
+
+    pub(crate) fn for_component_contract(
+        summary: &Croquis,
+        generic_param: Option<&GenericParameters>,
+        component_contract: Option<&str>,
+    ) -> Self {
         let props = summary.macros.props();
         let models = summary.macros.models();
         let define_props_type_args = summary
@@ -64,7 +72,12 @@ impl TemplatePropsModel {
             !props.is_empty() || !models.is_empty() || define_props_type_args.is_some();
 
         let setup_scoped = define_props_type_requires_setup_scope(summary);
-        let authored_type_ref = if !setup_scoped && super::hoisted_props_alias_replaced(summary) {
+        let authored_type_ref = if !setup_scoped && let Some(contract) = component_contract {
+            generic_param.map_or_else(
+                || contract.into(),
+                |generic| cstr!("{contract}<{}>", generic.names),
+            )
+        } else if !setup_scoped && super::hoisted_props_alias_replaced(summary) {
             generic_param.map_or_else(
                 || "$ResolvedProps".into(),
                 |generic| cstr!("$ResolvedProps<{}>", generic.names),
@@ -181,6 +194,7 @@ pub(crate) struct TemplatePropsScope<'a> {
     generic_parameters: Option<&'a GenericParameters>,
     props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
     props_object_binding: &'a str,
+    component_contract: Option<&'static str>,
 }
 
 impl<'a> TemplatePropsScope<'a> {
@@ -193,7 +207,13 @@ impl<'a> TemplatePropsScope<'a> {
             generic_parameters,
             props_shadow_anchor,
             props_object_binding,
+            component_contract: None,
         }
+    }
+
+    pub(crate) fn with_component_contract(mut self, contract: &'static str) -> Self {
+        self.component_contract = Some(contract);
+        self
     }
 }
 
@@ -211,9 +231,11 @@ pub(crate) fn generate_props_variables(
         generic_parameters,
         props_shadow_anchor,
         props_object_binding,
+        component_contract,
     } = scope;
     let mut keyed_names = FxHashSet::default();
-    let model = TemplatePropsModel::new(summary, generic_parameters);
+    let model =
+        TemplatePropsModel::for_component_contract(summary, generic_parameters, component_contract);
     if !model.declares_props {
         return keyed_names;
     }

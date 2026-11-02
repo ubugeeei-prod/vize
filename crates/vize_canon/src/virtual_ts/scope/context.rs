@@ -139,6 +139,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
+    /// The actual constructor plan's macro props contract, also read by `$props`.
+    pub(crate) component_props_contract: &'static str,
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) generic_parameters:
