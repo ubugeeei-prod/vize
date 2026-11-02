@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain complete immediate conditional-arm API packets.
+[[profile.default.overrides]]
+filter = "package(=vize_patina) & test(~require_slots_as_functions::conditional_tests::)"
+junit.store-success-output = true
+
 # Retain complete direct-Typeof and explicit semantic-successor packets.
 [[profile.default.overrides]]
 filter = """(package(=vize_patina) & test(~require_slots_as_functions::typeof_tests::)) |

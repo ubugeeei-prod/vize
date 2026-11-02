@@ -1,0 +1,19 @@
+{
+  "schema": "vize.slot-conditional-arm-original-source.v1",
+  "original": {
+    "project": "buefy",
+    "revision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
+    "path": "packages/buefy/src/components/field/FieldBody.vue",
+    "bytes": 2578,
+    "sha256": "549dd10935821983608154160721b6a600b8e4f74b74a60902872df81e934598",
+    "lines": 74
+  },
+  "officialRuleSha256": "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+  "beforeActualMain": "4b024c7f7f26d671f86614ea6d4730de3a46ce21",
+  "sourcePlanSha256": "435f5ae9d3ae381ceef8d01fde69cbe2d7c52526928edbcd6085359b931a33df",
+  "beforeQualificationSha256": "389639992da7552f646fe029dabd7418a400028d25fb0593f1abd512aa4d8bd9",
+  "officialWholeOriginalPointer": "/fullOfficialObservations/0",
+  "beforeOriginalCliPointer": "/fullCliObservations/0",
+  "oldTypeofProvenanceSha256": "bfdfd9e669dbe68d671fecffc8d68ae48e13b96bb5d884c66a95092804ff7d83",
+  "scope": "The actual full original before CLI remains status1 at line34. Current direct arms should be clean; genuine official whole original verify/fix/requery/secondFix is retained. No whole10822/24/public/native-history claim."
+}
