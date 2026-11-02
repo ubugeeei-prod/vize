@@ -6,10 +6,17 @@ import { assertCustody, inside } from "../computed_event_custody.ts";
 import { authenticate } from "./authority.ts";
 import { loadOriginal27, fixturePath, assertInputs } from "./fixtures.ts";
 import { install } from "./install.ts";
+import { childEnvironment } from "./capture.ts";
 import { independentOracles, observe, repairCopy, writeProject } from "./observe.ts";
 
 assert.equal(process.env.GITHUB_ACTIONS, "true", "public products run only in Actions");
-assert.equal(process.env.GITHUB_REF, "refs/heads/main", "merged main workflow required");
+assert.ok(
+  [
+    "refs/heads/main",
+    "refs/heads/test/published-constructor-original27-zero-debt-20261103",
+  ].includes(process.env.GITHUB_REF || ""),
+  "main or the explicitly reviewed650 controller branch required",
+);
 assert.equal(process.platform, "linux");
 assert.equal(process.arch, "x64");
 assert.equal(process.version, "v24.14.0");
@@ -50,10 +57,9 @@ const result: Record<string, unknown> = {
   node: process.version,
   platform: process.platform,
   arch: process.arch,
-  scope:
-    "original27 authored-error conservation with two separately retained generated mapper debts",
+  scope: "original27 zero generated debt with all fourteen authored negatives conserved",
   capsuleTrust:
-    "release owner supplies the exact immutable blob after whole producer ZIP authentication; this role joins receipt bytes to installed identity without duplicate archive download",
+    "release owner supplies the immutable blob after selected producer receipt/source-member authentication under retained archive-digest custody; this role joins those receipt bytes to installed identity without rereading native archive bodies",
   umbrella11023Closed: false,
   publicInstanceNoAnyQualified: false,
   timingUsable: false,
@@ -68,6 +74,10 @@ try {
     join(output, "historical-public-summary.json"),
   );
   const authority = await authenticate(version, releaseRun, blob, record);
+  // All controller API reads are complete; public JS and native probes need no credential.
+  const publicEnvironment = childEnvironment(process.env);
+  for (const name of Object.keys(process.env))
+    if (!Object.hasOwn(publicEnvironment, name)) delete process.env[name];
   result.producer = authority.ownership;
   const installed = await install(
     join(output, "registry-installation"),
@@ -95,9 +105,9 @@ try {
   assert.deepEqual(assertInputs(project, original.inputs.files), original.inputs.manifest);
   assertCustody(original.custody);
   assertCustody(installed.images);
-  result.status = "AUTHORED_CONSERVATION_WITH_GENERATED_DEBT";
+  result.status = "ORIGINAL27_ZERO_GENERATED_DEBT";
   result.accepted = true;
-  result.generatedDebtCount = 2;
+  result.generatedDebtCount = 0;
 } catch (error) {
   result.status = "FAILED";
   result.error = error instanceof Error ? error.message : String(error);

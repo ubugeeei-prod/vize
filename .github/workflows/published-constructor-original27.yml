@@ -7,10 +7,11 @@ on:
       - tools/support/release/constructor_original27_public/**
       - tests/tooling/release/constructor-original27-public.test.ts
       - tests/tooling/release/constructor-original27-stderr.test.ts
+      - tests/tooling/release/constructor-original27-zero-debt.test.ts
   workflow_dispatch:
     inputs:
       version:
-        description: Exact containing public version (first expected 0.614.0)
+        description: Exact containing public version (0.650.0)
         type: string
         required: true
       release_run:
@@ -43,12 +44,12 @@ jobs:
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
-      - name: Require whole vectors, debt preservation, registry custody and repair isolation
-        run: node --test tests/tooling/release/constructor-original27-public.test.ts tests/tooling/release/constructor-original27-stderr.test.ts
+      - name: Require whole zero-debt vectors, authored negatives, registry custody and repair isolation
+        run: node --test tests/tooling/release/constructor-original27-public.test.ts tests/tooling/release/constructor-original27-stderr.test.ts tests/tooling/release/constructor-original27-zero-debt.test.ts tests/tooling/release/human-reports-11252-11253-native-prerequisite.test.ts
 
   installed-public:
     name: Original Linux public 27 cases and separate repair copy
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/published-constructor-original27-zero-debt-20261103')
     needs: contracts
     permissions: { contents: read, actions: read }
     runs-on: blacksmith-8vcpu-ubuntu-2404
