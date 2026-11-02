@@ -363,7 +363,7 @@ fn dynamic_component_reference(element: &ElementNode<'_>, summary: &Croquis) -> 
         // Project supported target unions directly from the retained AST so
         // the registry never names that inner alias.
         let alias = vize_croquis::drawer::dynamic_component_alias(element.loc.span.start);
-        let owns_alias = vize_croquis::facts::component_usage_list(summary)
+        let owns_alias = vize_croquis::facts::component_usage_slice(summary)
             .iter()
             .any(|usage| {
                 usage.start == element.loc.span.start && usage.name.as_str() == alias.as_str()

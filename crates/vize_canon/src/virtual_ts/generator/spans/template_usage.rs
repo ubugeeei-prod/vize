@@ -62,7 +62,7 @@ fn collect_template_referenced_names(
         }
     }
 
-    for usage in vize_croquis::facts::component_usage_list(summary) {
+    for usage in vize_croquis::facts::component_usage_slice(summary) {
         names.insert(usage.name.as_str().into());
         value_names.insert(usage.name.as_str().into());
         if let Some(guard) = usage.vif_guard.as_ref() {

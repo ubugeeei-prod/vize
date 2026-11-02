@@ -54,8 +54,8 @@ pub(super) fn find_slot_host(
     component: &str,
 ) -> Option<ComponentUsage> {
     let directive_offset = scope.span.start;
-    vize_croquis::facts::component_usage_list(summary)
-        .into_iter()
+    vize_croquis::facts::component_usage_slice(summary)
+        .iter()
         .filter(|usage| usage.name.as_str() == component)
         .find(|usage| {
             usage
@@ -63,4 +63,5 @@ pub(super) fn find_slot_host(
                 .iter()
                 .any(|slot| slot.start == directive_offset)
         })
+        .cloned()
 }
