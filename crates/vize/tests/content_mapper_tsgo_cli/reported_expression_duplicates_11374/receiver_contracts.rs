@@ -55,6 +55,7 @@ fn receiver_echoes_preserve_contextual_contracts() {
             "stdout": output.stdout,
             "stderr": output.stderr,
             "expectedStatus": state["expectedStatus"],
+            "expectedStdout": state["expectedStdout"],
             "expectedCodes": state["expectedCodes"],
             "expectedMessage": state["expectedMessage"],
         }));
@@ -73,39 +74,10 @@ fn receiver_echoes_preserve_contextual_contracts() {
             "{id}"
         );
         assert_eq!(output.stderr, b"", "{id}");
-        let stdout = String::from_utf8(output.stdout).unwrap();
-        let diagnostics = stdout
-            .lines()
-            .filter_map(|line| {
-                let (_, suffix) = line.split_once(": error TS")?;
-                let (code, _) = suffix.split_once(':')?;
-                Some((line, code.parse::<u64>().unwrap()))
-            })
-            .collect::<Vec<_>>();
-        let codes = diagnostics
-            .iter()
-            .map(|(_, code)| *code)
-            .collect::<Vec<_>>();
-        let expected = state["expectedCodes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|code| code.as_u64().unwrap())
-            .collect::<Vec<_>>();
-        assert_eq!(codes, expected, "{id}: {stdout}");
-        if expected.is_empty() {
-            assert_eq!(stdout, "", "{id}");
-        } else {
-            assert!(
-                diagnostics
-                    .iter()
-                    .all(|(line, _)| line.starts_with("src/Parent.vue(")),
-                "{id}: {stdout}"
-            );
-            assert!(
-                stdout.contains(state["expectedMessage"].as_str().unwrap()),
-                "{id}: {stdout}"
-            );
-        }
+        assert_eq!(
+            output.stdout.as_slice(),
+            state["expectedStdout"].as_str().unwrap().as_bytes(),
+            "{id}"
+        );
     }
 }

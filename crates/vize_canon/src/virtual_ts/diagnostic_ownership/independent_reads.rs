@@ -187,14 +187,13 @@ fn script_declaration(
             }
             declaration = Some(actual);
         }
-        if let Some(binding) = scope.get_binding(name) {
-            if scope.kind != ScopeKind::ScriptSetup
+        if let Some(binding) = scope.get_binding(name)
+            && (scope.kind != ScopeKind::ScriptSetup
                 || binding.binding_type != BindingType::SetupConst
                 || binding.is_mutated()
-                || binding.declaration_offset != start
-            {
-                return None;
-            }
+                || binding.declaration_offset != start)
+        {
+            return None;
         }
         pending.extend(scope.parents.iter().copied());
     }
