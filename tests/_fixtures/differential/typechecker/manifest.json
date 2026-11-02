@@ -11828,6 +11828,41 @@
           }
         },
     {
+      "id": "typechecker/owned-vue-import-projection",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "b8d5427f93853606bb9f6c596106bbfc9bc3b229",
+      "inputs": [
+        {
+          "path": "owned-vue-import-projection/Child.vue.txt",
+          "sha256": "07e19de13397e41b560d791124313b8c56e716dcf7126b4409688b46661ddb3f",
+          "role": "physically-consumed-source-literal-for-owned-relative-vue-graph-and-native-controls"
+        },
+        {
+          "path": "owned-vue-import-projection/Parent.vue.txt",
+          "sha256": "49768796c24102ee20ffdf400ed56c40de920869821d64b1d61c02b8131f6a8b",
+          "role": "physically-consumed-source-literal-for-owned-relative-vue-graph-and-native-controls"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::virtual_project::module_projection::owned_vue_imports::tests::owned_relative_edge_changes_only_extension_and_preserves_every_map_offset; tests::native::owned_relative_imports_preserve_native_diagnostics_and_declarations; physically consumed original SFC literals; input-only, no native/public/performance qualification"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
       "targets": [

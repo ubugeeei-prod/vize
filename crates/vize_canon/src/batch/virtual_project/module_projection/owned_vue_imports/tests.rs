@@ -1,17 +1,20 @@
 //! Native Actions exercise the same owned graph, complete packets and lifecycle.
-#![expect(
-    clippy::disallowed_macros,
-    reason = "fixtures retain complete source-map packets"
-)]
 
 use std::fs;
 use std::path::Path;
 
+use vize_carton::cstr;
+
 use super::super::super::VirtualProject;
 
-const CHILD: &str =
-    "<script setup lang=\"ts\">defineProps<{ count: number }>();</script><template />";
-const PARENT: &str = "<script setup lang=\"ts\">import Child from './Child.vue'; const count: string = 1;</script><template><Child :count=\"count\" /></template>";
+const CHILD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/owned-vue-import-projection/Child.vue.txt"
+));
+const PARENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/owned-vue-import-projection/Parent.vue.txt"
+));
 
 fn project(root: &Path, options: &str) -> VirtualProject {
     fs::write(root.join("tsconfig.json"), options).unwrap();
@@ -32,7 +35,7 @@ fn packet(project: &VirtualProject, name: &str) -> serde_json::Value {
         .find_by_original(&project.project_root().join(name))
         .unwrap();
     serde_json::json!({"code": file.content,
-        "map": format!("{:?}", file.source_map),
+        "map": cstr!("{:?}", file.source_map),
         "original": file.original_path, "virtual": file.virtual_path,
         "authored": project.original_contents[&file.virtual_path],
         "pristine": project.pre_rewrite_code.get(&file.virtual_path)})

@@ -1,9 +1,11 @@
 //! Mandatory native discriminator; observations are saved before assertions.
 
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_carton::ToCompactString;
+use vize_carton::{ToCompactString, cstr};
 
 use super::{CHILD, packet, project, register};
 use crate::batch::virtual_project::VirtualProject;
@@ -20,32 +22,51 @@ fn save(directory: &Path, name: &str, value: serde_json::Value) {
 }
 
 fn native_check(native: &Path, config: &Path, directory: &Path, phase: &str) -> Output {
+    let cwd = config.parent().unwrap();
+    let arguments = ["--project", config.to_str().unwrap(), "--pretty", "false"];
+    let authority_environment = serde_json::json!({
+        "CORSA_PATH": std::env::var("CORSA_PATH").ok(),
+        "VIZE_TEST_REQUIRE_TSGO": std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),
+        "VIZE_TEST_DISABLE_TSGO": std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),
+        "remainingEnvironment": "inherited and not captured; no environment-independence claim"
+    });
     let result = Command::new(native)
+        .current_dir(cwd)
         .args(["--project"])
         .arg(config)
         .args(["--pretty", "false"])
         .output();
     let value = match &result {
-        Ok(output) => serde_json::json!({"native": native, "configPath": config,
-            "config": std::fs::read_to_string(config).unwrap(),
-            "status": output.status.code(), "stdout": output.stdout, "stderr": output.stderr}),
+        Ok(output) => {
+            #[cfg(unix)]
+            let signal = output.status.signal();
+            #[cfg(not(unix))]
+            let signal: Option<i32> = None;
+            serde_json::json!({"native": native, "argv":arguments, "cwd":cwd,
+                "authorityEnvironment":authority_environment, "configPath": config,
+                "config": std::fs::read_to_string(config).unwrap(),
+                "status": output.status.code(), "signal":signal,
+                "stdout": output.stdout, "stderr": output.stderr})
+        }
         Err(error) => {
-            serde_json::json!({"native": native, "configPath": config, "error": error.to_compact_string()})
+            serde_json::json!({"native": native, "argv":arguments, "cwd":cwd,
+                "authorityEnvironment":authority_environment, "configPath": config,
+                "error": error.to_compact_string()})
         }
     };
-    save(directory, &format!("{phase}.json"), value);
+    save(directory, &cstr!("{phase}.json"), value);
     result.unwrap()
 }
 
 fn snapshot(project: &VirtualProject, directory: &Path, phase: &str) {
     save(
         directory,
-        &format!("{phase}-inputs.json"),
+        &cstr!("{phase}-inputs.json"),
         serde_json::json!({
             "config": std::fs::read_to_string(project.generated_tsconfig_path()).unwrap(),
             "files": project.virtual_files_sorted().into_iter().map(|file| {
                 serde_json::json!({"original": file.original_path, "virtual": file.virtual_path,
-                    "content": file.content, "map": format!("{:?}", file.source_map),
+                    "content": file.content, "map": cstr!("{:?}", file.source_map),
                     "authored": project.original_contents.get(&file.virtual_path),
                     "pristine": project.pre_rewrite_code.get(&file.virtual_path)})
             }).collect::<Vec<_>>()
@@ -83,7 +104,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     let capture = std::env::var_os("VIZE_OWNED_VUE_CAPTURE")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            std::env::temp_dir().join(format!("owned-vue-native-{}", std::process::id()))
+            std::env::temp_dir().join(cstr!("owned-vue-native-{}", std::process::id()).as_str())
         });
     for (mode, module) in [("bundler", "ESNext"), ("Node16", "Node16")] {
         let root = tempfile::tempdir().unwrap();
@@ -100,7 +121,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
             register(&mut project, "Parent.vue", source);
             project.finalize_module_imports();
             project.materialize().unwrap();
-            let phase = format!("{mode}-{phase}");
+            let phase = cstr!("{mode}-{phase}");
             snapshot(&project, &capture, &phase);
             let output = native_check(
                 &native,
@@ -137,7 +158,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         );
         project.finalize_module_imports();
         project.materialize().unwrap();
-        let phase = format!("{mode}-authored-control");
+        let phase = cstr!("{mode}-authored-control");
         snapshot(&project, &capture, &phase);
         let output = native_check(
             &native,
@@ -179,14 +200,60 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         "Parent.vue",
         "<script lang=\"ts\">export { default as Child } from './Child.vue'; export type { Props } from './Child.vue';</script><template />",
     );
+    project.finalize_module_imports();
+    project.materialize().unwrap();
+    let direct_out = root.path().join("direct-native-types");
+    let direct_config = project
+        .write_declaration_tsconfig(&direct_out, false)
+        .unwrap();
+    snapshot(&project, &capture, "direct-declaration");
+    let output = native_check(&native, &direct_config, &capture, "direct-declaration");
+    let direct_outputs = ["Child.vue.d.ts", "Parent.vue.d.ts"].map(|name| {
+        let path = direct_out.join(name);
+        let content = std::fs::read_to_string(&path);
+        let observed = match &content {
+            Ok(code) => serde_json::json!({"path":path,"content":code}),
+            Err(error) => serde_json::json!({"path":path,"error":error.to_compact_string()}),
+        };
+        (content.is_ok(), observed)
+    });
+    save(
+        &capture,
+        "direct-declaration-outputs.json",
+        serde_json::json!(
+            direct_outputs
+                .iter()
+                .map(|(_, value)| value)
+                .collect::<Vec<_>>()
+        ),
+    );
+    let text = std::str::from_utf8(&output.stdout).unwrap();
+    assert_eq!(output.status.code(), Some(0), "{text}");
+    assert!(output.stderr.is_empty());
+    assert_eq!(text.matches("error TS").count(), 0, "{text}");
+    assert!(direct_outputs.iter().all(|(present, _)| *present));
+
     let mut checker = BatchTypeChecker::new(root.path()).unwrap();
     checker.scan_project().unwrap();
     let out = root.path().join("types");
+    save(
+        &capture,
+        "public-emitter-inputs.json",
+        serde_json::json!({
+            "scope":"Actual public API inputs; delegated internal transport is not captured",
+            "root":root.path(), "outDir":out, "native":native,
+            "files":checker.virtual_files().into_iter().map(|file|serde_json::json!({
+                "original":file.original_path,"virtual":file.virtual_path,
+                "code":file.content,"map":cstr!("{:?}",file.source_map)
+            })).collect::<Vec<_>>()
+        }),
+    );
     let emitted = checker.emit_declarations(&DeclarationEmitOptions::new(out.clone()));
     save(
         &capture,
         "declaration-result.json",
-        serde_json::json!({"result":format!("{emitted:?}")}),
+        serde_json::json!({"result":cstr!("{emitted:?}"),
+            "scope":"Actual public API result; existing executor may lossily decode/trim failure streams; not a raw transport packet"}),
     );
     let emitted = emitted.unwrap();
     let parent = emitted
@@ -205,7 +272,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     save(
         &capture,
         "declaration-inputs-and-outputs.json",
-        serde_json::json!({"files":checker.virtual_files().into_iter().map(|file|serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,"code":file.content,"map":format!("{:?}",file.source_map)})).collect::<Vec<_>>(),"outputs":emitted.files.iter().map(|file|serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()}),
+        serde_json::json!({"files":checker.virtual_files().into_iter().map(|file|serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,"code":file.content,"map":cstr!("{:?}",file.source_map)})).collect::<Vec<_>>(),"outputs":emitted.files.iter().map(|file|serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()}),
     );
     let output = native_check(&native, &config, &capture, "declaration-consumer");
     let text = std::str::from_utf8(&output.stdout).unwrap();
