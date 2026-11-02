@@ -1,0 +1,179 @@
+{
+  "schema": "vize.slot-function-direct-condition-original-source",
+  "project": "buefy",
+  "revision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
+  "historicalReport": {
+    "bytes": 47289426,
+    "sha256": "7cd7ec5b7058d83f628ef7aab41e2303591c9e474942c3f8ed1ecfdbdb46467d",
+    "producer": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+    "buefyRevision": "4f094cd51a229a0ac16097c77bf537ab4e94f701"
+  },
+  "selectedOriginalFileRecords": [
+    {
+      "historicalFinding": {
+        "column": 13,
+        "endColumn": 32,
+        "endLine": 70,
+        "file": "packages/buefy/src/components/collapse/Collapse.vue",
+        "line": 70,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      "category": "direct-ternary-test-next-candidate",
+      "sourceBytes": 2533,
+      "sourceSha256": "c1f3d53987b9d6177d123ba26e632f9ca843cbf14a01461ef10100e8631cd11a",
+      "context": [
+        {
+          "line": 68,
+          "text": "                onClick: this.toggle"
+        },
+        {
+          "line": 69,
+          "text": "            },"
+        },
+        {
+          "line": 70,
+          "text": "            this.$slots.trigger"
+        },
+        {
+          "line": 71,
+          "text": "                ? this.$slots.trigger({ open: this.isOpen })"
+        },
+        {
+          "line": 72,
+          "text": "                : undefined"
+        }
+      ]
+    },
+    {
+      "historicalFinding": {
+        "column": 34,
+        "endColumn": 51,
+        "endLine": 225,
+        "file": "packages/buefy/src/components/field/Field.vue",
+        "line": 225,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      "category": "logical-or-outside-next-slice",
+      "sourceBytes": 10215,
+      "sourceSha256": "5ea1d76f10f26cba807c105cdd3b9906e0d438c9ebfd678ee58a3de45cffa00b",
+      "context": [
+        {
+          "line": 223,
+          "text": "        },"
+        },
+        {
+          "line": 224,
+          "text": "        hasLabel() {"
+        },
+        {
+          "line": 225,
+          "text": "            return this.label || this.$slots.label"
+        },
+        {
+          "line": 226,
+          "text": "        },"
+        },
+        {
+          "line": 227,
+          "text": "        hasMessage() {"
+        }
+      ]
+    },
+    {
+      "historicalFinding": {
+        "column": 17,
+        "endColumn": 36,
+        "endLine": 230,
+        "file": "packages/buefy/src/components/field/Field.vue",
+        "line": 230,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      "category": "logical-or-outside-next-slice",
+      "sourceBytes": 10215,
+      "sourceSha256": "5ea1d76f10f26cba807c105cdd3b9906e0d438c9ebfd678ee58a3de45cffa00b",
+      "context": [
+        {
+          "line": 228,
+          "text": "            const parentField = this.parent as InstanceType<typeof Field> | null"
+        },
+        {
+          "line": 229,
+          "text": "            return ((!parentField || !parentField.hasInnerField) && this.newMessage) ||"
+        },
+        {
+          "line": 230,
+          "text": "                this.$slots.message"
+        },
+        {
+          "line": 231,
+          "text": "        }"
+        },
+        {
+          "line": 232,
+          "text": "    },"
+        }
+      ]
+    },
+    {
+      "historicalFinding": {
+        "column": 17,
+        "endColumn": 36,
+        "endLine": 283,
+        "file": "packages/buefy/src/components/field/Field.vue",
+        "line": 283,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      "category": "direct-if-test-next-candidate",
+      "sourceBytes": 10215,
+      "sourceSha256": "5ea1d76f10f26cba807c105cdd3b9906e0d438c9ebfd678ee58a3de45cffa00b",
+      "context": [
+        {
+          "line": 281,
+          "text": "        hasAddons() {"
+        },
+        {
+          "line": 282,
+          "text": "            let renderedNode = 0"
+        },
+        {
+          "line": 283,
+          "text": "            if (this.$slots.default) {"
+        },
+        {
+          "line": 284,
+          "text": "                const countTags = (nodes: VNode[]): number =>"
+        },
+        {
+          "line": 285,
+          "text": "                    nodes.reduce((i, node) => {"
+        }
+      ]
+    }
+  ],
+  "currentBeforeRule": {
+    "revision": "335271ab1e53432adfc7e820ad36ed8e6f8376c8",
+    "path": "crates/vize_patina/src/rules/script/require_slots_as_functions.rs",
+    "bytes": 10843,
+    "sha256": "92339ea9fa57a62caa0705e98a4f9786c35a7f700c0db701415e6ae2cf3449b9"
+  },
+  "selectionSha256": "8344a40bd28b63f952551b3ab87e02bc5a7154dfc0affa89c2bea02e5aa80d20",
+  "officialIntent": {
+    "priorPinnedRuleSha256": "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+    "priorPinnedHelperSha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+    "sourceLaw": "verify() reports only final MemberExpression/VariableDeclarator/SpreadElement/ArrayExpression; direct IfStatement.test and ConditionalExpression.test are outside this report set. Existing335 visits/suppresses only call/LogicalNot, so exact two immediate-owned-member tests are source-reachable current gaps.",
+    "proposal": "Add only immediate authenticated SlotFn operand suppression for direct if/ternary test; ordinary walk retains nested logical/arithmetic/member/array value uses, calls, known alias mixed uses, shadowing and unknown-expression behavior. No universal boolean-context or whole-rule parity change."
+  },
+  "limits": [
+    "Historical observations are authentic; current two condition gaps are source-inferred before fresh Actions, no new current binary BEFORE.",
+    "All24 historical records/order retained in selection proof;12 LogicalNot sites are source-covered by actual335, only5 previously runtime-qualified.",
+    "Field logical fallback value uses stay native findings; no complete rule/project parity or remaining-live-count claim."
+  ]
+}

@@ -26,15 +26,15 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    BindingPattern, Expression, Function, MemberExpression, Program, SpreadElement,
-    StaticMemberExpression, UnaryExpression, VariableDeclarator,
+    BindingPattern, ConditionalExpression, Expression, Function, IfStatement, MemberExpression,
+    Program, SpreadElement, StaticMemberExpression, UnaryExpression, VariableDeclarator,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_arrow_function_expression, walk_call_expression, walk_function,
-        walk_identifier_reference, walk_spread_element, walk_static_member_expression,
-        walk_unary_expression, walk_variable_declarator,
+        walk_arrow_function_expression, walk_call_expression, walk_conditional_expression,
+        walk_function, walk_identifier_reference, walk_if_statement, walk_spread_element,
+        walk_static_member_expression, walk_unary_expression, walk_variable_declarator,
     },
 };
 use oxc_span::{GetSpan, Span};
@@ -128,6 +128,16 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
         self.suppress_direct_slot_function(&call.callee);
         walk_call_expression(self, call);
+    }
+
+    fn visit_if_statement(&mut self, statement: &IfStatement<'a>) {
+        self.suppress_direct_slot_function(&statement.test);
+        walk_if_statement(self, statement);
+    }
+
+    fn visit_conditional_expression(&mut self, expression: &ConditionalExpression<'a>) {
+        self.suppress_direct_slot_function(&expression.test);
+        walk_conditional_expression(self, expression);
     }
 
     fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
@@ -336,3 +346,6 @@ mod tests {
 
 #[cfg(test)]
 mod presence_tests;
+
+#[cfg(test)]
+mod condition_tests;

@@ -1,0 +1,199 @@
+{
+  "schema": "vize.slot-function-direct-condition-tests",
+  "version": 1,
+  "scope": "Immediate owned IfStatement.test/ConditionalExpression.test only; logical/arithmetic/typeof/comparison and ordinary value-use differences retain current native behavior.",
+  "cases": [
+    {
+      "id": "if-direct",
+      "script": "export default { render() { if (this.$slots.default) return this.$slots.default(); return [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "ternary-direct",
+      "script": "export default { render() { return this.$slots.default ? this.$slots.default() : undefined } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "if-parenthesized-unicode",
+      "script": "export default { render() { /* 雪🌸 */ if (((this.$slots.default))) return this.$slots.default(); return [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "ternary-parenthesized",
+      "script": "export default { render() { return ((this.$slots.default)) ? this.$slots.default() : [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "function-alias-if",
+      "script": "export default { render() { const slot = this.$slots.default; if (slot) return slot(); return [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "object-alias-ternary",
+      "script": "export default { render() { const slots = this.$slots; return slots.default ? slots.default() : [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "if-body-value",
+      "script": "export default { render() { if (this.$slots.default) return [this.$slots.default]; return [] } }",
+      "nativeSpans": [
+        {
+          "needle": "[this.$slots.default]",
+          "shift": 1,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "[this.$slots.default]",
+          "shift": 13,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "ternary-consequent-value",
+      "script": "export default { render() { return this.$slots.default ? [this.$slots.default] : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "[this.$slots.default]",
+          "shift": 1,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "[this.$slots.default]",
+          "shift": 13,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "if-nested-member",
+      "script": "export default { render() { /* 雪🌸 */ if (this.$slots.default.length) return []; return [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "ternary-nested-array",
+      "script": "export default { render() { return [this.$slots.default] ? [] : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "logical-and-outside-slice",
+      "script": "export default { render() { if (this.$slots.default && ready) return []; return [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "logical-or-outside-slice",
+      "script": "export default { render() { return this.$slots.default || [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "comparison-outside-slice",
+      "script": "export default { render() { if (this.$slots.default !== undefined) return []; return [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "typeof-outside-slice",
+      "script": "export default { render() { if (typeof this.$slots.default === \"function\") return []; return [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "alternate-value-outside-slice",
+      "script": "export default { render() { return ready ? [] : this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "arithmetic-test-outside-slice",
+      "script": "export default { render() { return this.$slots.default + 1 ? [] : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "existing-negated-if",
+      "script": "export default { render() { if (!this.$slots.default) return []; return this.$slots.default() } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "shadowed-object-alias",
+      "script": "export default { render() { const slots = this.$slots; function read(slots) { if (slots.default) return []; return [] } return read({}) } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    }
+  ]
+}
