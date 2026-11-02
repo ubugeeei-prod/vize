@@ -20,10 +20,18 @@ import {
   verifyQ16RequiredEnvironment,
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
 
-const workflow = fs.readFileSync(
+const actualWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
+// Keep the historical whole-workflow inverses independent of this command-local
+// provider declaration and its child under the existing owner artifact path.
+const standardCommand =
+  "cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture";
+const standardRoleCommand =
+  'VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE=standard-go-d6-vue35 VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR="$GITHUB_WORKSPACE/target/vize-tests/content-mapper-directive-owners/reported-dynamic-targets" ' +
+  standardCommand;
+const workflow = actualWorkflow.replace(standardRoleCommand, standardCommand);
 const data = parse(workflow);
 const childWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
@@ -201,6 +209,24 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
   );
 });
 
+test("dynamic-target printer roles are declared before capture and retain standard whole packets", () => {
+  assert.equal(actualWorkflow.split(standardRoleCommand).length, 2);
+  const actual = parse(actualWorkflow);
+  const steps = actual.jobs["exact-tsgo-project"].steps;
+  const standard = steps.find(
+    (step: { name?: string }) => step.name === "Run standard project and declaration conformance",
+  );
+  assert.equal(standard.run.split("\n")[0], standardRoleCommand);
+  const artifact = steps.find(
+    (step: { name?: string }) => step.name === "Preserve whole owner calibration observations",
+  );
+  assert(artifact.uses.startsWith("actions/upload-artifact@"));
+  assert.equal(artifact.if, "always()");
+  assert(
+    artifact.with.path.split("\n").includes("target/vize-tests/content-mapper-directive-owners"),
+  );
+});
+
 const source = "1".repeat(40);
 const valid: NodeJS.ProcessEnv = {
   GITHUB_EVENT_NAME: "workflow_dispatch",
@@ -328,9 +354,17 @@ test("required per-family captures and host paths cannot quietly disappear", () 
     "VIZE_NESTED_CALLBACK_CAPTURE",
     "VIZE_REPORTED_DECLARATIONS_CAPTURE",
   ];
+  e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE = "reported-tsrs-vue44";
   for (const k of booleans) e[k] = "1";
   for (const k of paths) e[k] = "/owned/" + k;
   verifyQ16RequiredEnvironment(e);
+  for (const role of [undefined, "", "unknown", "standard-go-d6-vue35"])
+    assert.throws(() =>
+      verifyQ16RequiredEnvironment({
+        ...e,
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: role,
+      }),
+    );
   for (const k of [...booleans, ...paths])
     assert.throws(() => verifyQ16RequiredEnvironment({ ...e, [k]: undefined }));
   assert.throws(() => verifyQ16RequiredEnvironment({ ...e, VIZE_TEST_DISABLE_TSGO: "1" }));

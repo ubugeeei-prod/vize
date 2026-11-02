@@ -18,11 +18,31 @@ mod capture;
 
 const REQUIRED: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED";
 const CAPTURE: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR";
+const PROVIDER_ROLE: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE";
 const FIXTURES: &str = "tests/_fixtures/differential/typechecker/reported-dynamic-targets-11362";
 
 // Complete pinned report-provider representation of the separate invalid-key
 // control, in addition to its independently authored missing-key/code/location law.
 const INDEX_KEY_MESSAGE: &str = r#"Type 'TKey' cannot be used to index type '{ a: { __vizeEmitProps?: $StaticEmitProps | undefined; __vizeRawEmits?: $AuthoredEventMap | undefined; __vizeEventMap?: { "update:modelValue": ...; } | undefined; ... 4 more ...; readonly __vizeFallthroughProps?: ... | undefined; } & $ComponentConstructor & $VueComponentOptions; }'."#;
+
+// The supplementary invalid-key law is identical; these two known hosts print
+// its nested constructor type differently. Select the full golden from a
+// declared role before running cases, and validate the captured host afterward.
+const STANDARD_INDEX_KEY_MESSAGE: &str = r#"Type 'TKey' cannot be used to index type '{ a: { __vizeEmitProps?: $StaticEmitProps | undefined; __vizeRawEmits?: $AuthoredEventMap | undefined; __vizeEventMap?: { "update:modelValue": (value: string) => any; } | undefined; ... 4 more ...; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions; }'."#;
+
+fn provider_contract(role: &std::ffi::OsStr) -> Option<(&'static str, &'static str, &'static str)> {
+    match role.to_str()? {
+        "standard-go-d6-vue35" => {
+            Some((STANDARD_INDEX_KEY_MESSAGE, "Version 7.1.0-dev\n", "3.5.35"))
+        }
+        "reported-tsrs-vue44" => Some((
+            INDEX_KEY_MESSAGE,
+            "Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)\n",
+            "3.5.44",
+        )),
+        _ => None,
+    }
+}
 
 struct Case {
     issue: u64,
@@ -79,7 +99,7 @@ fn push_case(
     });
 }
 
-fn cases() -> (Vec<Value>, Vec<Case>) {
+fn cases(index_key_message: &'static str) -> (Vec<Value>, Vec<Case>) {
     let mut inputs = Vec::new();
     let mut cases = Vec::new();
     let (input, files) = fixture("guarded-member.json");
@@ -207,13 +227,13 @@ fn cases() -> (Vec<Value>, Vec<Case>) {
         (
             "invalid-key-error",
             missing_key.clone(),
-            Expected::Error(2536, INDEX_KEY_MESSAGE),
+            Expected::Error(2536, index_key_message),
         ),
         ("invalid-key-repair", original.clone(), Expected::Clean),
         (
             "invalid-key-restored",
             missing_key,
-            Expected::Error(2536, INDEX_KEY_MESSAGE),
+            Expected::Error(2536, index_key_message),
         ),
     ] {
         push_case(&mut cases, 11366, role, &files, probe, expected);
@@ -302,6 +322,12 @@ fn assert_case(case: &Case, packet: &Value) {
 
 #[test]
 fn originals_and_error_repair_restore_keep_component_target_types() {
+    assert_eq!(provider_contract(std::ffi::OsStr::new("")), None);
+    assert_eq!(provider_contract(std::ffi::OsStr::new("unknown")), None);
+    let provider_role = std::env::var_os(PROVIDER_ROLE);
+    let contract = provider_role
+        .as_deref()
+        .map(|role| provider_contract(role).expect("unknown dynamic-target provider role"));
     let required = std::env::var_os(REQUIRED);
     assert!(
         required.is_none() || required.as_deref() == Some(std::ffi::OsStr::new("1")),
@@ -330,7 +356,9 @@ fn originals_and_error_repair_restore_keep_component_target_types() {
     if let Some(path) = &capture_dir {
         std::fs::create_dir_all(path).unwrap();
     }
-    let (inputs, cases) = cases();
+    let (index_key_message, checker_version, vue_version) =
+        contract.expect("native dynamic-target cases require a declared provider role");
+    let (inputs, cases) = cases(index_key_message);
     let root = workspace_root().join("target/vize-tests/tests");
     std::fs::create_dir_all(&root).unwrap();
     let project = tempfile::Builder::new()
@@ -382,11 +410,27 @@ fn originals_and_error_repair_restore_keep_component_target_types() {
         }
         packets.push(packet);
     }
-    let envelope = json!({"schema":"vize.reportedDynamicTargetsCapture.v1","inputs":inputs,"provider":provider,"cases":packets,"semanticVerdictNotYetApplied":true,"publicAcceptance":false});
+    let envelope = json!({"schema":"vize.reportedDynamicTargetsCapture.v1","inputs":inputs,"provider":provider,"providerRole":provider_role.as_deref().and_then(std::ffi::OsStr::to_str),"cases":packets,"semanticVerdictNotYetApplied":true,"publicAcceptance":false});
     if let Some(path) = &capture_dir {
         capture::save(&path.join("whole-capture.json"), &envelope);
     }
     println!("REPORTED_DYNAMIC_TARGETS_RAW={envelope}");
+    // Validate the declared role only after all raw cases survive. Metadata
+    // validates the choice; observed diagnostic text never chooses a golden.
+    let observed_provider = &envelope["provider"];
+    assert_eq!(observed_provider["checkerVersionCompanion"]["status"], 0);
+    assert_eq!(
+        observed_provider["checkerVersionCompanion"]["stdoutUtf8"].as_str(),
+        Some(checker_version),
+    );
+    assert_eq!(
+        observed_provider["checkerVersionCompanion"]["stderrBytes"],
+        json!([])
+    );
+    let vue_bytes: Vec<u8> = serde_json::from_value(observed_provider["vueManifestBytes"].clone())
+        .expect("complete captured Vue manifest bytes");
+    let vue: Value = serde_json::from_slice(&vue_bytes).expect("captured Vue manifest JSON");
+    assert_eq!(vue["version"].as_str(), Some(vue_version));
     // Every checker and whole transform response above survives the first failing expectation.
     for (case, packet) in cases.iter().zip(envelope["cases"].as_array().unwrap()) {
         assert_case(case, packet);
