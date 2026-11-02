@@ -8,17 +8,14 @@ use crate::virtual_ts::helpers::shared_types;
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Scope, ScopeChain, ScopeData, ScopeId, ScopeKind, analysis::ComponentUsage};
 
-/// The first slice uses project-shared helpers and slot witnesses already
-/// emitted in the root render block. The qualified helper names cannot capture
-/// an authored setup type alias; standalone helpers retain their existing path.
+/// Capture the actual root-slot constructor result in both emission modes.
 /// A closure-local witness cannot be named by the root props aliases.
 pub(crate) fn root_slot_scope<'a>(
     scopes: &'a ScopeChain,
     usage: &ComponentUsage,
-    hoisted: bool,
+    _hoisted: bool,
 ) -> Option<&'a Scope> {
-    if !hoisted
-        || usage.vif_guard.is_some()
+    if usage.vif_guard.is_some()
         || (!usage.props.iter().any(is_checkable_prop) && usage.spread_props.is_empty())
         || !root_ancestry(scopes, Some(usage.scope_id))
     {
@@ -95,18 +92,15 @@ pub(crate) fn append_slot_selection(
 /// the external component contract.
 fn usage_raw_props(component: &str, pair: &str, hoisted: bool) -> String {
     let raw = shared_types::COMPONENT_RAW_PROPS.select(hoisted);
-    let constructor = shared_types::SLOT_CONSTRUCTOR.select(hoisted);
-    let is_any = shared_types::IS_ANY.select(hoisted);
-    let lists = if hoisted {
-        "import(\"vize:virtual-ts\").$SlotConstructorHasArguments"
-    } else {
-        "$SlotConstructorHasArguments"
-    };
+    // The with-arguments sentinel has no $props; a real constructor result
+    // retains its own public surface. Inspect these actual values rather than
+    // re-reading constructor parameters or a slot fallback. Built-in any tests
+    // introduce no new setup-visible helper name in standalone generation.
     let selected = cstr!(
-        "([{lists}<{constructor}<typeof {component}>>] extends [never] ? typeof {pair}.withoutArguments : typeof {pair}.withArguments)"
+        "(typeof {pair}.withArguments extends {{ $props: unknown }} ? typeof {pair}.withArguments : typeof {pair}.withoutArguments)"
     );
     cstr!(
-        "typeof {component} extends {{ readonly __vizeComponentMarker: true }} ? {raw}<typeof {component}> : {is_any}<{selected}> extends true ? {raw}<typeof {component}> : {selected} extends {{ $props: infer __P }} ? {raw}<typeof {component}, __P> : {raw}<typeof {component}>"
+        "typeof {component} extends {{ readonly __vizeComponentMarker: true }} ? {raw}<typeof {component}> : 0 extends (1 & {selected}) ? {raw}<typeof {component}> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {raw}<typeof {component}>"
     )
 }
 
@@ -132,6 +126,9 @@ pub(crate) fn append_usage_props(
         );
     }
 }
+
+#[cfg(test)]
+mod standalone_tests;
 
 #[cfg(test)]
 mod tests {
@@ -202,7 +199,7 @@ mod tests {
             );
             assert_eq!(
                 root_slot_scope(&scopes, &usage, false).map(|scope| scope.id),
-                None
+                closure.is_none().then_some(candidate)
             );
             usage.props.clear();
             assert_eq!(

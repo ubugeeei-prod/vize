@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -369,4 +370,64 @@ test("published mapper admission rejects mixed scopes, tags, runtime overrides a
     delete incomplete[key];
     assert.throws(() => officialActorInputs(incomplete), key);
   }
+});
+
+// The npm build packages this file directly; it does not regenerate Rust helpers.
+test("published recursive emit helper matches the canonical native declaration", () => {
+  const ts = createRequire(path.join(root, "npm/cli/package.json"))("typescript");
+  const canonical = fs.readFileSync(
+    path.join(
+      root,
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+    ),
+    "utf8",
+  );
+  const published = fs.readFileSync(path.join(root, "npm/cli/virtual-ts-globals.d.ts"), "utf8");
+  function signature(source: string): string[][] {
+    const file = ts.createSourceFile("helpers.d.ts", source, ts.ScriptTarget.Latest, true);
+    assert.deepEqual(file.parseDiagnostics, []);
+    const pending = [file];
+    const aliases = [];
+    while (pending.length > 0) {
+      const node = pending.pop()!;
+      if (ts.isTypeAliasDeclaration(node) && node.name.text === "$OverloadUnionRecursive") {
+        aliases.push(node);
+      }
+      pending.push(...node.getChildren(file));
+    }
+    assert.equal(aliases.length, 1);
+    const alias = aliases[0];
+    const parts = [...alias.typeParameters, alias.type];
+    const result: string[][] = [];
+    for (const part of parts) {
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.Latest,
+        true,
+        ts.LanguageVariant.Standard,
+        part.getText(file),
+      );
+      const tokens: string[] = [];
+      for (
+        let kind = scanner.scan();
+        kind !== ts.SyntaxKind.EndOfFileToken;
+        kind = scanner.scan()
+      ) {
+        tokens.push(
+          `${kind}:${kind === ts.SyntaxKind.StringLiteral ? scanner.getTokenValue() : scanner.getTokenText()}`,
+        );
+      }
+      result.push(tokens);
+    }
+    return result;
+  }
+  assert.deepEqual(signature(published), signature(canonical));
+  // These regressions must be visible even when formatting and quote style differ.
+  assert.notDeepEqual(
+    signature(published.replace("extends 900", "extends 32")),
+    signature(canonical),
+  );
+  assert.notDeepEqual(
+    signature(published.replace("TAccumulated = never", "TAccumulated = unknown")),
+    signature(canonical),
+  );
 });

@@ -24,6 +24,7 @@ pub(super) fn inner_type_of(type_args: &str) -> &str {
 pub(super) struct EmitsInfo {
     pub(super) has_emits_for_props: bool,
     has_runtime_emits: bool,
+    has_model_emits: bool,
     has_generic_emits: bool,
     generic_event_map_decl: String,
     generic_event_map_names: String,
@@ -267,6 +268,7 @@ pub(super) fn emit_emits_type(
     EmitsInfo {
         has_emits_for_props,
         has_runtime_emits,
+        has_model_emits,
         has_generic_emits: emits_generic_decl.is_some(),
         generic_event_map_decl,
         generic_event_map_names,
@@ -294,7 +296,7 @@ fn emit_emit_props_helper(
     }
     let emit_props =
         crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
-    if info.has_runtime_emits {
+    if info.has_runtime_emits && !info.has_model_emits {
         if info.preserve_event_navigation {
             ts! { &mut *ts =>
                 type $StaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;

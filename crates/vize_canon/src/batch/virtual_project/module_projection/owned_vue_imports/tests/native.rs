@@ -223,7 +223,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
                 );
                 expected
             } else {
-                String::new()
+                String::default()
             };
             assert_eq!(text, expected_stdout.as_str());
         }

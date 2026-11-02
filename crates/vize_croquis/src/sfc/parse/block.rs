@@ -1,58 +1,25 @@
 mod compat;
-mod end;
 mod literals;
 mod regex;
 mod script;
 
-use memchr::{memchr, memrchr};
+use memchr::memchr;
 use std::borrow::Cow;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::FxHashMap;
 
 use compat::is_void_block;
-use end::find_block_end;
 pub(super) use literals::{can_start_regex_literal, skip_script_string_literal};
 pub(super) use regex::skip_regex_literal;
 use script::find_script_block_end;
+pub(super) use vize_l1::container::vue::compat::{
+    BlockAttrs, BlockEndSearch, BlockParseResult, advance_line, build_malformed_error,
+    content_end_column, find_block_end, find_closing_tag_end, newlines,
+};
 
 // Tag name bytes for fast comparison
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
-
-pub(super) type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
-pub(super) type BlockParseOutput<'a> = (
-    &'a [u8],       // tag name as bytes
-    BlockAttrs<'a>, // attrs with borrowed strings
-    Cow<'a, str>,   // content as borrowed string
-    usize,          // content start
-    usize,          // content end
-    usize,          // end position
-    usize,          // content end line
-    usize,          // content end column
-);
-pub(super) type BlockParseError = (&'static str, String);
-pub(super) type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
-
-pub(super) struct BlockEndSearch<'a> {
-    pub(super) bytes: &'a [u8],
-    pub(super) source: &'a str,
-    pub(super) tag_name: &'a [u8],
-    pub(super) pos: usize,
-    pub(super) content_start: usize,
-    pub(super) start_line: usize,
-    pub(super) start_column: usize,
-    pub(super) initial_last_newline: usize,
-    pub(super) attrs: BlockAttrs<'a>,
-}
-
-/// Build a uniform `(code, message)` error for any malformed block.
-pub(super) fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParseError {
-    let tag_str = std::str::from_utf8(tag_name).unwrap_or("unknown");
-    (
-        "MALFORMED_BLOCK",
-        cstr!("Malformed <{tag_str}> block: {reason}."),
-    )
-}
 
 /// Fast tag name comparison using byte slices
 #[inline(always)]
@@ -80,85 +47,11 @@ pub(super) fn is_whitespace_fast(b: u8) -> bool {
     matches!(b, b' ' | b'\t' | b'\n' | b'\r')
 }
 
-/// Newline count and the offset of the last newline. A vectorized count beats
-/// stepping `memchr_iter` through every line of a block.
-#[inline]
-pub(super) fn newlines(bytes: &[u8]) -> (usize, Option<usize>) {
-    let count = bytes.iter().filter(|&&b| b == b'\n').count();
-    let last = if count == 0 {
-        None
-    } else {
-        memrchr(b'\n', bytes)
-    };
-    (count, last)
-}
-
-#[inline]
-pub(super) fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_newline: &mut usize) {
-    let (count, last) = newlines(bytes);
-    *line += count;
-    if let Some(offset) = last {
-        *last_newline = base + offset;
-    }
-}
-
 #[inline]
 fn position_after(bytes: &[u8], line: usize, column: usize) -> (usize, usize) {
     let (count, last) = newlines(bytes);
     let end_column = last.map_or(column + bytes.len(), |offset| bytes.len() - offset);
     (line + count, end_column)
-}
-
-#[inline]
-fn content_end_column(
-    content_start: usize,
-    start_line: usize,
-    start_column: usize,
-    content_end: usize,
-    end_line: usize,
-    last_newline: usize,
-) -> usize {
-    if end_line == start_line {
-        start_column + content_end - content_start
-    } else {
-        content_end - last_newline
-    }
-}
-
-/// Find the end of a closing tag `</tag_name` followed by optional whitespace and `>`.
-/// Returns the position immediately after `>`, or `None` if no valid closing tag at `pos`.
-#[inline]
-pub(super) fn find_closing_tag_end(
-    bytes: &[u8],
-    pos: usize,
-    len: usize,
-    tag_name: &[u8],
-) -> Option<usize> {
-    // Need at least "</" + tag_name + ">"
-    if pos + 2 + tag_name.len() >= len {
-        return None;
-    }
-    if bytes.get(pos..pos + 2) != Some(b"</".as_slice()) {
-        return None;
-    }
-    let name_start = pos + 2;
-    if !bytes
-        .get(name_start..name_start + tag_name.len())
-        .is_some_and(|name| name.eq_ignore_ascii_case(tag_name))
-    {
-        return None;
-    }
-    let mut check_pos = name_start + tag_name.len();
-    while check_pos < len
-        && let Some(&byte) = bytes.get(check_pos)
-    {
-        match byte {
-            b'>' => return Some(check_pos + 1),
-            b' ' | b'\t' | b'\n' | b'\r' => check_pos += 1,
-            _ => return None,
-        }
-    }
-    None
 }
 
 /// Parse a single block from the source using byte operations

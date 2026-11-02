@@ -1,6 +1,6 @@
 //! Raw style and custom-block boundary scanning.
 
-use std::borrow::Cow;
+use alloc::borrow::Cow;
 
 use memchr::memchr;
 
@@ -10,7 +10,7 @@ use super::{
 };
 
 /// Find the end of a raw block by jumping between `<` bytes.
-pub(super) fn find_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
+pub fn find_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
     let BlockEndSearch {
         bytes,
         source,

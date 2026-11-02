@@ -5,7 +5,7 @@ import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
 import { a65Data } from "./a-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64" | "F78";
+export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64" | "E90-91" | "F78";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -15,6 +15,8 @@ export interface Expected {
   status: number;
   stdout: string;
   stderr: string;
+  stdoutKind?: "OWNED_HEADER_OPAQUE_PRINTER";
+  sourceInputSha256?: string;
 }
 export interface State {
   id: string;
@@ -48,13 +50,13 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "F78",
-  fix: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
-  version: "0.647.0",
-  source: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
-  candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
-  run: "41443199914",
-  capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
+  subset: "E90-91",
+  fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
+  version: "0.649.0",
+  run: "41495567070",
+  capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
@@ -73,6 +75,12 @@ export const reportedCommands = {
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
 export function commandsFor(subset: Subset) {
+  if (subset === "E90-91")
+    return {
+      install: ["npm", "i"],
+      tsrs: ["npx", "tsrs", "--fast", "--runExternalCode", "-p", "tsconfig.json"],
+      reference: null,
+    } as const;
   if (subset === "F78")
     return {
       install: ["npm", "i"],
@@ -83,7 +91,7 @@ export function commandsFor(subset: Subset) {
 }
 export function subsetFor(id: string): SuppliedSubset {
   assert(
-    ["D61", "B60-68", "A59", "C62", "C4", "F78"].includes(id),
+    ["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78"].includes(id),
     "closed source-qualified subset required",
   );
   const rows: SuppliedSubset[] = suppliedSubsets;
@@ -122,7 +130,8 @@ export function filesFor(state: State, profile: Profile): SourceFile[] {
   return state.files.map((file) => {
     assert(/^(package\.json|tsconfig\.json|src\/[A-Za-z0-9_.-]+)$/u.test(file.path));
     if (file.path !== "package.json") return { ...file };
-    const before = profile.subset === "F78" ? "0.641.0" : "0.638.0",
+    const before =
+        profile.subset === "E90-91" ? "0.645.0" : profile.subset === "F78" ? "0.641.0" : "0.638.0",
       needle = '"vize": "' + before + '"';
     assert.equal(file.source.split(needle).length, 2);
     return {

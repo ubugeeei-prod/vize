@@ -73,6 +73,18 @@ test("source planning uses Node and offline metadata before selecting affected p
     "${{ needs.pr-source-plan.outputs.js-plan }}",
   );
   assert.equal(plan.outputs?.tooling, "${{ steps.plan.outputs.tooling }}");
+  assert.equal(source.jobs["affected-tooling-cli"].needs, "pr-source-plan");
+  assert.equal(
+    source.jobs["affected-tooling-cli"].if,
+    "${{ github.event_name != 'pull_request' || needs.pr-source-plan.outputs.affected-tooling != 'false' }}",
+  );
+  assert.deepEqual(
+    Object.entries(source.jobs)
+      .filter(([, job]) => /affected-tooling-cli|source-cli/.test(JSON.stringify(job)))
+      .map(([name]) => name),
+    ["affected-tooling-cli", "affected-tooling", "affected-tooling-report"],
+    "new producer consumers require an explicit selection/custody review",
+  );
   assert.ok(steps.every((step) => step.name !== "Test CI selection when its inputs change"));
   const selectionJob = source.jobs["ci-selection-tests"];
   assert.equal(selectionJob.needs, "pr-source-plan");

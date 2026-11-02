@@ -202,3 +202,9 @@ tests/_fixtures/differential/linter/slot-existence-conditions-10822/Collapse.vue
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/Field.vue.txt -text
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/source-provenance.json -text
+
+# Preserve the original Typeof SFC and explicit semantic-successor custody bytes.
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/semantic-successors.json -text
+tests/_fixtures/differential/linter/slot-typeof-presence-10822/source-provenance.json -text

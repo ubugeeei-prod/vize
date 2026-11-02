@@ -1,24 +1,13 @@
 //! The L2 transform passes over lowered Vue output — the P2-9 series
 //! substrate.
 //!
-//! # Why the passes live here (the dependency-direction decision)
+//! # Ownership
 //!
-//! P2-9 re-expresses `vize_atelier_core`'s transform lane as classified
-//! L2 passes, but the passes cannot live *in* `vize_atelier_core`: that
-//! crate is published to crates.io and the release gate
-//! (`tests/tooling/publish-crates-plan.test.ts`) rejects any
-//! published crate whose release graph names an unpublished one — the
-//! constraint `docs/davinci/plan/phase-2.md` records under "Davinci
-//! describes the shipped pipeline". The backends read Davinci from
-//! **dev-dependencies** (stripped on publish), which is where the P2-9
-//! differential comparator sits (`crates/vize_atelier_core/tests/
-//! davinci_l2_transform*.rs`); the pass bodies themselves need a crate
-//! that may depend on `vize_davinci` + `vize_l2` outright.
-//!
-//! Dialect legalizers stay here: `vize_l1_to_l2` already depends downward on
-//! both stages, and what lowering leaves syntactic a pass here turns semantic.
-//! Backend-neutral analysis bodies live in `vize_l2`; this crate keeps only
-//! the lowering adapter and fact-producer integration for those analyses.
+//! Vue dialect legalization and lowering adapters stay in this conversion
+//! crate. Backend-neutral analyses, including static-subtree and template
+//! complexity, execute in `vize_l2` over its canonical regions. The current
+//! transform plan still selects them and publishes their facts beside the
+//! transitional lowering result.
 //!
 //! # Driving a run
 //!

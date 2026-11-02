@@ -1,0 +1,54 @@
+{
+  "schema": "vize.slot-typeof-original-source.v1",
+  "original": {
+    "project": "buefy",
+    "revision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
+    "path": "packages/buefy/src/components/field/FieldBody.vue",
+    "bytes": 2578,
+    "sha256": "549dd10935821983608154160721b6a600b8e4f74b74a60902872df81e934598",
+    "lines": 74
+  },
+  "historicalMatrix": {
+    "producer": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+    "bytes": 47289426,
+    "sha256": "7cd7ec5b7058d83f628ef7aab41e2303591c9e474942c3f8ed1ecfdbdb46467d",
+    "scope": "Complete retained matrix unchanged; following messages are explicitly target-rule observations, not a replacement whole-project oracle."
+  },
+  "historicalTargetFindings": [
+    {
+      "column": 31,
+      "endColumn": 50,
+      "endLine": 32,
+      "line": 32,
+      "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+      "ruleDocsPath": "docs/content/rules/type-and-script.md",
+      "ruleId": "script/require-slots-as-functions",
+      "severity": 2
+    },
+    {
+      "column": 15,
+      "endColumn": 34,
+      "endLine": 34,
+      "line": 34,
+      "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+      "ruleDocsPath": "docs/content/rules/type-and-script.md",
+      "ruleId": "script/require-slots-as-functions",
+      "severity": 2
+    }
+  ],
+  "historicalOfficialTargetFindings": [],
+  "beforeCurrentRule": {
+    "revision": "3b0fb69e06b75ebb201c8b76e15fd6c2d8aa1b09",
+    "sha256": "0673f14ce68018c1636dd398d0c36108af8f5a17a90140cb10ad3b6c503f2118"
+  },
+  "officialRuleSha256": "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+  "oldOfficialTypeofPacket": {
+    "file": "f301-official-complete-20.json",
+    "sha256": "f4d1c7b4650fec1b320e714c9abdf78a96f3ee4ba016d5eeaf88b6dd4d76bf00",
+    "id": "typeof-outside-slice",
+    "sourceSha256": "a2291a6f923d1458536f8f94a60b2ae437f989f4f6d1381f22fff781c479802a",
+    "verify": [],
+    "fixPerformed": false
+  },
+  "currentScope": "Clear only typeof row32. Bare fallback row34 remains a native finding; no all24/matrix-budget/public/native-history promotion."
+}

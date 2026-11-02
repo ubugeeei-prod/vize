@@ -420,19 +420,19 @@ declare global {
     TOverload,
     TPartialOverload = unknown,
     TDepth extends unknown[] = [],
-  > = TDepth["length"] extends 32
-    ? never
+    TAccumulated = never,
+  > = TDepth["length"] extends 900
+    ? TAccumulated
     : TOverload extends (...args: infer TArgs) => infer TReturn
       ? TPartialOverload extends TOverload
-        ? never
-        :
-            | $OverloadUnionRecursive<
-                TPartialOverload & TOverload,
-                TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
-                [...TDepth, unknown]
-              >
-            | ((...args: TArgs) => TReturn)
-      : never;
+        ? TAccumulated
+        : $OverloadUnionRecursive<
+            TPartialOverload & TOverload,
+            TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
+            [...TDepth, unknown],
+            TAccumulated | ((...args: TArgs) => TReturn)
+          >
+      : TAccumulated;
   type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<
     $OverloadUnionRecursive<(() => never) & TOverload>,
     TOverload extends () => never ? never : () => never
