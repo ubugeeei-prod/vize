@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
+import path from "node:path";
 import {
   removeOwnedChildAnchor,
   verifyImportAnchorTransition,
@@ -29,10 +30,22 @@ function packet(text: string, extra = {}) {
   return {
     status: 0,
     stdout: Buffer.from(JSON.stringify(value, null, 2) + "\n"),
-    stderr: Buffer.from(header + helper + `\n=== ${cwd}/${file} ===\n${text}\n`),
+    stderr: Buffer.from(
+      header +
+        helper +
+        value.files
+          .toSorted((a, b) =>
+            Buffer.compare(
+              Buffer.from(path.resolve(cwd, a.file)),
+              Buffer.from(path.resolve(cwd, b.file)),
+            ),
+          )
+          .map((row) => `\n=== ${path.resolve(cwd, row.file)} ===\n${row.virtualTs}\n`)
+          .join(""),
+    ),
   };
 }
-const inputs = [{ path: file, body: source }];
+const inputs = [{ path: cwd + "/" + file, body: source }];
 
 test("exact source/read-owned Child anchor disappears while all other statements remain", () => {
   assert.deepEqual(removeOwnedChildAnchor(code, source), { code: next, removed: 1 });
@@ -74,7 +87,7 @@ test("whole JSON and debug reconstruction preserves fields, helper, order and op
 
 test("zero actual deletions is explicit ineligible population, never an assumed affected corpus", () => {
   const proof = verifyImportAnchorTransition(packet(code), packet(code), cwd, [
-    { path: file, body: "const Child = {};\n" },
+    { path: cwd + "/" + file, body: "const Child = {};\n" },
   ]);
   assert.equal(proof.removedAnchors, 0);
   assert.deepEqual(proof.modules, []);
@@ -166,5 +179,43 @@ test("normal-only cohort is exactly 20 outer commands/eight primaries in the ori
   assert.equal(
     verifyCandidateCommandPopulation([...candidateCommandIds], true).plannedOuterCommands,
     30,
+  );
+});
+
+test("source-owned display paths keep in-cwd relative and out-of-cwd absolute without changing packet strings", () => {
+  const sibling = "/owned/project/packages/pkg-000/src/index.ts";
+  const packageBody = "export const value = 1;\n";
+  const siblingFile = { file: sibling, diagnostics: [], virtualTs: packageBody };
+  const before = packet(code, { files: [{ file, diagnostics: [], virtualTs: code }, siblingFile] });
+  const after = packet(next, { files: [{ file, diagnostics: [], virtualTs: next }, siblingFile] });
+  const proof = verifyImportAnchorTransition(before, after, cwd, [
+    ...inputs,
+    { path: sibling, body: packageBody },
+  ]);
+  assert.equal(proof.removedAnchors, 1);
+  assert.throws(() =>
+    verifyImportAnchorTransition(before, after, cwd, [
+      ...inputs,
+      { path: "../../packages/pkg-000/src/index.ts", body: packageBody },
+    ]),
+  );
+  assert.throws(() =>
+    verifyImportAnchorTransition(before, after, cwd, [
+      ...inputs,
+      { path: sibling, body: packageBody },
+      { path: cwd + "/src/Control.vue", body: source },
+    ]),
+  );
+  const relativeSibling = packet(next, {
+    files: [
+      { file, diagnostics: [], virtualTs: next },
+      { ...siblingFile, file: "../../packages/pkg-000/src/index.ts" },
+    ],
+  });
+  assert.throws(() =>
+    verifyImportAnchorTransition(before, relativeSibling, cwd, [
+      ...inputs,
+      { path: sibling, body: packageBody },
+    ]),
   );
 });

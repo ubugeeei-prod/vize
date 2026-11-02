@@ -210,7 +210,7 @@ export async function candidateNormalCommands(options: {
       preflights.head.raw,
       corpus.app,
       corpus.entries.map((row) => ({
-        path: path.relative(corpus.app, path.join(common, "project", row.path)),
+        path: path.join(common, "project", row.path),
         body: fs.readFileSync(path.join(common, "project", row.path), "utf8"),
       })),
     );

@@ -57,7 +57,19 @@ export function verifyImportAnchorTransition(
   assert.equal(before.status, 0);
   assert.equal(after.status, before.status);
   assert(path.isAbsolute(cwd));
-  const source = new Map(sources.map((row) => [row.path, row.body]));
+  // runner/resolve.rs::display_path strips cwd only for actual descendants; siblings stay absolute.
+  const source = new Map(
+    sources.map((row) => {
+      assert(
+        path.isAbsolute(row.path) && path.normalize(row.path) === row.path,
+        "exact absolute census path required",
+      );
+      const displayed = row.path.startsWith(cwd + path.sep)
+        ? row.path.slice(cwd.length + 1)
+        : row.path;
+      return [displayed, row.body];
+    }),
+  );
   assert.equal(source.size, sources.length, "duplicate authored source paths");
   const old = JSON.parse(before.stdout.toString("utf8"));
   const current = JSON.parse(after.stdout.toString("utf8"));
