@@ -11,7 +11,7 @@
     },
     {
       "id": "renamed-interface",
-      "source": "<script setup lang=\"ts\">\ninterface FooProps {\n  foo: string;\n}\n\ndefineFooProps<FooProps>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "source": "<script setup lang=\"ts\">\ninterface FooProps {\n  foo: string;\n}\n\ndefineProps<FooProps>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n",
       "codes": []
     },
     {
