@@ -145,9 +145,6 @@ function __setup() {
   void __vize_native_key_64;
   if ((key === 'b')) {
     // @vize-map: expr -> 11:22
-  }
-  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
-  if ((key === 'b')) {
 
     // v-for scope: value in elems[key]
     {

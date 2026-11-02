@@ -272,23 +272,29 @@ pub(super) fn generate_v_slot_props_scope(
         "\n{indent}// Component props in v-slot scope: #{}\n",
         data.name
     );
-    let props_type = slot_payload_type(
-        ts,
-        &SlotPayloadContext {
-            component_binding_check: ctx.component_binding_check,
-            summary: ctx.summary,
-            options: ctx.options,
-            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-            template_binding_access: ctx.template_binding_access,
-            source_context: ctx.source_context,
-            binding_prefix: "__vize_slot_props_host_",
-            indent,
-            hoist_shared_preamble: ctx.hoist_shared_preamble,
-            explicit_generics: ctx.explicit_generics,
-        },
-        scope,
-        data,
-    );
+    // Without a slot binding nothing reads the payload, so skip the host
+    // inference; the template-scope pass keeps the host other checks use.
+    let props_type = if data.props_pattern.is_none() {
+        String::from("unknown")
+    } else {
+        slot_payload_type(
+            ts,
+            &SlotPayloadContext {
+                component_binding_check: ctx.component_binding_check,
+                summary: ctx.summary,
+                options: ctx.options,
+                syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+                template_binding_access: ctx.template_binding_access,
+                source_context: ctx.source_context,
+                binding_prefix: "__vize_slot_props_host_",
+                indent,
+                hoist_shared_preamble: ctx.hoist_shared_preamble,
+                explicit_generics: ctx.explicit_generics,
+            },
+            scope,
+            data,
+        )
+    };
     let function_gen_start = ts.len();
     emit_slot_function_open(
         ts,

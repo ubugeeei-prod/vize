@@ -4,13 +4,10 @@ use super::{
     reserved_props::{map_rewritten_template_binding, rewrite_reserved_template_binding},
     ts_suppression_comments::expression_source_for_typecheck,
 };
+use crate::virtual_ts::scope::{append_chained_vif_condition_open, append_chained_vif_guard_close};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{VizeMapping, helpers::generated_text_range};
-use oxc_allocator::Allocator;
-use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
-use vize_carton::{String, append, cstr, profile};
+use vize_carton::{String, append, profile};
 use vize_croquis::TemplateExpression;
 
 pub(super) fn generate_vif_guard_expression(
@@ -41,23 +38,6 @@ pub(super) fn generate_vif_guard_expression(
         .map_or_else(|| guard, |s| s.as_str());
     let isolated_guard = super::incomplete::isolate_incomplete_expression(generated_guard);
     let generated_guard = isolated_guard.as_str();
-    let enclosing = enclosing_guard(generated_guard, generated_expression);
-    let outer_indent = indent;
-    let inner_indent = enclosing.map(|parent| {
-        crate::virtual_ts::scope::append_ignored_vif_guard_open(
-            ts,
-            indent,
-            parent,
-            "Repeated parent guard",
-        );
-        cstr!("{indent}  ")
-    });
-    let indent = inner_indent.as_deref().unwrap_or(indent);
-    let generated_guard = if enclosing.is_some() {
-        generated_expression
-    } else {
-        generated_guard
-    };
     let mapping_needle = if isolated_guard.is_owned() {
         isolated_guard.mapped_str()
     } else if generated_guard.contains(generated_expression) {
@@ -66,9 +46,21 @@ pub(super) fn generate_vif_guard_expression(
         generated_guard
     };
 
-    let gen_stmt_start = ts.len();
-    append!(*ts, "{indent}if ({generated_guard}) {{\n");
-    let gen_stmt_end = ts.len();
+    // Fold the enclosing levels into the surrounding guard chain; only the
+    // authored condition is written (and reported) here.
+    let chained = (!isolated_guard.is_owned())
+        .then(|| {
+            append_chained_vif_condition_open(ts, indent, generated_guard, "Narrowing-only guard")
+        })
+        .flatten();
+    let (gen_stmt_start, gen_stmt_end) = match &chained {
+        Some(range) => (range.start, range.end),
+        None => {
+            let start = ts.len();
+            append!(*ts, "{indent}if ({generated_guard}) {{\n");
+            (start, ts.len())
+        }
+    };
     mappings.push(VizeMapping {
         gen_range: generated_text_range(
             ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
@@ -90,38 +82,9 @@ pub(super) fn generate_vif_guard_expression(
         *ts,
         "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",
     );
-    append!(*ts, "{indent}}}\n");
-    if enclosing.is_some() {
-        append!(*ts, "{outer_indent}}}\n");
+    if chained.is_some() {
+        append_chained_vif_guard_close(ts, indent);
+    } else {
+        append!(*ts, "{indent}}}\n");
     }
-}
-
-/// A generated parent conjunction ends in the exact authored own condition.
-/// Parse the logical boundary instead of splitting tokens inside strings.
-fn enclosing_guard<'s>(guard: &'s str, own: &str) -> Option<&'s str> {
-    if !guard.contains(" && ") || !vize_l0::expression_guard::expression_is_safe_to_parse(guard) {
-        return None;
-    }
-    let allocator = Allocator::new();
-    let expression = Parser::new(&allocator, guard, SourceType::ts())
-        .parse_expression()
-        .ok()?;
-    let Expression::LogicalExpression(logical) = expression else {
-        return None;
-    };
-    if !logical.operator.is_and() {
-        return None;
-    }
-    let full = logical.span;
-    if guard.get(full.start as usize..full.end as usize) != Some(guard.trim()) {
-        return None;
-    }
-    let right = logical.right.span();
-    if guard.get(right.start as usize..right.end as usize)
-        != Some(cstr!("({})", own.trim()).as_str())
-    {
-        return None;
-    }
-    let left = logical.left.span();
-    guard.get(left.start as usize..left.end as usize)
 }

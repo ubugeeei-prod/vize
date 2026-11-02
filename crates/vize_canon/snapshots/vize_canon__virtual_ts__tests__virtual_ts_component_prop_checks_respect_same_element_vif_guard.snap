@@ -153,9 +153,6 @@ function __setup() {
 
   if ((item)) {
     // @vize-map: expr -> 16:20
-  }
-  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
-  if ((item)) {
     void (item.name); // VBind
     // @vize-map: expr -> 27:36
   }

@@ -1,20 +1,23 @@
-//! Guarded check blocks emitted as one `if` / `else if` chain per branch run.
+//! Guarded check blocks folded into one nested `if` tree per run.
 //!
 //! Each check under a `v-else-if` branch carries the whole branch guard: the
-//! negated conditions of every earlier branch followed by its own. Emitted as
-//! independent `if (guard) { … }` blocks, every check repeats the chain, so a
-//! template with N branches costs O(N²) conditions and O(N³) narrowing work,
-//! and a few dozen branches push one generated body past TypeScript's
-//! control-flow depth limit. TypeScript then reports TS2563 on the generated
-//! body and stops flow typing for every file it checks afterwards.
+//! negated conditions of every earlier branch followed by its own, plus the
+//! guards of every enclosing `v-if`. Emitted as independent `if (guard) { … }`
+//! blocks, every check repeats the chain, so a template with N branches costs
+//! O(N²) conditions and O(N³) narrowing work, and a few dozen branches push
+//! one generated body past TypeScript's control-flow depth limit. TypeScript
+//! then reports TS2563 on the generated body and stops flow typing for every
+//! file it checks afterwards. Independent blocks are also costly for callbacks
+//! created after them: each callback is its own flow container, so its
+//! narrowing walk crosses every earlier block body again.
 //!
-//! The blocks of one emission pass are written back to back, so a block that
-//! follows its predecessor directly is folded into it instead: the same guard
-//! reopens the block, and the next branch of the same chain becomes
-//! `else if (<own condition>)` inside one enclosing `if (<chain base>)`.
-//! The enclosing guard must be factored out: the false branch of `P && A`
-//! followed by `P` does not let TypeScript recover `!A`. Each condition still
-//! appears once and sibling exclusions flow through the inner chain.
+//! A guard is emitted as levels: a run of exclusions, then each positive term.
+//! A block that follows its predecessor directly (only comments in between)
+//! reuses the predecessor's levels that its guard starts with, continues the
+//! first differing level with `else` / `else if (<own condition>)` when the
+//! guard is that level's next branch, and nests whatever terms remain. The
+//! false branch of `P && A` followed by `P` does not let TypeScript recover
+//! `!A`, so `else` only continues a level whose `if` tests one positive term.
 //!
 //! A v-for whose body already sits in that `if` suspends the chain so inner
 //! checks fold on their own, and records the active prefix. A guard that the
@@ -22,31 +25,39 @@
 
 use std::cell::{Cell, RefCell};
 use std::mem;
+use std::ops::Range;
 
 use vize_carton::{String, append};
 
 use super::vif_guard::{append_ignored_vif_guard_open, split_guard_terms};
 
+/// One `if` level of an emitted guard block.
+#[derive(Clone, PartialEq, Eq, Debug)]
+struct Frame {
+    /// Terms this level contributes to the block's guard, in order. An
+    /// `else` level also carries the exclusions its position implies.
+    terms: Vec<String>,
+    /// The condition when the level's `if` tests exactly one positive term,
+    /// so a following branch can continue it with `else`.
+    branch: Option<String>,
+}
+
 /// The block most recently closed by [`append_chained_vif_guard_close`].
 struct ClosedGuard {
-    /// Buffer length right after the closing brace.
+    /// Buffer length right after the last closing brace.
     closed_at: usize,
     indent: String,
-    /// Terms shared by every branch of the chain (the enclosing guard).
-    base: Vec<String>,
-    /// Every term of the guard the closed block was opened with.
-    terms: Vec<String>,
+    frames: Vec<Frame>,
     block: u64,
 }
 
 struct OpenGuard {
-    base: Vec<String>,
-    terms: Vec<String>,
+    frames: Vec<Frame>,
     /// Identity of the emitted TypeScript block. A reopened block keeps it.
     block: u64,
 }
 
-enum Frame {
+enum FrameState {
     Emitted,
     Skipped,
 }
@@ -56,7 +67,7 @@ thread_local! {
     static CLOSED: RefCell<Option<ClosedGuard>> = const { RefCell::new(None) };
     static NEXT_BLOCK: Cell<u64> = const { Cell::new(0) };
     static PREFIX: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
-    static FRAMES: RefCell<Vec<Frame>> = const { RefCell::new(Vec::new()) };
+    static FRAMES: RefCell<Vec<FrameState>> = const { RefCell::new(Vec::new()) };
 }
 
 /// The open chain around a v-for body. Inner checks must not replace it.
@@ -120,7 +131,7 @@ fn next_block() -> u64 {
 }
 
 /// Open a guarded check block, folding it into the block closed right before
-/// it when both belong to the same branch or to consecutive branches.
+/// it when their guards share levels.
 pub(crate) fn append_chained_vif_guard_open(
     ts: &mut String,
     indent: &str,
@@ -136,6 +147,57 @@ pub(super) fn append_bare_chained_vif_guard_open(ts: &mut String, indent: &str, 
     open_with(ts, indent, guard, None);
 }
 
+/// Open a chained block whose innermost level tests the authored `v-if`
+/// condition (the guard's last term) without `@ts-ignore`, so diagnostics in
+/// the condition stay reportable. Returns the byte range of that `if` /
+/// `else if` line, or `None` when the guard cannot be split; the caller then
+/// writes its own block.
+pub(crate) fn append_chained_vif_condition_open(
+    ts: &mut String,
+    indent: &str,
+    guard: &str,
+    purpose: &str,
+) -> Option<Range<usize>> {
+    let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+    if isolated.is_owned() {
+        return None;
+    }
+    let terms: Vec<String> = split_guard_terms(isolated.as_str())
+        .into_iter()
+        .map(String::from)
+        .collect();
+    let (_, prefix) = terms.split_last()?;
+    let mut prefix = prefix.to_vec();
+    let stripped = strip_active_prefix(&mut prefix);
+    let terms: Vec<String> = if stripped {
+        prefix.iter().chain(terms.last()).cloned().collect()
+    } else {
+        terms
+    };
+    FRAMES.with(|frames| frames.borrow_mut().push(FrameState::Emitted));
+    let previous = CLOSED
+        .with(|closed| closed.borrow_mut().take())
+        .filter(|previous| follows_directly(previous, ts, indent));
+    let mut condition = None;
+    let (frames, _) = match previous {
+        Some(previous) => fold(
+            ts,
+            indent,
+            Some(purpose),
+            &terms,
+            previous,
+            Some(&mut condition),
+        ),
+        None => (
+            open_levels(ts, indent, Some(purpose), &terms, Some(&mut condition)),
+            0,
+        ),
+    };
+    let block = next_block();
+    OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { frames, block }));
+    condition
+}
+
 fn open_with(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
     let mut terms: Vec<String> = split_guard_terms(isolated.as_str())
@@ -144,74 +206,216 @@ fn open_with(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) 
         .collect();
     let stripped = strip_active_prefix(&mut terms);
     if stripped && terms.is_empty() {
-        FRAMES.with(|frames| frames.borrow_mut().push(Frame::Skipped));
+        FRAMES.with(|frames| frames.borrow_mut().push(FrameState::Skipped));
         return;
     }
-    FRAMES.with(|frames| frames.borrow_mut().push(Frame::Emitted));
-    let joined = stripped.then(|| terms.join(" && "));
-    let guard = joined.as_deref().unwrap_or(guard);
-    let previous = CLOSED.with(|closed| closed.borrow_mut().take());
-    let mut block = None;
-    let base = match previous {
-        Some(previous) if follows_directly(&previous, ts, indent) => {
-            match continuation(&previous.terms, &terms) {
-                Some(Continuation::SameBranch) => {
-                    reopen(
-                        ts,
-                        indent,
-                        previous.closed_at,
-                        closing_blocks(&previous.base),
-                    );
-                    block = Some(previous.block);
-                    previous.base
-                }
-                Some(Continuation::NextBranch(own)) => {
-                    if !previous.base.is_empty() {
-                        // Keep the previous branch closed, but reopen its enclosing guard.
-                        reopen(ts, indent, previous.closed_at, 1);
-                    }
-                    if let Some(purpose) = purpose {
-                        append!(
-                            *ts,
-                            "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n"
-                        );
-                    }
-                    if own.is_empty() {
-                        append!(*ts, "{indent}else {{\n");
-                    } else {
-                        let condition = own.join(" && ");
-                        append!(*ts, "{indent}else if ({condition}) {{\n");
-                    }
-                    previous.base
-                }
-                None => open_fresh(ts, indent, guard, purpose, &terms),
-            }
-        }
-        _ => open_fresh(ts, indent, guard, purpose, &terms),
+    FRAMES.with(|frames| frames.borrow_mut().push(FrameState::Emitted));
+    if terms.is_empty() {
+        // Nothing to split or share: keep the authored text as one level.
+        emit_if(ts, indent, isolated.as_str(), purpose);
+        let frames = vec![Frame {
+            terms: Vec::new(),
+            branch: None,
+        }];
+        let block = next_block();
+        OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { frames, block }));
+        return;
+    }
+    let previous = CLOSED
+        .with(|closed| closed.borrow_mut().take())
+        .filter(|previous| follows_directly(previous, ts, indent));
+    let (frames, block) = match previous {
+        Some(previous) => fold(ts, indent, purpose, &terms, previous, None),
+        None => (open_levels(ts, indent, purpose, &terms, None), next_block()),
     };
-    let block = block.unwrap_or_else(next_block);
-    OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { base, terms, block }));
+    OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { frames, block }));
+}
+
+/// Fold `terms` into the levels of the block that was just closed.
+fn fold(
+    ts: &mut String,
+    indent: &str,
+    purpose: Option<&str>,
+    terms: &[String],
+    previous: ClosedGuard,
+    mut condition: Option<&mut Option<Range<usize>>>,
+) -> (Vec<Frame>, u64) {
+    // A mapped condition is always written again: its own level is never reused.
+    let reusable = terms.len().saturating_sub(usize::from(condition.is_some()));
+    let mut shared = 0;
+    let mut covered = 0;
+    for frame in &previous.frames {
+        let end = covered + frame.terms.len();
+        if frame.terms.is_empty()
+            || end > reusable
+            || terms.get(covered..end) != Some(frame.terms.as_slice())
+        {
+            break;
+        }
+        shared += 1;
+        covered = end;
+    }
+    let total = previous.frames.len();
+    if condition.is_none() && shared == total && covered == terms.len() {
+        reopen(ts, indent, previous.closed_at, total);
+        return (previous.frames, previous.block);
+    }
+    let mut frames: Vec<Frame> = previous.frames.get(..shared).unwrap_or_default().to_vec();
+    let rest = terms.get(covered..).unwrap_or_default();
+    if let Some(sibling) = previous
+        .frames
+        .get(shared)
+        .and_then(|frame| sibling(frame, rest))
+    {
+        // Keep the earlier branch (and anything nested in it) closed and
+        // continue its `if` from the enclosing levels.
+        reopen(ts, indent, previous.closed_at, shared);
+        let consumed = sibling.level.len();
+        let mapped_here = covered + consumed == terms.len() && sibling.own.is_some();
+        let mapped_condition = condition.as_deref_mut().filter(|_| mapped_here);
+        if let (Some(purpose), None) = (purpose, mapped_condition.as_ref()) {
+            append!(
+                *ts,
+                "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n"
+            );
+        }
+        let start = ts.len();
+        match sibling.own.as_deref() {
+            Some(own) => append!(*ts, "{indent}else if ({own}) {{\n"),
+            None => append!(*ts, "{indent}else {{\n"),
+        }
+        if let Some(mapped_condition) = mapped_condition {
+            *mapped_condition = Some(start..ts.len());
+        }
+        let condition = condition.filter(|_| !mapped_here);
+        frames.push(Frame {
+            terms: sibling.level,
+            branch: sibling.own,
+        });
+        frames.extend(open_levels(
+            ts,
+            indent,
+            purpose,
+            rest.get(consumed..).unwrap_or_default(),
+            condition,
+        ));
+        return (frames, next_block());
+    }
+    reopen(ts, indent, previous.closed_at, shared);
+    frames.extend(open_levels(ts, indent, purpose, rest, condition));
+    (frames, next_block())
+}
+
+struct Sibling {
+    /// Terms of the continued level: the earlier branch's exclusions, the
+    /// negated earlier condition and the own condition.
+    level: Vec<String>,
+    own: Option<String>,
+}
+
+/// `frame = E + [t]`, `rest = E + [!t] + [own]? + nested` continues the same
+/// `if` with `else if (own)` or `else`.
+fn sibling(frame: &Frame, rest: &[String]) -> Option<Sibling> {
+    let condition = frame.branch.as_ref()?;
+    let exclusions = frame.terms.split_last()?.1;
+    if rest.get(..exclusions.len())? != exclusions {
+        return None;
+    }
+    let negated = rest.get(exclusions.len())?;
+    if negated.strip_prefix('!') != Some(condition.as_str()) {
+        return None;
+    }
+    let mut level = rest.get(..=exclusions.len())?.to_vec();
+    let own = rest
+        .get(exclusions.len() + 1)
+        .filter(|term| !term.starts_with('!'))
+        .cloned();
+    if let Some(own) = &own {
+        level.push(own.clone());
+    }
+    Some(Sibling { level, own })
+}
+
+/// Emit `terms` as fresh levels: each run of exclusions, then each positive
+/// term on its own so later branches can continue it with `else`.
+fn open_levels(
+    ts: &mut String,
+    indent: &str,
+    purpose: Option<&str>,
+    terms: &[String],
+    condition: Option<&mut Option<Range<usize>>>,
+) -> Vec<Frame> {
+    let mapped = condition.is_some();
+    let (body, last) = match terms.split_last() {
+        Some((last, body)) if mapped => (body, Some(last)),
+        _ => (terms, None),
+    };
+    let mut frames = Vec::new();
+    let mut exclusions: Vec<String> = Vec::new();
+    for term in body {
+        if term.starts_with('!') {
+            exclusions.push(term.clone());
+            continue;
+        }
+        if !exclusions.is_empty() {
+            emit_if(ts, indent, &exclusions.join(" && "), purpose);
+            frames.push(Frame {
+                terms: mem::take(&mut exclusions),
+                branch: None,
+            });
+        }
+        emit_if(ts, indent, term, purpose);
+        frames.push(Frame {
+            terms: vec![term.clone()],
+            branch: Some(term.clone()),
+        });
+    }
+    if let (Some(last), Some(condition)) = (last, condition) {
+        if !exclusions.is_empty() {
+            emit_if(ts, indent, &exclusions.join(" && "), purpose);
+            frames.push(Frame {
+                terms: mem::take(&mut exclusions),
+                branch: None,
+            });
+        }
+        let start = ts.len();
+        append!(*ts, "{indent}if ({last}) {{\n");
+        *condition = Some(start..ts.len());
+        frames.push(Frame {
+            terms: vec![last.clone()],
+            branch: (!last.starts_with('!')).then(|| last.clone()),
+        });
+        return frames;
+    }
+    if !exclusions.is_empty() {
+        emit_if(ts, indent, &exclusions.join(" && "), purpose);
+        frames.push(Frame {
+            terms: exclusions,
+            branch: None,
+        });
+    }
+    frames
 }
 
 /// Close a block opened by [`append_chained_vif_guard_open`].
 pub(crate) fn append_chained_vif_guard_close(ts: &mut String, indent: &str) {
-    let skipped = FRAMES.with(|frames| matches!(frames.borrow_mut().pop(), Some(Frame::Skipped)));
+    let skipped =
+        FRAMES.with(|frames| matches!(frames.borrow_mut().pop(), Some(FrameState::Skipped)));
     if skipped {
         return;
     }
-    append!(*ts, "{indent}}}\n");
     let Some(open) = OPEN.with(|open| open.borrow_mut().take()) else {
+        append!(*ts, "{indent}}}\n");
         return;
     };
-    if !open.base.is_empty() {
+    for _ in &open.frames {
         append!(*ts, "{indent}}}\n");
     }
     CLOSED.with(|closed| {
         *closed.borrow_mut() = Some(ClosedGuard {
             closed_at: ts.len(),
             indent: String::from(indent),
-            base: open.base,
-            terms: open.terms,
+            frames: open.frames,
             block: open.block,
         });
     });
@@ -237,26 +441,6 @@ fn strip_active_prefix(terms: &mut Vec<String>) -> bool {
     })
 }
 
-fn open_fresh(
-    ts: &mut String,
-    indent: &str,
-    guard: &str,
-    purpose: Option<&str>,
-    terms: &[String],
-) -> Vec<String> {
-    let Some((last, base)) = terms.split_last() else {
-        emit_if(ts, indent, guard, purpose);
-        return Vec::new();
-    };
-    if base.is_empty() {
-        emit_if(ts, indent, guard, purpose);
-    } else {
-        emit_if(ts, indent, &base.join(" && "), purpose);
-        emit_if(ts, indent, last, purpose);
-    }
-    base.to_vec()
-}
-
 fn emit_if(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
     if let Some(purpose) = purpose {
         append_ignored_vif_guard_open(ts, indent, guard, purpose);
@@ -266,16 +450,12 @@ fn emit_if(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
     append!(*ts, "{indent}if ({}) {{\n", isolated.as_str());
 }
 
-fn closing_blocks(base: &[String]) -> usize {
-    if base.is_empty() { 1 } else { 2 }
-}
-
-/// Whether `ts` still ends with the closing brace of `previous`, followed by
+/// Whether `ts` still ends with the closing braces of `previous`, followed by
 /// nothing but comment lines. Generation of one SFC runs on one thread and
 /// writes one buffer at a time, so the thread-local record cannot describe a
 /// different buffer that happens to end the same way.
 fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
-    let close_len = (indent.len() + 2) * closing_blocks(&previous.base);
+    let close_len = (indent.len() + 2) * previous.frames.len();
     let closing = previous
         .closed_at
         .checked_sub(close_len)
@@ -294,39 +474,17 @@ fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
         })
 }
 
-/// Drop the closing brace written by the previous close, keeping any comment
-/// lines written after it so they move into the reopened block.
+/// Drop the last `blocks` closing braces written by the previous close,
+/// keeping any comment lines written after them so they move into the
+/// reopened block.
 fn reopen(ts: &mut String, indent: &str, closed_at: usize, blocks: usize) {
+    if blocks == 0 {
+        return;
+    }
     let between = String::from(ts.get(closed_at..).unwrap_or_default());
     let close_len = (indent.len() + 2) * blocks;
     ts.truncate(closed_at.saturating_sub(close_len));
     ts.push_str(between.as_str());
-}
-
-enum Continuation {
-    SameBranch,
-    /// The new block is the next branch; carries its own terms.
-    NextBranch(Vec<String>),
-}
-
-/// `previous = P + [t]`, `next = P + [!t] + own` with `own` empty for `v-else`.
-fn continuation(previous: &[String], next: &[String]) -> Option<Continuation> {
-    if previous == next {
-        return Some(Continuation::SameBranch);
-    }
-    let (last, prefix) = previous.split_last()?;
-    if !last.starts_with('(') || next.len() < previous.len() {
-        return None;
-    }
-    let (shared, rest) = next.split_at_checked(prefix.len())?;
-    let (negated, own) = rest.split_first()?;
-    let expected = {
-        let mut negated_last = String::from("!");
-        negated_last.push_str(last.as_str());
-        negated_last
-    };
-    (shared == prefix && *negated == expected && own.len() <= 1)
-        .then(|| Continuation::NextBranch(own.to_vec()))
 }
 
 #[cfg(test)]

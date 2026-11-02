@@ -113,7 +113,8 @@ const navItems: Item[] = []
     assert!(
         output
             .code
-            .contains("if ((isOpen)) {\n\n    // v-for scope"),
+            .contains("if ((isOpen)) {\n    // @vize-map: expr -> 11:17\n\n    // v-for scope")
+            && output.code.matches("if ((isOpen))").count() == 1,
         "the common outer guard should wrap the complete v-for:\n{}",
         output.code
     );

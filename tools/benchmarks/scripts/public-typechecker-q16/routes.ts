@@ -10,9 +10,9 @@ import {
 } from "../../../support/release/computed_event_custody.ts";
 import type { PackageBase } from "../../../support/release/human_reports_11252_11253_public/model.ts";
 
-export type CommandBin = "tsrs" | "vue-tsc" | "vize";
+export type CommandBin = "tsrs" | "vue-tsc" | "vize" | "tsc";
 export function sourceBin(root: string, name: CommandBin, files: FileImage[]) {
-  const directory = realpathSync(join(root, "node_modules", name));
+  const directory = realpathSync(join(root, "node_modules", name === "tsc" ? "typescript" : name));
   const manifest = asRecord(JSON.parse(readFileSync(join(directory, "package.json"), "utf8")));
   const declared = typeof manifest.bin === "string" ? manifest.bin : asRecord(manifest.bin)[name];
   const target = realpathSync(join(directory, asString(declared)));
