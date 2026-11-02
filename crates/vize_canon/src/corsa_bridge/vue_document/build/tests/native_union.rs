@@ -3,7 +3,7 @@
 use super::*;
 
 fn native_documents(project: &CorsaVueVirtualProject) -> Vec<(String, String)> {
-    let mut documents = project.documents.clone();
+    let mut documents = project.documents.to_vec();
     if let Some(root) = project.session_project_root.as_deref() {
         project
             .host
@@ -70,14 +70,14 @@ fn native_live_union_contains_closed_sibling_dependencies_before_a_later_query()
     let session = EditorMirrorSession::new();
     let both = [(a.clone(), HOST), (b.clone(), B)];
     let first = prepare(&session, &a, HOST, &both, &[]);
-    let first_packet = first.documents.clone();
+    let first_packet = first.documents.to_vec();
     assert_eq!(
         first_packet.len(),
         2,
         "A's exact own/imported query closure"
     );
     let second = prepare(&session, &b, B, &both, &[]);
-    let second_packet = second.documents.clone();
+    let second_packet = second.documents.to_vec();
     assert!(
         second.host.dependencies.is_empty(),
         "B has no authored imports"
@@ -103,7 +103,7 @@ fn native_live_union_contains_closed_sibling_dependencies_before_a_later_query()
     );
     let reopened = prepare(&session, &a, HOST, &both, &[]);
     let current_b = prepare(&session, &b, B, &both, &[]);
-    let mut reopened_expected = reopened.documents.clone();
+    let mut reopened_expected = reopened.documents.to_vec();
     reopened_expected.push((
         current_b.host.request_uri.clone(),
         current_b.host.code.clone(),
@@ -116,7 +116,7 @@ fn native_live_union_contains_closed_sibling_dependencies_before_a_later_query()
     let edited_overlays = [(a.clone(), unsaved.as_str()), (b.clone(), B)];
     let edited = prepare(&session, &a, &unsaved, &edited_overlays, &[]);
     let after_edit = prepare(&session, &b, B, &edited_overlays, &[]);
-    let mut edited_expected = edited.documents.clone();
+    let mut edited_expected = edited.documents.to_vec();
     edited_expected.push((
         after_edit.host.request_uri.clone(),
         after_edit.host.code.clone(),
@@ -240,11 +240,11 @@ fn host_and_requested_revisions_share_one_materialized_native_union() {
     let overlays = [(host.clone(), HOST)];
     let requested = [(app.clone(), CHILD)];
     let navigation = prepare(&session, &host, HOST, &overlays, &requested);
-    let navigation_packet = navigation.documents.clone();
+    let navigation_packet = navigation.documents.to_vec();
     let navigation_native = native_documents(&navigation);
     assert_eq!(navigation_native.len(), 3);
     let ordinary = prepare(&session, &host, HOST, &overlays, &[]);
-    let ordinary_packet = ordinary.documents.clone();
+    let ordinary_packet = ordinary.documents.to_vec();
     let mut ordinary_expected = ordinary_packet.clone();
     ordinary_expected.sort_unstable_by(|left, right| left.0.cmp(&right.0));
     assert_eq!(ordinary_expected.len(), 2);

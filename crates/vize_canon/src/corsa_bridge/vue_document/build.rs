@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashMap, String};
 
 use super::{
-    CorsaBridgeError, CorsaProjectEnvironment, CorsaVueVirtualDocument,
+    CorsaBridgeError, CorsaNativeDocumentBatch, CorsaProjectEnvironment, CorsaVueVirtualDocument,
     CorsaVueVirtualDocumentOptions, CorsaVueVirtualProject, ImportRewriter,
     collect_dependency_documents, generate_vue_document_with_options, materialized_documents,
     tsx_vue_import_shim,
@@ -13,9 +13,13 @@ use super::{
 
 /// Immutable query data belongs to the same bounded, self-validating alias revision.
 /// Native session synchronization is intentionally performed on every open.
+#[expect(
+    clippy::disallowed_types,
+    reason = "one immutable native payload per alias revision"
+)]
 pub(in crate::corsa_bridge) struct QuerySurface {
     host: CorsaVueVirtualDocument,
-    documents: Vec<(String, String)>,
+    documents: std::sync::Arc<Vec<(String, String)>>,
     session_config_path: Option<PathBuf>,
 }
 
@@ -70,7 +74,7 @@ pub(super) fn build_vue_virtual_workspace_project(
     Ok(CorsaVueVirtualProject {
         session_project_root: host.session_project_root.clone(),
         host,
-        documents: surface.documents.clone(),
+        documents: CorsaNativeDocumentBatch::shared(surface.documents.clone()),
         session_config_path: surface.session_config_path.clone(),
         materialized_changes: alias_context.materialized_changes.clone(),
     })
@@ -156,7 +160,7 @@ fn build_surface(
             source_catalog: Default::default(),
             session_project_root: session_project_root.clone(),
         },
-        documents,
+        documents: documents.into(),
         session_config_path: alias_context.mirror_project_config_path(),
     })
 }

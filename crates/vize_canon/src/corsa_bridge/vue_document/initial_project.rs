@@ -60,7 +60,7 @@ impl CorsaBridge {
         project
             .host
             .source_catalog
-            .extend_native_project_documents(root, &mut project.documents);
+            .extend_native_project_document_batch(root, &mut project.documents);
         // This guard is pure UTF-8/URI validation. The factory repeats it
         // defensively before real startup; it performs no RPC here.
         crate::corsa_client::CorsaProjectClient::validate_initial_editor_project_delta(
@@ -203,7 +203,7 @@ impl CorsaBridge {
             project
                 .host
                 .source_catalog
-                .extend_native_project_documents(root, &mut project.documents);
+                .extend_native_project_document_batch(root, &mut project.documents);
         }
         let inputs_identical = receipt.owner.is_current(self)
             && receipt.matches_config_read(&project, read_config(&project));
