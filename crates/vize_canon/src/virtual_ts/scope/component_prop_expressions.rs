@@ -120,10 +120,16 @@ pub(super) fn collect_component_prop_expression_ranges(
                         .template
                         .and_then(|text| text.get(value_range.clone()))
                         .is_some_and(|text| text == reads.raw.as_str())
+                    && let Ok(value_start) = u32::try_from(value_range.start)
                 {
-                    collector
-                        .borrow_mut()
-                        .prepare_independent_reads(summary, bindings, &usage, prop, reads);
+                    collector.borrow_mut().prepare_independent_reads(
+                        summary,
+                        bindings,
+                        &usage,
+                        prop,
+                        reads,
+                        value_start,
+                    );
                 }
                 if contextual.unproven.contains(&(prop.start, prop.end))
                     && let Some(collector) = options.diagnostic_ownership

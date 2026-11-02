@@ -144,53 +144,6 @@ impl<'a> ComponentPropSource<'a> {
         self.inference_only
     }
 
-    pub(crate) fn record_prop_projection(
-        self,
-        usage: &ComponentUsage,
-        prop: &PassedProp,
-        name: std::ops::Range<usize>,
-        value: std::ops::Range<usize>,
-        generated: (&str, bool),
-    ) {
-        use crate::virtual_ts::diagnostic_ownership::{InputOwner, InputRole};
-        let Some(collector) = self.diagnostic_ownership else {
-            return;
-        };
-        let ordinary_owner = InputOwner::for_prop(usage, prop);
-        if ordinary_owner.is_none() {
-            self.record_independent_receivers(usage, prop, generated.0, value.clone(), generated.1);
-        }
-        let Some(owner) = ordinary_owner.or_else(|| {
-            (self.expected_packet || self.inert)
-                .then(|| InputOwner::for_expected_projection(usage, prop))
-                .flatten()
-        }) else {
-            return;
-        };
-        let name_source = prop_name_source_range(self, prop);
-        let value_source = prop_value_source_range(self, prop).or_else(|| name_source.clone());
-        // Do not retain a RefCell borrow while another emitter runs.
-        let mut ledger = collector.borrow_mut();
-        let mut record = |owner, generated, source| {
-            if self.inert {
-                ledger.record_inert(owner, generated, source);
-            } else if ordinary_owner.is_some() {
-                ledger.record(owner, generated, source, self.inference_only);
-            } else {
-                // The root relocation proof classifies the callback's creation.
-                // Its contextual body still owns diagnostics; this record only
-                // prevents an inference mapping from widening authored EXPECT.
-                ledger.record_expect_geometry(owner, generated, source, self.inference_only);
-            }
-        };
-        if let Some(source) = name_source {
-            record(owner.with_role(InputRole::Name), name, source);
-        }
-        if let Some(source) = value_source {
-            record(owner, value, source);
-        }
-    }
-
     /// A merged `class`/`style` entry repeats each dynamic value that its own
     /// per-prop assignment already checks; that assignment owns diagnostics.
     pub(super) fn record_merged_prop_echo(
@@ -416,7 +369,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             if inline_callback {
                 source_context.protect_callback_primary(gen_stmt_start..statement_end);
             }
-            source_context.record_prop_projection(
+            source_context.record_prop_projection_with_receivers(
                 usage,
                 prop,
                 check_name_start..check_name_end,

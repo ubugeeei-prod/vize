@@ -10,8 +10,7 @@ use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{String, append};
 use vize_croquis::{
-    Scope, ScopeData, TemplateExpression, VForScopeData,
-    drawer::{extract_identifiers_oxc, strip_js_comments},
+    Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
 };
 
 pub(crate) fn append_ignored_vif_guard_open(
@@ -34,12 +33,14 @@ pub(crate) fn append_ignored_vif_guard_open(
 /// newline-sensitive token values. Preserve those and every uncertain parse.
 fn guard_on_ignored_line(guard: &str) -> Cow<'_, str> {
     if !guard.contains(['\n', '\r', '\u{2028}', '\u{2029}'])
+        || guard.contains('/')
         || !vize_l0::expression_guard::expression_is_safe_to_parse(guard)
     {
         return Cow::Borrowed(guard);
     }
-    let stripped = strip_js_comments(guard);
-    let source = stripped.trim();
+    // A slash can introduce a comment or regexp. The old comment scanner has
+    // no regexp authority; retain all such guards, including division, exactly.
+    let source = guard.trim();
     let allocator = Allocator::new();
     let Ok(expression) = Parser::new(&allocator, source, SourceType::ts()).parse_expression()
     else {
@@ -288,6 +289,9 @@ mod tests {
             "String.raw`first\nsecond` === value",
             "value === 'first\\\nsecond'",
             "ready\n trailing",
+            "/[/*][*/]/.test(text) &&\n ready",
+            "ready && // comment\n visible",
+            "total /\n count > 1",
         ] {
             assert_eq!(guard_on_ignored_line(source), source, "{source}");
         }
