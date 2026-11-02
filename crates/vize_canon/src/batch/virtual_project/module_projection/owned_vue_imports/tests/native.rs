@@ -283,6 +283,11 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     link_node_modules(root.path());
     let options = r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","types":[],"noEmit":true},"include":["Child.vue","Parent.vue"]}"#;
     let mut project = project(root.path(), options);
+    // The public emitter scans authored inputs afresh. Keep the direct native
+    // materialization and declaration outputs outside that authored root.
+    let direct_storage = tempfile::tempdir().unwrap();
+    project.scope_batch_namespace(direct_storage.path());
+    let direct_output = tempfile::tempdir().unwrap();
     // Keep authored public exports distinct from the generated component Props.
     // These real SFCs exercise declaration resolution through the same edge.
     register(
@@ -297,7 +302,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     );
     project.finalize_module_imports();
     project.materialize().unwrap();
-    let direct_out = root.path().join("direct-native-types");
+    let direct_out = direct_output.path().join("types");
     let direct_config = project
         .write_declaration_tsconfig(&direct_out, false)
         .unwrap();
@@ -347,6 +352,19 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
                 "code":file.content,"map":cstr!("{:?}",file.source_map)
             })).collect::<Vec<_>>()
         }),
+    );
+    let mut authored_inputs = checker
+        .virtual_files()
+        .into_iter()
+        .map(|file| file.original_path.clone())
+        .collect::<Vec<_>>();
+    authored_inputs.sort();
+    assert_eq!(
+        authored_inputs,
+        [
+            root.path().join("Child.vue"),
+            root.path().join("Parent.vue")
+        ]
     );
     let emitted = checker.emit_declarations(&DeclarationEmitOptions::new(out.clone()));
     save(
