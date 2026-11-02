@@ -68,7 +68,7 @@ pub use codegen::{
 };
 #[expect(deprecated, reason = "kept exported until removal")]
 pub use lane::{
-    DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
+    DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform,
     StructuralDirectiveTransform, TransformContext, transform,
     transform_with_template_syntax_quirks, transform_with_vue_parser_quirks,
 };
