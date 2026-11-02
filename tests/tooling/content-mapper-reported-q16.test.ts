@@ -17,7 +17,6 @@ import {
   verifyQ16Inputs,
   verifyQ16List,
   verifyQ16Lock,
-  verifyQ16RequiredEnvironment,
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
 
 const actualWorkflow = fs.readFileSync(
