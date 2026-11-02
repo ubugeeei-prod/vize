@@ -111,7 +111,22 @@ pub(super) fn emit_exposed_type(
     let Some(expose) = summary.macros.define_expose() else {
         return (false, false);
     };
-    if let Some(ref type_args) = expose.type_args {
+    if expose.type_args.is_some()
+        && super::setup_scope::define_expose_type_requires_setup_scope(summary)
+    {
+        // Setup-local names resolve only through the setup return.
+        if let Some((declaration, names)) = generic_injection {
+            let names = names.join(", ");
+            ts! { &mut *ts =>
+                export type Exposed<#declaration> = Awaited<ReturnType<typeof __setup<#names>>>["__vize_typed_exposed"];
+            }
+            return (true, true);
+        }
+        ts! { &mut *ts =>
+            export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_typed_exposed"];
+        }
+        (true, false)
+    } else if let Some(ref type_args) = expose.type_args {
         let inner_type = inner_type_of(type_args);
         let suffix = module_alias_generic_suffix(generic_injection, inner_type);
         ts! { &mut *ts => export type Exposed #suffix = #inner_type; }
