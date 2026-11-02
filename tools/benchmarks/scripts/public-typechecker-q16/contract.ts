@@ -40,7 +40,15 @@ export interface Profile {
   capsule: string;
 }
 // Only the parent can bind a genuine published containing release in a narrow source successor.
-export const afterProfile: Profile | null = null;
+export const afterProfile: Profile | null = {
+  subset: "B60-68",
+  fix: "3e87793de6a17fd226b292482bb596e227795b5a",
+  version: "0.642.0",
+  source: "3e87793de6a17fd226b292482bb596e227795b5a",
+  candidate: "704b8b9b7cea594c102c39c124229064bbc272e7",
+  run: "41412662852",
+  capsule: "442abe6a7ca87f2ae9b2f9562e58592c85b33be5",
+};
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
   scope:
@@ -64,18 +72,16 @@ export function subsetFor(id: string): SuppliedSubset {
   assert.equal(matches.length, 1, "subset source data has not been supplied");
   return matches[0]!;
 }
-export function profileFor(_role: Role = "after"): Profile {
-  assert(afterProfile !== null, "genuine containing AFTER release is UNKNOWN");
-  subsetFor(afterProfile.subset);
-  for (const sha of [
-    afterProfile.fix,
-    afterProfile.source,
-    afterProfile.candidate,
-    afterProfile.capsule,
-  ])
+export function requireProfile(profile: Profile | null): Profile {
+  assert(profile !== null, "genuine containing AFTER release is UNKNOWN");
+  subsetFor(profile.subset);
+  for (const sha of [profile.fix, profile.source, profile.candidate, profile.capsule])
     assert(/^[a-f0-9]{40}$/u.test(sha), "literal source binding required");
-  assert(/^0\.\d+\.0$/u.test(afterProfile.version) && /^\d+$/u.test(afterProfile.run));
-  return afterProfile;
+  assert(/^0\.\d+\.0$/u.test(profile.version) && /^\d+$/u.test(profile.run));
+  return profile;
+}
+export function profileFor(_role: Role = "after"): Profile {
+  return requireProfile(afterProfile);
 }
 export function filesFor(state: State, profile: Profile): SourceFile[] {
   return state.files.map((file) => {

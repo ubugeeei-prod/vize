@@ -14,6 +14,7 @@ import test from "node:test";
 import {
   filesFor,
   profileFor,
+  requireProfile,
   reportedCommands,
   requireEnvironment,
   subsetFor,
@@ -77,7 +78,7 @@ function temporary(run: (root: string) => void) {
     rmSync(root, { recursive: true });
   }
 }
-test("only supplied closed subsets and no unknown AFTER execution", () => {
+test("only supplied closed subsets and genuine B binding retain unknown-profile refusal", () => {
   assert.equal(subsetFor("D61").projects[0]!.states.length, 8);
   assert.equal(subsetFor("C62").projects[0]!.states.length, 4);
   assert.equal(
@@ -86,7 +87,25 @@ test("only supplied closed subsets and no unknown AFTER execution", () => {
   );
   for (const id of ["A59-65", "all-ten", "D", "unknown"])
     assert.throws(() => subsetFor(id), assert.AssertionError);
-  assert.throws(() => profileFor(), assert.AssertionError);
+  assert.deepEqual(profileFor(), {
+    subset: "B60-68",
+    fix: "3e87793de6a17fd226b292482bb596e227795b5a",
+    version: "0.642.0",
+    source: "3e87793de6a17fd226b292482bb596e227795b5a",
+    candidate: "704b8b9b7cea594c102c39c124229064bbc272e7",
+    run: "41412662852",
+    capsule: "442abe6a7ca87f2ae9b2f9562e58592c85b33be5",
+  });
+  const invalid: (Profile | null)[] = [
+    null,
+    { ...mock, source: "UNKNOWN" },
+    { ...mock, capsule: "UNKNOWN" },
+    { ...mock, version: "UNKNOWN" },
+    { ...mock, run: "UNKNOWN" },
+    { ...mock, subset: "A59" },
+  ];
+  for (const profile of invalid)
+    assert.throws(() => requireProfile(profile), assert.AssertionError);
   assert.deepEqual(reportedCommands.tsrs, [
     "npx",
     "tsrs",
