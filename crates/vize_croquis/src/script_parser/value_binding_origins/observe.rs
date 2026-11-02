@@ -93,6 +93,7 @@ pub(crate) fn note_expression_mutation(
         Expression::CallExpression(call) if matches!(call.callee.get_inner_expression(), Expression::Identifier(id) if id.name == "eval") => {
             origins.refuse()
         }
+        Expression::CallExpression(_) => origins.refuse_homogeneous_call(),
         Expression::ClassExpression(_)
         | Expression::JSXElement(_)
         | Expression::JSXFragment(_)

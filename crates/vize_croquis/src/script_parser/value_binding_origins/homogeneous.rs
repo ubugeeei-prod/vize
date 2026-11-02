@@ -11,6 +11,7 @@ use crate::scope::ScopeId;
 #[derive(Debug, Default)]
 pub(super) struct HomogeneousObjects {
     entries: FxHashMap<ValueBindingKey, HomogeneousObject>,
+    opaque_call: bool,
 }
 
 #[derive(Debug)]
@@ -133,7 +134,16 @@ impl ValueBindingOrigins {
         );
     }
 
+    // Ordinary calls can carry assertion signatures that change apparent
+    // property types without a syntactic write. This proof does not model them.
+    pub(crate) fn refuse_homogeneous_call(&mut self) {
+        self.homogeneous.opaque_call = true;
+    }
+
     pub(crate) fn homogeneous_import_property(&self, name: &str, scope: ScopeId) -> Option<&str> {
+        if self.homogeneous.opaque_call {
+            return None;
+        }
         if !self.is_complete() || !self.owns_setup_program() || self.root != Some(scope) {
             return None;
         }

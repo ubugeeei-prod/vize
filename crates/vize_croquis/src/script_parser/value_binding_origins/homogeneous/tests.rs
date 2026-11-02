@@ -87,3 +87,14 @@ fn caller_owned_ast_does_not_acquire_original_parser_admission() {
         None
     );
 }
+
+#[test]
+fn opaque_assertion_calls_refuse_equality_without_changing_compiler_macro_admission() {
+    let macro_source = "import Child from './Child.vue'; const { foo } = defineProps<{ foo: K }>(); const map = { a: Child, b: Child }; const model = defineModel<string>({ required: true });";
+    assert_eq!(
+        selected(macro_source, Some("K extends 'a' | 'b'")).as_deref(),
+        Some("a")
+    );
+    let assertion_source = "import Child from './Child.vue'; import { refine } from './refine'; const map = { a: Child, b: Child }; const key = 'b'; refine(map);";
+    assert_eq!(selected(assertion_source, Some("Unused")), None);
+}

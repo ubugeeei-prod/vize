@@ -215,6 +215,28 @@ fn cases() -> (Vec<Value>, Vec<Case>) {
     ] {
         push_case(&mut cases, 11366, role, &files, probe, expected);
     }
+    // An imported assertion may refine one entry after equal initializers.
+    // Keep this separate from all twenty-one existing original/control states.
+    let (_, mut files) = fixture("generic-index-model.json");
+    files.insert(
+        String::from("src/Functional.ts"),
+        String::from("import type { FunctionalComponent } from 'vue';\ndeclare const Child: FunctionalComponent<{ value: string }>;\nexport default Child;\n"),
+    );
+    files.insert(
+        String::from("src/refine.ts"),
+        String::from("import type { FunctionalComponent } from 'vue';\nimport Child from './Functional';\nexport declare function refine(value: { a: typeof Child; b: typeof Child }): asserts value is { a: typeof Child & FunctionalComponent<{ value: string; extra: number }>; b: typeof Child };\n"),
+    );
+    let probe = String::from(
+        "<script setup lang=\"ts\" generic=\"Unused\">\nimport Child from './Functional';\nimport { refine } from './refine';\nconst map = { a: Child, b: Child };\nconst key = 'b';\nrefine(map);\n</script>\n<template>\n  <component :is=\"map[key]\" value=\"ok\" />\n</template>\n",
+    );
+    push_case(
+        &mut cases,
+        11366,
+        "opaque-assertion-refinement-control",
+        &files,
+        probe,
+        Expected::Clean,
+    );
     (inputs, cases)
 }
 
