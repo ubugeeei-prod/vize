@@ -79,6 +79,12 @@ fn options_projection_preserves_plain_and_mixed_runtime_prop_imports() {
                 // Debug includes the complete content, SFC/projection/import mappings,
                 // authored path and materialized path; nothing is selected or removed.
                 assert_eq!(vize_carton::cstr!("{actual_child:#?}"), expected_child);
+                // Keep the complete projection law across the intentional owned-import
+                // transition; JavaScript-enabled reference projects retain their old path.
+                let old_import = "import Child from './Child.vue.ts'";
+                let new_import = "import Child from './Child.vue.js'";
+                assert_eq!(expected_parent.matches(old_import).count(), 1);
+                let expected_parent = expected_parent.replacen(old_import, new_import, 1);
                 assert_eq!(
                     vize_carton::cstr!("{:#?}", project.find_by_original(&parent_path).unwrap()),
                     expected_parent

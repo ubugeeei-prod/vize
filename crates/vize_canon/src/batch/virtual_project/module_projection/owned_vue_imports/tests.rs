@@ -51,12 +51,7 @@ fn owned_relative_edge_changes_only_extension_and_preserves_every_map_offset() {
     register(&mut project, "Child.vue", CHILD);
     register(&mut project, "Parent.vue", PARENT);
     let before = packet(&project, "Parent.vue");
-    assert!(
-        before["code"]
-            .as_str()
-            .unwrap()
-            .contains("'./Child.vue.ts'")
-    );
+
     project.finalize_module_imports();
     let after = packet(&project, "Parent.vue");
     let mut expected = before.clone();
@@ -66,6 +61,7 @@ fn owned_relative_edge_changes_only_extension_and_preserves_every_map_offset() {
         .replace("'./Child.vue.ts'", "'./Child.vue.js'")
         .into();
     assert_eq!(after, expected);
+    assert_ne!(after["code"], before["code"]);
     project.finalize_module_imports();
     assert_eq!(packet(&project, "Parent.vue"), after);
     project.materialize().unwrap();
@@ -214,12 +210,13 @@ fn target_shape_remove_readd_and_second_project_never_reuse_previous_resolution(
     fs::remove_file(&target).unwrap();
     project.finalize_module_imports();
     let removed = packet(&project, "Parent.vue");
-    assert!(
-        !removed["code"]
-            .as_str()
-            .unwrap()
-            .contains("'./Child.vue.js'")
+    let mut missing_reference = self::project(
+        root.path(),
+        r#"{"compilerOptions":{"moduleResolution":"bundler"}}"#,
     );
+    register(&mut missing_reference, "Parent.vue", PARENT);
+    missing_reference.finalize_module_imports();
+    assert_eq!(removed, packet(&missing_reference, "Parent.vue"));
     register(&mut project, "Child.vue", CHILD);
     project.finalize_module_imports();
     assert_eq!(packet(&project, "Parent.vue"), admitted);
@@ -229,13 +226,9 @@ fn target_shape_remove_readd_and_second_project_never_reuse_previous_resolution(
         r#"{"compilerOptions":{"moduleResolution":"bundler"}}"#,
     );
     register(&mut second, "Parent.vue", PARENT);
+    let second_before = packet(&second, "Parent.vue");
     second.finalize_module_imports();
-    assert!(
-        !packet(&second, "Parent.vue")["code"]
-            .as_str()
-            .unwrap()
-            .contains("'./Child.vue.js'")
-    );
+    assert_eq!(packet(&second, "Parent.vue"), second_before);
     assert_eq!(packet(&project, "Parent.vue"), admitted);
 }
 

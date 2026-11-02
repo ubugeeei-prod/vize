@@ -183,8 +183,16 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
                 // The source-bound generated-error witness remains the exact
                 // synthetic tuple replay above; authored tuple/property rows below
                 // and the complete raw/mapped vector comparisons are unchanged.
-                assert_eq!(app.content.matches("./Child.vue.js").count(), 1);
-                assert!(!app.content.contains("./Child.vue.ts"));
+                let specifiers = crate::batch::import_rewriter::ImportRewriter::new()
+                    .collect_all_specifiers(&app.content, oxc_span::SourceType::ts());
+                assert_eq!(
+                    specifiers,
+                    [
+                        cstr!("./Child.vue.js"),
+                        cstr!("vue"),
+                        cstr!("vize:virtual-ts")
+                    ]
+                );
             }
             if let Some((code, message)) = expected {
                 let (needle, relative, length) = if code == 2493 {

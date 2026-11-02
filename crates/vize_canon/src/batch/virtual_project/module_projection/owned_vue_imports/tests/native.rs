@@ -74,6 +74,23 @@ fn snapshot(project: &VirtualProject, directory: &Path, phase: &str) {
     );
 }
 
+fn diagnostic_file_ids(text: &str, config: &Path) -> Vec<PathBuf> {
+    text.lines()
+        .map(|line| {
+            let (file, _) = line
+                .split_once('(')
+                .expect("every native output line is a diagnostic");
+            let file = Path::new(file);
+            let path = if file.is_absolute() {
+                file.to_path_buf()
+            } else {
+                config.parent().unwrap().join(file)
+            };
+            crate::batch::virtual_project::tsconfig_paths::normalize_path_lexically(&path)
+        })
+        .collect()
+}
+
 fn link_node_modules(root: &Path) {
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -119,7 +136,17 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         let bad = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child count=\"wrong\" /></template>";
         for (phase, source, expected) in [("clean", good, 0), ("prop-error", bad, 1)] {
             register(&mut project, "Parent.vue", source);
+            let before = packet(&project, "Parent.vue");
             project.finalize_module_imports();
+            let after = packet(&project, "Parent.vue");
+            let mut expected_projection = before.clone();
+            expected_projection["code"] = before["code"]
+                .as_str()
+                .unwrap()
+                .replace("'./Child.vue.ts'", "'./Child.vue.js'")
+                .into();
+            assert_eq!(after, expected_projection);
+            assert_ne!(after["code"], before["code"]);
             project.materialize().unwrap();
             let phase = cstr!("{mode}-{phase}");
             snapshot(&project, &capture, &phase);
@@ -136,17 +163,22 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
                 "{text}"
             );
             assert!(output.stderr.is_empty());
-            assert!(
-                !text.contains("TS5097"),
-                "generated import must not require allowImportingTsExtensions: {text}"
-            );
             assert_eq!(text.matches("error TS2322:").count(), expected, "{text}");
             assert_eq!(text.matches("error TS").count(), expected, "{text}");
-            assert!(
-                packet(&project, "Parent.vue")["code"]
-                    .as_str()
-                    .unwrap()
-                    .contains("'./Child.vue.js'")
+            let expected_files = if expected == 0 {
+                Vec::new()
+            } else {
+                vec![
+                    project
+                        .find_by_original(&root.path().join("Parent.vue"))
+                        .unwrap()
+                        .virtual_path
+                        .clone(),
+                ]
+            };
+            assert_eq!(
+                diagnostic_file_ids(text, &project.generated_tsconfig_path()),
+                expected_files
             );
         }
         register(&mut project, "Parent.vue", good);
@@ -172,11 +204,14 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         assert_eq!(text.matches("error TS5097:").count(), 1, "{text}");
         assert_eq!(text.matches("error TS2322:").count(), 1, "{text}");
         assert_eq!(text.matches("error TS").count(), 2, "{text}");
-        assert!(
-            text.lines()
-                .filter(|line| line.contains("error TS"))
-                .all(|line| line.contains("authored.ts")),
-            "{text}"
+        let authored_file = project
+            .find_by_original(&root.path().join("authored.ts"))
+            .unwrap()
+            .virtual_path
+            .clone();
+        assert_eq!(
+            diagnostic_file_ids(text, &project.generated_tsconfig_path()),
+            [authored_file.clone(), authored_file]
         );
         assert_eq!(
             std::fs::read_to_string(root.path().join("authored.ts")).unwrap(),
@@ -280,10 +315,8 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     assert!(output.stderr.is_empty());
     assert_eq!(text.matches("error TS2322:").count(), 1, "{text}");
     assert_eq!(text.matches("error TS").count(), 1, "{text}");
-    assert!(
-        text.lines()
-            .filter(|line| line.contains("error TS"))
-            .all(|line| line.contains("consumer.ts")),
-        "{text}"
+    assert_eq!(
+        diagnostic_file_ids(text, &config),
+        [directory.join("consumer.ts")]
     );
 }
