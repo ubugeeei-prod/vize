@@ -34,6 +34,7 @@ pub(super) mod generic_attribute;
 mod generic_syntax;
 mod style_modules;
 mod template;
+mod tsx_syntax;
 mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 #[cfg(test)]
@@ -387,8 +388,23 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let mut code = output.code;
-    let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
+    let (mut mappings, mut mapping_meta, mut semantic_links, mut prop_default_key_links) =
         output.mapping.into_binding_parts_with_metadata();
+    if codegen_options.tsx_module && tsx_syntax::applies(descriptor) {
+        profile!(
+            "canon.virtual_ts.tsx_syntax",
+            tsx_syntax::rewrite(
+                &mut code,
+                tsx_syntax::Coordinates {
+                    mappings: &mut mappings,
+                    mapping_meta: &mut mapping_meta,
+                    semantic_links: &mut semantic_links,
+                    prop_default_key_links: &mut prop_default_key_links,
+                    diagnostic_ownership: codegen_options.diagnostic_ownership,
+                },
+            )
+        );
+    }
     let generic_copies = generic_parameters.as_ref().and_then(|plan| {
         let attribute =
             crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)?;

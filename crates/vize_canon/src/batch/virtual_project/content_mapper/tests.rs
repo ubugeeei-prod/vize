@@ -23,6 +23,7 @@ mod protocol;
 mod scoped_event_navigation;
 mod slot_outlet_navigation;
 mod template_callback_event_navigation;
+mod tsx_script_syntax;
 #[test]
 fn emits_stable_semantic_links_for_ref_unwraps() {
     let source = r#"<script setup lang="ts">

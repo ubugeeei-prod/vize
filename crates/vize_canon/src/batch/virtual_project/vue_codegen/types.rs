@@ -64,6 +64,8 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) inline_auto_import_stubs: bool,
     /// Content-mapper transforms can run outside Vite projects.
     pub(in crate::batch::virtual_project) omit_vite_client_reference: bool,
+    /// The module is parsed as TSX; authored `.ts` syntax is kept valid there.
+    pub(in crate::batch::virtual_project) tsx_module: bool,
     /// Batch generation can share imported runtime prop/default resolution
     /// across rayon workers. Document/content-mapper callers use a per-file
     /// cache to avoid keeping stale source-derived state.

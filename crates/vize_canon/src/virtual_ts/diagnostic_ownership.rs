@@ -212,6 +212,22 @@ impl DiagnosticOwnership {
         }
     }
 
+    /// Follow a generated rewrite. `remap` returns the new range and whether
+    /// it moved as one copied run; any other row loses its proof only.
+    pub(crate) fn note_generated_rewrite(
+        &mut self,
+        remap: impl Fn(&Range<usize>) -> (Range<usize>, bool),
+    ) {
+        for range in &mut self.callback_primaries {
+            *range = remap(range).0;
+        }
+        for row in &mut self.rows {
+            let (generated, exact) = remap(&row.generated);
+            row.generated = generated;
+            row.valid &= exact;
+        }
+    }
+
     /// Consume the very same accepted insertion coordinates as the mapping
     /// authority. An edit inside a row removes its proof, never its diagnostic.
     pub(crate) fn note_generated_insertion(&mut self, at: usize, length: usize) {
