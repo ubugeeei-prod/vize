@@ -260,7 +260,10 @@ test("stock runner adaptation is closed to the one new manual ref and preserves 
     "${{ github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && github.ref == '" +
     ref +
     "' && 'ubuntu-24.04' || 'blacksmith-8vcpu-ubuntu-2404' }}";
-  let before = workflow;
+  let before = workflow.replaceAll(
+    " || github.ref == 'refs/heads/test/published-expression-duplicates-11374-20261103'",
+    "",
+  );
   // The later listener role owns only its literal ref, runner and Node seams.
   const listenerRef = "refs/heads/test/published-global-component-listener-11373-20261103";
   before = before.replaceAll(

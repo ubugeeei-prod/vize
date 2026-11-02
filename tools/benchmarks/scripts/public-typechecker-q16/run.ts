@@ -31,6 +31,7 @@ import { runDeclaration } from "./declaration.ts";
 import { runA } from "./a-capture.ts";
 import { runGenericArrow } from "./generic-arrow.ts";
 import { runGlobalListener } from "./global-listener.ts";
+import { runExpressionDuplicates } from "./expression-duplicates.ts";
 
 export function argumentsFor(argv: string[]) {
   assert.equal(argv.length, 6);
@@ -58,6 +59,7 @@ export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
       "refs/heads/test/published-static-template-ref-11377-20261102",
       "refs/heads/test/published-generic-arrow-tsx-20261103",
       "refs/heads/test/published-global-component-listener-11373-20261103",
+      "refs/heads/test/published-expression-duplicates-11374-20261103",
     ].includes(environment.GITHUB_REF ?? ""),
     "owned source ref required",
   );
@@ -88,6 +90,8 @@ export async function main(argv: string[]) {
   if (profile.subset === "A59-65") return runA(options, profile);
   if (profile.subset === "GArrowTsc") return runGenericArrow(options, profile);
   if (profile.subset === "GlobalListener11373") return runGlobalListener(options, profile);
+  if (profile.subset === "ExpressionDuplicates11374")
+    return runExpressionDuplicates(options, profile);
   const selected = subsetFor(profile.subset),
     commands = commandsFor(profile.subset),
     emits = profile.subset === "E90-91";

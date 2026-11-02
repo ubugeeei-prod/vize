@@ -1,0 +1,80 @@
+{
+  "schema": "vize.expressionDuplicates11374.data.v1",
+  "original": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n",
+      "sha256": "0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "sha256": "0fb7c01618571aed599d1ab3f5b1c5bf286a4e7d16cb6160e450640af617a938"
+    },
+    {
+      "path": "src/Child.vue",
+      "source": "<script setup lang=\"ts\">\ndefineProps<{ options: { run: () => string } }>();\ndefineEmits<{ done: [] }>();\n</script>\n\n<template>\n  <span />\n</template>\n",
+      "sha256": "5f9b76d3be97fe8625315a2a0245ce2cd94545d87be40090ef504503172d4e9d"
+    },
+    {
+      "path": "src/MultilineProp.vue",
+      "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items: { label: string }[] = [];\nfunction onDone() {}\n</script>\n\n<template>\n  <Child\n    :options=\"{\n      run: () => {\n        return items[0].label;\n      },\n    }\"\n    @done=\"onDone\"\n  />\n</template>\n",
+      "sha256": "3969035cc1df9648351643ac69cea389f0472db4924e3c477901787ff660d397"
+    },
+    {
+      "path": "src/MultilineVIf.vue",
+      "source": "<script setup lang=\"ts\">\nconst items: { label: string }[] = [];\nconst enabled = true;\n</script>\n\n<template>\n  <div\n    v-if=\"\n      enabled &&\n      items[0].label === 'x'\n    \"\n  >\n    {{ enabled }}\n  </div>\n</template>\n",
+      "sha256": "4c91d09543e2c78e6b4cf50fe0b37d95a7b4298e7e8378d982082f9c42a2bc9e"
+    },
+    {
+      "path": "src/NestedVIf.vue",
+      "source": "<script setup lang=\"ts\">\nconst items: { label: string }[] = [];\n</script>\n\n<template>\n  <div v-if=\"items[0].label\">\n    <span v-if=\"items.length > 1\">nested</span>\n  </div>\n</template>\n",
+      "sha256": "d05de6037a9a04984868593dde765bf1369926e12b6cd715ef7119f6684098af"
+    }
+  ],
+  "states": [
+    {
+      "id": "original",
+      "repairAll": false,
+      "control": false,
+      "inputSha256": "e8aebc816c096edf2832ef54ef3f5171da42974aca98587dc69dec55fbcf8cdd",
+      "stdout": "src/MultilineProp.vue(12,16): error TS2532: Object is possibly 'undefined'.\nsrc/MultilineVIf.vue(10,7): error TS2532: Object is possibly 'undefined'.\nsrc/NestedVIf.vue(6,14): error TS2532: Object is possibly 'undefined'.\n"
+    },
+    {
+      "id": "repair-all",
+      "repairAll": true,
+      "control": false,
+      "inputSha256": "528d9d88ecdd743a4ef0124d125eb340e31d0b15ec2a07fa8a1fb93db5c6388d",
+      "stdout": ""
+    },
+    {
+      "id": "independent-script-error",
+      "repairAll": true,
+      "control": true,
+      "inputSha256": "03e22c368e89511556d591f449c394c98d6fafdaeb51565ff1939e601174d299",
+      "stdout": "src/Control.ts(1,7): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+    },
+    {
+      "id": "restored-original",
+      "repairAll": false,
+      "control": false,
+      "inputSha256": "e8aebc816c096edf2832ef54ef3f5171da42974aca98587dc69dec55fbcf8cdd",
+      "stdout": "src/MultilineProp.vue(12,16): error TS2532: Object is possibly 'undefined'.\nsrc/MultilineVIf.vue(10,7): error TS2532: Object is possibly 'undefined'.\nsrc/NestedVIf.vue(6,14): error TS2532: Object is possibly 'undefined'.\n"
+    }
+  ],
+  "sourceAuthority": {
+    "reportSha256": "caade04a3456553a87e44ca1f51acb96a4bfd3cce7f185747aac713c71417cc6",
+    "fencesSha256": "3c9ade88cb94d6ebd8770cfecc49e999f8a9449075bd91feba99e0070f6e7c8c",
+    "expectedFenceIndex": 8,
+    "independentOracleGit": "987260c7080f879f31fff62ce28c310708e97347",
+    "independentOraclePath": "crates/vize/tests/content_mapper_tsgo_cli/reported_expression_duplicates_11374.rs",
+    "independentOracleSha256": "6f121af2773afb9e64e663a94b66dcd346c6084e6de750aa1830fcf83ec5bb07",
+    "originalReportNumericStatusOwned": false,
+    "originalReportStderrOwned": false,
+    "publicProtocol": "Prospectively adopted exact published TSRS0.20.1-ts7.1.0-beta command-profile clean0/diagnostic2/empty-stderr law; sourceGo status is separate",
+    "publicOriginalHostQualified": false,
+    "sourceObservationsTransferred": false,
+    "context4Included": false,
+    "afterProfile": null
+  }
+}

@@ -17,7 +17,8 @@ export type Subset =
   | "F78"
   | "R77"
   | "GArrowTsc"
-  | "GlobalListener11373";
+  | "GlobalListener11373"
+  | "ExpressionDuplicates11374";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -61,15 +62,8 @@ export type DeclarationProfile = PublishedProfile & {
 };
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
-export const afterProfile: Profile | null = {
-  subset: "GlobalListener11373",
-  fix: "044768e5e35cedf030da532d78fe3c8f8a056310",
-  version: "0.653.0",
-  source: "1d355176f870d47ba75cbc1191b881556760f6fe",
-  candidate: "bd211090b39049b5b2e3b71955cb8883c6a75c5b",
-  run: "41535688394",
-  capsule: "058fe417bffde1dae82fbba0300f650c9d83f0a7",
-};
+export const expressionDuplicatesFix: string | null = null;
+export const afterProfile: Profile | null = null;
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 const defaultLimitations = {
   scope:
@@ -82,10 +76,13 @@ const defaultLimitations = {
   wholeNodeModulesFilesetQualified: false,
 };
 export function limitationsFor(subset: Subset) {
-  if (subset === "GlobalListener11373")
+  if (subset === "GlobalListener11373" || subset === "ExpressionDuplicates11374")
     return {
       ...defaultLimitations,
-      scope: "Fresh installed fourteen-state global component listener reproducer",
+      scope:
+        subset === "GlobalListener11373"
+          ? "Fresh installed fourteen-state global component listener reproducer"
+          : "Fresh installed four-state expression duplicate reproducer",
       host: "Linux x64 Node26.12.1 adaptation; reported macOS26.4.1 arm64 is not claimed",
       manager:
         "npm11.19.1/npm i/npx adaptation of reported pnpm12.3.4 install/exec; exact inner checker argv retained",
@@ -157,6 +154,9 @@ export function requireProfile(profile: Profile | null): Profile {
     assert.equal(profile.fix, a65Data.fixMerge);
   } else if (profile.subset === "GArrowTsc") {
     assert.equal(profile.fix, "ba01953b4429fabdd652d3497d89a8cf1737697b");
+  } else if (profile.subset === "ExpressionDuplicates11374") {
+    assert(expressionDuplicatesFix !== null, "expression fix merge is UNKNOWN");
+    assert.equal(profile.fix, expressionDuplicatesFix);
   } else if (profile.subset === "GlobalListener11373") {
     assert.equal(profile.fix, "044768e5e35cedf030da532d78fe3c8f8a056310");
   } else {

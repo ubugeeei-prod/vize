@@ -81,7 +81,9 @@ export async function install(
   checkEnvironment();
   assert.equal(
     process.version,
-    profileFor().subset === "GlobalListener11373" ? "v26.12.1" : "v26.13.0",
+    ["GlobalListener11373", "ExpressionDuplicates11374"].includes(profileFor().subset)
+      ? "v26.12.1"
+      : "v26.13.0",
   );
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
