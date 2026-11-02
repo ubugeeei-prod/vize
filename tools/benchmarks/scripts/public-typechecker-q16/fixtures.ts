@@ -11,6 +11,8 @@ export const fixtureNames = [
   "fixtures-c4-issue-11366.json",
   "fixtures-c4-issue-11367.json",
   "fixtures-a59-issue-11359.json",
+  "fixtures-e90-91-issue-11390.json",
+  "fixtures-e90-91-issue-11391.json",
 ] as const;
 const raw: unknown[] = fixtureNames.map((name) =>
   JSON.parse(readFileSync(new URL(name, import.meta.url), "utf8")),
@@ -18,7 +20,7 @@ const raw: unknown[] = fixtureNames.map((name) =>
 const parts: SuppliedSubset[] = asArray(raw).map((value) => {
   const row = asRecord(value),
     id = asString(row.id);
-  assert(["D61", "B60-68", "A59", "C62", "C4"].includes(id));
+  assert(["D61", "B60-68", "A59", "C62", "C4", "E90-91"].includes(id));
   return {
     id: id as Subset,
     sourceAuthority: row.sourceAuthority,
@@ -32,6 +34,24 @@ const parts: SuppliedSubset[] = asArray(raw).map((value) => {
           const state = asRecord(value),
             expected = asRecord(state.expectedTsrs);
           assert(Number.isSafeInteger(expected.status));
+          const opaque = Object.hasOwn(expected, "stdoutKind");
+          if (opaque) {
+            assert.equal(id, "E90-91");
+            assert(
+              ["11390/typed-payload-wrong", "11391/runtime-payload-wrong"].includes(
+                asString(state.id),
+              ),
+            );
+            assert.equal(expected.stdoutKind, "OWNED_HEADER_OPAQUE_PRINTER");
+            assert(/^[a-f0-9]{64}$/u.test(asString(expected.sourceInputSha256)));
+            assert.deepEqual(Object.keys(expected).sort(), [
+              "sourceInputSha256",
+              "status",
+              "stderr",
+              "stdout",
+              "stdoutKind",
+            ]);
+          }
           return {
             id: asString(state.id),
             phase: asString(state.phase),
@@ -43,6 +63,12 @@ const parts: SuppliedSubset[] = asArray(raw).map((value) => {
               status: Number(expected.status),
               stdout: asString(expected.stdout),
               stderr: asString(expected.stderr),
+              ...(opaque
+                ? {
+                    stdoutKind: "OWNED_HEADER_OPAQUE_PRINTER" as const,
+                    sourceInputSha256: asString(expected.sourceInputSha256),
+                  }
+                : {}),
             },
           };
         }),

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdirSync, realpathSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertCustody } from "../../../support/release/computed_event_custody.ts";
@@ -9,9 +9,11 @@ import {
   filesFor,
   limitations,
   profileFor,
-  reportedCommands,
+  commandsFor,
+  sha256,
   requireEnvironment,
   subsetFor,
+  type SourceFile,
 } from "./contract.ts";
 import {
   assessTsrs,
@@ -46,11 +48,30 @@ export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
     "owned manual event required",
   );
   assert(
-    ["refs/heads/main", "refs/heads/test/published-q16-first-subset-20261102"].includes(
-      environment.GITHUB_REF ?? "",
-    ),
+    [
+      "refs/heads/main",
+      "refs/heads/test/published-q16-first-subset-20261102",
+      "refs/heads/test/published-emits-11390-11391-20261102",
+    ].includes(environment.GITHUB_REF ?? ""),
     "owned source ref required",
   );
+}
+export function writeEmitsInputs(root: string, current: SourceFile[], next: SourceFile[]) {
+  inputImages(root, current);
+  const roster = (files: SourceFile[]) => files.map((file) => file.path).join("|");
+  const allowed = [
+    "package.json|tsconfig.json|src/Probe.vue",
+    "package.json|tsconfig.json|src/Probe.vue|src/Listener.ts",
+  ];
+  assert(
+    allowed.includes(roster(current)) && allowed.includes(roster(next)),
+    "closed emit input population required",
+  );
+  assert(next[0]!.source === current[0]!.source, "registered package must stay unchanged");
+  if (current.length === 4 && next.length === 3) unlinkSync(join(root, "src/Listener.ts"));
+  for (const file of next)
+    if (file.path !== "package.json") writeFileSync(join(root, file.path), file.source);
+  inputImages(root, next);
 }
 export async function main(argv: string[]) {
   const options = argumentsFor(argv),
@@ -59,7 +80,9 @@ export async function main(argv: string[]) {
   requireOwnedDispatch(process.env);
   if (profile.subset === "A64") return runDeclaration(options, profile);
   if (profile.subset === "A59-65") return runA(options, profile);
-  const selected = subsetFor(profile.subset);
+  const selected = subsetFor(profile.subset),
+    commands = commandsFor(profile.subset),
+    emits = profile.subset === "E90-91";
   assert.equal(realpathSync(dirname(options.out)), dirname(options.out));
   mkdirSync(options.out);
   const record = recorder(options.out),
@@ -70,7 +93,7 @@ export async function main(argv: string[]) {
     id: string;
     state: (typeof selected.projects)[number]["states"][number];
     tsrs: Packet;
-    reference: Packet;
+    reference: Packet | null;
   }[] = [];
   const final: { id: string; verify: () => void }[] = [];
   try {
@@ -88,7 +111,7 @@ export async function main(argv: string[]) {
       sourceAuthority: selected.sourceAuthority,
       own,
       environment: requireEnvironment(process.env),
-      reportedCommands,
+      reportedCommands: commands,
       limitations,
     });
     const authorityOut = join(options.out, "authority");
@@ -109,6 +132,7 @@ export async function main(argv: string[]) {
           authority,
           owned,
           cache,
+          emits ? ["tsrs"] : undefined,
         );
         let finalFiles = filesFor(project.states[0]!, profile);
         const verify = () => {
@@ -121,36 +145,51 @@ export async function main(argv: string[]) {
           const state = project.states[i]!,
             next = filesFor(state, profile);
           verify();
-          assert.deepEqual(
-            next.map((file) => file.path),
-            finalFiles.map((file) => file.path),
-          );
-          for (const file of next) {
-            if (file.path.startsWith("src/")) writeFileSync(join(root, file.path), file.source);
-            else
-              assert.equal(
-                file.source,
-                finalFiles.find((previous) => previous.path === file.path)!.source,
-              );
+          if (emits) writeEmitsInputs(root, finalFiles, next);
+          else {
+            assert.deepEqual(
+              next.map((file) => file.path),
+              finalFiles.map((file) => file.path),
+            );
+            for (const file of next) {
+              if (file.path.startsWith("src/")) writeFileSync(join(root, file.path), file.source);
+              else
+                assert.equal(
+                  file.source,
+                  finalFiles.find((previous) => previous.path === file.path)!.source,
+                );
+            }
           }
           finalFiles = next;
           const before = inputImages(root, next),
             label = "state-" + i;
-          owned.json(label + ".input.json", { id: state.id, phase: state.phase, files: before });
+          owned.json(label + ".input.json", {
+            id: state.id,
+            phase: state.phase,
+            files: before,
+            ...(emits
+              ? {
+                  sourceInputSha256: sha256(JSON.stringify(state.files)),
+                  actualInputSha256: sha256(JSON.stringify(next)),
+                }
+              : {}),
+          });
           const tsrs = capture(
             owned,
             label + ".tsrs",
-            [process.execPath, options.npx, ...reportedCommands.tsrs.slice(1)],
+            [process.execPath, options.npx, ...commands.tsrs.slice(1)],
             root,
             verify,
           );
-          const reference = capture(
-            owned,
-            label + ".vue-tsc",
-            [process.execPath, options.npx, ...reportedCommands.reference.slice(1)],
-            root,
-            verify,
-          );
+          const reference = commands.reference
+            ? capture(
+                owned,
+                label + ".vue-tsc",
+                [process.execPath, options.npx, ...commands.reference.slice(1)],
+                root,
+                verify,
+              )
+            : null;
           captured.push({ id: project.id, state, tsrs, reference });
           // Record the complete pair before input recheck; no semantic verdict here.
           owned.json(label + ".complete.json", {
@@ -191,7 +230,12 @@ export async function main(argv: string[]) {
       selected.projects.reduce((sum, project) => sum + project.states.length, 0),
     );
     // Reference semantics remain unowned, but its actual whole process must be retained.
-    for (const row of captured) whole(row.reference);
+    for (const row of captured) {
+      if (commands.reference) {
+        assert(row.reference);
+        whole(row.reference);
+      } else assert.equal(row.reference, null);
+    }
     const outcomes = captured.map((row) => {
       try {
         return { id: row.state.id, result: assessTsrs(row.state, row.tsrs), failure: null };
@@ -203,7 +247,7 @@ export async function main(argv: string[]) {
       status: "COMPLETE_CAPTURE_SOURCE_INTENT_ASSESSED",
       outcomes,
       referenceOracleOwned: false,
-      referencePacketsRetained: captured.length,
+      referencePacketsRetained: captured.filter((row) => row.reference !== null).length,
       limitations,
       accepted: false,
       publicAcceptance: false,

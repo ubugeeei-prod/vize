@@ -14,7 +14,6 @@ import test from "node:test";
 import {
   filesFor,
   requireProfile,
-  profileFor,
   subsetFor,
   type RegressionProfile,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/contract.ts";
@@ -45,16 +44,19 @@ const profile: RegressionProfile = {
   run: "41438403319",
   capsule: "1".repeat(40),
 };
-test("literal A profile binds the genuine containing646 source candidate run and fetched capsule", () => {
-  assert.deepEqual(profileFor(), {
-    subset: "A59-65",
-    fix: "a321c37109d86c03afeacc833b1760c85ad4a32c",
-    version: "0.646.0",
-    source: "a321c37109d86c03afeacc833b1760c85ad4a32c",
-    candidate: "46f7f273d05bb7ea9d94bfdfb22bd792f6075f95",
-    run: "41438403319",
-    capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac",
-  });
+test("historical A profile binds the genuine containing646 source candidate run and fetched capsule", () => {
+  assert.deepEqual(
+    requireProfile({ ...profile, capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac" }),
+    {
+      subset: "A59-65",
+      fix: "a321c37109d86c03afeacc833b1760c85ad4a32c",
+      version: "0.646.0",
+      source: "a321c37109d86c03afeacc833b1760c85ad4a32c",
+      candidate: "46f7f273d05bb7ea9d94bfdfb22bd792f6075f95",
+      run: "41438403319",
+      capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac",
+    },
+  );
 });
 function temporary(run: (root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "q16-a-")));
