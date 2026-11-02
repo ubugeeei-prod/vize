@@ -28,6 +28,26 @@ const release = (
   ...overrides,
 });
 
+const metadataPage = (
+  releases: PublishedRelease[],
+  hasNextPage = false,
+  endCursor: string | null = null,
+) => ({
+  data: {
+    repository: {
+      releases: {
+        nodes: releases.map((item) => ({
+          tagName: item.tag_name,
+          isDraft: item.draft,
+          isPrerelease: item.prerelease,
+          publishedAt: item.published_at,
+        })),
+        pageInfo: { hasNextPage, endCursor },
+      },
+    },
+  },
+});
+
 // Real pinned topology: release metadata commits are siblings of main's later
 // integration, not ancestors of the following release's immutable source cut.
 test("sibling pinned tags use the preceding published version, not the common ancestor's release", () => {
@@ -68,16 +88,23 @@ test("sibling pinned tags use the preceding published version, not the common an
     const notes = generateReleaseNotes(
       (path, body) => {
         requests.push({ path, body });
-        return body
-          ? { body: "## What's Changed\n\nOnly current fixes.\n" }
-          : [release("v0.458.0"), release("v0.435.0"), release("v0.457.0")];
+        return path === "graphql"
+          ? metadataPage([release("v0.458.0"), release("v0.435.0"), release("v0.457.0")])
+          : { body: "## What's Changed\n\nOnly current fixes.\n" };
       },
       "owner/repo",
       "v0.458.0",
       currentHead,
     );
+    const query = (requests[0].body as { query: string }).query;
+    assert.match(query, /nodes \{ tagName isDraft isPrerelease publishedAt \}/u);
+    assert.match(query, /releases\(first:100,after:\$cursor,/u);
+    assert.doesNotMatch(query, /\b(?:assets|description|body)\b/u);
     assert.deepEqual(requests, [
-      { path: "repos/owner/repo/releases?per_page=100&page=1", body: undefined },
+      {
+        path: "graphql",
+        body: { query, variables: { owner: "owner", name: "repo", cursor: null } },
+      },
       {
         path: "repos/owner/repo/releases/generate-notes",
         body: {
@@ -131,13 +158,19 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
   const requests: object[] = [];
   const result = generateReleaseNotes(
     (path, body) => {
-      if (body) {
+      if (path !== "graphql") {
+        assert.ok(body);
         requests.push(body);
         return { body: "bounded notes" };
       }
-      return path.endsWith("page=1")
-        ? Array.from({ length: 100 }, (_, index) => release(`v0.${1000 + index}.0`))
-        : [release("v0.457.0")];
+      const cursor = (body as { variables: { cursor: string | null } }).variables.cursor;
+      return cursor === null
+        ? metadataPage(
+            Array.from({ length: 100 }, (_, index) => release(`v0.${1000 + index}.0`)),
+            true,
+            "page-100",
+          )
+        : metadataPage([release("v0.457.0")]);
     },
     "owner/repo",
     "v0.458.0",
@@ -157,9 +190,12 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
     assert.throws(
       () =>
         generateReleaseNotes(
-          (_path, body) => {
-            if (body) called.push(body);
-            return candidates;
+          (path, body) => {
+            if (path !== "graphql") {
+              assert.ok(body);
+              called.push(body);
+            }
+            return metadataPage(candidates);
           },
           "owner/repo",
           "v0.1.0",
@@ -171,13 +207,111 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
   }
   assert.throws(
     () =>
-      generateReleaseNotes(() => [release("v0.459.0")], "owner/repo", "v0.458.0", "a".repeat(40)),
+      generateReleaseNotes(
+        () => metadataPage([release("v0.459.0")]),
+        "owner/repo",
+        "v0.458.0",
+        "a".repeat(40),
+      ),
     /No preceding/,
   );
   assert.throws(
     () => generateReleaseNotes(() => [], "owner/repo", "v0.458.0", "main"),
     /exact source SHA/,
   );
+});
+
+test("release pagination follows pageInfo even for short intermediate and full final pages", () => {
+  const cursors: unknown[] = [];
+  const generated: object[] = [];
+  const result = generateReleaseNotes(
+    (path, body) => {
+      if (path !== "graphql") {
+        assert.ok(body);
+        generated.push(body);
+        return { body: "complete range" };
+      }
+      const cursor = (body as { variables: { cursor: string | null } }).variables.cursor;
+      cursors.push(cursor);
+      return cursor === null
+        ? metadataPage([release("v9.0.0")], true, "last-page")
+        : metadataPage([
+            ...Array.from({ length: 99 }, (_, i) => release(`standalone-${i}`)),
+            release("v0.457.0"),
+          ]);
+    },
+    "owner/repo",
+    "v0.458.0",
+    "a".repeat(40),
+  );
+  assert.deepEqual(cursors, [null, "last-page"]);
+  assert.equal(result.previousTag, "v0.457.0");
+  assert.deepEqual(generated, [
+    { tag_name: "v0.458.0", target_commitish: "a".repeat(40), previous_tag_name: "v0.457.0" },
+  ]);
+});
+
+test("incomplete GraphQL data and repeated cursors fail before release-note generation", () => {
+  const valid = metadataPage([release("v0.457.0")]);
+  const page = valid.data.repository.releases;
+  for (const response of [
+    null,
+    { ...valid, errors: [{ message: "partial response" }] },
+    { data: { repository: null } },
+    { data: { repository: { releases: { ...page, nodes: null } } } },
+    { data: { repository: { releases: { ...page, nodes: [null] } } } },
+    {
+      data: {
+        repository: { releases: { ...page, nodes: [{ ...page.nodes[0], isPrerelease: "false" }] } },
+      },
+    },
+    {
+      data: {
+        repository: {
+          releases: { ...page, nodes: [{ ...page.nodes[0], publishedAt: undefined }] },
+        },
+      },
+    },
+    metadataPage([release("v0.457.0")], true, null),
+  ]) {
+    const paths: string[] = [];
+    assert.throws(
+      () =>
+        generateReleaseNotes(
+          (path) => {
+            paths.push(path);
+            return response;
+          },
+          "owner/repo",
+          "v0.458.0",
+          "a".repeat(40),
+        ),
+      /GitHub release/,
+    );
+    assert.deepEqual(
+      paths,
+      ["graphql"],
+      "never generate a body from incomplete publication history",
+    );
+  }
+  const pages = ["first", "second", "first"].map((cursor) =>
+    metadataPage([release("v0.457.0")], true, cursor),
+  );
+  const paths: string[] = [];
+  assert.throws(
+    () =>
+      generateReleaseNotes(
+        (path) => {
+          paths.push(path);
+          return pages.shift();
+        },
+        "owner/repo",
+        "v0.458.0",
+        "a".repeat(40),
+      ),
+    /pagination did not advance/,
+  );
+  assert.deepEqual(paths, ["graphql", "graphql", "graphql"]);
 });
 
 test("the workflow publishes only the prepared body for the release tag commit", () => {
@@ -254,7 +388,7 @@ test("the real command preserves generated notes and evergreen scope and refuses
     const gh = join(root, "gh");
     writeFileSync(
       gh,
-      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
+      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(process.argv[3] === 'graphql' ? ${JSON.stringify(metadataPage([release("v0.458.0"), release("v0.457.0")]))} : body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
       { mode: 0o755 },
     );
     const thanks = "## Thanks\n\nReported and co-authored by @reporter (#1).\n";
@@ -282,15 +416,12 @@ test("the real command preserves generated notes and evergreen scope and refuses
       .trim()
       .split("\n")
       .map((line) => JSON.parse(line));
+    const query = JSON.parse(requests[0].body).query;
+    assert.match(query, /nodes \{ tagName isDraft isPrerelease publishedAt \}/u);
     assert.deepEqual(requests, [
       {
-        args: [
-          "api",
-          "repos/owner/repo/releases?per_page=100&page=1",
-          "--jq",
-          "map({tag_name, draft, prerelease, published_at})",
-        ],
-        body: "",
+        args: ["api", "graphql", "--method", "POST", "--input", "-"],
+        body: JSON.stringify({ query, variables: { owner: "owner", name: "repo", cursor: null } }),
       },
       {
         args: [
@@ -386,8 +517,8 @@ void test("only the authenticated already-published integration bullet is remove
     const notes = generateReleaseNotes(
       (path, request) => {
         calls.push(path);
+        if (path === "graphql") return metadataPage([release(tag)]);
         if (request) return { body };
-        if (path.includes("/releases?")) return [release(tag)];
         const key = path.slice(`repos/${repository}/`.length);
         if (!(key in objects)) throw new Error("unavailable identity");
         return objects[key];
@@ -401,7 +532,7 @@ void test("only the authenticated already-published integration bullet is remove
   const positive = run();
   assert.deepEqual(positive.notes, { body: expected, previousTag: tag });
   assert.deepEqual(positive.calls, [
-    `repos/${repository}/releases?per_page=100&page=1`,
+    "graphql",
     `repos/${repository}/releases/generate-notes`,
     ...[
       `git/ref/tags/${tag}`,
