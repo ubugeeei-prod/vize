@@ -12,6 +12,8 @@ use vize_carton::{String, append};
 use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+mod homogeneous_index;
+
 /// A named value of the built-in `component`, not an authored registry tag.
 /// Match the existing Croquis retained-AST authority without reparsing.
 pub(crate) fn is_owned_named_dynamic_component(
@@ -30,7 +32,8 @@ pub(super) fn owned_named_dynamic_component_ast<'a>(
     };
     let js = expression.js_ast?.as_expression()?;
     (js.raw == expression.content
-        && usage.name == expression.content.trim()
+        && (usage.name == expression.content.trim()
+            || usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start))
         && matches!(
             js.ast,
             oxc_ast::ast::Expression::Identifier(_)
@@ -47,7 +50,16 @@ pub(crate) fn is_owned_dynamic_component_alias(
 ) -> bool {
     is_dynamic_component_alias(usage.name.as_str())
         && usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start)
-        && template_ast.is_some_and(|root| is_expression(root, usage.start).is_some())
+        && template_ast.is_some_and(|root| {
+            let Some(ExpressionNode::Simple(expression)) = is_expression_node(root, usage.start)
+            else {
+                return false;
+            };
+            expression
+                .js_ast
+                .and_then(|js| js.as_expression())
+                .is_some_and(|js| js.raw == expression.content)
+        })
 }
 
 pub(super) fn emit_dynamic_component_aliases(
@@ -67,12 +79,29 @@ pub(super) fn emit_dynamic_component_aliases(
         };
         // The authored `v-bind` statement owns the expression's own
         // diagnostics; the alias only has to carry its type.
-        append!(
-            *ts,
-            "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {} = ({});\n",
-            usage.name,
-            expression.trim()
-        );
+        // The original Program proves equal declared entry types. Select an
+        // actual constant-key property to retain ordinary literal widening.
+        let annotation = homogeneous_index::value(summary, root, &usage)
+            .map(|value| vize_carton::cstr!(": {value}"))
+            .unwrap_or_default();
+        if let Some(guard) = &usage.vif_guard {
+            append!(
+                *ts,
+                "  // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\n  const {}{} = ({}) ? ({}) : (undefined as never);\n",
+                usage.name,
+                annotation,
+                guard,
+                expression.trim()
+            );
+        } else {
+            append!(
+                *ts,
+                "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {}{} = ({});\n",
+                usage.name,
+                annotation,
+                expression.trim()
+            );
+        }
     }
 }
 

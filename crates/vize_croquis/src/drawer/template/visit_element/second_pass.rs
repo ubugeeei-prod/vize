@@ -234,15 +234,28 @@ impl Drawer {
             }
             let exp = dir.exp.as_ref()?;
             if let Some(target) = expression_identifier(exp, &self.template_source) {
+                // Capture the member once, inside its recorded narrowing
+                // guard when present. The authored :is expression owns errors;
+                // repeated root-level typeof queries must not duplicate them.
+                let owns_scope = !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "scope" | "for")));
+                if target.contains('.') && owns_scope
+                    && self.in_template_root_scope()
+                    && self.dynamic_target_has_script_root(target.as_str())
+                    && self.new_dynamic_alias_is_unbound(el.loc.span.start)
+                    && !dynamic_is_captures_same_element_for_alias(el, target.as_str(), &self.template_source)
+                {
+                    return Some(CompactString::new(dynamic_component_alias(el.loc.span.start)));
+                }
                 return dynamic_component_target_is_known(self, target.as_str()).then_some(target);
             }
-            // Any other `:is` expression (a conditional, a lookup, a call) is
-            // a component in its own right. It is aliased for checking only at
-            // the template root, where the alias cannot capture loop or slot
-            // bindings that would be out of scope where it is declared. The
-            // same element's v-for scope has not been entered yet here, so
-            // inspect its aliases as well before emitting a root-level alias.
-            (self.in_template_root_scope()
+            // Root-owned script values keep their identity under a slot/loop
+            // which does not capture them. Actual lexical bindings, unknown
+            // globals and same-element v-for captures still cannot be hoisted.
+            ((self.in_template_root_scope()
+                || (self.current_vif_guard().is_none()
+                    && !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else" | "for" | "scope")))
+                    && self.new_dynamic_alias_is_unbound(el.loc.span.start)
+                    && self.dynamic_index_has_only_script_values(exp)))
                 && !dynamic_is_captures_same_element_for_alias(
                     el,
                     expression_content(exp, &self.template_source),

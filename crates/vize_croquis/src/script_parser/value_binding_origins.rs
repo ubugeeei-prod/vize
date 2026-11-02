@@ -4,6 +4,7 @@
 //! Keys belong to one store; merging two actual Programs refuses provenance.
 
 use crate::scope::{ScopeChain, ScopeId, ScopeKind};
+mod homogeneous;
 mod observe;
 mod resolution;
 pub(crate) use observe::{note_expression_mutation, note_loop_left};
@@ -96,6 +97,7 @@ pub struct ValueBindingOrigins {
     refused: bool,
     admitted: bool,
     pub(crate) async_components: super::async_components::AsyncComponentBindings,
+    homogeneous: homogeneous::HomogeneousObjects,
 }
 
 impl ValueBindingOrigins {

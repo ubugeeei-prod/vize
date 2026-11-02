@@ -37,13 +37,28 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
         let template = vize_carton::cstr!("<component :is=\"{expression}\" count=\"wrong\" />");
         for checked in [true, false] {
             let output = generate(&script, &template, checked);
+            let captured = matches!(expression, "registry.Choice" | "registry.nested.Choice");
+            let constructor = if captured {
+                "__vize_dynamic_is_0"
+            } else {
+                reference
+            };
             assert!(
                 output
                     .code
-                    .contains(vize_carton::cstr!(" = typeof {reference} extends ").as_str()),
+                    .contains(vize_carton::cstr!(" = typeof {constructor} extends ").as_str()),
                 "{template}\n{}",
                 output.code
             );
+            if captured {
+                let initializers = output
+                    .code
+                    .lines()
+                    .filter_map(|line| line.strip_prefix("  const __vize_dynamic_is_0 = "))
+                    .collect::<Vec<_>>();
+                let expected_initializer = vize_carton::cstr!("({expression});");
+                assert_eq!(initializers, vec![expected_initializer.as_str()]);
+            }
             assert!(output.code.contains("\"count\": \"wrong\""));
             assert!(!output.code.contains("typeof registry_Choice extends "));
             let value = 100 + template.find("wrong").expect("authored wrong value");
@@ -85,10 +100,10 @@ fn ordinary_namespaced_tags_keep_their_markup_reference() {
     assert!(
         output
             .code
-            .contains("type __Registry_Choice_Props_0 = typeof Registry_Choice")
+            .contains("type __Registry_Choice_Props_0 = typeof Registry.Choice extends ")
     );
-    assert!(output.code.contains("__vize_global_component_"));
-    assert!(!output.code.contains("typeof Registry.Choice extends "));
+    assert!(!output.code.contains("__vize_global_component_"));
+    assert!(!output.code.contains("typeof Registry_Choice"));
 }
 
 #[test]

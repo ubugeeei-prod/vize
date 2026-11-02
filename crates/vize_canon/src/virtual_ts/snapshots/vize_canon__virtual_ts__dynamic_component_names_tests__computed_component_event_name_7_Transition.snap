@@ -107,7 +107,7 @@ import Child from './Child.vue'
 // Global component stubs (vue module augmentations)
 type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import("vue").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;
 type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;
-declare const Transition: $GlobalComponent<"Transition"> & $GlobalComponentFallback;
+declare const Transition: $GlobalComponentFallback & $GlobalComponent<"Transition">;
 
 // ========== Exported Types ==========
 export type Props = {};

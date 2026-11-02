@@ -156,7 +156,11 @@ impl<'a> GlobalComponentPlan<'a> {
             // Vue resolves registry components in this exact order. Use the
             // same selected provider for props and slot payload ownership.
             let registry_keys = [pascal_name.as_str(), camel_name.as_str(), name];
-            if candidates.iter().any(|candidate| {
+            if crate::virtual_ts::component_reference::has_dotted_component_value_binding(
+                summary,
+                syntactic_type_only_imported_names,
+                name,
+            ) || candidates.iter().any(|candidate| {
                 (crate::virtual_ts::script_facts::contains_binding(summary, candidate)
                     && !contains_compact_name(syntactic_type_only_imported_names, candidate))
                     || (imported_names.contains(candidate)
@@ -281,7 +285,12 @@ fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'
 }
 
 fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&str; 3]) {
-    append!(*ts, "declare const {component_ref}: $GlobalComponent<");
+    // Keep the real callable signature last: template-ref inference reads its
+    // exposed members instead of the open fallback's unconstrained argument.
+    append!(
+        *ts,
+        "declare const {component_ref}: $GlobalComponentFallback & $GlobalComponent<"
+    );
     let mut previous = None;
     for key in keys {
         if previous == Some(key) {
@@ -293,7 +302,7 @@ fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&st
         push_ts_string_literal(ts, key);
         previous = Some(key);
     }
-    ts.push_str("> & $GlobalComponentFallback;\n");
+    ts.push_str(">;\n");
 }
 
 #[cfg(test)]

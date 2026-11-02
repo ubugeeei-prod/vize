@@ -157,6 +157,20 @@ fn resolved_component_binding_reference_with_bindings(
             ));
         }
     }
+    if let Some(root) = dotted_component_root(template_name)
+        && !contains_compact_name(syntactic_type_only_imported_names, root)
+        && let Some(binding_type) = bindings.binding_type(root)
+    {
+        let mut reference = component_binding_reference_for_summary_binding(
+            summary,
+            bindings,
+            root,
+            binding_type,
+            options,
+        );
+        reference.push_str(template_name.strip_prefix(root)?);
+        return Some((reference, true));
+    }
     if let Some(reference) = super::component_aliases::inline_value(
         summary,
         options,
@@ -186,6 +200,28 @@ fn resolved_component_binding_reference_with_bindings(
         }
     }
     None
+}
+
+/// A dotted tag is a member path only after all parts are valid identifiers;
+/// its first part still needs an actual value-binding owner.
+pub(crate) fn dotted_component_root(name: &str) -> Option<&str> {
+    let (root, tail) = name.split_once('.')?;
+    (oxc_syntax::identifier::is_identifier_name(root)
+        && tail
+            .split('.')
+            .all(oxc_syntax::identifier::is_identifier_name))
+    .then_some(root)
+}
+
+pub(crate) fn has_dotted_component_value_binding(
+    summary: &Croquis,
+    type_only: &FxHashSet<CompactString>,
+    name: &str,
+) -> bool {
+    dotted_component_root(name).is_some_and(|root| {
+        !contains_compact_name(type_only, root)
+            && super::script_facts::contains_binding(summary, root)
+    })
 }
 
 /// Resolve an expression identifier exactly, without markup case candidates.
@@ -297,3 +333,6 @@ fn options_api_reserved_binding_local_with_bindings(
     }
     local
 }
+
+#[cfg(test)]
+mod dotted_tests;

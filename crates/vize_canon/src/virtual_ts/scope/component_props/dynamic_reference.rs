@@ -14,10 +14,25 @@ pub(in crate::virtual_ts::scope) fn named_dynamic_reference(
     ctx: &ComponentPropsContext<'_, '_>,
     usage: &ComponentUsage,
 ) -> Option<String> {
-    if ctx.legacy_vue2 || !usage.name.contains('.') {
+    if !usage.name.contains('.') {
+        return None;
+    }
+    named_dynamic_navigation_reference(ctx, usage)
+}
+
+/// Navigation follows the retained authored member even when props use its
+/// narrowing-safe alias. Its ignored read never owns expression diagnostics.
+pub(in crate::virtual_ts::scope) fn named_dynamic_navigation_reference(
+    ctx: &ComponentPropsContext<'_, '_>,
+    usage: &ComponentUsage,
+) -> Option<String> {
+    if ctx.legacy_vue2 {
         return None;
     }
     let ast = owned_named_dynamic_component_ast(ctx.template_ast, usage)?;
+    if !matches!(ast, Expression::StaticMemberExpression(_)) {
+        return None;
+    }
     reference(ctx, ast)
 }
 
