@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { build, type Plugin } from "vite";
 import { vize } from "./index.ts";
@@ -225,7 +226,9 @@ void test("a read race mixed with known compiler diagnostics remains a fatal who
         forConfig: () => ({
           ownsInput(file: string) {
             if (!removed) {
-              removed = files.find((candidate) => candidate !== file)!;
+              removed = files.find(
+                (candidate) => path.normalize(candidate) !== path.normalize(file),
+              )!;
               fs.unlinkSync(removed);
             }
             return false;
