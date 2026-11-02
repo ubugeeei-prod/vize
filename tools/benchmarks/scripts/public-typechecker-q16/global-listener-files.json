@@ -1,0 +1,137 @@
+{
+  "schema": "vize.globalListener11373.files.v1",
+  "files": [
+    {
+      "path": "authored/bad-event.vue.txt",
+      "bytes": 99,
+      "sha256": "c2d7224f7b34eb55eb7b9fcc39ddc25eeb29dd14b9c959abac58217c5dcbec13",
+      "utf8": "<template>\n  <typed-global-link to=\"/\" @navigate=\"payload => payload.toUpperCase()\" />\n</template>\n"
+    },
+    {
+      "path": "authored/good-event.vue.txt",
+      "bytes": 95,
+      "sha256": "0c10147f516deda10c1fbd1405f4fb9a76d8055c4c3609d6f4fde369af01a57d",
+      "utf8": "<template>\n  <typed-global-link to=\"/\" @navigate=\"payload => payload.toFixed()\" />\n</template>\n"
+    },
+    {
+      "path": "authored/local-number.vue.txt",
+      "bytes": 202,
+      "sha256": "624ec96a23dc2257a87e8ccc10ad75e41baca32dd065516dc47658a7f700ed90",
+      "utf8": "<script setup lang=\"ts\">\nconst GlobalLink = (props: { to: number }) => props.to;\nfunction onNavigate() {}\n</script>\n\n<template>\n  <global-link :to=\"1\" @click=\"onNavigate\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "authored/local-string.vue.txt",
+      "bytes": 201,
+      "sha256": "933567df8352362029e265714ce3b43e9dcd75030112ed5ebebf8220cb1e87ca",
+      "utf8": "<script setup lang=\"ts\">\nconst GlobalLink = (props: { to: number }) => props.to;\nfunction onNavigate() {}\n</script>\n\n<template>\n  <global-link to=\"/\" @click=\"onNavigate\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "authored/missing-required.vue.txt",
+      "bytes": 138,
+      "sha256": "cdc06dfc5926489ce825b14f95933bfa1ad08086500afe3a96a68c1f23c2d30f",
+      "utf8": "<script setup lang=\"ts\">\nfunction onNavigate() {}\n</script>\n\n<template>\n  <global-link @click=\"onNavigate\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "authored/strict-unknown.tsconfig.json.txt",
+      "bytes": 488,
+      "sha256": "8e8f2ae0d5923270e2e617164fe7ba3e41f532ec406ea876e9bd9cf33ab06b32",
+      "utf8": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownComponents\": true\n  }\n}\n"
+    },
+    {
+      "path": "authored/suppression-global-components.d.ts.txt",
+      "bytes": 198,
+      "sha256": "dc8b307bc2f678eb539e19b64f880380cc3250d0bb9e78aadbdcf2f2ec15e2e6",
+      "utf8": "import type { DefineComponent } from \"vue\";\n\ndeclare module \"vue\" {\n  export interface GlobalComponents {\n    SuppressionProbe: DefineComponent<{ value: { count: number; sibling: number } }>;\n  }\n}\n"
+    },
+    {
+      "path": "authored/suppression-marked.vue.txt",
+      "bytes": 169,
+      "sha256": "99cfd2b8d6525252bae994559da77807f29826741e271f2ebafac49628d03ca2",
+      "utf8": "<template>\n  <suppression-probe :value=\"{\n    // @ts-expect-error intentional authored count mismatch\n    count: '@ts-expect-error',\n    sibling: 1,\n  }\" />\n</template>\n"
+    },
+    {
+      "path": "authored/suppression-sibling.vue.txt",
+      "bytes": 173,
+      "sha256": "a70e3610e668ab13febf1b23266d62d0bb90c53b27a43405621e65015f02ef66",
+      "utf8": "<template>\n  <suppression-probe :value=\"{\n    // @ts-expect-error intentional authored count mismatch\n    count: '@ts-expect-error',\n    sibling: 'bad',\n  }\" />\n</template>\n"
+    },
+    {
+      "path": "authored/suppression-unmarked.vue.txt",
+      "bytes": 109,
+      "sha256": "3aabc5dc0a2fa76ce4587eb280f229410854d285de53b0f350aab2b15986f787",
+      "utf8": "<template>\n  <suppression-probe :value=\"{\n    count: '@ts-expect-error',\n    sibling: 1,\n  }\" />\n</template>\n"
+    },
+    {
+      "path": "authored/typed-global-components.d.ts.txt",
+      "bytes": 316,
+      "sha256": "c6d4908cca0f95c9630fb7a070a95f3fbe6627f3abb52b1da3b72aa041e24ab7",
+      "utf8": "import type { DefineComponent, ComponentOptionsMixin } from \"vue\";\n\ndeclare module \"vue\" {\n  export interface GlobalComponents {\n    TypedGlobalLink: DefineComponent<\n      { to: string }, {}, {}, {}, {},\n      ComponentOptionsMixin, ComponentOptionsMixin,\n      { navigate: (payload: number) => void }\n    >;\n  }\n}\n"
+    },
+    {
+      "path": "authored/unknown.vue.txt",
+      "bytes": 72,
+      "sha256": "aca4c67c3464e8bfae916e1cc855e9fa88b99149f59d5d75724c7b05df5a19c1",
+      "utf8": "<template>\n  <unregistered-link to=\"/\" @click=\"() => {}\" />\n</template>\n"
+    },
+    {
+      "path": "authored/wrong-prop.vue.txt",
+      "bytes": 148,
+      "sha256": "1fb52dea697b23b07149719513e4f699ac6c67dd04c9eb1446e8da403f099202",
+      "utf8": "<script setup lang=\"ts\">\nfunction onNavigate() {}\n</script>\n\n<template>\n  <global-link :to=\"123\" @click=\"onNavigate\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 1014,
+      "sha256": "73fe1ca0a6d6331abcd75b5c7c8bb0c7a162f90e71e0926a9041898848a401f3",
+      "utf8": "{\n  \"historicalIssue\": 11373,\n  \"sourceRevision\": \"83433431f96dd514f2de4c835a3b25ab6c67f416\",\n  \"referenceOrigin\": \"Reported vue-tsc acceptance; authored post-fix source contract, not a captured current source/backend result.\",\n  \"cases\": [\n    {\n      \"id\": \"original-three-components\",\n      \"inputs\": [\n        {\n          \"file\": \"package.json\",\n          \"source\": \"package.json.txt\"\n        },\n        {\n          \"file\": \"tsconfig.json\",\n          \"source\": \"tsconfig.json.txt\"\n        },\n        {\n          \"file\": \"src/global-components.d.ts\",\n          \"source\": \"src/global-components.d.ts.txt\"\n        },\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"src/GlobalComponentListener.vue.txt\"\n        },\n        {\n          \"file\": \"src/PascalListener.vue\",\n          \"source\": \"src/PascalListener.vue.txt\"\n        },\n        {\n          \"file\": \"src/NoListener.vue\",\n          \"source\": \"src/NoListener.vue.txt\"\n        }\n      ],\n      \"diagnostics\": []\n    }\n  ]\n}\n"
+    },
+    {
+      "path": "controls.json",
+      "bytes": 6889,
+      "sha256": "9da0ff4e561bbf23b7dcd8b1079b1f902e596f3614e6a52a56ad8e63c1d9dd60",
+      "utf8": "{\n  \"schema\": \"vize.reported-global-component-listener.controls.v1\",\n  \"issue\": 11373,\n  \"basePack\": \"cases.json\",\n  \"origin\": \"Authored semantic contracts, not captured production/reference packets. All original six files remain immutable.\",\n  \"absenceRestoration\": \"Replace only the reported main file with the exact original NoListener control bytes (including no script, preserving noUnusedLocals), then restore exact original GlobalComponentListener bytes. Other two original SFCs and settings remain unchanged.\",\n  \"nativeCoordinatePolicy\": \"Expected diagnostics must belong to the authored source needle; complete stdout/stderr/status/source/transforms retained before assertions. No output normalization, any/drop/ref masking or generated TS2448 accepted.\",\n  \"cases\": [\n    {\n      \"id\": \"original-three-components\",\n      \"overrides\": [],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"wrong-global-prop\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/wrong-prop.vue.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2322,\n          \"sourceNeedle\": \":to=\\\"123\\\"\",\n          \"message\": \"Type 'number' is not assignable to type 'string'.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"missing-required-global-prop\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/missing-required.vue.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2345,\n          \"sourceNeedle\": \"<global-link\",\n          \"missingRequiredProperty\": \"to\"\n        }\n      ]\n    },\n    {\n      \"id\": \"typed-event-bad\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/bad-event.vue.txt\"\n        },\n        {\n          \"file\": \"src/typed-global-components.d.ts\",\n          \"source\": \"authored/typed-global-components.d.ts.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2339,\n          \"sourceNeedle\": \"payload => payload.toUpperCase()\",\n          \"message\": \"Property 'toUpperCase' does not exist on type 'number'.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"typed-event-good\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/good-event.vue.txt\"\n        },\n        {\n          \"file\": \"src/typed-global-components.d.ts\",\n          \"source\": \"authored/typed-global-components.d.ts.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"local-owned-number\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/local-number.vue.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"local-owned-string-rejected\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/local-string.vue.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2322,\n          \"sourceNeedle\": \"to=\\\"/\\\"\",\n          \"message\": \"Type 'string' is not assignable to type 'number'.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"unregistered-default\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/unknown.vue.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"unregistered-explicit-check\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/unknown.vue.txt\"\n        },\n        {\n          \"file\": \"tsconfig.json\",\n          \"source\": \"authored/strict-unknown.tsconfig.json.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2339,\n          \"sourceNeedle\": \"<unregistered-link\",\n          \"message\": \"Property 'unregistered-link' does not exist on type '{}'.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"listener-absent-original-control\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"src/NoListener.vue.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"listener-restored-exact-original\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"src/GlobalComponentListener.vue.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"authored-expect-error-marked\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/suppression-marked.vue.txt\"\n        },\n        {\n          \"file\": \"src/suppression-global-components.d.ts\",\n          \"source\": \"authored/suppression-global-components.d.ts.txt\"\n        }\n      ],\n      \"success\": true,\n      \"diagnostics\": []\n    },\n    {\n      \"id\": \"quoted-marker-unmarked\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/suppression-unmarked.vue.txt\"\n        },\n        {\n          \"file\": \"src/suppression-global-components.d.ts\",\n          \"source\": \"authored/suppression-global-components.d.ts.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2322,\n          \"sourceNeedle\": \"count: '@ts-expect-error'\",\n          \"message\": \"Type 'string' is not assignable to type 'number'.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"authored-expect-error-sibling\",\n      \"overrides\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"source\": \"authored/suppression-sibling.vue.txt\"\n        },\n        {\n          \"file\": \"src/suppression-global-components.d.ts\",\n          \"source\": \"authored/suppression-global-components.d.ts.txt\"\n        }\n      ],\n      \"success\": false,\n      \"diagnostics\": [\n        {\n          \"file\": \"src/GlobalComponentListener.vue\",\n          \"code\": 2322,\n          \"sourceNeedle\": \"sibling: 'bad'\",\n          \"message\": \"Type 'string' is not assignable to type 'number'.\"\n        }\n      ]\n    }\n  ],\n  \"suppressionRegressionOrigin\": \"Three authored controls for the actual vue-router feed382 nested TypeScript comment false-positive. Full original11 contracts remain unchanged; a quoted marker is a value, and the unmarked sibling remains checked.\"\n}\n"
+    },
+    {
+      "path": "package.json.txt",
+      "bytes": 199,
+      "sha256": "0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3",
+      "utf8": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n"
+    },
+    {
+      "path": "source-provenance.json",
+      "bytes": 2136,
+      "sha256": "46a3e7e97bd0c59ced85250e51805ce704a8411914a238b01578e99e19a43441",
+      "utf8": "{\n  \"schema\": \"vize.issue11373.original-source-custody\",\n  \"reportSha256\": \"1b531a4391361f1859303b867d2bf201fddcd3e0d5ff5343cd28e509132860d1\",\n  \"bodySha256\": \"180980b2d918ca58a996dd6dd3d286d498ea30915bc25e9bee2cde1c72b030b1\",\n  \"originalFiles\": [\n    {\n      \"path\": \"package.json\",\n      \"bytes\": 199,\n      \"sha256\": \"0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3\"\n    },\n    {\n      \"path\": \"tsconfig.json\",\n      \"bytes\": 352,\n      \"sha256\": \"44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181\"\n    },\n    {\n      \"path\": \"src/global-components.d.ts\",\n      \"bytes\": 161,\n      \"sha256\": \"58b604d66bf532e0923a2efda34db10a577105683fcf1c47092a93849627798a\"\n    },\n    {\n      \"path\": \"src/GlobalComponentListener.vue\",\n      \"bytes\": 145,\n      \"sha256\": \"9f7661b8691673eaed9357ac86372f384e2ccbc06c378483b4525a50d3900a48\"\n    },\n    {\n      \"path\": \"src/PascalListener.vue\",\n      \"bytes\": 143,\n      \"sha256\": \"4646e0dc67bffcef92ceb1ee44d2a6701049a55edb864572c8d723d4dd0c2b68\"\n    },\n    {\n      \"path\": \"src/NoListener.vue\",\n      \"bytes\": 64,\n      \"sha256\": \"d16626074222e1eea198f4a23e60700ae7370c0e9b2df3cc9fa7a5bb8858af71\"\n    }\n  ],\n  \"versions\": {\n    \"vize\": \"0.640.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\",\n    \"typescript\": \"5.9.3\",\n    \"vue-tsc\": \"3.2.6\",\n    \"node\": \"26.12.1\",\n    \"os\": \"macOS26.4.1\",\n    \"arch\": \"arm64\",\n    \"pnpm\": \"12.3.4\"\n  },\n  \"originalCommands\": \"pnpm install\\npnpm exec tsrs --runExternalCode -p tsconfig.json --pretty false\\npnpm exec vue-tsc --noEmit -p tsconfig.json --pretty false\\n\",\n  \"originalDiagnostic\": \"src/GlobalComponentListener.vue(55,87): error TS2448: Block-scoped variable 'global_link' used before its declaration.\\n  This location is in virtual code produced by the content mapper 'vize@0.640.0' and has no corresponding location in the original file.\\n\",\n  \"reporter\": \"ubugeeei; no external attribution in original report\",\n  \"scope\": \"Three original components and all original settings verbatim. Original installed/public role and current-source controls are separate; current exact semantic qualification pending.\"\n}\n"
+    },
+    {
+      "path": "src/GlobalComponentListener.vue.txt",
+      "bytes": 145,
+      "sha256": "9f7661b8691673eaed9357ac86372f384e2ccbc06c378483b4525a50d3900a48",
+      "utf8": "<script setup lang=\"ts\">\nfunction onNavigate() {}\n</script>\n\n<template>\n  <global-link to=\"/\" @click=\"onNavigate\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "src/NoListener.vue.txt",
+      "bytes": 64,
+      "sha256": "d16626074222e1eea198f4a23e60700ae7370c0e9b2df3cc9fa7a5bb8858af71",
+      "utf8": "<template>\n  <global-link to=\"/\">home</global-link>\n</template>\n"
+    },
+    {
+      "path": "src/PascalListener.vue.txt",
+      "bytes": 143,
+      "sha256": "4646e0dc67bffcef92ceb1ee44d2a6701049a55edb864572c8d723d4dd0c2b68",
+      "utf8": "<script setup lang=\"ts\">\nfunction onNavigate() {}\n</script>\n\n<template>\n  <GlobalLink to=\"/\" @click=\"onNavigate\">home</GlobalLink>\n</template>\n"
+    },
+    {
+      "path": "src/global-components.d.ts.txt",
+      "bytes": 161,
+      "sha256": "58b604d66bf532e0923a2efda34db10a577105683fcf1c47092a93849627798a",
+      "utf8": "import type { DefineComponent } from \"vue\";\n\ndeclare module \"vue\" {\n  export interface GlobalComponents {\n    GlobalLink: DefineComponent<{ to: string }>;\n  }\n}\n"
+    },
+    {
+      "path": "tsconfig.json.txt",
+      "bytes": 352,
+      "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181",
+      "utf8": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+    }
+  ]
+}

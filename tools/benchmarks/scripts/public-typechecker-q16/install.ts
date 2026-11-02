@@ -38,6 +38,11 @@ import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
 import { sourceBin, tsrsRoute, type CommandBin } from "./routes.ts";
 import { e649MetadataUrl, readE649Metadata, usesE649Packument } from "./e649-metadata.ts";
 import { publishedTscRoute } from "./generic-arrow-route.ts";
+import {
+  usesP73FullPackument,
+  readP73FullMetadata,
+  p73FullMetadataUrl,
+} from "./global-listener-data.ts";
 
 function physical(path: string) {
   const stat = lstatSync(path);
@@ -74,7 +79,10 @@ export async function install(
 ) {
   const checkEnvironment = () => requireEnvironment(process.env);
   checkEnvironment();
-  assert.equal(process.version, "v26.13.0");
+  assert.equal(
+    process.version,
+    profileFor().subset === "GlobalListener11373" ? "v26.12.1" : "v26.13.0",
+  );
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
   const manager = managerImages(npm, npx),
@@ -188,6 +196,29 @@ export async function install(
           url: e649MetadataUrl,
           selectedVersion: version,
           representation: "EXACT_ABBREVIATED_INSTALL_PACKUMENT_MEMBER",
+          value: metadata,
+        });
+        record.json("registry-observations.json", registry);
+      } else if (
+        name === "vize" &&
+        usesP73FullPackument(
+          profile,
+          name,
+          version,
+          asRecord(asRecord(authority.capsule.npmSRI)[name]),
+        )
+      ) {
+        metadata = await readP73FullMetadata(
+          profile,
+          row,
+          asRecord(asRecord(authority.capsule.npmSRI)[name]),
+          record,
+          cache,
+        );
+        registry.push({
+          url: p73FullMetadataUrl,
+          selectedVersion: version,
+          representation: "EXACT_FULL_PACKUMENT_MEMBER",
           value: metadata,
         });
         record.json("registry-observations.json", registry);
