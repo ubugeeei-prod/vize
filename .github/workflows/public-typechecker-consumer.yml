@@ -163,7 +163,7 @@ jobs:
           path: ${{ runner.temp }}/public-11339-evidence.tgz
           retention-days: 14
   contracts-q16:
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && github.ref == 'refs/heads/test/published-generic-arrow-tsx-20261103' && 'ubuntu-24.04' || 'blacksmith-8vcpu-ubuntu-2404' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -174,9 +174,9 @@ jobs:
         run: node --test tests/tooling/public-typechecker-q16*.test.ts
   public-q16:
     permissions: { contents: read, actions: read }
-    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && github.repository == 'ubugeeei-prod/vize' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/published-q16-first-subset-20261102' || github.ref == 'refs/heads/test/published-commented-vif-11378-20261102' || github.ref == 'refs/heads/test/published-emits-11390-11391-20261102' || github.ref == 'refs/heads/test/published-static-template-ref-11377-20261102')
+    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && github.repository == 'ubugeeei-prod/vize' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/published-q16-first-subset-20261102' || github.ref == 'refs/heads/test/published-commented-vif-11378-20261102' || github.ref == 'refs/heads/test/published-emits-11390-11391-20261102' || github.ref == 'refs/heads/test/published-static-template-ref-11377-20261102' || github.ref == 'refs/heads/test/published-generic-arrow-tsx-20261103')
     needs: contracts-q16
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && github.ref == 'refs/heads/test/published-generic-arrow-tsx-20261103' && 'ubuntu-24.04' || 'blacksmith-8vcpu-ubuntu-2404' }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

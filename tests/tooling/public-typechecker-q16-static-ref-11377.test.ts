@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  afterProfile,
   commandsFor,
   filesFor,
   limitationsFor,
@@ -75,8 +74,16 @@ test("R77 keeps the exact three reported files and only the independent authored
   );
 });
 
-test("R77 authenticates the containing release separately from fix identity and substitutes only Vize", () => {
-  const profile = requireProfile(afterProfile);
+test("R77 validates its retained 648 fields and substitutes only Vize", () => {
+  const profile = requireProfile({
+    subset: "R77",
+    fix: "56635d7cfb27718ec8b40e67309c71da5b9a3803",
+    version: "0.648.0",
+    source: "155820d442a6250be45eb52c89c455e343f07905",
+    candidate: "012ca83a14856567f3806199f9b00f4e47ffc160",
+    run: "41450079853",
+    capsule: "aa2694a717c6749d85ce694eab8b5b0812fdab7f",
+  });
   assert.equal(profile.subset, "R77");
   assert("fix" in profile);
   assert.equal(profile.fix, "56635d7cfb27718ec8b40e67309c71da5b9a3803");

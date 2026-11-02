@@ -37,6 +37,7 @@ import { profileFor, requireEnvironment, limitations, type SourceFile } from "./
 import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
 import { sourceBin, tsrsRoute, type CommandBin } from "./routes.ts";
 import { e649MetadataUrl, readE649Metadata, usesE649Packument } from "./e649-metadata.ts";
+import { publishedTscRoute } from "./generic-arrow-route.ts";
 
 function physical(path: string) {
   const stat = lstatSync(path);
@@ -292,7 +293,9 @@ export async function install(
     (kind, value) => record.json("native-prerequisite-" + kind + ".json", value),
   );
   // This is non-executing route/image proof. No companion probe is attributed to the original compiler.
-  const route = tsrsRoute(root, packages),
+  const selectedRoute = () =>
+    profile.subset === "GArrowTsc" ? publishedTscRoute(root, packages) : tsrsRoute(root, packages);
+  const route = selectedRoute(),
     bindings = commandBins.map((name) => sourceBin(root, name, images));
   const custody = [
     ...new Map(
@@ -301,7 +304,7 @@ export async function install(
         ...graph.files,
         ...managerPublic.images,
         ...manager,
-        route.ldd,
+        ...("ldd" in route ? [route.ldd] : []),
         route.node,
         fileImage(join(root, "package-lock.json")),
       ].map((image) => [image.path, image]),
@@ -314,7 +317,7 @@ export async function install(
       commandBins.map((name) => sourceBin(root, name, images)),
       bindings,
     );
-    assert.deepEqual(tsrsRoute(root, packages), route);
+    assert.deepEqual(selectedRoute(), route);
     recheckNativeLoadPrerequisite({ root, packages, sdk: graph.files, nativeLoad }, process.env);
   };
   verify();

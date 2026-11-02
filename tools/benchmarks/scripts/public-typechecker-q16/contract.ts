@@ -15,7 +15,8 @@ export type Subset =
   | "A64"
   | "E90-91"
   | "F78"
-  | "R77";
+  | "R77"
+  | "GArrowTsc";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -60,13 +61,13 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "R77",
-  fix: "56635d7cfb27718ec8b40e67309c71da5b9a3803",
-  version: "0.648.0",
-  source: "155820d442a6250be45eb52c89c455e343f07905",
-  candidate: "012ca83a14856567f3806199f9b00f4e47ffc160",
-  run: "41450079853",
-  capsule: "aa2694a717c6749d85ce694eab8b5b0812fdab7f",
+  subset: "GArrowTsc",
+  fix: "ba01953b4429fabdd652d3497d89a8cf1737697b",
+  version: "0.652.0",
+  source: "ba01953b4429fabdd652d3497d89a8cf1737697b",
+  candidate: "6a9b36fbb8c21b0d928583e3732410f5c2afb12a",
+  run: "41523763531",
+  capsule: "b567cd114991ae7a9d3b3f6a398bf78246e50182",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 const defaultLimitations = {
@@ -80,6 +81,14 @@ const defaultLimitations = {
   wholeNodeModulesFilesetQualified: false,
 };
 export function limitationsFor(subset: Subset) {
+  if (subset === "GArrowTsc")
+    return {
+      ...defaultLimitations,
+      scope:
+        "Fresh installed TSC generic-arrow reproducer with authored package/config/argv completion",
+      host: "Linux x64 Node26.13.0 adaptation; reported M4/macOS15.6.1/Node22.23.3 is not claimed",
+      manager: "npm11.19.1/npm i control; controlled Node invokes the authentic installed bin/tsc",
+    };
   return subset === "R77"
     ? {
         ...defaultLimitations,
@@ -91,7 +100,7 @@ export function limitationsFor(subset: Subset) {
       }
     : defaultLimitations;
 }
-export const limitations = limitationsFor(afterProfile?.subset ?? "D61");
+export const limitations = limitationsFor((afterProfile as Profile | null)?.subset ?? "D61");
 export const reportedCommands = {
   install: ["npm", "i"],
   tsrs: ["npx", "tsrs", "--runExternalCode", "--noEmit", "-p", "tsconfig.json"],
@@ -137,6 +146,8 @@ export function requireProfile(profile: Profile | null): Profile {
   } else if (profile.subset === "A59-65") {
     subsetFor("A59");
     assert.equal(profile.fix, a65Data.fixMerge);
+  } else if (profile.subset === "GArrowTsc") {
+    assert.equal(profile.fix, "ba01953b4429fabdd652d3497d89a8cf1737697b");
   } else {
     subsetFor(profile.subset);
     if (profile.subset === "R77")

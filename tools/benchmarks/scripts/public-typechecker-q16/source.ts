@@ -6,6 +6,7 @@ import { fileImage } from "../../../support/release/computed_event_custody.ts";
 import { fixtureNames } from "./fixtures.ts";
 import { declarationFileName } from "./declaration-data.ts";
 import { a65FileName } from "./a-data.ts";
+import { genericArrowFileName } from "./generic-arrow-data.ts";
 
 export function sourceCustody() {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
@@ -18,6 +19,7 @@ export function sourceCustody() {
       ...fixtureNames.map((name) => ns + name),
       ns + declarationFileName,
       ns + a65FileName,
+      ns + genericArrowFileName,
       ".github/workflows/public-typechecker-consumer.yml",
     ],
     seen = new Set<string>(),
