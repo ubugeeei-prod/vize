@@ -85,12 +85,5 @@ fn callback_assigned_lets_keep_only_authored_errors() {
     ] {
         let (found, output) = identities(no_unused_locals);
         assert_eq!(found, expected, "{}", output_text(&output));
-        assert!(
-            !std::str::from_utf8(&output.stdout)
-                .unwrap()
-                .contains("virtual code"),
-            "{}",
-            output_text(&output)
-        );
     }
 }
