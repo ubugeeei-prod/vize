@@ -55,6 +55,37 @@ impl Fixture {
     }
 }
 
+fn shell_quoted_path(path: &std::path::Path) -> vize_l0::String {
+    vize_l0::cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\\''"))
+}
+
+#[test]
+fn held_backend_pid_witness_uses_its_owned_path_from_a_different_working_directory() {
+    let authored = crate::test_support::tempdir().unwrap();
+    let canon = crate::test_support::tempdir().unwrap();
+    let owned = authored.path().join("owned 雪 ' $HOME `uname`");
+    std::fs::create_dir(&owned).unwrap();
+    let pid_file = owned.join("backend.pids");
+    let status = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(
+            vize_l0::cstr!(
+                "printf '%s' 'whole owned PID witness' > {}",
+                shell_quoted_path(&pid_file)
+            )
+            .as_str(),
+        )
+        .current_dir(canon.path())
+        .status()
+        .unwrap();
+    assert!(status.success());
+    assert_eq!(
+        std::fs::read(&pid_file).unwrap(),
+        b"whole owned PID witness"
+    );
+    assert!(!canon.path().join("backend.pids").exists());
+}
+
 fn fixture(held: bool) -> Fixture {
     let root = crate::test_support::tempdir().unwrap();
     std::fs::write(root.path().join("App.vue"), APP).unwrap();
@@ -66,7 +97,13 @@ fn fixture(held: bool) -> Fixture {
     if held {
         std::fs::write(
             &backend,
-            "#!/bin/sh\necho $$ >> backend.pids\nexec cat 3>&1 > /dev/null\n",
+            // The selected native project may use its private Canon cwd.
+            // Keep this fixture's stop/read witness owned by its authored root.
+            vize_l0::cstr!(
+                "#!/bin/sh\necho $$ >> {}\nexec cat 3>&1 > /dev/null\n",
+                shell_quoted_path(&root.path().join("backend.pids"))
+            )
+            .as_bytes(),
         )
         .unwrap();
         std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();
