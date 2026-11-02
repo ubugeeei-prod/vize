@@ -33,6 +33,9 @@ pub struct IdeContext<'a> {
     /// Optional request-local strict-open receipt; never inherited by another context.
     #[cfg(feature = "native")]
     foreground_preparation: Option<(&'a Url, &'a std::sync::atomic::AtomicBool)>,
+    /// A cold initial project receipt is owned only by this request.
+    #[cfg(feature = "native")]
+    initial_canonical_document: Option<Box<initial_project::OwnedInitialDocument>>,
     /// Pug derivation and semantic scope are shared by this request's fallbacks.
     pub(in crate::ide) pug_scope: OnceLock<Option<Box<super::template_scope::pug::PugScope>>>,
 }
@@ -186,6 +189,8 @@ impl<'a> IdeContext<'a> {
             descriptor,
             #[cfg(feature = "native")]
             foreground_preparation: None,
+            #[cfg(feature = "native")]
+            initial_canonical_document: None,
             pug_scope: OnceLock::new(),
         }
     }
@@ -324,3 +329,6 @@ impl<'a> IdeContext<'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "native")]
+mod initial_project;

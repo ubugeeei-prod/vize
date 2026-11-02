@@ -21,13 +21,13 @@ impl ServerState {
             .values()
             .cloned()
             .collect();
-        let mut bridges: Vec<_> = self.initialized_corsa_bridge().into_iter().collect();
+        let mut bridges: Vec<_> = self.corsa_bridge_for_shutdown().into_iter().collect();
         for context in contexts {
             // Retired owners discard startups that complete after this point.
             context.mark_retired();
             let Some(bridge) = context
                 .published_state()
-                .and_then(|state| state.initialized_corsa_bridge())
+                .and_then(|state| state.corsa_bridge_for_shutdown())
             else {
                 continue;
             };
@@ -36,7 +36,9 @@ impl ServerState {
             }
         }
         for bridge in self.take_detached_corsa_bridges() {
-            if bridge.is_initialized() && !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge)) {
+            if should_join_bridge(|| bridge.is_initialized(), || bridge.stop_pending_startup())
+                && !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge))
+            {
                 bridges.push(bridge);
             }
         }
@@ -47,10 +49,18 @@ impl ServerState {
             .collect()
     }
 
-    fn initialized_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
-        self.corsa_bridge
-            .read()
-            .clone()
-            .filter(|bridge| bridge.is_initialized())
+    fn corsa_bridge_for_shutdown(&self) -> Option<Arc<CorsaBridge>> {
+        let bridge = self.corsa_bridge.read().clone()?;
+        should_join_bridge(|| bridge.is_initialized(), || bridge.stop_pending_startup())
+            .then_some(bridge)
     }
 }
+
+/// Publication and pending-stop classification can race. If publication won,
+/// keep that owner in the existing outer join rather than losing both paths.
+fn should_join_bridge(initialized: impl Fn() -> bool, stop_pending: impl FnOnce() -> bool) -> bool {
+    initialized() || (!stop_pending() && initialized())
+}
+
+#[cfg(test)]
+mod tests;

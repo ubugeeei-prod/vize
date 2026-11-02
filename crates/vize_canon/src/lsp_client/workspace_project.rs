@@ -1,5 +1,7 @@
 //! Switching a long-lived client onto a materialized Canon project.
 
+mod initial;
+
 use std::path::Path;
 
 use vize_l0::String;
