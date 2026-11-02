@@ -217,17 +217,13 @@ test("dynamic-target printer roles are declared before capture and retain standa
     (step: { name?: string }) => step.name === "Run standard project and declaration conformance",
   );
   assert.equal(standard.run.split("\n")[0], standardRoleCommand);
-  assert(
-    steps.some((step: { with?: { path?: string } }) =>
-      step.with?.path?.split("\n").includes("target/vize-tests/content-mapper-directive-owners"),
-    ),
+  const artifact = steps.find(
+    (step: { name?: string }) => step.name === "Preserve whole owner calibration observations",
   );
-  const runner = fs.readFileSync(
-    new URL("../../tools/support/compat/content-mapper/reported-q16.ts", import.meta.url),
-    "utf8",
-  );
+  assert(artifact.uses.startsWith("actions/upload-artifact@"));
+  assert.equal(artifact.if, "always()");
   assert(
-    runner.includes('VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: "reported-tsrs-vue44"'),
+    artifact.with.path.split("\n").includes("target/vize-tests/content-mapper-directive-owners"),
   );
 });
 
@@ -358,9 +354,17 @@ test("required per-family captures and host paths cannot quietly disappear", () 
     "VIZE_NESTED_CALLBACK_CAPTURE",
     "VIZE_REPORTED_DECLARATIONS_CAPTURE",
   ];
+  e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE = "reported-tsrs-vue44";
   for (const k of booleans) e[k] = "1";
   for (const k of paths) e[k] = "/owned/" + k;
   verifyQ16RequiredEnvironment(e);
+  for (const role of [undefined, "", "unknown", "standard-go-d6-vue35"])
+    assert.throws(() =>
+      verifyQ16RequiredEnvironment({
+        ...e,
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: role,
+      }),
+    );
   for (const k of [...booleans, ...paths])
     assert.throws(() => verifyQ16RequiredEnvironment({ ...e, [k]: undefined }));
   assert.throws(() => verifyQ16RequiredEnvironment({ ...e, VIZE_TEST_DISABLE_TSGO: "1" }));

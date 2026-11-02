@@ -50,6 +50,7 @@ export function verifyQ16Inputs(e: NodeJS.ProcessEnv, actual: string) {
     assert.equal(e[key], undefined, `unexpected inherited ${key}`);
 }
 export function verifyQ16RequiredEnvironment(e: NodeJS.ProcessEnv) {
+  assert.equal(e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE, "reported-tsrs-vue44");
   for (const key of [
     "VIZE_TEST_REQUIRE_TSGO",
     "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
