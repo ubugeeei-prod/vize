@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
-import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
+import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.ts";
 import { directChildHistoricalSuccessor } from "./support/native-ssr-direct-child-successor.ts";
 
 void test("the original whole SSR archives permit only the named nested-refusal successor", () => {
@@ -102,6 +102,7 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
     "tools/support/compat/github/native-ssr-capture.mjs",
+    "tools/support/compat/github/native-ssr-capture.ts",
     "pnpm-lock.yaml",
     "Cargo.lock",
   ])
@@ -120,6 +121,10 @@ void test("prose, generated ledgers and independent target consumers do not gran
     "davinci/vize_l4/src/targets/vapor/write.rs",
     "davinci/vize_l4/src/targets/dom/output.rs",
     "README.md",
+    "tools/support/compat/github/native-ssr-capture.tsx",
+    "tools/support/compat/github/native-ssr-capture.ts/child",
+    "tools/support/compat/github/native-ssr-capture.mjs.bak",
+    "tools/support/compat/github/plan-tooling-tests.ts",
   ])
     assert.equal(nativeSsrCaptureRequired([path]), false, path);
   assert.equal(nativeSsrCaptureRequired([]), false);
