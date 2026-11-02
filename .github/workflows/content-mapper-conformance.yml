@@ -8,8 +8,13 @@ on:
       targeted-test:
         description: "Run the full suite or the original 16-state/four-host generic body-error cohort"
         type: choice
-        options: [full, generic-body-error]
+        options: [full, generic-body-error, reported-q16]
         default: full
+      reported-q16-cases:
+        description: "Closed source After case set; all retains the original six tests"
+        type: choice
+        options: [all, A, A-with-declaration, B, C, D]
+        default: all
       event-rename-only:
         description: "Qualify both Vize-owned event rename targets with exact upstream tsgo"
         type: boolean
@@ -37,7 +42,7 @@ on:
       release_run: { description: "Successful official Release R", type: string, required: false }
 
 concurrency:
-  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.router-experimental-only && '-router-experimental' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}
+  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.targeted-test == 'reported-q16' && '-reported-q16' || inputs.router-experimental-only && '-router-experimental' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}
   cancel-in-progress: ${{ !inputs.published-defaults-only }}
 
 permissions:
@@ -49,8 +54,81 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  reported-q16:
+    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+      Q16_TARGETED_TEST: ${{ inputs.targeted-test }}
+      Q16_OTHER_MODES: ${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}
+      Q16_PUBLIC_CUT: ${{ inputs.cut }}
+      Q16_PUBLIC_HEAD: ${{ inputs.head }}
+      Q16_PUBLIC_TAG: ${{ inputs.tag }}
+      Q16_PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
+      Q16_PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+    steps:
+      - name: Checkout exact reviewed joint baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Initialize runner-local joint evidence paths
+        shell: bash
+        env:
+          Q16_REQUESTED_CASE_SET: ${{ inputs.reported-q16-cases }}
+        run: |
+          printf 'Q16_OUT=%s/reported-q16\nQ16_PROVIDER=%s/reported-q16-provider\nQ16_CASE_SET=%s\n' "$RUNNER_TEMP" "$RUNNER_TEMP" "$Q16_REQUESTED_CASE_SET" >> "$GITHUB_ENV"
+      - name: Setup repository build Node and Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Refuse mixed modes and preserve the source-role package adaptation
+        run: node tools/support/compat/content-mapper/reported-q16.ts prepare
+      - name: Setup source Rust toolchain
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: content-mapper-reported-q16
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen repository build dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build one current source NAPI companion and CLI with raw evidence
+        run: node tools/support/compat/content-mapper/reported-q16.ts build
+      - name: Setup reported Node for the published host and oracle role
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Install the exact report host and oracle versions and retain the generated lock
+        shell: bash
+        run: |
+          set -uo pipefail
+          node --version > "$Q16_OUT/provider-node-version.txt"
+          npm --version > "$Q16_OUT/provider-npm-version.txt"
+          npm install --prefix "$Q16_PROVIDER" --package-lock-only --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org > "$Q16_OUT/provider-lock.stdout.bin" 2> "$Q16_OUT/provider-lock.stderr.bin"
+          lock_status=$?
+          printf '%s\n' "$lock_status" > "$Q16_OUT/provider-lock.status.txt"
+          test "$lock_status" = 0 || exit "$lock_status"
+          cp "$Q16_PROVIDER/package.json" "$Q16_OUT/provider-package.json"
+          cp "$Q16_PROVIDER/package-lock.json" "$Q16_OUT/provider-package-lock.json"
+          npm ci --prefix "$Q16_PROVIDER" --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org > "$Q16_OUT/provider-install.stdout.bin" 2> "$Q16_OUT/provider-install.stderr.bin"
+          install_status=$?
+          printf '%s\n' "$install_status" > "$Q16_OUT/provider-install.status.txt"
+          exit "$install_status"
+      - name: Authenticate installed host roles before any report checks
+        run: node tools/support/compat/content-mapper/reported-q16.ts provider
+      - name: Run all six exact compiled tests and retain every result before the final verdict
+        run: node tools/support/compat/content-mapper/reported-q16.ts cases
+      - name: Upload all raw Cargo, test, source and provider evidence even on baseline failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: reported-q16-source-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reported-q16/
+          if-no-files-found: error
+          include-hidden-files: true
+
   exact-tsgo-project:
-    if: ${{ inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only) }}
+    if: ${{ inputs.targeted-test != 'reported-q16' && (inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only)) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -385,7 +463,7 @@ jobs:
           retention-days: 7
 
   event-rename:
-    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
+    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -483,7 +561,7 @@ jobs:
         run: test "$TRANSACTIONS_OUTCOME" = success
 
   official-css-options:
-    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
+    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
@@ -632,7 +710,7 @@ jobs:
             !${{ runner.temp }}/official-css-options/**/node_modules/**
 
   router-experimental:
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.router-experimental-only)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
