@@ -150,7 +150,8 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
     );
     assert_eq!(geometry["parseDiagnostics"], json!([]));
     // The owned import resolves without a generated extension diagnostic.
-    // Preserve every authored native diagnostic, including guarded inference copies.
+    // Preserve the complete authored native vectors. Geometry keeps guarded
+    // inference copies; their suppressed duplicate diagnostics remain unreported.
     let mut expected = CompactString::default();
     let negatives = geometry["negative"].as_array().unwrap();
     let owners = negatives
