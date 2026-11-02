@@ -322,21 +322,27 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
     };
     let (owned, owned_maps) = emit(Some(&root));
     let (unowned, unowned_maps) = emit(None);
-    const REGISTRY_CHECK: &str = concat!(
-        "const { \"registry.button\": __vize_global_component_0 } = {} as (",
-        "\"Registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : ",
-        "\"registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : ",
-        "\"registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : {});\n",
+    // The script-owned member now resolves through a local alias. The actual
+    // template proves that owner; missing AST retains the registry refusal.
+    const UNOWNED: &str = concat!(
+        "const { \"__vize_dynamic_is_0\": __vize_global_component_0 } = {} as (",
+        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : ",
+        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : ",
+        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : {});\n",
         "void __vize_global_component_0;\n",
+        "\n// Global component stubs (vue module augmentations)\n",
+        "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
+        "type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
+        "declare const __vize_dynamic_is_0: $GlobalComponentFallback & $GlobalComponent<\"__vize_dynamic_is_0\">;\n",
     );
-    assert_eq!(unowned, vize_carton::cstr!("{REGISTRY_CHECK}{owned}"));
-    assert!(owned.contains("declare const registry_button:"));
+    assert_eq!(owned, "");
+    assert_eq!(unowned, UNOWNED);
     assert!(owned_maps.is_empty());
     assert_eq!(
         unowned_maps,
         vec![crate::virtual_ts::VizeMapping {
-            gen_range: 8..25,
-            src_range: 101..116,
+            gen_range: 8..29,
+            src_range: 101..120,
             sub_spans: Vec::new(),
         }]
     );

@@ -1,0 +1,68 @@
+{
+  "schema": "vize.reportedContentMapperInputs.v1",
+  "version": 1,
+  "issue": 11363,
+  "case": "dotted-tag",
+  "report": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11363",
+    "bodySha256": "209314ab2e9b0eb1a05978d76527e33c6c5a6466368c2f16816ce5b63ed2356e",
+    "originalReportSha256": "445a33e7faed5e8f60dec83dc97588bdf61ffa95ab6378ae65dead4eb912ea33",
+    "originalFencesSha256": "bcfb8f1afa70037962d0e37ae7baa4600929f76bd4e8d399552e90ceefb96081",
+    "authorLogin": "Q16solver",
+    "authorPublicNodeId": "MDQ6VXNlcjUwNzg2Mjg3"
+  },
+  "reportedEnvironment": {
+    "vize": "0.638.0",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "vue": "3.5.44",
+    "vueTsc": "3.3.11",
+    "typescript": "6.0.3",
+    "node": "26.13.0",
+    "os": "Windows 11",
+    "nuxtMentionedInProse": "5.0.0-2611010234-c709ec8",
+    "minimalPackageIncludesNuxt": false,
+    "lockfileProvided": false
+  },
+  "reportedCommands": [
+    "npm i && npx tsrs --runExternalCode --noEmit -p tsconfig.json",
+    "npx vue-tsc --noEmit -p tsconfig.json"
+  ],
+  "files": [
+    {
+      "file": "package.json",
+      "content": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+      "utf8Bytes": 200,
+      "sha256": "6bd44e5f4250fd98b039fc323a4ccfe902d58ece8cc0a160c97dc1238b213b00",
+      "sourceFenceIndex": 0
+    },
+    {
+      "file": "tsconfig.json",
+      "content": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "utf8Bytes": 322,
+      "sha256": "56b91da48238cfbe7cc6e9c67a4d985f5aaa14a554a34ec94d6e44291754de94",
+      "sourceFenceIndex": 1
+    },
+    {
+      "file": "src/Foo.vue",
+      "content": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "utf8Bytes": 101,
+      "sha256": "6e17ae91abb655765e75ec91a7b9e9327ff0ad9c3925658329ae4ad7457464e6",
+      "sourceFenceIndex": 2
+    },
+    {
+      "file": "src/parts.ts",
+      "content": "export { default as Foo } from \"./Foo.vue\";\n",
+      "utf8Bytes": 44,
+      "sha256": "cad3dc964cbc2399203e450160601004596b8f799613861f92198dc7efb12c96",
+      "sourceFenceIndex": 3
+    },
+    {
+      "file": "src/Probe.vue",
+      "content": "<script setup lang=\"ts\">\nimport * as Parts from \"./parts\";\n</script>\n\n<template>\n  <Parts.Foo bar=\"baz\" />\n</template>\n",
+      "utf8Bytes": 119,
+      "sha256": "d2adb8462d0188ed4edec9654e91517baa946e58b4434160976542b023296c67",
+      "sourceFenceIndex": 4
+    }
+  ],
+  "scope": "Verbatim named original fences only; input data, not execution or acceptance evidence."
+}

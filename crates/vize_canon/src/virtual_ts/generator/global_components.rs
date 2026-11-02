@@ -156,7 +156,11 @@ impl<'a> GlobalComponentPlan<'a> {
             // Vue resolves registry components in this exact order. Use the
             // same selected provider for props and slot payload ownership.
             let registry_keys = [pascal_name.as_str(), camel_name.as_str(), name];
-            if candidates.iter().any(|candidate| {
+            if crate::virtual_ts::component_reference::has_dotted_component_value_binding(
+                summary,
+                syntactic_type_only_imported_names,
+                name,
+            ) || candidates.iter().any(|candidate| {
                 (crate::virtual_ts::script_facts::contains_binding(summary, candidate)
                     && !contains_compact_name(syntactic_type_only_imported_names, candidate))
                     || (imported_names.contains(candidate)

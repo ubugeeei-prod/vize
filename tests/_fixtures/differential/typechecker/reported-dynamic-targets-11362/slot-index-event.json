@@ -1,0 +1,68 @@
+{
+  "schema": "vize.reportedContentMapperInputs.v1",
+  "version": 1,
+  "issue": 11367,
+  "case": "slot-index-event",
+  "report": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11367",
+    "bodySha256": "acb4cdbbb6a3eabd73c6051a5ca05bacb4b5fcac3efd0e4c4de82acaf4e34ce8",
+    "originalReportSha256": "c7bf7d1d29ba382241d596a1602e590f0eaa1a57e2fa3f6e24b1dc819e0313ec",
+    "originalFencesSha256": "5c0c217d9e1ac2b5e7b3a7c0ddd47aee428ea1e1a6ca288dd7a912317b8efabe",
+    "authorLogin": "Q16solver",
+    "authorPublicNodeId": "MDQ6VXNlcjUwNzg2Mjg3"
+  },
+  "reportedEnvironment": {
+    "vize": "0.638.0",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "vue": "3.5.44",
+    "vueTsc": "3.3.11",
+    "typescript": "6.0.3",
+    "node": "26.13.0",
+    "os": "Windows 11",
+    "nuxtMentionedInProse": "5.0.0-2611010234-c709ec8",
+    "minimalPackageIncludesNuxt": false,
+    "lockfileProvided": false
+  },
+  "reportedCommands": [
+    "npm i && npx tsrs --runExternalCode --noEmit -p tsconfig.json",
+    "npx vue-tsc --noEmit -p tsconfig.json"
+  ],
+  "files": [
+    {
+      "file": "package.json",
+      "content": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+      "utf8Bytes": 200,
+      "sha256": "6bd44e5f4250fd98b039fc323a4ccfe902d58ece8cc0a160c97dc1238b213b00",
+      "sourceFenceIndex": 0
+    },
+    {
+      "file": "tsconfig.json",
+      "content": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "utf8Bytes": 294,
+      "sha256": "8640fb996f9fa23059a5a60e7a897863c448e2e4287b6054127dd6a200514308",
+      "sourceFenceIndex": 1
+    },
+    {
+      "file": "src/Child.vue",
+      "content": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ select: [value: number] }>();\n</script>\n\n<template>\n  <button @click=\"emit('select', 1)\" />\n</template>\n",
+      "utf8Bytes": 156,
+      "sha256": "44bac019daaf8a0aef688a9cd3e9b6f55ec95aa01e035a56cef9c88bbb3dc9e3",
+      "sourceFenceIndex": 2
+    },
+    {
+      "file": "src/Panel.vue",
+      "content": "<script setup lang=\"ts\">\ndefineSlots<{ foo: (props: { bar: number }) => unknown }>();\n</script>\n\n<template>\n  <slot name=\"foo\" :bar=\"1\" />\n</template>\n",
+      "utf8Bytes": 151,
+      "sha256": "d5590bc407e1de2417932084959cd15c8685c9114310a0bef30152d988c1b58f",
+      "sourceFenceIndex": 3
+    },
+    {
+      "file": "src/Probe.vue",
+      "content": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Panel from \"./Panel.vue\";\n\nconst map = { foo: Child };\nconst key = \"foo\";\n</script>\n\n<template>\n  <Panel>\n    <template #foo>\n      <component :is=\"map[key]\" @select=\"(value) => value.toFixed()\" />\n    </template>\n  </Panel>\n</template>\n",
+      "utf8Bytes": 302,
+      "sha256": "8d7bd4afc8e80fddbc02b19359f6fb355f365c7f9e2f50f8db11784dd5c81fa0",
+      "sourceFenceIndex": 4
+    }
+  ],
+  "scope": "Verbatim named original fences only; input data, not execution or acceptance evidence."
+}

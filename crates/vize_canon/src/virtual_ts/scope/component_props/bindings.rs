@@ -76,7 +76,10 @@ pub(in crate::virtual_ts::scope) fn has_script_binding(
     usage: &ComponentUsage,
 ) -> bool {
     let name = usage.name.as_str();
-    if bindings.contains_binding(name) {
+    if bindings.contains_binding(name)
+        || crate::virtual_ts::component_reference::dotted_component_root(name)
+            .is_some_and(|root| bindings.contains_binding(root))
+    {
         return true;
     }
     let camel = camelize(name);
