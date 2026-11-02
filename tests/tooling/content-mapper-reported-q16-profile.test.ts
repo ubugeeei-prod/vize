@@ -99,3 +99,37 @@ test("11373 is a closed independent report profile while the entire previous wor
   );
   assert(runner.includes("verifyQ16Lock(lock, profile.package.dependencies)"));
 });
+
+test("required per-family captures and host paths cannot quietly disappear", () => {
+  const e: NodeJS.ProcessEnv = {};
+  const booleans = [
+    "VIZE_TEST_REQUIRE_TSGO",
+    "VIZE_REQUIRE_REPORTED_GENERIC_COMPONENTS",
+    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED",
+    "VIZE_TEST_REQUIRE_NESTED_CALLBACK",
+  ];
+  const paths = [
+    "CORSA_PATH",
+    "VIZE_TEST_CONTENT_MAPPER_TSGO",
+    "VIZE_TEST_CONTENT_MAPPER_VUE",
+    "VIZE_REPORTED_MODEL_CAPTURE",
+    "VIZE_REPORTED_GENERIC_EVIDENCE_DIR",
+    "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR",
+    "VIZE_NESTED_CALLBACK_CAPTURE",
+    "VIZE_REPORTED_DECLARATIONS_CAPTURE",
+  ];
+  e.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE = "reported-tsrs-vue44";
+  for (const k of booleans) e[k] = "1";
+  for (const k of paths) e[k] = "/owned/" + k;
+  verifyQ16RequiredEnvironment(e);
+  for (const role of [undefined, "", "unknown", "standard-go-d6-vue35"])
+    assert.throws(() =>
+      verifyQ16RequiredEnvironment({
+        ...e,
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: role,
+      }),
+    );
+  for (const k of [...booleans, ...paths])
+    assert.throws(() => verifyQ16RequiredEnvironment({ ...e, [k]: undefined }));
+  assert.throws(() => verifyQ16RequiredEnvironment({ ...e, VIZE_TEST_DISABLE_TSGO: "1" }));
+});
