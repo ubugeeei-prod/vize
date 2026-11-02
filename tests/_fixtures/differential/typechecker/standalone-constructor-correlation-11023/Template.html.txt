@@ -1,1 +1,1 @@
-<el-badge :value="1"><template #content="{ value }">{{ value.missing }}</template></el-badge>
+<ElBadge :value="1"><template #content="{ value }">{{ value.missing }}</template></ElBadge>
