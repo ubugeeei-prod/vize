@@ -61,6 +61,42 @@ assert.equal(
   "0d831b09099288dda67162ec4986637f6214d3f599ca203bfc663041263dcba3",
 );
 const successors = asRecord(parseJson(successorBytes.toString()));
+const conditionalDirectory = join(
+  root,
+  "tests/_fixtures/differential/linter/slot-conditional-arms-10822",
+);
+const conditionalBytes = readFileSync(join(conditionalDirectory, "cases.json"));
+assert.equal(
+  hash(conditionalBytes),
+  "36e47c4efcd91e10a53a86f7a5b6ce08485f95107e130e1cae97d2ddfec52e70",
+);
+const conditionalRows = asArray(asRecord(parseJson(conditionalBytes.toString())).cases).map(
+  (value) => {
+    const row = asRecord(value);
+    return {
+      id: asString(row.id),
+      script: asString(row.script),
+      spans: asArray(row.officialSpans),
+    };
+  },
+);
+assert.equal(conditionalRows.length, 10);
+const conditionalSuccessorBytes = readFileSync(
+  join(conditionalDirectory, "semantic-successors.json"),
+);
+assert.equal(
+  hash(conditionalSuccessorBytes),
+  "7bb4eaa041d6d4a48545f4f8b97520d35af29308e3290c8c61d4c47f31082b3c",
+);
+const conditionalSuccessors = asRecord(parseJson(conditionalSuccessorBytes.toString()));
+const conditionalProvenanceBytes = readFileSync(
+  join(conditionalDirectory, "source-provenance.json"),
+);
+assert.equal(
+  hash(conditionalProvenanceBytes),
+  "6c422e3ee89efe8ee557b1c420519de86812c8f5f99496d93fc291ed2743ad50",
+);
+const conditionalProvenance = asRecord(parseJson(conditionalProvenanceBytes.toString()));
 test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole before packets", () => {
   assert.equal(successors.schema, "vize.slot-typeof-semantic-successors.v1");
   assert.equal(successors.feature, "immediate-authenticated-typeof-operand-v1");
@@ -121,13 +157,94 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
   const after =
     "if matches!(\n            expression.operator,\n            UnaryOperator::LogicalNot | UnaryOperator::Typeof\n        ) {";
   assert.equal(current.split(after).length, 2);
-  const before = current
+  const conditionalLines =
+    "        self.suppress_direct_slot_function(&expression.consequent);\n        self.suppress_direct_slot_function(&expression.alternate);\n";
+  assert.equal(current.split(conditionalLines).length, 2);
+  const beforeConditional = current
+    .replace(conditionalLines, "")
+    .replace("\n#[cfg(test)]\nmod conditional_tests;\n", "");
+  assert.equal(hash(beforeConditional), conditionalSuccessors.beforeRuleSha256);
+  const before = beforeConditional
     .replace(after, "if expression.operator == UnaryOperator::LogicalNot {")
     .replace("\n#[cfg(test)]\nmod typeof_tests;\n", "");
   assert.equal(hash(before), successors.beforeRuleSha256);
 });
 
-test("the pinned Vue rule retains complete direct-Typeof original and boundary outcomes", () => {
+test("named ConditionalArms-v1 retains the exact old alternate and original CLI packets", () => {
+  assert.equal(conditionalSuccessors.schema, "vize.slot-conditional-arm-semantic-successors.v1");
+  assert.equal(conditionalSuccessors.version, 1);
+  assert.equal(conditionalSuccessors.feature, "immediate-authenticated-conditional-arms-v1");
+  const entry = asRecord(conditionalSuccessors.conditionCase);
+  const oldBytes = readFileSync(
+    join(root, "tests/_fixtures/differential/linter/slot-existence-conditions-10822/cases.json"),
+  );
+  assert.equal(hash(oldBytes), entry.predecessorCorpusSha256);
+  const old = asArray(asRecord(parseJson(oldBytes.toString())).cases)
+    .map((value) => asRecord(value))
+    .find((row) => row.id === "alternate-value-outside-slice")!;
+  assert.deepEqual(entry.historicalCase, old);
+  const script = asString(old.script);
+  assert.equal(hash(script), entry.inputSha256);
+  assert.deepEqual(entry.currentNativeSpans, []);
+  const before = asArray(entry.historicalNativeObservations).map((value) => asRecord(value));
+  assert.deepEqual(
+    before.map((row) => row.offset),
+    [0, 17],
+  );
+  for (const row of before) {
+    assert.equal(row.source, script);
+    const start =
+      Buffer.byteLength(script.slice(0, script.indexOf("this.$slots.default"))) +
+      asNumber(row.offset);
+    assert.equal(
+      row.completeResultDebug,
+      `ScriptLintResult {
+    diagnostics: [
+        LintDiagnostic {
+            rule_name: "script/require-slots-as-functions",
+            severity: Error,
+            message: "\`$slots\` properties are functions in Vue 3 and must be called.",
+            start: ${start},
+            end: ${start + 19},
+            help: None,
+            labels: [],
+            fix: None,
+        },
+    ],
+    error_count: 1,
+    warning_count: 0,
+}`,
+    );
+  }
+  const original = asRecord(conditionalSuccessors.originalCli);
+  assert.equal(original.id, "original-field-body");
+  const literal = asString(original.beforeProducerLine);
+  assert.equal(hash(literal), original.beforeProducerLineSha256);
+  assert.equal(literal.startsWith("vize-slot-typeof-cli "), true);
+  const packet = asRecord(parseJson(literal.slice("vize-slot-typeof-cli ".length)));
+  assert.deepEqual(Object.keys(packet).sort(), [
+    "fileAfter",
+    "id",
+    "source",
+    "status",
+    "stderrBytes",
+    "stdoutBytes",
+  ]);
+  const bytes = readFileSync(join(conditionalDirectory, "FieldBody.vue.txt"));
+  assert.equal(hash(bytes), original.inputSha256);
+  assert.equal(hash(bytes), "549dd10935821983608154160721b6a600b8e4f74b74a60902872df81e934598");
+  assert.equal(packet.source, bytes.toString());
+  assert.deepEqual(bytes, Buffer.from(asArray(packet.fileAfter).map((value) => asNumber(value))));
+  assert.equal(packet.status, 1);
+  assert.deepEqual(packet.stderrBytes, []);
+  assert.deepEqual(
+    parseJson(Buffer.from(asArray(packet.stdoutBytes).map((value) => asNumber(value))).toString()),
+    original.beforeWholeJson,
+  );
+  assert.deepEqual(original.currentNativeSpans, []);
+});
+
+test("the pinned Vue rule retains complete immediate presence originals and boundaries", () => {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "reference execution is Actions-only");
   const workspace = createRequire(join(root, "package.json"));
   const require = createRequire(workspace.resolve("@nuxt/eslint-config"));
@@ -166,19 +283,24 @@ test("the pinned Vue rule retains complete direct-Typeof original and boundary o
     helper: { path: helperPath, sha256: hash(readFileSync(helperPath)) },
     originalSources: originals.map(({ id, sourceSha256 }) => ({ id, sourceSha256 })),
     casesSha256: hash(caseBytes),
-    provenance,
+    historicalTypeofProvenance: provenance,
+    conditionalProvenance,
+    conditionalCasesSha256: hash(conditionalBytes),
     inlineConfig:
       "disabled for this isolated-rule host; original non-target directives remain literal input",
     currentRuleSha256: hash(
       readFileSync(join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs")),
     ),
     scope:
-      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.13.0. This changes immediate Typeof only; fallback/other operators and existing native value-use differences remain explicit.",
+      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.13.0. Current semantics include immediate Typeof and conditional arms only. Typeof provenance remains historical; nested/other-operator and existing native value-use differences remain explicit.",
   };
   console.log("vize-slot-typeof-reference-source " + JSON.stringify(source));
   const inputs = [
     ...originals,
-    ...rows.map((row) => ({ ...row, source: `<script>\n${row.script}\n</script>\n` })),
+    ...[...rows, ...conditionalRows].map((row) => ({
+      ...row,
+      source: `<script>\n${row.script}\n</script>\n`,
+    })),
   ];
   const config = [
     {
@@ -250,7 +372,7 @@ test("the pinned Vue rule retains complete direct-Typeof original and boundary o
         cases: observations.length,
         complete: true,
         limits:
-          "Whole original FieldBody plus direct-Typeof controls. The fallback remains a native finding; no project-matrix/all24FP/public/native-history qualification claim.",
+          "Whole original FieldBody plus direct-Typeof and direct-arm controls. No project-matrix/all24FP/public/native-history qualification claim.",
       }),
   );
 });

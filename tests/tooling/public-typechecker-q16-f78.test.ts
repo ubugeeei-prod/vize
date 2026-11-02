@@ -6,7 +6,6 @@ import test from "node:test";
 import {
   commandsFor,
   filesFor,
-  profileFor,
   requireProfile,
   subsetFor,
   type RegressionProfile,
@@ -27,16 +26,24 @@ const mock: RegressionProfile = {
   run: "123",
   capsule: "4".repeat(40),
 };
-test("literal commented condition profile binds the genuine647 containing release and fetched capsule", () => {
-  assert.deepEqual(profileFor(), {
-    subset: "F78",
-    fix: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
-    version: "0.647.0",
-    source: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
-    candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
-    run: "41443199914",
-    capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
-  });
+test("historical commented condition profile validates retained release fields", () => {
+  assert.deepEqual(
+    requireProfile({
+      ...mock,
+      candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
+      run: "41443199914",
+      capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
+    }),
+    {
+      subset: "F78",
+      fix: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+      version: "0.647.0",
+      source: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+      candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
+      run: "41443199914",
+      capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
+    },
+  );
 });
 test("commented condition has one closed project and five independently authored states", () => {
   const selected = subsetFor("F78");

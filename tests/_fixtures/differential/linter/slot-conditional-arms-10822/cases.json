@@ -1,0 +1,125 @@
+{
+  "schema": "vize.slot-conditional-arm-cases.v1",
+  "version": 1,
+  "scope": "Immediate authenticated consequent/alternate only. Nested reads and current native value-use differences stay explicit.",
+  "cases": [
+    {
+      "id": "conditional-arm-consequent",
+      "script": "export default { render() { return ready ? this.$slots.default : [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-alternate",
+      "script": "export default { render() { return ready ? [] : this.$slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-parenthesized-both",
+      "script": "export default { render() { return ready ? (this.$slots.default) : ((this.$slots.named)) } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-known-aliases",
+      "script": "export default { render() { const slots = this.$slots; const slot = slots.default; return ready ? slot : slots.named } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-shadowed-unrelated",
+      "script": "export default { render() { const slot = this.$slots.default; function f(slot) { return ready ? slot.length : other.$slots.default } return ready ? slot : [] } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-nested-member-unicode",
+      "script": "export default { render() { /* 雪🌸 */ return ready ? this.$slots.default.length : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "conditional-arm-nested-array",
+      "script": "export default { render() { return ready ? [] : [this.$slots.default] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "conditional-arm-nested-call",
+      "script": "export default { render() { return ready ? consume(this.$slots.default) : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-arithmetic",
+      "script": "export default { render() { return ready ? this.$slots.default + 1 : [] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "conditional-arm-report-order",
+      "script": "export default { render() { return ready ? [this.$slots.default] : this.$slots.named.length } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        },
+        {
+          "needle": "this.$slots.named",
+          "shift": 0,
+          "length": 17
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        },
+        {
+          "needle": "this.$slots.named",
+          "shift": 12,
+          "length": 5
+        }
+      ]
+    }
+  ]
+}

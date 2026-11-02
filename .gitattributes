@@ -1,6 +1,7 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf
+tests/_fixtures/differential/typechecker/tsconfig-reference-defaults-3984/input.json text eol=lf
 # Original commented else-if report inputs are consumed by Content Mapper tests.
 tests/_fixtures/differential/typechecker/commented-vif-11378/*.txt text eol=lf
 # Original nested callback report inputs are physically consumed by Content Mapper tests.
@@ -208,3 +209,9 @@ tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt
 tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-typeof-presence-10822/semantic-successors.json -text
 tests/_fixtures/differential/linter/slot-typeof-presence-10822/source-provenance.json -text
+
+# Preserve the original conditional-arm SFC and named semantic-successor custody.
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.txt -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json -text
+tests/_fixtures/differential/linter/slot-conditional-arms-10822/source-provenance.json -text
