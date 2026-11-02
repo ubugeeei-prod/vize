@@ -182,3 +182,15 @@ export function packageAuthenticator(
     return { name, version: expectedVersion, root, payload };
   };
 }
+
+export function managerRoute(root: string) {
+  const directory = realpathSync(root),
+    manifest = json(readFileSync(join(directory, "package.json")));
+  assert.equal(manifest.name, "pnpm");
+  assert.equal(manifest.version, object(contract.adaptation).pnpm);
+  const relativeBin = typeof manifest.bin === "string" ? manifest.bin : object(manifest.bin).pnpm;
+  assert.equal(typeof relativeBin, "string");
+  const executable = realpathSync(safePath(directory, String(relativeBin)));
+  assert(lstatSync(executable).isFile());
+  return { directory, executable, manifest };
+}

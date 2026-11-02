@@ -95,7 +95,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           STARTUP_VERSION: ${{ inputs.version }}
           STARTUP_AUTHORITY: ${{ inputs.authority-blob }}
-        run: node tools/support/release/verify_published/vite_startup.ts "$STARTUP_VERSION" "$STARTUP_AUTHORITY" "$RUNNER_TEMP/vite-startup-manager/node_modules/pnpm/bin/pnpm.cjs"
+        run: node tools/support/release/verify_published/vite_startup.ts "$STARTUP_VERSION" "$STARTUP_AUTHORITY" "$RUNNER_TEMP/vite-startup-manager/node_modules/pnpm"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

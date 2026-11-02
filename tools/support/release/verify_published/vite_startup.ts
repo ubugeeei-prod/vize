@@ -4,6 +4,7 @@ import {
   hash,
   image,
   json,
+  managerRoute,
   object,
   packageAuthenticator,
   packageRoot,
@@ -77,6 +78,7 @@ export function collect(
     signal: result.signal,
     error: result.error?.name ?? null,
     pid: result.pid,
+    errorCode: result.error && "code" in result.error ? String(result.error.code) : null,
     stdout: { bytes: stdout.length, sha256: hash(stdout) },
     stderr: { bytes: stderr.length, sha256: hash(stderr) },
   };
@@ -197,10 +199,11 @@ export async function run() {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
   assert.equal(process.version, object(contract.adaptation).node);
-  const [version, blob, pnpmPath] = process.argv.slice(2);
+  const [version, blob, managerDirectory] = process.argv.slice(2);
   assert.equal(version, target.version);
   assert.equal(blob, target.authorityBlob);
-  assert(pnpmPath && isAbsolute(pnpmPath));
+  assert(managerDirectory && isAbsolute(managerDirectory));
+  let pnpmPath = managerDirectory;
   const temp = process.env.RUNNER_TEMP;
   assert(temp && isAbsolute(temp));
   const stamp = process.env.GITHUB_RUN_ID + "-" + process.env.GITHUB_RUN_ATTEMPT;
@@ -301,6 +304,33 @@ export async function run() {
     const fix = await github("compare/" + target.requiredFix + "..." + owned.producerSource);
     assert(["ahead", "identical"].includes(String(fix.status)));
     assert.equal(object(fix.base_commit).sha, target.requiredFix);
+    const authenticatePackage = packageAuthenticator(sri, observed, save);
+    const route = managerRoute(managerDirectory);
+    pnpmPath = route.executable;
+    const managerProject = dirname(dirname(route.directory));
+    await authenticatePackage(
+      managerProject,
+      "pnpm",
+      String(object(contract.adaptation).pnpm),
+      route.directory,
+    );
+    const exe = "@pnpm/exe.linux-x64";
+    assert.equal(
+      object(route.manifest.optionalDependencies)[exe],
+      object(contract.adaptation).pnpm,
+    );
+    await authenticatePackage(
+      managerProject,
+      exe,
+      String(object(contract.adaptation).pnpm),
+      packageRoot(managerProject, exe, join(route.directory, "package.json")),
+    );
+    save("manager-route", {
+      directory: route.directory,
+      executable: route.executable,
+      manifest: route.manifest,
+      selectedPackage: exe,
+    });
     const manager = execute("manager-version", projects, ["--version"]);
     assert.equal(manager.status, 0);
     assert.equal(manager.stderr, "");
@@ -315,14 +345,6 @@ export async function run() {
       writerIdentity: "UNKNOWN",
       originalHostReproduction: false,
     });
-    const authenticatePackage = packageAuthenticator(sri, observed, save);
-    const managerRoot = dirname(dirname(realpathSync(pnpmPath)));
-    await authenticatePackage(
-      dirname(dirname(managerRoot)),
-      "pnpm",
-      String(object(contract.adaptation).pnpm),
-      managerRoot,
-    );
     const observations: Array<{ issue: number; state: string; result: Result; cwd: string }> = [];
     for (const issue of [11375, 11376]) {
       const project = join(projects, String(issue));

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
 import test from "node:test";
@@ -252,4 +252,21 @@ test("published mode needs same-run contracts while the source job remains expli
   );
   assert(workflow.includes("uses: ./.github/workflows/full-source-cli.yml"));
   assert(workflow.includes("node --test tests/tooling/release/published-vite-startup.test.ts"));
+});
+
+test("pnpm12 manager executable follows its actual root bin declaration", async () => {
+  const { managerRoute } =
+    await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
+  const root = mkdtempSync(join(tmpdir(), "pnpm-declared-bin-"));
+  try {
+    writeFileSync(
+      join(root, "package.json"),
+      JSON.stringify({ name: "pnpm", version: "12.16.1", bin: { pnpm: "pnpm" } }),
+    );
+    writeFileSync(join(root, "pnpm"), "declared executable fixture");
+    assert.equal(managerRoute(root).executable, realpathSync(join(root, "pnpm")));
+    assert.throws(() => managerRoute(join(root, "bin/pnpm.cjs")));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
