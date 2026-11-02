@@ -125,7 +125,7 @@ pub(super) fn collect_component_prop_expression_ranges(
                     collector.borrow_mut().prepare_independent_reads(
                         summary,
                         bindings,
-                        &usage,
+                        usage,
                         prop,
                         reads,
                         value_start,
