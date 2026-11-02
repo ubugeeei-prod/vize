@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { nativeScopedCaptureRequired } from "../../tools/support/compat/github/native-scoped-capture.ts";
-import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
+import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.ts";
 import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
 import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
 

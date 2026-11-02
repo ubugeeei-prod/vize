@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { changedPaths, planSourceChecks } from "./plan-source-checks.ts";
 import { nativeSetupCaptureRequired } from "./native-setup-capture.mjs";
-import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
+import { nativeSsrCaptureRequired } from "./native-ssr-capture.ts";
 import { nativeScopedCaptureRequired } from "./native-scoped-capture.ts";
 import { nativeVaporCaptureRequired } from "./native-vapor-capture.mjs";
 import { nativeAttributeValues7502CaptureRequired } from "./native-attribute-values-7502-capture.mjs";
