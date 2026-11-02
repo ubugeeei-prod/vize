@@ -32,7 +32,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{RawJs, expr_source};
 use super::prefix::PrefixScope;
-use crate::pass::{SlotCarrier, SlotFacts, SlotName};
+use vize_l2::analysis::slot_facts::{SlotCarrier, SlotFacts, SlotName};
 
 /// First `v-slots="expr"` (no argument) on the component, matching
 /// `codegen/slots/detect.rs`. An argument spelling is a different

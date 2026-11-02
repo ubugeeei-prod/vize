@@ -1,6 +1,6 @@
 use vize_l2::op::ComponentOp;
 
-use crate::pass::SlotFacts;
+use vize_l2::analysis::slot_facts::SlotFacts;
 
 use super::super::js::RawJs;
 use super::super::{EmitCx, EmitError, builtin, create_slots, create_slots_walk, slots};

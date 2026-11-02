@@ -242,6 +242,15 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::native_cli_static_template_refs_keep_unused_and_shadow_diagnostics --exact --nocapture
+    - name: Test later implicit referenced-project inputs and Vue repair
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_TSCONFIG_REFERENCE_CAPTURE: ${{ runner.temp }}/native-syntax-semantics/tsconfig-reference-defaults-3984
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_tsconfig_mixed_project_graph_cli::default_reference::later_default_reference_checks_vue_template_and_repair --exact --nocapture
     - name: Test complete native diagnostic profiling and source repair
       shell: bash
       env:

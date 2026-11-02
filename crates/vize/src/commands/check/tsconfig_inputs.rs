@@ -190,7 +190,7 @@ fn collect_default_check_files_for_tsconfig(
         .unwrap_or_else(|| project_root.to_path_buf());
 
     let default_includes;
-    let includes: &[GlobSpec] = if !spec.has_includes && !spec.has_files && files.is_empty() {
+    let includes: &[GlobSpec] = if !spec.has_includes && !spec.has_files {
         default_includes = GlobSpec::include(&default_base_dir, "**/*")
             .into_iter()
             .collect::<Vec<_>>();

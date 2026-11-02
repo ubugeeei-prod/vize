@@ -283,15 +283,17 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     link_node_modules(root.path());
     let options = r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","types":[],"noEmit":true},"include":["Child.vue","Parent.vue"]}"#;
     let mut project = project(root.path(), options);
+    // Keep authored public exports distinct from the generated component Props.
+    // These real SFCs exercise declaration resolution through the same edge.
     register(
         &mut project,
         "Child.vue",
-        "<script lang=\"ts\">export interface Props { count: number }; export default {};</script><template />",
+        "<script lang=\"ts\">\nexport interface PublicCounterProps { count: number }\nexport default {};\n</script><template />",
     );
     register(
         &mut project,
         "Parent.vue",
-        "<script lang=\"ts\">export { default as Child } from './Child.vue'; export type { Props } from './Child.vue';</script><template />",
+        "<script lang=\"ts\">\nexport { default as Child } from './Child.vue';\nexport type { PublicCounterProps } from './Child.vue';\n</script><template />",
     );
     project.finalize_module_imports();
     project.materialize().unwrap();
@@ -364,7 +366,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         })
         .unwrap();
     let directory = parent.path.parent().unwrap();
-    let consumer_source = "import type { Props } from './Parent.vue.js'; export const wrong: Props = { count: 'wrong' };\n";
+    let consumer_source = "import type { PublicCounterProps } from './Parent.vue.js'; export const wrong: PublicCounterProps = { count: 'wrong' };\n";
     std::fs::write(directory.join("consumer.ts"), consumer_source).unwrap();
     let config = directory.join("tsconfig.consumer.json");
     std::fs::write(&config, r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","types":[],"noEmit":true},"files":["consumer.ts"]}"#).unwrap();
