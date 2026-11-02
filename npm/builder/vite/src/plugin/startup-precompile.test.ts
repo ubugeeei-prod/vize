@@ -27,11 +27,10 @@ void test("reported unimported SFC diagnostics defer in build and serve, imports
     const host = await startupHost(project.root, { plugins: vize({ configMode: false }) }, command);
     try {
       const start = await observeConsole(() => host.start());
-      const imports = await Promise.all(
-        [false, true].map((ssr) =>
-          observeConsole(() => host.load(project.file("src/Placeholder.vue"), ssr)),
-        ),
-      );
+      const imports = [
+        await observeConsole(() => host.load(project.file("src/Placeholder.vue"), false)),
+        await observeConsole(() => host.load(project.file("src/Placeholder.vue"), true)),
+      ];
       const app = await observeConsole(() => host.load(project.file("src/App.vue")));
       retainObservation(command, { fixture: project.fixture, start, imports, app });
       assert.equal(start.error, null);
@@ -51,11 +50,10 @@ void test("reported unimported SFC diagnostics defer in build and serve, imports
       assert.equal(app.error, null);
       assert.ok(app.value);
       fs.writeFileSync(project.file("src/Placeholder.vue"), repaired);
-      const repairedImports = await Promise.all(
-        [false, true].map((ssr) =>
-          observeConsole(() => host.load(project.file("src/Placeholder.vue"), ssr)),
-        ),
-      );
+      const repairedImports = [
+        await observeConsole(() => host.load(project.file("src/Placeholder.vue"), false)),
+        await observeConsole(() => host.load(project.file("src/Placeholder.vue"), true)),
+      ];
       retainObservation(`${command}-repair`, repairedImports);
       for (const imported of repairedImports) {
         assert.equal(imported.error, null);
