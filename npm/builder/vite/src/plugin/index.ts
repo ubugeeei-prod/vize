@@ -14,7 +14,7 @@ import {
   normalizePrecompileBatchSize,
 } from "./state.ts";
 import { CompiledModuleCache } from "./compiled-module-cache.ts";
-import { compileAll } from "./precompile-run.ts";
+import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
@@ -266,10 +266,15 @@ export function vize(
         // opted into on-demand compilation. Skip pre-compilation.
         return;
       }
-      await compileAll(
-        { ...state, extractCss: shouldExtractCssForBuild(state, this) },
-        precompileInputOwners(this, precompileConfig),
-      );
+      try {
+        await compileAll(
+          { ...state, extractCss: shouldExtractCssForBuild(state, this) },
+          precompileInputOwners(this, precompileConfig),
+        );
+      } catch (error) {
+        if (!(error instanceof PrecompileDiagnosticsError)) throw error;
+        state.logger.warn(`${error.message}\nStartup scan diagnostics are deferred until import.`);
+      }
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 

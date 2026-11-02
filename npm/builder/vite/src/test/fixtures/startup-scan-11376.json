@@ -1,0 +1,38 @@
+{
+  "issue": 11376,
+  "scope": "Exact reported project text; source-host tests use the current workspace provider, not the reported installed release",
+  "reportFileSha256": "aeff959d734e79f2719b157ff773d3bfcad542649d2aa1363f625a64455468c8",
+  "reportBodySha256": "e6fe426315619af3916d307a1b0edf1336f9edade01a36436b06458553952d61",
+  "fencesFileSha256": "a640774cc0f42bd71bd86dee014ba82e459c25ffc1e1955605f46fbfeb4028d7",
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"@vizejs/vite-plugin\": \"0.641.0\",\n    \"vite\": \"npm:@voidzero-dev/vite-plus-core@1.4.0\",\n    \"vite-plus\": \"1.4.0\",\n    \"vize\": \"0.641.0\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+    },
+    {
+      "path": "vite.config.ts",
+      "source": "import { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({}).withVue({\n  files: [\"src/**/*.vue\"],\n  ignores: [\"src/Ignored.vue\"],\n});\n"
+    },
+    {
+      "path": "index.html",
+      "source": "<!doctype html>\n<div id=\"app\"></div>\n<script type=\"module\" src=\"/src/main.ts\"></script>\n"
+    },
+    {
+      "path": "src/main.ts",
+      "source": "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\ncreateApp(App).mount(\"#app\");\n"
+    },
+    {
+      "path": "src/App.vue",
+      "source": "<template>\n  <p>hello</p>\n</template>\n"
+    },
+    {
+      "path": "src/Ignored.vue",
+      "source": "<template>\n  <p>ignored</p>\n</template>\n"
+    },
+    {
+      "path": "other/Outside.vue",
+      "source": "<template>\n  <p>outside</p>\n</template>\n"
+    }
+  ],
+  "reportedCommands": "pnpm install\npnpm exec vp build\n"
+}
