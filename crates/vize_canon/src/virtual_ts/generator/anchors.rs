@@ -149,6 +149,11 @@ fn emit_setup_binding_anchors(
                 // `keyof typeof` consumes the permitted type query without asserting
                 // directly to the enum object type, which TypeScript also rejects.
                 append!(*ts, "void (null as unknown as keyof typeof {name});");
+            } else if kind == Some(BindingType::SetupLet) {
+                // The template IIFE shares setup's flow: a value read of a
+                // `let` assigned only in callbacks is TS2454. A type query
+                // still marks it used without asserting definite assignment.
+                append!(*ts, "void (null as unknown as typeof {name});");
             } else {
                 append!(*ts, "void {name};");
             }
@@ -339,6 +344,41 @@ const state = ref(State.Idle);"#;
         assert_eq!(
             anchors.as_str(),
             "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as keyof typeof State); void (null as unknown as keyof typeof ref); void state;\n"
+        );
+    }
+
+    #[test]
+    fn let_anchors_use_type_queries_without_asserting_definite_assignment() {
+        // misskey MkMediaAudio: `let stop: () => void` is assigned only in a
+        // callback, so a value read in the template IIFE is TS2454.
+        let script = r#"import { onMounted } from 'vue';
+let stop: () => void;
+let count = 0;
+const label = 'a';
+onMounted(() => { stop = () => {}; count++; });"#;
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+        assert_eq!(parsed.diagnostics.len(), 0);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+        let usage = super::super::imports::collect_identifier_usage(&parsed.program);
+        let imports =
+            super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
+        let mut anchors = String::default();
+        super::emit_setup_binding_anchors(
+            &mut anchors,
+            &summary,
+            &imports,
+            &usage,
+            None,
+            &Default::default(),
+            "Reference setup bindings (used in template/CSS v-bind)",
+        );
+
+        assert_eq!(
+            anchors.as_str(),
+            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as typeof count); void label; void (null as unknown as keyof typeof onMounted); void (null as unknown as typeof stop);\n"
         );
     }
 }

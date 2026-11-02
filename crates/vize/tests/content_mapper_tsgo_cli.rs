@@ -19,6 +19,7 @@ mod global_component_listener_11373;
 mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;
+mod let_anchor_assignment;
 mod long_prop_kebab_case;
 mod nested_callback_11361;
 mod optional_prop_spacing;
