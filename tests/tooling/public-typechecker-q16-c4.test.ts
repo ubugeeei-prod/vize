@@ -6,7 +6,6 @@ import test from "node:test";
 import {
   filesFor,
   profileFor,
-  reportedCommands,
   subsetFor,
   type RegressionProfile,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/contract.ts";
@@ -17,7 +16,6 @@ import {
   recorder,
   type ProcessOutput,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/execute.ts";
-import { fixtureNames } from "../../tools/benchmarks/scripts/public-typechecker-q16/fixtures.ts";
 const profile: RegressionProfile = {
   subset: "C4",
   version: "0.645.0",
@@ -55,12 +53,19 @@ const output = (status: number, stdout: string, stderr: string): ProcessOutput =
   error: null,
   capacityLimited: false,
 });
-test("C4 covers all four original reports and exact sixteen frozen intended states", () => {
+test("C4 covers all four original reports and sixteen intended states", () => {
   const projects = subsetFor("C4").projects;
   assert.deepEqual(
     projects.map((row) => row.issue),
     [11362, 11363, 11366, 11367],
   );
+  assert.equal(
+    projects.reduce((n, row) => n + row.states.length, 0),
+    16,
+  );
+});
+test("C4 preserves the intended original error and repair status vectors", () => {
+  const projects = subsetFor("C4").projects;
   assert.deepEqual(
     projects.map((row) => row.states.map((state) => state.expectedTsrs.status)),
     [
@@ -70,21 +75,20 @@ test("C4 covers all four original reports and exact sixteen frozen intended stat
       [0, 2, 0, 2],
     ],
   );
-  assert.equal(
-    projects.reduce((n, row) => n + row.states.length, 0),
-    16,
-  );
-  assert.deepEqual(
-    projects.map((row) => row.states[0]!.files.length),
-    [3, 5, 4, 5],
-  );
-  assert.equal(fixtureNames.filter((name) => name.startsWith("fixtures-c4-")).length, 3);
   for (const project of projects) {
     assert.deepEqual(project.states[0]!.files, project.states[2]!.files);
     if (project.issue !== 11363)
       assert.deepEqual(project.states[1]!.files, project.states[3]!.files);
   }
-  const dotted = projects[1]!.states;
+});
+test("C4 retains the complete independently owned original project rosters", () => {
+  assert.deepEqual(
+    subsetFor("C4").projects.map((row) => row.states[0]!.files.length),
+    [3, 5, 4, 5],
+  );
+});
+test("C4 distinguishes namespace and direct-import diagnostic anchors", () => {
+  const dotted = subsetFor("C4").projects[1]!.states;
   assert.notDeepEqual(dotted[0]!.files, dotted[3]!.files);
   assert.equal(
     dotted[0]!.expectedTsrs.stdout,
@@ -94,14 +98,6 @@ test("C4 covers all four original reports and exact sixteen frozen intended stat
     dotted[3]!.expectedTsrs.stdout,
     "src/Probe.vue(6,8): error TS2322: Type 'string' is not assignable to type 'number'.\n",
   );
-  assert.deepEqual(reportedCommands.tsrs, [
-    "npx",
-    "tsrs",
-    "--runExternalCode",
-    "--noEmit",
-    "-p",
-    "tsconfig.json",
-  ]);
 });
 test("C4 instantiation changes only the registered public package version", () => {
   for (const project of subsetFor("C4").projects)

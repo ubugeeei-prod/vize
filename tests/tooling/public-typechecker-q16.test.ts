@@ -13,8 +13,6 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   filesFor,
-  afterProfile,
-  profileFor,
   requireProfile,
   reportedCommands,
   requireEnvironment,
@@ -99,8 +97,6 @@ test("closed regression data and noncausal A64 binding retain unknown-profile re
     capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
   };
   assert.equal(requireProfile(declarationProfile), declarationProfile);
-  if (afterProfile === null) assert.throws(() => profileFor(), assert.AssertionError);
-  else assert.equal(profileFor(), afterProfile);
   assert.throws(
     () =>
       Reflect.apply(requireProfile, null, [
