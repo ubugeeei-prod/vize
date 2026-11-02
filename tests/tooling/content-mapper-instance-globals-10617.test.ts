@@ -19,6 +19,7 @@ import {
 } from "./support/content-mapper-instance-globals-geometry-10617.ts";
 import { runRewriteProfileControls } from "./support/content-mapper-instance-globals-profiles-10617.ts";
 import { createInstanceGlobalsProcessLog } from "./support/content-mapper-instance-globals-process-log-10617.ts";
+import { createTs59ContextReferences } from "./support/content-mapper-instance-globals-context-reference-10617.ts";
 import {
   admitAdditionalHosts,
   assertHostCase,
@@ -217,6 +218,8 @@ await test(
         entry: (typeof cases)[number];
       }> = [];
       let id = 3;
+      const ts59Context = createTs59ContextReferences();
+      const contextReferences: Array<{ label: string; process: string; inputSha256: string }> = [];
       for (const [variant, newline, unicode] of [
         ["lf", "\n", false],
         ["crlf-unicode", "\r\n", true],
@@ -238,12 +241,27 @@ await test(
             ["--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
             source,
           );
-          const independent = run(
-            `${label}/independent-5.9-context`,
-            process.execPath,
-            [ts5, "--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
-            source,
+          const contextInput = {
+            command: process.execPath,
+            args: [ts5, "--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
+            cwd: source,
+            config: fs.readFileSync(path.join(source, "oracle.tsconfig.json"), "utf8"),
+            globals: fs.readFileSync(path.join(source, "src/globals.d.ts"), "utf8"),
+            context: fs.readFileSync(path.join(source, "oracle/Context.ts"), "utf8"),
+          };
+          const independent = ts59Context(entry.id, contextInput, () =>
+            run(
+              `${label}/independent-5.9-context`,
+              contextInput.command,
+              contextInput.args,
+              source,
+            ),
           );
+          contextReferences.push({
+            label,
+            process: independent.label,
+            inputSha256: sha(JSON.stringify(contextInput)),
+          });
           const before = run(
             `${label}/published-official-host`,
             host,
@@ -411,6 +429,10 @@ await test(
           });
         }
       }
+      fs.writeFileSync(
+        path.join(output, "independent-context-references.json"),
+        `${JSON.stringify(contextReferences, null, 2)}\n`,
+      );
       checks.push(
         ...runRewriteProfileControls(files, cases, source, output, binary, host, ts5, run),
       );
