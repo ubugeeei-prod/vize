@@ -33,6 +33,11 @@ import { compileScopedBatch } from "./precompile-scopes.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
 
+/** Known SFC diagnostics from speculative startup compilation, without I/O failures. */
+export class PrecompileDiagnosticsError extends Error {
+  override name = "PrecompileDiagnosticsError";
+}
+
 /**
  * The options the pre-compile batch actually compiles with.
  *
@@ -139,6 +144,7 @@ export async function compileAll(
   let successCount = 0;
   let restoredCount = 0;
   let failedCount = 0;
+  let hasReadFailure = false;
   let nativeTimeMs = 0;
   const precompileFailures: string[] = [];
   const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize, {
@@ -154,10 +160,10 @@ export async function compileAll(
         source = fs.readFileSync(file, "utf-8");
       } catch (e) {
         failedCount++;
+        hasReadFailure = true;
         state.cache.delete(file);
-        if (state.extractCss) {
-          state.collectedCss.delete(file);
-        }
+        state.ssrCache.delete(file);
+        state.collectedCss.delete(file);
         state.precompileMetadata.delete(file);
         cache.delete(file);
         precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
@@ -223,9 +229,8 @@ export async function compileAll(
 
       if (fileResult.errors.length > 0) {
         state.cache.delete(fileResult.path);
-        if (state.extractCss) {
-          state.collectedCss.delete(fileResult.path);
-        }
+        state.ssrCache.delete(fileResult.path);
+        state.collectedCss.delete(fileResult.path);
         state.precompileMetadata.delete(fileResult.path);
         cache.delete(fileResult.path);
         precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
@@ -270,7 +275,9 @@ export async function compileAll(
 
   if (failedCount > 0) {
     const details = precompileFailures.length > 0 ? `\n\n${precompileFailures.join("\n\n")}` : "";
-    throw new Error(`[vize] Pre-compilation failed for ${failedCount} file(s).${details}`);
+    const message = `[vize] Pre-compilation failed for ${failedCount} file(s).${details}`;
+    if (hasReadFailure) throw new Error(message);
+    throw new PrecompileDiagnosticsError(message);
   }
 }
 

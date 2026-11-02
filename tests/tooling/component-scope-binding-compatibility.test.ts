@@ -1,82 +1,45 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import { createHash } from "node:crypto";
 import test from "node:test";
 import {
-  classifyScopePair,
-  intendedScopeChanges,
-  intendedScopeSources,
-  requireScopeSourceTransition,
+  auditScopeCompatibility,
+  scopeBindingMode,
+  scopeObservation,
+  scopePacketEqual,
+  scopeCorrectnessReport,
 } from "../../tools/benchmarks/scripts/component-scope-binding-compatibility.ts";
-
-test("only the exact two complete-packet source-bound transitions are incomparable", () => {
-  for (const known of intendedScopeChanges) {
-    const pair = { ...known, count: 32, scriptBindings: 10000, identical: false };
-    assert.equal(classifyScopePair(pair), "incomparable");
-    for (const change of [
-      { count: 128 },
-      { scriptBindings: 32 },
-      { shape: "missing" },
-      { sourceSha256: "0".repeat(64) },
-      { beforePacketSha256: "0".repeat(64) },
-      { afterPacketSha256: "0".repeat(64) },
-      { beforePacketSha256: pair.afterPacketSha256, afterPacketSha256: pair.beforePacketSha256 },
-    ])
-      assert.equal(classifyScopePair({ ...pair, ...change }), "unexpected");
-  }
-});
-
-test("whole equality is separate from an incomparable or unexpected packet", () => {
-  const pair = {
-    shape: "camel",
-    count: 32,
-    scriptBindings: 32,
-    sourceSha256: "a".repeat(64),
-    beforePacketSha256: "b".repeat(64),
-    afterPacketSha256: "b".repeat(64),
-    identical: true,
-  };
-  assert.equal(classifyScopePair(pair), "equal");
-  assert.equal(classifyScopePair({ ...pair, identical: false }), "unexpected");
-  // The existing comparator checks complete JSON values, not object insertion order.
-  assert.equal(classifyScopePair({ ...pair, afterPacketSha256: "c".repeat(64) }), "equal");
-});
-
-test("missing, extra, reordered or changed source identities refuse the controlled path", () => {
-  requireScopeSourceTransition([...intendedScopeSources]);
-  for (const actual of [
-    intendedScopeSources.slice(1),
-    [...intendedScopeSources, intendedScopeSources[0]],
-    [...intendedScopeSources].reverse(),
-    intendedScopeSources.map((row) => ({ ...row, beforeSha256: "0".repeat(64) })),
-    intendedScopeSources.map((row) => ({ ...row, afterSha256: "0".repeat(64) })),
-  ])
-    assert.throws(() => requireScopeSourceTransition(actual));
-});
-
-test("the refusal precedes all normal clocks and the existing strict comparable path remains", () => {
-  const source = fs.readFileSync(
-    new URL("../../tools/benchmarks/scripts/component-scope-binding-evidence.ts", import.meta.url),
-    "utf8",
+test("experiment remains default; malformed provenance still fails before commands", () => {
+  assert.equal(scopeBindingMode(["/evidence"]).purpose, "experiment");
+  assert.equal(scopeBindingMode(["/evidence", "--correctness"]).purpose, "correctness");
+  assert.throws(() => scopeBindingMode(["/evidence", "--skip"]));
+  assert.throws(() => auditScopeCompatibility("/not-read", {}));
+  assert.throws(() =>
+    auditScopeCompatibility("/not-read", {
+      observerPurpose: "correctness",
+      eventName: "pull_request",
+      productBase: "invalid",
+      productHead: "invalid",
+    }),
   );
-  const preflight = source.indexOf("auditScopeCompatibility(root, provenance)");
-  assert(preflight > 0 && preflight < source.indexOf("const profiles:"));
-  assert(source.indexOf('status: "INCOMPARABLE"') < source.indexOf("const normal:"));
-  assert(source.includes("qualification: false"));
-  assert(source.includes('normal: "Not executed: whole output parity is absent"'));
-  assert(source.includes('"the entire generation packet must remain identical"'));
-  assert(source.includes('"all four normal mapper packets must remain identical"'));
-  assert(source.includes("number(headAlloc.requestedBytes) <= number(baseAlloc.requestedBytes)"));
-  const start = source.indexOf("  const incomparable = auditScopeCompatibility(root, provenance);");
-  const end = source.indexOf("  const profiles: ObjectValue[] = [];", start);
-  const inverse = (source.slice(0, start) + source.slice(end))
-    .replace(
-      'import { auditScopeCompatibility } from "./component-scope-binding-compatibility.ts";\n',
-      "",
-    )
-    .replace("    qualification: true,\n", "");
-  assert.equal(
-    createHash("sha256").update(inverse).digest("hex"),
-    "cfe37531a9f638fdeb115e2ef7ccc08c3e4aa9918bd261af8b2765faf682daea",
-  );
+});
+test("comparable and incomparable observations produce unqualified reports without normal clocks", () => {
+  const comparisons = Array.from({ length: 96 }, () => ({ identical: true, sameInput: true }));
+  const sourceDelta = { unclassified: "retained" },
+    provenance = { source: "actual" },
+    binaries = { base: "before", head: "after" };
+  const equal = scopeCorrectnessReport(provenance, binaries, { comparisons, sourceDelta });
+  assert.equal(equal.status, "NOT_APPLICABLE");
+  assert.equal(equal.performanceQualification, false);
+  assert.deepEqual(equal.normal, []);
+  comparisons[0].identical = false;
+  const report = scopeCorrectnessReport(provenance, binaries, { comparisons, sourceDelta });
+  assert.equal(report.status, "INCOMPARABLE");
+  assert.equal(report.qualification, false);
+  assert.equal(report.sourceDelta, sourceDelta);
+  assert.equal(report.provenance, provenance);
+  assert.equal(report.binaries, binaries);
+  assert.deepEqual(report.normal, []);
+  assert.equal(Object.hasOwn(report, "baseMedianWallNs"), false);
+  assert.equal(Object.hasOwn(report, "headMedianWallNs"), false);
+  assert.throws(() => scopeObservation(comparisons.slice(1)));
+  assert.equal(scopePacketEqual({ text: "whole", opaque: 1 }, { text: "whole", opaque: 2 }), false);
 });

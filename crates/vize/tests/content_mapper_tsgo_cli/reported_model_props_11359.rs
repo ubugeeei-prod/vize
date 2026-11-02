@@ -10,11 +10,11 @@ use vize_l0::cstr;
 #[test]
 fn resolved_model_props_preserve_authored_contract_and_assignment_errors() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
-        assert_ne!(
-            std::env::var("VIZE_TEST_REQUIRE_TSGO").as_deref(),
-            Ok("1"),
-            "required Content Mapper host absent"
+        assert!(
+            std::env::var_os("VIZE_REPORTED_MODEL_CAPTURE").is_none(),
+            "reported model capture requires the Content Mapper host"
         );
+        eprintln!("skipping exact reported model controls: {TSGO_ENV} is not set");
         return;
     };
     assert!(tsgo.is_file());

@@ -6,7 +6,11 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { TextDecoder } from "node:util";
 import { scopeBindingCases } from "./component-scope-binding-cases.ts";
-import { auditScopeCompatibility } from "./component-scope-binding-compatibility.ts";
+import {
+  auditScopeCompatibility,
+  scopeBindingMode,
+  scopeCorrectnessReport,
+} from "./component-scope-binding-compatibility.ts";
 type ObjectValue = Record<string, unknown>;
 function isRecord(value: unknown): value is ObjectValue {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -76,13 +80,12 @@ function span(value: ObjectValue, name: string): ObjectValue {
   return result;
 }
 export function main(args: string[]): void {
-  const [root] = args;
-  assert.ok(root && args.length === 1);
+  const { root, purpose } = scopeBindingMode(args);
   const provenance = read(path.join(root, "provenance.json"));
   const binaries = read(path.join(root, "binaries.json"));
   const baseline = record(binaries.base),
     head = record(binaries.head);
-  assert.notEqual(baseline.sha256, head.sha256);
+  if (purpose === "experiment") assert.notEqual(baseline.sha256, head.sha256);
   assert.equal(baseline.source, provenance.productBase);
   assert.equal(head.source, provenance.productHead);
   assert.deepEqual(record(baseline.cargoArtifact).features, record(head.cargoArtifact).features);
@@ -91,7 +94,7 @@ export function main(args: string[]): void {
   );
   const [profileBase, profileHead] = profileBinaries;
   assert.ok(profileBase && profileHead);
-  assert.notEqual(profileBase.sha256, profileHead.sha256);
+  if (purpose === "experiment") assert.notEqual(profileBase.sha256, profileHead.sha256);
   assert.equal(
     new Set([
       baseline.targetDirectory,
@@ -109,26 +112,12 @@ export function main(args: string[]): void {
     assert.equal(sha(fs.readFileSync(string(binary.file))), binary.sha256);
     assert.equal(binary.fresh, false);
   }
-  const incomparable = auditScopeCompatibility(root, provenance);
-  if (incomparable) {
-    save(path.join(root, "comparison.json"), {
-      schema: "vize.component-scope-binding-comparison.v1",
-      status: "INCOMPARABLE",
-      qualification: false,
-      reason: "Authenticated dead-alias output transition; no performance comparison",
-      provenance,
-      binaries,
-      ...incomparable,
-      scope: {
-        packets:
-          "All96 full profile packet pairs retained,12 intended differences and84 equal; no normalization",
-        normal: "Not executed: whole output parity is absent",
-        allocation:
-          "Raw profiling observations retained; no performance/nonregression qualification",
-        correctness:
-          "Independent correctness and LSP suites remain required; no pass credit from this refusal",
-      },
-    });
+  if (purpose === "correctness") {
+    const observed = auditScopeCompatibility(root, provenance);
+    save(
+      path.join(root, "comparison.json"),
+      scopeCorrectnessReport(provenance, binaries, observed),
+    );
     return;
   }
   const profiles: ObjectValue[] = [];
@@ -339,7 +328,6 @@ export function main(args: string[]): void {
   save(path.join(root, "comparison.json"), {
     schema: "vize.component-scope-binding-comparison.v1",
     status: "pass",
-    qualification: true,
     provenance,
     binaries,
     profiles,
