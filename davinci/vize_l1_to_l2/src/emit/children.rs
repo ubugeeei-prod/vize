@@ -7,6 +7,7 @@ pub(super) use slot_compound::emit_slot_compound_parts;
 pub(super) use slot_text::{emit_slot_text_child, emit_slot_text_run};
 use vize_l0::Span;
 use vize_l0::id::NodeId;
+use vize_l2::analysis::text_facts::TextPart;
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_l2::op::{CommentOp, InterpolationOp, Op, Region};
 
@@ -16,7 +17,6 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
 use super::prefix::Site;
-use crate::lower::TextPart;
 
 pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
     let mut first = true;
