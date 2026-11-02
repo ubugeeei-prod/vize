@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { useBox } from "./useBox";
+
+const plain = ref<HTMLDivElement | null>(null);
+const [fromComposable] = useBox();
+</script>
+
+<template>
+  <div ref="plain">a</div>
+  <div ref="fromComposable">b</div>
+</template>

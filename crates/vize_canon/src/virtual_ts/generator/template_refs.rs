@@ -1,6 +1,7 @@
 mod auto_imports;
 mod deferred_bindings;
 mod narrowed_bindings;
+mod static_runtime_reads;
 
 use std::ops::Range;
 
@@ -12,6 +13,20 @@ use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
+
+/// Setup-side template artifacts are emitted before the template closure owns
+/// any same-spelled local. Keep the caller's existing root-type phase intact.
+pub(super) fn emit_setup_artifacts(
+    ts: &mut String,
+    summary: &Croquis,
+    (options, generation): (&VirtualTsOptions, VirtualTsGenerationOptions<'_>),
+    type_only_names: &FxHashSet<String>,
+    root: Option<&vize_relief::RootNode<'_>>,
+    checks: super::super::types::VirtualTsCheckOptions,
+) -> bool {
+    static_runtime_reads::emit(ts, summary, root, generation);
+    super::root_element::emit_setup_type(ts, summary, options, type_only_names, root, checks)
+}
 
 /// `__U` for a binding the template narrows: `vue-tsc` asserts it as
 /// `NonNullable<T> & Ref & { value: Unwrapped<T> }` and reads `.value`, so a
