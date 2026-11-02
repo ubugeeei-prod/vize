@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use sha2::{Digest, Sha256};
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{String, ToCompactString, cstr, line_index::LineBreaks};
 
 use super::{CHILD, packet, project, register};
 use crate::batch::virtual_project::VirtualProject;
@@ -85,21 +85,24 @@ fn native_image(native: &Path) -> serde_json::Value {
         "bytes":bytes.len(),"sha256":digest})
 }
 
-fn diagnostic_file_ids(text: &str, config: &Path) -> Vec<PathBuf> {
-    text.lines()
-        .map(|line| {
-            let (file, _) = line
-                .split_once('(')
-                .expect("every native output line is a diagnostic");
-            let file = Path::new(file);
-            let path = if file.is_absolute() {
-                file.to_path_buf()
-            } else {
-                config.parent().unwrap().join(file)
-            };
-            crate::batch::virtual_project::tsconfig_paths::normalize_path_lexically(&path)
-        })
-        .collect()
+fn expected_diagnostic(
+    config: &Path,
+    file: &Path,
+    source: &str,
+    needle: &str,
+    code: u32,
+    message: &str,
+) -> String {
+    assert_eq!(source.matches(needle).count(), 1);
+    let offset = source.find(needle).unwrap();
+    let (line, column) = LineBreaks::Lsp.offset_to_position(source, offset);
+    let relative = file.strip_prefix(config.parent().unwrap()).unwrap();
+    cstr!(
+        "{}({},{}): error TS{code}: {message}\n",
+        relative.display(),
+        line + 1,
+        column + 1
+    )
 }
 
 fn link_node_modules(root: &Path) {
@@ -162,7 +165,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         register(&mut project, "Child.vue", CHILD);
         let good = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child :count=\"1\" /></template>";
         let bad = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child count=\"wrong\" /></template>";
-        for (phase, source, expected) in [("clean", good, 0), ("prop-error", bad, 1)] {
+        for (phase, source, wrong_prop) in [("clean", good, false), ("prop-error", bad, true)] {
             register(&mut project, "Parent.vue", source);
             let before = packet(&project, "Parent.vue");
             project.finalize_module_imports();
@@ -187,27 +190,42 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
             let text = std::str::from_utf8(&output.stdout).unwrap();
             assert_eq!(
                 output.status.code(),
-                Some(if expected == 0 { 0 } else { 2 }),
+                Some(if wrong_prop { 1 } else { 0 }),
                 "{text}"
             );
             assert!(output.stderr.is_empty());
-            assert_eq!(text.matches("error TS2322:").count(), expected, "{text}");
-            assert_eq!(text.matches("error TS").count(), expected, "{text}");
-            let expected_files = if expected == 0 {
-                Vec::new()
+            let expected_stdout = if wrong_prop {
+                let parent = project
+                    .find_by_original(&root.path().join("Parent.vue"))
+                    .unwrap();
+                let config = project.generated_tsconfig_path();
+                let message = "Type 'string' is not assignable to type 'number'.";
+                // These are distinct producer-owned checks: the value annotation
+                // and the whole-props checker. Keep both complete diagnostics.
+                let mut expected = expected_diagnostic(
+                    &config,
+                    &parent.virtual_path,
+                    &parent.content,
+                    "__vize_prop_check_0_count:",
+                    2322,
+                    message,
+                );
+                expected.push_str(
+                    expected_diagnostic(
+                        &config,
+                        &parent.virtual_path,
+                        &parent.content,
+                        r#""count": "wrong""#,
+                        2322,
+                        message,
+                    )
+                    .as_str(),
+                );
+                expected
             } else {
-                vec![
-                    project
-                        .find_by_original(&root.path().join("Parent.vue"))
-                        .unwrap()
-                        .virtual_path
-                        .clone(),
-                ]
+                String::new()
             };
-            assert_eq!(
-                diagnostic_file_ids(text, &project.generated_tsconfig_path()),
-                expected_files
-            );
+            assert_eq!(text, expected_stdout.as_str());
         }
         register(&mut project, "Parent.vue", good);
         register(&mut project, "plain.ts", "export const value = 1;\n");
@@ -227,20 +245,32 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
             &phase,
         );
         let text = std::str::from_utf8(&output.stdout).unwrap();
-        assert_eq!(output.status.code(), Some(2), "{text}");
+        assert_eq!(output.status.code(), Some(1), "{text}");
         assert!(output.stderr.is_empty());
-        assert_eq!(text.matches("error TS5097:").count(), 1, "{text}");
-        assert_eq!(text.matches("error TS2322:").count(), 1, "{text}");
-        assert_eq!(text.matches("error TS").count(), 2, "{text}");
-        let authored_file = project
+        let authored = project
             .find_by_original(&root.path().join("authored.ts"))
-            .unwrap()
-            .virtual_path
-            .clone();
-        assert_eq!(
-            diagnostic_file_ids(text, &project.generated_tsconfig_path()),
-            [authored_file.clone(), authored_file]
+            .unwrap();
+        let config = project.generated_tsconfig_path();
+        let mut expected = expected_diagnostic(
+            &config,
+            &authored.virtual_path,
+            &authored.content,
+            "'./plain.ts'",
+            5097,
+            "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.",
         );
+        expected.push_str(
+            expected_diagnostic(
+                &config,
+                &authored.virtual_path,
+                &authored.content,
+                "wrong: string",
+                2322,
+                "Type 'number' is not assignable to type 'string'.",
+            )
+            .as_str(),
+        );
+        assert_eq!(text, expected.as_str());
         assert_eq!(
             std::fs::read_to_string(root.path().join("authored.ts")).unwrap(),
             "import { value } from './plain.ts'; export const wrong: string = value;\n"
@@ -293,7 +323,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
     let text = std::str::from_utf8(&output.stdout).unwrap();
     assert_eq!(output.status.code(), Some(0), "{text}");
     assert!(output.stderr.is_empty());
-    assert_eq!(text.matches("error TS").count(), 0, "{text}");
+    assert_eq!(text, "");
     assert!(direct_outputs.iter().all(|(present, _)| *present));
 
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
@@ -334,24 +364,28 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         })
         .unwrap();
     let directory = parent.path.parent().unwrap();
-    std::fs::write(directory.join("consumer.ts"), "import type { Props } from './Parent.vue.js'; export const wrong: Props = { count: 'wrong' };\n").unwrap();
+    let consumer_source = "import type { Props } from './Parent.vue.js'; export const wrong: Props = { count: 'wrong' };\n";
+    std::fs::write(directory.join("consumer.ts"), consumer_source).unwrap();
     let config = directory.join("tsconfig.consumer.json");
     std::fs::write(&config, r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","types":[],"noEmit":true},"files":["consumer.ts"]}"#).unwrap();
     save(
         &capture,
         "declaration-inputs-and-outputs.json",
-        serde_json::json!({"files":checker.virtual_files().into_iter().map(|file|serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,"code":file.content,"map":cstr!("{:?}",file.source_map)})).collect::<Vec<_>>(),"outputs":emitted.files.iter().map(|file|serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()}),
+        serde_json::json!({"consumer":{"path":directory.join("consumer.ts"),"source":consumer_source},"files":checker.virtual_files().into_iter().map(|file|serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,"code":file.content,"map":cstr!("{:?}",file.source_map)})).collect::<Vec<_>>(),"outputs":emitted.files.iter().map(|file|serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()}),
     );
     let output = native_check(&native, &config, &capture, "declaration-consumer");
     let text = std::str::from_utf8(&output.stdout).unwrap();
-    assert_eq!(output.status.code(), Some(2), "{text}");
+    assert_eq!(output.status.code(), Some(1), "{text}");
     assert!(output.stderr.is_empty());
-    assert_eq!(text.matches("error TS2322:").count(), 1, "{text}");
-    assert_eq!(text.matches("error TS").count(), 1, "{text}");
-    assert_eq!(
-        diagnostic_file_ids(text, &config),
-        [directory.join("consumer.ts")]
+    let expected = expected_diagnostic(
+        &config,
+        &directory.join("consumer.ts"),
+        consumer_source,
+        "count: 'wrong'",
+        2322,
+        "Type 'string' is not assignable to type 'number'.",
     );
+    assert_eq!(text, expected.as_str());
     let after = native_image(&native);
     save(&capture, "provider-after.json", after.clone());
     assert_eq!(after, before);
