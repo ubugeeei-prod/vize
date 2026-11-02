@@ -65,7 +65,7 @@ pub(super) fn collect_component_prop_expression_ranges(
         .iter()
         .map(|name| name.as_str())
         .collect();
-    let usages = vize_croquis::facts::component_usage_list(summary);
+    let usages = vize_croquis::facts::component_usage_slice(summary);
     if usages.is_empty() {
         return plan;
     }
@@ -77,7 +77,7 @@ pub(super) fn collect_component_prop_expression_ranges(
         for usage in usages {
             let has_checkable_binding = component_usage_has_checkable_binding(
                 bindings,
-                &usage,
+                usage,
                 &external_template_bindings,
                 options.component_binding_check,
                 options.legacy_vue2,
@@ -87,13 +87,13 @@ pub(super) fn collect_component_prop_expression_ranges(
                 continue;
             }
             let legacy_external = options.legacy_vue2
-                && !has_script_binding(bindings, &usage)
+                && !has_script_binding(bindings, usage)
                 && component_name_matches_external_template_binding(
                     usage.name.as_str(),
                     &external_template_bindings,
                 );
             if let Some(collector) = options.diagnostic_ownership {
-                refuse_ambiguous_prop_spans(collector, &usage);
+                refuse_ambiguous_prop_spans(collector, usage);
             }
             for spread in &usage.spread_props {
                 // The generic props call checks the entire bag and owns its precise
@@ -113,12 +113,12 @@ pub(super) fn collect_component_prop_expression_ranges(
             for prop in &usage.props {
                 if unproven.contains(&(prop.start, prop.end))
                     && let Some(collector) = options.diagnostic_ownership
-                    && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
+                    && let Some(owner) = InputOwner::for_expected_projection(usage, prop)
                 {
                     collector.borrow_mut().refuse_owner(owner);
                 }
                 if options.diagnostic_ownership.is_some()
-                    && let Some(owner) = InputOwner::for_prop(&usage, prop)
+                    && let Some(owner) = InputOwner::for_prop(usage, prop)
                     && let Some(value) = source.value_source_range(prop)
                     && positions.contains(&(usage.scope_id.as_u32(), value.start, value.end))
                 {
