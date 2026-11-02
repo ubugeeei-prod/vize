@@ -4,6 +4,7 @@ use super::{
     reserved_props::{map_rewritten_template_binding, rewrite_reserved_template_binding},
     ts_suppression_comments::expression_source_for_typecheck,
 };
+use crate::virtual_ts::scope::{append_chained_vif_condition_open, append_chained_vif_guard_close};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{VizeMapping, helpers::generated_text_range};
 use vize_carton::{String, append, profile};
@@ -45,9 +46,21 @@ pub(super) fn generate_vif_guard_expression(
         generated_guard
     };
 
-    let gen_stmt_start = ts.len();
-    append!(*ts, "{indent}if ({generated_guard}) {{\n");
-    let gen_stmt_end = ts.len();
+    // Fold the enclosing levels into the surrounding guard chain; only the
+    // authored condition is written (and reported) here.
+    let chained = (!isolated_guard.is_owned())
+        .then(|| {
+            append_chained_vif_condition_open(ts, indent, generated_guard, "Narrowing-only guard")
+        })
+        .flatten();
+    let (gen_stmt_start, gen_stmt_end) = match &chained {
+        Some(range) => (range.start, range.end),
+        None => {
+            let start = ts.len();
+            append!(*ts, "{indent}if ({generated_guard}) {{\n");
+            (start, ts.len())
+        }
+    };
     mappings.push(VizeMapping {
         gen_range: generated_text_range(
             ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
@@ -69,5 +82,9 @@ pub(super) fn generate_vif_guard_expression(
         *ts,
         "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",
     );
-    append!(*ts, "{indent}}}\n");
+    if chained.is_some() {
+        append_chained_vif_guard_close(ts, indent);
+    } else {
+        append!(*ts, "{indent}}}\n");
+    }
 }
