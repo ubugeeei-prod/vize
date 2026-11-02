@@ -247,7 +247,7 @@ type BadgeInstance = typeof ElBadge
     assert_eq!(
         declared_const_lines(&output.code, "$Component_el_badge"),
         [
-            "declare const $Component_el_badge: $GlobalComponentFallback & ($GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\"> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);"
+            "declare const $Component_el_badge: $GlobalComponentFallback & $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"
         ],
         "{}",
         output.code,
@@ -286,7 +286,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     assert_eq!(
         declared_const_lines(&output.code, "el_badge"),
         [
-            "declare const el_badge: $GlobalComponentFallback & ($GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\"> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);"
+            "declare const el_badge: $GlobalComponentFallback & $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"
         ],
         "{}",
         output.code,

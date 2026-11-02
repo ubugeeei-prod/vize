@@ -285,7 +285,7 @@ fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&st
     // exposed members instead of the open fallback's unconstrained argument.
     append!(
         *ts,
-        "declare const {component_ref}: $GlobalComponentFallback & ($GlobalComponent<"
+        "declare const {component_ref}: $GlobalComponentFallback & $GlobalComponent<"
     );
     let mut previous = None;
     for key in keys {
@@ -298,12 +298,7 @@ fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&st
         push_ts_string_literal(ts, key);
         previous = Some(key);
     }
-    // The ref factory already reads this inference-only resolver. Preserve an
-    // authored/Vize resolver and every constructor exactly; a plain callable
-    // needs its real registry signature without the ordinary open fallback.
-    ts.push_str(
-        "> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);\n",
-    );
+    ts.push_str(">;\n");
 }
 
 #[cfg(test)]

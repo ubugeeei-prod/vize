@@ -186,7 +186,7 @@ fn vue3_stub_and_slot_provenance_share_pascal_camel_authored_order_without_chang
             .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
         [
-            "registry_child: $GlobalComponentFallback & ($GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\"> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);"
+            "registry_child: $GlobalComponentFallback & $GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\">;"
         ]
     );
     let (owners, vue2) = emit("", template, true, VirtualTsOptions::default());
@@ -196,7 +196,7 @@ fn vue3_stub_and_slot_provenance_share_pascal_camel_authored_order_without_chang
             .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
         [
-            "registry_child: $GlobalComponentFallback & ($GlobalComponent<\"registry-child\", \"RegistryChild\"> extends infer __C ? __C extends { __vizeResolveRef?: unknown } ? __C : __C extends (...args: any[]) => any ? __C & { __vizeResolveRef?: __C } : __C : never);"
+            "registry_child: $GlobalComponentFallback & $GlobalComponent<\"registry-child\", \"RegistryChild\">;"
         ]
     );
 }
