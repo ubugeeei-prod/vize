@@ -9,12 +9,23 @@ pub use props::{ScopedTypeProperties, ScopedTypeProperty};
 #[cfg(test)]
 mod tests;
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "worlds share immutable resolved dependency modules by Arc instead of cloning them per component"
+)]
+use std::sync::Arc;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 #[derive(Debug, Clone, Default)]
 pub struct ResolvedTypeWorld {
     pub root_module: CompactString,
-    pub modules: FxHashMap<CompactString, TypeModule>,
+    /// The root module is private to this world; dependency modules are the
+    /// resolved facts every world built from the same source snapshot shares.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "dependency modules are shared across the worlds of one source snapshot"
+    )]
+    pub modules: FxHashMap<CompactString, Arc<TypeModule>>,
 }
 
 #[derive(Debug, Clone, Default)]

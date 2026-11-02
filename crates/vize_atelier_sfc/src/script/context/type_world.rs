@@ -33,7 +33,17 @@ use super::{ScriptCompileContext, TypeSourceSnapshot};
 const MAX_MODULES: usize = 512;
 type ModuleSource = (Arc<str>, bool);
 type PendingModule = (PathBuf, Option<ModuleSource>);
-pub(super) type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
+type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
+
+/// One module with every import, export and star-export target resolved
+/// against a snapshot, plus the modules the world walk follows from it.
+/// Resolution depends only on the module's own path and the snapshot, never
+/// on the root component, so one resolution serves every world of a snapshot.
+#[derive(Debug)]
+pub(super) struct ResolvedDependency {
+    module: Arc<TypeModule>,
+    follow: Vec<PathBuf>,
+}
 
 impl ScriptCompileContext {
     /// Retain real module/export identities separately from the compatibility
@@ -77,7 +87,8 @@ impl ScriptCompileContext {
             root_module: root_module.clone(),
             ..ResolvedTypeWorld::default()
         };
-        let mut pending = vec![(path, Some((Arc::<str>::from(source.as_str()), is_tsx)))];
+        let mut pending: Vec<PendingModule> =
+            vec![(path, Some((Arc::<str>::from(source.as_str()), is_tsx)))];
         let mut visited = FxHashSet::default();
         while let Some((path, source)) = pending.pop() {
             let identity = path_key(&path);
@@ -85,54 +96,113 @@ impl ScriptCompileContext {
                 continue;
             }
             if world.modules.len() >= MAX_MODULES {
-                world.modules.insert(identity, TypeModule::default());
+                world
+                    .modules
+                    .insert(identity, Arc::new(TypeModule::default()));
                 continue;
             }
             // Root text belongs to this caller, including unsaved buffers and
-            // combined normal/setup scripts. Never reuse it by path. Only
-            // immutable snapshot dependencies share their unresolved parse.
-            let parsed = source.map_or_else(
-                || read_dependency_module(&path, sources),
-                |(source, is_tsx)| Some(parse_source(&source, is_tsx)),
-            );
-            let Some((mut module, needed_imports)) = parsed else {
-                world.modules.insert(identity, TypeModule::default());
-                continue;
-            };
-            for (local, import) in &mut module.imports {
-                resolve_target(
-                    &mut import.target,
-                    &path,
-                    &mut pending,
-                    needed_imports.contains(local),
-                    sources,
-                );
-            }
-            for export in module.exports.values_mut() {
-                match export {
-                    TypeExportBinding::Forward { target, .. }
-                    | TypeExportBinding::Namespace(target) => {
-                        resolve_target(target, &path, &mut pending, true, sources);
-                    }
-                    TypeExportBinding::Local(local) => {
-                        if let Some(import) = module.imports.get(local)
-                            && let Some(target) = &import.target.module
-                        {
-                            pending.push((PathBuf::from(target.as_str()), None));
-                        }
-                    }
+            // combined normal/setup scripts. Never reuse it by path. Immutable
+            // snapshot dependencies share one resolved module per snapshot.
+            let resolved = match source {
+                Some((source, is_tsx)) => {
+                    let (module, needed_imports) = parse_source(&source, is_tsx);
+                    Arc::new(resolve_module_targets(
+                        module,
+                        &needed_imports,
+                        &path,
+                        sources,
+                    ))
                 }
-            }
-            for target in &mut module.star_exports {
-                resolve_target(target, &path, &mut pending, true, sources);
-            }
-            for target in module.direct_imports.values_mut() {
-                resolve_target(target, &path, &mut pending, true, sources);
-            }
-            world.modules.insert(identity, module);
+                None => {
+                    let Some(resolved) = read_resolved_dependency(&path, sources) else {
+                        world
+                            .modules
+                            .insert(identity, Arc::new(TypeModule::default()));
+                        continue;
+                    };
+                    resolved
+                }
+            };
+            pending.extend(resolved.follow.iter().cloned().map(|path| (path, None)));
+            world.modules.insert(identity, Arc::clone(&resolved.module));
         }
         world
     }
+}
+
+/// Fill every target of a freshly parsed module and record, in the order the
+/// walk pushes them, the modules it follows from here. Imports are followed
+/// only when the module references them in a type position; exports, star
+/// exports and `import()` types are always followed.
+fn resolve_module_targets(
+    mut module: TypeModule,
+    needed_imports: &FxHashSet<vize_carton::CompactString>,
+    path: &Path,
+    sources: &TypeSourceSnapshot,
+) -> ResolvedDependency {
+    let mut follow = Vec::new();
+    for (local, import) in &mut module.imports {
+        resolve_target(
+            &mut import.target,
+            path,
+            &mut follow,
+            needed_imports.contains(local),
+            sources,
+        );
+    }
+    for export in module.exports.values_mut() {
+        match export {
+            TypeExportBinding::Forward { target, .. } | TypeExportBinding::Namespace(target) => {
+                resolve_target(target, path, &mut follow, true, sources);
+            }
+            TypeExportBinding::Local(local) => {
+                if let Some(import) = module.imports.get(local)
+                    && let Some(target) = &import.target.module
+                {
+                    follow.push(PathBuf::from(target.as_str()));
+                }
+            }
+        }
+    }
+    for target in &mut module.star_exports {
+        resolve_target(target, path, &mut follow, true, sources);
+    }
+    for target in module.direct_imports.values_mut() {
+        resolve_target(target, path, &mut follow, true, sources);
+    }
+    ResolvedDependency {
+        module: Arc::new(module),
+        follow,
+    }
+}
+
+/// Resolve a dependency once per snapshot; later worlds reuse the `Arc`.
+fn read_resolved_dependency(
+    path: &Path,
+    sources: &TypeSourceSnapshot,
+) -> Option<Arc<ResolvedDependency>> {
+    // Single-flight per dependency: the map lock is released before any read,
+    // parse or resolution work, so unrelated dependencies proceed in parallel.
+    let entry = sources
+        .resolved
+        .lock()
+        .ok()?
+        .entry(path.to_path_buf())
+        .or_default()
+        .clone();
+    entry
+        .get_or_init(|| {
+            let (module, needed_imports) = read_module_source(path, sources)
+                .map(|(source, is_tsx)| parse_source(&source, is_tsx))?;
+            Some(Arc::new(resolve_module_targets(
+                module,
+                &needed_imports,
+                path,
+                sources,
+            )))
+        })
+        .clone()
 }
 
 fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
@@ -144,34 +214,17 @@ fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
     parse::parse_module(source, source_type)
 }
 
-fn read_dependency_module(path: &Path, sources: &TypeSourceSnapshot) -> Option<ParsedTypeModule> {
-    // Single-flight per dependency, without holding the map lock while an
-    // unrelated dependency is read or parsed by another publication.
-    let entry = sources
-        .modules
-        .lock()
-        .ok()?
-        .entry(path.to_path_buf())
-        .or_default()
-        .clone();
-    entry
-        .get_or_init(|| {
-            read_module_source(path, sources).map(|(source, is_tsx)| parse_source(&source, is_tsx))
-        })
-        .clone()
-}
-
 fn resolve_target(
     target: &mut TypeModuleReference,
     current: &Path,
-    pending: &mut Vec<PendingModule>,
-    follow: bool,
+    follow: &mut Vec<PathBuf>,
+    should_follow: bool,
     sources: &TypeSourceSnapshot,
 ) {
     if let Some(path) = sources.resolve_import_from_identity(current, &target.specifier) {
         target.module = Some(path_key(&path));
-        if follow {
-            pending.push((path, None));
+        if should_follow {
+            follow.push(path);
         }
     }
 }

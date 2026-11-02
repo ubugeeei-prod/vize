@@ -74,3 +74,12 @@ adoption must demonstrate its full-command benefit. No 10x claim follows.
   shared dependency edits.
 - Keep #7698 open until the full-command 10x target is demonstrated. A
   stage-only gain or skipped correctness lane does not complete it.
+
+## Amended
+
+The first slice's design of caching only unresolved facts and cloning them
+before each world resolves its targets is superseded by
+[shared resolved type world dependencies](./2026-11-02-11370-typechecker-shared-resolved-dependencies.md)
+([#11370](https://github.com/ubugeeei-prod/vize/issues/11370)): dependencies
+are resolved once per snapshot and worlds share them by `Arc`. The targets, the
+paired probe and the remaining-work list above are otherwise unchanged.

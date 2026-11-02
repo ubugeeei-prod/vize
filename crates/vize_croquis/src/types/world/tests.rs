@@ -2,6 +2,7 @@ use super::{
     ResolvedTypeWorld, TypeDeclaration, TypeDeclarationKind, TypeExportBinding, TypeImport,
     TypeLookup, TypeModule, TypeModuleReference, UnknownTypeReason,
 };
+use std::sync::Arc;
 use vize_carton::{CompactString, FxHashMap};
 
 fn target(module: &str) -> TypeModuleReference {
@@ -66,10 +67,10 @@ fn world() -> ResolvedTypeWorld {
     ResolvedTypeWorld {
         root_module: CompactString::new("root"),
         modules: FxHashMap::from_iter([
-            (CompactString::new("root"), root),
-            (CompactString::new("barrel"), barrel),
-            (CompactString::new("api"), api),
-            (CompactString::new("unrelated"), unrelated),
+            (CompactString::new("root"), Arc::new(root)),
+            (CompactString::new("barrel"), Arc::new(barrel)),
+            (CompactString::new("api"), Arc::new(api)),
+            (CompactString::new("unrelated"), Arc::new(unrelated)),
         ]),
     }
 }
@@ -101,7 +102,7 @@ fn missing_star_does_not_prove_a_unique_export() {
         if reverse {
             stars.reverse();
         }
-        world.modules.get_mut("barrel").unwrap().star_exports = stars;
+        Arc::make_mut(world.modules.get_mut("barrel").unwrap()).star_exports = stars;
         let TypeLookup::Unknown(reference) = world.resolve("root", "Api.PrivateName") else {
             panic!("missing star may contain an ambiguous export")
         };
@@ -112,7 +113,8 @@ fn missing_star_does_not_prove_a_unique_export() {
 #[test]
 fn duplicate_stars_accept_the_same_identity_and_reject_distinct_declarations() {
     let mut world = world();
-    world.modules.get_mut("barrel").unwrap().star_exports = vec![target("api"), target("api")];
+    Arc::make_mut(world.modules.get_mut("barrel").unwrap()).star_exports =
+        vec![target("api"), target("api")];
     assert!(matches!(
         world.resolve("root", "Api.PrivateName"),
         TypeLookup::Found(_)
@@ -121,11 +123,8 @@ fn duplicate_stars_accept_the_same_identity_and_reject_distinct_declarations() {
     declaration(&mut duplicate, "PrivateName", "number");
     world
         .modules
-        .insert(CompactString::new("duplicate"), duplicate);
-    world
-        .modules
-        .get_mut("barrel")
-        .unwrap()
+        .insert(CompactString::new("duplicate"), Arc::new(duplicate));
+    Arc::make_mut(world.modules.get_mut("barrel").unwrap())
         .star_exports
         .push(target("duplicate"));
     let TypeLookup::Unknown(reference) = world.resolve("root", "Api.PrivateName") else {
@@ -137,13 +136,15 @@ fn duplicate_stars_accept_the_same_identity_and_reject_distinct_declarations() {
 #[test]
 fn reexport_cycles_are_bounded_and_explicit() {
     let mut world = world();
-    world.modules.get_mut("barrel").unwrap().exports.insert(
-        CompactString::new("Loop"),
-        TypeExportBinding::Forward {
-            target: target("barrel"),
-            exported: CompactString::new("Loop"),
-        },
-    );
+    Arc::make_mut(world.modules.get_mut("barrel").unwrap())
+        .exports
+        .insert(
+            CompactString::new("Loop"),
+            TypeExportBinding::Forward {
+                target: target("barrel"),
+                exported: CompactString::new("Loop"),
+            },
+        );
     let TypeLookup::Unknown(reference) = world.resolve("root", "Api.Loop") else {
         panic!("cycle cannot resolve")
     };
