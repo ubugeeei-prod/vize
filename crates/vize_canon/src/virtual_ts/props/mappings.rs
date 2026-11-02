@@ -179,7 +179,7 @@ impl<'a> PropBindingMappings<'a> {
             // Escaped, computed and implicit names grant no copied-name edge.
             if declaration == name {
                 0
-            } else if [b'\'', b'"'].into_iter().any(|quote| {
+            } else if b"'\"".iter().copied().any(|quote| {
                 declaration.as_bytes().first() == Some(&quote)
                     && declaration.as_bytes().last() == Some(&quote)
                     && declaration.get(1..declaration.len().saturating_sub(1)) == Some(name)

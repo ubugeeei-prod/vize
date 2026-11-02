@@ -9,10 +9,20 @@ import {
   initializeCapabilities,
   INITIALIZE_CAPABILITIES,
   loadLspManifest,
+  NATIVE_REASON,
 } from "../differential/lsp-manifest.ts";
 import { asArray, asRecord, parseJson } from "../../tools/support/json-value.ts";
 import { runLspPack } from "../differential/lsp.ts";
 
+import {
+  MODEL_BINDING_UNIT_ID,
+  MODEL_BINDING_UNIT_SESSION,
+} from "../differential/lsp-model-binding-source-unit.ts";
+import {
+  LOCAL_RESOLVE_SESSION_ID,
+  sourceSessionUnsupportedLegacy,
+} from "../differential/lsp-source-sessions.ts";
+import { NATIVE_CAPACITY_ID } from "../differential/lsp-native-capacity-contract.ts";
 const pack = new URL("../_fixtures/differential/lsp/", import.meta.url);
 const loaded = loadLspManifest(fileURLToPath(new URL("manifest.json", pack)));
 const id = "lsp/regression/versioned-template-lint-edits-6876";
@@ -164,14 +174,28 @@ void test("source-built stdio preserves unadvertised originals and explicit vers
       t.diagnostic(`versioned-lint-actions-whole-report ${JSON.stringify(observed)}`);
     },
   });
-  const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+  const sourceUnit = report.rows.find((row) => row.id === MODEL_BINDING_UNIT_ID);
+  assert.ok(sourceUnit);
+  assert.deepEqual(sourceUnit, {
+    id: MODEL_BINDING_UNIT_ID,
+    legacy: sourceSessionUnsupportedLegacy(MODEL_BINDING_UNIT_SESSION),
+    native: { state: "unsupported", reason: NATIVE_REASON },
+    comparison: { state: "not-compared", reason: NATIVE_REASON },
+  });
+  const earlier = report.rows.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
+  assert.equal(earlier.length, 82);
+  assert.deepEqual(
+    earlier.filter((row) => row.legacy.state === "unsupported").map((row) => row.id),
+    [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID],
+  );
+  assert.equal(earlier.filter((row) => row.legacy.verdict === "matched-reference").length, 80);
   assert.deepEqual(report.summary, {
-    plannedCases: 82,
-    legacyMatches: 82 - unsupported,
+    plannedCases: 83,
+    legacyMatches: 80,
     legacyFailures: 0,
-    legacyUnsupported: unsupported,
+    legacyUnsupported: 3,
     baselineDrift: 0,
-    nativeUnsupported: 82,
+    nativeUnsupported: 83,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,

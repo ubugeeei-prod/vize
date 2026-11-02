@@ -12218,6 +12218,45 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-nested-callback-11361",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nested-callback-inference-11361/Probe.vue.txt",
+          "sha256": "288acf9c818fdb8055456e793f33ee9d984dd8dd0e5159c15c7590b175527301",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-callback-inference-11361/package.json.txt",
+          "sha256": "6bd44e5f4250fd98b039fc323a4ccfe902d58ece8cc0a160c97dc1238b213b00",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-callback-inference-11361/tsconfig.json.txt",
+          "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::nested_callback_11361::nested_callback_keeps_original_acceptance_and_checked_body_errors; physically consumes exact reported input at d9b005407f31de8ed5b51138c77aaca17e6df1b9 for #11361; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],

@@ -18,6 +18,7 @@ mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;
 mod long_prop_kebab_case;
+mod nested_callback_11361;
 mod optional_prop_spacing;
 mod options_api_diagnostics;
 mod project_declarations;
