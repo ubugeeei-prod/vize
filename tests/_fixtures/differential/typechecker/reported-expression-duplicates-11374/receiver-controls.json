@@ -1,0 +1,72 @@
+{
+  "scope": "Synthetic source-owned controls for #11374 receiver ownership. These are not additional original reporter inputs or an installed-public reproduction. End positions and exact diagnostic formatting are not preclaimed.",
+  "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n",
+  "states": [
+    {
+      "id": "context-expression-wrong",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ data: T; options: { run: () => T } }>();\n</script>\n<template><span /></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst items: { label: string }[] = [{label:\"ok\"}];\n</script>\n<template>\n  <Child :data=\"1\" :options=\"{run:()=>items[0]!.label}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "expectedStatus": 2,
+      "expectedCodes": [2322],
+      "expectedMessage": "Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "id": "context-expression-repair",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ data: T; options: { run: () => T } }>();\n</script>\n<template><span /></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst items: { label: string }[] = [{label:\"ok\"}];\n</script>\n<template>\n  <Child :data=\"1\" :options=\"{run:()=>items[0]!.label.length}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "expectedStatus": 0,
+      "expectedCodes": [],
+      "expectedMessage": null
+    },
+    {
+      "id": "context-block-wrong",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ data: T; options: { run: () => T } }>();\n</script>\n<template><span /></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst items: { label: string }[] = [{label:\"ok\"}];\n</script>\n<template>\n  <Child :data=\"1\" :options=\"{run:()=>{return items[0]!.label;}}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "expectedStatus": 2,
+      "expectedCodes": [2322],
+      "expectedMessage": "Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "id": "context-block-repair",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ data: T; options: { run: () => T } }>();\n</script>\n<template><span /></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst items: { label: string }[] = [{label:\"ok\"}];\n</script>\n<template>\n  <Child :data=\"1\" :options=\"{run:()=>{return items[0]!.label.length;}}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+      "expectedStatus": 0,
+      "expectedCodes": [],
+      "expectedMessage": null
+    },
+    {
+      "id": "typed-fallthrough-wrong",
+      "sources": {
+        "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return 123;}}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
+      "expectedStatus": 2,
+      "expectedCodes": [2322],
+      "expectedMessage": "Type 'number' is not assignable to type 'string'."
+    },
+    {
+      "id": "typed-fallthrough-repair",
+      "sources": {
+        "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return 'ok';}}\" />\n</template>\n"
+      },
+      "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
+      "expectedStatus": 0,
+      "expectedCodes": [],
+      "expectedMessage": null
+    }
+  ]
+}
