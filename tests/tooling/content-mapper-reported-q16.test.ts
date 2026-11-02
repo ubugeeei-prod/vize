@@ -20,10 +20,22 @@ import {
   verifyQ16RequiredEnvironment,
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
 
-const workflow = fs.readFileSync(
+const actualWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
+// These additive standard-host fields are independent of the historical route
+// inverses below; verify their actual values before restoring those old bytes.
+const standardRoleLine =
+  "          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: standard-go-d6-vue35\n";
+const standardCaptureLine =
+  "          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets\n";
+const standardArtifactLine =
+  "            target/vize-tests/content-mapper-reported-dynamic-targets\n";
+const workflow = actualWorkflow
+  .replace(standardRoleLine, "")
+  .replace(standardCaptureLine, "")
+  .replace(standardArtifactLine, "");
 const data = parse(workflow);
 const childWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
@@ -198,6 +210,38 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
   assert.equal(steps.at(-1).with["if-no-files-found"], "error");
   assert(
     steps.some((s: { with?: { [key: string]: string } }) => s.with?.["node-version"] === "26.13.0"),
+  );
+});
+
+test("dynamic-target printer roles are declared before capture and retain standard whole packets", () => {
+  for (const line of [standardRoleLine, standardCaptureLine, standardArtifactLine])
+    assert.equal(actualWorkflow.split(line).length, 2);
+  const actual = parse(actualWorkflow);
+  const steps = actual.jobs["exact-tsgo-project"].steps;
+  const standard = steps.find(
+    (step: { name?: string }) => step.name === "Run standard project and declaration conformance",
+  );
+  assert.equal(
+    standard.env.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE,
+    "standard-go-d6-vue35",
+  );
+  assert.equal(
+    standard.env.VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR,
+    "${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets",
+  );
+  assert(
+    steps.some((step: { with?: { path?: string } }) =>
+      step.with?.path
+        ?.split("\n")
+        .includes("target/vize-tests/content-mapper-reported-dynamic-targets"),
+    ),
+  );
+  const runner = fs.readFileSync(
+    new URL("../../tools/support/compat/content-mapper/reported-q16.ts", import.meta.url),
+    "utf8",
+  );
+  assert(
+    runner.includes('VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: "reported-tsrs-vue44"'),
   );
 });
 

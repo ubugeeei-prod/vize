@@ -198,6 +198,8 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
+          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: standard-go-d6-vue35
+          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets
         run: |
           cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_directives:: --nocapture
@@ -389,6 +391,7 @@ jobs:
           name: content-mapper-owner-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/vize-tests/content-mapper-directive-owners
+            target/vize-tests/content-mapper-reported-dynamic-targets
             target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/content-mapper-native-host.json
             ${{ runner.temp }}/content-mapper-editor-stress
