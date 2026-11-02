@@ -51,7 +51,7 @@ mod tests {
             ("map", Some("(typeof map)[\"a\"]")),
             ("__vize_dynamic_is_0", None),
         ] {
-            let template = cstr!("<component :is=\"{object}[foo]\" />");
+            let template = cstr!("<component :is=\"{object}[foo]\"></component>");
             let (root, errors) = parse(&allocator, template.as_str());
             assert!(errors.is_empty());
             let script = cstr!(

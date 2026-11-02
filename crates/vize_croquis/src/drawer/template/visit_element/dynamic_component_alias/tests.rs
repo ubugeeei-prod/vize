@@ -31,11 +31,11 @@ fn nested_script_owned_computed_target_keeps_its_component_event_owner() {
     let script = "import Child from './Child.vue'; const map = { foo: Child }; const key = 'foo';";
     assert!(captured_target(
         script,
-        r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#
+        r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#
     ));
     assert!(captured_target(
         script,
-        r#"<div v-for="item in [1]"><component :is="map[key]" @select="value => value.toFixed()" /></div>"#
+        r#"<div v-for="item in [1]"><component :is="map[key]" @select="value => value.toFixed()"></component></div>"#
     ));
 }
 
@@ -43,19 +43,19 @@ fn nested_script_owned_computed_target_keeps_its_component_event_owner() {
 fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
     let script = "import Child from './Child.vue'; const map = { foo: Child }; const key = 'foo';";
     for template in [
-        r#"<Panel><template #foo><component v-if="map" :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#,
-        r#"<Panel><template #foo><div v-if="map"><component :is="map[key]" @select="value => value.toFixed()" /></div></template></Panel>"#,
-        r#"<Panel><template #foo="{ key }"><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#,
-        r#"<Panel><template #foo="{ map }"><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#,
-        r#"<Panel><template #foo><component v-for="key in ['foo']" :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#,
-        r#"<Panel><template #foo><component :is="map[unknownKey]" @select="value => value.toFixed()" /></template></Panel>"#,
-        r#"<Panel><template #foo><component :is="globalThis[key]" @select="value => value.toFixed()" /></template></Panel>"#,
+        r#"<Panel><template #foo><component v-if="map" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><div v-if="map"><component :is="map[key]" @select="value => value.toFixed()"></component></div></template></Panel>"#,
+        r#"<Panel><template #foo="{ key }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo="{ map }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><component v-for="key in ['foo']" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><component :is="map[unknownKey]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><component :is="globalThis[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
     ] {
         assert!(!captured_target(script, template), "{template}");
     }
     assert!(!captured_target(
         "import type { map } from './map'; const key = 'foo';",
-        r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#
+        r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#
     ));
 }
 
@@ -63,12 +63,15 @@ fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
 fn script_member_uses_one_owned_capture_and_preserves_its_guard() {
     let allocator = Allocator::new();
     for (template, guard) in [
-        (r#"<component :is="foo.bar" v-if="foo" />"#, Some("foo")),
         (
-            r#"<template v-if="foo"><component :is="foo.bar" /></template>"#,
+            r#"<component :is="foo.bar" v-if="foo"></component>"#,
             Some("foo"),
         ),
-        (r#"<component :is="foo.bar" />"#, None),
+        (
+            r#"<template v-if="foo"><component :is="foo.bar"></component></template>"#,
+            Some("foo"),
+        ),
+        (r#"<component :is="foo.bar"></component>"#, None),
     ] {
         let (root, errors) = parse(&allocator, template);
         assert!(errors.is_empty(), "{errors:?}");
@@ -91,7 +94,7 @@ fn script_member_uses_one_owned_capture_and_preserves_its_guard() {
 
 #[test]
 fn new_computed_admission_does_not_shadow_an_existing_script_value() {
-    let template = r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()" /></template></Panel>"#;
+    let template = r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#;
     let start = template.find("<component").expect("authored component") as u32;
     let alias = super::dynamic_component_alias(start);
     let script = vize_carton::cstr!(
