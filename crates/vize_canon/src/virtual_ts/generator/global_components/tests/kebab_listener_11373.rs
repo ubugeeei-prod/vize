@@ -149,3 +149,55 @@ fn default_unknown_and_local_component_policies_remain_separate() {
         .collect::<Vec<_>>();
     assert_eq!(local_registry, Vec::<&str>::new(), "{}", local.code);
 }
+
+#[test]
+fn retained_prop_comments_keep_the_complete_module_and_authored_value_map() {
+    let mut captured = Vec::new();
+    for raw in [
+        "value // @ts-ignore",
+        "value, other // @ts-ignore",
+        "'// @ts-ignore'",
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\">\nconst value = 1; const other = 2;\nconst Widget = (props: {{ foo: unknown; bar: number }}) => props;\n</script>\n<template><Widget :foo=\"{raw}\" :bar=\"other\" /></template>\n"
+        );
+        let result = generate_vue_content_mapper_transform(
+            Path::new("src/TrailingPropComment.vue"),
+            &source,
+        );
+        let packet = match &result {
+            Ok(transform) => serde_json::to_value(transform).unwrap(),
+            Err(error) => json!({"error":format!("{error:#?}")}),
+        };
+        println!(
+            "vize-global-listener-prop-comment {}",
+            json!({"source":source,"raw":raw,"result":packet})
+        );
+        captured.push((source, raw, result));
+    }
+    for (source, raw, result) in captured {
+        let transform = result.unwrap();
+        assert!(transform.diagnostics.is_empty(), "{transform:#?}");
+        let allocator = oxc_allocator::Allocator::default();
+        let parsed =
+            oxc_parser::Parser::new(&allocator, &transform.text, oxc_span::SourceType::tsx())
+                .parse();
+        assert!(
+            parsed.diagnostics.is_empty(),
+            "{:?}\n{}",
+            parsed.diagnostics,
+            transform.text
+        );
+        assert_eq!(source.matches(raw).count(), 1);
+        let start = source.find(raw).unwrap();
+        assert!(
+            transform.mappings.iter().any(|mapping| {
+                let [generated, generated_len, original, original_len, _, _] = mapping.0;
+                original == start
+                    && original_len == raw.len()
+                    && transform.text.get(generated..generated + generated_len) == Some(raw)
+            }),
+            "authored value must exclude the generated newline: {transform:#?}"
+        );
+    }
+}

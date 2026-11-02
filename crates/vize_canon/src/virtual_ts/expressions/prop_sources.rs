@@ -217,7 +217,24 @@ fn generated_prop_span_with_comment_policy<'a>(
             offsets,
         });
     }
+    if preserve_comments && ends_in_line_comment(span.text.as_str()) {
+        // Generated delimiters must not become part of an authored comment.
+        // Keep this synthetic tail outside the existing authored mapping.
+        span.text.push('\n');
+    }
     Some(span)
+}
+
+fn ends_in_line_comment(value: &str) -> bool {
+    if !value.contains("//") {
+        return false;
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, value, SourceType::ts()).parse();
+    parsed.program.comments.iter().any(|comment| {
+        matches!(comment.kind, oxc_ast::ast::CommentKind::Line)
+            && comment.span.end as usize == value.len()
+    })
 }
 
 /// Append one generated prop value and return its range without synthetic
