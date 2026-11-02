@@ -629,7 +629,7 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
         output
             .code
             .matches(
-                "declare const AutoCard: $GlobalComponent<\"AutoCard\"> & $GlobalComponentFallback;"
+                "declare const AutoCard: $GlobalComponentFallback & $GlobalComponent<\"AutoCard\">;"
             )
             .count(),
         1

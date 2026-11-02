@@ -50,7 +50,10 @@ pub(in crate::virtual_ts) fn define_slots_type_requires_setup_scope(summary: &Cr
         .macros
         .define_slots()
         .and_then(|call| call.type_args.as_deref())
-        .is_some_and(|args| macro_type_requires_setup_scope(summary, args))
+        .is_some_and(|args| {
+            super::generics::setup_signature(summary).1.is_some()
+                || macro_type_requires_setup_scope(summary, args)
+        })
 }
 
 /// Imports and hoisted declarations are visible to module-level aliases.

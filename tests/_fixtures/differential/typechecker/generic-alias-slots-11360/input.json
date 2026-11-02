@@ -1,0 +1,29 @@
+{
+  "schema": "vize.reported-generic-component-input.v1",
+  "issue": 11360,
+  "originalReport": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11360",
+    "sha256": "67a3bce46dab1d5c98be99e9412d16a32113a9888b730ef3058641e683ca7926",
+    "bodySha256": "3d4e9b3bb56ec5a937979035a728cd88465c521cde2a85e7e7d98edc4cc8deb8",
+    "inputsSha256": "41284fc436ecdd729553655f5f883d05d9c3aad46012b4623e1177711d3343ea"
+  },
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+    },
+    {
+      "path": "src/Child.vue",
+      "source": "<script setup lang=\"ts\" generic=\"TExtra = unknown\">\ntype Foo = TExtra & { bar: string };\n\ndefineProps<{ items: Foo[] }>();\ndefineSlots<{ default: (props: { item: Foo }) => unknown }>();\n</script>\n\n<template>\n  <slot :item=\"{ bar: 'a' } as Foo\" />\n</template>\n"
+    },
+    {
+      "path": "src/Probe.vue",
+      "source": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items = [{ bar: \"a\", baz: 1 }];\n</script>\n\n<template>\n  <Child :items>\n    <template #default=\"{ item }\">\n      {{ item.baz }}\n    </template>\n  </Child>\n</template>\n"
+    }
+  ],
+  "scope": "Faithful original code-fence bodies. Source Actions use the compiled source CLI and actual selected Vue/native provider, recorded separately; no installed0.638 or Windows acceptance claim."
+}
