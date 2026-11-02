@@ -4,7 +4,7 @@ import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { readTarGz } from "../../archive/tar.ts";
-import { provenancePayloadBinding, publicUrl, sriSha512 } from "../public_install/registry.ts";
+import { publicUrl, sriSha512 } from "../public_install/registry.ts";
 export type ObjectValue = Record<string, unknown>;
 export const hash = (raw: string | Buffer) => createHash("sha256").update(raw).digest("hex");
 export const object = (v: unknown): ObjectValue => {
@@ -120,17 +120,16 @@ export function packageAuthenticator(
         const expected = object(sri[name]);
         assert.equal(integrity, expected.integrity);
         assert.equal(dist.tarball, expected.tarball);
-        const provenance = await provenancePayloadBinding(
+        const provenanceUrl = publicUrl(String(object(dist.attestations).url));
+        const response = await observed(provenanceUrl, {
+          redirect: "error",
+          signal: AbortSignal.timeout(30_000),
+        });
+        assert.equal(response.status, 200);
+        const provenance = authenticateProvenance(
+          name,
           dist,
-          { H: String(target.candidate), tag: "v" + target.version, R: String(target.runId) },
-          async (url) => {
-            const r = await observed(publicUrl(url), {
-              redirect: "error",
-              signal: AbortSignal.timeout(30_000),
-            });
-            assert.equal(r.status, 200);
-            return json(Buffer.from(await r.arrayBuffer()));
-          },
+          json(Buffer.from(await response.arrayBuffer())),
         );
         save("provenance-" + name.replaceAll("/", "-"), provenance);
       }
@@ -193,4 +192,54 @@ export function managerRoute(root: string) {
   const executable = realpathSync(safePath(directory, String(relativeBin)));
   assert(lstatSync(executable).isFile());
   return { directory, executable, manifest };
+}
+
+// This closed 0.644 role follows its genuine main-branch Release producer.
+// The older shared release/<tag> recipe remains unchanged for its own roles.
+export function authenticateProvenance(name: string, dist: ObjectValue, value: unknown) {
+  const rows = object(value).attestations;
+  assert(Array.isArray(rows));
+  const slsa = rows
+    .map((row) => {
+      const envelope = object(object(object(row).bundle).dsseEnvelope);
+      assert.equal(typeof envelope.payload, "string");
+      const raw = Buffer.from(String(envelope.payload), "base64");
+      assert.equal(raw.toString("base64"), envelope.payload);
+      return json(raw);
+    })
+    .filter((row) => row.predicateType === "https://slsa.dev/provenance/v1");
+  assert.equal(slsa.length, 1);
+  const payload = slsa[0]!,
+    predicate = object(payload.predicate),
+    definition = object(predicate.buildDefinition);
+  const workflow = object(object(definition.externalParameters).workflow);
+  assert.deepEqual(workflow, {
+    ref: "refs/heads/main",
+    repository: "https://github.com/ubugeeei-prod/vize",
+    path: ".github/workflows/release.yml",
+  });
+  assert.deepEqual(definition.resolvedDependencies, [
+    {
+      uri: "git+https://github.com/ubugeeei-prod/vize@refs/heads/main",
+      digest: { gitCommit: target.producerSource },
+    },
+  ]);
+  const invocation = object(object(predicate.runDetails).metadata).invocationId;
+  assert.equal(
+    invocation,
+    "https://github.com/ubugeeei-prod/vize/actions/runs/" + target.runId + "/attempts/1",
+  );
+  const purl =
+    "pkg:npm/" + name.split("/").map(encodeURIComponent).join("/") + "@" + target.version;
+  assert.deepEqual(payload.subject, [
+    { name: purl, digest: { sha512: sriSha512(dist.integrity).toString("hex") } },
+  ]);
+  return {
+    workflow,
+    producerSource: target.producerSource,
+    invocation,
+    subject: payload.subject,
+    payloadBindingChecked: true,
+    cryptographicSignatureVerificationPerformed: false,
+  };
 }

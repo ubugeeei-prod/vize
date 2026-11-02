@@ -270,3 +270,51 @@ test("pnpm12 manager executable follows its actual root bin declaration", async 
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("actual 644 main-producer attestation binds exact scoped subject and rejects changed authority", async () => {
+  const { authenticateProvenance, object } =
+    await import("../../../tools/support/release/verify_published/vite_startup_authority.ts");
+  const sample = object(contract.provenanceExample),
+    raw = Buffer.from(String(sample.rawBase64), "base64");
+  assert.equal(hash(raw), sample.sha256);
+  const original = JSON.parse(raw.toString("utf8"));
+  authenticateProvenance(String(sample.name), object(sample.dist), original);
+  const rejects = (change: (payload: Record<string, unknown>) => void) => {
+    const response = structuredClone(original);
+    for (const row of response.attestations) {
+      const payload = JSON.parse(
+        Buffer.from(row.bundle.dsseEnvelope.payload, "base64").toString("utf8"),
+      );
+      if (payload.predicateType !== "https://slsa.dev/provenance/v1") continue;
+      change(payload);
+      row.bundle.dsseEnvelope.payload = Buffer.from(JSON.stringify(payload)).toString("base64");
+    }
+    assert.throws(() => authenticateProvenance(String(sample.name), object(sample.dist), response));
+  };
+  rejects((p) => {
+    object(object(object(object(p.predicate).buildDefinition).externalParameters).workflow).ref =
+      "refs/heads/release/v0.644.0";
+  });
+  rejects((p) => {
+    object(object(p.predicate).buildDefinition).resolvedDependencies = [
+      {
+        uri: "git+https://github.com/ubugeeei-prod/vize@refs/heads/main",
+        digest: { gitCommit: target.candidate },
+      },
+    ];
+  });
+  rejects((p) => {
+    object(object(object(p.predicate).runDetails).metadata).invocationId =
+      "https://github.com/ubugeeei-prod/vize/actions/runs/1/attempts/1";
+  });
+  rejects((p) => {
+    object(object(object(p.predicate).runDetails).metadata).invocationId =
+      "https://github.com/ubugeeei-prod/vize/actions/runs/" + target.runId + "/attempts/2";
+  });
+  rejects((p) => {
+    object((p.subject as unknown[])[0]).name = "pkg:npm/@vizejs/vite-plugin@0.644.0";
+  });
+  rejects((p) => {
+    object((p.subject as unknown[])[0]).digest = { sha512: "0".repeat(128) };
+  });
+});

@@ -215,7 +215,7 @@ export async function run() {
   const save = (name: string, value: unknown) =>
     writeFileSync(join(out, name + ".json"), JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
   const observed: typeof fetch = async (input, options) => {
-    const url = String(input),
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
       response = await fetch(input, options),
       cap = /\/(?:zip|[^/]+\.tgz)$/u.test(new URL(url).pathname)
         ? 128 * 1024 * 1024
