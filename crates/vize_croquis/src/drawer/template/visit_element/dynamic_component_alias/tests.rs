@@ -65,11 +65,11 @@ fn script_member_uses_one_owned_capture_and_preserves_its_guard() {
     for (template, guard) in [
         (
             r#"<component :is="foo.bar" v-if="foo"></component>"#,
-            Some("foo"),
+            Some("(foo)"),
         ),
         (
             r#"<template v-if="foo"><component :is="foo.bar"></component></template>"#,
-            Some("foo"),
+            Some("(foo)"),
         ),
         (r#"<component :is="foo.bar"></component>"#, None),
     ] {
