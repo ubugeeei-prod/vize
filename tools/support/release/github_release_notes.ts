@@ -78,6 +78,77 @@ export function previousPublishedTag(
 
 type GitHubApi = (path: string, body?: object) => unknown;
 
+const releaseMetadataQuery = `query($owner:String!,$name:String!,$cursor:String) {
+  repository(owner:$owner,name:$name) {
+    releases(first:100,after:$cursor,orderBy:{field:CREATED_AT,direction:DESC}) {
+      nodes { tagName isDraft isPrerelease publishedAt }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+}`;
+
+/** Select metadata on the server: release assets and bodies are unrelated. */
+function publishedReleases(api: GitHubApi, repository: string): PublishedRelease[] {
+  const [owner, name] = repository.split("/");
+  const releases: PublishedRelease[] = [];
+  const cursors = new Set<string>();
+  let cursor: string | null = null;
+  for (;;) {
+    const response = api("graphql", {
+      query: releaseMetadataQuery,
+      variables: { owner, name, cursor },
+    }) as {
+      errors?: unknown;
+      data?: {
+        repository?: {
+          releases?: {
+            nodes?: {
+              tagName?: unknown;
+              isDraft?: unknown;
+              isPrerelease?: unknown;
+              publishedAt?: unknown;
+            }[];
+            pageInfo?: { hasNextPage?: unknown; endCursor?: unknown };
+          };
+        };
+      };
+    };
+    if (!response || typeof response !== "object")
+      throw new Error("Invalid GitHub releases response");
+    if (
+      response.errors !== undefined &&
+      (!Array.isArray(response.errors) || response.errors.length)
+    )
+      throw new Error("GitHub release enumeration failed");
+    const page = response.data?.repository?.releases;
+    if (!page || !Array.isArray(page.nodes) || typeof page.pageInfo?.hasNextPage !== "boolean")
+      throw new Error("Invalid GitHub releases response");
+    for (const node of page.nodes) {
+      if (
+        !node ||
+        typeof node !== "object" ||
+        typeof node.tagName !== "string" ||
+        typeof node.isDraft !== "boolean" ||
+        typeof node.isPrerelease !== "boolean" ||
+        (node.publishedAt !== null && typeof node.publishedAt !== "string")
+      )
+        throw new Error("Invalid GitHub releases response");
+      releases.push({
+        tag_name: node.tagName,
+        draft: node.isDraft,
+        prerelease: node.isPrerelease,
+        published_at: node.publishedAt,
+      });
+    }
+    if (!page.pageInfo.hasNextPage) return releases;
+    const next = page.pageInfo.endCursor;
+    if (typeof next !== "string" || !next || cursors.has(next))
+      throw new Error("GitHub release pagination did not advance");
+    cursors.add(next);
+    cursor = next;
+  }
+}
+
 // The published tag receipt is the existing release identity, not a PR title or
 // label. Historical receipts outside this exact normal-cut format are left alone.
 function publishedIntegration(api: GitHubApi, repository: string, tag: string): string | null {
@@ -195,14 +266,7 @@ export function generateReleaseNotes(
   if (!/^[a-f0-9]{40}$/.test(expectedSha))
     throw new Error("Release notes require the exact source SHA");
   version(tag);
-  const releases: PublishedRelease[] = [];
-  for (let page = 1; ; page++) {
-    const batch = api(`repos/${repository}/releases?per_page=100&page=${page}`);
-    if (!Array.isArray(batch)) throw new Error("Invalid GitHub releases response");
-    releases.push(...batch);
-    if (batch.length < 100) break;
-  }
-  const previousTag = previousPublishedTag(tag, releases);
+  const previousTag = previousPublishedTag(tag, publishedReleases(api, repository));
   // The API infers a predecessor when this field is omitted, including old
   // unpublished tags. A first release needs an explicitly authored bootstrap
   // body; this existing-release workflow must never guess its history range.
@@ -287,16 +351,13 @@ function main(): void {
     const output = join(directory, "response.json");
     const fd = openSync(output, "wx", 0o600);
     try {
-      // Release-list bodies/assets are unrelated to predecessor selection and
-      // can exceed a megabyte on one page. Project metadata in gh, then capture
-      // through a file descriptor so the generated notes also remain complete.
+      // Release enumeration selects metadata in GraphQL before transport.
+      // Capture through a file descriptor so generated notes remain complete.
       const args = body
         ? ["--method", "POST", "--input", "-"]
-        : path.includes("/releases?")
-          ? ["--jq", "map({tag_name, draft, prerelease, published_at})"]
-          : path.includes("/compare/")
-            ? ["--jq", "{commits: [.commits[] | {commit: {message: .commit.message}, author}]}"]
-            : [];
+        : path.includes("/compare/")
+          ? ["--jq", "{commits: [.commits[] | {commit: {message: .commit.message}, author}]}"]
+          : [];
       execFileSync("gh", ["api", path, ...args], {
         input: body ? JSON.stringify(body) : undefined,
         stdio: ["pipe", fd, "inherit"],

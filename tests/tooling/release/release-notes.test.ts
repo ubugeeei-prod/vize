@@ -9,24 +9,23 @@ import {
   coAuthorCredits,
   generateReleaseNotes,
   previousPublishedTag,
-  type PublishedRelease,
 } from "../../../tools/support/release/github_release_notes.ts";
+import {
+  coAuthorFixtures,
+  incompleteMetadataResponses,
+  integrationLineEndingCases,
+  metadataPage,
+  unrecognisedIntegrationBodies,
+  release,
+  publishedIntegrationIdentity,
+  publishedIntegrationFixture,
+  unprovedIntegrationMutations,
+} from "./release-notes-fixtures.ts";
 
 type Job = {
   env?: Record<string, string>;
   steps?: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
 };
-
-const release = (
-  tag_name: string,
-  overrides: Partial<PublishedRelease> = {},
-): PublishedRelease => ({
-  tag_name,
-  draft: false,
-  prerelease: tag_name.includes("-"),
-  published_at: "2026-10-17T00:00:00Z",
-  ...overrides,
-});
 
 // Real pinned topology: release metadata commits are siblings of main's later
 // integration, not ancestors of the following release's immutable source cut.
@@ -68,16 +67,23 @@ test("sibling pinned tags use the preceding published version, not the common an
     const notes = generateReleaseNotes(
       (path, body) => {
         requests.push({ path, body });
-        return body
-          ? { body: "## What's Changed\n\nOnly current fixes.\n" }
-          : [release("v0.458.0"), release("v0.435.0"), release("v0.457.0")];
+        return path === "graphql"
+          ? metadataPage([release("v0.458.0"), release("v0.435.0"), release("v0.457.0")])
+          : { body: "## What's Changed\n\nOnly current fixes.\n" };
       },
       "owner/repo",
       "v0.458.0",
       currentHead,
     );
+    const query = (requests[0].body as { query: string }).query;
+    assert.match(query, /nodes \{ tagName isDraft isPrerelease publishedAt \}/u);
+    assert.match(query, /releases\(first:100,after:\$cursor,/u);
+    assert.doesNotMatch(query, /\b(?:assets|description|body)\b/u);
     assert.deepEqual(requests, [
-      { path: "repos/owner/repo/releases?per_page=100&page=1", body: undefined },
+      {
+        path: "graphql",
+        body: { query, variables: { owner: "owner", name: "repo", cursor: null } },
+      },
       {
         path: "repos/owner/repo/releases/generate-notes",
         body: {
@@ -131,13 +137,19 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
   const requests: object[] = [];
   const result = generateReleaseNotes(
     (path, body) => {
-      if (body) {
+      if (path !== "graphql") {
+        assert.ok(body);
         requests.push(body);
         return { body: "bounded notes" };
       }
-      return path.endsWith("page=1")
-        ? Array.from({ length: 100 }, (_, index) => release(`v0.${1000 + index}.0`))
-        : [release("v0.457.0")];
+      const cursor = (body as { variables: { cursor: string | null } }).variables.cursor;
+      return cursor === null
+        ? metadataPage(
+            Array.from({ length: 100 }, (_, index) => release(`v0.${1000 + index}.0`)),
+            true,
+            "page-100",
+          )
+        : metadataPage([release("v0.457.0")]);
     },
     "owner/repo",
     "v0.458.0",
@@ -157,9 +169,12 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
     assert.throws(
       () =>
         generateReleaseNotes(
-          (_path, body) => {
-            if (body) called.push(body);
-            return candidates;
+          (path, body) => {
+            if (path !== "graphql") {
+              assert.ok(body);
+              called.push(body);
+            }
+            return metadataPage(candidates);
           },
           "owner/repo",
           "v0.1.0",
@@ -171,13 +186,90 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
   }
   assert.throws(
     () =>
-      generateReleaseNotes(() => [release("v0.459.0")], "owner/repo", "v0.458.0", "a".repeat(40)),
+      generateReleaseNotes(
+        () => metadataPage([release("v0.459.0")]),
+        "owner/repo",
+        "v0.458.0",
+        "a".repeat(40),
+      ),
     /No preceding/,
   );
   assert.throws(
     () => generateReleaseNotes(() => [], "owner/repo", "v0.458.0", "main"),
     /exact source SHA/,
   );
+});
+
+test("release pagination follows pageInfo even for short intermediate and full final pages", () => {
+  const cursors: unknown[] = [];
+  const generated: object[] = [];
+  const result = generateReleaseNotes(
+    (path, body) => {
+      if (path !== "graphql") {
+        assert.ok(body);
+        generated.push(body);
+        return { body: "complete range" };
+      }
+      const cursor = (body as { variables: { cursor: string | null } }).variables.cursor;
+      cursors.push(cursor);
+      return cursor === null
+        ? metadataPage([release("v9.0.0")], true, "last-page")
+        : metadataPage([
+            ...Array.from({ length: 99 }, (_, i) => release(`standalone-${i}`)),
+            release("v0.457.0"),
+          ]);
+    },
+    "owner/repo",
+    "v0.458.0",
+    "a".repeat(40),
+  );
+  assert.deepEqual(cursors, [null, "last-page"]);
+  assert.equal(result.previousTag, "v0.457.0");
+  assert.deepEqual(generated, [
+    { tag_name: "v0.458.0", target_commitish: "a".repeat(40), previous_tag_name: "v0.457.0" },
+  ]);
+});
+
+test("incomplete GraphQL data and repeated cursors fail before release-note generation", () => {
+  for (const response of incompleteMetadataResponses()) {
+    const paths: string[] = [];
+    assert.throws(
+      () =>
+        generateReleaseNotes(
+          (path) => {
+            paths.push(path);
+            return response;
+          },
+          "owner/repo",
+          "v0.458.0",
+          "a".repeat(40),
+        ),
+      /GitHub release/,
+    );
+    assert.deepEqual(
+      paths,
+      ["graphql"],
+      "never generate a body from incomplete publication history",
+    );
+  }
+  const pages = ["first", "second", "first"].map((cursor) =>
+    metadataPage([release("v0.457.0")], true, cursor),
+  );
+  const paths: string[] = [];
+  assert.throws(
+    () =>
+      generateReleaseNotes(
+        (path) => {
+          paths.push(path);
+          return pages.shift();
+        },
+        "owner/repo",
+        "v0.458.0",
+        "a".repeat(40),
+      ),
+    /pagination did not advance/,
+  );
+  assert.deepEqual(paths, ["graphql", "graphql", "graphql"]);
 });
 
 test("the workflow publishes only the prepared body for the release tag commit", () => {
@@ -254,7 +346,7 @@ test("the real command preserves generated notes and evergreen scope and refuses
     const gh = join(root, "gh");
     writeFileSync(
       gh,
-      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
+      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(process.argv[3] === 'graphql' ? ${JSON.stringify(metadataPage([release("v0.458.0"), release("v0.457.0")]))} : body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
       { mode: 0o755 },
     );
     const thanks = "## Thanks\n\nReported and co-authored by @reporter (#1).\n";
@@ -282,15 +374,12 @@ test("the real command preserves generated notes and evergreen scope and refuses
       .trim()
       .split("\n")
       .map((line) => JSON.parse(line));
+    const query = JSON.parse(requests[0].body).query;
+    assert.match(query, /nodes \{ tagName isDraft isPrerelease publishedAt \}/u);
     assert.deepEqual(requests, [
       {
-        args: [
-          "api",
-          "repos/owner/repo/releases?per_page=100&page=1",
-          "--jq",
-          "map({tag_name, draft, prerelease, published_at})",
-        ],
-        body: "",
+        args: ["api", "graphql", "--method", "POST", "--input", "-"],
+        body: JSON.stringify({ query, variables: { owner: "owner", name: "repo", cursor: null } }),
       },
       {
         args: [
@@ -340,40 +429,12 @@ test("the real command preserves generated notes and evergreen scope and refuses
 });
 
 void test("only the authenticated already-published integration bullet is removed byte-for-byte", () => {
-  const repository = "owner/repo";
-  const tag = "v0.457.0";
-  const [object, head, cut, integrationHead, merge, tree, gate] = "abcdef0"
-    .split("")
-    .map((x) => x.repeat(40));
+  const { repository, tag, object, head, merge } = publishedIntegrationIdentity;
   const url = `https://github.com/${repository}/pull/73`;
   const row = `* Any title, not a classification by @reporter in ${url}`;
   const original = `## What's Changed\n* Real fix by @user in https://github.com/${repository}/pull/74\n${row}\n\n**Full Changelog**: https://github.com/${repository}/compare/${tag}...v0.458.0\n`;
   const expected = original.replace(`${row}\n`, "");
-  const make = () => ({
-    reference: { ref: `refs/tags/${tag}`, object: { type: "tag", sha: object } },
-    annotated: {
-      sha: object,
-      tag,
-      object: { type: "commit", sha: head },
-      message: `Release ${tag}\n\nRelease-Mode: pinned\nRelease-PR: #72\nValidated-run: 19\nValidated-head: ${head}\nValidated-base: ${cut}\nIntegration-PR: #73\nIntegration-head: ${integrationHead}\nIntegration-merge: ${merge}\nIntegration-parent: ${cut}\nProtected-candidate: ${gate}\n`,
-    },
-    pr: {
-      number: 73,
-      merged: true,
-      state: "closed",
-      merged_at: "2026-10-17T00:00:00Z",
-      merge_commit_sha: merge,
-      base: { ref: "main", repo: { full_name: repository } },
-      head: { sha: integrationHead, repo: { full_name: repository } },
-      body: `<!-- vize-release-pin-source: 72 -->\n<!-- vize-release-pin-cut: ${cut} -->\n<!-- vize-release-pin-head: ${head} -->\n<!-- vize-release-pin-tag: ${tag} -->`,
-    },
-    h: { sha: head, parents: [{ sha: cut }], commit: { tree: { sha: tree } } },
-    m: {
-      sha: merge,
-      parents: [{ sha: cut }],
-      commit: { tree: { sha: tree }, verification: { verified: true, reason: "valid" } },
-    },
-  });
+  const make = publishedIntegrationFixture;
   const run = (fixture = make(), body = original) => {
     const calls: string[] = [];
     const objects: Record<string, unknown> = {
@@ -386,8 +447,8 @@ void test("only the authenticated already-published integration bullet is remove
     const notes = generateReleaseNotes(
       (path, request) => {
         calls.push(path);
+        if (path === "graphql") return metadataPage([release(tag)]);
         if (request) return { body };
-        if (path.includes("/releases?")) return [release(tag)];
         const key = path.slice(`repos/${repository}/`.length);
         if (!(key in objects)) throw new Error("unavailable identity");
         return objects[key];
@@ -401,7 +462,7 @@ void test("only the authenticated already-published integration bullet is remove
   const positive = run();
   assert.deepEqual(positive.notes, { body: expected, previousTag: tag });
   assert.deepEqual(positive.calls, [
-    `repos/${repository}/releases?per_page=100&page=1`,
+    "graphql",
     `repos/${repository}/releases/generate-notes`,
     ...[
       `git/ref/tags/${tag}`,
@@ -411,101 +472,14 @@ void test("only the authenticated already-published integration bullet is remove
       `commits/${merge}`,
     ].map((path) => `repos/${repository}/${path}`),
   ]);
-  for (const mutate of [
-    (f: ReturnType<typeof make>) => {
-      f.reference.object.type = "commit";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.reference.ref += "-other";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.object.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.tag = "v0.456.0";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message += "Release-PR: #72\n";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message = f.annotated.message.replace("Validated-run: 19", "Validated-run: 0");
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message = f.annotated.message.replace(
-        `Integration-parent: ${cut}`,
-        `Integration-parent: ${gate}`,
-      );
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.number = 74;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.merged = false;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.state = "open";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.merge_commit_sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.head.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.base.ref = "other";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.base.repo.full_name = "foreign/repo";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.head.repo.full_name = "foreign/repo";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.body = f.pr.body.replace(head, gate);
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.body += "\n<!-- vize-release-pin-source: 99 -->";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.h.parents[0].sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.parents.push({ sha: gate });
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.parents[0].sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.verification.verified = false;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.verification.reason = "unsigned";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.tree.sha = gate;
-    },
-  ]) {
+  for (const mutate of unprovedIntegrationMutations) {
     const fixture = make();
     mutate(fixture);
     assert.equal(run(fixture).notes.body, original, `unproved identity: ${String(mutate)}`);
   }
-  for (const body of [
-    original.replace(url, `${url}0`),
-    original.replace(url, `${url}?other`),
-    original.replace(row, `- ${row.slice(2)}`),
-    original.replace(row, `${row}\n${row}`),
-    original.replace(row, `${row}\nExtra mention: ${url}`),
-    original.replace(url, url.replace(repository, "foreign/repo")),
-  ])
+  for (const body of unrecognisedIntegrationBodies(original, row, url))
     assert.equal(run(make(), body).notes.body, body, "unrecognized/ambiguous rows stay whole");
-  for (const [body, removed] of [
-    [original.replaceAll("\n", "\r\n"), `${row}\r\n`],
-    [original.trimEnd(), `${row}\n`],
-    [original.replace(row, `${row} with unexpected suffix`), ""],
-  ]) {
+  for (const [body, removed] of integrationLineEndingCases(original, row)) {
     assert.equal(run(make(), body).notes.body, removed ? body.replace(removed, "") : body);
   }
   const titledRow = row.replace(
@@ -517,36 +491,10 @@ void test("only the authenticated already-published integration bullet is remove
 });
 
 test("release notes credit third-party co-authors with their PRs", () => {
-  const fix = (subject: string, ...trailers: string[]) => ({
-    message: `${subject}\n\nCloses #1\n\n${trailers.join("\n")}`,
-    author: "maintainer",
-  });
-  const claude = "Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>";
-  const credits = coAuthorCredits([
-    fix(
-      "fix(canon): a (#9768)",
-      "Co-authored-by: escaton <123+escaton@users.noreply.github.com>",
-      claude,
-    ),
-    fix(
-      "fix(patina): b (#9759)",
-      "Co-authored-by: naitokosuke <9+naitokosuke@users.noreply.github.com>",
-    ),
-    fix(
-      "fix(patina): c (#9770)",
-      "co-authored-by: naitokosuke <naitokosuke@users.noreply.github.com>",
-    ),
-    fix("fix: self (#1)", "Co-authored-by: Maintainer <1+maintainer@users.noreply.github.com>"),
-    fix(
-      "chore: bot (#2)",
-      "Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
-    ),
-    fix("fix: mail (#3)", "Co-authored-by: Jane Doe <jane@example.com>"),
-    { message: "Release v0.486.0", author: null },
-  ]);
+  const fixtures = coAuthorFixtures();
   assert.equal(
-    credits,
+    coAuthorCredits(fixtures.commits),
     "## Thanks\n\nReported and co-authored by @escaton (#9768), @naitokosuke (#9759, #9770), Jane Doe (#3).\n",
   );
-  assert.equal(coAuthorCredits([fix("fix: x (#4)", claude)]), "");
+  assert.equal(coAuthorCredits(fixtures.botOnly), "");
 });
