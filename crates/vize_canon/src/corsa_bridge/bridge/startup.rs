@@ -281,19 +281,14 @@ impl CorsaBridge {
             if !lease.enter() {
                 return Err(CorsaBridgeError::ProcessTerminated);
             }
-            let outcome = (|| {
-                if slot.is_none() {
-                    *slot = Some(build_client(&config, shared)?);
-                }
-                lease.retain();
-                lease.publish(&initialized, true)
-            })();
-            if outcome.is_err() {
-                // Constructor failure need not return a joinable owner. Keep
-                // the pre-armed mirror and refuse an unproven second startup.
-                lease.retain_after_failure();
+            if slot.is_none() {
+                // This eager constructor has not received the Canon mirror.
+                // Its error keeps the existing retry/error ownership law;
+                // only the seeded factory can expose this graph on failure.
+                *slot = Some(build_client(&config, shared)?);
             }
-            outcome
+            lease.retain();
+            lease.publish(&initialized, true)
         })
         .await?;
         if let Some(timer) = timer {
