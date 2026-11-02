@@ -194,12 +194,18 @@ impl VirtualProject {
             }
             return registered_any;
         }
-        // Like `register_paths`, the batch shares one immutable dependency
-        // snapshot so an imported type module is resolved once per batch.
-        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        // The batch shares one immutable dependency snapshot so an imported type
+        // module is resolved once per batch, while each root keeps its own
+        // runtime-prop maps: their cycle cuts depend on that root.
+        let shared_type_sources = RuntimePropResolveCache::default();
+        let root_caches: Vec<RuntimePropResolveCache> = paths
+            .iter()
+            .map(|_| shared_type_sources.with_shared_type_sources())
+            .collect();
         let contexts = paths
             .iter()
-            .map(|path| self.path_build_context(path, Some(&runtime_prop_resolve_cache)))
+            .zip(root_caches.iter())
+            .map(|(path, cache)| self.path_build_context(path, Some(cache)))
             .collect::<Vec<_>>();
         let built = paths
             .par_iter()
