@@ -47,7 +47,15 @@ export type DeclarationProfile = PublishedProfile & {
 };
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
-export const afterProfile: Profile | null = null;
+export const afterProfile: Profile | null = {
+  subset: "F78",
+  fix: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+  version: "0.647.0",
+  source: "d1ef6f2200afaf18922a052c114bb9ed366846e5",
+  candidate: "98318e082d05b6db0a6908da2a9cad6dcdf276f1",
+  run: "41443199914",
+  capsule: "f8719292de81466487e2c9a028d0ff22ae23f389",
+};
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
   scope:
