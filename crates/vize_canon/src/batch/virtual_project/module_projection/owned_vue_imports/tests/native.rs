@@ -3,6 +3,8 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+use vize_carton::ToCompactString;
+
 use super::{CHILD, packet, project, register};
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::{BatchTypeChecker, DeclarationEmitOptions};
@@ -28,7 +30,7 @@ fn native_check(native: &Path, config: &Path, directory: &Path, phase: &str) -> 
             "config": std::fs::read_to_string(config).unwrap(),
             "status": output.status.code(), "stdout": output.stdout, "stderr": output.stderr}),
         Err(error) => {
-            serde_json::json!({"native": native, "configPath": config, "error": error.to_string()})
+            serde_json::json!({"native": native, "configPath": config, "error": error.to_compact_string()})
         }
     };
     save(directory, &format!("{phase}.json"), value);
@@ -90,7 +92,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         let options = serde_json::json!({"compilerOptions":{"strict":true,"target":"ES2022",
             "module":module,"moduleResolution":mode,"types":[],"noEmit":true},
             "include":["Child.vue","Parent.vue","authored.ts","plain.ts"]});
-        let mut project = project(root.path(), &options.to_string());
+        let mut project = project(root.path(), &options.to_compact_string());
         register(&mut project, "Child.vue", CHILD);
         let good = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child :count=\"1\" /></template>";
         let bad = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child count=\"wrong\" /></template>";
@@ -106,7 +108,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
                 &capture,
                 &phase,
             );
-            let text = String::from_utf8(output.stdout).unwrap();
+            let text = std::str::from_utf8(&output.stdout).unwrap();
             assert_eq!(
                 output.status.code(),
                 Some(if expected == 0 { 0 } else { 2 }),
@@ -143,7 +145,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
             &capture,
             &phase,
         );
-        let text = String::from_utf8(output.stdout).unwrap();
+        let text = std::str::from_utf8(&output.stdout).unwrap();
         assert_eq!(output.status.code(), Some(2), "{text}");
         assert!(output.stderr.is_empty());
         assert_eq!(text.matches("error TS5097:").count(), 1, "{text}");
@@ -206,7 +208,7 @@ fn owned_relative_imports_preserve_native_diagnostics_and_declarations() {
         serde_json::json!({"files":checker.virtual_files().into_iter().map(|file|serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,"code":file.content,"map":format!("{:?}",file.source_map)})).collect::<Vec<_>>(),"outputs":emitted.files.iter().map(|file|serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()}),
     );
     let output = native_check(&native, &config, &capture, "declaration-consumer");
-    let text = String::from_utf8(output.stdout).unwrap();
+    let text = std::str::from_utf8(&output.stdout).unwrap();
     assert_eq!(output.status.code(), Some(2), "{text}");
     assert!(output.stderr.is_empty());
     assert_eq!(text.matches("error TS2322:").count(), 1, "{text}");

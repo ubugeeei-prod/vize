@@ -76,10 +76,12 @@ impl ImportSourceMap {
         let mut source_map = Self::for_rewrites(self.replacement_ranges.len());
         let mut changed = lengths.into_iter().peekable();
         for (index, range) in self.replacement_ranges.iter().enumerate().rev() {
-            let length = if changed.peek().is_some_and(|(changed, _)| *changed == index) {
-                changed.next().unwrap().1
-            } else {
-                range.virtual_end - range.virtual_start
+            let length = match changed.peek() {
+                Some(&(changed_index, length)) if changed_index == index => {
+                    changed.next();
+                    length
+                }
+                _ => range.virtual_end - range.virtual_start,
             };
             source_map.record_replacement(range.original_start, range.original_end, length);
         }
