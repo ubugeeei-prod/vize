@@ -1,0 +1,3 @@
+<template>
+  <unregistered-link to="/" @click="() => {}" />
+</template>

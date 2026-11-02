@@ -204,6 +204,34 @@ tests/_fixtures/differential/linter/slot-existence-conditions-10822/Field.vue.tx
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-existence-conditions-10822/source-provenance.json -text
 
+# Exact original #11373 sources and settings.
+tests/_fixtures/differential/typechecker/global-component-listener-11373/package.json.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/tsconfig.json.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/global-components.d.ts.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/GlobalComponentListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/PascalListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/NoListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/cases.json -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/source-provenance.json -text
+
+# Authored #11373 semantic negative and inverse controls.
+tests/_fixtures/differential/typechecker/global-component-listener-11373/controls.json -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/bad-event.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/good-event.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/local-number.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/local-string.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/missing-required.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/strict-unknown.tsconfig.json.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/typed-global-components.d.ts.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/unknown.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/wrong-prop.vue.txt -text
+
+# Authored suppression ownership controls for the typed global projection.
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-global-components.d.ts.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-marked.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-sibling.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/authored/suppression-unmarked.vue.txt -text
+
 # Preserve the original Typeof SFC and explicit semantic-successor custody bytes.
 tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt -text
 tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json -text

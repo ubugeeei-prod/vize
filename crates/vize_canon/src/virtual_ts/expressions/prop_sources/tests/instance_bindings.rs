@@ -2,11 +2,85 @@
 
 use crate::virtual_ts::VirtualTsOptions;
 use crate::virtual_ts::expressions::prop_sources::{
-    generated_prop_span, generated_prop_span_preserving_comments,
+    append_prop_value, generated_diagnostic_prop_span, generated_prop_span,
+    generated_prop_span_preserving_comments,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{String, cstr};
 use vize_croquis::{Analyzer, AnalyzerOptions, croquis::PassedProp};
+
+#[test]
+fn retained_line_comments_leave_delimiters_and_mappings_outside_the_comment() {
+    let cases = [
+        ("value // @ts-ignore", "value // @ts-ignore\n", true),
+        (
+            "value // 雪 @ts-expect-error",
+            "value // 雪 @ts-expect-error\n",
+            true,
+        ),
+        (
+            "value, other // @ts-ignore",
+            "value, other // @ts-ignore\n",
+            true,
+        ),
+        ("'// @ts-ignore'", "'// @ts-ignore'", false),
+        ("`// @ts-ignore`", "`// @ts-ignore`", false),
+        (
+            "value /* @ts-expect-error */",
+            "value /* @ts-expect-error */",
+            false,
+        ),
+        ("value // @ts-ignore\n", "value // @ts-ignore\n", false),
+    ];
+    let bindings = TemplateBindingAccess::default();
+    let mut captured = Vec::new();
+    for (raw, expected, added_tail) in cases {
+        let prop = prop(raw);
+        let span = generated_diagnostic_prop_span(&prop, &bindings).unwrap();
+        let mut emitted = String::from("const props = { foo: ");
+        let range = append_prop_value(&mut emitted, span.text.as_str());
+        let mapped = range.start..span.mapped_limit(range.start);
+        emitted.push_str(", bar: other };");
+        let allocator = oxc_allocator::Allocator::default();
+        let parsed =
+            oxc_parser::Parser::new(&allocator, emitted.as_str(), oxc_span::SourceType::ts())
+                .parse();
+        let counterfactual = format!("const props = {{ foo: {raw}, bar: other }};");
+        let old_allocator = oxc_allocator::Allocator::default();
+        let old =
+            oxc_parser::Parser::new(&old_allocator, &counterfactual, oxc_span::SourceType::ts())
+                .parse();
+        println!(
+            "vize-retained-prop-comment {}",
+            serde_json::json!({
+                "raw": raw, "text": span.text.as_str(), "emitted": emitted.as_str(),
+                "mapped": [mapped.start, mapped.end], "diagnostics": format!("{:?}", parsed.diagnostics),
+                "sourceCounterfactual": counterfactual, "counterfactualDiagnostics": format!("{:?}", old.diagnostics),
+            })
+        );
+        captured.push((
+            raw,
+            expected,
+            added_tail,
+            span.text,
+            emitted.clone(),
+            mapped,
+            parsed.diagnostics.is_empty(),
+            old.diagnostics.is_empty(),
+        ));
+    }
+    for (raw, expected, added_tail, text, emitted, mapped, valid, old_valid) in captured {
+        assert_eq!(text, expected);
+        assert_eq!(emitted.get(mapped), Some(raw), "{emitted}");
+        assert!(valid, "{emitted}");
+        if added_tail {
+            assert!(
+                !old_valid,
+                "the source-derived old delimiter placement must fail: {raw}"
+            );
+        }
+    }
+}
 
 fn prop(value: &str) -> PassedProp {
     PassedProp {

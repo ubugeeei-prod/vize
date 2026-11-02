@@ -71,7 +71,7 @@ impl<'a> GlobalComponentPlan<'a> {
             component_check: if include_all {
                 GlobalComponentCheck::All
             } else if !legacy_vue2 {
-                GlobalComponentCheck::PascalCase
+                GlobalComponentCheck::PascalOrKebabCase
             } else {
                 GlobalComponentCheck::None
             },

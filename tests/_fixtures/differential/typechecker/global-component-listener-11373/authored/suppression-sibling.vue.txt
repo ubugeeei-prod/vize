@@ -1,0 +1,7 @@
+<template>
+  <suppression-probe :value="{
+    // @ts-expect-error intentional authored count mismatch
+    count: '@ts-expect-error',
+    sibling: 'bad',
+  }" />
+</template>
