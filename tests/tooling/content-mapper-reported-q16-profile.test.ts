@@ -3,9 +3,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { parse } from "yaml";
 import {
   q16Package,
   q16Profile,
@@ -21,15 +21,26 @@ const workflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
-test("11373 is a closed independent report profile while the entire previous workflow is restored", () => {
-  const before = workflow.replace(
-    'options: [all, A, A-with-declaration, B, C, D, "11373"]',
-    "options: [all, A, A-with-declaration, B, C, D]",
-  );
-  assert.equal(
-    createHash("sha256").update(before).digest("hex"),
-    "051e5b359b2bfe33178d681b1cc6566a6a9d594951cd4ea83a12c1acb02e3cad",
-  );
+test("11373 is a closed independent profile with the existing report dispatch", () => {
+  const config = parse(workflow) as {
+    on: {
+      workflow_dispatch: {
+        inputs: {
+          "reported-q16-cases": { type: unknown; options: unknown; default: unknown };
+        };
+      };
+    };
+    jobs: { "reported-q16": unknown };
+  };
+  const cases = config.on.workflow_dispatch.inputs["reported-q16-cases"];
+  assert.equal(cases.type, "choice");
+  assert.deepEqual(cases.options, ["all", "A", "A-with-declaration", "B", "C", "D", "11373"]);
+  assert.equal(cases.default, "all");
+  assert.deepEqual(config.jobs["reported-q16"], {
+    if: "github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'",
+    uses: "./.github/workflows/content-mapper-reported-q16.yml",
+    with: { request: "${{ toJSON(inputs) }}" },
+  });
   for (const key of ["all", "A", "A-with-declaration", "B", "C", "D"]) {
     assert.deepEqual(q16Profile(key).package, q16Package);
     verifyQ16ProviderNode("v26.13.0", key);
