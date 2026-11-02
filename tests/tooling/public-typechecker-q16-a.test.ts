@@ -138,11 +138,10 @@ test("closed A roles preserve actual single declaration original and source-owne
     [0, 0, 0, 0, 1, 1, 0],
   );
   assert.deepEqual(a65Data.states[0]!.files, a65Data.states[6]!.files);
-  assert(
-    a65Data.states[0]!.files.find((row) => row.path === "tsconfig.json")!.source.includes(
-      '"noUnusedLocals": true',
-    ),
-  );
+  const tsconfig = JSON.parse(
+    a65Data.states[0]!.files.find((row) => row.path === "tsconfig.json")!.source,
+  ) as { compilerOptions: { noUnusedLocals?: boolean } };
+  assert.equal(tsconfig.compilerOptions.noUnusedLocals, true);
   assert(!a65Data.originalArgs.includes("--format"));
   assert(!a65Data.originalArgs.includes("vue-tsc"));
 });
