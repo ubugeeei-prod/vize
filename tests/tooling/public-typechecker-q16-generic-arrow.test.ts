@@ -26,7 +26,10 @@ import {
   assessGenericArrow,
   genericArrowLimitations,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/generic-arrow.ts";
-import { assertTscModuleResolution } from "../../tools/benchmarks/scripts/public-typechecker-q16/generic-arrow-route.ts";
+import {
+  assertTscModuleResolution,
+  resolvedTscPackage,
+} from "../../tools/benchmarks/scripts/public-typechecker-q16/generic-arrow-route.ts";
 import { requireOwnedDispatch } from "../../tools/benchmarks/scripts/public-typechecker-q16/run.ts";
 
 const mock: RegressionProfile = {
@@ -199,6 +202,27 @@ test("actual module lookup guard refuses scopes conditional exports and prioriti
       writeFileSync(join(target, "package.json"), JSON.stringify(platform));
     };
     save();
+    // Vize legitimately carries its separate default compiler alongside the requested TSC.
+    const unrelated = join(root, "node_modules/vize/node_modules/@typescript/typescript-linux-x64");
+    mkdirSync(unrelated, { recursive: true });
+    writeFileSync(
+      join(unrelated, "package.json"),
+      JSON.stringify({ ...platform, version: "7.0.2" }),
+    );
+    const declaredPackages = [
+      { name: platform.name, directory: unrelated },
+      { name: manifest.name, directory: parent },
+      { name: platform.name, directory: target },
+    ];
+    assert.equal(resolvedTscPackage(parent, declaredPackages).directory, target);
+    assert.throws(
+      () =>
+        resolvedTscPackage(
+          parent,
+          declaredPackages.filter((pkg) => pkg.directory !== target),
+        ),
+      assert.AssertionError,
+    );
     assertTscModuleResolution(root, parent, target);
     for (const scope of ["lib", "bin"]) {
       mkdirSync(join(parent, scope), { recursive: true });

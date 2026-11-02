@@ -67,6 +67,25 @@ export function assertTscModuleResolution(root: string, parent: string, target: 
     targetManifestPath,
   );
 }
+export function resolvedTscPackage<T extends { name: string; directory: string }>(
+  parent: string,
+  packages: T[],
+) {
+  const resolved = createRequire(join(parent, "lib/getExePath.js")).resolve(
+    "@typescript/typescript-linux-x64/package.json",
+  );
+  const matches = packages.filter(
+    (pkg) =>
+      pkg.name === "@typescript/typescript-linux-x64" &&
+      join(pkg.directory, "package.json") === resolved,
+  );
+  assert.equal(
+    matches.length,
+    1,
+    "resolved compiler target must have authenticated package custody",
+  );
+  return matches[0]!;
+}
 export function publishedTscRoute(root: string, packages: PackageBase[]) {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
@@ -75,19 +94,12 @@ export function publishedTscRoute(root: string, packages: PackageBase[]) {
     assert.equal(rows.length, 1);
     return rows[0]!;
   };
-  const parent = one("typescript"),
-    target = one("@typescript/typescript-linux-x64");
+  const parent = one("typescript");
   assert.equal(parent.version, "7.1.0-beta");
-  assert.equal(target.version, parent.version);
   assert.equal(parent.integrity, parentIntegrity);
-  assert.equal(target.integrity, targetIntegrity);
   assert.equal(
     parent.archiveSha512,
     Buffer.from(parentIntegrity.slice(7), "base64").toString("hex"),
-  );
-  assert.equal(
-    target.archiveSha512,
-    Buffer.from(targetIntegrity.slice(7), "base64").toString("hex"),
   );
   for (const [path, digest] of Object.entries(programs)) {
     const absolute = join(parent.directory, path),
@@ -98,6 +110,13 @@ export function publishedTscRoute(root: string, packages: PackageBase[]) {
     assert.equal(approved.sha256, digest);
     assert.deepEqual(fileImage(absolute), approved);
   }
+  const target = resolvedTscPackage(parent.directory, packages);
+  assert.equal(target.version, parent.version);
+  assert.equal(target.integrity, targetIntegrity);
+  assert.equal(
+    target.archiveSha512,
+    Buffer.from(targetIntegrity.slice(7), "base64").toString("hex"),
+  );
   const targetManifestPath = join(target.directory, "package.json");
   assert.equal(
     fileImage(targetManifestPath).sha256,
