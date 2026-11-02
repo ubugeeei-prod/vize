@@ -3,6 +3,7 @@
 
 use oxc_allocator::HashMap;
 use vize_carton::Allocator;
+use vize_l2::analysis::text_facts::TextPart;
 use vize_l3::operand::{OperandRole, OperandValue, ValueKind};
 
 use super::{AdmissionFailure, LegacyReason, native::validate::reference, retained::Retained};
@@ -97,9 +98,9 @@ pub(super) fn capture<'a>(
     Ok(())
 }
 
-/// `vize_l1_to_l2::lower::rebuild_source(parts) == text`, without building
+/// `vize_l2::analysis::text_facts::rebuild_source(parts) == text`, without building
 /// the rebuilt string.
-fn rebuilds(parts: &[vize_l1_to_l2::lower::TextPart], mut text: &str) -> bool {
+fn rebuilds(parts: &[TextPart], mut text: &str) -> bool {
     for part in parts {
         let rest = if part.dynamic {
             text.strip_prefix("{{ ")
