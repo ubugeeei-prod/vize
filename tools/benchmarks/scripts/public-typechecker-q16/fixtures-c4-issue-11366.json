@@ -1,0 +1,143 @@
+{
+  "id": "C4",
+  "sourceAuthority": {
+    "sourceDataFreezeSha256": "f52c7d2d88bb0f33ed8bfaa44793a99b5ddc9bc7209257837b09a5a11f9bbbd6",
+    "c62IndependentManifestSha256": "541525579a7b4a4cda7d1d64af0372b1c24add3a6fcbe752c2c69eb9f12568ed",
+    "additionalIndependentManifests": [
+      {
+        "issue": 11363,
+        "name": "C63-11363-data-manifest.json",
+        "sha": "9b52cae4f350d6d2e3af4a18c44176135174f39f23a6b205601d561855a12e10"
+      },
+      {
+        "issue": 11366,
+        "name": "C66-11366-data-manifest.json",
+        "sha": "19499b212f7c4d7befe2d932c175b3e3664cc74edb6e16bd50205c1c9e1dee86"
+      },
+      {
+        "issue": 11367,
+        "name": "C67-11367-data-manifest.json",
+        "sha": "5036b6d577c279c91217b76666de17037ea55f07a066e908c661532610a4ce2d"
+      }
+    ],
+    "sourceObservationsArePublicOutputs": false,
+    "originalArgvAddsPrettyFalse": false,
+    "selectedIssues": [11362, 11363, 11366, 11367]
+  },
+  "projects": [
+    {
+      "id": "issue-11366",
+      "issue": 11366,
+      "states": [
+        {
+          "id": "11366/original",
+          "phase": "original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\">\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <div>{{ model }}</div>\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TKey extends 'a' | 'b'\">\nimport Child from \"./Child.vue\";\n\nconst { foo } = defineProps<{ foo: TKey }>();\nconst map = { a: Child, b: Child };\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <component :is=\"map[foo]\" v-model=\"model\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11366/number-model-error",
+          "phase": "number-model-error",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\">\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <div>{{ model }}</div>\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TKey extends 'a' | 'b'\">\nimport Child from \"./Child.vue\";\n\nconst { foo } = defineProps<{ foo: TKey }>();\nconst map = { a: Child, b: Child };\nconst model = defineModel<number>({ required: true });\n</script>\n\n<template>\n  <component :is=\"map[foo]\" v-model=\"model\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,29): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11366/string-model-repair",
+          "phase": "string-model-repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\">\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <div>{{ model }}</div>\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TKey extends 'a' | 'b'\">\nimport Child from \"./Child.vue\";\n\nconst { foo } = defineProps<{ foo: TKey }>();\nconst map = { a: Child, b: Child };\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <component :is=\"map[foo]\" v-model=\"model\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11366/number-model-restored",
+          "phase": "number-model-restored",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Child.vue",
+              "source": "<script setup lang=\"ts\">\nconst model = defineModel<string>({ required: true });\n</script>\n\n<template>\n  <div>{{ model }}</div>\n</template>\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\" generic=\"TKey extends 'a' | 'b'\">\nimport Child from \"./Child.vue\";\n\nconst { foo } = defineProps<{ foo: TKey }>();\nconst map = { a: Child, b: Child };\nconst model = defineModel<number>({ required: true });\n</script>\n\n<template>\n  <component :is=\"map[foo]\" v-model=\"model\" />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(10,29): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "schema": "vize.q16.public.declaration11365.v1",
+  "fixMerge": "a321c37109d86c03afeacc833b1760c85ad4a32c",
+  "fixture": {
+    "path": "tests/_fixtures/differential/typechecker/reported-declarations-11364-11365/input.json",
+    "sha256": "36707b0c34eda5929ba17a98ff107b6ac7cbc3904432ae6bb914bcac0c133e73"
+  },
+  "independentSourceTest": {
+    "path": "crates/vize/tests/check_reported_declarations_11364_11365_cli.rs",
+    "sha256": "85d87f98e44e0927a3f5c5d61265b75373f91c7dde413ff4445e4a357ae52a2d"
+  },
+  "renderers": [
+    {
+      "path": "crates/vize/src/commands/check/runner/execution.rs",
+      "bytes": 12117,
+      "sha256": "1d80f3b493e62cdf1ea29fe496466e38f00874d6dbd47da6c6f0070819b76e84",
+      "gitBlob": "e49381dc2b82f43d3dae7ada93964b749d8c5f0a"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/output.rs",
+      "bytes": 9574,
+      "sha256": "4348cbf296120a240f593b7b2291fb2ac7824a6732452b869a992ea75d9c3fc5",
+      "gitBlob": "aa6ad6dae0756689e3bcd86fc7d225e42e3040bb"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/output/declarations.rs",
+      "bytes": 1324,
+      "sha256": "7b900e37ee109039a1900eaec010b16e8d10c2aebc142de12c2e835f09d5a854",
+      "gitBlob": "938adeaa31c8da7e69e29da557410958cbbf0db9"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/output/json.rs",
+      "bytes": 5322,
+      "sha256": "eb9242a29d00267b4f310e7fb6488c814af1ccde11120f7d156cb1c81bdf7fa3",
+      "gitBlob": "24e8e026274d4cb73c1900fc1091f99e2bc948ef"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/diagnostics.rs",
+      "bytes": 10542,
+      "sha256": "88ba79e09eee09e5544359feebffdd4770893e337ead1d98c317c55fbaf1d847",
+      "gitBlob": "17981be37cd32955c3baa2d42b3da8d341a6606b"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/resolve.rs",
+      "bytes": 17184,
+      "sha256": "8d882264ba3dd1cdbf6787a5e673f19e19cff28fe48731a418c77a81ec7f86f7",
+      "gitBlob": "54b4b0ae31833dbca4f8288cc38933bd274c368a"
+    },
+    {
+      "path": "crates/vize/src/commands/check/runner/text_style.rs",
+      "bytes": 1438,
+      "sha256": "3ba8fc70ba3c451310edecdf4fcb67d66a6217f7190359f96d0c7aa033bb7979",
+      "gitBlob": "404c502469a63f47c4d07fb604d10a440ef59cac"
+    },
+    {
+      "path": "crates/vize/src/commands/check/reporting.rs",
+      "bytes": 1616,
+      "sha256": "2ed38f2a9b82162ef3a2f82afed3892bc1ae59663868fc061cc1206f7181d117",
+      "gitBlob": "0938d5154ad6acf455e2a1ff8bc1bbaae8ad203e"
+    }
+  ],
+  "originalCommand": "npm i && npx vize check --declaration --declaration-dir out src/Foo.vue src/Probe.vue\n",
+  "originalArgs": [
+    "npx",
+    "vize",
+    "check",
+    "--declaration",
+    "--declaration-dir",
+    "out",
+    "src/Foo.vue",
+    "src/Probe.vue"
+  ],
+  "authoredJsonArgs": [
+    "npx",
+    "vize",
+    "check",
+    "--format",
+    "json",
+    "--declaration",
+    "--declaration-dir",
+    "out",
+    "src/Foo.vue",
+    "src/Probe.vue"
+  ],
+  "outputFiles": ["Foo.vue.d.ts", "Probe.vue.d.ts", "__vize_helpers.d.ts"],
+  "fullDeclarationByteGoldenOwned": false,
+  "sourceDeclarationsUsedAsPublicInput": false,
+  "originalEnvironmentOverrideCopied": false,
+  "states": [
+    {
+      "id": "original-text-repeated",
+      "json": false,
+      "status": 0,
+      "expectedDiagnostic": null,
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "original-repeated",
+      "json": true,
+      "status": 0,
+      "expectedDiagnostic": null,
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "one-use",
+      "json": true,
+      "status": 0,
+      "expectedDiagnostic": null,
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "no-unused-false",
+      "json": true,
+      "status": 0,
+      "expectedDiagnostic": null,
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": false,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "wrong-owned-prop",
+      "json": true,
+      "status": 1,
+      "expectedDiagnostic": "error:7:8 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Foo bar=\"wrong\" />; binding: bar)",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo bar=\"wrong\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "authored-unused",
+      "json": true,
+      "status": 1,
+      "expectedDiagnostic": "error:2:7 [TS6133] 'authoredUnused' is declared but its value is never read.",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nconst authoredUnused = 1;\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n"
+        }
+      ]
+    },
+    {
+      "id": "repaired-repeated",
+      "json": true,
+      "status": 0,
+      "expectedDiagnostic": null,
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+        },
+        {
+          "path": "src/Foo.vue",
+          "source": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+        },
+        {
+          "path": "src/Probe.vue",
+          "source": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n"
+        }
+      ]
+    }
+  ]
+}

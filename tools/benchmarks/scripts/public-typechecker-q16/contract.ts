@@ -3,8 +3,9 @@ import { createHash } from "node:crypto";
 import { overrides } from "../../../support/release/public_install/identity.ts";
 import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
+import { a65Data } from "./a-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "C62" | "A64";
+export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -47,14 +48,13 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "A64",
-  knownGoodSource: "07d1feb1bb19d862b30aea10fe3465a08a8b1239",
-  causalFix: null,
-  version: "0.643.0",
-  source: "f6f94688127f72fbc1cc1f349df4d66327705985",
-  candidate: "6ea5cc7d4c287feaf2ea4fe13012535d8a83e7f2",
-  run: "41417714586",
-  capsule: "faa59972a4b6877f5d12eb1f24e38a59105e3db5",
+  subset: "A59-65",
+  fix: "a321c37109d86c03afeacc833b1760c85ad4a32c",
+  version: "0.646.0",
+  source: "a321c37109d86c03afeacc833b1760c85ad4a32c",
+  candidate: "46f7f273d05bb7ea9d94bfdfb22bd792f6075f95",
+  run: "41438403319",
+  capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 export const limitations = {
@@ -73,7 +73,10 @@ export const reportedCommands = {
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
 export function subsetFor(id: string): SuppliedSubset {
-  assert(["D61", "B60-68", "A59", "C62"].includes(id), "closed source-qualified subset required");
+  assert(
+    ["D61", "B60-68", "A59", "C62", "C4"].includes(id),
+    "closed source-qualified subset required",
+  );
   const rows: SuppliedSubset[] = suppliedSubsets;
   const matches = rows.filter((row) => row.id === id);
   assert.equal(matches.length, 1, "subset source data has not been supplied");
@@ -85,6 +88,9 @@ export function requireProfile(profile: Profile | null): Profile {
     assert.equal(profile.causalFix, null);
     assert(!Object.hasOwn(profile, "fix"), "A64 has no causal fix claim");
     assert.equal(profile.knownGoodSource, declarationData.knownGoodSource);
+  } else if (profile.subset === "A59-65") {
+    subsetFor("A59");
+    assert.equal(profile.fix, a65Data.fixMerge);
   } else subsetFor(profile.subset);
   for (const sha of [
     profile.subset === "A64" ? profile.knownGoodSource : profile.fix,

@@ -1,0 +1,85 @@
+{
+  "id": "A59",
+  "sourceAuthority": {
+    "independentManifestSha256": "6550671756bb3cda353ce212850b8812dcd10e219e8fc731292ab8139939168f",
+    "fixMerge": "a321c37109d86c03afeacc833b1760c85ad4a32c",
+    "sourceObservationsArePublicOutputs": false
+  },
+  "projects": [
+    {
+      "id": "issue-11359",
+      "issue": 11359,
+      "states": [
+        {
+          "id": "11359/original",
+          "phase": "original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\ndefineModel<boolean>();\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11359/wrong-model-assignment",
+          "phase": "wrong-model-assignment",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\nconst bar = defineModel<boolean>();\nbar.value = \"baz\";\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/Probe.vue(8,1): error TS2322: Type '\"baz\"' is not assignable to type 'boolean | undefined'.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11359/repaired-model-assignment",
+          "phase": "repaired-model-assignment",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/Probe.vue",
+              "source": "<script setup lang=\"ts\">\ninterface Props {\n  foo: string;\n}\n\ndefineProps<Props>();\nconst bar = defineModel<boolean>();\nbar.value = true;\n</script>\n\n<template>\n  <div />\n</template>\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}
