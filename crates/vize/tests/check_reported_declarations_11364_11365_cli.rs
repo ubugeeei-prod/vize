@@ -223,19 +223,39 @@ fn repeated_component_declarations_preserve_no_unused_and_authored_errors() {
         assert_eq!(diagnostic_codes(&output), expected_codes, "{id}: {all}");
         if clean {
             assert!(helpers, "{id}: full helper module absent");
-            assert!(
-                !serde_json::to_string(&outputs)
+            assert_eq!(
+                serde_json::to_string(&outputs)
                     .unwrap()
-                    .contains("vize:virtual-ts"),
+                    .matches("vize:virtual-ts")
+                    .count(),
+                0,
                 "{id}: private specifier leaked"
             );
-        } else if id == "wrong-owned-prop" {
-            assert!(
-                all.contains("TS2322") || all.contains("\"code\":2322"),
-                "{id}: {all}"
+            assert_eq!(
+                outputs
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|row| row["file"].as_str().unwrap())
+                    .collect::<Vec<_>>(),
+                vec!["Foo.vue.d.ts", "Probe.vue.d.ts", "__vize_helpers.d.ts"]
             );
         } else {
-            assert!(all.contains("authoredUnused"), "{id}: {all}");
+            let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+            let actual = json["files"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .flat_map(|file| file["diagnostics"].as_array().unwrap())
+                .cloned()
+                .collect::<Vec<_>>();
+            let expected = if id == "wrong-owned-prop" {
+                "error:7:8 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Foo bar=\"wrong\" />; binding: bar)"
+            } else {
+                "error:2:7 [TS6133] 'authoredUnused' is declared but its value is never read."
+            };
+            assert_eq!(actual, vec![json!(expected)], "{id}: {all}");
+            assert_eq!(outputs, json!([]));
         }
     }
 }

@@ -34,12 +34,13 @@ const onClose = () => undefined
         output.code
     );
     for suffix in ["Component", "CheckProps", "CheckTail"] {
-        let declaration = vize_carton::cstr!("  type __MyChild_{suffix}_1 =");
+        let declaration = vize_carton::cstr!("type __MyChild_{suffix}_1");
         assert_eq!(
             output
                 .code
                 .lines()
-                .filter(|line| line.starts_with(declaration.as_str()))
+                .filter(|line| line.split_once('=').map(|(left, _)| left.trim())
+                    == Some(declaration.trim()))
                 .count(),
             0,
             "unused shared declaration: {}",
@@ -84,7 +85,10 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                 } else {
                     "MyChild"
                 };
-                let template = cstr!("<div><{tag} {attributes} /><{tag} {attributes} /></div>");
+                let end_tag = if dynamic { "component" } else { "MyChild" };
+                let template = cstr!(
+                    "<div><{tag} {attributes}></{end_tag}><{tag} {attributes}></{end_tag}></div>"
+                );
                 let allocator = vize_carton::Allocator::new();
                 let (root, errors) = vize_armature::parse(&allocator, template.as_str());
                 assert!(errors.is_empty(), "{errors:?}");
@@ -122,7 +126,10 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                 let actual = output
                     .code
                     .lines()
-                    .filter(|line| line.starts_with(cstr!("  type {alias} =").as_str()))
+                    .filter(|line| {
+                        line.split_once('=').map(|(left, _)| left.trim())
+                            == Some(cstr!("type {alias}").as_str())
+                    })
                     .collect::<Vec<_>>();
                 let expected = if reads == 0 {
                     vec![]
@@ -141,12 +148,13 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                     output.code
                 );
                 for suffix in ["CheckProps", "CheckTail"] {
-                    let prefix = cstr!("  type __{name}_{suffix}_1 =");
+                    let prefix = cstr!("type __{name}_{suffix}_1");
                     assert_eq!(
                         output
                             .code
                             .lines()
-                            .filter(|line| line.starts_with(prefix.as_str()))
+                            .filter(|line| line.split_once('=').map(|(left, _)| left.trim())
+                                == Some(prefix.trim()))
                             .count(),
                         0,
                         "{}",
@@ -154,12 +162,13 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                     );
                 }
                 let checker = cstr!("  type __{name}_Check_1 = __{name}_Check_0;");
-                let check_prefix = cstr!("  type __{name}_Check_1 =");
+                let check_prefix = cstr!("type __{name}_Check_1");
                 assert_eq!(
                     output
                         .code
                         .lines()
-                        .filter(|line| line.starts_with(check_prefix.as_str()))
+                        .filter(|line| line.split_once('=').map(|(left, _)| left.trim())
+                            == Some(check_prefix.as_str()))
                         .collect::<Vec<_>>(),
                     vec![checker.as_str()],
                     "{}",
