@@ -36,6 +36,7 @@ import { authenticateProvenance, type authenticate } from "./authority.ts";
 import { profileFor, requireEnvironment, limitations, type SourceFile } from "./contract.ts";
 import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
 import { sourceBin, tsrsRoute, type CommandBin } from "./routes.ts";
+import { e649MetadataUrl, readE649Metadata, usesE649Packument } from "./e649-metadata.ts";
 
 function physical(path: string) {
   const stat = lstatSync(path);
@@ -174,7 +175,22 @@ export async function install(
     }
     let metadata: unknown;
     await packageMetadata(name, version, row, undefined, async (url) => {
-      metadata = await reader(url);
+      if (usesE649Packument(profile, name, version)) {
+        metadata = await readE649Metadata(
+          profile,
+          row,
+          asRecord(asRecord(authority.capsule.npmSRI)[name]),
+          record,
+          cache,
+        );
+        registry.push({
+          url: e649MetadataUrl,
+          selectedVersion: version,
+          representation: "EXACT_ABBREVIATED_INSTALL_PACKUMENT_MEMBER",
+          value: metadata,
+        });
+        record.json("registry-observations.json", registry);
+      } else metadata = await reader(url);
       return metadata;
     });
     const provenance = vize

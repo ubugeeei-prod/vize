@@ -44,7 +44,7 @@ const profile: RegressionProfile = {
   run: "41438403319",
   capsule: "1".repeat(40),
 };
-test("historical A profile binds the genuine containing646 source candidate run and fetched capsule", () => {
+test("historical A profile validates retained release fields", () => {
   assert.deepEqual(
     requireProfile({ ...profile, capsule: "21dc2dcb31c73131a945cd87ec8c2d6c58887bac" }),
     {

@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod emit_overloads;
 mod public_instance;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
@@ -106,18 +107,19 @@ fn previous(current: &str, record: &Value) -> String {
 pub(super) fn source_before(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
-        return actual;
+        return emit_overloads::source_before(path, actual);
     };
     let before_instance = if index < 3 {
         public_instance::source_before(path, &actual)
     } else {
-        actual
+        emit_overloads::source_before(path, actual)
     };
     previous(&before_instance, &load()["files"][index])
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    previous(current, &load()["logicalPreamble"])
+    let previous_overloads = emit_overloads::preamble_before(current);
+    previous(&previous_overloads, &load()["logicalPreamble"])
 }
 
 pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], current: &str) {
@@ -143,6 +145,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
     public_instance::retain_provenance(manifest);
+    emit_overloads::retain_provenance(manifest);
 }
 
 #[cfg(test)]

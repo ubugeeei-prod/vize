@@ -1,10 +1,10 @@
-//! Vue surface rules that consume L2's retained-expression constness.
+//! Canonical binding-surface rules consuming retained-expression constness.
 //!
 //! # The pessimal law's first real consumer
 //!
 //! [`constant_for_hoist`] is the first L2 pass code that *acts* on
 //! P2-5b's const-classification contract: an
-//! [`ExprRef::Opaque`](vize_l2::expr::ExprRef::Opaque) is
+//! [`ExprRef::Opaque`](crate::expr::ExprRef::Opaque) is
 //! **never** constant ([`OpaqueExpr::is_constant`], pessimal law 3 —
 //! "no folding, hoisting, or caching may be justified by an opaque
 //! expression"), and this pass is the first place where that answer
@@ -15,13 +15,13 @@
 //! # The JS rule (self-bound locals ported, free names still weaker)
 //!
 //! The backend-neutral retained-expression classifier now lives in
-//! [`vize_l2::analysis::constant_expression`]. For a retained
-//! [`ExprRef::Js`](vize_l2::expr::ExprRef::Js) the shipped classifier
+//! [`crate::analysis::constant_expression`]. For a retained
+//! [`ExprRef::Js`](crate::expr::ExprRef::Js) the shipped classifier
 //! (`vize_atelier_core::codegen::is_constant_simple_expression`, called
 //! with `bindings: None` by `hoist_static/props.rs`) admits an
 //! expression whose identifiers are locals it binds itself, allowlisted
 //! globals, or helper aliases, and — a measured quirk — admits `this`.
-//! This crate stays off the `vize_croquis` allowlist. The rule here: a
+//! The analysis stays off the `vize_croquis` allowlist. The rule here: a
 //! retained expression is constant iff its walk meets
 //!
 //! - **every identifier reference is a local the expression binds**
@@ -41,10 +41,10 @@
 //! remaining divergence is an L2 *under*-hoist, counted as
 //! `consts_templates` instead of compared.
 //!
-//! [`OpaqueExpr::is_constant`]: vize_l2::expr::OpaqueExpr::is_constant
+//! [`OpaqueExpr::is_constant`]: crate::expr::OpaqueExpr::is_constant
 
+use crate::op::{Attribute, BindingOp, DynamicName, SlotOp};
 use vize_l0::camelize;
-use vize_l2::op::{Attribute, BindingOp, DynamicName, SlotOp};
 
 use super::constant_for_hoist;
 

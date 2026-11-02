@@ -31,6 +31,16 @@ import {
   requireOwnedDispatch,
   writeEmitsInputs,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/run.ts";
+import { requirePairedPrinterFields } from "../../tools/benchmarks/scripts/public-typechecker-q16/fixtures.ts";
+const historicalE649 = requireProfile({
+  subset: "E90-91",
+  fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
+  version: "0.649.0",
+  run: "41495567070",
+  capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
+});
 const mock: RegressionProfile = {
   subset: "E90-91",
   fix: "1".repeat(40),
@@ -60,6 +70,55 @@ const output = (status: number, stdout: string, stderr = ""): ProcessOutput => (
   capacityLimited: false,
 });
 const opaque = (state: State) => state.expectedTsrs.stdoutKind === "OWNED_HEADER_OPAQUE_PRINTER";
+test("genuine 649 profile binds only the fixed E reports", () => {
+  assert.deepEqual(historicalE649, {
+    subset: "E90-91",
+    fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+    source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+    candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
+    version: "0.649.0",
+    run: "41495567070",
+    capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
+  });
+  assert.equal(requireProfile(historicalE649), historicalE649);
+  assert.throws(() => requireProfile(null), assert.AssertionError);
+});
+test("opaque fixture metadata is paired at the actual loader seam", () => {
+  requirePairedPrinterFields({ status: 0, stdout: "", stderr: "" });
+  for (const state of states.filter(opaque)) {
+    requirePairedPrinterFields(state.expectedTsrs);
+    const { stdoutKind: _kind, ...onlyHash } = state.expectedTsrs;
+    const { sourceInputSha256: _hash, ...onlyKind } = state.expectedTsrs;
+    assert.throws(() => requirePairedPrinterFields(onlyHash), assert.AssertionError);
+    assert.throws(() => requirePairedPrinterFields(onlyKind), assert.AssertionError);
+  }
+});
+test("workflow and actual dispatch guard admit the same closed source refs", () => {
+  const workflow = readFileSync(
+      new URL("../../.github/workflows/public-typechecker-consumer.yml", import.meta.url),
+      "utf8",
+    ).split("\n"),
+    start = workflow.indexOf("  public-q16:");
+  assert(start >= 0);
+  let end = workflow.findIndex((line, index) => index > start && /^  [A-Za-z0-9_-]+:$/u.test(line));
+  if (end < 0) end = workflow.length;
+  const conditions = workflow.slice(start + 1, end).filter((line) => line.startsWith("    if: "));
+  assert.equal(conditions.length, 1);
+  const refs = [...conditions[0]!.matchAll(/github\.ref == '([^']+)'/gu)].map((match) => match[1]!),
+    runtime = readFileSync(
+      new URL("../../tools/benchmarks/scripts/public-typechecker-q16/run.ts", import.meta.url),
+      "utf8",
+    ),
+    runtimeRefs = [...runtime.matchAll(/"(refs\/heads\/[^"\n]+)"/gu)].map((match) => match[1]!);
+  assert.deepEqual([...new Set(refs)].sort(), [...new Set(runtimeRefs)].sort());
+  assert(refs.length > 0);
+  for (const ref of refs)
+    requireOwnedDispatch({
+      GITHUB_EVENT_NAME: "workflow_dispatch",
+      GITHUB_REPOSITORY: "ubugeeei-prod/vize",
+      GITHUB_REF: ref,
+    });
+});
 test("closed two-report protocol has exactly twenty independent states and restored originals", () => {
   assert.deepEqual(
     projects.map((project) => project.issue),

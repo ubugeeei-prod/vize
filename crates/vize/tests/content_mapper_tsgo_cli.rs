@@ -28,6 +28,7 @@ mod pug_refusal;
 mod quoted_generic_parameters;
 mod reported_dynamic_targets;
 mod reported_generic_components;
+mod reported_model_events_11390_11391;
 mod reported_model_props_11359;
 mod runtime_null_prop;
 mod support;

@@ -5,7 +5,17 @@ import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
 import { a65Data } from "./a-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64" | "E90-91" | "R77";
+export type Subset =
+  | "D61"
+  | "B60-68"
+  | "A59"
+  | "A59-65"
+  | "C62"
+  | "C4"
+  | "A64"
+  | "E90-91"
+  | "F78"
+  | "R77";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -100,11 +110,17 @@ export function commandsFor(subset: Subset) {
       tsrs: ["npx", "tsrs", "--fast", "--runExternalCode", "-p", "tsconfig.json"],
       reference: null,
     } as const;
+  if (subset === "F78")
+    return {
+      install: ["npm", "i"],
+      tsrs: ["npx", "tsrs", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
+      reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
+    } as const;
   return reportedCommands;
 }
 export function subsetFor(id: string): SuppliedSubset {
   assert(
-    ["D61", "B60-68", "A59", "C62", "C4", "E90-91", "R77"].includes(id),
+    ["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78", "R77"].includes(id),
     "closed source-qualified subset required",
   );
   const rows: SuppliedSubset[] = suppliedSubsets;
@@ -125,6 +141,8 @@ export function requireProfile(profile: Profile | null): Profile {
     subsetFor(profile.subset);
     if (profile.subset === "R77")
       assert.equal(profile.fix, "56635d7cfb27718ec8b40e67309c71da5b9a3803");
+    if (profile.subset === "F78")
+      assert.equal(profile.fix, "d1ef6f2200afaf18922a052c114bb9ed366846e5");
   }
   for (const sha of [
     profile.subset === "A64" ? profile.knownGoodSource : profile.fix,
@@ -144,7 +162,11 @@ export function filesFor(state: State, profile: Profile): SourceFile[] {
     assert(/^(package\.json|tsconfig\.json|src\/[A-Za-z0-9_.-]+)$/u.test(file.path));
     if (file.path !== "package.json") return { ...file };
     const before =
-        profile.subset === "R77" ? "0.641.0" : profile.subset === "E90-91" ? "0.645.0" : "0.638.0",
+        profile.subset === "E90-91"
+          ? "0.645.0"
+          : ["F78", "R77"].includes(profile.subset)
+            ? "0.641.0"
+            : "0.638.0",
       needle = '"vize": "' + before + '"';
     assert.equal(file.source.split(needle).length, 2);
     return {

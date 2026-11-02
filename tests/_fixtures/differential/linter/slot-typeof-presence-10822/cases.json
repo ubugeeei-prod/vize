@@ -1,0 +1,91 @@
+{
+  "schema": "vize.slot-typeof-direct-operand-cases.v1",
+  "version": 1,
+  "scope": "Only immediate authenticated Typeof operand gains support. Nested value reads and other operators preserve native behavior; official packets remain independent, not universal parity.",
+  "cases": [
+    {
+      "id": "direct-typeof",
+      "script": "export default { render() { return typeof this.$slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "parenthesized-typeof",
+      "script": "export default { render() { return typeof ((this.$slots.default)) } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "known-function-alias",
+      "script": "export default { render() { const slot = this.$slots.default; return typeof slot } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "shadowed-function-alias",
+      "script": "export default { render() { const slot = this.$slots.default; function f(slot) { return typeof slot.length } return typeof slot } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "unrelated-owner",
+      "script": "export default { render() { const other = { $slots: { default: [] } }; return typeof other.$slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "nested-member-unicode",
+      "script": "export default { render() { /* 雪🌸 */ return typeof this.$slots.default.length } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "nested-array",
+      "script": "export default { render() { return typeof [this.$slots.default] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "nested-call-argument",
+      "script": "export default { render() { return typeof consume(this.$slots.default) } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "actual-slot-call",
+      "script": "export default { render() { return typeof this.$slots.default() } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    }
+  ]
+}

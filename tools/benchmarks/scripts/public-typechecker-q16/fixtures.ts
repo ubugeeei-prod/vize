@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { asArray, asRecord, asString } from "../../../support/json-value.ts";
 import type { SuppliedSubset, Subset } from "./contract.ts";
+export function requirePairedPrinterFields(expected: object) {
+  assert.equal(
+    Object.hasOwn(expected, "sourceInputSha256"),
+    Object.hasOwn(expected, "stdoutKind"),
+    "sourceInputSha256 and stdoutKind must appear together",
+  );
+}
 export const fixtureNames = [
   "fixtures-d61-issue-11361.json",
   "fixtures-b60-68-issue-11360.json",
@@ -11,6 +18,7 @@ export const fixtureNames = [
   "fixtures-c4-issue-11366.json",
   "fixtures-c4-issue-11367.json",
   "fixtures-a59-issue-11359.json",
+  "fixtures-f78-issue-11378.json",
   "fixtures-e90-91-issue-11390.json",
   "fixtures-e90-91-issue-11391.json",
   "fixtures-r77-issue-11377.json",
@@ -21,7 +29,7 @@ const raw: unknown[] = fixtureNames.map((name) =>
 const parts: SuppliedSubset[] = asArray(raw).map((value) => {
   const row = asRecord(value),
     id = asString(row.id);
-  assert(["D61", "B60-68", "A59", "C62", "C4", "E90-91", "R77"].includes(id));
+  assert(["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78", "R77"].includes(id));
   return {
     id: id as Subset,
     sourceAuthority: row.sourceAuthority,
@@ -35,6 +43,7 @@ const parts: SuppliedSubset[] = asArray(raw).map((value) => {
           const state = asRecord(value),
             expected = asRecord(state.expectedTsrs);
           assert(Number.isSafeInteger(expected.status));
+          requirePairedPrinterFields(expected);
           const opaque = Object.hasOwn(expected, "stdoutKind");
           if (opaque) {
             assert.equal(id, "E90-91");

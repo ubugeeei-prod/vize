@@ -51,6 +51,7 @@ export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
     [
       "refs/heads/main",
       "refs/heads/test/published-q16-first-subset-20261102",
+      "refs/heads/test/published-commented-vif-11378-20261102",
       "refs/heads/test/published-emits-11390-11391-20261102",
       "refs/heads/test/published-static-template-ref-11377-20261102",
     ].includes(environment.GITHUB_REF ?? ""),

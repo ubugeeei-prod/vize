@@ -6,3 +6,4 @@ pub mod if_facts;
 pub mod model_facts;
 pub mod static_facts;
 pub mod template_complexity;
+pub mod text_facts;

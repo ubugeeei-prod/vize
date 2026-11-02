@@ -10,6 +10,7 @@ use super::{DocumentHtmlRefusal as Refusal, DocumentHtmlStructure, Element};
 use crate::markup::document::{DocumentTokenKind as Kind, NativeDocument};
 use crate::markup::{Document, Profile};
 
+mod head_text;
 mod insertion;
 mod select;
 mod table;
@@ -162,6 +163,7 @@ impl<P: Profile> Builder<'_, '_, P> {
     fn text(&mut self, span: Span, space: bool) -> Result<(), Refusal> {
         match self.mode {
             Mode::InBody | Mode::InCell | Mode::InCaption => Ok(()),
+            Mode::InHead if self.in_head_text() => Ok(()),
             Mode::InTable | Mode::InTableBody | Mode::InRow | Mode::InColumnGroup if !space => {
                 Err(Refusal::TableText(span))
             }
@@ -224,6 +226,7 @@ impl<P: Profile> Builder<'_, '_, P> {
             (Mode::Head, "head") => Mode::InHead,
             (Mode::Body, "body") => Mode::InBody,
             (Mode::InHead, "base" | "link" | "meta") => Mode::InHead,
+            (_, "title" | "style") => return self.head_text_start(tag),
             (_, "html" | "head" | "body" | "base" | "link" | "meta") => {
                 return Err(Refusal::ExplicitEnvelope);
             }
@@ -271,6 +274,7 @@ impl<P: Profile> Builder<'_, '_, P> {
             event,
         };
         match (self.mode, name) {
+            (Mode::InHead, "title" | "style") => self.pop_matching(&end),
             (Mode::InHead, "head") => {
                 self.pop_matching(&end)?;
                 self.mode = Mode::Body;
@@ -389,13 +393,15 @@ struct End {
     event: usize,
 }
 
-const NAMES: [&str; 56] = [
+const NAMES: [&str; 58] = [
     "html",
     "head",
     "body",
     "base",
     "link",
     "meta",
+    "title",
+    "style",
     "div",
     "span",
     "br",
