@@ -114,7 +114,8 @@ impl CorsaBridge {
                 } = project;
                 let root = session_project_root.ok_or(CorsaBridgeError::NotInitialized)?;
                 let config_path = session_config_path.ok_or(CorsaBridgeError::NotInitialized)?;
-                if !lease.enter() {
+                lease.arm_before_entry()?;
+                if !current() || !lease.enter() {
                     return Err(CorsaBridgeError::ProcessTerminated);
                 }
                 let outcome = (|| {

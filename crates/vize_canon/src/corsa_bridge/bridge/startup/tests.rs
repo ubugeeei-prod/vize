@@ -223,6 +223,7 @@ fn entered_factory_error_without_returned_owner_never_admits_a_second_startup() 
     let path = marker(&session);
     let root = session.root().unwrap().to_path_buf();
     let mut lease = state.reserve(Arc::clone(&session), true, false).unwrap();
+    lease.arm_before_entry().unwrap();
     assert!(lease.enter());
     lease.retain_after_failure();
     drop(lease);
@@ -293,4 +294,26 @@ fn mutable_worker_epoch_covers_sync_async_ready_error_and_queued_cleanup() {
         .unwrap(),
         6
     );
+}
+
+#[test]
+fn eager_marker_failure_precedes_native_factory_and_has_no_unknown_owner() {
+    let bridge = CorsaBridge::with_config(crate::corsa_bridge::CorsaBridgeConfig {
+        corsa_path: Some("must-not-start-native".into()),
+        ..Default::default()
+    });
+    let root = bridge.editor_session.root().unwrap().to_path_buf();
+    std::fs::create_dir(root.join(".retained-after-failed-shutdown")).unwrap();
+    let expected = bridge
+        .editor_session
+        .arm_retention_before_startup()
+        .unwrap_err();
+    let actual = corsa::runtime::block_on(bridge.spawn()).unwrap_err();
+    assert_eq!(actual.to_string(), expected.to_string());
+    assert!(matches!(actual, CorsaBridgeError::CommunicationError(_)));
+    assert!(!bridge.is_initialized());
+    assert_eq!(bridge.pending_startups(), 0);
+    assert!(!root.join(".retained-after-failed-shutdown").exists());
+    drop(bridge);
+    assert!(!root.exists());
 }

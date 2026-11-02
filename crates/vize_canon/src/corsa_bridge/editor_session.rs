@@ -1,6 +1,7 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
 use std::fs::{File, OpenOptions, TryLockError};
+use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};
@@ -28,6 +29,7 @@ struct EditorStorage {
     _lifetime_lock: File,
     directory: Option<tempfile::TempDir>,
     retain_after_failure: AtomicBool,
+    retention_armed: AtomicBool,
 }
 
 /// One preparation identity and the signal its worker thread resolves.
@@ -86,9 +88,47 @@ impl EditorMirrorSession {
     /// An incomplete native retirement can still be reading these exact files.
     /// This flag is sticky even if a later cleanup attempt appears successful.
     pub(in crate::corsa_bridge) fn retain_after_failed_shutdown(&self) {
-        if let Ok(storage) = &self.storage {
+        // Both physical bridge entrypoints must arm first. An unarmed mirror
+        // is still pre-native (or has completed normal cleanup), so it must not
+        // acquire an invented unknown-live retention claim.
+        if let Ok(storage) = &self.storage
+            && storage.retention_armed.load(Ordering::Acquire)
+        {
             storage.retain_after_failure.store(true, Ordering::Release);
         }
+    }
+
+    /// Both bridge factories call this on their owning worker before physical
+    /// startup. Failure is still an unstarted admission, never unknown-live.
+    pub(in crate::corsa_bridge) fn arm_retention_before_startup(
+        &self,
+    ) -> Result<(), CorsaBridgeError> {
+        let storage = self
+            .storage
+            .as_ref()
+            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))?;
+        if storage.retention_armed.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let root = self.root()?;
+        let outcome = (|| -> std::io::Result<()> {
+            let mut marker = OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .open(root.join(RETAINED_FAILURE))?;
+            marker.write_all(b"unknown native retirement\n")?;
+            marker.sync_all()?;
+            #[cfg(unix)]
+            File::open(root)?.sync_all()?;
+            Ok(())
+        })();
+        outcome.map_err(|error| {
+            CorsaBridgeError::CommunicationError(vize_carton::cstr!(
+                "Failed to arm editor mirror retention: {error}"
+            ))
+        })?;
+        storage.retention_armed.store(true, Ordering::Release);
+        Ok(())
     }
 
     pub(in crate::corsa_bridge) fn cache(&self) -> MutexGuard<'_, SessionCache> {
@@ -133,6 +173,9 @@ impl EditorMirrorSession {
                 let _ = std::fs::remove_file(path);
             }
         }
+        if let Ok(storage) = &self.storage {
+            storage.retention_armed.store(false, Ordering::Release);
+        }
     }
 }
 
@@ -143,14 +186,8 @@ impl Drop for EditorStorage {
         if self.retain_after_failure.load(Ordering::Acquire)
             && let Some(directory) = self.directory.take()
         {
-            // A later session's existing abandoned-owner sweep must not infer
-            // quiescence merely because our lifetime lock has been released.
-            if let Err(error) = std::fs::write(
-                directory.path().join(RETAINED_FAILURE),
-                b"unknown native retirement\n",
-            ) {
-                tracing::warn!(%error, "could not mark retained editor mirror");
-            }
+            // The marker was created and flushed before either physical
+            // factory could enter. Drop performs no fallible marker write.
             let retained = directory.keep();
             tracing::warn!(path = %retained.display(), "retaining editor mirror after incomplete native shutdown");
         }
@@ -210,6 +247,7 @@ fn create_storage() -> std::io::Result<EditorStorage> {
         _lifetime_lock: lifetime_lock,
         directory: Some(directory),
         retain_after_failure: AtomicBool::new(false),
+        retention_armed: AtomicBool::new(false),
     })
 }
 

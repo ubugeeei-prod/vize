@@ -138,6 +138,17 @@ impl StartupLease {
         true
     }
 
+    pub(in crate::corsa_bridge) fn arm_before_entry(&self) -> Result<(), CorsaBridgeError> {
+        self.session
+            .arm_retention_before_startup()
+            .inspect_err(|_| {
+                let state = self.state.lock();
+                if !self.entered && !state.retained {
+                    self.session.clear();
+                }
+            })
+    }
+
     pub(in crate::corsa_bridge) fn retain(&self) {
         self.state.lock().retained = true;
     }
@@ -264,14 +275,25 @@ impl CorsaBridge {
         let shared = self.shared_editor_transport;
         let initialized = Arc::clone(&self.initialized);
         self.submit_async(move |slot| {
+            // This remains inside the queued owner: cleanup cannot remove the
+            // marker between admission and physical entry on another worker.
+            lease.arm_before_entry()?;
             if !lease.enter() {
                 return Err(CorsaBridgeError::ProcessTerminated);
             }
-            if slot.is_none() {
-                *slot = Some(build_client(&config, shared)?);
+            let outcome = (|| {
+                if slot.is_none() {
+                    *slot = Some(build_client(&config, shared)?);
+                }
+                lease.retain();
+                lease.publish(&initialized, true)
+            })();
+            if outcome.is_err() {
+                // Constructor failure need not return a joinable owner. Keep
+                // the pre-armed mirror and refuse an unproven second startup.
+                lease.retain_after_failure();
             }
-            lease.retain();
-            lease.publish(&initialized, true)
+            outcome
         })
         .await?;
         if let Some(timer) = timer {

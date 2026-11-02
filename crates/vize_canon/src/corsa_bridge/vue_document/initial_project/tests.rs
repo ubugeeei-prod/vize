@@ -297,6 +297,10 @@ fn sticky_failure_keeps_actual_canon_generated_file_after_later_success_and_brid
     );
     // Models the storage consequence of an entered startup/retirement error;
     // no native executable is run by this ownership control.
+    bridge
+        .editor_session
+        .arm_retention_before_startup()
+        .unwrap();
     bridge.editor_session.retain_after_failed_shutdown();
     corsa::runtime::block_on(bridge.shutdown()).unwrap();
     drop(seed);
@@ -338,4 +342,34 @@ fn missing_private_config_disables_receipt_reuse_without_replacing_the_normal_er
     assert!(unreadable.is_err(), "actual missing private config");
     assert!(!receipt.matches_config_read(&current, unreadable));
     drop(lease);
+}
+
+#[test]
+fn seeded_marker_failure_rolls_back_before_physical_startup_without_sticky_retention() {
+    let root = workspace();
+    let bridge = bridge(root.path());
+    let seed = bridge
+        .prepare_initial_vue_project(request(root.path()))
+        .unwrap()
+        .unwrap();
+    let generated = crate::file_uri::file_uri_to_path(&seed.project.host.request_uri).unwrap();
+    let owner = bridge.editor_session.root().unwrap().to_path_buf();
+    assert!(generated.is_file());
+    std::fs::create_dir(owner.join(".retained-after-failed-shutdown")).unwrap();
+    let expected = bridge
+        .editor_session
+        .arm_retention_before_startup()
+        .unwrap_err();
+    let result = corsa::runtime::block_on(bridge.spawn_with_initial_project(seed, || true));
+    let actual = match result {
+        Err(error) => error,
+        Ok(_) => panic!("unarmed seed must not enter its native factory"),
+    };
+    assert_eq!(actual.to_string(), expected.to_string());
+    assert!(!bridge.is_initialized());
+    assert_eq!(bridge.pending_startups(), 0);
+    assert!(!generated.exists());
+    assert!(!owner.join(".retained-after-failed-shutdown").exists());
+    drop(bridge);
+    assert!(!owner.exists());
 }
