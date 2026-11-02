@@ -40,6 +40,7 @@ pub(super) struct TemplateRefKeyChecks<'a> {
     calls: &'a [InferredCall],
     helper: &'a str,
     next: usize,
+    tsx_arrows: &'a [super::script_module::tsx_arrows::ArrowComma],
 }
 
 struct InferredCall {
@@ -112,6 +113,7 @@ impl TemplateRefUsage {
             calls: if registered { &self.calls } else { &[] },
             helper: self.helper.as_str(),
             next: 0,
+            tsx_arrows: &[],
         }
     }
 }
