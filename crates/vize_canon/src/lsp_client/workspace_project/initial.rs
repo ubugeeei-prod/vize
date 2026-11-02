@@ -5,6 +5,13 @@ use crate::{batch::virtual_project::MaterializedFileDelta, file_uri::path_to_fil
 use vize_l0::{String, cstr};
 
 impl CorsaProjectClient {
+    /// Exact selected configuration for the native first-owner control.
+    #[cfg(all(test, target_os = "linux"))]
+    pub(crate) fn initial_project_config_for_test(&mut self) -> Result<std::path::PathBuf, String> {
+        self.project_session()
+            .map(|session| std::path::PathBuf::from(session.project().config_file_name.as_str()))
+    }
+
     /// Reject every delta spelling the fresh-owner refresh would reject,
     /// before any native child is created. This performs no native I/O.
     pub(crate) fn validate_initial_editor_project_delta(

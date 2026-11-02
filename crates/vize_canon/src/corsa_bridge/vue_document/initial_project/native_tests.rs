@@ -62,12 +62,9 @@ fn intervening_native_operations_restore_exact_initial_graph() {
             "none" => {}
             "metadata" => {
                 let selected = corsa::runtime::block_on(bridge.with_client(|client| {
-                    Ok(client
-                        .project_session()
-                        .unwrap()
-                        .project()
-                        .config_file_name
-                        .clone())
+                    client
+                        .initial_project_config_for_test()
+                        .map_err(crate::corsa_bridge::CorsaBridgeError::CommunicationError)
                 }))
                 .unwrap();
                 assert_eq!(
