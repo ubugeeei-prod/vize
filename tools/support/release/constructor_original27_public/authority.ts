@@ -7,7 +7,13 @@ import { Recorder, sha256 } from "../../config/windows_consumer/common.ts";
 import { githubSnapshot } from "../release/quota/http.ts";
 import { readReleaseOwnership } from "../release/quota_ownership.ts";
 
-export const requiredMerge = "ccd079c6dfb5c4ff50feddb23a6777154f33fab1";
+export const requiredMerge = "1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957";
+export const afterRelease = {
+  version: "0.650.0",
+  run: "41507479394",
+  source: "85ab7600097035afa060ca03f8a77108cdc5e337",
+  candidate: "3ec8f999df04a50b37aea7f12a5fa85161d43d8d",
+} as const;
 export const sdkFiles = [
   "virtual-ts.d.ts",
   "virtual-ts.d.mts",
@@ -18,6 +24,7 @@ export const sdkFiles = [
   "generated/content-mapper-types.d.ts",
   "virtual-ts-globals.d.ts",
   "virtual-ts-patterns.d.ts",
+  "virtual-ts-slots.d.ts",
 ] as const;
 export const gitBlob = (raw: Buffer) =>
   createHash("sha1")
@@ -91,6 +98,8 @@ export function assertLockedPackage(
   assert.equal(new URL(asString(row.resolved)).origin, "https://registry.npmjs.org");
 }
 export async function authenticate(version: string, run: string, blob: string, record: Recorder) {
+  assert.equal(version, afterRelease.version);
+  assert.equal(run, afterRelease.run);
   assert.match(version, /^\d+\.\d+\.\d+$/u);
   assert.match(run, /^[1-9]\d*$/u);
   assert.match(blob, /^[a-f0-9]{40}$/u);
@@ -115,6 +124,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   assert.equal(tag.ref, "refs/tags/v" + version);
   assert.equal(target.type, "commit");
   const candidate = asString(target.sha);
+  assert.equal(candidate, afterRelease.candidate);
   const publication = asRecord(await read("releases/tags/v" + version));
   assert.equal(publication.tag_name, "v" + version);
   assert.equal(publication.draft, false);
@@ -128,6 +138,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   );
   const ownership = await readReleaseOwnership(version, candidate, run, read);
   record.json("producer-ownership.json", ownership);
+  assert.equal(ownership.producerSource, afterRelease.source);
   validateCapsule(capsule, version, candidate, ownership.producerSource);
   const ancestry = asRecord(
     await read("compare/" + requiredMerge + "..." + ownership.producerSource),

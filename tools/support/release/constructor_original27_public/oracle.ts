@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { asArray, asRecord, asString, readJsonRecord } from "../../json-value.ts";
+import { asArray, asRecord, readJsonRecord } from "../../json-value.ts";
 import { packet } from "../../../benchmarks/scripts/canon-instance-directives-model.ts";
 import { sha256 } from "../computed_event_custody.ts";
 
@@ -40,31 +41,21 @@ export function diagnostics(stdout: Buffer, project: string): Diagnostic[] {
   }
   return rows;
 }
-/** Only the known mapper package label changes; generated positions/messages stay exact. */
-export function expectedMapper(version: string, input = asArray(reference().mapper)) {
-  const rows = input.map((value) => structuredClone(asRecord(value)));
-  assert.equal(rows.length, 16);
-  const debts = rows.filter((row) => row.code === 2741);
+/** Independent complete source expectation frozen before native execution. */
+export function afterReference() {
+  const raw = readFileSync(new URL("./after-source-reference.json.txt", import.meta.url));
+  assert.equal(sha256(raw), "600388b71468f7ea848b1e4265341ed4395bd977eac5fd1e4a61c3c8695a0dc9");
+  return asRecord(JSON.parse(raw.toString("utf8")));
+}
+export function expectedMapper(version: string, input = asArray(afterReference().expectedMapper)) {
+  assert.equal(version, "0.650.0", "only the containing650 AFTER role is declared");
   assert.deepEqual(
-    debts.map((row) => [row.file, row.line, row.column]),
-    [
-      ["constructor-public-props-discrepancy/src/Tiny.vue", 57, 495],
-      ["constructor-public-props-discrepancy/src/Tiny.vue", 108, 501],
-    ],
+    input,
+    afterReference().expectedMapper,
+    "complete source-owned mapper expectation",
   );
-  const line = (label: string) =>
-    `  This location is in virtual code produced by the content mapper 'vize@${label}' and has no corresponding location in the original file.`;
-  for (const row of rows) {
-    if (debts.includes(row)) {
-      assert.deepEqual(row.continuation, [line("0.0.0-source-" + sourceReference)]);
-      row.continuation = [line(version)];
-    } else
-      for (const value of asArray(row.continuation))
-        assert.ok(
-          !asString(value).includes("vize@0.0.0-source-"),
-          "unexpected source-version continuation",
-        );
-  }
+  const rows = input.map((value) => structuredClone(asRecord(value)));
+  assert.equal(rows.length, 14);
   return rows;
 }
 /** Derive one finite repaired expectation; never drop a file-wide error population. */
@@ -91,7 +82,7 @@ export function assertOriginalVectors(
   repaired = false,
 ) {
   const expected = expectedMapper(version),
-    displayed = asArray(reference().cli);
+    displayed = asArray(afterReference().expectedCli);
   assert.deepEqual(
     mapper,
     repaired ? repairExpected(expected, "mapper") : expected,

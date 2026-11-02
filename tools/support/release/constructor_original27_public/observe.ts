@@ -38,6 +38,7 @@ export function protocol(
   const config = parseJson(readFileSync(join(project, "tsconfig.mapper.json"), "utf8"));
   const input = slotRequests(project, row.source, config, row.id + "/src/Tiny.vue");
   const journal = observed(installed.root, identity(installed), record, label);
+  installed.verifyNative();
   const raw = capture(
     record,
     label,
@@ -69,6 +70,7 @@ export function observe(
 ) {
   const inputs = assertInputs(project, files);
   record.json(label + ".inputs.json", inputs);
+  installed.verifyNative();
   const mapper = capture(
     record,
     label + "-mapper",
@@ -86,6 +88,7 @@ export function observe(
     project,
   );
   const journal = observed(installed.root, identity(installed), record, label + "-cli");
+  installed.verifyNative();
   const cli = capture(
     record,
     label + "-cli",
@@ -118,7 +121,7 @@ export function observe(
     cli: { status: cli.status, packet: displayed },
     protocols: packets,
   });
-  completed(mapper, 2); // The two generated TS2741 debts remain even in the repair control.
+  completed(mapper, 2); // Authored negatives remain in both original and finite repair populations.
   completed(cli, 1, false);
   const debug = verifyCliDebug(cli.stderr, displayed.result, project);
   const nativeExit = verifyNegativeCliJournal(

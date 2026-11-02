@@ -9,7 +9,13 @@ import { install } from "./install.ts";
 import { independentOracles, observe, repairCopy, writeProject } from "./observe.ts";
 
 assert.equal(process.env.GITHUB_ACTIONS, "true", "public products run only in Actions");
-assert.equal(process.env.GITHUB_REF, "refs/heads/main", "merged main workflow required");
+assert.ok(
+  [
+    "refs/heads/main",
+    "refs/heads/test/published-constructor-original27-zero-debt-20261103",
+  ].includes(process.env.GITHUB_REF || ""),
+  "main or the explicitly reviewed650 controller branch required",
+);
 assert.equal(process.platform, "linux");
 assert.equal(process.arch, "x64");
 assert.equal(process.version, "v24.14.0");
@@ -50,8 +56,7 @@ const result: Record<string, unknown> = {
   node: process.version,
   platform: process.platform,
   arch: process.arch,
-  scope:
-    "original27 authored-error conservation with two separately retained generated mapper debts",
+  scope: "original27 zero generated debt with all fourteen authored negatives conserved",
   capsuleTrust:
     "release owner supplies the exact immutable blob after whole producer ZIP authentication; this role joins receipt bytes to installed identity without duplicate archive download",
   umbrella11023Closed: false,
@@ -95,9 +100,9 @@ try {
   assert.deepEqual(assertInputs(project, original.inputs.files), original.inputs.manifest);
   assertCustody(original.custody);
   assertCustody(installed.images);
-  result.status = "AUTHORED_CONSERVATION_WITH_GENERATED_DEBT";
+  result.status = "ORIGINAL27_ZERO_GENERATED_DEBT";
   result.accepted = true;
-  result.generatedDebtCount = 2;
+  result.generatedDebtCount = 0;
 } catch (error) {
   result.status = "FAILED";
   result.error = error instanceof Error ? error.message : String(error);

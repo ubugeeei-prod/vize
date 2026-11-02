@@ -16,6 +16,7 @@ import { assertLockedPackage, validateNativeReceipt, type authenticate } from ".
 import { installedManifest, type loadOriginal27 } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
 import { assertVueProviderLineage, captureVueNamespace } from "./host-versions.ts";
+import { nativePrerequisite } from "./native-prerequisite.ts";
 
 export async function install(
   root: string,
@@ -81,6 +82,25 @@ export async function install(
     "./bin/vize",
     "content-mapper",
   ]);
+  const platformName = "@vizejs/native-linux-x64-gnu";
+  const platform = pkg(platformName, version);
+  assert.equal(asRecord(nativePackage.manifest.optionalDependencies)[platformName], version);
+  for (const name of ["vize", "@vizejs/native", platformName])
+    assertLockedPackage(lock, authority.capsule, name, version);
+  const graph = captureDeclarationGraph(cliRoot);
+  assert.equal(graph.files.length, 10);
+  assert.equal(graph.edges.length, 13);
+  for (const expected of authority.sdk.filter((file) => file.file !== "package.json")) {
+    const actual = fileImage(join(cliRoot, expected.file));
+    assert.equal(actual.bytes, expected.bytes);
+    assert.equal(actual.sha256, expected.sha256, expected.file);
+    writeFileSync(
+      join(record.root, "sdk-" + expected.file.replaceAll("/", "--")),
+      readFileSync(actual.path),
+    );
+  }
+  const prerequisite = await nativePrerequisite(root, lock, authority, graph.files, record);
+  prerequisite.verify(); // No product wrapper or candidate may execute before this guard.
   const fromCli = createRequire(cli);
   const nativeEntry = realpathSync(fromCli.resolve("@vizejs/native"));
   assert.equal(
@@ -93,6 +113,7 @@ export async function install(
   );
   assert.equal(loaded.length, 1);
   const image = fileImage(loaded[0]);
+  assert.ok(inside(realpathSync(dirname(platform.file)), image.path));
   assert.equal(fromCli.cache[image.path]?.loaded, true);
   const imageExports = asRecord(fromCli.cache[image.path]?.exports);
   const helper = asRecord(fromCli(join(modules, "@vizejs/native/native-binding-identity.js")));
@@ -109,12 +130,6 @@ export async function install(
     imageExports,
   ]);
   assertNativeIdentity(token, imageToken, binding);
-  const platformName = "@vizejs/native-linux-x64-gnu";
-  const platform = pkg(platformName, version);
-  assert.equal(asRecord(nativePackage.manifest.optionalDependencies)[platformName], version);
-  assert.ok(inside(realpathSync(dirname(platform.file)), image.path));
-  for (const name of ["vize", "@vizejs/native", platformName])
-    assertLockedPackage(lock, authority.capsule, name, version);
   validateNativeReceipt(
     authority.capsule,
     {
@@ -127,17 +142,6 @@ export async function install(
     authority.candidate,
     authority.ownership.runId,
   );
-  const graph = captureDeclarationGraph(cliRoot);
-  assert.equal(graph.files.length, 9);
-  for (const expected of authority.sdk.filter((file) => file.file !== "package.json")) {
-    const actual = fileImage(join(cliRoot, expected.file));
-    assert.equal(actual.bytes, expected.bytes);
-    assert.equal(actual.sha256, expected.sha256, expected.file);
-    writeFileSync(
-      join(record.root, "sdk-" + expected.file.replaceAll("/", "--")),
-      readFileSync(actual.path),
-    );
-  }
   const hostImages = captureVueNamespace(modules, record);
   assertVueProviderLineage(
     manifest.overrides,
@@ -179,7 +183,8 @@ export async function install(
     assert.equal(actual.bytes, expected.bytes);
     assert.equal(actual.sha256, expected.sha256, expected.file);
   }
-  const images = [
+  const candidates = [
+    ...prerequisite.images,
     fileImage(join(root, "package.json")),
     fileImage(join(root, "package-lock.json")),
     fileImage(cliPackage.file),
@@ -200,6 +205,14 @@ export async function install(
     ...hostImages,
     ...graph.files,
   ];
+  const unique = new Map<string, (typeof candidates)[number]>();
+  for (const image of candidates) {
+    const previous = unique.get(image.path);
+    if (previous)
+      assert.deepEqual(image, previous, "same installed image must retain its authenticated bytes");
+    unique.set(image.path, image);
+  }
+  const images = [...unique.values()];
   assertCustody(images);
   record.json("installed-identity.json", {
     version,
@@ -228,5 +241,6 @@ export async function install(
     official,
     images,
     graph,
+    verifyNative: prerequisite.verify,
   };
 }
