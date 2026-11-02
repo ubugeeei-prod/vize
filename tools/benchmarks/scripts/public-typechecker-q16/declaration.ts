@@ -36,7 +36,7 @@ export interface EmittedDeclaration {
   name: string;
   bytes: Buffer;
 }
-function physicalFile(path: string) {
+function physicalFile(path: string, requireUtf8 = true) {
   const stat = lstatSync(path);
   assert(
     stat.isFile() && !stat.isSymbolicLink() && realpathSync(path) === path,
@@ -44,7 +44,7 @@ function physicalFile(path: string) {
   );
   assert(stat.size > 0 && stat.size <= 4 * 1024 ** 2, "bounded nonempty declaration data required");
   const raw = readFileSync(path);
-  new TextDecoder("utf8", { fatal: true }).decode(raw);
+  if (requireUtf8) new TextDecoder("utf8", { fatal: true }).decode(raw);
   return raw;
 }
 function physicalDirectory(path: string) {
@@ -70,16 +70,34 @@ export function retainAndCopyDeclarations(
       return { name, bytes: stat.size, file: stat.isFile(), symlink: stat.isSymbolicLink() };
     }),
   );
+  const retained = declarationData.outputFiles.map((name) => {
+    let bytes: Buffer | null = null;
+    let image: ReturnType<Recorder["raw"]> | null = null;
+    try {
+      bytes = physicalFile(join(output, name), false);
+      image = record.raw("emitted-" + name + ".raw", bytes);
+      new TextDecoder("utf8", { fatal: true }).decode(bytes);
+      return { name, bytes, image, failure: null };
+    } catch (error) {
+      return { name, bytes, image, failure: safeFailure(error) };
+    }
+  });
+  record.json(
+    "expected-emitted-custody.json",
+    retained.map(({ name, image, failure }) => ({ name, image, failure })),
+  );
   assert.deepEqual(
     names,
     [...declarationData.outputFiles].sort(),
     "complete emitted declaration roster must be exactly the original two files",
   );
-  const files = declarationData.outputFiles.map((name) => ({
-    name,
-    bytes: physicalFile(join(output, name)),
-  }));
-  for (const file of files) record.raw("emitted-" + file.name + ".raw", file.bytes);
+  const files = retained.map((row) => {
+    assert(
+      row.failure === null && row.bytes !== null,
+      "every expected declaration must be safely retained before copy",
+    );
+    return { name: row.name, bytes: row.bytes };
+  });
   const vendor = join(consumer, "src/vendor");
   assert.equal(
     lstatSync(vendor, { throwIfNoEntry: false }),

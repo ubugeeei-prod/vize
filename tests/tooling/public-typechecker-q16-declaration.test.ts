@@ -124,7 +124,7 @@ test("only actual whole generated two-file bytes are retained and copied; mutati
       ),
     );
   }));
-test("extra or symlinked output refuses before copy/consumer callback", () => {
+test("wrong output roster retains safe expected bytes before refusing copy/consumer callback", () => {
   for (const mode of ["extra", "link"]) {
     temporary((root) => {
       const x = setup(root);
@@ -153,6 +153,14 @@ test("extra or symlinked output refuses before copy/consumer callback", () => {
       assert.equal(executed, 0);
       assert.equal(row.executed, false);
       assert(!existsSync(join(x.consumer, "src/vendor")));
+      const expectedNames =
+        mode === "extra" ? declarationData.outputFiles : [declarationData.outputFiles[1]!];
+      for (const name of expectedNames)
+        assert.deepEqual(
+          readFileSync(join(x.evidence, "emitted-" + name + ".raw")),
+          x.bytes[declarationData.outputFiles.indexOf(name)],
+        );
+      assert(existsSync(join(x.evidence, "expected-emitted-custody.json")));
     });
   }
 });
