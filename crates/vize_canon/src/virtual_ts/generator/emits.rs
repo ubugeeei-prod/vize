@@ -183,10 +183,10 @@ pub(super) fn emit_emits_type(
     if !emits_already_defined {
         if let Some(type_args) = define_emits_type_args {
             let inner_type = if define_emits_type_requires_setup_scope(summary) {
-                let names = generic_param
-                    .map(|generic| generic.names.clone())
+                let arguments = generic_param
+                    .map(|generic| cstr!("<{}>", generic.names))
                     .unwrap_or_default();
-                cstr!("Awaited<ReturnType<typeof __setup<{names}>>>[\"__vize_typed_emits\"]")
+                cstr!("Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_typed_emits\"]")
             } else {
                 String::from(inner_type_of(type_args))
             };

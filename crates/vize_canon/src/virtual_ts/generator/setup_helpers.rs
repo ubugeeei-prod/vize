@@ -66,6 +66,18 @@ pub(super) fn emit_return_artifacts(
     {
         append!(*ts, "\n  const __vize_exposed = ({runtime_args});\n");
         fields.push("__vize_exposed".into());
+    } else if super::setup_scope::define_expose_type_requires_setup_scope(summary)
+        && let Some(type_args) = summary
+            .macros
+            .define_expose()
+            .and_then(|call| call.type_args.as_deref())
+    {
+        let inner = super::emits::inner_type_of(type_args);
+        append!(
+            *ts,
+            "\n  const __vize_typed_exposed = undefined as unknown as {inner};\n"
+        );
+        fields.push("__vize_typed_exposed".into());
     }
     if let Some(runtime_args) = define_emits_runtime_args(summary) {
         append!(

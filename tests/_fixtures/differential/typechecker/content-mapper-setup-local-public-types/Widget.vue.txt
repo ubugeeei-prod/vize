@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { WidgetEmits, WidgetExpose } from './types';
+const def = { size: 1, label: 'a' };
+type WidgetProps = typeof def;
+const emit = defineEmits<WidgetEmits<WidgetProps>>();
+defineExpose<WidgetExpose<WidgetProps>>({ current: () => def });
+emit('update', def);
+</script>
+<template><button @click="emit('update', def)">{{ def.label }}</button></template>

@@ -1,1 +1,1 @@
-  void undefined;
+  void (null as unknown as typeof undefined);
