@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import {
   callbackOwnerProjects,
+  callbackInertBindings,
   callbackSetupReference,
   callbackSetupReferencePrefix,
   type SourceSpan,
@@ -223,6 +224,11 @@ export function auditCallbackOwners(directory: string) {
       processPacket(row.observations[`${side}-check`], [0, 1]);
       processPacket(row.observations[`${side}-mapper`], [0, 2]);
     }
+    const inertBindings = callbackInertBindings(project).map((binding) => ({
+      name: at(binding.name, original, parent, parentVariant),
+      value: at(binding.value, original, parent, parentVariant),
+      callbackMarker: binding.callbackMarker,
+    }));
     if (project.comparison === "complete-before-head-packets" && !dynamicMutation) {
       assert.equal(candidate.length, before.length);
       before.forEach((packet, index) =>
@@ -230,12 +236,7 @@ export function auditCallbackOwners(directory: string) {
           packet,
           candidate[index],
           index === 0 ? row.files["src/Comp.vue"] : parent,
-          index === 0
-            ? undefined
-            : project.authoredBindings.map((binding) => ({
-                name: at(binding.name, original, parent, parentVariant),
-                value: at(binding.value, original, parent, parentVariant),
-              })),
+          index === 0 ? undefined : inertBindings,
         ),
       );
       preservedPackets += before.length;
@@ -268,7 +269,12 @@ export function auditCallbackOwners(directory: string) {
       // name is admitted by the independent typed reference, with all before raw retained.
       assertPreservedCallbackPacket(before[0], candidate[0], row.files["src/Comp.vue"]);
       preservedPackets++;
+      // The current PR base already owns the computed-name repair. Preserve
+      // its entire parent packet too, allowing only the exact inert rows.
+      assertPreservedCallbackPacket(before[1], candidate[1], parent, inertBindings);
+      preservedPackets++;
       assert.deepEqual(Object.keys(candidate[1]).sort(), [
+        "diagnosticDirectives",
         "diagnostics",
         "extension",
         "mappings",
@@ -410,7 +416,7 @@ export function auditCallbackOwners(directory: string) {
   assert.equal(qualified, 44);
   assert.equal(resolvedMapperFrontiers, 4);
   assert.equal(preserved, 40);
-  assert.equal(preservedPackets, 84);
+  assert.equal(preservedPackets, 88);
   assert.equal(resolvedDynamicArguments, 4);
   assert.equal(frontiers, 8);
   const report = {

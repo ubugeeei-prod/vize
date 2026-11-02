@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 
 type Span = { start: number; end: number; text: string };
-export type InertCallbackBinding = { name: Span; value: Span };
+export type InertCallbackBinding = { name: Span; value: Span; callbackMarker: boolean };
 
 /** Derive the complete new rows from independently authored binding geometry. */
 export function withInertCallbackRows(
@@ -23,7 +23,13 @@ export function withInertCallbackRows(
     assert.equal(source.slice(span.start, span.end), span.text);
     return [Buffer.byteLength(source.slice(0, span.start)), Buffer.byteLength(span.text)];
   };
-  const copies: { name: string; value: string; key: number; valueAt: number }[] = [];
+  const entries: {
+    name: string;
+    value: string;
+    key: number;
+    valueAt: number;
+    callbackMarker: boolean;
+  }[] = [];
   const blocks =
     /^([ \t]*)const __vize_events_resolved_(\d+) = \(undefined as unknown as __vize_events_resolver_\2\)\(\{\n([\s\S]*?)^\1\}\);\n/gmu;
   const marker =
@@ -33,28 +39,37 @@ export function withInertCallbackRows(
     const bodyAt = block.index + block[0].indexOf("\n") + 1;
     const lines = block[3].split("\n");
     let offset = bodyAt;
+    assert.equal(
+      text.slice(0, block.index).split("\n").at(-2)?.trim(),
+      "// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.",
+    );
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
-      if (line === prefix + marker) {
-        const entry = lines[index + 1];
-        assert.ok(entry?.startsWith(prefix + '"'));
-        const match = /^"([A-Za-z_$][A-Za-z0-9_$]*)": (.+),$/u.exec(entry.slice(prefix.length));
-        assert.ok(match, "only a complete unchanged single-line callback entry is admitted");
-        const key = Buffer.byteLength(text.slice(0, offset + line.length + 1 + prefix.length));
-        copies.push({
+      const match = line.startsWith(prefix)
+        ? /^"([A-Za-z_$][A-Za-z0-9_$]*)": (.+),$/u.exec(line.slice(prefix.length))
+        : null;
+      if (match) {
+        const key = Buffer.byteLength(text.slice(0, offset + prefix.length));
+        entries.push({
           name: match[1],
           value: match[2],
           key,
           valueAt: key + Buffer.byteLength(`"${match[1]}": `),
+          callbackMarker: lines[index - 1] === prefix + marker,
         });
       }
       offset += line.length + 1;
     }
   }
+  const copies = entries.filter((entry) =>
+    bindings.some(
+      (binding) => binding.name.text === entry.name && binding.value.text === entry.value,
+    ),
+  );
   assert.equal(
     copies.length,
     bindings.length,
-    "every authored callback has exactly one navigation copy",
+    "every source-owned binding has exactly one navigation copy",
   );
   assert.ok(copies.length > 0);
   const rows: number[][] = [];
@@ -62,7 +77,9 @@ export function withInertCallbackRows(
     const copy = copies[index];
     assert.equal(copy.name, binding.name.text);
     assert.equal(copy.value, binding.value.text);
-    assert.ok(binding.value.text.includes("=>") && !/[\r\n]/u.test(binding.value.text));
+    assert.equal(copy.callbackMarker, binding.callbackMarker);
+    assert.ok(!/[\r\n]/u.test(binding.value.text));
+    if (binding.callbackMarker) assert.ok(binding.value.text.includes("=>"));
     assert.equal(
       source.slice(binding.name.start - 1, binding.value.start),
       `:${binding.name.text}="`,
