@@ -105,8 +105,10 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
             dependencies.canonicalize().unwrap(),
             authored_dependencies.canonicalize().unwrap()
         );
-        assert!(!storage.root().starts_with(&authored_root));
-        assert!(!storage.root().starts_with(&canon_root));
+        for ancestor in storage.root().ancestors() {
+            assert_ne!(ancestor, authored_root.as_path());
+            assert_ne!(ancestor, canon_root.as_path());
+        }
         let initial_owner = control::native_lsp(&canon_root, &native);
         let source = fixture["source"].as_str().unwrap();
         let bad = report(&mut client, &canon_root, source);
