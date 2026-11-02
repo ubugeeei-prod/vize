@@ -16,7 +16,8 @@ export type Subset =
   | "E90-91"
   | "F78"
   | "R77"
-  | "GArrowTsc";
+  | "GArrowTsc"
+  | "GlobalListener11373";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -61,13 +62,13 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "GArrowTsc",
-  fix: "ba01953b4429fabdd652d3497d89a8cf1737697b",
-  version: "0.652.0",
-  source: "ba01953b4429fabdd652d3497d89a8cf1737697b",
-  candidate: "6a9b36fbb8c21b0d928583e3732410f5c2afb12a",
-  run: "41523763531",
-  capsule: "b567cd114991ae7a9d3b3f6a398bf78246e50182",
+  subset: "GlobalListener11373",
+  fix: "044768e5e35cedf030da532d78fe3c8f8a056310",
+  version: "0.653.0",
+  source: "1d355176f870d47ba75cbc1191b881556760f6fe",
+  candidate: "bd211090b39049b5b2e3b71955cb8883c6a75c5b",
+  run: "41535688394",
+  capsule: "058fe417bffde1dae82fbba0300f650c9d83f0a7",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
 const defaultLimitations = {
@@ -81,6 +82,14 @@ const defaultLimitations = {
   wholeNodeModulesFilesetQualified: false,
 };
 export function limitationsFor(subset: Subset) {
+  if (subset === "GlobalListener11373")
+    return {
+      ...defaultLimitations,
+      scope: "Fresh installed fourteen-state global component listener reproducer",
+      host: "Linux x64 Node26.12.1 adaptation; reported macOS26.4.1 arm64 is not claimed",
+      manager:
+        "npm11.19.1/npm i/npx adaptation of reported pnpm12.3.4 install/exec; exact inner checker argv retained",
+    };
   if (subset === "GArrowTsc")
     return {
       ...defaultLimitations,
@@ -148,6 +157,8 @@ export function requireProfile(profile: Profile | null): Profile {
     assert.equal(profile.fix, a65Data.fixMerge);
   } else if (profile.subset === "GArrowTsc") {
     assert.equal(profile.fix, "ba01953b4429fabdd652d3497d89a8cf1737697b");
+  } else if (profile.subset === "GlobalListener11373") {
+    assert.equal(profile.fix, "044768e5e35cedf030da532d78fe3c8f8a056310");
   } else {
     subsetFor(profile.subset);
     if (profile.subset === "R77")

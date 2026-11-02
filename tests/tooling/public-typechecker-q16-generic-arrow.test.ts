@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  afterProfile,
   requireProfile,
   sha256,
   subsetFor,
@@ -98,7 +97,7 @@ test("the exact five lines and all ten independent syntax and typed controls rem
   assert.equal(genericArrowLimitations.sourceDev71OrOtherVueOutputsTransferred, false);
 });
 test("only Vize changes in the explicitly constructed TSC project and unknown profiles refuse", () => {
-  assert.deepEqual(afterProfile, {
+  const retained: RegressionProfile = {
     subset: "GArrowTsc",
     fix: "ba01953b4429fabdd652d3497d89a8cf1737697b",
     version: "0.652.0",
@@ -106,8 +105,8 @@ test("only Vize changes in the explicitly constructed TSC project and unknown pr
     candidate: "6a9b36fbb8c21b0d928583e3732410f5c2afb12a",
     run: "41523763531",
     capsule: "b567cd114991ae7a9d3b3f6a398bf78246e50182",
-  });
-  assert.equal(requireProfile(afterProfile), afterProfile);
+  };
+  assert.equal(requireProfile(retained), retained);
   assert.equal(requireProfile(mock), mock);
   assert.throws(() => requireProfile(null), assert.AssertionError);
   assert.throws(() => requireProfile({ ...mock, fix: "f".repeat(40) }), assert.AssertionError);
@@ -262,6 +261,17 @@ test("stock runner adaptation is closed to the one new manual ref and preserves 
     ref +
     "' && 'ubuntu-24.04' || 'blacksmith-8vcpu-ubuntu-2404' }}";
   let before = workflow;
+  // The later listener role owns only its literal ref, runner and Node seams.
+  const listenerRef = "refs/heads/test/published-global-component-listener-11373-20261103";
+  before = before.replaceAll(
+    " && (github.ref == '" + ref + "' || github.ref == '" + listenerRef + "') &&",
+    " && github.ref == '" + ref + "' &&",
+  );
+  before = before.replace(" || github.ref == '" + listenerRef + "'", "");
+  before = before.replace(
+    "        with:\n          node-version: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/published-global-component-listener-11373-20261103') && '26.12.1' || '26.13.0' }}\n          package-manager-cache: false\n",
+    "        with: { node-version: 26.13.0, package-manager-cache: false }\n",
+  );
   for (const job of ["contracts-q16", "public-q16"]) {
     const marker = "  " + job + ":\n";
     const start = before.indexOf(marker);
