@@ -1,0 +1,52 @@
+{
+  "schema": "vize.issue11373.original-source-custody",
+  "reportSha256": "1b531a4391361f1859303b867d2bf201fddcd3e0d5ff5343cd28e509132860d1",
+  "bodySha256": "180980b2d918ca58a996dd6dd3d286d498ea30915bc25e9bee2cde1c72b030b1",
+  "originalFiles": [
+    {
+      "path": "package.json",
+      "bytes": 199,
+      "sha256": "0ddd97e462e3d59c15437f5de12aa5eb917ec34cce28bb7a3a3259a27940dbb3"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 352,
+      "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+    },
+    {
+      "path": "src/global-components.d.ts",
+      "bytes": 161,
+      "sha256": "58b604d66bf532e0923a2efda34db10a577105683fcf1c47092a93849627798a"
+    },
+    {
+      "path": "src/GlobalComponentListener.vue",
+      "bytes": 145,
+      "sha256": "9f7661b8691673eaed9357ac86372f384e2ccbc06c378483b4525a50d3900a48"
+    },
+    {
+      "path": "src/PascalListener.vue",
+      "bytes": 143,
+      "sha256": "4646e0dc67bffcef92ceb1ee44d2a6701049a55edb864572c8d723d4dd0c2b68"
+    },
+    {
+      "path": "src/NoListener.vue",
+      "bytes": 64,
+      "sha256": "d16626074222e1eea198f4a23e60700ae7370c0e9b2df3cc9fa7a5bb8858af71"
+    }
+  ],
+  "versions": {
+    "vize": "0.640.0",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "vue": "3.5.43",
+    "typescript": "5.9.3",
+    "vue-tsc": "3.2.6",
+    "node": "26.12.1",
+    "os": "macOS26.4.1",
+    "arch": "arm64",
+    "pnpm": "12.3.4"
+  },
+  "originalCommands": "pnpm install\npnpm exec tsrs --runExternalCode -p tsconfig.json --pretty false\npnpm exec vue-tsc --noEmit -p tsconfig.json --pretty false\n",
+  "originalDiagnostic": "src/GlobalComponentListener.vue(55,87): error TS2448: Block-scoped variable 'global_link' used before its declaration.\n  This location is in virtual code produced by the content mapper 'vize@0.640.0' and has no corresponding location in the original file.\n",
+  "reporter": "ubugeeei; no external attribution in original report",
+  "scope": "Three original components and all original settings verbatim. Original installed/public role and current-source controls are separate; current exact semantic qualification pending."
+}

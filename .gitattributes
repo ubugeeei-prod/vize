@@ -215,3 +215,13 @@ tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.tx
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json -text
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/source-provenance.json -text
+
+# Exact original #11373 sources and settings.
+tests/_fixtures/differential/typechecker/global-component-listener-11373/package.json.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/tsconfig.json.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/global-components.d.ts.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/GlobalComponentListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/PascalListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/src/NoListener.vue.txt -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/cases.json -text
+tests/_fixtures/differential/typechecker/global-component-listener-11373/source-provenance.json -text
