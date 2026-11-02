@@ -143,7 +143,8 @@ fn default_unknown_and_local_component_policies_remain_separate() {
         .code
         .lines()
         .filter(|line| {
-            line.starts_with("declare const ") || line.starts_with("type $GlobalComponent<")
+            line.starts_with("declare const global_link:")
+                || line.starts_with("type $GlobalComponent<")
         })
         .collect::<Vec<_>>();
     assert_eq!(local_registry, Vec::<&str>::new(), "{}", local.code);

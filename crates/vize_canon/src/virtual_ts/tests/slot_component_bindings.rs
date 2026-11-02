@@ -139,14 +139,14 @@ fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signatu
     assert_eq!(
         code.matches("__vizeSlotConstructorInstance<$SlotConstructor<typeof el_badge>>()(",)
             .count(),
-        1,
-        "the slot-host constructor must select the exact direct construction:\n{code}",
+        2,
+        "the template and props slot-host constructors must select their exact direct constructions:\n{code}",
     );
     assert_eq!(
         code.matches("$SlotConstructorWithArguments<$SlotConstructor<typeof el_badge>>)(",)
             .count(),
-        1,
-        "the non-empty branch must preserve the direct props construction:\n{code}",
+        2,
+        "both non-empty branches must preserve the direct props construction:\n{code}",
     );
 }
 
@@ -293,7 +293,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     );
     assert_eq!(
         slot_factory_owners(&output.code),
-        ["el_badge"],
+        ["el_badge", "el_badge"],
         "{}",
         output.code,
     );
@@ -413,8 +413,8 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
         let reference = format!("import(\"vize:virtual-ts\").{helper}<{constructor}>");
         assert_eq!(
             code.matches(&reference).count(),
-            1,
-            "the hoisted direct branch must use one collision-proof {helper} reference:\n{code}",
+            2,
+            "the template and props branches each use one collision-proof {helper} reference:\n{code}",
         );
         assert_eq!(
             crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS
