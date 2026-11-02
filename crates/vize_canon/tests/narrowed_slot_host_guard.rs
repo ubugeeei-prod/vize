@@ -10,7 +10,7 @@ const SOURCE: &str = include_str!(concat!(
 ));
 
 #[test]
-fn both_slot_host_passes_keep_each_inference_guard_on_its_own_ignored_line() {
+fn slot_host_calls_keep_each_inference_guard_on_its_own_ignored_line() {
     for newline in ["\n", "\r\n"] {
         let source = SOURCE.replace('\n', newline);
         let result = generate_vue_content_mapper_transform(Path::new("Status.vue"), &source)
@@ -21,10 +21,11 @@ fn both_slot_host_passes_keep_each_inference_guard_on_its_own_ignored_line() {
             .enumerate()
             .filter(|(_, line)| line.contains("(!(status === 'pending')) ? {"))
             .collect::<Vec<_>>();
+        // The props pass skips the host of this unbound slot.
         assert_eq!(
             guarded_copies.len(),
-            4,
-            "both constructor/factory calls in both slot passes"
+            2,
+            "both constructor/factory calls in the template slot pass"
         );
         for (index, _) in guarded_copies {
             assert_eq!(
