@@ -276,9 +276,10 @@ pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> O
 }
 
 /// One generic setup's const-object declaration has the same original value-import
-/// identity in every declared entry. This is value-type equality, not Vue
+/// identity in every declared entry. Its representative property retains
+/// ordinary literal widening. This is type equality, not Vue
 /// component authority, a key-union approximation, or module resolution.
-pub fn homogeneous_index_value<'a>(
+pub fn homogeneous_index_property<'a>(
     croquis: &'a Croquis,
     object: &str,
     scope_id: crate::ScopeId,
@@ -296,7 +297,7 @@ pub fn homogeneous_index_value<'a>(
         seen.push(id);
         let scope = croquis.scopes.get_scope(id)?;
         if scope.get_binding(object).is_some() {
-            return origins.homogeneous_import_value(object, id);
+            return origins.homogeneous_import_property(object, id);
         }
         current = scope.parent();
     }

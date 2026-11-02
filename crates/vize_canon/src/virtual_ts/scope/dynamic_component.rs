@@ -69,10 +69,10 @@ pub(super) fn emit_dynamic_component_aliases(
         };
         // The authored `v-bind` statement owns the expression's own
         // diagnostics; the alias only has to carry its type.
-        // This exact imported value type is proven by the original Program's
-        // homogeneous immutable entries, never by a key-union approximation.
+        // The original Program proves equal declared entry types. Select an
+        // actual constant-key property to retain ordinary literal widening.
         let annotation = homogeneous_index::value(summary, root, usage)
-            .map(|value| vize_carton::cstr!(": typeof {value}"))
+            .map(|value| vize_carton::cstr!(": {value}"))
             .unwrap_or_default();
         if let Some(guard) = &usage.vif_guard {
             append!(

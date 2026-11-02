@@ -3,14 +3,20 @@ use oxc_ast::ast::{
     BindingPattern, Expression, ImportDeclarationSpecifier, ObjectExpression, ObjectPropertyKind,
     Program, PropertyKey, PropertyKind, Statement, VariableDeclarationKind, VariableDeclarator,
 };
-use vize_carton::FxHashMap;
+use vize_carton::{CompactString, FxHashMap};
 
 use super::{ValueBindingKey, ValueBindingOrigins, ValueImportExport, ValueReference};
 use crate::scope::ScopeId;
 
 #[derive(Debug, Default)]
 pub(super) struct HomogeneousObjects {
-    entries: FxHashMap<ValueBindingKey, Vec<ValueReference>>,
+    entries: FxHashMap<ValueBindingKey, HomogeneousObject>,
+}
+
+#[derive(Debug)]
+struct HomogeneousObject {
+    values: Vec<ValueReference>,
+    property: CompactString,
 }
 
 fn value_identifiers<'a, 'ast>(object: &'a ObjectExpression<'ast>) -> Option<&'a str> {
@@ -50,6 +56,17 @@ fn object<'a, 'ast>(
     }
     match declaration.init.as_ref()? {
         Expression::ObjectExpression(object) => Some(object),
+        _ => None,
+    }
+}
+
+fn first_key<'a, 'ast>(object: &'a ObjectExpression<'ast>) -> Option<&'a str> {
+    let ObjectPropertyKind::ObjectProperty(property) = object.properties.first()? else {
+        return None;
+    };
+    match &property.key {
+        PropertyKey::StaticIdentifier(key) => Some(key.name.as_str()),
+        PropertyKey::StringLiteral(key) => Some(key.value.as_str()),
         _ => None,
     }
 }
@@ -94,6 +111,9 @@ impl ValueBindingOrigins {
         let Some(key) = self.declaration_key(scope, identifier.span) else {
             return;
         };
+        let Some(property) = first_key(object) else {
+            return;
+        };
         let mut entries = Vec::with_capacity(object.properties.len());
         for property in &object.properties {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
@@ -104,10 +124,16 @@ impl ValueBindingOrigins {
             };
             entries.push(ValueReference::new(scope, value.name.as_str(), value.span));
         }
-        self.homogeneous.entries.insert(key, entries);
+        self.homogeneous.entries.insert(
+            key,
+            HomogeneousObject {
+                values: entries,
+                property: CompactString::new(property),
+            },
+        );
     }
 
-    pub(crate) fn homogeneous_import_value(&self, name: &str, scope: ScopeId) -> Option<&str> {
+    pub(crate) fn homogeneous_import_property(&self, name: &str, scope: ScopeId) -> Option<&str> {
         if !self.is_complete() || !self.owns_setup_program() || self.root != Some(scope) {
             return None;
         }
@@ -117,9 +143,8 @@ impl ValueBindingOrigins {
             return None;
         }
         let entries = self.homogeneous.entries.get(&key)?;
-        let mut selected = None;
         let mut selected_key = None;
-        for reference in entries {
+        for reference in &entries.values {
             let value = self.resolve(reference)?;
             let canonical = value.canonical?;
             let import = value.import?;
@@ -136,9 +161,8 @@ impl ValueBindingOrigins {
                 return None;
             }
             selected_key = Some(canonical);
-            selected = Some(reference.name.as_str());
         }
-        selected
+        selected_key.map(|_| entries.property.as_str())
     }
 }
 
