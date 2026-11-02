@@ -8,7 +8,7 @@ on:
       targeted-test:
         description: "Run the full suite or the original 16-state/four-host generic body-error cohort"
         type: choice
-        options: [full, generic-body-error, reported-q16]
+        options: [full, generic-body-error, reported-q16, standard-dynamic-targets]
         default: full
       reported-q16-cases:
         description: "Closed source After case set; all retains the original six tests"
@@ -70,7 +70,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify targeted source and exclusive mode
-        if: inputs.targeted-test == 'generic-body-error'
+        if: inputs.targeted-test == 'generic-body-error' || inputs.targeted-test == 'standard-dynamic-targets'
         env:
           EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
           OTHER_MODES: ${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}
@@ -143,7 +143,7 @@ jobs:
         run: |
           cargo test --locked -p vize --test integration -- content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs --exact --nocapture
       - name: Run authored syntax and setup binding conformance
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
@@ -159,19 +159,19 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::optional_prop_spacing:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
       - name: Run TS-40 current-projection baselines
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         run: |
           cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture
           cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture
           cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
           node --test tests/tooling/davinci-ts40-projection.test.ts
       - name: Build packed Content Mapper runtime
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         run: |
           vp run --filter './npm/native' build:ci
           (cd npm/cli && vp pack)
       - name: Prepare native platform packages
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         working-directory: npm/native
         run: |
           vp exec napi create-npm-dirs
@@ -185,7 +185,7 @@ jobs:
             fi
           done
       - name: Run standard tsgo through fresh-installed package tarballs
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
@@ -198,7 +198,20 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
+          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED: "1"
+          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ github.workspace }}/target/vize-tests/content-mapper-reported-dynamic-targets
+          STANDARD_DYNAMIC_ONLY: ${{ inputs.targeted-test == 'standard-dynamic-targets' && '1' || '0' }}
         run: |
+          if [ "$STANDARD_DYNAMIC_ONLY" = 1 ]; then
+            mkdir -p "$VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR"
+            set +e
+            cargo test -p vize --test integration -- content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types --exact --nocapture >"$VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR/cargo.stdout.bin" 2>"$VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR/cargo.stderr.bin"
+            standard_c_status=$?
+            set -e
+            printf '%s\n' "$standard_c_status" >"$VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR/cargo.status.txt"
+            test -s "$VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR/whole-capture.json"
+            exit "$standard_c_status"
+          else
           cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_directives:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_build:: --nocapture
@@ -206,8 +219,9 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_package_references:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_watch:: --nocapture
           cargo test -p vize --test integration -- content_mapper_importer_scoped_packages:: --nocapture
+          fi
       - name: Run importer-scoped package resolution matrix
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         env:
           CORSA_PATH: ${{ runner.temp }}/tsgo
           VIZE_TEST_REQUIRE_TSGO: "1"
@@ -219,7 +233,7 @@ jobs:
           cargo test -p vize --test integration -- check_package_scope_mode_cli:: --nocapture
           cargo test -p vize --test integration -- check_package_tsx_shadow_cli:: --nocapture
       - name: Run Content Mapper LSP and virtual-overlay editor checks
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
@@ -230,7 +244,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
       - name: Stress every editor case against its exact native provider
-        if: inputs.targeted-test != 'generic-body-error'
+        if: inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'standard-dynamic-targets'
         run: |
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
@@ -389,6 +403,7 @@ jobs:
           name: content-mapper-owner-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/vize-tests/content-mapper-directive-owners
+            target/vize-tests/content-mapper-reported-dynamic-targets
             target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/content-mapper-native-host.json
             ${{ runner.temp }}/content-mapper-editor-stress
