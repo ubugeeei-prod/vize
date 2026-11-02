@@ -17,7 +17,7 @@ fn previous(current: &str, before_bytes: usize, before_sha: &str, after_sha: &st
     assert_eq!(current.len(), before_bytes + 58);
     assert_eq!(support::hash(current.as_bytes()), after_sha);
     assert_eq!(current.matches(AFTER).count(), 1);
-    assert!(!current.contains(BEFORE));
+    assert_eq!(current.matches(BEFORE).count(), 0);
     let previous = current.replacen(AFTER, BEFORE, 1);
     assert_eq!(previous.len(), before_bytes);
     assert_eq!(support::hash(previous.as_bytes()), before_sha);
@@ -76,7 +76,7 @@ mod tests {
         ] {
             let prior = previous(current, before_bytes, before_sha, after_sha);
             assert_eq!(prior.matches(BEFORE).count(), 1);
-            assert!(!prior.contains(AFTER));
+            assert_eq!(prior.matches(AFTER).count(), 0);
             assert_eq!(prior.replacen(BEFORE, AFTER, 1), current);
         }
         assert_eq!(
