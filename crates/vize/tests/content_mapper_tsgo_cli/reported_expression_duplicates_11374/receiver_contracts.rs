@@ -20,7 +20,25 @@ fn receiver_echoes_preserve_contextual_and_typed_fallthrough_contracts() {
     std::fs::create_dir_all(&cases_root).unwrap();
     let mut observations = Vec::new();
     let mut verdicts = Vec::new();
-    for state in input["states"].as_array().unwrap() {
+    let mut states = input["states"].as_array().unwrap().clone();
+    // A mutable binding is deliberately ineligible for independent receiver
+    // ownership. These same-contract controls distinguish an existing unchecked
+    // fallthrough route from a diagnostic hidden by the new receiver intervals.
+    for original in input["states"].as_array().unwrap() {
+        if original["id"]
+            .as_str()
+            .unwrap()
+            .starts_with("typed-fallthrough-")
+        {
+            let mut state = original.clone();
+            state["id"] = json!(format!("{}-mutable", original["id"].as_str().unwrap()));
+            let parent = state["sources"]["Parent.vue"].as_str().unwrap();
+            state["sources"]["Parent.vue"] =
+                json!(parent.replace("const entries:", "let entries:"));
+            states.push(state);
+        }
+    }
+    for state in &states {
         let id = state["id"].as_str().unwrap();
         let project = tempfile::Builder::new()
             .prefix("reported-receiver-contract-11374-")
