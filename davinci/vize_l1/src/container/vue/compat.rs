@@ -1,14 +1,18 @@
-//! Retained SFC raw-block boundary implementation owned by L1.
+//! Retained SFC block boundary implementations owned by L1.
 //!
-//! Compatibility consumers keep their existing descriptor policy and scanners.
-//! This is the unchanged style/custom-block boundary provider, not native
-//! descriptor admission or a replacement for the remaining script/template path.
+//! Compatibility consumers keep their existing descriptor policy and public
+//! parse API while opening, attribute, script, template and raw-block scanning
+//! share this implementation. Native descriptor admission remains separate.
 
 use alloc::borrow::Cow;
 use memchr::memrchr;
 use vize_l0::{FxHashMap, String, cstr};
 
+mod block;
 mod raw;
+mod template_boundary;
+
+pub use block::{parse_block_fast, tag_name_eq};
 pub use raw::find_block_end;
 
 pub type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;

@@ -5,7 +5,9 @@ use super::compat::can_start_string_literal;
 use super::{BlockAttrs, advance_line, find_closing_tag_end, skip_regex_literal};
 use memchr::{memchr2, memmem};
 
-pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
+pub(in crate::container::vue::compat) fn can_start_regex_literal(
+    prev_significant_char: u8,
+) -> bool {
     matches!(
         prev_significant_char,
         b'=' | b'('
@@ -53,7 +55,7 @@ pub(super) fn script_regex_end(
     Some(end)
 }
 
-pub(in crate::sfc::parse) fn skip_script_string_literal(
+pub(in crate::container::vue::compat) fn skip_script_string_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,
@@ -217,7 +219,7 @@ fn skip_template_expression(
 #[cfg(test)]
 mod tests {
     use super::{BlockAttrs, script_regex_end, skip_regex_literal, skip_script_string_literal};
-    use std::borrow::Cow;
+    use alloc::borrow::Cow;
 
     #[test]
     fn jsx_boundary_recovery_does_not_change_other_language_or_regex_results() {
