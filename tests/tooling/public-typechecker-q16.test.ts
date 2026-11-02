@@ -111,7 +111,7 @@ test("closed regression data and noncausal A64 binding retain unknown-profile re
     { ...mock, capsule: "UNKNOWN" },
     { ...mock, version: "UNKNOWN" },
     { ...mock, run: "UNKNOWN" },
-    { ...mock, subset: "A59" },
+    { ...mock, subset: "A59-65", fix: "f".repeat(40) },
   ];
   for (const profile of invalid)
     assert.throws(() => requireProfile(profile), assert.AssertionError);

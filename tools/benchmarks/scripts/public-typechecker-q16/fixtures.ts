@@ -10,6 +10,7 @@ export const fixtureNames = [
   "fixtures-c4-issue-11363.json",
   "fixtures-c4-issue-11366.json",
   "fixtures-c4-issue-11367.json",
+  "fixtures-a59-issue-11359.json",
 ] as const;
 const raw: unknown[] = fixtureNames.map((name) =>
   JSON.parse(readFileSync(new URL(name, import.meta.url), "utf8")),
