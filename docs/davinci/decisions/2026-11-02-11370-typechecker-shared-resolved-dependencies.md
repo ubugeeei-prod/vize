@@ -45,14 +45,30 @@ remains of the cost recorded in #11370.
 
 ## Evidence
 
-The paired `type_snapshot_bench` at base `07d1feb1bb` against this change
-reports identical module-fact signatures for every workload. Warmed 128-host
-medians improve 2.68x (fanout, 1 thread), 2.69x (fanout, 4 threads), 3.00x and
-2.07x (deep barrels), 2.24x and 1.67x (Vue/TSX); cold one-host and local-only
-cases stay within 0.96–1.03x. In the batch CLI the per-component world cost
-halves (p50 8.2 → 4.1 ms for twenty components importing one type through a
-400-module barrel) while full-command wall time changes little, because the
-parallel workers wait on the same first parse of the closure. The unit tests
+[Paired run 41382042484](https://github.com/ubugeeei-prod/vize/actions/runs/41382042484)
+(`blacksmith-32vcpu-ubuntu-2404`, base `07d1feb1bb`, head `7fd84eef83`, nine
+alternating pairs) reports identical module-fact signatures for all twelve
+workloads. Warmed 128-host medians:
+
+| Workload     | Threads |     Base |    Head | Speedup |
+| ------------ | ------: | -------: | ------: | ------: |
+| Fanout       |       1 | 32.53 ms | 3.24 ms |  10.05x |
+| Deep barrels |       1 | 29.97 ms | 1.52 ms |  19.75x |
+| Vue/TSX      |       1 | 30.74 ms | 3.25 ms |   9.46x |
+| Fanout       |       4 | 18.56 ms | 1.29 ms |  14.37x |
+| Deep barrels |       4 | 19.88 ms | 0.92 ms |  21.62x |
+| Vue/TSX      |       4 | 18.24 ms | 1.23 ms |  14.82x |
+
+Cold one-host cases moved from 1.63 / 1.50 / 2.13 ms to 1.43 / 1.37 / 1.91 ms
+and local-only cases stayed within 0.88–1.03x. The same harness on an Apple M1
+(`ci-opt`) gives 2.1–2.9x warm and 1.00–1.07x cold. The run's `paired-cli` job
+stopped before building any CLI because `canon-alias-collector.test.mjs` fails
+on `main`; CLI parity comes from a 61-package workspace sweep whose diagnostics
+are byte-identical before and after, with warm wall time unchanged at 112 s.
+In that CLI the per-component world cost halves (p50 8.2 → 4.1 ms for twenty
+components importing one type through a 400-module barrel) while the first
+touch of a barrel still parses and resolves the whole closure once per process,
+and parallel workers wait on that same first parse. The unit tests
 `dependency_modules_are_resolved_once_per_snapshot_and_shared_between_worlds`
 and `barrel_dependencies_are_resolved_once_however_many_worlds_import_them`
 pin the sharing (`Arc::ptr_eq`), the cache contents and fact equality across
