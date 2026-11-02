@@ -3282,6 +3282,52 @@
       }
     },
     {
+      "id": "linter/slot-typeof-presence-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "slot-typeof-presence-10822",
+        "files": [
+          {
+            "path": "FieldBody.vue.txt",
+            "sha256": "549dd10935821983608154160721b6a600b8e4f74b74a60902872df81e934598",
+            "role": "original-real-project-component"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "e5846f88426847c1eed349f1914b103aea7a58e5f534b998d2675c876f853554",
+            "role": "authored-scope-controls"
+          },
+          {
+            "path": "semantic-successors.json",
+            "sha256": "0d831b09099288dda67162ec4986637f6214d3f599ca203bfc663041263dcba3",
+            "role": "explicit-versioned-semantic-successors"
+          },
+          {
+            "path": "source-provenance.json",
+            "sha256": "bfdfd9e669dbe68d671fecffc8d68ae48e13b96bb5d884c66a95092804ff7d83",
+            "role": "source-custody"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "whole original script-SFC and authored Typeof controls; no native/shared history promotion"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/static-class/adjacent-attribute",
       "state": "active",
       "targets": ["lint"],
