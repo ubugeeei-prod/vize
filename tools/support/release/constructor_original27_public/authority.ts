@@ -24,8 +24,8 @@ export const sdkFiles = [
   "generated/content-mapper-types.d.ts",
   "virtual-ts-globals.d.ts",
   "virtual-ts-patterns.d.ts",
-  "virtual-ts-slots.d.ts",
 ] as const;
+export const afterSdkFiles = [...sdkFiles, "virtual-ts-slots.d.ts"] as const;
 export const gitBlob = (raw: Buffer) =>
   createHash("sha1")
     .update("blob " + raw.length + "\0")
@@ -149,7 +149,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   assert.ok(["ahead", "identical"].includes(asString(ancestry.status)));
   const sdk = [];
   let packageManifest: JsonRecord | undefined;
-  for (const name of ["package.json", ...sdkFiles]) {
+  for (const name of ["package.json", ...afterSdkFiles]) {
     const file = asRecord(await read("contents/npm/cli/" + name + "?ref=" + candidate));
     assert.equal(file.type, "file");
     assert.equal(file.path, "npm/cli/" + name);

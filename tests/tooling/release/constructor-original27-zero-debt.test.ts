@@ -25,6 +25,7 @@ import {
   afterRelease,
   requiredMerge,
   sdkFiles,
+  afterSdkFiles,
 } from "../../../tools/support/release/constructor_original27_public/authority.ts";
 import { shippedImages } from "../../../tools/support/release/constructor_original27_public/native-prerequisite.ts";
 
@@ -93,8 +94,10 @@ test("AFTER role binds containing merge, producer source and run while the compl
     source: "85ab7600097035afa060ca03f8a77108cdc5e337",
     candidate: "3ec8f999df04a50b37aea7f12a5fa85161d43d8d",
   });
-  assert.equal(new Set(sdkFiles).size, 10);
-  assert(sdkFiles.includes("virtual-ts-slots.d.ts"));
+  assert.equal(sdkFiles.length, 9);
+  assert(!sdkFiles.some((file: string) => file === "virtual-ts-slots.d.ts"));
+  assert.equal(new Set(afterSdkFiles).size, 10);
+  assert(afterSdkFiles.includes("virtual-ts-slots.d.ts"));
 });
 test("actual shipped-byte authentication rejects changed payload, installed mutation and symlink before any loader runs", () => {
   const root = mkdtempSync(join(tmpdir(), "original27-shipped-"));
