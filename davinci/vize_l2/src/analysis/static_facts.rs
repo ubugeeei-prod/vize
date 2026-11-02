@@ -1,11 +1,25 @@
-//! Canonical product schema for L2 static-subtree analysis.
+//! Static-subtree analysis over canonical L2 owners.
 //!
-//! These facts describe canonical L2 owners and are independent of the
-//! backend decision that consumes them. The transitional Vue lowering adapter
-//! still produces the table while its binding-surface policy is separated from
-//! the neutral tree walk; consumers can depend on this L2 schema directly.
+//! The analysis publishes the existing per-owner lattice and ordered
+//! provenance without mutating its region. It consumes retained expressions
+//! and the shared page-order walk; no dialect legalizer or backend is needed.
+//! Hoisting decisions remain position- and option-dependent in the backend.
+//! The transitional Vue pass is only an adapter to this implementation.
 
-use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
+use alloc::vec::Vec;
+use vize_l0::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
+use vize_l0::side_table::SideTable;
+
+use crate::op::{Namespace, Region};
+use crate::provenance::ProvenanceRecord;
+use crate::walk::{PageWalk, assert_accounting};
+
+mod consts;
+mod lattice;
+mod remarks;
+
+pub use super::constant_expression::is_self_bound_constant as constant_for_hoist;
+pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "hoist-static";
@@ -52,3 +66,51 @@ const _: () = {
 
 /// Five bytes on every width: one tag byte plus four bools.
 const _: () = assert!(core::mem::size_of::<StaticFacts>() == 5);
+
+/// Analyze one complete region using its existing page-order node count.
+///
+/// Facts and provenance have the original post-order publication order. The
+/// region and existing provenance prefix are retained unchanged.
+///
+/// # Panics
+///
+/// Panics on mismatched page accounting, which is a producer invariant.
+#[must_use]
+pub fn run(
+    root: &Region<'_>,
+    op_count: u32,
+    provenance: &mut Vec<ProvenanceRecord>,
+) -> SideTable<StaticFacts> {
+    run_remarked(root, op_count, provenance, &mut NoRemarks)
+}
+
+/// [`run`] with the existing static-subtree and static-props remarks.
+///
+/// A detached sink leaves the analysis and its provenance identical.
+///
+/// # Panics
+///
+/// As [`run`].
+#[must_use]
+pub fn run_remarked<R: RemarkSink>(
+    root: &Region<'_>,
+    op_count: u32,
+    provenance: &mut Vec<ProvenanceRecord>,
+    remarks: &mut R,
+) -> SideTable<StaticFacts> {
+    let mut facts = SideTable::new();
+    let mut walk = PageWalk::new();
+    lattice::visit_region(
+        &mut walk,
+        &root.ops,
+        Namespace::Html,
+        provenance,
+        &mut facts,
+        remarks,
+    );
+    assert_accounting(&walk, op_count, NAME);
+    facts
+}
+
+#[cfg(test)]
+mod tests;
