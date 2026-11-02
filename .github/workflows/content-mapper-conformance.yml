@@ -54,8 +54,6 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
-      Q16_OUT: ${{ runner.temp }}/reported-q16
-      Q16_PROVIDER: ${{ runner.temp }}/reported-q16-provider
       EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
       Q16_TARGETED_TEST: ${{ inputs.targeted-test }}
       Q16_OTHER_MODES: ${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}
@@ -68,6 +66,10 @@ jobs:
       - name: Checkout exact reviewed joint baseline
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
+      - name: Initialize runner-local joint evidence paths
+        shell: bash
+        run: |
+          printf 'Q16_OUT=%s/reported-q16\nQ16_PROVIDER=%s/reported-q16-provider\n' "$RUNNER_TEMP" "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Setup repository build Node and Vite Plus
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
