@@ -50,7 +50,7 @@
       "id": "typed-fallthrough-wrong",
       "sources": {
         "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return 123;}}\" />\n</template>\n"
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.value;}}\" />\n</template>\n"
       },
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
       "expectedStatus": 2,
@@ -61,7 +61,7 @@
       "id": "typed-fallthrough-repair",
       "sources": {
         "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return 'ok';}}\" />\n</template>\n"
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.text;}}\" />\n</template>\n"
       },
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
       "expectedStatus": 0,
