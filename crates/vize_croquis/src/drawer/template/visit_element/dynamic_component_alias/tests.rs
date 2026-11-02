@@ -60,11 +60,15 @@ fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
 }
 
 #[test]
-fn guarded_script_member_uses_one_owned_capture_and_preserves_its_guard() {
+fn script_member_uses_one_owned_capture_and_preserves_its_guard() {
     let allocator = Allocator::new();
-    for template in [
-        r#"<component :is="foo.bar" v-if="foo" />"#,
-        r#"<template v-if="foo"><component :is="foo.bar" /></template>"#,
+    for (template, guard) in [
+        (r#"<component :is="foo.bar" v-if="foo" />"#, Some("foo")),
+        (
+            r#"<template v-if="foo"><component :is="foo.bar" /></template>"#,
+            Some("foo"),
+        ),
+        (r#"<component :is="foo.bar" />"#, None),
     ] {
         let (root, errors) = parse(&allocator, template);
         assert!(errors.is_empty(), "{errors:?}");
@@ -75,7 +79,7 @@ fn guarded_script_member_uses_one_owned_capture_and_preserves_its_guard() {
         assert_eq!(summary.component_usages.len(), 1);
         let usage = &summary.component_usages[0];
         assert!(super::is_dynamic_component_alias(usage.name.as_str()));
-        assert_eq!(usage.vif_guard.as_deref(), Some("foo"));
+        assert_eq!(usage.vif_guard.as_deref(), guard);
         assert!(
             summary
                 .template_expressions
