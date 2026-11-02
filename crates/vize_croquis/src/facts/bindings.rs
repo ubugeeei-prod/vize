@@ -81,6 +81,13 @@ impl FactProducer<Croquis> for Bindings {
     }
 }
 
+/// Whether the setup binding relation belongs to exactly one parsed Program.
+/// This is an ownership guard, not a variable-declaration-kind inference.
+#[doc(hidden)]
+pub fn has_single_setup_binding_frame(croquis: &Croquis) -> bool {
+    croquis.source_program_count == 1 && croquis.bindings.is_script_setup
+}
+
 /// Name-level reads over a `Bindings` table.
 pub trait BindingsTable {
     /// Whether the bindings come from `<script setup>`.

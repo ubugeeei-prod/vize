@@ -132,9 +132,11 @@ fn static_root<'a>(expression: &'a Expression<'_>) -> Option<(&'a str, Range<usi
     }
 }
 
-/// Require the actual immutable script declaration and reject every accessible
-/// lexical shadow, mutation or replayed closure. This is a binding proof, not
-/// an assumption made from an identifier's spelling or two equal inferred types.
+/// Bind the canonical setup kind/span to one actual accessible setup scope.
+/// Top-level variables live in Bindings, not duplicate ScopeBinding slots.
+/// The fixed TypeScript category includes const variables, functions, classes
+/// and imports; it is not a syntactic variable-const assertion. A contradictory
+/// physical slot or any lexical/replayed scope must still refuse ownership.
 fn script_declaration(
     summary: &Croquis,
     bindings: ScriptBindings<'_>,
@@ -142,6 +144,7 @@ fn script_declaration(
     name: &str,
 ) -> Option<(u32, u32)> {
     if usage.vif_guard.is_some()
+        || !vize_croquis::facts::bindings::has_single_setup_binding_frame(summary)
         || !bindings.is_script_setup()
         || bindings.binding_type(name) != Some(BindingType::SetupConst)
         || name.starts_with("__")
@@ -177,6 +180,13 @@ fn script_declaration(
         {
             return None;
         }
+        if scope.kind == ScopeKind::ScriptSetup {
+            let actual = (id.as_u32(), start);
+            if declaration.is_some_and(|previous| previous != actual) {
+                return None;
+            }
+            declaration = Some(actual);
+        }
         if let Some(binding) = scope.get_binding(name) {
             if scope.kind != ScopeKind::ScriptSetup
                 || binding.binding_type != BindingType::SetupConst
@@ -185,11 +195,6 @@ fn script_declaration(
             {
                 return None;
             }
-            let actual = (id.as_u32(), binding.declaration_offset);
-            if declaration.is_some_and(|previous| previous != actual) {
-                return None;
-            }
-            declaration = Some(actual);
         }
         pending.extend(scope.parents.iter().copied());
     }
@@ -337,7 +342,29 @@ mod tests {
         let facts = super::super::contextual_prop_facts(&root);
         let mut ledger = DiagnosticOwnership::default();
         crate::virtual_ts::script_facts::with_bindings(&summary, |bindings| {
+            eprintln!(
+                "receiver-source-facts: single_program={} setup={} kinds={:?} spans={:?} candidate_keys={:?} scopes={:?}",
+                vize_croquis::facts::bindings::has_single_setup_binding_frame(&summary),
+                bindings.is_script_setup(),
+                bindings.typed().collect::<Vec<_>>(),
+                bindings.spans().collect::<Vec<_>>(),
+                facts.reads.keys().collect::<Vec<_>>(),
+                summary
+                    .scopes
+                    .iter()
+                    .map(|scope| (
+                        scope.id,
+                        scope.kind,
+                        &scope.parents,
+                        scope.get_binding("items")
+                    ))
+                    .collect::<Vec<_>>()
+            );
             for usage in vize_croquis::facts::component_usage_list(&summary) {
+                eprintln!(
+                    "receiver-usage-facts: start={} scope={:?} guard={:?} props={:?}",
+                    usage.start, usage.scope_id, usage.vif_guard, usage.props
+                );
                 for prop in &usage.props {
                     if let Some(value) = facts.reads.get(&(prop.start, prop.end)) {
                         ledger
@@ -454,5 +481,14 @@ mod tests {
         ledger.record(read, 2..3, 4..5, true);
         ledger.refuse_owner(owner);
         assert!(ledger.into_echoes().is_empty());
+    }
+    #[test]
+    fn mixed_script_programs_do_not_prove_one_setup_binding_frame() {
+        let mut analyzer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        analyzer.analyze_script_plain("export const outer = 1;");
+        analyzer.analyze_script_setup(SCRIPT);
+        let summary = analyzer.finish();
+        assert!(!vize_croquis::facts::bindings::has_single_setup_binding_frame(&summary));
     }
 }
