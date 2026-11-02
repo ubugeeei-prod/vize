@@ -230,6 +230,12 @@ export function auditCallbackOwners(directory: string) {
           packet,
           candidate[index],
           index === 0 ? row.files["src/Comp.vue"] : parent,
+          index === 0
+            ? undefined
+            : project.authoredBindings.map((binding) => ({
+                name: at(binding.name, original, parent, parentVariant),
+                value: at(binding.value, original, parent, parentVariant),
+              })),
         ),
       );
       preservedPackets += before.length;
@@ -424,6 +430,7 @@ export function auditCallbackOwners(directory: string) {
       "./callback-owner-audit.ts",
       "./callback-owner-reference.ts",
       "./callback-owner-packet-parity.ts",
+      "./callback-owner-inert-packet.ts",
       "./callback-owner-projects.ts",
       "./constructor-projection-parity.ts",
       "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts",

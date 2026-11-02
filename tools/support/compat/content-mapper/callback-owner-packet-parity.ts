@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { isDeepStrictEqual } from "node:util";
 import {
   currentNativeAttributeAliases,
   currentSlotsExport,
@@ -11,6 +12,8 @@ import {
   previousSlotsExport,
   previousSlotsMarker,
 } from "./constructor-projection-parity.ts";
+
+import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const nativeRoot =
@@ -230,11 +233,17 @@ export function assertPreservedCallbackPacket(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
   authoredSource?: string,
+  inertBindings?: InertCallbackBinding[],
 ) {
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
-    assert.deepEqual(after, before, "all unchanged callback fields stay exact");
+    if (isDeepStrictEqual(after, before)) return;
+    const expected =
+      inertBindings && authoredSource !== undefined
+        ? withInertCallbackRows(before, after, authoredSource, inertBindings)
+        : before;
+    assert.deepEqual(after, expected, "all unchanged callback fields stay exact");
     return;
   }
   const original = before.text as string;
