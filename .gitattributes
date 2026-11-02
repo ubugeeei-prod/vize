@@ -267,3 +267,7 @@ npm/cli/*.d.mts text eol=lf
 npm/cli/*.d.cts text eol=lf
 npm/cli/generated/*.d.ts text eol=lf
 crates/vize/src/commands/content_mapper/helper-abi.json text eol=lf
+
+# Complete retained static-ref initialization regression inputs.
+tests/_fixtures/differential/typechecker/static-template-ref-runtime-11377/StaticRef.vue.txt -text
+tests/_fixtures/differential/typechecker/static-template-ref-uninitialized-runtime-11377/StaticRef.vue.txt -text
