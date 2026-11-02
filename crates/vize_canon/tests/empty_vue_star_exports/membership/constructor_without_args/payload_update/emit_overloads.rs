@@ -65,6 +65,7 @@ fn previous(current: &str, before_bytes: usize, before_sha: &str, after_sha: &st
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::emit_overload_stall::source_before(path, current);
     if path == PATH {
         previous(&current, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA)
     } else if path == PUBLIC_PATH {
@@ -86,6 +87,7 @@ fn previous_public(current: &str) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::emit_overload_stall::preamble_before(current);
     previous(current, 43_967, PREAMBLE_BEFORE_SHA, PREAMBLE_AFTER_SHA)
 }
 
@@ -120,17 +122,34 @@ mod tests {
     };
     use serde_json::json;
 
-    const CURRENT_ASSET: &str = include_str!(concat!(
+    const CURRENT_STALL_ASSET: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt"
     ));
 
+    fn tail_layer(path: &str, current: &str) -> String {
+        super::super::emit_overload_stall::source_before(path, current.to_owned())
+    }
+
+    fn tail_preamble() -> String {
+        super::super::emit_overload_stall::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        )
+    }
+
     #[test]
     fn exact_current_asset_and_compiled_preamble_reconstruct_only_prior_declaration() {
+        let current_asset = tail_layer(PATH, CURRENT_STALL_ASSET);
+        let current_preamble = tail_preamble();
         for (current, before_bytes, before_sha, after_sha) in [
-            (CURRENT_ASSET, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA),
             (
-                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                current_asset.as_str(),
+                1606,
+                ASSET_BEFORE_SHA,
+                ASSET_AFTER_SHA,
+            ),
+            (
+                current_preamble.as_str(),
                 43_967,
                 PREAMBLE_BEFORE_SHA,
                 PREAMBLE_AFTER_SHA,
@@ -142,8 +161,8 @@ mod tests {
             assert_eq!(prior.replacen(BEFORE, AFTER, 1), current);
         }
         assert_eq!(
-            source_before(PATH, CURRENT_ASSET.to_owned()),
-            previous(CURRENT_ASSET, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA)
+            source_before(PATH, CURRENT_STALL_ASSET.to_owned()),
+            previous(&current_asset, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA)
         );
         assert_eq!(
             support::hash(preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS).as_bytes()),
@@ -152,8 +171,8 @@ mod tests {
         let other_path =
             "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(
-            source_before(other_path, CURRENT_ASSET.to_owned()),
-            CURRENT_ASSET
+            source_before(other_path, CURRENT_STALL_ASSET.to_owned()),
+            CURRENT_STALL_ASSET
         );
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
         retain_provenance(&mut manifest);
@@ -166,10 +185,17 @@ mod tests {
 
     #[test]
     fn missing_duplicate_stale_foreign_and_extra_bytes_refuse_for_both_whole_bodies() {
+        let current_asset = tail_layer(PATH, CURRENT_STALL_ASSET);
+        let current_preamble = tail_preamble();
         for (current, before_bytes, before_sha, after_sha) in [
-            (CURRENT_ASSET, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA),
             (
-                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                current_asset.as_str(),
+                1606,
+                ASSET_BEFORE_SHA,
+                ASSET_AFTER_SHA,
+            ),
+            (
+                current_preamble.as_str(),
                 43_967,
                 PREAMBLE_BEFORE_SHA,
                 PREAMBLE_AFTER_SHA,
@@ -213,18 +239,19 @@ mod tests {
     }
     #[test]
     fn current_published_globals_reconstruct_complete_historical_body_and_refuse_mutants() {
-        let current = include_str!(concat!(
+        let stall_current = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../npm/cli/virtual-ts-globals.d.ts"
         ));
+        let current = &tail_layer(PUBLIC_PATH, stall_current);
         assert_eq!(support::hash(current.as_bytes()), PUBLIC_AFTER_SHA);
         let prior = previous_public(current);
         assert_eq!(prior.len(), 18_966);
         assert_eq!(support::hash(prior.as_bytes()), PUBLIC_BEFORE_SHA);
         assert_eq!(prior.matches(PUBLIC_BEFORE).count(), 1);
         assert_eq!(prior.matches(PUBLIC_AFTER).count(), 0);
-        assert_eq!(prior.replacen(PUBLIC_BEFORE, PUBLIC_AFTER, 1), current);
-        assert_eq!(source_before(PUBLIC_PATH, current.to_owned()), prior);
+        assert_eq!(&prior.replacen(PUBLIC_BEFORE, PUBLIC_AFTER, 1), current);
+        assert_eq!(source_before(PUBLIC_PATH, stall_current.to_owned()), prior);
         for mutated in [
             current.replacen(PUBLIC_AFTER, "", 1),
             format!("{current}{PUBLIC_AFTER}"),

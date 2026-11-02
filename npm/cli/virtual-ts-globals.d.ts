@@ -416,22 +416,41 @@ declare global {
   // Emit-overload helpers (consumed by the per-file __EmitProps alias)
 
   type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+  // Peeling infers each signature twice. A third identical inference means a
+  // generic overload cannot be peeled, so stop instead of recursing to 900.
   type $OverloadUnionRecursive<
     TOverload,
     TPartialOverload = unknown,
     TDepth extends unknown[] = [],
     TAccumulated = never,
+    TLast = never,
+    TStalled = false,
   > = TDepth["length"] extends 900
     ? TAccumulated
     : TOverload extends (...args: infer TArgs) => infer TReturn
       ? TPartialOverload extends TOverload
         ? TAccumulated
-        : $OverloadUnionRecursive<
-            TPartialOverload & TOverload,
-            TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
-            [...TDepth, unknown],
-            TAccumulated | ((...args: TArgs) => TReturn)
-          >
+        : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast
+              ? 1
+              : 2
+          ? TStalled extends true
+            ? TAccumulated
+            : $OverloadUnionRecursive<
+                TPartialOverload & TOverload,
+                TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
+                [...TDepth, unknown],
+                TAccumulated,
+                TLast,
+                true
+              >
+          : $OverloadUnionRecursive<
+              TPartialOverload & TOverload,
+              TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
+              [...TDepth, unknown],
+              TAccumulated | ((...args: TArgs) => TReturn),
+              (...args: TArgs) => TReturn,
+              false
+            >
       : TAccumulated;
   type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<
     $OverloadUnionRecursive<(() => never) & TOverload>,

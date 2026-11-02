@@ -220,3 +220,62 @@ fn emit_overload_tail_accumulator_preserves_shapes_and_all_events() {
     assert_eq!(repair, vec![]);
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+// A generic overload never dedupes against its erased inference, so peeling
+// used to repeat it until depth 900 (~2.6M instantiations for one emit type).
+#[test]
+fn generic_emit_overload_peeling_stops_after_a_stall() {
+    let Some(tsgo) = resolve_test_tsgo_binary() else {
+        return;
+    };
+    let mut source = std::string::String::from("export {};\n");
+    source.push_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/virtual_ts/helpers/declarations/core-types.d.ts.txt"
+    )));
+    source.push_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt"
+    )));
+    source.push_str(
+        r#"
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends
+  (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+type Info = { user: { payload: number }; tag: { payload: string } };
+type Stalled = {
+  <T extends keyof Info>(event: 'done', value: { type: T; value: Info[T]['payload'] }): void;
+  (event: 'closed'): void;
+};
+type Names = Assert<Equal<$OverloadParameters<Stalled>[0], 'done' | 'closed'>>;
+type Mixed = { (event: 'a', x: number): void; <U extends string>(event: 'b', u: U): void; (event: 'c'): void };
+type MixedNames = Assert<Equal<$OverloadParameters<Mixed>[0], 'b' | 'c'>>;
+type Plain = { (event: 'a', x: number): void; (event: 'a', x?: number): void; (event: 'b'): void };
+type PlainNames = Assert<Equal<$OverloadParameters<Plain>[0], 'a' | 'b'>>;
+"#,
+    );
+    let project_root = create_project_case(
+        "generic-emit-overload-stall",
+        &[("src/stall.ts", source.as_str())],
+    );
+    let output = std::process::Command::new(tsgo)
+        .current_dir(&project_root)
+        .args([
+            "--ignoreConfig",
+            "--noEmit",
+            "--strict",
+            "--extendedDiagnostics",
+            "src/stall.ts",
+        ])
+        .output()
+        .unwrap();
+    let stdout = std::string::String::from_utf8_lossy(&output.stdout);
+    assert!(output.status.success(), "{stdout}");
+    let instantiations = stdout
+        .lines()
+        .find_map(|line| line.strip_prefix("Instantiations:"))
+        .and_then(|value| value.trim().parse::<u64>().ok())
+        .unwrap();
+    assert!(instantiations < 200_000, "{stdout}");
+    let _ = std::fs::remove_dir_all(&project_root);
+}
