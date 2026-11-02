@@ -20,6 +20,10 @@ const REQUIRED: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED";
 const CAPTURE: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR";
 const FIXTURES: &str = "tests/_fixtures/differential/typechecker/reported-dynamic-targets-11362";
 
+// Complete pinned report-provider representation of the separate invalid-key
+// control, in addition to its independently authored missing-key/code/location law.
+const INDEX_KEY_MESSAGE: &str = r#"Type 'TKey' cannot be used to index type '{ a: { __vizeEmitProps?: $StaticEmitProps | undefined; __vizeRawEmits?: $AuthoredEventMap | undefined; __vizeEventMap?: { "update:modelValue": ...; } | undefined; ... 4 more ...; readonly __vizeFallthroughProps?: ... | undefined; } & $ComponentConstructor & $VueComponentOptions; }'."#;
+
 struct Case {
     issue: u64,
     role: &'static str,
@@ -30,7 +34,6 @@ struct Case {
 enum Expected {
     Clean,
     Error(u64, &'static str),
-    ErrorPrefix(u64, &'static str),
 }
 
 fn changed(source: &str, from: &str, to: &str) -> String {
@@ -204,13 +207,13 @@ fn cases() -> (Vec<Value>, Vec<Case>) {
         (
             "invalid-key-error",
             missing_key.clone(),
-            Expected::ErrorPrefix(2536, "Type 'TKey' cannot be used to index type"),
+            Expected::Error(2536, INDEX_KEY_MESSAGE),
         ),
         ("invalid-key-repair", original.clone(), Expected::Clean),
         (
             "invalid-key-restored",
             missing_key,
-            Expected::ErrorPrefix(2536, "Type 'TKey' cannot be used to index type"),
+            Expected::Error(2536, INDEX_KEY_MESSAGE),
         ),
     ] {
         push_case(&mut cases, 11366, role, &files, probe, expected);
@@ -240,40 +243,37 @@ fn cases() -> (Vec<Value>, Vec<Case>) {
     (inputs, cases)
 }
 
+// Exact authored diagnostic anchors from the frozen originals and the explicit
+// token edits above; never infer an expected location from a received diagnostic.
+fn expected_error_location(case: &Case) -> Option<(usize, usize)> {
+    match (case.issue, case.role) {
+        (11362, "unguarded-error" | "unguarded-restored") => Some((6, 19)),
+        (11363, "original" | "wrong-prop-restored") => Some((6, 14)),
+        (11363, "direct-import-error") => Some((6, 8)),
+        (11366, "number-model-error" | "number-model-restored") => Some((10, 29)),
+        (11366, "invalid-key-error" | "invalid-key-restored") => Some((10, 19)),
+        (11367, "number-member-error" | "number-member-restored") => Some((12, 59)),
+        (11367, "outside-slot-error") => Some((10, 59)),
+        _ => None,
+    }
+}
+
 fn assert_case(case: &Case, packet: &Value) {
     let output = &packet["checker"];
     assert!(output["error"].is_null(), "{packet}");
     assert!(output["signal"].is_null(), "{packet}");
     assert_eq!(output["stderrBytes"], json!([]), "{packet}");
     let stdout = output["stdoutUtf8"].as_str().expect("UTF-8 checker stdout");
-    let diagnostics: Vec<_> = stdout
-        .lines()
-        .filter(|line| line.contains(": error TS"))
-        .collect();
     match case.expected {
         Expected::Clean => {
             assert_eq!(output["status"], 0, "{packet}");
             assert_eq!(stdout, "", "{packet}");
         }
-        Expected::Error(code, message) | Expected::ErrorPrefix(code, message) => {
-            assert_ne!(output["status"], 0, "{packet}");
-            assert!(output["status"].is_i64(), "{packet}");
-            assert_eq!(diagnostics.len(), 1, "{packet}");
-            assert!(diagnostics[0].starts_with("src/Probe.vue("), "{packet}");
-            assert!(
-                diagnostics[0].contains(cstr!("): error TS{code}: {message}").as_str()),
-                "{packet}"
-            );
-            let line_and_column = diagnostics[0]
-                .split_once('(')
-                .unwrap()
-                .1
-                .split_once(')')
-                .unwrap()
-                .0;
-            let (line, column) = line_and_column.split_once(',').unwrap();
-            let line: usize = line.parse().unwrap();
-            let column: usize = column.parse().unwrap();
+        Expected::Error(code, message) => {
+            let (line, column) = expected_error_location(case).expect("registered source error role");
+            let expected = cstr!("src/Probe.vue({line},{column}): error TS{code}: {message}\n");
+            assert_eq!(output["status"], 2, "{packet}");
+            assert_eq!(stdout, expected.as_str(), "{packet}");
             let authored = case.files["src/Probe.vue"]
                 .lines()
                 .nth(line - 1)
