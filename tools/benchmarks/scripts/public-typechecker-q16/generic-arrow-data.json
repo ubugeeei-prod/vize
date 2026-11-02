@@ -1,0 +1,320 @@
+{
+  "schema": "vize.genericArrowTsc.sourceIntent.v1",
+  "id": "GArrowTsc",
+  "project": "generic-arrow-tsx",
+  "sourceAuthority": {
+    "fixMerge": "ba01953b4429fabdd652d3497d89a8cf1737697b",
+    "sourceProducer": {
+      "path": "crates/vize/tests/content_mapper_tsgo_cli/template_expression_syntax/generic_arrows.rs",
+      "sha256": "209632edeae785f3fe2e9edba4276baf9ff355d96a5e7b35ba70541b31d2d77a"
+    },
+    "originalAppSha256": "14d54e14493903d7f65a7b2d98865c70dd427801c15da860233a1a70f6c3cd30",
+    "ownerReviewSha256": "606612599787145e3c4a2b56a8f3bba700c213613799bb2e2911ec7ecfa6096c",
+    "reported": {
+      "compilerPackage": "typescript@7.1.0-beta",
+      "mapper": "vize@0.649.0",
+      "vue": "3.5.44",
+      "node": "22.23.3",
+      "os": "macOS15.6.1 arm64 Apple M4 Max",
+      "commandPrefix": [
+        "tsc",
+        "--runExternalCode"
+      ],
+      "completePackageConfigAndArgvSupplied": false
+    },
+    "authored": {
+      "minimalPackageAndStrictConfig": true,
+      "command": [
+        "tsc",
+        "--runExternalCode",
+        "-p",
+        "tsconfig.json",
+        "--pretty",
+        "false"
+      ],
+      "npmManagerControl": "11.19.1",
+      "host": "Linux x64 Node26.13.0 adaptation",
+      "compilerExecution": "Authentic installed bin/tsc under the controlled Node; no npx/TSRS frontend adaptation",
+      "diagnosticExitCriterion": "Prospectively nonzero exact-diagnostic outcome; actual integer status retained literally, no source-native numeric transfer"
+    },
+    "compilerFrontend": "TSC, not TSRS; no --fast/vize-check/official mapper execution",
+    "officialAlpha3ParityQualified": false,
+    "reportedPrivateAppOrPerformanceQualified": false,
+    "nativeSourceHostOrOtherVueOutputsTransferred": false,
+    "sourceObservationsArePublicOutputs": false,
+    "publicTarget": null,
+    "publicAccepted": false
+  },
+  "cases": [
+    {
+      "id": "original",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): T => value;\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "explicit-comma",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T,>(value: T): T => value;\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "bad-return",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): number => 'bad';\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "NONZERO_DIAGNOSTIC",
+        "stdout": "src/App.vue(2,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 2,
+        "stdout": "src/App.vue(2,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "repair-return",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): T => value;\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "restore-bad-return",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): number => 'bad';\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "NONZERO_DIAGNOSTIC",
+        "stdout": "src/App.vue(2,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 2,
+        "stdout": "src/App.vue(2,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "bad-count",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): T => value;\nconst count: string = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "NONZERO_DIAGNOSTIC",
+        "stdout": "src/App.vue(3,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 2,
+        "stdout": "src/App.vue(3,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "repair-count",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): T => value;\nconst count = identity(1);\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "comments-crlf",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\r\nconst identity = <T /* , > inside comment */>(value: T): T => value;\r\nconst count = identity(1);\r\n</script>\r\n<template>{{ count }}</template>\r\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "nested",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nconst identity = <T>(value: T): T => value;\nconst outer = <U>(value: U) => <V>(other: V) => [value, other];\nconst count = identity(1);\nvoid outer;\n</script>\n<template>{{ count }}</template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "ZERO",
+        "stdout": "",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "same-line-template-ref",
+      "files": [
+        {
+          "path": "package.json",
+          "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"7.1.0-beta\",\n    \"vize\": \"0.649.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"types\": [],\n    \"jsx\": \"preserve\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+        },
+        {
+          "path": "src/App.vue",
+          "source": "<script setup lang=\"ts\">\nimport { useTemplateRef } from 'vue';\nconst element = useTemplateRef('target'); const identity = <T>(value: T): T => value;\nconst count: string = identity(1);\n</script>\n<template><span ref=\"target\">{{ count }}</span></template>\n"
+        }
+      ],
+      "expectedTsc": {
+        "exit": "NONZERO_DIAGNOSTIC",
+        "stdout": "src/App.vue(4,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+        "stderr": ""
+      },
+      "sourceNativeExpected": {
+        "status": 2,
+        "stdout": "src/App.vue(4,7): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+        "stderr": ""
+      }
+    }
+  ]
+}
