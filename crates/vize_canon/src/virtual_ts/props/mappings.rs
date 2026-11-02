@@ -159,9 +159,38 @@ impl<'a> PropBindingMappings<'a> {
 
     fn authored_name_range(&self, name: &str) -> Option<Range<usize>> {
         let script = self.script_content?;
-        let (start, end) = self.summary.macros.prop_declaration(name)?;
+        let (start, end, model) = self
+            .summary
+            .macros
+            .prop_declaration(name)
+            .map(|(start, end)| (start, end, false))
+            .or_else(|| {
+                self.summary
+                    .macros
+                    .model_declaration(name)
+                    .map(|(start, end)| (start, end, true))
+            })?;
         let declaration = script.get(start as usize..end as usize)?;
-        let relative = declaration.find(name)?;
+        let relative = if model {
+            if prop_binding_identifier(name).as_str() != name {
+                return None;
+            }
+            // A retained explicit model literal owns the synthesized local.
+            // Escaped, computed and implicit names grant no copied-name edge.
+            if declaration == name {
+                0
+            } else if [b'\'', b'"'].into_iter().any(|quote| {
+                declaration.as_bytes().first() == Some(&quote)
+                    && declaration.as_bytes().last() == Some(&quote)
+                    && declaration.get(1..declaration.len().saturating_sub(1)) == Some(name)
+            }) {
+                1
+            } else {
+                return None;
+            }
+        } else {
+            declaration.find(name)?
+        };
         let start = (self.script_source_offset)(start as usize + relative);
         Some(start..start + name.len())
     }

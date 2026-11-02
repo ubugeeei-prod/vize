@@ -68,6 +68,14 @@ fn direct_model_position(
     let Some(post) = crate::ide::position_to_offset(&result.code, line, character) else {
         return false;
     };
+    // A template local now has its real model anchor, but remains a binding
+    // alias. Only the prop and update declarations are model-native endpoints.
+    if result.semantic_links.iter().any(|link| {
+        link.kind == vize_canon::virtual_ts::VizeSemanticLinkKind::VueTemplatePropBinding
+            && link.source_range.contains(&post)
+    }) {
+        return false;
+    }
     let pre = result.import_source_map.get_original_offset(post as u32) as usize;
     // A broad setup mapping can round-trip the defineModel string argument,
     // but that coordinate is not the projected prop or update identity. The
@@ -276,6 +284,25 @@ mod tests {
                 &result,
                 &(authored + 1..authored + literal.len())
             ));
+            let binding = result
+                .semantic_links
+                .iter()
+                .find(|link| {
+                    link.kind
+                        == vize_canon::virtual_ts::VizeSemanticLinkKind::VueTemplatePropBinding
+                        && result.code.get(link.source_range.clone()) == Some(name)
+                        && result.code.get(link.target_range.clone()) == Some(name)
+                })
+                .expect("model template binding metadata");
+            let binding_position =
+                crate::ide::offset_to_position(&result.code, binding.source_range.start);
+            assert!(!direct_model_position(
+                &result,
+                &source,
+                &declaration,
+                binding_position.0,
+                binding_position.1,
+            ));
             let prop = result
                 .code
                 .find(vize_l0::cstr!("  \"{name}\"").as_str())
@@ -310,7 +337,8 @@ mod tests {
             if name.len() < "update:".len() {
                 expected_generic.push(prefix_position);
             }
-            expected_generic.push((169, 35));
+            expected_generic.extend([(169, 35), binding_position]);
+            expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
                 &result,
@@ -377,7 +405,8 @@ mod tests {
             if name.len() < "update:".len() {
                 expected_generic.push((169, 28));
             }
-            expected_generic.extend([(169, 35), script_position]);
+            expected_generic.extend([(169, 35), binding_position, script_position]);
+            expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
                 &document.virtual_result,
