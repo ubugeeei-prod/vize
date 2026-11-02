@@ -5,7 +5,17 @@ import { suppliedSubsets } from "./fixtures.ts";
 import { declarationData } from "./declaration-data.ts";
 import { a65Data } from "./a-data.ts";
 
-export type Subset = "D61" | "B60-68" | "A59" | "A59-65" | "C62" | "C4" | "A64" | "E90-91" | "F78";
+export type Subset =
+  | "D61"
+  | "B60-68"
+  | "A59"
+  | "A59-65"
+  | "C62"
+  | "C4"
+  | "A64"
+  | "E90-91"
+  | "F78"
+  | "R77";
 export type Role = "after";
 export interface SourceFile {
   path: string;
@@ -50,16 +60,16 @@ export type DeclarationProfile = PublishedProfile & {
 export type Profile = RegressionProfile | DeclarationProfile;
 // Only the parent can bind a genuine published containing release in a narrow source successor.
 export const afterProfile: Profile | null = {
-  subset: "E90-91",
-  fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
-  source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
-  candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
-  version: "0.649.0",
-  run: "41495567070",
-  capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
+  subset: "R77",
+  fix: "56635d7cfb27718ec8b40e67309c71da5b9a3803",
+  version: "0.648.0",
+  source: "155820d442a6250be45eb52c89c455e343f07905",
+  candidate: "012ca83a14856567f3806199f9b00f4e47ffc160",
+  run: "41450079853",
+  capsule: "aa2694a717c6749d85ce694eab8b5b0812fdab7f",
 };
 export const sha256 = (raw: string | Uint8Array) => createHash("sha256").update(raw).digest("hex");
-export const limitations = {
+const defaultLimitations = {
   scope:
     "Fresh installed AFTER-only selected Q16 subset; retained source Before is not public remeasurement",
   host: "Linux x64 Node26.13.0 adaptation; reporter Windows11/architecture and exact npm version are not claimed",
@@ -69,12 +79,31 @@ export const limitations = {
   sourceObservationsArePublicOutputs: false,
   wholeNodeModulesFilesetQualified: false,
 };
+export function limitationsFor(subset: Subset) {
+  return subset === "R77"
+    ? {
+        ...defaultLimitations,
+        scope:
+          "Fresh installed AFTER-only static template ref11377; source-native six-state observations are not public outputs",
+        host: "Linux x64 Node26.13.0 adaptation; reported macOS26.4.1 arm64 Node26.12.1 is not claimed",
+        manager:
+          "npm11.19.1/npm i/npx adaptation of reported pnpm12.3.4 add/exec; exactly three reported direct dependencies",
+      }
+    : defaultLimitations;
+}
+export const limitations = limitationsFor(afterProfile?.subset ?? "D61");
 export const reportedCommands = {
   install: ["npm", "i"],
   tsrs: ["npx", "tsrs", "--runExternalCode", "--noEmit", "-p", "tsconfig.json"],
   reference: ["npx", "vue-tsc", "--noEmit", "-p", "tsconfig.json"],
 } as const;
 export function commandsFor(subset: Subset) {
+  if (subset === "R77")
+    return {
+      install: ["npm", "i"],
+      tsrs: ["npx", "tsrs", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
+      reference: null,
+    } as const;
   if (subset === "E90-91")
     return {
       install: ["npm", "i"],
@@ -91,7 +120,7 @@ export function commandsFor(subset: Subset) {
 }
 export function subsetFor(id: string): SuppliedSubset {
   assert(
-    ["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78"].includes(id),
+    ["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78", "R77"].includes(id),
     "closed source-qualified subset required",
   );
   const rows: SuppliedSubset[] = suppliedSubsets;
@@ -110,6 +139,8 @@ export function requireProfile(profile: Profile | null): Profile {
     assert.equal(profile.fix, a65Data.fixMerge);
   } else {
     subsetFor(profile.subset);
+    if (profile.subset === "R77")
+      assert.equal(profile.fix, "56635d7cfb27718ec8b40e67309c71da5b9a3803");
     if (profile.subset === "F78")
       assert.equal(profile.fix, "d1ef6f2200afaf18922a052c114bb9ed366846e5");
   }
@@ -131,7 +162,11 @@ export function filesFor(state: State, profile: Profile): SourceFile[] {
     assert(/^(package\.json|tsconfig\.json|src\/[A-Za-z0-9_.-]+)$/u.test(file.path));
     if (file.path !== "package.json") return { ...file };
     const before =
-        profile.subset === "E90-91" ? "0.645.0" : profile.subset === "F78" ? "0.641.0" : "0.638.0",
+        profile.subset === "E90-91"
+          ? "0.645.0"
+          : ["F78", "R77"].includes(profile.subset)
+            ? "0.641.0"
+            : "0.638.0",
       needle = '"vize": "' + before + '"';
     assert.equal(file.source.split(needle).length, 2);
     return {

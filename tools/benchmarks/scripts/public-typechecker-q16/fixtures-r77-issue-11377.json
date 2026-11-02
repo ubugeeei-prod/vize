@@ -1,0 +1,170 @@
+{
+  "id": "R77",
+  "sourceAuthority": {
+    "issue": 11377,
+    "fixMerge": "56635d7cfb27718ec8b40e67309c71da5b9a3803",
+    "originalIssue": "https://github.com/ubugeeei-prod/vize/issues/11377",
+    "sourceControlDataSha256": "c649ffbc27f046258cc7376304d73fe26410a39cf5dc26582a9572f2373ddf98",
+    "sourceQualificationSha256": "c5205fd39a15112e283b94b2fe14f500aa89825b9578f2c16afb112d927803b5",
+    "originalFileSha256": {
+      "src/StaticRef.vue": "a439b4747a8cc8b5c1adf9562d5412d61bbfdfe605886c945f9c2ecd0bf4c7c6",
+      "src/useBox.ts": "8b69196f7909119360e50ac2d72dba8705c29d50155b8d7e6843c27884ec5387",
+      "tsconfig.json": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+    },
+    "negativeFileSha256": {
+      "src/StaticRef.vue": "290b1b55ca37f1f8e690d1963d3402c367517c16f64448b56ee5e034b5728b14",
+      "src/useBox.ts": "8b69196f7909119360e50ac2d72dba8705c29d50155b8d7e6843c27884ec5387",
+      "tsconfig.json": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+    },
+    "packageScaffold": "Derived only from the reported pnpm add -D vize@0.641.0 tsrs@0.20.1-ts7.1.0-beta vue@3.5.43; no original package.json fence exists. Only Vize version substitutes at execution.",
+    "expectedFrontendStatus": "Success0 and diagnostic2 follow the same pinned tsrs0.20.1 beta public Content Mapper route used by existing B/D/C; native VizeCLI negative1 is not transferred.",
+    "fullTextOracle": "Pre-frozen direct Content Mapper source assertion; complete stdout and stderr remain exact, no opaque-printer mode.",
+    "originalCommand": ["tsrs", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
+    "reportedHost": "macOS26.4.1 arm64 Node26.12.1 pnpm12.3.4; Linux/npm adaptation explicitly separate",
+    "sourceNativeSixArePublicOutputs": false,
+    "endAndRelatedFieldsOwned": false
+  },
+  "projects": [
+    {
+      "id": "issue-11377",
+      "issue": 11377,
+      "states": [
+        {
+          "id": "11377/original",
+          "phase": "original",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/StaticRef.vue",
+              "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport { useBox } from \"./useBox\";\n\nconst plain = ref<HTMLDivElement | null>(null);\nconst [fromComposable] = useBox();\n</script>\n\n<template>\n  <div ref=\"plain\">a</div>\n  <div ref=\"fromComposable\">b</div>\n</template>\n"
+            },
+            {
+              "path": "src/useBox.ts",
+              "source": "import { ref, watch, type Ref } from \"vue\";\n\nexport function useBox(): [el: Ref<HTMLElement | undefined>] {\n  const el = ref<HTMLElement>();\n  watch(el, (value) => console.log(value?.clientWidth));\n  return [el];\n}\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11377/authored-unused",
+          "phase": "authored-unused",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/StaticRef.vue",
+              "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport { useBox } from \"./useBox\";\n\nconst plain = ref<HTMLDivElement | null>(null);\nconst [fromComposable] = useBox();\nconst trueUnused = 1;\n</script>\n\n<template>\n  <div ref=\"plain\">a</div>\n  <div ref=\"fromComposable\">b</div>\n</template>\n"
+            },
+            {
+              "path": "src/useBox.ts",
+              "source": "import { ref, watch, type Ref } from \"vue\";\n\nexport function useBox(): [el: Ref<HTMLElement | undefined>] {\n  const el = ref<HTMLElement>();\n  watch(el, (value) => console.log(value?.clientWidth));\n  return [el];\n}\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/StaticRef.vue(7,7): error TS6133: 'trueUnused' is declared but its value is never read.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11377/repair",
+          "phase": "repair",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/StaticRef.vue",
+              "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport { useBox } from \"./useBox\";\n\nconst plain = ref<HTMLDivElement | null>(null);\nconst [fromComposable] = useBox();\n</script>\n\n<template>\n  <div ref=\"plain\">a</div>\n  <div ref=\"fromComposable\">b</div>\n</template>\n"
+            },
+            {
+              "path": "src/useBox.ts",
+              "source": "import { ref, watch, type Ref } from \"vue\";\n\nexport function useBox(): [el: Ref<HTMLElement | undefined>] {\n  const el = ref<HTMLElement>();\n  watch(el, (value) => console.log(value?.clientWidth));\n  return [el];\n}\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11377/negative-restoration",
+          "phase": "negative-restoration",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/StaticRef.vue",
+              "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport { useBox } from \"./useBox\";\n\nconst plain = ref<HTMLDivElement | null>(null);\nconst [fromComposable] = useBox();\nconst trueUnused = 1;\n</script>\n\n<template>\n  <div ref=\"plain\">a</div>\n  <div ref=\"fromComposable\">b</div>\n</template>\n"
+            },
+            {
+              "path": "src/useBox.ts",
+              "source": "import { ref, watch, type Ref } from \"vue\";\n\nexport function useBox(): [el: Ref<HTMLElement | undefined>] {\n  const el = ref<HTMLElement>();\n  watch(el, (value) => console.log(value?.clientWidth));\n  return [el];\n}\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 2,
+            "stdout": "src/StaticRef.vue(7,7): error TS6133: 'trueUnused' is declared but its value is never read.\n",
+            "stderr": ""
+          }
+        },
+        {
+          "id": "11377/final-original-restoration",
+          "phase": "final-original-restoration",
+          "files": [
+            {
+              "path": "package.json",
+              "source": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"vize\": \"0.641.0\",\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"vue\": \"3.5.43\"\n  }\n}\n"
+            },
+            {
+              "path": "tsconfig.json",
+              "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+            },
+            {
+              "path": "src/StaticRef.vue",
+              "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport { useBox } from \"./useBox\";\n\nconst plain = ref<HTMLDivElement | null>(null);\nconst [fromComposable] = useBox();\n</script>\n\n<template>\n  <div ref=\"plain\">a</div>\n  <div ref=\"fromComposable\">b</div>\n</template>\n"
+            },
+            {
+              "path": "src/useBox.ts",
+              "source": "import { ref, watch, type Ref } from \"vue\";\n\nexport function useBox(): [el: Ref<HTMLElement | undefined>] {\n  const el = ref<HTMLElement>();\n  watch(el, (value) => console.log(value?.clientWidth));\n  return [el];\n}\n"
+            }
+          ],
+          "expectedTsrs": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { asRecord } from "../../tools/support/json-value.ts";
 import {
-  profileFor,
+  requireProfile,
   sha256,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/contract.ts";
 import { recorder } from "../../tools/benchmarks/scripts/public-typechecker-q16/execute.ts";
@@ -16,6 +16,16 @@ import {
   selectE649Metadata,
   usesE649Packument,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/e649-metadata.ts";
+
+const historicalE649 = requireProfile({
+  subset: "E90-91",
+  fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
+  version: "0.649.0",
+  run: "41495567070",
+  capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
+});
 
 // Whole genuine selected member of the retained 773435-byte install packument.
 const memberBase64 =
@@ -49,7 +59,7 @@ async function temporary(run: (root: string) => Promise<void>) {
   }
 }
 test("abbreviated metadata choice is closed to the actual E649 vize package", () => {
-  const profile = profileFor();
+  const profile = historicalE649;
   assert(usesE649Packument(profile, "vize", "0.649.0"));
   assert(!usesE649Packument(profile, "@vizejs/native", "0.649.0"));
   assert(!usesE649Packument(profile, "vize", "0.650.0"));
@@ -125,7 +135,14 @@ test("actual reader seam retains whole bytes and uses one exact same-run request
       const directory = join(root, String(index));
       mkdirSync(directory);
       assert.deepEqual(
-        await readE649Metadata(profileFor(), lock, capsule, recorder(directory), cache, fetchMock),
+        await readE649Metadata(
+          historicalE649,
+          lock,
+          capsule,
+          recorder(directory),
+          cache,
+          fetchMock,
+        ),
         member,
       );
       assert(readFileSync(join(directory, "vize-install-packument.raw.json")).equals(bytes));
@@ -143,7 +160,7 @@ test("non-200 refusal retains the actual complete body and never populates succe
     const cache = new Map<string, Buffer>();
     const fetchMock: typeof fetch = async () => response(bytes, 404);
     await assert.rejects(
-      readE649Metadata(profileFor(), lock, capsule, recorder(root), cache, fetchMock),
+      readE649Metadata(historicalE649, lock, capsule, recorder(root), cache, fetchMock),
       assert.AssertionError,
     );
     assert(readFileSync(join(root, "vize-install-packument.raw.json")).equals(bytes));
