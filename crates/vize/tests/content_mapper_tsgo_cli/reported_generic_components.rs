@@ -3,7 +3,6 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
-use vize_l0::cstr;
 
 use super::{
     TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, workspace_root,
@@ -192,43 +191,27 @@ fn reported_generic_slots_and_global_refs_keep_authored_members() {
         "11360/11368 complete observations: {}",
         serde_json::to_string_pretty(&capture).unwrap()
     );
-    assert_eq!(capture["observations"].as_array().unwrap().len(), 18);
-    // Execute every original/wrong/repair/restore state before asserting any.
-    for observation in capture["observations"].as_array().unwrap() {
-        let identity = &observation["identity"];
-        assert_eq!(observation["stderr"], "", "{observation:#}");
-        if !identity["bad"].as_bool().unwrap() {
-            assert_eq!(observation["status"], 0, "{observation:#}");
-            assert_eq!(observation["stdout"], "", "{observation:#}");
-        } else {
-            assert_eq!(observation["status"], 2, "{observation:#}");
-            let stdout = observation["stdout"].as_str().unwrap();
-            let lines = stdout.lines().collect::<Vec<_>>();
-            assert_eq!(
-                lines.len(),
-                1,
-                "complete diagnostic vector: {observation:#}"
-            );
-            let prefix = cstr!(
-                "src/Probe.vue({},{}): error TS{}:",
-                identity["line"],
-                identity["column"],
-                identity["expectedCode"]
-            );
-            assert!(stdout.starts_with(prefix.as_str()), "{observation:#}");
-            if identity["expectedCode"] == 2339 {
-                let property = identity["expectedProperty"].as_str().unwrap();
-                assert!(
-                    stdout.contains(cstr!("Property '{property}' does not exist").as_str()),
-                    "{observation:#}"
-                );
-            } else {
-                assert_eq!(
-                    stdout,
-                    cstr!("{prefix} Expected 0 arguments, but got 1.\n").as_str(),
-                    "{observation:#}"
-                );
-            }
-        }
-    }
+    // All eighteen process packets are persisted before comparing the complete,
+    // independently reviewed native result vector, including exact byte streams.
+    let expected: Value = serde_json::from_str(include_str!(
+        "reported_generic_components/expected-results.json"
+    ))
+    .unwrap();
+    let actual = capture["observations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|observation| {
+            json!({
+                "identity": observation["identity"],
+                "status": observation["status"],
+                "success": observation["success"],
+                "stdout": observation["stdout"],
+                "stderr": observation["stderr"],
+                "stdoutBytes": observation["stdoutBytes"],
+                "stderrBytes": observation["stderrBytes"],
+            })
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(json!(actual), expected);
 }

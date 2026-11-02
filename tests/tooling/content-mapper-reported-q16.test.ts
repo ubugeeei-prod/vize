@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import {
   declaredBin,
@@ -24,7 +25,53 @@ const workflow = fs.readFileSync(
   "utf8",
 );
 const data = parse(workflow);
+const childWorkflow = fs.readFileSync(
+  new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
+  "utf8",
+);
+const childData = parse(childWorkflow);
+const jointCall =
+  "  reported-q16:\n    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'\n    uses: ./.github/workflows/content-mapper-reported-q16.yml\n    with:\n      request: ${{ toJSON(inputs) }}\n";
+function restoreJointJob(value: string) {
+  let body = childWorkflow.slice(childWorkflow.indexOf("  reported-q16:\n"));
+  for (const key of [
+    "expected-source-sha",
+    "targeted-test",
+    "router-experimental-only",
+    "event-rename-only",
+    "official-css-options-only",
+    "published-defaults-only",
+    "cut",
+    "head",
+    "tag",
+    "source_pr",
+    "release_run",
+    "reported-q16-cases",
+  ])
+    body = body.replaceAll("fromJSON(inputs.request)." + key, "inputs." + key);
+  assert.equal(value.split(jointCall).length, 2);
+  value = value.replace(jointCall, body);
+  value = value
+    .replace('  schedule: [{ cron: "21 4 * * *" }]', '  schedule:\n    - cron: "21 4 * * *"')
+    .replace("permissions: { contents: read }", "permissions:\n  contents: read");
+  for (const key of [
+    "on:",
+    "concurrency:",
+    "permissions:",
+    "env:",
+    "jobs:",
+    "  exact-tsgo-project:",
+    "  event-rename:",
+    "  official-css-options:",
+    "  router-experimental:",
+  ]) {
+    assert.equal(value.split("\n" + key).length, 2);
+    value = value.replace("\n" + key, "\n\n" + key);
+  }
+  return value;
+}
 function stripSelectedAfter(value: string) {
+  value = restoreJointJob(value);
   const input =
       '      reported-q16-cases:\n        description: "Closed source After case set; all retains the original six tests"\n        type: choice\n        options: [all, A, A-with-declaration, B, C, D]\n        default: all\n',
     from =
@@ -110,9 +157,7 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
         /inputs\.([a-z-]+)/gu,
         (_, key: keyof typeof inputs) => `inputs[${JSON.stringify(key)}]`,
       );
-    return Boolean(
-      new Function("inputs", "github", `return (${body});`)(inputs, { event_name: event }),
-    );
+    return Boolean(runInNewContext(`(${body})`, { inputs, github: { event_name: event } }));
   };
   for (const event of ["schedule", "workflow_dispatch"])
     for (let bits = 0; bits < 16; bits++)
@@ -143,7 +188,7 @@ test("actual job conditions preserve every old-mode truth-table row and isolate 
           event === "workflow_dispatch" && joint,
         );
       }
-  const steps = data.jobs["reported-q16"].steps;
+  const steps = childData.jobs["reported-q16"].steps;
   assert.equal(
     steps.filter(
       (s: { run?: string }) =>
@@ -372,4 +417,30 @@ test("post-compile CLI image is attested from the normal Cargo binary while pres
     runner.indexOf("cliProvenance = attestQ16CompiledCli") <
       runner.indexOf("for (const [id, name] of selected)"),
   );
+});
+
+test("the factored report job preserves its entire former body, inputs and global environment", () => {
+  const restored = restoreJointJob(workflow);
+  assert.equal(
+    createHash("sha256").update(restored).digest("hex"),
+    "8c86c4c3f1a1eb8a0521f46365307e497618309ace637bf222e77871d07bc411",
+  );
+  const original = parse(restored);
+  assert.deepEqual(data.on, original.on);
+  assert.deepEqual(data.env, original.env);
+  assert.deepEqual(childData.env, data.env);
+  assert.deepEqual(childData.permissions, data.permissions);
+  assert.deepEqual(Object.keys(childData.on), ["workflow_call"]);
+  assert.deepEqual(childData.on.workflow_call.inputs, {
+    request: { type: "string", required: true },
+  });
+  assert.deepEqual(data.jobs["reported-q16"].with, { request: "${{ toJSON(inputs) }}" });
+  assert.equal(
+    data.jobs["reported-q16"].uses,
+    "./.github/workflows/content-mapper-reported-q16.yml",
+  );
+  assert.equal(workflow.split("\n").length - 1, 726);
+  assert(childWorkflow.split("\n").length - 1 < 500);
+  for (const job of Object.keys(original.jobs).filter((key) => key !== "reported-q16"))
+    assert.deepEqual(data.jobs[job], original.jobs[job]);
 });
