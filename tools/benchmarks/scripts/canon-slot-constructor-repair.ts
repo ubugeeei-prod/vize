@@ -395,19 +395,12 @@ async function main() {
           2,
           "both baseline inference phases must reject it",
         );
-        assert.equal(
-          headGenerated.length,
-          2,
-          "both repaired inference phases must still reject it",
-        );
-        for (const diagnostic of headGenerated) {
-          assert.equal(diagnostic.code, 2741);
-          assert.match(diagnostic.message, /^Property 'internal' is missing /u);
-          assert.match(diagnostic.message, /internal: string/u);
-        }
-      } else {
-        assert.deepEqual(headGenerated, [], "the repair must add no generated diagnostics");
       }
+      assert.deepEqual(
+        headGenerated,
+        [],
+        "inference-only constructor copies must add no generated diagnostics",
+      );
       assertCliDiagnosticContract(row, cliContract(b.cli), cliContract(h.cli));
       if (row.requiresAuthoredError) {
         assert.ok(
