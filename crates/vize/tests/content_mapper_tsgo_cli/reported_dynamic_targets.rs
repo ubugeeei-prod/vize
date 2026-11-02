@@ -270,7 +270,8 @@ fn assert_case(case: &Case, packet: &Value) {
             assert_eq!(stdout, "", "{packet}");
         }
         Expected::Error(code, message) => {
-            let (line, column) = expected_error_location(case).expect("registered source error role");
+            let (line, column) =
+                expected_error_location(case).expect("registered source error role");
             let expected = cstr!("src/Probe.vue({line},{column}): error TS{code}: {message}\n");
             assert_eq!(output["status"], 2, "{packet}");
             assert_eq!(stdout, expected.as_str(), "{packet}");
