@@ -168,6 +168,66 @@
       ],
       "success": true,
       "diagnostics": []
+    },
+    {
+      "id": "authored-expect-error-marked",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-marked.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "quoted-marker-unmarked",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-unmarked.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": "count: '@ts-expect-error'",
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "authored-expect-error-sibling",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-sibling.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": "sibling: 'bad'",
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
     }
-  ]
+  ],
+  "suppressionRegressionOrigin": "Three authored controls for the actual vue-router feed382 nested TypeScript comment false-positive. Full original11 contracts remain unchanged; a quoted marker is a value, and the unmarked sibling remains checked."
 }

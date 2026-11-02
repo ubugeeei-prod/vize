@@ -4,8 +4,8 @@ use crate::virtual_ts::expressions::component_props::{
 };
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
-    PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
-    prop_value_source_range,
+    PropSpan, append_prop_value, generated_diagnostic_prop_span, generated_prop_span,
+    prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::helpers::{
     component_aria_prop_keys, component_prop_key, to_safe_identifier_fragment,
@@ -52,8 +52,10 @@ pub(super) fn append_prop_entry<'p>(
         *emitted_merged_class = true;
         merged_class_binding_value(class_bindings, Some(&mut merged_value_ranges))
             .map(PropSpan::plain)
-    } else {
+    } else if source_context.is_inference_only() {
         generated_prop_span(prop, template_binding_access)
+    } else {
+        generated_diagnostic_prop_span(prop, template_binding_access)
     };
     let mut generated_value = generated_value?;
     let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);

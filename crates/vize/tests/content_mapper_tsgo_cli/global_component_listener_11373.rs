@@ -89,7 +89,7 @@ fn reported_components_and_typed_controls_keep_real_diagnostics() {
     let controls: Controls = serde_json::from_str(CONTROLS).unwrap();
     assert_eq!(pack.cases.len(), 1);
     assert_eq!(pack.cases[0].inputs.len(), 6);
-    assert_eq!(controls.cases.len(), 11);
+    assert_eq!(controls.cases.len(), 14);
     let git = std::process::Command::new("git")
         .args(["rev-parse", "HEAD"])
         .current_dir(workspace_root())

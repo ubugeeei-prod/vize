@@ -121,6 +121,20 @@ pub(crate) fn generated_prop_span<'a>(
     generated_prop_span_with_comment_policy(prop, template_binding_access, false)
 }
 
+/// Preserve authored TypeScript directives only in copies that own diagnostics.
+/// The marker is a cheap retention candidate, never a suppression decision:
+/// TypeScript still decides whether it is an actual comment or a string value.
+pub(crate) fn generated_diagnostic_prop_span<'a>(
+    prop: &'a PassedProp,
+    template_binding_access: &TemplateBindingAccess,
+) -> Option<PropSpan<'a>> {
+    let preserve = prop.is_dynamic
+        && prop.value.as_ref().is_some_and(|value| {
+            value.contains("@ts-ignore") || value.contains("@ts-expect-error")
+        });
+    generated_prop_span_with_comment_policy(prop, template_binding_access, preserve)
+}
+
 pub(crate) fn generated_prop_span_preserving_comments<'a>(
     prop: &'a PassedProp,
     template_binding_access: &TemplateBindingAccess,
