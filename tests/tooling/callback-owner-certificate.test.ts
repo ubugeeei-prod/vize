@@ -1,3 +1,7 @@
+import {
+  callbackInertBindings,
+  callbackOwnerProjects,
+} from "../../tools/support/compat/content-mapper/callback-owner-projects.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -193,4 +197,203 @@ test("computed mutation reference admission requires every independent diagnosti
       ),
     );
   }
+});
+
+test("inert navigation copies retain the whole packet and every mapped callback owner", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    for (const prefix of ["", "<!-- 日本 🧭 -->"]) {
+      const value = "(field: typeof state.value) => !!field";
+      const source = `${prefix}<template>${newline}<Comp :pick="${value}" /></template>`;
+      const nameAt = source.indexOf(":pick") + 1;
+      const valueAt = source.indexOf(value);
+      const binding = {
+        callbackMarker: true,
+        name: { start: nameAt, end: nameAt + 4, text: "pick" },
+        value: { start: valueAt, end: valueAt + value.length, text: value },
+      };
+      const text = `// 日本 🧭\nconst checked: (x: number) => boolean = ${value};\n  // @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n  const __vize_events_resolved_0 = (undefined as unknown as __vize_events_resolver_0)({\n    // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n    "pick": ${value},\n  });\n`;
+      const key = Buffer.byteLength(text.slice(0, text.indexOf('"pick"')));
+      const generatedValue = key + 8;
+      const originalValue = Buffer.byteLength(source.slice(0, valueAt));
+      const rows = [
+        [Buffer.byteLength(source.slice(0, nameAt)), 4, key, key + 6, 0, 0],
+        [originalValue, value.length, generatedValue, generatedValue + value.length, 0, 0],
+      ];
+      const mapped = Buffer.byteLength(text.slice(0, text.indexOf(value)));
+      const before = {
+        text,
+        extension: ".tsx",
+        diagnostics: [],
+        futureMetadata: { unchanged: true },
+        mappings: [[mapped, value.length, originalValue, value.length, 0, 1048575]],
+      };
+      const after = {
+        ...before,
+        diagnosticDirectives: { directives: rows, unusedExpectDirectiveDiagnostics: [] },
+      };
+      assertPreservedCallbackPacket(before, after, source, [binding]);
+      assertPreservedCallbackPacket(after, after, source, [binding]);
+      assert.throws(() => assertPreservedCallbackPacket(before, after, source));
+      assert.throws(() => assertPreservedCallbackPacket(before, after, source, []));
+      for (const changed of [
+        { ...after, text: text + "void missing;\n" },
+        { ...after, diagnostics: [{ code: 2322 }] },
+        { ...after, futureMetadata: { unchanged: false } },
+        {
+          ...after,
+          diagnosticDirectives: { ...after.diagnosticDirectives, directives: rows.slice(0, 1) },
+        },
+        {
+          ...after,
+          diagnosticDirectives: { ...after.diagnosticDirectives, directives: [...rows, rows[0]] },
+        },
+        {
+          ...after,
+          diagnosticDirectives: {
+            ...after.diagnosticDirectives,
+            directives: rows.map((row) => [...row.slice(0, 4), 1, 0]),
+          },
+        },
+        {
+          ...after,
+          diagnosticDirectives: {
+            ...after.diagnosticDirectives,
+            directives: rows.map((row) => [
+              ...row.slice(0, 2),
+              mapped,
+              mapped + value.length,
+              0,
+              0,
+            ]),
+          },
+        },
+        {
+          ...after,
+          diagnosticDirectives: {
+            ...after.diagnosticDirectives,
+            unusedExpectDirectiveDiagnostics: [{ code: 4 }],
+          },
+        },
+      ])
+        assert.throws(() => assertPreservedCallbackPacket(before, changed, source, [binding]));
+      const overlapping = {
+        ...before,
+        mappings: [
+          ...before.mappings,
+          [generatedValue, value.length, originalValue, value.length, 0, 0],
+        ],
+      };
+      assert.throws(() =>
+        assertPreservedCallbackPacket(
+          overlapping,
+          { ...after, mappings: overlapping.mappings },
+          source,
+          [binding],
+        ),
+      );
+      assert.throws(() =>
+        assertPreservedCallbackPacket(before, after, source, [
+          { ...binding, value: { ...binding.value, start: valueAt + 1 } },
+        ]),
+      );
+      const old = {
+        directives: [[1, 1, 0, 1, 1, 3]],
+        unusedExpectDirectiveDiagnostics: [{ preserved: true }],
+      };
+      const prior = { ...before, diagnosticDirectives: old };
+      const expected = {
+        ...after,
+        diagnosticDirectives: { ...old, directives: [...old.directives, ...rows] },
+      };
+      assertPreservedCallbackPacket(prior, expected, source, [binding]);
+      assert.throws(() => assertPreservedCallbackPacket(prior, after, source, [binding]));
+    }
+  }
+});
+
+test("the existing getter sibling has only its exact unmapped navigation rows", () => {
+  const project = callbackOwnerProjects().find(
+    (p) => p.id === "callback-owner-unsupported-sibling-object-getter-literal",
+  )!;
+  const source = project.inlineInputs["src/Min.vue"];
+  const bindings = callbackInertBindings(project);
+  assert.deepEqual(
+    bindings.map((b) => [b.name.text, b.callbackMarker]),
+    [
+      ["pick", true],
+      ["other", false],
+    ],
+  );
+  assert.equal(bindings[1].value.text, "{ get value() { delete state.value; return 1 } }");
+  let text = bindings.map((b, i) => `const checked${i} = ${b.value.text};\n`).join("");
+  const mappings = bindings.map((b) => [
+    Buffer.byteLength(text.slice(0, text.indexOf(b.value.text))),
+    Buffer.byteLength(b.value.text),
+    Buffer.byteLength(source.slice(0, b.value.start)),
+    Buffer.byteLength(b.value.text),
+    0,
+    1048575,
+  ]);
+  text +=
+    "  // @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n  const __vize_events_resolved_0 = (undefined as unknown as __vize_events_resolver_0)({\n";
+  const rows: number[][] = [];
+  for (const binding of bindings) {
+    if (binding.callbackMarker)
+      text +=
+        "    // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n";
+    const key = Buffer.byteLength(text) + 4;
+    const value = key + Buffer.byteLength(`"${binding.name.text}": `);
+    text += `    "${binding.name.text}": ${binding.value.text},\n`;
+    rows.push([
+      Buffer.byteLength(source.slice(0, binding.name.start)),
+      Buffer.byteLength(binding.name.text),
+      key,
+      value - 2,
+      0,
+      0,
+    ]);
+    rows.push([
+      Buffer.byteLength(source.slice(0, binding.value.start)),
+      Buffer.byteLength(binding.value.text),
+      value,
+      value + Buffer.byteLength(binding.value.text),
+      0,
+      0,
+    ]);
+  }
+  text += "  });\n";
+  const before = {
+    text,
+    mappings,
+    diagnostics: [],
+    extension: ".tsx",
+    foreign: { preserved: true },
+  };
+  const after = {
+    ...before,
+    diagnosticDirectives: { directives: rows, unusedExpectDirectiveDiagnostics: [] },
+  };
+  assertPreservedCallbackPacket(before, after, source, bindings);
+  assert.throws(() => assertPreservedCallbackPacket(before, after, source, bindings.slice(0, 1)));
+  assert.throws(() =>
+    assertPreservedCallbackPacket(
+      before,
+      after,
+      source,
+      bindings.map((b) => ({ ...b, callbackMarker: true })),
+    ),
+  );
+  for (const directives of [
+    rows.slice(0, 3),
+    [...rows, [0, 1, 0, 1, 0, 0]],
+    rows.map((row, i) => (i === 3 ? [...row.slice(0, 3), row[3] + 1, 0, 0] : row)),
+  ])
+    assert.throws(() =>
+      assertPreservedCallbackPacket(
+        before,
+        { ...after, diagnosticDirectives: { ...after.diagnosticDirectives, directives } },
+        source,
+        bindings,
+      ),
+    );
 });

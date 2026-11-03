@@ -1,5 +1,8 @@
 //! Shared internal inputs for component prop value checks.
-use super::{ComponentPropSource, FxHashSet, String, TemplateBindingAccess, VizeMapping};
+use super::{
+    ComponentPropSource, FxHashSet, String, TemplateBindingAccess, VizeMapping,
+    prop_name_source_range, prop_value_source_range,
+};
 
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) inference_prelude:
@@ -54,5 +57,102 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     pub(crate) fn hoist_shared_preamble(mut self, enabled: bool) -> Self {
         self.hoist_shared_preamble = enabled;
         self
+    }
+}
+
+impl super::ComponentPropSource<'_> {
+    pub(crate) fn record_prop_projection(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        name: std::ops::Range<usize>,
+        value: std::ops::Range<usize>,
+    ) {
+        self.record_prop_projection_inner(usage, prop, name, value, None);
+    }
+
+    pub(crate) fn record_prop_projection_with_receivers(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        name: std::ops::Range<usize>,
+        value: std::ops::Range<usize>,
+        generated: (&str, bool),
+    ) {
+        self.record_prop_projection_inner(usage, prop, name, value, Some(generated));
+    }
+
+    fn record_prop_projection_inner(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        name: std::ops::Range<usize>,
+        value: std::ops::Range<usize>,
+        generated: Option<(&str, bool)>,
+    ) {
+        use crate::virtual_ts::diagnostic_ownership::{InputOwner, InputRole};
+        let Some(collector) = self.diagnostic_ownership else {
+            return;
+        };
+        let ordinary_owner = InputOwner::for_prop(usage, prop);
+        if ordinary_owner.is_none()
+            && let Some((text, primary)) = generated
+        {
+            self.record_independent_receivers(usage, prop, text, value.clone(), primary);
+        }
+        let Some(owner) = ordinary_owner.or_else(|| {
+            (self.expected_packet || self.inert)
+                .then(|| InputOwner::for_expected_projection(usage, prop))
+                .flatten()
+        }) else {
+            return;
+        };
+        let name_source = prop_name_source_range(self, prop);
+        let value_source = prop_value_source_range(self, prop).or_else(|| name_source.clone());
+        // Do not retain a RefCell borrow while another emitter runs.
+        let mut ledger = collector.borrow_mut();
+        let mut record = |owner, generated, source| {
+            if self.inert {
+                ledger.record_inert(owner, generated, source);
+            } else if ordinary_owner.is_some() {
+                ledger.record(owner, generated, source, self.inference_only);
+            } else {
+                // The root relocation proof classifies the callback's creation.
+                // Its contextual body still owns diagnostics; this record only
+                // prevents an inference mapping from widening authored EXPECT.
+                ledger.record_expect_geometry(owner, generated, source, self.inference_only);
+            }
+        };
+        if let Some(source) = name_source {
+            record(owner.with_role(InputRole::Name), name, source);
+        }
+        if let Some(source) = value_source {
+            record(owner, value, source);
+        }
+    }
+
+    /// Only byte-identical parser-owned receivers can share a diagnostic row.
+    /// The contextual function and both of its whole contracts stay untouched.
+    pub(crate) fn record_independent_receivers(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        generated: &str,
+        range: std::ops::Range<usize>,
+        primary: bool,
+    ) {
+        if self.expected_packet || self.inference_only || self.inert {
+            return;
+        }
+        let (Some(collector), Some(authored), Some(value)) = (
+            self.diagnostic_ownership,
+            self.value_source_range(prop),
+            generated.get(range.clone()),
+        ) else {
+            return;
+        };
+        collector
+            .borrow_mut()
+            .record_independent_receivers(usage, prop, value, range, authored, !primary);
     }
 }

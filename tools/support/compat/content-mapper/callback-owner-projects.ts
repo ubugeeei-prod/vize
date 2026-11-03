@@ -107,15 +107,15 @@ function span(file: string, source: string, text: string, occurrence = 0): Sourc
     last = point(end);
   return { file, start, end, ...first, endLine: last.line, endColumn: last.column, text };
 }
-function binding(source: string, callback: string, occurrence = 0) {
-  const text = `:pick="${callback}"`;
+function binding(source: string, callback: string, occurrence = 0, name = "pick") {
+  const text = `:${name}="${callback}"`;
   const attribute = span(parentFile, source, text, occurrence);
   const at = (offset: number, value: string) => {
     const prior = source.slice(0, attribute.start + offset);
     const count = prior.split(value).length - 1;
     return span(parentFile, source, value, count);
   };
-  return { attribute, name: at(1, "pick"), value: at(7, callback) };
+  return { attribute, name: at(1, name), value: at(name.length + 3, callback) };
 }
 type Case = {
   id: string;
@@ -212,6 +212,27 @@ defineEmits<{ save: [] }>()
     ...(input.mapperFrontier ? { mapperFrontier: input.mapperFrontier } : {}),
     ...(input.sequence ? { sequence: input.sequence } : {}),
   };
+}
+
+const objectGetterSibling = "{ get value() { delete state.value; return 1 } }";
+
+/** Source-owned inert navigation entries; the project/control objects stay exact. */
+export function callbackInertBindings(project: CallbackOwnerProject) {
+  const bindings = project.authoredBindings.map(({ name, value }) => ({
+    name,
+    value,
+    callbackMarker: true,
+  }));
+  if (project.id === "callback-owner-unsupported-sibling-object-getter-literal") {
+    const { name, value } = binding(
+      project.inlineInputs[parentFile],
+      objectGetterSibling,
+      0,
+      "other",
+    );
+    bindings.push({ name, value, callbackMarker: false });
+  }
+  return bindings.sort((left, right) => left.name.start - right.name.start);
 }
 
 /** The caller applies LF/CRLF and Unicode prefixes and captures all hosts. */
@@ -390,7 +411,7 @@ for (const entry of [state]) {
     "reader.value",
     "const reader = { get value() { delete state.value; return 1 } }\n",
   );
-  preserve("sibling-object-getter-literal", "{ get value() { delete state.value; return 1 } }");
+  preserve("sibling-object-getter-literal", objectGetterSibling);
   preserve(
     "prior-root-v-for-mutation",
     "",

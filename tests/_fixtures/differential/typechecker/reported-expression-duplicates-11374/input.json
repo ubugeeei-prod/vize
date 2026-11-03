@@ -1,0 +1,9 @@
+{
+  "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n",
+  "tsconfig": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\"ES2022\", \"DOM\"]\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+  "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ options: { run: () => string } }>();\ndefineEmits<{ done: [] }>();\n</script>\n\n<template>\n  <span />\n</template>\n",
+  "MultilineProp.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst items: { label: string }[] = [];\nfunction onDone() {}\n</script>\n\n<template>\n  <Child\n    :options=\"{\n      run: () => {\n        return items[0].label;\n      },\n    }\"\n    @done=\"onDone\"\n  />\n</template>\n",
+  "MultilineVIf.vue": "<script setup lang=\"ts\">\nconst items: { label: string }[] = [];\nconst enabled = true;\n</script>\n\n<template>\n  <div\n    v-if=\"\n      enabled &&\n      items[0].label === 'x'\n    \"\n  >\n    {{ enabled }}\n  </div>\n</template>\n",
+  "NestedVIf.vue": "<script setup lang=\"ts\">\nconst items: { label: string }[] = [];\n</script>\n\n<template>\n  <div v-if=\"items[0].label\">\n    <span v-if=\"items.length > 1\">nested</span>\n  </div>\n</template>\n",
+  "expectedDiagnostics": "src/MultilineProp.vue(12,16): error TS2532: Object is possibly 'undefined'.\nsrc/MultilineVIf.vue(10,7): error TS2532: Object is possibly 'undefined'.\nsrc/NestedVIf.vue(6,14): error TS2532: Object is possibly 'undefined'.\n"
+}
