@@ -12,6 +12,41 @@
         {
           "file": "tsconfig.json",
           "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "contract-provenance.json",
+          "source": "contract-provenance.json"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "Probe.vue",
+          "line": 6,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'Editor' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "pinned-vue-3-5-44-proptype-contract",
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "source": "Probe-pinned-contract.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "PropType-3.5.44.ts",
+          "source": "PropType-3.5.44.ts.txt"
+        },
+        {
+          "file": "contract-provenance.json",
+          "source": "contract-provenance.json"
         }
       ],
       "diagnostics": [
