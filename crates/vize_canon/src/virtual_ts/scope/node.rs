@@ -84,10 +84,10 @@ pub(super) fn generate_scope_node(
                 ctx.template_binding_access,
                 capture_slots,
                 |ts, mappings| {
-                    // Recheck positive terms for callback-captured object-property narrowing.
+                    // Restore the complete branch after the callback boundary.
                     let callback_guard = enclosing_guard
                         .filter(|_| capture_slots)
-                        .and_then(callback_vif_guard);
+                        .and_then(|guard| callback_vif_guard(guard, None));
                     let callback_indent = if let Some(guard) = callback_guard.as_deref() {
                         let rewritten =
                             rewrite_reserved_template_binding(guard, ctx.template_binding_access);

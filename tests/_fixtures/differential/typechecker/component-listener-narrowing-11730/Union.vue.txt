@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Row from './Row.vue';
+type Item = { kind: 'header'; label: string } | { kind: 'entry'; slug: string };
+defineProps<{ rows: { index: number; item: Item }[] }>();
+const open = (slug: string, v: string) => void [slug, v];
+</script>
+
+<template>
+  <template v-for="row in rows" :key="row.index">
+    <Row v-if="row.item.kind === 'header'" :label="row.item.label" />
+    <Row v-else @act="open(row.item.slug, $event)" />
+  </template>
+</template>

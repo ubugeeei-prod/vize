@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ label?: string }>();
+defineEmits<{ (e: 'act', v: string): void }>();
+</script>
+
+<template><div>{{ label }}</div></template>
