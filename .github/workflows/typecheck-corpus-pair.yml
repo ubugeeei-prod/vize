@@ -61,7 +61,7 @@ jobs:
           git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/n8n
           npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
           npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
-          if ! /usr/bin/time --version 2>&1 | grep -q 'GNU time'; then
+          if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
             sudo apt-get update -qq
             sudo apt-get install -y --no-install-recommends time
           fi

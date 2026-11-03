@@ -220,7 +220,7 @@ function packageVersion(dir: string, name: string): string {
 function requireGnuTime(): string {
   const probe = spawnSync(GNU_TIME, ["--version"], { encoding: "utf8" });
   const version = `${probe.stdout ?? ""}${probe.stderr ?? ""}`.trim().split("\n")[0] ?? "";
-  if (probe.status !== 0 || !/GNU time/u.test(version)) {
+  if (probe.status !== 0 || !/GNU time/iu.test(version)) {
     throw new Error(`max RSS needs GNU time at ${GNU_TIME}; found: ${version || probe.error}`);
   }
   return version;
