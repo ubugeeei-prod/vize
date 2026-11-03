@@ -125,21 +125,21 @@ fn matching_ancestors_stray_closes_void_and_self_closing_tags_restore_the_owner_
 }
 
 #[test]
-fn implicit_interactive_recovery_and_foreign_namespaces_share_builder_scope() {
+fn lexical_scope_survives_interactive_recovery_and_foreign_namespaces() {
     for (source, expected, authored) in [
         (
             "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
-            vec!["after", "tail", "end"],
+            vec!["end"],
             true,
         ),
         (
             "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
-            vec!["after", "tail", "end"],
+            vec!["end"],
             true,
         ),
         (
             "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}",
-            vec!["tail", "end"],
+            vec!["end"],
             true,
         ),
         (
@@ -154,14 +154,12 @@ fn implicit_interactive_recovery_and_foreign_namespaces_share_builder_scope() {
         ),
         (
             "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
-            vec!["after", "tail"],
+            vec!["tail"],
             true,
         ),
         (
             "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
-            // This close claims the old, implicitly closed span. The new
-            // shallower span remains open until </section>, including tail.
-            vec![],
+            vec!["tail"],
             true,
         ),
     ] {
@@ -290,16 +288,12 @@ fn same_tag_pre_ignores_unrelated_over_budget_heads_in_both_orders_and_keeps_pri
             parsed.unsupported.is_empty(),
             "recovered independent owner: {source}"
         );
-        assert_eq!(
-            interpolations(&parsed.tree.children),
-            [" tail ", " end "],
-            "{source}"
-        );
+        assert_eq!(interpolations(&parsed.tree.children), [" end "], "{source}");
         assert_eq!(check_fidelity(&parsed.tree), Ok(()));
         let authored = parsed
             .authored
             .expect("interactive recovery retains authored projection");
-        assert_eq!(interpolations(&authored.children), [" tail ", " end "]);
+        assert_eq!(interpolations(&authored.children), [" end "]);
         assert_eq!(check_fidelity(&authored), Ok(()));
     }
 }

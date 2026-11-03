@@ -139,7 +139,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
 }
 
 #[test]
-fn live_recovery_ends_ambiguous_scope_without_rewriting_original_observations() {
+fn tree_recovery_preserves_ambiguous_authored_scope_and_original_observations() {
     let source =
         "<template><a v-pre.foo><span><a></a></span></a><input :autofocus='outside' /></template>";
     let arena = Allocator::default();
@@ -158,7 +158,7 @@ fn live_recovery_ends_ambiguous_scope_without_rewriting_original_observations() 
         [
             ("a", Err(Refusal::AmbiguousVerbatim)),
             ("span", Err(Refusal::AmbiguousVerbatim)),
-            ("a", Ok(Kind::Element)),
+            ("a", Err(Refusal::AmbiguousVerbatim)),
             ("input", Ok(Kind::Element)),
         ]
     );
@@ -166,7 +166,7 @@ fn live_recovery_ends_ambiguous_scope_without_rewriting_original_observations() 
     assert!(matches!(outer.surface().close, ElementClose::Implicit));
     assert!(outer.surface().open.is_verbatim());
     let inner = owner.children().nth(1).unwrap().into_element().unwrap();
-    assert!(!inner.surface().open.is_verbatim());
+    assert!(inner.surface().open.is_verbatim());
     assert_eq!(
         rendered(&owner.component().carrier().tree).as_str(),
         owner.component().block().source()

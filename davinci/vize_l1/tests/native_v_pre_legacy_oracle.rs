@@ -30,7 +30,7 @@ fn legacy_interpolations<'a>(children: &[TemplateChildNode<'a>], values: &mut Ve
     }
 }
 
-fn assert_ast_policy(source: &str) {
+fn interpolation_policy(source: &str) -> (Vec<std::string::String>, Vec<std::string::String>) {
     let allocator = Allocator::new();
     let parsed = parse_component(&allocator, source).unwrap();
     assert!(parsed.unsupported.is_empty(), "{source}");
@@ -40,8 +40,16 @@ fn assert_ast_policy(source: &str) {
     let mut legacy_values = Vec::new();
     native_interpolations(&parsed.tree.children, &mut native_values);
     legacy_interpolations(&legacy.children, &mut legacy_values);
-    assert_eq!(native_values, legacy_values, "{source}");
     assert_eq!(check_fidelity(&parsed.tree), Ok(()), "{source}");
+    (
+        native_values.into_iter().map(str::to_owned).collect(),
+        legacy_values.into_iter().map(str::to_owned).collect(),
+    )
+}
+
+fn assert_ast_policy(source: &str) {
+    let (native, legacy) = interpolation_policy(source);
+    assert_eq!(native, legacy, "{source}");
 }
 
 #[test]
@@ -101,14 +109,43 @@ fn native_recovered_scopes_match_live_legacy_ast_interpolation_admission() {
         "<Comp v-pre/>{{normal}}",
         "<input v-pre>{{normal}}",
         "<div v-pre><input v-pre>{{inner}}<Comp v-pre/>{{more}}</div>{{normal}}",
-        "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
-        "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
         "<svg><a v-pre><a>{{inner}}</a>{{outer}}</a></svg>{{tail}}",
         "<math><button v-pre><button>{{inner}}</button></button></math>{{tail}}",
-        "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
-        "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
     ] {
         assert_ast_policy(source);
+    }
+}
+
+#[test]
+fn authored_vue_scopes_classify_known_legacy_recovery_differences() {
+    for (source, native_expected, legacy_expected) in [
+        (
+            "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
+            vec!["end"],
+            vec!["after", "tail", "end"],
+        ),
+        (
+            "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
+            vec!["end"],
+            vec!["after", "tail", "end"],
+        ),
+        (
+            "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
+            vec!["tail"],
+            vec!["after", "tail"],
+        ),
+        (
+            "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
+            vec!["tail"],
+            vec![],
+        ),
+    ] {
+        let (native, legacy) = interpolation_policy(source);
+        assert_eq!(native, native_expected, "Vue authored scope: {source}");
+        assert_eq!(
+            legacy, legacy_expected,
+            "retained legacy behavior: {source}"
+        );
     }
 }
 
@@ -144,10 +181,9 @@ fn same_tag_pre_proves_unrelated_directive_heads_are_raw_regardless_of_order() {
 }
 
 #[test]
-fn native_recovered_independent_owner_honors_its_own_pre_after_implicit_close() {
-    // Native policy is resolved after shared structural recovery. Legacy still
-    // classifies the second control head under the implicitly closed owner and
-    // loses it. Production routes retain that legacy behavior unchanged.
+fn native_keeps_authored_outer_pre_where_legacy_loses_its_owner() {
+    // Vue's outer lexical scope survives HTML repair. The legacy parser still
+    // loses that owner; production routes retain that behavior until migrated.
     let source = "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}";
     let allocator = Allocator::new();
     let parsed = parse_component(&allocator, source).unwrap();
@@ -157,7 +193,7 @@ fn native_recovered_independent_owner_honors_its_own_pre_after_implicit_close() 
     let mut legacy_values = Vec::new();
     native_interpolations(&parsed.tree.children, &mut native_values);
     legacy_interpolations(&legacy.children, &mut legacy_values);
-    assert_eq!(native_values, ["tail", "end"]);
+    assert_eq!(native_values, ["end"]);
     assert_eq!(legacy_values, ["inner", "tail", "end"]);
     assert!(parsed.unsupported.is_empty());
     assert_eq!(check_fidelity(&parsed.tree), Ok(()));
