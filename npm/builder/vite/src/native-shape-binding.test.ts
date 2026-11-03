@@ -30,6 +30,8 @@ function compile(
   assert.equal(result.code, compiled.code, "the shape describes compileFile's code");
   const shape = result.moduleShape;
   assert.ok(shape, "the native compiler reports a shape");
+  // #11544: `compileFile` hands that shape through to the output assembly.
+  assert.deepEqual(compiled.moduleShape, shape, "compileFile carries the native shape");
   return {
     compiled,
     shape: {

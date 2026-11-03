@@ -120,9 +120,8 @@ export interface CompiledModule {
   dependencies?: string[];
   /**
    * Module shape reported by the native compiler, so `generateOutput` need not
-   * re-parse the emitted module (#3425). Absent for a cache entry written before
-   * the field existed, and for the rspack and unplugin builders, which never set
-   * it — both fall back to parsing.
+   * re-parse the emitted module (#3425). Every compile here carries it (#11544);
+   * the rspack and unplugin builders never set it and fall back to parsing.
    */
   moduleShape?: ModuleOutputInfo;
 }
