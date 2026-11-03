@@ -6,6 +6,7 @@
 //! stays in `lower/text.rs`.
 
 use alloc::vec::Vec as StdVec;
+use vize_l2::provenance::ProvenanceSink;
 
 use vize_l0::{Allocator, String, StringBuilder};
 use vize_l1::markup::SurfaceChild;
@@ -28,7 +29,7 @@ pub(super) fn is_vue_ws(c: char) -> bool {
 /// Whether `child` is a comment this compile is not preserving — a
 /// child the shipped lane never built, so the text rules must look past
 /// it in every direction.
-fn invisible_comment(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
+fn invisible_comment(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> bool {
     !cx.preserve_comments() && matches!(child, SurfaceChild::Comment(_))
 }
 
@@ -175,7 +176,10 @@ struct TextGroup {
     has_newline: bool,
 }
 
-fn text_groups<'a>(cx: &Cx<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGroup> {
+fn text_groups<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    children: &[SurfaceChild<'a>],
+) -> StdVec<TextGroup> {
     let mut groups = StdVec::new();
     let mut i = 0usize;
     while i < children.len() {
@@ -248,7 +252,7 @@ fn text_groups<'a>(cx: &Cx<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGro
 /// (on parser output, one node each — the algorithm is then armature's
 /// exactly). All-`Keep` inside a suppressed subtree.
 pub(crate) fn plan_whitespace<'a>(
-    cx: &Cx<'a>,
+    cx: &Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
 ) -> StdVec<TextAction<'a>> {
     let mut plan: StdVec<TextAction<'a>> = StdVec::new();
@@ -352,7 +356,11 @@ fn drop_members(plan: &mut [TextAction<'_>], group: &TextGroup) {
 /// gap — a comment, a dropped node or recovered junk between two
 /// children is a hard run boundary, so a merged span is always the
 /// authored bytes and the parts stay span-contiguous).
-pub(super) fn extends_run(cx: &Cx<'_>, child: &SurfaceChild<'_>, end: u32) -> bool {
+pub(super) fn extends_run(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    child: &SurfaceChild<'_>,
+    end: u32,
+) -> bool {
     match child {
         SurfaceChild::Text(token) => token.leading.is_empty() && cx.offset(token.text) == end,
         SurfaceChild::Interpolation(node) => {

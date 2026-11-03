@@ -22,6 +22,7 @@ use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Attribute;
 
 use vize_l2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
@@ -32,7 +33,10 @@ use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at};
 pub(crate) const RULE_SAME_NAME: &str = "normalize.bind.same-name";
 
 /// The op's name position from the directive's argument.
-fn lower_name<'a>(cx: &mut Cx<'a>, arg: Option<Arg<'a>>) -> Option<DynamicName<'a>> {
+fn lower_name<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    arg: Option<Arg<'a>>,
+) -> Option<DynamicName<'a>> {
     arg.map(|arg| match arg {
         Arg::Static(text) => DynamicName::Static(text),
         Arg::Dynamic(inner) => DynamicName::Dynamic(expr_at(cx, inner)),
@@ -50,7 +54,7 @@ fn name_desc(head: &str, name: &Option<DynamicName<'_>>) -> String {
 
 /// Lower one `v-bind` spelling into `ui.bind`.
 pub(crate) fn lower_bind<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
@@ -93,7 +97,7 @@ pub(crate) fn lower_bind<'a>(
                     RULE_SAME_NAME,
                     node,
                     attr_slice(cx, attr),
-                    cstr!("{text}"),
+                    || cstr!("{text}"),
                     span,
                 );
                 Some(expr)
@@ -124,7 +128,7 @@ pub(crate) fn lower_bind<'a>(
             "lower.sync",
             node,
             attr_slice(cx, attr),
-            name_desc("vue.sync", &Some(DynamicName::Static(name))),
+            || name_desc("vue.sync", &Some(DynamicName::Static(name))),
             span,
         );
         return BindingOp::VueSync(Box::new_in(
@@ -142,7 +146,7 @@ pub(crate) fn lower_bind<'a>(
         "lower.bind",
         node,
         attr_slice(cx, attr),
-        name_desc("ui.bind", &name),
+        || name_desc("ui.bind", &name),
         span,
     );
     BindingOp::Bind(Box::new_in(
@@ -158,7 +162,7 @@ pub(crate) fn lower_bind<'a>(
 
 /// Lower one `v-on` spelling into `ui.on`.
 pub(crate) fn lower_on<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
@@ -176,7 +180,7 @@ pub(crate) fn lower_on<'a>(
         "lower.on",
         node,
         attr_slice(cx, attr),
-        name_desc("ui.on", &name),
+        || name_desc("ui.on", &name),
         span,
     );
     BindingOp::On(Box::new_in(

@@ -75,6 +75,7 @@
 
 use vize_l0::pass::RemarkSink;
 use vize_l0::side_table::SideTable;
+use vize_l2::provenance::ProvenanceSink;
 
 use crate::lower::Lowered;
 
@@ -88,7 +89,7 @@ pub use vize_l2::analysis::static_facts::{
 ///
 /// Panics only on mismatched page accounting, which is a producer invariant.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_>) -> SideTable<StaticFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<StaticFacts> {
     vize_l2::analysis::static_facts::run(&lowered.root, lowered.op_count, &mut lowered.provenance)
 }
 
@@ -99,7 +100,7 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<StaticFacts> {
 /// As [`run`].
 #[must_use]
 pub fn run_remarked<R: RemarkSink>(
-    lowered: &mut Lowered<'_>,
+    lowered: &mut Lowered<'_, impl ProvenanceSink>,
     remarks: &mut R,
 ) -> SideTable<StaticFacts> {
     vize_l2::analysis::static_facts::run_remarked(

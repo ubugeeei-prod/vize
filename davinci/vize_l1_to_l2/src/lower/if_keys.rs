@@ -5,6 +5,7 @@
 //! lower/pass public names continue to refer to those same types.
 
 use alloc::vec::Vec as StdVec;
+use vize_l2::provenance::ProvenanceSink;
 
 use vize_l0::id::NodeId;
 use vize_l0::{String, cstr};
@@ -43,7 +44,7 @@ pub(crate) fn from_wrapper_key(key: &WrapperKey) -> BranchKey {
 /// recording the extraction provenance and duplicate-key diagnostics
 /// beside the artifact.
 pub(crate) fn attach_if_facts(
-    cx: &mut Cx<'_>,
+    cx: &mut Cx<'_, impl ProvenanceSink>,
     node: Option<NodeId>,
     keys: StdVec<Option<BranchKey>>,
 ) {
@@ -53,7 +54,7 @@ pub(crate) fn attach_if_facts(
                 "lower.if-branch-key",
                 node,
                 key_spelling(key).as_str(),
-                cstr!("fact key branch={index}"),
+                || cstr!("fact key branch={index}"),
                 key.span,
             );
         }
@@ -78,7 +79,7 @@ pub(crate) fn attach_if_facts(
                 "error.v-if-same-key",
                 node,
                 key_spelling(later).as_str(),
-                String::default(),
+                String::default,
                 later.span,
             );
         }

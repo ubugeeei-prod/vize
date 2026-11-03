@@ -20,6 +20,7 @@ use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::binding::{defer, lower_slot_content};
 use super::bindop::{RULE_SAME_NAME, lower_bind, lower_on};
@@ -31,7 +32,7 @@ use super::structural::lower_children;
 
 /// Lower one `<slot>` element into a `ui.slot` outlet.
 pub(crate) fn lower_slot<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
@@ -81,7 +82,7 @@ pub(crate) fn lower_slot<'a>(
                                 RULE_SAME_NAME,
                                 node,
                                 attr_slice(cx, attr),
-                                cstr!("{arg_text}"),
+                                || cstr!("{arg_text}"),
                                 attr_span(cx, attr),
                             );
                             name = Some(DynamicName::Dynamic(expr));
@@ -113,7 +114,7 @@ pub(crate) fn lower_slot<'a>(
                         "error.slot-directive",
                         None,
                         attr_slice(cx, attr),
-                        String::default(),
+                        String::default,
                         attr_span(cx, attr),
                     );
                 }
@@ -126,7 +127,7 @@ pub(crate) fn lower_slot<'a>(
                         "error.v-model-on-slot",
                         None,
                         attr_slice(cx, attr),
-                        String::default(),
+                        String::default,
                         attr_span(cx, attr),
                     );
                 }
@@ -144,7 +145,7 @@ pub(crate) fn lower_slot<'a>(
         }
     }
     let name = name.unwrap_or(DynamicName::Static("default"));
-    let after = match &name {
+    let after = || match &name {
         DynamicName::Static(text) => cstr!("ui.slot \"{text}\""),
         DynamicName::Dynamic(expr) => cstr!("ui.slot {}", desc(expr)),
     };

@@ -6,9 +6,10 @@ use vize_l1::{
     markup::{Attribute, Element},
 };
 use vize_l2::op::Namespace;
+use vize_l2::provenance::ProvenanceSink;
 
 pub(super) fn vue_is<'a>(
-    cx: &Cx<'a>,
+    cx: &Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
 ) -> Option<(usize, &'a str)> {
@@ -32,7 +33,10 @@ pub(super) fn vue_is<'a>(
 }
 
 /// Table owner admission must see the cast before minting synthetic wrappers.
-pub(in crate::lower) fn casts_component(cx: &Cx<'_>, element: &Element<'_>) -> bool {
+pub(in crate::lower) fn casts_component(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    element: &Element<'_>,
+) -> bool {
     if cx.v_pre_suppressed() || element.open.is_verbatim() || cx.is_custom_element(element.tag()) {
         return false;
     }
@@ -57,12 +61,12 @@ pub(in crate::lower) fn casts_component(cx: &Cx<'_>, element: &Element<'_>) -> b
         .is_ok_and(|decoded| decoded.text().starts_with("vue:"))
 }
 
-pub(super) fn consume(cx: &mut Cx<'_>, attribute: &Attribute<'_>) {
+pub(super) fn consume(cx: &mut Cx<'_, impl ProvenanceSink>, attribute: &Attribute<'_>) {
     cx.record(
         "drop.vue-is",
         None,
         attr_slice(cx, attribute),
-        String::default(),
+        String::default,
         attr_span(cx, attribute),
     );
 }

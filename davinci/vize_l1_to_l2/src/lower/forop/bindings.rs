@@ -8,6 +8,7 @@ use vize_l0::expression_guard::{expression_is_safe_to_parse, is_expression_trail
 use vize_l0::{SmallVec, Span, String, profiler::global_profiler};
 use vize_l1::embed::{EmbedSource, prepare_attribute_value};
 use vize_l2::expr::ExprRef;
+use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeBinding, ScopeOrigin};
 
 use super::{Cx, ForName};
@@ -22,7 +23,7 @@ pub(super) enum AliasGoal<'a> {
 }
 
 impl<'a> AliasGoal<'a> {
-    pub(super) fn parse(cx: &Cx<'a>, expr: Option<&ExprRef<'a>>) -> Self {
+    pub(super) fn parse(cx: &Cx<'a, impl ProvenanceSink>, expr: Option<&ExprRef<'a>>) -> Self {
         let Some(expr) = expr else {
             return Self::Ordinary;
         };

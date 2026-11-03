@@ -81,7 +81,7 @@ use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
 pub use vize_l2::analysis::model_facts::{ModelFacts, ModelFault};
 use vize_l2::op::{BindingOp, Op};
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::ProvenanceSink;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
@@ -121,7 +121,7 @@ pub const DESC: PassDesc = PassDesc::new(
 /// lowering's minted accounting — a compiler bug by the id law, never an
 /// input property.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_>) -> SideTable<ModelFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelFacts> {
     let Lowered {
         root,
         op_count,
@@ -141,15 +141,15 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<ModelFacts> {
     channels.facts
 }
 
-pub(super) struct Channels<'l> {
+pub(super) struct Channels<'l, P> {
     pub(super) diagnostics: &'l mut StdVec<Diagnostic>,
-    pub(super) provenance: &'l mut StdVec<ProvenanceRecord>,
+    pub(super) provenance: &'l mut P,
     pub(super) facts: SideTable<ModelFacts>,
 }
 
 fn region<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     env: &mut StdVec<String>,
     ops: &[Op<'a>],
 ) {
@@ -158,7 +158,7 @@ fn region<'a>(
 
 fn region_guarded<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     env: &mut StdVec<String>,
     ops: &[Op<'a>],
 ) {
@@ -169,7 +169,7 @@ fn region_guarded<'a>(
 
 fn visit<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     env: &mut StdVec<String>,
     op: &Op<'a>,
 ) {
@@ -236,7 +236,7 @@ fn visit<'a>(
 /// `enter_v_slot_scope_if_needed` reads the first `v-slot` only).
 fn owner_bindings<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     env: &StdVec<String>,
     bindings: &[BindingOp<'a>],
 ) -> Option<String> {

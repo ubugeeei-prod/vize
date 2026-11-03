@@ -6,12 +6,11 @@
 //! Hoisting decisions remain position- and option-dependent in the backend.
 //! The transitional Vue pass is only an adapter to this implementation.
 
-use alloc::vec::Vec;
 use vize_l0::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
 use vize_l0::side_table::SideTable;
 
 use crate::op::{Namespace, Region};
-use crate::provenance::ProvenanceRecord;
+use crate::provenance::ProvenanceSink;
 use crate::walk::{PageWalk, assert_accounting};
 
 mod consts;
@@ -79,7 +78,7 @@ const _: () = assert!(core::mem::size_of::<StaticFacts>() == 5);
 pub fn run(
     root: &Region<'_>,
     op_count: u32,
-    provenance: &mut Vec<ProvenanceRecord>,
+    provenance: &mut impl ProvenanceSink,
 ) -> SideTable<StaticFacts> {
     run_remarked(root, op_count, provenance, &mut NoRemarks)
 }
@@ -95,7 +94,7 @@ pub fn run(
 pub fn run_remarked<R: RemarkSink>(
     root: &Region<'_>,
     op_count: u32,
-    provenance: &mut Vec<ProvenanceRecord>,
+    provenance: &mut impl ProvenanceSink,
     remarks: &mut R,
 ) -> SideTable<StaticFacts> {
     let mut facts = SideTable::new();

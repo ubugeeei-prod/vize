@@ -16,6 +16,7 @@ use vize_l0::{Box, String, Vec, cstr, is_native_tag};
 use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
+use vize_l2::provenance::ProvenanceSink;
 
 pub(super) mod identity;
 mod v_pre;
@@ -178,7 +179,7 @@ pub(crate) fn attr_text<'a>(attr: &vize_l1::markup::Attribute<'a>) -> Option<&'a
 /// Lower one element (its structural directives already consumed by the
 /// caller): `<slot>` outlet, component, or native element.
 pub(crate) fn element_core<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
@@ -210,11 +211,11 @@ pub(crate) fn element_core<'a>(
             "lower.component",
             node,
             open_slice,
-            cstr!("ui.component {tag}"),
+            || cstr!("ui.component {tag}"),
             span,
         );
     } else {
-        let after = match own_ns {
+        let after = || match own_ns {
             Namespace::Html => cstr!("ui.element {tag}"),
             Namespace::Svg => cstr!("ui.element {tag} ns=svg"),
             Namespace::MathMl => cstr!("ui.element {tag} ns=mathml"),
@@ -251,7 +252,7 @@ pub(crate) fn element_core<'a>(
                 "drop.v-pre",
                 None,
                 attr_slice(cx, attr),
-                String::default(),
+                String::default,
                 attr_span(cx, attr),
             );
             continue;

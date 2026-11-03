@@ -8,6 +8,7 @@ use vize_l0::{Box, Span, String, StringBuilder, cstr};
 use vize_l1::markup::SurfaceChild;
 use vize_l2::expr::OpaqueReason;
 use vize_l2::op::{InterpolationOp, Op, TextOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::{
     TextAction, TextPart, TextParts, collapse_fused, extends_run, normalize_special_text,
@@ -37,7 +38,7 @@ fn fold_gap(parts: &mut StdVec<TextPart>, pending: &mut Option<u32>) {
 /// nothing (recorded); a one-node run lowers as the plain leaf; a
 /// longer run merges.
 pub(crate) fn lower_text_run<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     plan: &[TextAction<'a>],
     start: usize,
@@ -56,7 +57,7 @@ pub(crate) fn lower_text_run<'a>(
             "condense.drop-whitespace",
             None,
             token.text,
-            String::default(),
+            String::default,
             span,
         );
         return start + 1;
@@ -105,7 +106,7 @@ pub(crate) fn lower_text_run<'a>(
             && cx.offset(token.text) == probe
         {
             let span = cx.token_span(token);
-            cx.record("drop.comment", None, token.text, String::default(), span);
+            cx.record("drop.comment", None, token.text, String::default, span);
             pending_gap = Some(span.end);
             i += 1;
             continue;
@@ -125,7 +126,7 @@ pub(crate) fn lower_text_run<'a>(
                         "condense.drop-whitespace",
                         None,
                         token.text,
-                        String::default(),
+                        String::default,
                         span,
                     );
                     pending_gap = Some(span.end);
@@ -213,7 +214,7 @@ pub(crate) fn lower_text_run<'a>(
             "lower.text-run",
             node,
             raw,
-            cstr!("ui.text merged={members}"),
+            || cstr!("ui.text merged={members}"),
             span,
         );
         out.push(Op::Text(Box::new_in(
@@ -236,12 +237,14 @@ pub(crate) fn lower_text_run<'a>(
             "lower.compound",
             node,
             raw,
-            cstr!(
-                "ui.interpolation {} parts={} dynamic={}",
-                desc(&expression),
-                parts.len(),
-                dynamic
-            ),
+            || {
+                cstr!(
+                    "ui.interpolation {} parts={} dynamic={}",
+                    desc(&expression),
+                    parts.len(),
+                    dynamic
+                )
+            },
             span,
         );
         cx.attach_texts(node, TextParts { parts }, span, rebuilt.as_str());
@@ -257,7 +260,7 @@ pub(crate) fn lower_text_run<'a>(
 /// Interpolation delimiters render as authored text, while Vue's normal
 /// whitespace condense still applies unless an enclosing `<pre>` disabled it.
 pub(crate) fn lower_v_pre_text_run<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     plan: &[TextAction<'a>],
     start: usize,
@@ -293,7 +296,7 @@ pub(crate) fn lower_v_pre_text_run<'a>(
             "condense.drop-whitespace",
             None,
             token.text,
-            String::default(),
+            String::default,
             span,
         );
         return i;
@@ -314,7 +317,13 @@ pub(crate) fn lower_v_pre_text_run<'a>(
     let mut interned = StringBuilder::with_capacity_in(content.len(), cx.allocator);
     interned.push_str(content.as_str());
     let node = cx.mint_op();
-    cx.record("lower.v-pre-text", node, raw, String::from("ui.text"), span);
+    cx.record(
+        "lower.v-pre-text",
+        node,
+        raw,
+        || String::from("ui.text"),
+        span,
+    );
     out.push(Op::Text(Box::new_in(
         TextOp {
             content: interned.into_str(),
@@ -325,7 +334,7 @@ pub(crate) fn lower_v_pre_text_run<'a>(
     i
 }
 
-fn text_family_start(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Option<u32> {
+fn text_family_start(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> Option<u32> {
     match child {
         SurfaceChild::Text(token) => Some(cx.offset(token.text)),
         SurfaceChild::Interpolation(node) => Some(cx.offset(node.open.text)),
@@ -333,7 +342,7 @@ fn text_family_start(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Option<u32> {
     }
 }
 
-fn text_family_end(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Option<u32> {
+fn text_family_end(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> Option<u32> {
     match child {
         SurfaceChild::Text(token) => Some(cx.token_span(token).end),
         SurfaceChild::Interpolation(node) => Some(cx.token_span(&node.close).end),

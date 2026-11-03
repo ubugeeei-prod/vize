@@ -1,5 +1,6 @@
 //! Text rules belong to the direct owner; pre whitespace also spans descendants.
 use vize_l1::markup::{Element, SurfaceChild};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::Cx;
 
@@ -11,7 +12,7 @@ pub(crate) enum TextWhitespace {
     Rcdata,
 }
 
-impl<'a> Cx<'a> {
+impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn normalize_pre_newlines(&self) -> bool {
         self.text_whitespace == TextWhitespace::Pre
     }

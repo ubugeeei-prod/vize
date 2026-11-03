@@ -20,6 +20,6 @@ pub const NAME: &str = "v-if";
 
 /// Mirror lowering-published `ui.if` facts for transform consumers.
 #[must_use]
-pub fn facts_from_lowering(lowered: &Lowered<'_>) -> SideTable<IfFacts> {
+pub fn facts_from_lowering<P>(lowered: &Lowered<'_, P>) -> SideTable<IfFacts> {
     lowered.if_facts.clone()
 }

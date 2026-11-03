@@ -43,9 +43,9 @@
 //!   [`Diagnostic`] plus a kept fragment. Adding op variants is P2-9's
 //!   decision, not this crate's.
 //! - **Facts beside the tree**: hygiene scope tags on every
-//!   binding-introducing op ([`vize_l2::scope`]) and fully
-//!   materialized before/after provenance ([`vize_l2::provenance`])
-//!   that both survive failure, Lean-InfoTree style.
+//!   binding-introducing op ([`vize_l2::scope`]) and before/after
+//!   provenance ([`vize_l2::provenance`]), kept for the consumers that
+//!   read it; both survive failure, Lean-InfoTree style.
 //!
 //! [`Diagnostic`]: vize_l0::diag::Diagnostic
 //! [`SurfaceError`]: vize_l1::markup::SurfaceError

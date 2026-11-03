@@ -3,6 +3,7 @@
 use vize_l0::{Box, String};
 use vize_l1::markup::Attribute;
 use vize_l2::op::{BindingOp, VueHtmlOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::binding::defer;
 use super::cx::{Cx, attr_slice, attr_span};
@@ -11,7 +12,7 @@ use super::element::attr_text;
 use super::expr::expr_at;
 
 pub(crate) fn lower_html<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
@@ -37,7 +38,7 @@ pub(crate) fn lower_html<'a>(
         "lower.vue-html",
         node,
         attr_slice(cx, attr),
-        String::from("vue.html"),
+        || String::from("vue.html"),
         span,
     );
     Some(BindingOp::VueHtml(Box::new_in(

@@ -16,7 +16,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String, cstr};
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::ScopeOrigin;
 
 use super::consume::{Channels, ChildKind, ChildView, SlotSpelling};
@@ -27,7 +27,7 @@ use super::{
 
 /// Group and validate one `ui.component`.
 pub(super) fn component(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     name: &str,
     span: Span,
@@ -53,7 +53,7 @@ pub(super) fn component(
             SlotName::Dynamic { text } => listing.push_str(cstr!("[{text}]").as_str()),
         }
     }
-    channels.provenance.push(ProvenanceRecord {
+    channels.provenance.record(|| ProvenanceRecord {
         rule: String::from("pass.v-slot.group"),
         node: id,
         before: String::from(name),
@@ -72,7 +72,7 @@ pub(super) fn component(
 /// when the component has content, no own spelling, and no group named
 /// `default`.
 fn collect(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     span: Span,
     own: &[SlotSpelling],
@@ -116,7 +116,7 @@ fn collect(
         )
     });
     if own.is_empty() && has_content && !groups.iter().any(|group| group.name.text() == "default") {
-        channels.provenance.push(ProvenanceRecord {
+        channels.provenance.record(|| ProvenanceRecord {
             rule: String::from(RULE_IMPLICIT_DEFAULT),
             node: id,
             before: String::default(),
@@ -141,7 +141,7 @@ fn collect(
 /// tree. The misplaced check fires at each element's own visit
 /// ([`super::consume`]); this half owns the component-level three.
 fn validate(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     own: &[SlotSpelling],
     children: &[ChildView],
@@ -159,7 +159,7 @@ fn validate(
                     MIXED_MESSAGE,
                     "error.v-slot-mixed",
                     id,
-                    String::default(),
+                    String::default,
                 );
                 break;
             }
@@ -190,7 +190,7 @@ fn validate(
                         DUPLICATE_MESSAGE,
                         "error.v-slot-duplicate",
                         id,
-                        cstr!("\"{text}\""),
+                        || cstr!("\"{text}\""),
                     );
                     continue;
                 }
@@ -219,7 +219,7 @@ fn validate(
             EXTRANEOUS_MESSAGE,
             "error.v-slot-extraneous-children",
             id,
-            String::default(),
+            String::default,
         );
     }
 }
