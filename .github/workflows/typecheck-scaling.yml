@@ -1,0 +1,111 @@
+name: Type-check scaling
+run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; monorepo ${{ inputs.monorepo_sfcs }})"
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full 40-hex commit to build and measure
+        type: string
+        required: true
+      sizes:
+        description: Comma-separated SFC counts of the single generated projects
+        type: string
+        default: "1000,5000,20000"
+      runs:
+        description: Warm timed runs per tool and size (median reported; one cold run is extra)
+        type: string
+        default: "3"
+      monorepo_sfcs:
+        description: SFCs of the project-references monorepo (0 skips it)
+        type: string
+        default: "5000"
+  # Registers the dispatch-only workflow from its PR; the job runs only on dispatch.
+  pull_request:
+    paths: [.github/workflows/typecheck-scaling.yml]
+permissions: { contents: read }
+concurrency:
+  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.monorepo_sfcs }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  measure:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 330
+    env:
+      SHA: ${{ inputs.sha }}
+      SIZES: ${{ inputs.sizes }}
+      RUNS: ${{ inputs.runs }}
+      MONOREPO_SFCS: ${{ inputs.monorepo_sfcs }}
+    steps:
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
+          [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Check out the measured commit beside the driver
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$SHA"
+          git worktree add --detach "$RUNNER_TEMP/scaling-target" "$SHA"
+      - name: Install the locked hosts and GNU time
+        run: |
+          set -euo pipefail
+          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+          if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends time
+          fi
+          /usr/bin/time --version
+      - name: Test the generator, gate and report
+        run: node --test tests/tooling/typecheck-scaling.test.ts
+      - name: Build the native binding and the vize package
+        working-directory: ${{ runner.temp }}/scaling-target
+        run: |
+          set -euo pipefail
+          # The whole workspace: vue-tsc and vue come from tools/benchmarks/scripts, tsgo from the root.
+          vp install --frozen-lockfile --prefer-offline
+          cargo --version
+          vp run --workspace-root build:native > "$RUNNER_TEMP/build-native.log" 2>&1 || { tail -n 80 "$RUNNER_TEMP/build-native.log"; exit 1; }
+          tail -n 20 "$RUNNER_TEMP/build-native.log"
+          vp run --filter './npm/cli' build
+          git rev-parse HEAD
+      - name: Measure
+        env:
+          VIZE_SCALING_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: |
+          node tools/benchmarks/scripts/typecheck-scaling.ts \
+            --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
+            --sizes "$SIZES" --runs "$RUNS" --monorepo-sfcs "$MONOREPO_SFCS" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --work "$RUNNER_TEMP/scaling-work" --out "$RUNNER_TEMP/scaling-out"
+      - name: Write job summary
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/scaling-out/summary.md" ]]; then cat "$RUNNER_TEMP/scaling-out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typecheck-scaling-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/scaling-out/
+            ${{ runner.temp }}/build-native.log
+          if-no-files-found: warn
+          retention-days: 30

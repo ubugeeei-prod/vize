@@ -15,7 +15,7 @@ let clockTicksPerSecond;
  * invocation is that invocation's whole process tree. Linux only; elsewhere
  * no CPU figure is recorded.
  */
-function reapedChildCpuMs() {
+export function reapedChildCpuMs() {
   if (process.platform !== "linux") return null;
   clockTicksPerSecond ??= Number(execFileSync("getconf", ["CLK_TCK"], { encoding: "utf8" }));
   const stat = readFileSync("/proc/self/stat", "utf8");
