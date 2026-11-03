@@ -10,6 +10,11 @@ use vize_carton::{CompactString, FxHashSet, String, append};
 
 use crate::virtual_ts::DECLARATION_HELPERS_DTS;
 
+// A declaration consumer supplies fallthrough attributes through Vue's
+// component contract. Keep declared prop value and required-key checks, while
+// the mapper's ordinary construction checks retain their stricter extra keys.
+const DECLARATION_INPUT_GUARD: &str = "type $ComponentInputGuardFor<T, _Declared, Authored, _Allowed> = $ComponentMissingInputGuard<T, Authored>;";
+
 fn helpers() -> &'static (Vec<CompactString>, String) {
     static HELPERS: OnceLock<(Vec<CompactString>, String)> = OnceLock::new();
     HELPERS.get_or_init(|| {
@@ -27,8 +32,25 @@ fn helpers() -> &'static (Vec<CompactString>, String) {
                 _ => None,
             })
             .collect();
+        let guard = parsed
+            .program
+            .body
+            .iter()
+            .find_map(|statement| match statement {
+                Statement::TSTypeAliasDeclaration(alias)
+                    if alias.id.name == "$ComponentInputGuardFor" =>
+                {
+                    Some(alias.span)
+                }
+                _ => None,
+            })
+            .expect("canonical declaration helpers retain the component input guard");
         let exports = names.join(", ");
         let mut module = String::from(DECLARATION_HELPERS_DTS);
+        module.replace_range(
+            guard.start as usize..guard.end as usize,
+            DECLARATION_INPUT_GUARD,
+        );
         append!(module, "\nexport type {{ {exports} }};\n");
         (names, module)
     })
@@ -70,6 +92,49 @@ pub(super) fn module_specifier(depth: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn declaration_fallthrough_changes_only_the_owned_guard_alias() {
+        let allocator = Allocator::default();
+        let original = Parser::new(&allocator, DECLARATION_HELPERS_DTS, SourceType::d_ts()).parse();
+        let old = original
+            .program
+            .body
+            .iter()
+            .find_map(|statement| match statement {
+                Statement::TSTypeAliasDeclaration(alias)
+                    if alias.id.name == "$ComponentInputGuardFor" =>
+                {
+                    DECLARATION_HELPERS_DTS.get(alias.span.start as usize..alias.span.end as usize)
+                }
+                _ => None,
+            })
+            .unwrap();
+        let allocator = Allocator::default();
+        let generated = Parser::new(&allocator, module(), SourceType::d_ts()).parse();
+        assert_eq!(generated.diagnostics.len(), 0);
+        let aliases: Vec<_> = generated
+            .program
+            .body
+            .iter()
+            .filter_map(|statement| match statement {
+                Statement::TSTypeAliasDeclaration(alias)
+                    if alias.id.name == "$ComponentInputGuardFor" =>
+                {
+                    module().get(alias.span.start as usize..alias.span.end as usize)
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(aliases, vec![DECLARATION_INPUT_GUARD]);
+        let exports = helpers().0.join(", ");
+        let expected =
+            vize_carton::cstr!("{DECLARATION_HELPERS_DTS}\nexport type {{ {exports} }};\n");
+        assert_eq!(
+            module().replacen(DECLARATION_INPUT_GUARD, old, 1),
+            expected.as_str()
+        );
+    }
 
     #[test]
     fn helpers_are_parseable_module_exports_and_imports_preserve_depth() {
