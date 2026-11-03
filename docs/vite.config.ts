@@ -1,10 +1,10 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "./browser-path.js";
-import { materializeContent } from "./scripts/materialize-content.ts";
 import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
+import "./theme/i18n/sitemap.js";
 
 const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
 if (puppeteerExecutablePath) {
@@ -27,10 +27,56 @@ const themeCss = [
   .join("\n");
 const themeJs = buildDocsBackgroundScript(themeDir);
 
+const contentDir = resolve(import.meta.dirname, "content");
+const { supportedLocales } = (
+  globalThis as { __vizeDocsSitemap?: { supportedLocales: { code: string }[] } }
+).__vizeDocsSitemap!;
+
+/**
+ * The sidebar source lists the English pages once. Every page embeds it, so a
+ * copy per locale grew each page and the build with every locale.
+ * `theme/i18n/navigation.js` points each placed link at the reader's locale.
+ */
+function englishNavigation() {
+  const localeDirectories = new Set([...supportedLocales.map(({ code }) => code), "i18n"]);
+  const items: { title: string; path: string }[] = [];
+  const walk = (directory: string) => {
+    const entries = readdirSync(directory, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name),
+    );
+    for (const entry of entries) {
+      const file = join(directory, entry.name);
+      if (entry.isDirectory()) {
+        if (directory !== contentDir || !localeDirectories.has(entry.name)) walk(file);
+        continue;
+      }
+      if (!entry.name.endsWith(".md")) continue;
+      const source = readFileSync(file, "utf8");
+      const frontmatter = source.startsWith("---\n")
+        ? source.slice(4, source.indexOf("\n---", 4))
+        : "";
+      const quoted = frontmatter.match(/^title:\s*(.+)$/m)?.[1]?.trim();
+      const title = quoted?.startsWith('"')
+        ? JSON.parse(quoted)
+        : (quoted ?? source.match(/^# (.+)$/m)?.[1]);
+      const route = relative(contentDir, file)
+        .replaceAll("\\", "/")
+        .replace(/\.md$/, "")
+        .replace(/(^|\/)index$/, "");
+      items.push({
+        title: title ?? entry.name.replace(/\.md$/, ""),
+        path: `/${route}`.replace(/(.)\/$/, "$1"),
+      });
+    }
+  };
+  walk(contentDir);
+  return [{ title: "Docs", items }];
+}
+
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: materializeContent(import.meta.dirname),
+      srcDir: contentDir,
       outDir: "dist",
 
       i18n: {
@@ -50,6 +96,7 @@ export default defineConfig({
 
       ssg: {
         siteName: "Vize",
+        navigation: englishNavigation(),
         siteUrl: "https://vizejs.dev",
         // Strict page-specific generation runs after SSG. Ox Content 2.81's
         // automatic path swallows template/browser errors and omits images.

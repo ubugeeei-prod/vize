@@ -1,18 +1,39 @@
 ---
 title: "script/define-emits-declaration"
+description: "defineEmits を型による宣言形式に揃えます。"
 ---
 
 # `script/define-emits-declaration`
 
 defineEmits を型による宣言形式に揃えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`defineEmits(["change"])` は実行時の配列による宣言です。このスタイルルールは型ベースの宣言を推奨します。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const emit = defineEmits(["change"]);
+emit("change", 1);
+</script>
+```
+
+## 良い例
+
+`defineEmits<{ change: [id: number] }>()` で宣言を型引数へ移し、`emit("change", 1)` が渡す数値のペイロードも明示します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const emit = defineEmits<{ change: [id: number] }>();
+emit("change", 1);
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`defineEmits(["change"])` は実行時の配列による宣言です。このスタイルルールは型ベースの宣言を推奨します。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["change"]);
-emit("change", 1);
-</script>
-```
-
-## 良い
-
-`defineEmits<{ change: [id: number] }>()` で宣言を型引数へ移し、`emit("change", 1)` が渡す数値のペイロードも明示します。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ change: [id: number] }>();
-emit("change", 1);
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39)

@@ -6,10 +6,17 @@ import { test } from "node:test";
 import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 
+type Section = { page: string; paths?: string[]; namespaces?: string[]; directory?: string };
 type Sitemap = {
   hiddenPathPatterns: RegExp[];
-  navGroups: Array<{ key: string; paths: string[]; pathsByLocale?: Record<string, string[]> }>;
+  navGroups: Array<{
+    key: string;
+    paths: string[];
+    pathsByLocale?: Record<string, string[]>;
+    sections?: Section[];
+  }>;
   supportedLocales: Array<{ code: string; name: string }>;
+  sectionPaths: (section: Section, routes: string[]) => string[];
 };
 
 const themeDir = path.join(repoRoot, "docs/theme");
@@ -27,7 +34,7 @@ const localeCodes = sitemap.supportedLocales.map(({ code }) => code);
 /** Authored page routes of one locale, in the form the sitemap lists them. */
 function authoredRoutes(locale: string): string[] {
   const localeDir = locale === "en" ? contentDir : path.join(contentDir, locale);
-  const skipped = new Set(["generated", "i18n", ...localeCodes]);
+  const skipped = new Set(["i18n", ...localeCodes]);
   const walk = (directory: string, prefix: string): string[] =>
     fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
       if (entry.isDirectory()) {
@@ -46,16 +53,22 @@ void test("every published page has a named sidebar group in every locale", () =
   // That section grew to forty unrelated pages once; a new page now has to be
   // filed under a group, or hidden because its parent page links to it.
   for (const locale of localeCodes) {
-    const listed = sitemap.navGroups.flatMap(
-      (group) => group.pathsByLocale?.[locale] ?? group.paths,
-    );
+    const routes = authoredRoutes(locale);
+    const sectionRoutes = (section: Section) => [
+      section.page,
+      ...sitemap.sectionPaths(section, routes),
+    ];
+    const listed = sitemap.navGroups.flatMap((group) => [
+      ...(group.pathsByLocale?.[locale] ?? group.paths),
+      ...(group.sections ?? []).flatMap(sectionRoutes),
+    ]);
     assert.deepEqual(
       listed.filter((navPath, index) => listed.indexOf(navPath) !== index),
       [],
       `${locale} lists a page in more than one group`,
     );
     assert.deepEqual(
-      authoredRoutes(locale)
+      routes
         .filter(
           (route) =>
             !listed.includes(route) &&

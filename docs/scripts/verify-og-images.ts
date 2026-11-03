@@ -7,7 +7,6 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import { DEFAULT_MARKDOWN_EXTENSIONS } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { CATALOGUE_SOURCES } from "./materialize-content.ts";
 import { docsSiteUrl, ogHeight, ogWidth, pageRoute, isPageMetadata } from "../theme/open-graph.ts";
 import { verifyImageIdentity, verifyImageIdentityControls } from "./og-image-identity.ts";
 import type { RenderedPageMetadata } from "./og-image-identity.ts";
@@ -103,7 +102,6 @@ const expectedRoutes = (await readdir(contentDir, { recursive: true, withFileTyp
   .map((file) =>
     path.relative(contentDir, path.join(file.parentPath, file.name)).replaceAll("\\", "/"),
   )
-  .filter((file) => !CATALOGUE_SOURCES.includes(file))
   .map(pageRoute)
   .sort();
 assert.deepEqual(

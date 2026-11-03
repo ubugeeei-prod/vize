@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 描画する `ShippingAddress.vue` と `BillingAddress.vue` の両方が `id="postal-code"` を使い、label の文書内の参照先が重複します。
 
@@ -82,7 +82,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 </template>
 ```
 
-## 良い
+## 良い例
 
 各コンポーネントが `useId()` を呼び、その戻り値を label の `for` と input の `id` にバインドします。ラベルと入力欄の対応を保ちながら、固定 ID の重複をなくします。
 

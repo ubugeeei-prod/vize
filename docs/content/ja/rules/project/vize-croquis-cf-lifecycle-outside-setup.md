@@ -45,7 +45,7 @@ export function installTitle() {
 
 ```
 
-## 悪い
+## 悪い例
 
 エントリーファイルの `main.ts` がアプリのマウント前に `installTitle()` を呼び、コンポーネントの setup が有効でない状態で `onMounted` を登録しています。
 
@@ -73,7 +73,7 @@ createApp(App).mount('#app');
 
 ```
 
-## 良い
+## 良い例
 
 同じヘルパーを App の setup から同期的に呼び、ライフサイクルのコールバックをそのインスタンスのマウントに結び付けます。
 

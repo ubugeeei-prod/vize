@@ -51,7 +51,7 @@ const title = useTitle();
 
 ```
 
-## 悪い
+## 悪い例
 
 `use-title.ts` の import 時点で、コンポーネントの setup が有効になる前に `onMounted` を登録します。後から公開関数を呼んでもモジュール直下の ref を返すだけで、ライフサイクルフックは、コンポーネントに登録されないままです。
 
@@ -65,7 +65,7 @@ export function useTitle() { return title; }
 
 ```
 
-## 良い
+## 良い例
 
 状態作成とフック登録を `useTitle` の中へ移し、App の setup 内から同期的に呼びます。mounted フックがその App インスタンスに所属するようになります。
 

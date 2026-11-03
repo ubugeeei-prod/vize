@@ -425,60 +425,41 @@ void test("the existing warning baseline preserves every original source, repair
   );
 });
 
-void test("all generated locale tables and bilingual references expose the actual preset memberships", () => {
-  const locales = ["en", "ja", "fr", "pt-BR", "zh-CN"];
+void test("every locale's rule page and index expose the actual preset memberships", () => {
+  const locales = ["", "ja/", "fr/", "pt-BR/", "zh-CN/"];
   const presets = (line) =>
     [...line.matchAll(/`([^`]+)`/g)]
       .map((match) => match[1])
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-  for (const { name, expected, section } of [
+  for (const { name, expected, smallest } of [
     {
       name: "vue/no-use-v-else-with-v-for",
       expected: ["ecosystem", "happy-path", "nuxt", "opinionated"],
-      section: "vue",
+      smallest: ["happy-path"],
     },
     {
       name: "script/no-deep-destructure-in-props",
       expected: ["nuxt", "opinionated"],
-      section: "type-and-script",
+      smallest: ["nuxt", "opinionated"],
     },
   ]) {
     const slug = name.replaceAll("/", "-");
-    for (const filename of locales.map(
-      (locale) => `docs/content/generated/rules/${locale}/${section}.md`,
-    )) {
-      const body = read(filename).toString();
-      const block = body.split(`### \`${name}\`\n`)[1]?.split("\n### ")[0];
-      assert(block, filename);
-      const line = block
-        .split("\n")
-        .find((line) => /^(?:Presets|プリセット|Préréglages|Predefinições|预设):/.test(line));
-      assert(line, filename);
-      assert.deepEqual(presets(line), expected, filename);
-    }
-    for (const locale of ["", "ja/"]) {
+    for (const locale of locales) {
       const filename = `docs/content/${locale}rules/reference/${slug}.md`;
+      // The facts row: severity, presets, automatic fix, options.
       const line = read(filename)
         .toString()
         .split("\n")
-        .find((line) => /^(?:Presets|プリセット):/.test(line));
+        .find((line) => line.startsWith("| `warning` | "));
       assert(line, filename);
-      assert.deepEqual(presets(line), expected, filename);
-    }
-    for (const filename of [
-      "docs/content/rules/all.md",
-      "docs/content/ja/rules/all.md",
-      ...["en", "ja"].map((locale) => `docs/content/generated/rules/${locale}/all.md`),
-    ]) {
-      const line = read(filename)
+      assert.deepEqual(presets(line.split(" | ")[1]), expected, filename);
+      const index = `docs/content/${locale}rules/all.md`;
+      const row = read(index)
         .toString()
         .split("\n")
-        .find((line) => line.startsWith(`| [\`${name}\`]`));
-      assert(line, filename);
-      const cells = line.split(" | ");
-      const severity = cells.indexOf("`warning`");
-      assert(severity >= 0, filename);
-      assert.deepEqual(presets(cells[severity + 1]), expected, filename);
+        .find((line) => line.includes(`[\`${name}\`](./reference/${slug}.md)`));
+      assert(row, index);
+      assert.deepEqual(presets(row.split(" | ")[2]), smallest, index);
     }
   }
 });

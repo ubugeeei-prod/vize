@@ -62,7 +62,7 @@ const theme = useTheme();
 
 ```
 
-## 悪い
+## 悪い例
 
 `main.ts` が有効なコンポーネントインスタンスなしで component の `provide` を呼びます。子の `inject` は意図した祖先の値を受け取れず、`light` を使います。
 
@@ -90,7 +90,7 @@ import ThemedText from './ThemedText.vue';
 
 ```
 
-## 良い
+## 良い例
 
 App の setup で子を描画する前に provider を呼び、子が祖先コンポーネントの `dark` を受け取れるようにします。
 

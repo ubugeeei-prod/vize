@@ -1,18 +1,37 @@
 ---
 title: "a11y/no-aria-hidden-on-focusable"
+description: "フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。"
 ---
 
 # `a11y/no-aria-hidden-on-focusable`
 
 フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+フォーカスできる Close ボタンを `aria-hidden="true"` でアクセシビリティ ツリーから隠しています。
+
+```vue annotate="remove:2"
+<template>
+  <button aria-hidden="true" @click="close">Close</button>
+</template>
+```
+
+## 良い例
+
+aria-hidden を取り除いてボタンを支援技術から参照できる状態にし、aria-label に Close を指定します。
+
+```vue annotate="add:2"
+<template>
+  <button aria-label="Close" @click="close">Close</button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-フォーカスできる Close ボタンを `aria-hidden="true"` でアクセシビリティ ツリーから隠しています。
-
-```vue
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
-
-## 良い
-
-aria-hidden を取り除いてボタンを支援技術から参照できる状態にし、aria-label に Close を指定します。
-
-```vue
-<template>
-  <button aria-label="Close" @click="close">Close</button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19)

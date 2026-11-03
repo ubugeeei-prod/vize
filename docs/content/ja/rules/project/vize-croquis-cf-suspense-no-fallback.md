@@ -50,7 +50,7 @@ const message = await Promise.resolve('Ready');
 
 ```
 
-## 悪い
+## 悪い例
 
 Suspense の境界に非同期の子がありますが fallback がなく、この例の待機中の状態に表示する内容がありません。
 
@@ -68,7 +68,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-## 良い
+## 良い例
 
 `#fallback` slot にローディングの段落を指定し、非同期の子が完了するまで表示します。
 

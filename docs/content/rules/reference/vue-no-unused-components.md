@@ -1,18 +1,45 @@
 ---
 title: "vue/no-unused-components"
+description: "Disallow registering components that are not used inside templates."
 ---
 
 # `vue/no-unused-components`
 
-Disallow registering components that are not used inside templates
+Disallow registering components that are not used inside templates.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+UserAvatar is imported as a component but the template never renders it.
+
+```vue annotate="remove:6"
+<script setup lang="ts">
+import UserAvatar from "./UserAvatar.vue";
+</script>
+
+<template>
+  <p>{{ user.name }}</p>
+</template>
+```
+
+## Good
+
+The template renders the imported UserAvatar and passes the user binding.
+
+```vue annotate="add:6"
+<script setup lang="ts">
+import UserAvatar from "./UserAvatar.vue";
+</script>
+
+<template>
+  <UserAvatar :user="user" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-UserAvatar is imported as a component but the template never renders it.
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <p>{{ user.name }}</p>
-</template>
-```
-
-## Good
-
-The template renders the imported UserAvatar and passes the user binding.
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <UserAvatar :user="user" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L47) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L47)

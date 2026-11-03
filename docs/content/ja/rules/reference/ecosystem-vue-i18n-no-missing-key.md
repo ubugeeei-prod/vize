@@ -1,18 +1,41 @@
 ---
 title: "ecosystem/vue-i18n-no-missing-key"
+description: "SFC 内の翻訳データに存在しない静的キーを検出します。"
 ---
 
 # `ecosystem/vue-i18n-no-missing-key`
 
 SFC 内の翻訳データに存在しない静的キーを検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `ecosystem`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+テンプレートは auth.missing を参照しますが、ローカルの英語メッセージには auth.login しかありません。
+
+```vue annotate="remove:1"
+<template>{{ $t("auth.missing") }}</template>
+
+<i18n lang="json">
+{ "en": { "auth": { "login": "Log in" } } }
+</i18n>
+```
+
+## 良い例
+
+ローカルのメッセージにある auth.login を参照します。
+
+```vue annotate="add:1"
+<template>{{ $t("auth.login") }}</template>
+
+<i18n lang="json">
+{ "en": { "auth": { "login": "Log in" } } }
+</i18n>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-テンプレートは auth.missing を参照しますが、ローカルの英語メッセージには auth.login しかありません。
-
-```vue
-<template>{{ $t("auth.missing") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
-
-## 良い
-
-ローカルのメッセージにある auth.login を参照します。
-
-```vue
-<template>{{ $t("auth.login") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17)

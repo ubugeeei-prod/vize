@@ -1,18 +1,45 @@
 ---
 title: "a11y/mouse-events-have-key-events"
+description: "マウス操作と対応する focus / blur 操作を用意します。"
 ---
 
 # `a11y/mouse-events-have-key-events`
 
 マウス操作と対応する focus / blur 操作を用意します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+プレビューの表示切り替えを mouseenter と mouseleave だけに指定しています。
+
+```vue annotate="remove:2"
+<template>
+  <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+</template>
+```
+
+## 良い例
+
+フォーカスできる button で、同じ操作を focus と blur からも実行します。
+
+```vue annotate="add:2,3,4,5,6,7,8,9,10"
+<template>
+  <button
+    type="button"
+    @focus="showPreview"
+    @blur="hidePreview"
+    @mouseenter="showPreview"
+    @mouseleave="hidePreview"
+  >
+    Preview
+  </button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-プレビューの表示切り替えを mouseenter と mouseleave だけに指定しています。
-
-```vue
-<template>
-  <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
-</template>
-```
-
-## 良い
-
-フォーカスできる button で、同じ操作を focus と blur からも実行します。
-
-```vue
-<template>
-  <button
-    type="button"
-    @focus="showPreview"
-    @blur="hidePreview"
-    @mouseenter="showPreview"
-    @mouseleave="hidePreview"
-  >
-    Preview
-  </button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30)

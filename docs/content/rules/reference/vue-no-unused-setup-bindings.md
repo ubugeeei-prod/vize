@@ -1,18 +1,35 @@
 ---
 title: "vue/no-unused-setup-bindings"
+description: "Disallow unread script setup bindings."
 ---
 
 # `vue/no-unused-setup-bindings`
 
-Disallow unread script setup bindings
+Disallow unread script setup bindings.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The script setup message binding is never read by the template.
+
+```vue annotate="remove:2"
+<script setup>const message = "Hello";</script>
+<template><p>Welcome</p></template>
+```
+
+## Good
+
+The paragraph interpolates message, using the declared binding.
+
+```vue annotate="add:2"
+<script setup>const message = "Hello";</script>
+<template><p>{{ message }}</p></template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,28 +48,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The script setup message binding is never read by the template.
-
-```vue
-<script setup>const message = "Hello";</script>
-<template><p>Welcome</p></template>
-```
-
-## Good
-
-The paragraph interpolates message, using the declared binding.
-
-```vue
-<script setup>const message = "Hello";</script>
-<template><p>{{ message }}</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19)

@@ -19,11 +19,12 @@ const navigation = globalThis.__vizeDocsNavigation;
 for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
   void test(`navigation files Content Mapper under Type checker and keeps Getting started open (${code})`, () => {
     const prefix = code === "en" ? "" : `/${code}`;
+    // The rendered sidebar lists English pages; the theme localizes placed links.
     const document = createNavigationDocument([
-      [`${prefix}/getting-started`, "Getting Started"],
-      [`${prefix}/philosophy`, "Philosophy"],
-      [`${prefix}/guide/content-mapper`, "Content Mapper"],
-      [`${prefix}/guide/musea`, "Musea"],
+      ["/getting-started", "Getting Started"],
+      ["/philosophy", "Philosophy"],
+      ["/guide/content-mapper", "Content Mapper"],
+      ["/guide/musea", "Musea"],
     ]);
     applyNavigation(document, `${prefix}/guide/content-mapper/index.html`);
     const strings = globalThis.__vizeDocsLocales[code];
@@ -124,8 +125,8 @@ void test("applyNavigationOrder files former More pages under the task they belo
     ["/guide/init", "Project Setup"],
     ["/guide/lint-execution", "Native lint execution settings"],
     ["/guide/formatter-indent-width", "Indentation width"],
+    ["/rules/options", "Rule Options"],
     ["/rules/options-vue", "Vue Rule Options"],
-    ["/rules/vue-sfc", "Vue Rules: SFC Blocks"],
     ["/guide/musea-hosting", "Musea Hosting"],
     ["/integrations/mcp", "MCP Server"],
     ["/guide/doctor", "Doctor Diagnostics"],
@@ -149,8 +150,8 @@ void test("applyNavigationOrder files former More pages under the task they belo
     { title: "Compiler and integrations", labels: ["Compiler inspector"] },
     { title: "Components", labels: ["Musea hosting", "MCP server"] },
     { title: "CLI and tools", labels: ["Doctor"] },
-    { title: "Rule reference", labels: ["Options: Vue"] },
-    { title: "Rules by topic", labels: ["Vue: SFC Blocks"] },
+    { title: "Rule reference", labels: ["Overview", "Vue"] },
+    { title: "Rule options", labels: ["Overview", "Vue"] },
     { title: "Project and architecture", labels: ["Contributing"] },
   ]);
 });
@@ -232,12 +233,13 @@ void test("applyNavigationOrder hides dated blog posts from the More fallback", 
   ]);
 });
 
-void test("applyNavigationOrder keeps only the current locale and localizes labels", () => {
+void test("applyNavigationOrder points English links at the reader's locale and localizes labels", () => {
   const document = createNavigationDocument([
     ["/getting-started", "Getting Started"],
-    ["/ja/getting-started", "getting-started"],
-    ["/ja/guide/static-analysis", "static-analysis"],
-    ["/fr/getting-started", "getting-started"],
+    ["/guide/static-analysis", "Static Analysis"],
+    ["/rules/options", "Rule Options"],
+    ["/rules/options-vue", "Vue Rule Options"],
+    ["/guide/doctor", "Doctor"],
   ]);
 
   applyNavigation(document, "/ja/guide/static-analysis/index.html");
@@ -251,20 +253,52 @@ void test("applyNavigationOrder keeps only the current locale and localizes labe
       title: "リンター",
       labels: ["静的解析"],
     },
+    { title: "CLI とツール", labels: ["Doctor"] },
+    { title: "ルールリファレンス", labels: ["概要", "Vue"] },
+    { title: "ルールのオプション", labels: ["概要", "Vue"] },
   ]);
+  assert.deepEqual(
+    document
+      .querySelectorAll(".nav-link[href]")
+      .map((link) => [link.getAttribute("href"), link.className]),
+    [
+      ["/ja/getting-started", "nav-link"],
+      ["/ja/guide/static-analysis", "nav-link active"],
+      ["/ja/guide/doctor", "nav-link"],
+      ["/ja/rules/options", "nav-link"],
+      ["/ja/rules/options-vue", "nav-link"],
+    ],
+  );
   assert.equal(
     navigation.canonicalPath("/ja/guide/static-analysis/index.html"),
     "/guide/static-analysis",
   );
+
+  // zh-CN publishes neither the options pages nor Doctor: no section, no fallback link.
+  const chinese = createNavigationDocument([
+    ["/getting-started", "Getting Started"],
+    ["/rules/options", "Rule Options"],
+    ["/rules/options-vue", "Vue Rule Options"],
+    ["/guide/doctor", "Doctor"],
+  ]);
+  applyNavigation(chinese, "/zh-CN/getting-started/index.html");
+  assert.deepEqual(
+    chinese.querySelectorAll(".nav-link[href]").map((link) => link.getAttribute("href")),
+    ["/zh-CN/getting-started"],
+  );
 });
 
-void test("navigation opens the current goal and keeps generated leaf pages out of the sidebar", () => {
+void test("navigation opens the current goal and files rule pages under their category", () => {
   const document = createNavigationDocument([
     ["/getting-started", "Getting Started"],
     ["/guide/vite-plus", "Vite+"],
     ["/guide/migration", "Migration"],
     ["/rules/all", "All Rules"],
+    ["/rules/vue", "Vue rules"],
     ["/rules/reference/vue-no-v-html", "vue/no-v-html"],
+    ["/rules/reference/vue-attribute-order", "vue/attribute-order"],
+    ["/rules/html", "HTML rules"],
+    ["/rules/reference/html-no-dupe-attrs", "html/no-dupe-attrs"],
     ["/guide/ui", "UI"],
     ["/guide/ui/button", "Button"],
     ["/guide/composables", "Composables"],
@@ -274,20 +308,33 @@ void test("navigation opens the current goal and keeps generated leaf pages out 
   assert.deepEqual(sections(document), [
     { title: "Getting started", labels: ["Quick start", "Vite+ integration", "Migration"] },
     { title: "Components", labels: ["UI components", "Composables"] },
-    { title: "Rule reference", labels: ["All Rules"] },
+    {
+      title: "Rule reference",
+      labels: [
+        "All rules",
+        "Overview",
+        "vue/attribute-order",
+        "vue/no-v-html",
+        "Overview",
+        "html/no-dupe-attrs",
+      ],
+    },
+    { title: "Vue", labels: ["Overview", "vue/attribute-order", "vue/no-v-html"] },
+    { title: "HTML", labels: ["Overview", "html/no-dupe-attrs"] },
   ]);
   const groups = document.querySelectorAll(".nav-section");
   assert.deepEqual(
     groups.map((group) => group.tagName),
-    ["DETAILS", "DETAILS", "DETAILS"],
+    ["DETAILS", "DETAILS", "DETAILS", "DETAILS", "DETAILS"],
   );
+  // Only the current page's group and rule category open.
   assert.deepEqual(
     groups.map((group) => group.getAttribute("open") !== null),
-    [true, false, true],
+    [true, false, true, true, false],
   );
   assert.deepEqual(
     groups.map((group) => group.querySelector(".nav-list").inert),
-    [false, true, false],
+    [false, true, false, false, true],
   );
   assert.equal(groups[0].querySelector(".nav-title").tagName, "SUMMARY");
 });

@@ -1,20 +1,39 @@
 ---
 title: "type/require-typed-props"
+description: "Require type definition for defineProps."
 ---
 
 # `type/require-typed-props`
 
-Require type definition for defineProps
+Require type definition for defineProps.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below.
 
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
+This rule reads type information from your TypeScript project (`tsconfig.json`), so the configuration sets `typeAware: true`. `typeAware` does not turn on opt-in rules by itself.
+
+## Bad
+
+The array-only `defineProps(["title"])` declares `title` by name without giving it a type.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineProps(["title"]);
+</script>
+```
+
+## Good
+
+`defineProps<{ title: string }>()` gives `title` an explicit string type instead of a name-only runtime declaration.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineProps<{ title: string }>();
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -34,30 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The array-only `defineProps(["title"])` declares `title` by name without giving it a type.
-
-```vue
-<script setup lang="ts">
-defineProps(["title"]);
-</script>
-```
-
-## Good
-
-`defineProps<{ title: string }>()` gives `title` an explicit string type instead of a name-only runtime declaration.
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57)

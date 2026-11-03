@@ -1,18 +1,37 @@
 ---
 title: "script/no-deprecated-destroyed-lifecycle"
+description: "Disallow deprecated destroyed and beforeDestroy lifecycle hooks."
 ---
 
 # `script/no-deprecated-destroyed-lifecycle`
 
-Disallow deprecated destroyed and beforeDestroy lifecycle hooks
+Disallow deprecated destroyed and beforeDestroy lifecycle hooks.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Yes | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+`beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.
+
+```vue annotate="remove:2"
+<script lang="ts">
+export default { beforeDestroy() { clearTimeout(this.timer); } };
+</script>
+```
+
+## Good
+
+Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.
+
+```vue annotate="add:2"
+<script lang="ts">
+export default { beforeUnmount() { clearTimeout(this.timer); } };
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.
-
-```vue
-<script lang="ts">
-export default { beforeDestroy() { clearTimeout(this.timer); } };
-</script>
-```
-
-## Good
-
-Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.
-
-```vue
-<script lang="ts">
-export default { beforeUnmount() { clearTimeout(this.timer); } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17)

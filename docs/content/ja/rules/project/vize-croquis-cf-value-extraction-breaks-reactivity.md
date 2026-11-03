@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 Vue 3.5 の reactive な props 分割代入で得た `item` を、`itemSnapshot` に一度だけ読み取っています。後の prop の置き換えは、そのスナップショットに反映されません。
 
@@ -74,7 +74,7 @@ const itemSnapshot = item;
 </script>
 ```
 
-## 良い
+## 良い例
 
 `computed` 内で `item` を読み取ります。Vue がリアクティブな props の分割代入を変換することで、評価のたびにその依存を追跡できるようにします。
 

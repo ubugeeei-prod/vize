@@ -1,18 +1,37 @@
 ---
 title: "vue/no-template-key"
+description: "v-for 用ではない template の key 指定を検出します。"
 ---
 
 # `vue/no-template-key`
 
 v-for 用ではない template の key 指定を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+繰り返しではない template に key を指定しています。
+
+```vue annotate="remove:2"
+<template>
+<template :key="section"><div>Details</div></template>
+</template>
+```
+
+## 良い例
+
+template の v-for に key を付け、繰り返す各フラグメントを識別します。
+
+```vue annotate="add:2"
+<template>
+<template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-繰り返しではない template に key を指定しています。
-
-```vue
-<template>
-<template :key="section"><div>Details</div></template>
-</template>
-```
-
-## 良い
-
-template の v-for に key を付け、繰り返す各フラグメントを識別します。
-
-```vue
-<template>
-<template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31)

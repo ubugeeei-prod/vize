@@ -1,45 +1,23 @@
 ---
 title: "script/no-side-effects-in-computed-properties"
+description: "Options API の computed getter 内の副作用を検出します。"
 ---
 
 # `script/no-side-effects-in-computed-properties`
 
 Options API の computed getter 内の副作用を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
-## 設定（Vite+）
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-side-effects-in-computed-properties": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-## 悪い
+## 悪い例
 
 `doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらのゲッターも、値を計算する元の状態を変更してしまっています。
 
-```vue
+```vue annotate="remove:8,9,12"
 <script lang="ts">
 export default {
   data() {
@@ -58,11 +36,11 @@ export default {
 </script>
 ```
 
-## 良い
+## 良い例
 
 `doubled` は代入せず乗算結果を返します。`reversed` は配列をコピーしてから反転し、getter が元のコンポーネント状態を変更しないようにします。
 
-```vue
+```vue annotate="add:8,11"
 <script lang="ts">
 export default {
   data() {
@@ -80,6 +58,27 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+## 設定（Vite+）
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L77) · [全ルール](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-side-effects-in-computed-properties": "error"
+      }
+    },
+  },
+});
+```
+
+設定したら `vp run lint` を実行します。
+
+## 関連ページ
+
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L77)

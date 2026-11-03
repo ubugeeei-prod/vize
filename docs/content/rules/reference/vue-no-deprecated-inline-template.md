@@ -1,18 +1,37 @@
 ---
 title: "vue/no-deprecated-inline-template"
+description: "Disallow the deprecated `inline-template` attribute."
 ---
 
 # `vue/no-deprecated-inline-template`
 
-Disallow the deprecated `inline-template` attribute
+Disallow the deprecated `inline-template` attribute.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+Card uses the deprecated inline-template attribute for its supplied content.
+
+```vue annotate="remove:2"
+<template>
+<Card inline-template><p>Details</p></Card>
+</template>
+```
+
+## Good
+
+The same content is passed normally without the inline-template attribute.
+
+```vue annotate="add:2"
+<template>
+<Card><p>Details</p></Card>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Card uses the deprecated inline-template attribute for its supplied content.
-
-```vue
-<template>
-<Card inline-template><p>Details</p></Card>
-</template>
-```
-
-## Good
-
-The same content is passed normally without the inline-template attribute.
-
-```vue
-<template>
-<Card><p>Details</p></Card>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20)

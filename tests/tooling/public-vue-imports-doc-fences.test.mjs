@@ -28,11 +28,13 @@ await test("finite private-import example successor retains all four fences and 
       (f) => f.pop(),
       (f) => f.push("```ts\nconst extra = 1;\n```"),
       (f) => f.reverse(),
-      (f) => (f[0] = f[0].replace("incremental", "essential")),
+      // Current page order: Bad, Good, configuration.
+      (f) => (f[2] = f[2].replace("incremental", "essential")),
       (f) => (f[1] += "\nchanged"),
-      (f) => (f[2] = f[2].replace("ref", "privateRef")),
-      (f) => (f[3] = f[3].replace("isString", "camelize")),
-      (f) => (f[3] = source.beforeCodeFences[3]),
+      (f) => (f[0] = f[0].replace("ref", "privateRef")),
+      (f) => (f[1] = f[1].replace("isString", "camelize")),
+      (f) => (f[1] = source.beforeCodeFences[3]),
+      (f) => (f[0] = f[0].replace(/ annotate="[^"]*"/, "")),
     ]) {
       const changed = structuredClone(fences);
       mutate(changed);

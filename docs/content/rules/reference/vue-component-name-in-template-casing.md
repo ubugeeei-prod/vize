@@ -1,18 +1,46 @@
 ---
 title: "vue/component-name-in-template-casing"
+description: "Enforce specific casing for component names in templates."
 ---
 
 # `vue/component-name-in-template-casing`
 
-Enforce specific casing for component names in templates
+Enforce specific casing for component names in templates.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | Yes | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The component is written in kebab-case and camelCase under the PascalCase convention.
+
+```vue annotate="remove:5,6"
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
+<template>
+  <my-component />
+  <myComponent />
+</template>
+```
+
+## Good
+
+MyComponent uses PascalCase; native slot syntax remains lowercase.
+
+```vue annotate="add:5,6,7"
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
+<template>
+  <MyComponent />
+  <RouterView />
+  <slot />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,39 +59,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The component is written in kebab-case and camelCase under the PascalCase convention.
-
-```vue
-<script setup>
-import MyComponent from "./MyComponent.vue";
-</script>
-<template>
-  <my-component />
-  <myComponent />
-</template>
-```
-
-## Good
-
-MyComponent uses PascalCase; native slot syntax remains lowercase.
-
-```vue
-<script setup>
-import MyComponent from "./MyComponent.vue";
-</script>
-<template>
-  <MyComponent />
-  <RouterView />
-  <slot />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31)

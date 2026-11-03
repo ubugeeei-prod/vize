@@ -1,18 +1,38 @@
 ---
 title: "vue/no-deprecated-html-element-is"
+description: "Disallow the `is` attribute on native HTML elements."
 ---
 
 # `vue/no-deprecated-html-element-is`
 
-Disallow the `is` attribute on native HTML elements
+Disallow the `is` attribute on native HTML elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+A native div uses the old unprefixed is attribute to request a Vue component.
+
+```vue annotate="remove:2"
+<template>
+  <div is="MyComponent" />
+</template>
+```
+
+## Good
+
+A dynamic component uses :is; the native-element spelling explicitly uses the vue: prefix.
+
+```vue annotate="add:2,3"
+<template>
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-A native div uses the old unprefixed is attribute to request a Vue component.
-
-```vue
-<template>
-  <div is="MyComponent" />
-</template>
-```
-
-## Good
-
-A dynamic component uses :is; the native-element spelling explicitly uses the vue: prefix.
-
-```vue
-<template>
-  <component :is="MyComponent" />
-  <div is="vue:MyComponent" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39)

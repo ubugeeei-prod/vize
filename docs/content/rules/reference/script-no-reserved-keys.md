@@ -1,18 +1,37 @@
 ---
 title: "script/no-reserved-keys"
+description: "Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys."
 ---
 
 # `script/no-reserved-keys`
 
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The returned data key `$el` collides with Vue’s built-in component-instance property and also uses a reserved `$` prefix.
+
+```vue annotate="remove:2"
+<script lang="ts">
+export default { data() { return { $el: "custom" }; } };
+</script>
+```
+
+## Good
+
+Renaming the application data to `elementLabel` avoids the built-in instance surface and reserved prefix.
+
+```vue annotate="add:2"
+<script lang="ts">
+export default { data() { return { elementLabel: "custom" }; } };
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The returned data key `$el` collides with Vue’s built-in component-instance property and also uses a reserved `$` prefix.
-
-```vue
-<script lang="ts">
-export default { data() { return { $el: "custom" }; } };
-</script>
-```
-
-## Good
-
-Renaming the application data to `elementLabel` avoids the built-in instance surface and reserved prefix.
-
-```vue
-<script lang="ts">
-export default { data() { return { elementLabel: "custom" }; } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30)

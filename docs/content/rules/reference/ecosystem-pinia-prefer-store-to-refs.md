@@ -1,18 +1,38 @@
 ---
 title: "ecosystem/pinia-prefer-store-to-refs"
+description: "Prefer storeToRefs() when destructuring Pinia stores."
 ---
 
 # `ecosystem/pinia-prefer-store-to-refs`
 
-Prefer storeToRefs() when destructuring Pinia stores
+Prefer storeToRefs() when destructuring Pinia stores.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | No | None |
 
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+Destructuring `name` directly from the store separates the value from its reactive store access.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const { name } = useUserStore();
+</script>
+```
+
+## Good
+
+The store remains intact and storeToRefs creates a reactive reference for name.
+
+```vue annotate="add:2,3"
+<script setup lang="ts">
+const store = useUserStore();
+const { name } = storeToRefs(store);
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Destructuring `name` directly from the store separates the value from its reactive store access.
-
-```vue
-<script setup lang="ts">
-const { name } = useUserStore();
-</script>
-```
-
-## Good
-
-The store remains intact and storeToRefs creates a reactive reference for name.
-
-```vue
-<script setup lang="ts">
-const store = useUserStore();
-const { name } = storeToRefs(store);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20)

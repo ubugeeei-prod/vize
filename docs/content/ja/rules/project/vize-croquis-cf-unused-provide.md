@@ -54,7 +54,7 @@ export interface Theme { color: string; }
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-## 悪い
+## 悪い例
 
 `App.vue` に `ThemeKey` の provide がありますが、描画する `Dashboard.vue` の下に使用側がありません。
 
@@ -83,7 +83,7 @@ provide(ThemeKey, theme);
 </template>
 ```
 
-## 良い
+## 良い例
 
 `Dashboard.vue` が `ThemeLabel.vue` を描画するようにし、`ThemeLabel.vue` で祖先が使うものと同一の `ThemeKey` を inject します。
 

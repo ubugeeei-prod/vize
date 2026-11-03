@@ -1,22 +1,39 @@
 ---
 title: "script/prefer-define-emits-binding"
+description: "Prefer the captured defineEmits function over template $emit."
 ---
 
 # `script/prefer-define-emits-binding`
 
-Prefer the captured defineEmits function over template $emit
+Prefer the captured defineEmits function over template $emit.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | Yes | None |
 
-Default severity: `warning`
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
-Presets: _none_
+## Bad
 
-Automatic fix: Available for supported findings
+The template calls the component-only `$emit` helper even though `<script setup>` already captures the typed function returned by `defineEmits`.
 
-Applies to: Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
 
-Options: No rule-specific options. Severity and preset selection are configurable.
+## Good
+
+The template calls the captured `emit` binding, so event names and payloads go through the component's `defineEmits` contract.
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
 
 ## Configuration (Vite+)
 
@@ -35,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The template calls the component-only `$emit` helper even though `<script setup>` already captures the typed function returned by `defineEmits`.
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-<template><button @click="$emit('save', 1)">Save</button></template>
-```
-
-## Good
-
-The template calls the captured `emit` binding, so event names and payloads go through the component's `defineEmits` contract.
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-<template><button @click="emit('save', 1)">Save</button></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16)

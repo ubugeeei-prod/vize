@@ -1,18 +1,37 @@
 ---
 title: "vue/no-deprecated-inline-template"
+description: "削除済みの inline-template 属性を検出します。"
 ---
 
 # `vue/no-deprecated-inline-template`
 
 削除済みの inline-template 属性を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+Card に渡す内容に、廃止された inline-template を指定しています。
+
+```vue annotate="remove:2"
+<template>
+<Card inline-template><p>Details</p></Card>
+</template>
+```
+
+## 良い例
+
+inline-template を取り除き、同じ内容を通常の形で渡します。
+
+```vue annotate="add:2"
+<template>
+<Card><p>Details</p></Card>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-Card に渡す内容に、廃止された inline-template を指定しています。
-
-```vue
-<template>
-<Card inline-template><p>Details</p></Card>
-</template>
-```
-
-## 良い
-
-inline-template を取り除き、同じ内容を通常の形で渡します。
-
-```vue
-<template>
-<Card><p>Details</p></Card>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20)

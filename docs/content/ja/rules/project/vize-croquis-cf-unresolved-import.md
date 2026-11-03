@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親の import は `./Missing.vue` ですが、プロジェクトにあるファイルは `Child.vue` です。
 
@@ -51,7 +51,7 @@ import Child from "./Missing.vue";
 <template><p>Child</p></template>
 ```
 
-## 良い
+## 良い例
 
 テンプレートで使う識別子は変えず、存在する `./Child.vue` を import します。
 

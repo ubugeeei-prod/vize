@@ -85,7 +85,7 @@ export { label } from './value';
 
 ```
 
-## 悪い
+## 悪い例
 
 `entry.ts` が単純な値を `level-one`、`level-two`、`level-three` 経由で参照しています。公開部分への参照を短い経路に保ちたいプロジェクトでは、不要に深い import の連鎖になります。
 
@@ -96,7 +96,7 @@ export { label } from './level-one';
 
 ```
 
-## 良い
+## 良い例
 
 値を直接再公開する `public-api.ts` を entry から使います。使用側の import 名を保ったまま、参照の列を短くします。
 

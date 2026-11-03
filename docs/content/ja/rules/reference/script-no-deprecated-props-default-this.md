@@ -1,45 +1,23 @@
 ---
 title: "script/no-deprecated-props-default-this"
+description: "prop の default / validator 内で使えなくなった this を検出します。"
 ---
 
 # `script/no-deprecated-props-default-this`
 
 prop の default / validator 内で使えなくなった this を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
-## 設定（Vite+）
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-props-default-this": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-## 悪い
+## 悪い例
 
 prop の既定値関数とバリデーターが `this` を参照していますが、Vue 3 ではこれらの関数の `this` からコンポーネントインスタンスを参照できません。
 
-```vue
+```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
 export default {
   props: {
@@ -61,11 +39,11 @@ export default {
 </script>
 ```
 
-## 良い
+## 良い例
 
 既定値関数は引数の `props.baseSize` を使い、validator は引数の `value` を検査します。どちらも利用できないインスタンスの `this` に依存しなくなります。
 
-```vue
+```vue annotate="add:6,7,8,13,14"
 <script lang="ts">
 export default {
   props: {
@@ -87,6 +65,27 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+## 設定（Vite+）
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全ルール](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-props-default-this": "error"
+      }
+    },
+  },
+});
+```
+
+設定したら `vp run lint` を実行します。
+
+## 関連ページ
+
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71)

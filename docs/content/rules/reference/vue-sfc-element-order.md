@@ -1,18 +1,52 @@
 ---
 title: "vue/sfc-element-order"
+description: "Enforce consistent order of SFC top-level elements."
 ---
 
 # `vue/sfc-element-order`
 
-Enforce consistent order of SFC top-level elements
+Enforce consistent order of SFC top-level elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The style block precedes the script block, contrary to the configured SFC block order.
+
+```vue annotate="remove:2,6,7,8"
+<style scoped>
+.panel {
+  color: red;
+}
+</style>
+<script setup lang="ts">
+const label = "Save";
+</script>
+```
+
+## Good
+
+The blocks follow script → template → style. Projects can choose a different order through this rule's typed option.
+
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
+<script setup lang="ts">
+const label = "Save";
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>
+
+<style scoped>
+p {
+  color: red;
+}
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,45 +65,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The style block precedes the script block, contrary to the configured SFC block order.
-
-```vue
-<style scoped>
-.panel {
-  color: red;
-}
-</style>
-<script setup lang="ts">
-const label = "Save";
-</script>
-```
-
-## Good
-
-The blocks follow script → template → style. Projects can choose a different order through this rule's typed option.
-
-```vue
-<script setup lang="ts">
-const label = "Save";
-</script>
-
-<template>
-  <p>{{ label }}</p>
-</template>
-
-<style scoped>
-p {
-  color: red;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50)

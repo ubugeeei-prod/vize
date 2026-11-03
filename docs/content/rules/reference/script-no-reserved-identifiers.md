@@ -1,18 +1,41 @@
 ---
 title: "script/no-reserved-identifiers"
+description: "Disallow using Vue compiler reserved identifiers."
 ---
 
 # `script/no-reserved-identifiers`
 
-Disallow using Vue compiler reserved identifiers
+Disallow using Vue compiler reserved identifiers.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The bindings `__props`, `__emit`, and `__sfc__` use identifiers reserved for generated Vue compiler code.
+
+```vue annotate="remove:2,3,4"
+<script setup lang="ts">
+const __props = { name: "Ada" };
+const __emit = () => {};
+const __sfc__ = {};
+</script>
+```
+
+## Good
+
+The ordinary names `props`, `emit`, and `componentData` avoid those generated identifiers while retaining props and emits declarations.
+
+```vue annotate="add:2,3,4"
+<script setup lang="ts">
+const props = defineProps<{ name: string }>();
+const emit = defineEmits<{ save: [] }>();
+const componentData = {};
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The bindings `__props`, `__emit`, and `__sfc__` use identifiers reserved for generated Vue compiler code.
-
-```vue
-<script setup lang="ts">
-const __props = { name: "Ada" };
-const __emit = () => {};
-const __sfc__ = {};
-</script>
-```
-
-## Good
-
-The ordinary names `props`, `emit`, and `componentData` avoid those generated identifiers while retaining props and emits declarations.
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ name: string }>();
-const emit = defineEmits<{ save: [] }>();
-const componentData = {};
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49)

@@ -1,18 +1,37 @@
 ---
 title: "vue/require-component-is"
+description: "Require `v-bind:is` on `<component>` elements."
 ---
 
 # `vue/require-component-is`
 
-Require `v-bind:is` on `<component>` elements
+Require `v-bind:is` on `<component>` elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.
+
+```vue annotate="remove:2"
+<template>
+  <component />
+</template>
+```
+
+## Good
+
+`:is="currentComponent"` supplies the component selection; the binding may change at runtime.
+
+```vue annotate="add:2"
+<template>
+  <component :is="currentComponent" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.
-
-```vue
-<template>
-  <component />
-</template>
-```
-
-## Good
-
-`:is="currentComponent"` supplies the component selection; the binding may change at runtime.
-
-```vue
-<template>
-  <component :is="currentComponent" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27)

@@ -49,7 +49,7 @@ export const useCounterStore = defineStore('counter', {
 
 ```
 
-## 悪い
+## 悪い例
 
 `const doubled = store.doubled` が setup 時点の getter の数値をコピーし、後の `store.count` 更新に追従しなくなります。
 
@@ -68,7 +68,7 @@ const doubled = store.doubled;
 
 ```
 
-## 良い
+## 良い例
 
 `storeToRefs(store)` からリアクティブな getter の ref を受け取り、分割代入やテンプレートでの自動アンラップ後もストアとのつながりを保ちます。
 

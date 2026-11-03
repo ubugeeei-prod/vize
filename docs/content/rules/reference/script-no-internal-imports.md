@@ -1,18 +1,38 @@
 ---
 title: "script/no-internal-imports"
+description: "Disallow importing from Vue internal modules."
 ---
 
 # `script/no-internal-imports`
 
-Disallow importing from Vue internal modules
+Disallow importing from Vue internal modules.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+Both imports address internal `dist` files rather than Vue’s public package entry point, coupling the component to build-file paths.
+
+```vue annotate="remove:2,3"
+<script setup lang="ts">
+import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
+import { bar } from 'vue/dist/vue.esm-bundler'
+</script>
+```
+
+## Good
+
+Importing the required helpers from `vue` removes the dependency on internal distribution file locations.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Both imports address internal `dist` files rather than Vue’s public package entry point, coupling the component to build-file paths.
-
-```vue
-<script setup lang="ts">
-import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
-import { bar } from 'vue/dist/vue.esm-bundler'
-</script>
-```
-
-## Good
-
-Importing the required helpers from `vue` removes the dependency on internal distribution file locations.
-
-```vue
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28)

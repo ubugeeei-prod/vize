@@ -69,7 +69,7 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
 `postId` は単一の値を取るパスパラメーターですが、配列 `["2"]` を渡しています。
 
@@ -84,7 +84,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 繰り返し指定を許さないパスの `postId` 部分に、配列ではなく一つの値 `"2"` を渡します。
 

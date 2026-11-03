@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親が数値式 `42` を、解決した子の `title: string` prop に渡しています。
 
@@ -54,7 +54,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 文字列の `title="Hello"` を渡し、子の宣言と合わせます。
 

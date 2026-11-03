@@ -1,18 +1,41 @@
 ---
 title: "ecosystem/vue-i18n-no-missing-key"
+description: "Report static vue-i18n keys that are absent from local SFC messages."
 ---
 
 # `ecosystem/vue-i18n-no-missing-key`
 
-Report static vue-i18n keys that are absent from local SFC messages
+Report static vue-i18n keys that are absent from local SFC messages.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | No | None |
 
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The template requests auth.missing, but the local English messages declare only auth.login.
+
+```vue annotate="remove:1"
+<template>{{ $t("auth.missing") }}</template>
+
+<i18n lang="json">
+{ "en": { "auth": { "login": "Log in" } } }
+</i18n>
+```
+
+## Good
+
+The template requests the auth.login key that exists in the local messages.
+
+```vue annotate="add:1"
+<template>{{ $t("auth.login") }}</template>
+
+<i18n lang="json">
+{ "en": { "auth": { "login": "Log in" } } }
+</i18n>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The template requests auth.missing, but the local English messages declare only auth.login.
-
-```vue
-<template>{{ $t("auth.missing") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
-
-## Good
-
-The template requests the auth.login key that exists in the local messages.
-
-```vue
-<template>{{ $t("auth.login") }}</template>
-
-<i18n lang="json">
-{ "en": { "auth": { "login": "Log in" } } }
-</i18n>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17)

@@ -69,7 +69,7 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
 `user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
 
@@ -84,7 +84,7 @@ router.push({ name: "user-post", params: { userId: "1" } });
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 `userId` と `postId` を両方明示し、現在のルートのパラメーター値に依存せず遷移できるようにします。
 

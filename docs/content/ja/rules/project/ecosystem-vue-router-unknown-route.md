@@ -69,7 +69,7 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
 解析で参照できる登録済みルーターには `user-post` が登録されていますが、遷移時のルート名を `user-posts` と誤記しています。
 
@@ -84,7 +84,7 @@ router.push({ name: "user-posts", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 宣言済みの二つのパスパラメーターはそのまま渡し、ルート名を登録済みの `user-post` に合わせます。
 

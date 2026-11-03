@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子が `save` を宣言していますが、その名前で emit 関数を呼んでいません。
 
@@ -54,7 +54,7 @@ const emit = defineEmits<{ save: [] }>();
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 例では `emit("save")` を呼び、宣言したイベントを使います。実際の実装では、対応する操作が行われたときに通知します。
 

@@ -1,18 +1,37 @@
 ---
 title: "vue/v-on-style"
+description: "Enforce `v-on` directive style."
 ---
 
 # `vue/v-on-style`
 
-Enforce `v-on` directive style
+Enforce `v-on` directive style.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+`v-on:click` uses the long event-listener form where the rule requires shorthand.
+
+```vue annotate="remove:2"
+<template>
+  <div v-on:click="handleClick"></div>
+</template>
+```
+
+## Good
+
+`@click` keeps the same handler while using the configured shorthand.
+
+```vue annotate="add:2"
+<template>
+  <div @click="handleClick"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`v-on:click` uses the long event-listener form where the rule requires shorthand.
-
-```vue
-<template>
-  <div v-on:click="handleClick"></div>
-</template>
-```
-
-## Good
-
-`@click` keeps the same handler while using the configured shorthand.
-
-```vue
-<template>
-  <div @click="handleClick"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28)

@@ -69,7 +69,7 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
 `user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
 
@@ -84,7 +84,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2", tab: "a" } 
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 `params` から `tab` を除き、ルートのパスで宣言されたキーだけを渡します。タブ選択が必要なら、別途 `query` を使います。
 

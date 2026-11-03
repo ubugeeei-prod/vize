@@ -48,7 +48,7 @@ defineSlots<{ header(): unknown }>();
 
 ```
 
-## 悪い
+## 悪い例
 
 App が `footer` スロットを渡しますが、Card が宣言して描画するのは `header` だけです。渡した Notice を表示するスロットの挿入位置が子にありません。
 
@@ -65,7 +65,7 @@ import Card from './Card.vue';
 
 ```
 
-## 良い
+## 良い例
 
 子の型付きスロット宣言とスロットの挿入位置に合わせて `header` を渡し、Notice を表示できるようにします。
 

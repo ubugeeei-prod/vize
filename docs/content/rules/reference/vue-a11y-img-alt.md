@@ -1,18 +1,45 @@
 ---
 title: "vue/a11y-img-alt"
+description: "Require alt attribute on images for accessibility."
 ---
 
 # `vue/a11y-img-alt`
 
-Require alt attribute on images for accessibility
+Require alt attribute on images for accessibility.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+Neither the static image nor the dynamically sourced image supplies an alt attribute.
+
+```vue annotate="remove:2,3"
+<template>
+<img src="/photo.jpg" />
+<img :src="photo" />
+</template>
+```
+
+## Good
+
+Informative images get descriptive alt text, decoration gets an empty alt, and the dynamic image binds its description.
+
+```vue annotate="add:2,3,4,5,6,7,8,9"
+<template>
+<!-- Informative image -->
+<img src="/photo.jpg" alt="Team photo from company retreat" />
+
+<!-- Decorative image (empty alt) -->
+<img src="/decoration.svg" alt="" />
+
+<!-- Dynamic alt -->
+<img :src="photo" :alt="photoDescription" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Neither the static image nor the dynamically sourced image supplies an alt attribute.
-
-```vue
-<template>
-<img src="/photo.jpg" />
-<img :src="photo" />
-</template>
-```
-
-## Good
-
-Informative images get descriptive alt text, decoration gets an empty alt, and the dynamic image binds its description.
-
-```vue
-<template>
-<!-- Informative image -->
-<img src="/photo.jpg" alt="Team photo from company retreat" />
-
-<!-- Decorative image (empty alt) -->
-<img src="/decoration.svg" alt="" />
-
-<!-- Dynamic alt -->
-<img :src="photo" :alt="photoDescription" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33)

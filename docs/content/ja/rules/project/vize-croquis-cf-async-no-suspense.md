@@ -36,7 +36,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子にトップレベルの `await` がありますが、親には `<Suspense>` の境界がありません。現在のソース解析は、この診断コードの生成に必要なマクロ情報を渡しません。
 
@@ -58,7 +58,7 @@ const greeting = await Promise.resolve("Hello");
 <template><p>{{ greeting }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 親は同じ非同期の子を `<Suspense>` で包み、読み込み中の代替表示を用意します。これは使い方を示す例であり、現在の検査は悪い例・良い例のどちらからもこの診断コードを生成しません。
 

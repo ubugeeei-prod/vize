@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 マウント時に window の resize リスナーを登録しますが、アンマウント時に同じコールバックを解除していません。
 
@@ -47,7 +47,7 @@ onMounted(() => { window.addEventListener("resize", resize); });
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 `onUnmounted` で、登録時と同じイベント名・関数の参照を使ってリスナーを解除します。
 

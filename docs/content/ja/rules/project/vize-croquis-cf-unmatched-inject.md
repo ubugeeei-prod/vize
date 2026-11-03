@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `ThemeLabel.vue` は `ThemeKey` を inject しますが、解析対象の構成で祖先にあたる `App.vue` は同じキーを provide していません。
 
@@ -85,7 +85,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-## 良い
+## 良い例
 
 `App.vue` は、公開された同じ `ThemeKey` を使ってリアクティブなテーマを provide してから、その値を inject する子孫を描画します。
 

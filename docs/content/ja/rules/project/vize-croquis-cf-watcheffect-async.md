@@ -56,7 +56,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 }
 ```
 
-## 悪い
+## 悪い例
 
 非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。
 
@@ -91,7 +91,7 @@ watchEffect(async () => {
 </script>
 ```
 
-## 良い
+## 良い例
 
 `watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。
 

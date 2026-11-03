@@ -1,45 +1,23 @@
 ---
 title: "script/no-reserved-props"
+description: "Disallow reserved names in a component's props declaration."
 ---
 
 # `script/no-reserved-props`
 
-Disallow reserved names in a component's props declaration
+Disallow reserved names in a component's props declaration.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-## Configuration (Vite+)
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-reserved-props": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
 ## Bad
 
 The object-form `ref` and `$foo`, plus the array-form `key`, are reserved prop names. `ref` and `key` are framework controls, and `$`-prefixed names are rejected.
 
-```vue
+```vue annotate="remove:4,5,8,9,10,11"
 <script lang="ts">
 export default {
   props: {
@@ -58,7 +36,7 @@ export default {
 
 The ordinary prop names `name` and `refValue` avoid the reserved names in both spelling and prefix.
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
   props: {
@@ -69,6 +47,27 @@ export default {
 </script>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+## Configuration (Vite+)
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [All rules](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-reserved-props": "error"
+      }
+    },
+  },
+});
+```
+
+Then run `vp run lint`.
+
+## Related
+
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53)

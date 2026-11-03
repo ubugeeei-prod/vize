@@ -4,9 +4,26 @@ import fs from "node:fs";
 import path from "node:path";
 import { currentConfigExample } from "./docs-config-successor.ts";
 import { sha256 } from "../lint-default-correctness-reference.mjs";
+import { changedCodeLines } from "../../../docs/scripts/rules/inline-code-diff.ts";
 
 export const codeFences = (source) =>
   [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
+
+/**
+ * The current rule page shows Bad and Good first, with changed lines annotated
+ * by the generator's own line diff, then the configuration. `vp run lint` became
+ * prose. Archived fences stay byte-for-byte; only this adapter knows the layout.
+ */
+export function currentRulePageFences([config, run, bad, good]) {
+  assert.equal(run, "```sh\nvp run lint\n```");
+  const body = (fence) => fence.slice(fence.indexOf("\n") + 1, fence.lastIndexOf("\n```"));
+  const { removed, added } = changedCodeLines(body(bad), body(good));
+  const annotate = (fence, kind, lines) =>
+    lines.length
+      ? fence.replace(/^```(\w+)/, `\`\`\`$1 annotate="${kind}:${lines.join(",")}"`)
+      : fence;
+  return [annotate(bad, "remove", removed), annotate(good, "add", added), config];
+}
 
 export function validateFenceSuccessor(successor) {
   assert.deepEqual(
@@ -119,7 +136,7 @@ export function createFenceVerifier(root) {
     assert.ok([entry.path, entry.englishPath].includes(filename));
     assert.deepEqual(
       fences,
-      successor.afterCodeFences.map(currentConfigExample),
+      currentRulePageFences(successor.afterCodeFences.map(currentConfigExample)),
       filename + ": complete source-authored private example successor",
     );
     return true;

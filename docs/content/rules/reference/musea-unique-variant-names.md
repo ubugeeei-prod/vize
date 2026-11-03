@@ -1,18 +1,39 @@
 ---
 title: "musea/unique-variant-names"
+description: "Require unique variant names."
 ---
 
 # `musea/unique-variant-names`
 
-Require unique variant names
+Require unique variant names.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Musea .art.vue art, variant, and style blocks.
+
+## Bad
+
+Two variants in the same art block both use the primary name.
+
+```vue annotate="remove:3"
+<art title="Button" component="./Button.vue">
+  <variant name="primary" />
+  <variant name="primary" />
+</art>
+```
+
+## Good
+
+The variants have distinct primary and secondary names.
+
+```vue annotate="add:3"
+<art title="Button" component="./Button.vue">
+  <variant name="primary" />
+  <variant name="secondary" />
+</art>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Two variants in the same art block both use the primary name.
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-  <variant name="primary" />
-</art>
-```
-
-## Good
-
-The variants have distinct primary and secondary names.
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-  <variant name="secondary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10)

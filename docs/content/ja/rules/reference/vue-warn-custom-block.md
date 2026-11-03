@@ -1,18 +1,45 @@
 ---
 title: "vue/warn-custom-block"
+description: "SFC のカスタムブロックを検出します。"
 ---
 
 # `vue/warn-custom-block`
 
 SFC のカスタムブロックを検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+SFC に `<i18n>` のカスタムブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
+
+```vue annotate="remove:1,2,3,4"
+<i18n>
+{ "en": { "hello": "Hello" } }
+</i18n>
+
+<template>
+  <p>{{ hello }}</p>
+</template>
+```
+
+## 良い例
+
+標準の template と script setup を使います。移植性に関するこの任意の警告は、カスタムブロック全般が Vue で無効という意味ではありません。
+
+```vue annotate="add:4,5,6,7"
+<template>
+  <p>{{ hello }}</p>
+</template>
+
+<script setup lang="ts">
+const hello = "Hello";
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-SFC に `<i18n>` のカスタムブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
-
-```vue
-<i18n>
-{ "en": { "hello": "Hello" } }
-</i18n>
-
-<template>
-  <p>{{ hello }}</p>
-</template>
-```
-
-## 良い
-
-標準の template と script setup を使います。移植性に関するこの任意の警告は、カスタムブロック全般が Vue で無効という意味ではありません。
-
-```vue
-<template>
-  <p>{{ hello }}</p>
-</template>
-
-<script setup lang="ts">
-const hello = "Hello";
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50)

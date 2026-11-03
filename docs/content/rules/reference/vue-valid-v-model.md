@@ -1,18 +1,41 @@
 ---
 title: "vue/valid-v-model"
+description: "Enforce valid `v-model` directives."
 ---
 
 # `vue/valid-v-model`
 
-Enforce valid `v-model` directives
+Enforce valid `v-model` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+A native `<div>` cannot use `v-model` as a form control, and a bare input directive has no writable target expression.
+
+```vue annotate="remove:2,3"
+<template>
+  <div v-model="value"></div>
+  <input v-model />
+</template>
+```
+
+## Good
+
+Bind the input, select, textarea, or custom component to the shown writable variables.
+
+```vue annotate="add:2,3,4,5"
+<template>
+  <input v-model="value" />
+  <select v-model="selected"></select>
+  <textarea v-model="text"></textarea>
+  <MyInput v-model="value" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-A native `<div>` cannot use `v-model` as a form control, and a bare input directive has no writable target expression.
-
-```vue
-<template>
-  <div v-model="value"></div>
-  <input v-model />
-</template>
-```
-
-## Good
-
-Bind the input, select, textarea, or custom component to the shown writable variables.
-
-```vue
-<template>
-  <input v-model="value" />
-  <select v-model="selected"></select>
-  <textarea v-model="text"></textarea>
-  <MyInput v-model="value" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36)

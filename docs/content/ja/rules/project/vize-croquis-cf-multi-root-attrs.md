@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子に `<main>` と `<aside>` の二つのルートがあり、親の class を自動で受け取る一つのルートがありません。
 
@@ -51,7 +51,7 @@ import Child from "./Child.vue";
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
-## 良い
+## 良い例
 
 二つ目のルートを保ったまま、`<main>` に `$attrs` を明示的に渡します。
 

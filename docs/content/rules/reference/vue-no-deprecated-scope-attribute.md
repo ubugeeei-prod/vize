@@ -1,18 +1,37 @@
 ---
 title: "vue/no-deprecated-scope-attribute"
+description: "Disallow the deprecated `scope` attribute on <template>."
 ---
 
 # `vue/no-deprecated-scope-attribute`
 
-Disallow the deprecated `scope` attribute on &lt;template&gt;
+Disallow the deprecated `scope` attribute on &lt;template&gt;.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The slot template declares props through the deprecated scope attribute.
+
+```vue annotate="remove:2"
+<template>
+<Card><template scope="props">{{ props.name }}</template></Card>
+</template>
+```
+
+## Good
+
+The default-slot directive declares the same props binding through current slot syntax.
+
+```vue annotate="add:2"
+<template>
+<Card><template #default="props">{{ props.name }}</template></Card>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The slot template declares props through the deprecated scope attribute.
-
-```vue
-<template>
-<Card><template scope="props">{{ props.name }}</template></Card>
-</template>
-```
-
-## Good
-
-The default-slot directive declares the same props binding through current slot syntax.
-
-```vue
-<template>
-<Card><template #default="props">{{ props.name }}</template></Card>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38)

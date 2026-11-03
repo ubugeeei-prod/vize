@@ -1,18 +1,41 @@
 ---
 title: "vue/no-boolean-attr-value"
+description: "Disallow explicit values for boolean HTML attributes."
 ---
 
 # `vue/no-boolean-attr-value`
 
-Disallow explicit values for boolean HTML attributes
+Disallow explicit values for boolean HTML attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | Yes | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The boolean disabled and checked attributes redundantly contain string values.
+
+```vue annotate="remove:2,3,4"
+<template>
+  <input disabled="disabled" />
+  <input checked="checked" />
+  <button disabled="true">Save</button>
+</template>
+```
+
+## Good
+
+The presence of each boolean attribute expresses the same enabled state without a value.
+
+```vue annotate="add:2,3,4"
+<template>
+  <input disabled />
+  <input checked />
+  <button disabled>Save</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The boolean disabled and checked attributes redundantly contain string values.
-
-```vue
-<template>
-  <input disabled="disabled" />
-  <input checked="checked" />
-  <button disabled="true">Save</button>
-</template>
-```
-
-## Good
-
-The presence of each boolean attribute expresses the same enabled state without a value.
-
-```vue
-<template>
-  <input disabled />
-  <input checked />
-  <button disabled>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36)

@@ -1,18 +1,45 @@
 ---
 title: "vue/no-reserved-component-names"
+description: "Disallow the use of reserved names as component names."
 ---
 
 # `vue/no-reserved-component-names`
 
-Disallow the use of reserved names as component names
+Disallow the use of reserved names as component names.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The component name button conflicts with a native HTML element name.
+
+```vue annotate="remove:1,2,3,4"
+<script>
+export default {
+  name: "button",
+};
+</script>
+```
+
+## Good
+
+AppButton is an application component name and does not reuse the native button name.
+
+```vue annotate="add:1,2,4,5,6,7,8,9"
+<script setup lang="ts">
+defineOptions({ name: "AppButton" });
+</script>
+
+<template>
+  <Transition>
+    <AppButton />
+  </Transition>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The component name button conflicts with a native HTML element name.
-
-```vue
-<script>
-export default {
-  name: "button",
-};
-</script>
-```
-
-## Good
-
-AppButton is an application component name and does not reuse the native button name.
-
-```vue
-<script setup lang="ts">
-defineOptions({ name: "AppButton" });
-</script>
-
-<template>
-  <Transition>
-    <AppButton />
-  </Transition>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L43) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L43)

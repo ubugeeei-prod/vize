@@ -1,18 +1,37 @@
 ---
 title: "nuxt/no-page-meta-runtime-values"
+description: "definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。"
 ---
 
 # `nuxt/no-page-meta-runtime-values`
 
 definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `nuxt` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外に移されます。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+definePageMeta({ title: useRoute() });
+</script>
+```
+
+## 良い例
+
+`validate` にコールバックを渡し、`useRoute().params.id` の評価をコールバックが呼び出されるまで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+definePageMeta({ validate: () => Boolean(useRoute().params.id) });
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外に移されます。
-
-```vue
-<script setup lang="ts">
-definePageMeta({ title: useRoute() });
-</script>
-```
-
-## 良い
-
-`validate` にコールバックを渡し、`useRoute().params.id` の評価をコールバックが呼び出されるまで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
-
-```vue
-<script setup lang="ts">
-definePageMeta({ validate: () => Boolean(useRoute().params.id) });
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25)

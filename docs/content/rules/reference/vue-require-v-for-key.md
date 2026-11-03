@@ -1,18 +1,37 @@
 ---
 title: "vue/require-v-for-key"
+description: "Require `v-bind:key` with `v-for` directives."
 ---
 
 # `vue/require-v-for-key`
 
-Require `v-bind:key` with `v-for` directives
+Require `v-bind:key` with `v-for` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+Each repeated `<li>` lacks a key that identifies its corresponding item during list updates.
+
+```vue annotate="remove:2"
+<template>
+  <li v-for="item in items">{{ item.name }}</li>
+</template>
+```
+
+## Good
+
+`:key="item.id"` gives each repeated node the item's identity rather than its current position.
+
+```vue annotate="add:2"
+<template>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Each repeated `<li>` lacks a key that identifies its corresponding item during list updates.
-
-```vue
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
-
-## Good
-
-`:key="item.id"` gives each repeated node the item's identity rather than its current position.
-
-```vue
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L46) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L46)

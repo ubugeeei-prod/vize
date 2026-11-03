@@ -1,18 +1,39 @@
 ---
 title: "vue/valid-v-cloak"
+description: "Enforce valid `v-cloak` directives."
 ---
 
 # `vue/valid-v-cloak`
 
-Enforce valid `v-cloak` directives
+Enforce valid `v-cloak` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+`v-cloak` is given a value, argument, or modifier even though it accepts none of those.
+
+```vue annotate="remove:2,3,4"
+<template>
+<div v-cloak="foo"></div>
+<div v-cloak:arg></div>
+<div v-cloak.mod></div>
+</template>
+```
+
+## Good
+
+Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute after mounting.
+
+```vue annotate="add:2"
+<template>
+<div v-cloak></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`v-cloak` is given a value, argument, or modifier even though it accepts none of those.
-
-```vue
-<template>
-<div v-cloak="foo"></div>
-<div v-cloak:arg></div>
-<div v-cloak.mod></div>
-</template>
-```
-
-## Good
-
-Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute after mounting.
-
-```vue
-<template>
-<div v-cloak></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27)

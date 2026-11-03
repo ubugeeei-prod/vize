@@ -1,18 +1,39 @@
 ---
 title: "vue/valid-v-text"
+description: "v-text の値・引数・修飾子を検査します。"
 ---
 
 # `vue/valid-v-text`
 
 v-text の値・引数・修飾子を検査します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+`v-text` に文字列の式がないか、対応していない引数・修飾子を指定しています。
+
+```vue annotate="remove:2,3,4"
+<template>
+<div v-text></div>
+<div v-text:arg="foo"></div>
+<div v-text.mod="foo"></div>
+</template>
+```
+
+## 良い例
+
+`v-text="msg"` は構文として有効です。別の `vue/no-v-text` は mustache の使用を推奨する場合があります。
+
+```vue annotate="add:2"
+<template>
+<div v-text="msg"></div>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`v-text` に文字列の式がないか、対応していない引数・修飾子を指定しています。
-
-```vue
-<template>
-<div v-text></div>
-<div v-text:arg="foo"></div>
-<div v-text.mod="foo"></div>
-</template>
-```
-
-## 良い
-
-`v-text="msg"` は構文として有効です。別の `vue/no-v-text` は mustache の使用を推奨する場合があります。
-
-```vue
-<template>
-<div v-text="msg"></div>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27)

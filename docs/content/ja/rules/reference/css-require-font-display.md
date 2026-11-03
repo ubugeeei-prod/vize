@@ -1,18 +1,44 @@
 ---
 title: "css/require-font-display"
+description: "@font-face に font-display を指定します。"
 ---
 
 # `css/require-font-display`
 
 @font-face に font-display を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+
+## 悪い例
+
+font-face にフォントの参照先はありますが、font-display の方針を指定していません。
+
+```vue
+<style>
+@font-face {
+  font-family: "Inter";
+  src: url("/inter.woff2") format("woff2");
+}
+</style>
+```
+
+## 良い例
+
+font-display: swap を追加し、代替フォントで表示した後、読み込まれたフォントへ切り替える方針を指定します。
+
+```vue annotate="add:5"
+<style>
+@font-face {
+  font-family: "Inter";
+  src: url("/inter.woff2") format("woff2");
+  font-display: swap;
+}
+</style>
+```
 
 ## 設定（Vite+）
 
@@ -31,37 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-font-face にフォントの参照先はありますが、font-display の方針を指定していません。
-
-```vue
-<style>
-@font-face {
-  font-family: "Inter";
-  src: url("/inter.woff2") format("woff2");
-}
-</style>
-```
-
-## 良い
-
-font-display: swap を追加し、代替フォントで表示した後、読み込まれたフォントへ切り替える方針を指定します。
-
-```vue
-<style>
-@font-face {
-  font-family: "Inter";
-  src: url("/inter.woff2") format("woff2");
-  font-display: swap;
-}
-</style>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [全ルール](../all.md)
+- [Musea と CSS のルール](../musea-and-css.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13)

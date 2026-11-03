@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `v-for` の各反復で固定の `result-title` ID が繰り返されます。key があっても DOM の ID は一意になりません。
 
@@ -63,7 +63,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 </template>
 ```
 
-## 良い
+## 良い例
 
 見出しの ID に result の識別子を含め、各項目の文書 ID を区別します。
 

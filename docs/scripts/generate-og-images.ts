@@ -23,7 +23,6 @@ import {
   readDocumentMetadata,
 } from "../theme/open-graph.ts";
 import { buildOgTemplate } from "./og-template.ts";
-import { CATALOGUE_SOURCES } from "./materialize-content.ts";
 
 type GeneratedPage = ReturnType<typeof pageMetadata> & {
   htmlPath: string;
@@ -76,8 +75,7 @@ async function markdownFiles(directory: string, prefix = ""): Promise<string[]> 
       result.push(...(await markdownFiles(path.join(directory, entry.name), relative)));
     else if (
       entry.isFile() &&
-      DEFAULT_MARKDOWN_EXTENSIONS.some((extension) => extension === path.extname(entry.name)) &&
-      !CATALOGUE_SOURCES.some((source: string) => source === relative)
+      DEFAULT_MARKDOWN_EXTENSIONS.some((extension) => extension === path.extname(entry.name))
     )
       result.push(relative);
   }

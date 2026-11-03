@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子の `ref(props.count)` は初期値を一度コピーし、後の親の prop 変更には追従しません。現在の prop-to-ref 生成元の例で、非決定的な SSR 全般の例ではありません。
 
@@ -70,7 +70,7 @@ const count = ref(props.count);
 <template><p>{{ count }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 初期値を独立した状態にコピーせず、`toRef(props, "count")` で prop を参照します。
 

@@ -1,18 +1,40 @@
 ---
 title: "script/no-unstable-nested-components"
+description: "Disallow component definitions inside setup or render functions."
 ---
 
 # `script/no-unstable-nested-components`
 
-Disallow component definitions inside setup or render functions
+Disallow component definitions inside setup or render functions.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+`defineComponent` runs inside the parent’s `setup()`, creating a new `Child` component definition whenever that setup executes.
+
+```vue annotate="remove:3"
+<script lang="ts">
+import { defineComponent } from "vue";
+export default { setup() { const Child = defineComponent({ render() { return null; } }); return { Child }; } };
+</script>
+```
+
+## Good
+
+The `Child` definition moves to module scope, and `setup()` returns that existing definition instead of recreating it.
+
+```vue annotate="add:3,4"
+<script lang="ts">
+import { defineComponent } from "vue";
+const Child = defineComponent({ render() { return null; } });
+export default { setup() { return { Child }; } };
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`defineComponent` runs inside the parent’s `setup()`, creating a new `Child` component definition whenever that setup executes.
-
-```vue
-<script lang="ts">
-import { defineComponent } from "vue";
-export default { setup() { const Child = defineComponent({ render() { return null; } }); return { Child }; } };
-</script>
-```
-
-## Good
-
-The `Child` definition moves to module scope, and `setup()` returns that existing definition instead of recreating it.
-
-```vue
-<script lang="ts">
-import { defineComponent } from "vue";
-const Child = defineComponent({ render() { return null; } });
-export default { setup() { return { Child }; } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19)

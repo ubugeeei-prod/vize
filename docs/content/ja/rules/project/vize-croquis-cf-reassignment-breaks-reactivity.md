@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子が作った prop の ref を `props.user` で上書きし、ref としての接続を失います。
 
@@ -78,7 +78,7 @@ user = props.user;
 </script>
 ```
 
-## 良い
+## 良い例
 
 `toRef` を `const` に保持し、参照を置き換える再代入を除きます。
 

@@ -28,27 +28,11 @@
     /^\/blog\/releases\/\d{4}-\d{2}-\d{2}-/,
     /^\/reference\/(?:ui|composables)(?:\/|$)/,
     /^\/guide\/(?:ui|composables)\/.+/,
-    /^\/rules\/(?:reference|project)\//,
     // Reached from their parent page: Experimentals links to both of these in
     // every locale, so listing them again would only lengthen the sidebar.
     /^\/guide\/experimentals-(?:reference|vue-rfcs)$/,
     // Linked from Type Checking in the two locales with an authored recipe.
     /^\/guide\/experimental-router-types$/,
-  ];
-
-  // petite-vue has authored pages in English and Japanese only.
-  const rulePaths = [
-    "/rules",
-    "/rules/all",
-    "/rules/vue",
-    "/rules/type-and-script",
-    "/rules/html",
-    "/rules/accessibility",
-    "/rules/ssr",
-    "/rules/vapor",
-    "/rules/ecosystem",
-    "/rules/musea-and-css",
-    "/rules/cross-file",
   ];
 
   // Every published page belongs to exactly one group below or is hidden
@@ -93,10 +77,40 @@
       ? { key, paths }
       : { key, paths: common, pathsByLocale: { en: paths, ja: paths } };
   };
-  const authoredRulePaths = [
-    "/rules",
-    "/rules/all",
-    "/rules/options",
+
+  // One collapsible sidebar section per rule category. A rule page belongs to
+  // the section that owns its ID namespace (`vue/...`, `a11y/...`); project
+  // rule pages live in one directory. The rule generator reads this table too,
+  // so a rule's page, its category page and its sidebar section always agree.
+  sitemap.ruleSections = [
+    { page: "/rules/vue", namespaces: ["vue"] },
+    { page: "/rules/type-and-script", namespaces: ["script", "type"] },
+    { page: "/rules/html", namespaces: ["html"] },
+    { page: "/rules/accessibility", namespaces: ["a11y"] },
+    { page: "/rules/ssr", namespaces: ["ssr"] },
+    { page: "/rules/vapor", namespaces: ["vapor"] },
+    { page: "/rules/ecosystem", namespaces: ["ecosystem", "nuxt"] },
+    { page: "/rules/musea-and-css", namespaces: ["musea", "css"] },
+    { page: "/rules/petite-vue", namespaces: ["petite-vue"] },
+    { page: "/rules/cross-file", directory: "/rules/project/" },
+  ];
+
+  // The pages a section lists, from the routes a locale publishes. A rule's
+  // page slug starts with its namespace: `vue/no-v-html` is `vue-no-v-html`.
+  sitemap.sectionPaths = (section, routes) =>
+    section.paths ??
+    routes
+      .filter((route) =>
+        section.directory
+          ? route.startsWith(section.directory)
+          : section.namespaces.some((namespace) =>
+              route.startsWith(`/rules/reference/${namespace}-`),
+            ),
+      )
+      .sort((left, right) => left.localeCompare(right));
+
+  // Options and the ESLint map are authored in English and Japanese only.
+  const ruleOptionPaths = [
     "/rules/options-vue",
     "/rules/options-events",
     "/rules/options-attributes",
@@ -104,22 +118,6 @@
     "/rules/options-script",
     "/rules/options-type",
     "/rules/options-musea",
-    "/rules/migration",
-    ...rulePaths.slice(2),
-    "/rules/petite-vue",
-  ];
-  const ruleGuidePaths = [
-    "/rules/vue-sfc",
-    "/rules/vue-components",
-    "/rules/vue-directives",
-    "/rules/vue-directive-validity",
-    "/rules/vue-template-safety",
-    "/rules/vue-template-structure",
-    "/rules/vue-formatting",
-    "/rules/accessibility-core",
-    "/rules/accessibility-integrity",
-    "/rules/accessibility-interactions",
-    "/rules/accessibility-structure",
   ];
 
   // `key` selects the section heading from a locale's `ui.groups`. Product
@@ -199,19 +197,16 @@
     section("tools", ["/guide/cli", "/guide/doctor", "/guide/testing"]),
     {
       key: "rules",
-      paths: rulePaths,
+      paths: ["/rules", "/rules/all"],
       pathsByLocale: {
-        en: authoredRulePaths,
-        ja: authoredRulePaths,
-        "zh-CN": [...rulePaths, "/rules/petite-vue"],
-        "pt-BR": [...rulePaths, "/rules/petite-vue"],
-        fr: [...rulePaths, "/rules/petite-vue"],
+        en: ["/rules", "/rules/all", "/rules/migration"],
+        ja: ["/rules", "/rules/all", "/rules/migration"],
       },
-    },
-    {
-      key: "ruleGuides",
-      paths: [],
-      pathsByLocale: { en: ruleGuidePaths, ja: ruleGuidePaths },
+      // Each section collapses under its own page.
+      sections: [
+        { page: "/rules/options", paths: ruleOptionPaths, locales: ["en", "ja"] },
+        ...sitemap.ruleSections,
+      ],
     },
     section("architecture", [
       "/stability",

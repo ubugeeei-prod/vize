@@ -1,18 +1,37 @@
 ---
 title: "a11y/no-access-key"
+description: "環境のショートカットと衝突し得る accesskey を検出します。"
 ---
 
 # `a11y/no-access-key`
 
 環境のショートカットと衝突し得る accesskey を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+`accesskey="s"` がブラウザーや支援技術のショートカットと競合する可能性があります。
+
+```vue annotate="remove:2"
+<template>
+  <button accesskey="s">Save</button>
+</template>
+```
+
+## 良い例
+
+accesskey を取り除き、通常の Save ボタンは残します。
+
+```vue annotate="add:2"
+<template>
+  <button>Save</button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`accesskey="s"` がブラウザーや支援技術のショートカットと競合する可能性があります。
-
-```vue
-<template>
-  <button accesskey="s">Save</button>
-</template>
-```
-
-## 良い
-
-accesskey を取り除き、通常の Save ボタンは残します。
-
-```vue
-<template>
-  <button>Save</button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19)

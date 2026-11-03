@@ -52,7 +52,7 @@ export default Vue.extend({
 
 ```
 
-## 悪い
+## 悪い例
 
 この旧 Vue 2.7 プロジェクトでは、`items[0] = next` が配列の変更を監視する Vue 2 の仕組みに通知せず配列を変更するため、表示中の最初の要素が更新されない場合があります。
 
@@ -65,7 +65,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 ```
 
-## 良い
+## 良い例
 
 `splice(0, 1, next)` で Vue 2 が監視する配列の変更メソッドを使い、同じ置換を画面に反映します。
 

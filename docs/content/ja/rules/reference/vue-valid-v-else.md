@@ -1,18 +1,40 @@
 ---
 title: "vue/valid-v-else"
+description: "v-else の位置・引数・値を検査します。"
 ---
 
 # `vue/valid-v-else`
 
 v-else の位置・引数・値を検査します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応している診断で利用できます  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+`v-else` に式を渡す、`v-if` と併用する、直前の条件分岐がない、といった不正な組み合わせです。
+
+```vue annotate="remove:2,3"
+<template>
+  <div v-else="ready"></div>
+  <div v-else v-if="ready"></div>
+  <div v-else></div>
+</template>
+```
+
+## 良い例
+
+対応する `v-if` の直後に、値のない `v-else` を置きます。
+
+```vue annotate="add:2"
+<template>
+  <div v-if="ready"></div>
+  <div v-else></div>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`v-else` に式を渡す、`v-if` と併用する、直前の条件分岐がない、といった不正な組み合わせです。
-
-```vue
-<template>
-  <div v-else="ready"></div>
-  <div v-else v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
-
-## 良い
-
-対応する `v-if` の直後に、値のない `v-else` を置きます。
-
-```vue
-<template>
-  <div v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31)

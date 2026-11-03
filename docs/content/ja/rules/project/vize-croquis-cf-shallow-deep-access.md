@@ -49,7 +49,7 @@ const profile = makeProfile();
 
 ```
 
-## 悪い
+## 悪い例
 
 `shallowReactive` が追跡するのはルートの `user` プロパティであり、内側のオブジェクトは raw のままです。`profile.user.name` の変更は、追跡された深い変更としてテンプレートへ通知されません。
 
@@ -61,7 +61,7 @@ export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }
 
 ```
 
-## 良い
+## 良い例
 
 `reactive` で内側の `user` オブジェクトまでリアクティブにし、同じ代入で表示が更新されるようにします。
 

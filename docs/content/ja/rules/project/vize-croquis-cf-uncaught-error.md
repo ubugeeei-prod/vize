@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子のテンプレートが不正な input を `JSON.parse` し、到達する親にエラーを受け止める境界がありません。
 
@@ -70,7 +70,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-## 良い
+## 良い例
 
 親で子のエラーを受ける `onErrorCaptured` を登録します。`false` を返すと伝播が止まります。実際に使うエラー境界では、復旧に役立つ UI も用意してください。
 

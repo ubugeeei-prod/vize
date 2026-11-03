@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 両コンポーネントが文字列 `"theme"` を使い、無関係な機能とキーが衝突する可能性があります。
 
@@ -76,7 +76,7 @@ const theme = inject("theme");
 </script>
 ```
 
-## 良い
+## 良い例
 
 型付きのシンボル `ThemeKey` を一つだけ export し、provide 側と inject 側で同じ値を import します。説明文字列が同じでも、別々に作ったシンボルでは両者を結び付けられません。
 

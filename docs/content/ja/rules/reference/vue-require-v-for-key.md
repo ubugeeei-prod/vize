@@ -1,18 +1,37 @@
 ---
 title: "vue/require-v-for-key"
+description: "v-for に安定した :key を指定します。"
 ---
 
 # `vue/require-v-for-key`
 
 v-for に安定した :key を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+繰り返す `<li>` に key がなく、一覧更新時に対応する項目を識別できません。
+
+```vue annotate="remove:2"
+<template>
+  <li v-for="item in items">{{ item.name }}</li>
+</template>
+```
+
+## 良い例
+
+`:key="item.id"` で、現在の位置ではなく項目の識別子を各ノードに付けます。
+
+```vue annotate="add:2"
+<template>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-繰り返す `<li>` に key がなく、一覧更新時に対応する項目を識別できません。
-
-```vue
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
-
-## 良い
-
-`:key="item.id"` で、現在の位置ではなく項目の識別子を各ノードに付けます。
-
-```vue
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L46) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L46)

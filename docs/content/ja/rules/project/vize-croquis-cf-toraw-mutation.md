@@ -49,7 +49,7 @@ const profile = makeProfile();
 
 ```
 
-## 悪い
+## 悪い例
 
 `rename` は Proxy の元のオブジェクトを取り出し、`raw.name` に代入しています。そのため、表示中の名前の変更を通知する Proxy の setter を通りません。
 
@@ -65,7 +65,7 @@ export function rename(profile: { name: string }): void {
 
 ```
 
-## 良い
+## 良い例
 
 渡されたリアクティブ Proxy の `profile.name` を書き、同じ名前の変更を依存先に通知します。
 

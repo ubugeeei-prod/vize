@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親が `typo` を渡しますが、解決した子の宣言は `title` だけです。この解析器の規約は、Vue の属性自動継承の一般的な動作とは別です。
 
@@ -54,7 +54,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 意図しない `typo` のバインドを取り除き、宣言済みの `title` を残します。
 

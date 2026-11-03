@@ -1,18 +1,40 @@
 ---
 title: "script/valid-define-options"
+description: "Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots)."
 ---
 
 # `script/valid-define-options`
 
-Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots)
+Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots).
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The first call puts the dedicated `props` declaration inside `defineOptions`; the later calls also repeat the macro and include a non-object argument. These illustrate the forbidden shape and repeated-call constraints.
+
+```vue annotate="remove:2,3,4,5"
+<script setup lang="ts">
+defineOptions({ props: ['foo'] })   // use defineProps instead
+defineOptions({ name: 'Foo' })
+defineOptions({ name: 'Bar' })      // duplicate call
+defineOptions('Foo')                // not an object literal
+</script>
+```
+
+## Good
+
+One `defineOptions` call receives an object containing only the supported ordinary options `name` and `inheritAttrs`.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineOptions({ name: 'Foo', inheritAttrs: false })
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The first call puts the dedicated `props` declaration inside `defineOptions`; the later calls also repeat the macro and include a non-object argument. These illustrate the forbidden shape and repeated-call constraints.
-
-```vue
-<script setup lang="ts">
-defineOptions({ props: ['foo'] })   // use defineProps instead
-defineOptions({ name: 'Foo' })
-defineOptions({ name: 'Bar' })      // duplicate call
-defineOptions('Foo')                // not an object literal
-</script>
-```
-
-## Good
-
-One `defineOptions` call receives an object containing only the supported ordinary options `name` and `inheritAttrs`.
-
-```vue
-<script setup lang="ts">
-defineOptions({ name: 'Foo', inheritAttrs: false })
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41)

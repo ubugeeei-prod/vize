@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 提供側の `title` は明示的な `string` ですが、子孫が同じキーを `inject<number>` で要求します。
 
@@ -73,7 +73,7 @@ const title = inject<number>("title");
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 使用側の型注釈を `inject<string>` にし、提供側の注釈と一致させます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。
 

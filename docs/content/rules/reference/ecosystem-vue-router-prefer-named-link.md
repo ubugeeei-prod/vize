@@ -1,18 +1,37 @@
 ---
 title: "ecosystem/vue-router-prefer-named-link"
+description: "Prefer named route objects over static path strings in RouterLink."
 ---
 
 # `ecosystem/vue-router-prefer-named-link`
 
-Prefer named route objects over static path strings in RouterLink
+Prefer named route objects over static path strings in RouterLink.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | No | None |
 
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The RouterLink destination is a literal path rather than a named route.
+
+```vue annotate="remove:2"
+<template>
+  <RouterLink to="/settings">Settings</RouterLink>
+</template>
+```
+
+## Good
+
+The bound route object identifies the destination by its settings route name.
+
+```vue annotate="add:2"
+<template>
+  <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The RouterLink destination is a literal path rather than a named route.
-
-```vue
-<template>
-  <RouterLink to="/settings">Settings</RouterLink>
-</template>
-```
-
-## Good
-
-The bound route object identifies the destination by its settings route name.
-
-```vue
-<template>
-  <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15)

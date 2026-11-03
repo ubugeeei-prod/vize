@@ -1,18 +1,41 @@
 ---
 title: "musea/require-title"
+description: "Require title attribute in <art> block."
 ---
 
 # `musea/require-title`
 
-Require title attribute in &lt;art&gt; block
+Require title attribute in &lt;art&gt; block.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Musea .art.vue art, variant, and style blocks.
+
+## Bad
+
+The art block identifies Button.vue but supplies no title.
+
+```vue annotate="remove:1"
+<art component="./Button.vue">
+  <variant name="primary" />
+</art>
+```
+
+## Good
+
+The defineArt options supply the Button title for the art block.
+
+```vue annotate="add:1,2,3,4,5"
+<script setup>
+defineArt("./Button.vue", { title: "Button" });
+</script>
+
+<art>
+  <variant name="primary" />
+</art>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The art block identifies Button.vue but supplies no title.
-
-```vue
-<art component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
-
-## Good
-
-The defineArt options supply the Button title for the art block.
-
-```vue
-<script setup>
-defineArt("./Button.vue", { title: "Button" });
-</script>
-
-<art>
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)

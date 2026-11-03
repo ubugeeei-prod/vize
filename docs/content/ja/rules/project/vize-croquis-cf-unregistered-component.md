@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `Child.vue` は存在しますが、親がテンプレートの `Child` を import / 登録していません。
 
@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 <template><p>Child</p></template>
 ```
 
-## 良い
+## 良い例
 
 親の script setup で `Child` を import し、テンプレートがそのコンポーネントの識別子を解決できるようにします。
 

@@ -1,18 +1,37 @@
 ---
 title: "a11y/tabindex-no-positive"
+description: "通常のフォーカス順序を変える正の tabindex を検出します。"
 ---
 
 # `a11y/tabindex-no-positive`
 
 通常のフォーカス順序を変える正の tabindex を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+tabindex に正の値 3 を指定し、通常の操作要素より先にフォーカスが移動するようにしています。
+
+```vue annotate="remove:2"
+<template>
+  <button tabindex="3">Save</button>
+</template>
+```
+
+## 良い例
+
+正の tabindex を取り除き、button の標準のフォーカス順を使います。
+
+```vue annotate="add:2"
+<template>
+  <button>Save</button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-tabindex に正の値 3 を指定し、通常の操作要素より先にフォーカスが移動するようにしています。
-
-```vue
-<template>
-  <button tabindex="3">Save</button>
-</template>
-```
-
-## 良い
-
-正の tabindex を取り除き、button の標準のフォーカス順を使います。
-
-```vue
-<template>
-  <button>Save</button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16)

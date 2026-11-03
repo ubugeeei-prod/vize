@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親の `tracking-code` は prop として使われず、複数ルートの子から転送もされません。
 
@@ -51,7 +51,7 @@ import Child from "./Child.vue";
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
-## 良い
+## 良い例
 
 `<main>` に `$attrs` をバインドし、継承属性の適用先を明示します。
 

@@ -20,7 +20,7 @@ on:
       - "docs/scripts/rules/**"
       - "docs/content/rules/**"
       - "docs/content/ja/rules/**"
-      - "docs/content/generated/rules/**"
+      - "docs/content/*/rules/**"
       - "crates/vize_patina/src/rule.rs"
       - "crates/vize_patina/src/rule/**"
       - "crates/vize_patina/src/rules/**"

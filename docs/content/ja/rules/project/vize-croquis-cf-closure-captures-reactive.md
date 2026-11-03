@@ -52,7 +52,7 @@ const shown = computed(read);
 
 ```
 
-## 悪い
+## 悪い例
 
 `makeReader` がクロージャーを作る前に `count.value` をコピーします。computed の読取処理はリアクティブな依存を読まず、最初の数値を返し続けます。
 
@@ -67,7 +67,7 @@ export function makeReader(count: Ref<number>): () => number {
 
 ```
 
-## 良い
+## 良い例
 
 呼び出すたびにクロージャー内で `count.value` を読み、computed が ref を追跡して増加後の `shown` を更新できるようにします。
 

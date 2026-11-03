@@ -42,7 +42,7 @@ export function focusInput(input: HTMLInputElement | null): void { input?.focus(
 
 ```
 
-## 悪い
+## 悪い例
 
 マウント前の setup でテンプレート ref を読み取るため、その値はまだ null です。`input?.focus()` はオプショナルチェーンによって呼び出しが省略され、入力欄にフォーカスしません。
 
@@ -62,7 +62,7 @@ focusInput(input.value);
 
 ```
 
-## 良い
+## 良い例
 
 `onMounted` で Vue が input 要素をテンプレート ref に設定するまで参照を遅らせ、ヘルパーが実際の要素をフォーカスできるようにします。
 

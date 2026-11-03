@@ -1,16 +1,22 @@
 ---
 title: "petite-vue 规则"
+description: "检查使用 petite-vue 的 HTML 页面中的指令和作用域。"
 ---
 
 # petite-vue 规则
 
-本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+检查使用 petite-vue 的 HTML 页面中的指令和作用域。
 
+每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-| 规则 | 示例 | 用途 |
+## 按需启用 (3)
+
+不属于任何预设。在 `vue.linter.rules` 中按名称启用。
+
+| 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| [`petite-vue/no-unsupported-directive`](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-no-unsupported-directive) | [错误示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-no-unsupported-directive-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-no-unsupported-directive-good) | 禁止 petite-vue 不支持的指令 |
-| [`petite-vue/valid-v-effect`](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-effect) | [错误示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-effect-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-effect-good) | 要求 v-effect 具有非空表达式 |
-| [`petite-vue/valid-v-scope`](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-scope) | [错误示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-scope-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/petite-vue.html#petite-vue-valid-v-scope-good) | 要求 v-scope 绑定对象字面量 |
+| <span id="petite-vue-no-unsupported-directive"></span>[`petite-vue/no-unsupported-directive`](./reference/petite-vue-no-unsupported-directive.md) | 禁止 petite-vue 不支持的指令。 |  |
+| <span id="petite-vue-valid-v-effect"></span>[`petite-vue/valid-v-effect`](./reference/petite-vue-valid-v-effect.md) | 要求 v-effect 具有非空表达式。 |  |
+| <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | 要求 v-scope 绑定对象字面量。 |  |
 
-[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

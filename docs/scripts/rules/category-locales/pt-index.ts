@@ -15,8 +15,3 @@ export const portuguesePackets: Record<string, readonly [string, string, string]
 };
 
 export { portugueseShared } from "./pt-shared.ts";
-export {
-  portugueseCategoryTitles,
-  portugueseCategoryIntro,
-  portugueseCrossFileIntro,
-} from "./pt-labels.ts";

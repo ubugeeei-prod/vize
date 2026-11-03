@@ -1,18 +1,37 @@
 ---
 title: "ecosystem/vue-test-utils-no-html-snapshot"
+description: "Avoid snapshotting wrapper.html() in Vue Test Utils tests."
 ---
 
 # `ecosystem/vue-test-utils-no-html-snapshot`
 
-Avoid snapshotting wrapper.html() in Vue Test Utils tests
+Avoid snapshotting wrapper.html() in Vue Test Utils tests.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | No | None |
 
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+expect(wrapper.html()).toMatchSnapshot();
+</script>
+```
+
+## Good
+
+The assertion checks that the rendered text contains Saved.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+expect(wrapper.text()).toContain("Saved");
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.
-
-```vue
-<script setup lang="ts">
-expect(wrapper.html()).toMatchSnapshot();
-</script>
-```
-
-## Good
-
-The assertion checks that the rendered text contains Saved.
-
-```vue
-<script setup lang="ts">
-expect(wrapper.text()).toContain("Saved");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15)

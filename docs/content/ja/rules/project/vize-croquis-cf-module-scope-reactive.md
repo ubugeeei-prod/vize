@@ -64,7 +64,7 @@ const { count } = createCounter();
 
 ```
 
-## 悪い
+## 悪い例
 
 モジュールが `count` を一度だけ初期化し、二つの Counter が同じ ref を受け取ります。この例では独立した状態を意図していますが、一方をクリックすると両方が変わります。
 
@@ -77,7 +77,7 @@ export function createCounter() { return { count }; }
 
 ```
 
-## 良い
+## 良い例
 
 `createCounter` の中で ref を作り、setup からの同期的な呼び出しごとに別の状態を渡します。それぞれのボタンが個別のカウンターを持つようになります。
 

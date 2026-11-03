@@ -1,20 +1,39 @@
 ---
 title: "type/require-typed-props"
+description: "defineProps に型定義を指定します。"
 ---
 
 # `type/require-typed-props`
 
 defineProps に型定義を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
+このルールは TypeScript プロジェクト（`tsconfig.json`）の型情報を使うため、設定で `typeAware: true` を指定しています。`typeAware` だけでは、個別に有効化するルールは有効になりません。
+
+## 悪い例
+
+配列だけの `defineProps(["title"])` は `title` の名前だけを宣言し、型を指定していません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineProps(["title"]);
+</script>
+```
+
+## 良い例
+
+`defineProps<{ title: string }>()` で、名前だけの実行時宣言に代えて `title` の string 型を明示します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineProps<{ title: string }>();
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -34,30 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-配列だけの `defineProps(["title"])` は `title` の名前だけを宣言し、型を指定していません。
-
-```vue
-<script setup lang="ts">
-defineProps(["title"]);
-</script>
-```
-
-## 良い
-
-`defineProps<{ title: string }>()` で、名前だけの実行時宣言に代えて `title` の string 型を明示します。
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57)

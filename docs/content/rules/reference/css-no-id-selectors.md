@@ -1,18 +1,41 @@
 ---
 title: "css/no-id-selectors"
+description: "Discourage use of ID selectors in CSS."
 ---
 
 # `css/no-id-selectors`
 
-Discourage use of ID selectors in CSS
+Discourage use of ID selectors in CSS.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+`#submit` ties the style rule to an ID selector.
+
+```vue annotate="remove:2"
+<style scoped>
+#submit {
+  font-weight: 600;
+}
+</style>
+```
+
+## Good
+
+The `.submit` class expresses the reusable styling hook without an ID selector.
+
+```vue annotate="add:2"
+<style scoped>
+.submit {
+  font-weight: 600;
+}
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`#submit` ties the style rule to an ID selector.
-
-```vue
-<style scoped>
-#submit {
-  font-weight: 600;
-}
-</style>
-```
-
-## Good
-
-The `.submit` class expresses the reusable styling hook without an ID selector.
-
-```vue
-<style scoped>
-.submit {
-  font-weight: 600;
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19)
