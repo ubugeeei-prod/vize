@@ -25,7 +25,7 @@ import {
   toolingTestFiles,
 } from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
-import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
+import { nativeSsrCaptureRequired } from "./native-ssr-capture.ts";
 import { nativeScopedCaptureRequired } from "./native-scoped-capture.ts";
 
 import { nativeVaporCaptureRequired } from "./native-vapor-capture.mjs";

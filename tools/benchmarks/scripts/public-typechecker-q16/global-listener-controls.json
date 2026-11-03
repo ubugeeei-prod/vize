@@ -1,0 +1,288 @@
+{
+  "schema": "vize.globalListener11373.controls.v1",
+  "subset": "GlobalListener11373",
+  "fix": "044768e5e35cedf030da532d78fe3c8f8a056310",
+  "sourceAuthority": {
+    "sourceDataSha256": "d8049324a66026205692b9110406178bb2ca4640ec3a712bd19b6085fa29e30c",
+    "currentSourceProofSha256": "ec73d4fe317ff1c29a08645141580ffcaa305994b002a621a024e64869049afd",
+    "originalCommands": [
+      ["pnpm", "install"],
+      ["pnpm", "exec", "tsrs", "--runExternalCode", "-p", "tsconfig.json", "--pretty", "false"],
+      ["pnpm", "exec", "vue-tsc", "--noEmit", "-p", "tsconfig.json", "--pretty", "false"]
+    ],
+    "reportedAuthority": {
+      "report": "/private/tmp/vize-overnight-20261031/third-party/issue-11373-priority-current-report.json",
+      "reportSha256": "1b531a4391361f1859303b867d2bf201fddcd3e0d5ff5343cd28e509132860d1",
+      "originalInputs": "/private/tmp/vize-overnight-20261031/third-party/issue-11373-priority-original-inputs.json",
+      "originalInputsSha256": "cb98d516666720feab79c331e50617dbf1db378ea908a1db5243284e0cd4a1e7",
+      "author": "ubugeeei",
+      "reportedVize": "0.640.0",
+      "platform": "macOS26.4.1 arm64",
+      "node": "26.12.1",
+      "packageManager": "pnpm12.3.4",
+      "dependencies": {
+        "tsrs": "0.20.1-ts7.1.0-beta",
+        "vue": "3.5.43",
+        "typescript": "5.9.3",
+        "vue-tsc": "3.2.6"
+      },
+      "originalLockSupplied": false
+    },
+    "managerAdaptation": "npm11.19.1 install and npx exec preserving exact inner TSRS and vue-tsc argv; reported pnpm12.3.4 is not executed",
+    "hostAdaptation": "Linuxx64 Node26.12.1; reported Mac26.4.1/arm64 is not reproduced",
+    "referenceAuthority": "Only original joint project vue-tsc status0; other references not executed",
+    "missingRequiredPrinter": "Only TS2345/required to/source needle intent owned; complete generated-type printer raw/unclaimed",
+    "historicalSourceOutputsTransferred": false,
+    "publicAccepted": false
+  },
+  "baseline": [
+    {
+      "file": "package.json",
+      "source": "package.json.txt"
+    },
+    {
+      "file": "tsconfig.json",
+      "source": "tsconfig.json.txt"
+    },
+    {
+      "file": "src/global-components.d.ts",
+      "source": "src/global-components.d.ts.txt"
+    },
+    {
+      "file": "src/GlobalComponentListener.vue",
+      "source": "src/GlobalComponentListener.vue.txt"
+    },
+    {
+      "file": "src/PascalListener.vue",
+      "source": "src/PascalListener.vue.txt"
+    },
+    {
+      "file": "src/NoListener.vue",
+      "source": "src/NoListener.vue.txt"
+    }
+  ],
+  "controls": [
+    {
+      "id": "original-three-components",
+      "overrides": [],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "wrong-global-prop",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/wrong-prop.vue.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": ":to=\"123\"",
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "missing-required-global-prop",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/missing-required.vue.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2345,
+          "sourceNeedle": "<global-link",
+          "missingRequiredProperty": "to"
+        }
+      ]
+    },
+    {
+      "id": "typed-event-bad",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/bad-event.vue.txt"
+        },
+        {
+          "file": "src/typed-global-components.d.ts",
+          "source": "authored/typed-global-components.d.ts.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2339,
+          "sourceNeedle": "payload => payload.toUpperCase()",
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "typed-event-good",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/good-event.vue.txt"
+        },
+        {
+          "file": "src/typed-global-components.d.ts",
+          "source": "authored/typed-global-components.d.ts.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "local-owned-number",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/local-number.vue.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "local-owned-string-rejected",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/local-string.vue.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": "to=\"/\"",
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "unregistered-default",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/unknown.vue.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "unregistered-explicit-check",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/unknown.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "authored/strict-unknown.tsconfig.json.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2339,
+          "sourceNeedle": "<unregistered-link",
+          "message": "Property 'unregistered-link' does not exist on type '{}'."
+        }
+      ]
+    },
+    {
+      "id": "listener-absent-original-control",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "src/NoListener.vue.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "listener-restored-exact-original",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "src/GlobalComponentListener.vue.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "authored-expect-error-marked",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-marked.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": true,
+      "diagnostics": []
+    },
+    {
+      "id": "quoted-marker-unmarked",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-unmarked.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": "count: '@ts-expect-error'",
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "authored-expect-error-sibling",
+      "overrides": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "source": "authored/suppression-sibling.vue.txt"
+        },
+        {
+          "file": "src/suppression-global-components.d.ts",
+          "source": "authored/suppression-global-components.d.ts.txt"
+        }
+      ],
+      "success": false,
+      "diagnostics": [
+        {
+          "file": "src/GlobalComponentListener.vue",
+          "code": 2322,
+          "sourceNeedle": "sibling: 'bad'",
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

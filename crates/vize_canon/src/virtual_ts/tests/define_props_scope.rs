@@ -3,6 +3,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod imported_props;
 mod public_types;
+mod template_model_props;
 
 #[test]
 fn test_define_props_typeof_setup_binding_deferred_to_setup_scope() {

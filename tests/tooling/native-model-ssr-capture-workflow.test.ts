@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
+import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.ts";
 import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
 
 test("shared genuine Model identity always qualifies both actual target consumers", () => {

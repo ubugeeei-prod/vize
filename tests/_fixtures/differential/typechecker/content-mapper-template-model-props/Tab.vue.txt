@@ -1,0 +1,23 @@
+<template>
+	<div>
+		<button
+			v-for="option in tabs"
+			:key="option.key"
+			:class="{ active: modelValue === option.key }"
+			:disabled="modelValue === option.key"
+			@click="update(option.key)"
+		>{{ option.label }}</button>
+	</div>
+</template>
+
+<script lang="ts">
+export type Tab<T = string> = { key: T; label?: string };
+</script>
+
+<script setup lang="ts" generic="const T extends Tab">
+defineProps<{ tabs: T[] }>();
+const model = defineModel<T['key']>();
+function update(key: T['key']) {
+	model.value = key;
+}
+</script>
