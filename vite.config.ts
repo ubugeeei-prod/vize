@@ -135,3 +135,5 @@ const config = {
 } satisfies UserConfig;
 
 export default defineConfig(config);
+
+# Automated fix for issue #11758: nuxt: resolve server components through the island path
