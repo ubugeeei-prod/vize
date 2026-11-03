@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
@@ -101,6 +103,40 @@ test("a fast empty or wrong answer is a failure, not a sample", () => {
     "duplicates from two providers count once",
   );
   assert.equal(judge(references, [same, { ...same, character: 9 }], "/w").ok, true);
+});
+
+test("a location reached through a workspace symlink is the file it links to", () => {
+  const workspace = mkdtempSync(join(os.tmpdir(), "lsp-judge-"));
+  try {
+    mkdirSync(join(workspace, "packages/board/src"), { recursive: true });
+    writeFileSync(join(workspace, "packages/board/src/Level.vue"), "");
+    mkdirSync(join(workspace, "node_modules/@mono"), { recursive: true });
+    symlinkSync("../../packages/board", join(workspace, "node_modules/@mono/board"), "dir");
+    const linked = {
+      path: join(workspace, "node_modules/@mono/board/src/Level.vue"),
+      line: 0,
+      character: 0,
+    };
+    const definition: RequestSpec = {
+      kind: "definition",
+      name: "d",
+      anchor: { find: "x" },
+      expectPath: "packages/board/src/Level.vue",
+    };
+    assert.equal(judge(definition, [linked], workspace).ok, true);
+    const elsewhere = { ...linked, path: join(workspace, "packages/board/src/Other.vue") };
+    assert.equal(judge(definition, [elsewhere], workspace).ok, false);
+    const references: RequestSpec = {
+      kind: "references",
+      name: "r",
+      anchor: { find: "x" },
+      min: 2,
+    };
+    const real = { ...linked, path: join(workspace, "packages/board/src/Level.vue") };
+    assert.equal(judge(references, [linked, real], workspace).ok, false, "one file, two spellings");
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test("protocol answers normalize across both editors' shapes", () => {

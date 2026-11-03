@@ -8,6 +8,7 @@
  * nothing is asked. The process tree is sampled throughout.
  */
 
+import { realpathSync } from "node:fs";
 import { relative } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -101,10 +102,23 @@ function within<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
   ]);
 }
 
+/** One spelling per file: a workspace package reached through its symlink is the package. */
+function realPath(path: string): string {
+  try {
+    return realpathSync.native(path);
+  } catch (error) {
+    // A file that does not exist has no link to resolve.
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return path;
+    throw error;
+  }
+}
+
 function unique(locations: Location[]): Location[] {
   const seen = new Map<string, Location>();
-  for (const location of locations)
-    seen.set(`${location.path}:${location.line}:${location.character}`, location);
+  for (const location of locations) {
+    const path = realPath(location.path);
+    seen.set(`${path}:${location.line}:${location.character}`, { ...location, path });
+  }
   return [...seen.values()];
 }
 
@@ -134,8 +148,9 @@ export function judge(
     }
     case "definition": {
       const found = unique(answer as Location[]);
+      const root = realPath(workspace);
       const paths = [
-        ...new Set(found.map((item) => relative(workspace, item.path).split("\\").join("/"))),
+        ...new Set(found.map((item) => relative(root, item.path).split("\\").join("/"))),
       ];
       return {
         ok: paths.some((path) => path.endsWith(spec.expectPath)),
