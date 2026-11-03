@@ -12661,6 +12661,36 @@
       }
     },
     {
+      "id": "typechecker/reported-external-11447",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "876f17a393fd1ced591474340887fc06f447d918",
+      "inputs": [
+        {
+          "path": "reported-library-generic-events-11447/input.json",
+          "sha256": "9e8cb4fd8496e90f576e09675a4cb9b766cb75c25cd2da1c33bde6ff5ad28bad",
+          "role": "physically-consumed-latest-original-and-source-owned-generic-payload-error-repair-controls-11447"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_library_generic_events::originals_payload_errors_and_repairs_keep_library_generics; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/reported-model-events-11390",
       "state": "active",
       "targets": [
