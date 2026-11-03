@@ -111,6 +111,8 @@ export function compileFile(
     styles: normalizeStyleBlocks(result.styles, resolved),
     // `src` blocks, then what the compile itself read (pug includes).
     dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
+    // The emitted module's shape, so its output is never parsed again (#3425).
+    ...(result.moduleShape ? { moduleShape: result.moduleShape } : {}),
   };
 
   cache.set(filePath, compiled);
@@ -252,6 +254,7 @@ export function compileBatch(
       fileResult.macroArtifacts = fallback.macroArtifacts;
     }
     delete fileResult.moduleShape;
+    if (fallback.moduleShape !== undefined) fileResult.moduleShape = fallback.moduleShape;
   }
 
   for (const fileResult of result.results) {
@@ -278,6 +281,7 @@ export function compileBatch(
           ...(inlinedByPath.get(fileResult.path)?.dependencies ?? []),
           ...(fileResult.dependencies ?? []),
         ],
+        ...(fileResult.moduleShape ? { moduleShape: fileResult.moduleShape } : {}),
       });
     }
 

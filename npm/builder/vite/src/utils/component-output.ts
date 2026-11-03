@@ -10,10 +10,8 @@ export function assembleComponentOutput(
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
 
   // The native compiler already parsed this module and reports its shape, so
-  // the oxc parse here is redundant (#3425). `??` rather than a required field:
-  // a `.vpc` cache entry written before this existed reads back without it and
-  // simply pays the parse it always paid, so no cache-format bump is needed and
-  // the fallback stays exercised.
+  // the oxc parse here is redundant (#3425, #11544). It reports none only for
+  // output it could not parse, which pays the parse here.
   const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(emitted.code);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;

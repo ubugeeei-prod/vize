@@ -1,5 +1,6 @@
-// #11526: style bindings attach to the `_sfc_main` the assembly exported, so
-// generating a styled module never parses the emitted code again. The probe
+// #11526, #11544: real compiler output carries its module shape and style
+// bindings attach to the `_sfc_main` the assembly exported, so generating a
+// module never parses the emitted code again. The probe
 // runs in a child process because `oxc-parser` must be mocked before the
 // output helpers load.
 import assert from "node:assert/strict";
@@ -16,7 +17,6 @@ mock.module("oxc-parser", {
 });
 const { compileFile } = await import(${JSON.stringify(url("./compiler.ts"))});
 const { generateOutput } = await import(${JSON.stringify(url("./utils/index.ts"))});
-const { analyzeModuleOutput } = await import(${JSON.stringify(url("./utils/module-output.ts"))});
 const cases = {
   setupModule: '<script setup>const n = 1</script><template><p :class="$style.a">{{ n }}</p></template><style module>.a{color:red}</style>',
   optionsModule: '<script>export default { name: "Opt" }</script><template><p :class="classes.a" /></template><style module="classes">.a{color:red}</style>',
@@ -29,8 +29,6 @@ for (const [name, source] of Object.entries(cases)) {
     if (ssr && name === "customElement") continue;
     const file = "/src/" + name + ".vue";
     const compiled = compileFile(file, new Map(), { sourceMap: false, ssr, vapor: false }, source);
-    // The shape the native compiler reports; \`compileFile\` drops it (#11544).
-    compiled.moduleShape ??= analyzeModuleOutput(compiled.code);
     parses = 0;
     const code = generateOutput(compiled, {
       isProduction: false, isDev: false, ssr, filePath: file, customElement: name === "customElement",
@@ -60,7 +58,7 @@ const { out: results, noDefault }: { out: Record<string, Probe>; noDefault: Prob
 );
 
 for (const [name, { parses, code }] of Object.entries(results)) {
-  assert.equal(parses, 0, `${name}: generating a styled module must not re-parse it`);
+  assert.equal(parses, 0, `${name}: generating the module must not re-parse it`);
   const exported = code.indexOf("export default _sfc_main");
   assert.ok(exported >= 0, `${name}: the component stays the default export`);
   const binding = name.startsWith("customElement")
