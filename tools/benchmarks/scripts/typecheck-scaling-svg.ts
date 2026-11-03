@@ -16,6 +16,14 @@ const SERIES = [
   ["#e87ba4", "#d55181"],
 ] as const;
 
+const LIGHT = { surface: "#fcfcfb", ink: "#0b0b0b", muted: "#52514e", grid: "#e4e3df" };
+const DARK = { surface: "#1a1a19", ink: "#f0efec", muted: "#c3c2b7", grid: "#3a3936" };
+const color = (index: number, mode: 0 | 1) => SERIES[index % SERIES.length]?.[mode] ?? LIGHT.ink;
+const line = (index: number) =>
+  `class="s${index}" fill="none" stroke-width="2" stroke-linejoin="round" stroke="${color(index, 0)}"`;
+const dot = (index: number) =>
+  `class="f${index} dot" stroke="${LIGHT.surface}" stroke-width="2" fill="${color(index, 0)}"`;
+
 type Panel = { title: string; unit: string; value: (row: Row) => number | null };
 const PANELS: Panel[] = [
   { title: "Wall", unit: "s", value: (row) => (row.wallMs == null ? null : row.wallMs / 1000) },
@@ -85,25 +93,22 @@ export function renderScalingSvg(results: ScalingResults): string {
   const out: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-labelledby="title">`,
     `<title id="title">Type-check cost against project size, ${escape(results.sha.slice(0, 12))}</title>`,
+    // Light colors are attributes, so renderers without CSS still draw them; dark mode overrides by class.
     "<style>",
-    "svg{--surface:#fcfcfb;--ink:#0b0b0b;--muted:#52514e;--grid:#e4e3df;font-family:system-ui,sans-serif;font-size:11px}",
-    ...tools.map((_, index) => `svg{--s${index}:${SERIES[index % SERIES.length]?.[0]}}`),
-    "@media (prefers-color-scheme: dark){svg{--surface:#1a1a19;--ink:#f0efec;--muted:#c3c2b7;--grid:#3a3936}",
-    ...tools.map((_, index) => `svg{--s${index}:${SERIES[index % SERIES.length]?.[1]}}`),
-    "}",
-    "text{fill:var(--ink)}.muted{fill:var(--muted)}.grid{stroke:var(--grid);stroke-width:1}",
-    ".line{fill:none;stroke-width:2;stroke-linejoin:round}.dot{stroke:var(--surface);stroke-width:2}",
+    "svg{font-family:system-ui,sans-serif;font-size:11px}",
+    `@media (prefers-color-scheme: dark){.bg{fill:${DARK.surface}}.ink{fill:${DARK.ink}}.muted{fill:${DARK.muted}}.grid{stroke:${DARK.grid}}.dot{stroke:${DARK.surface}}${tools.map((_, index) => `.s${index}{stroke:${color(index, 1)}}.f${index}{fill:${color(index, 1)}}`).join("")}}`,
     "</style>",
-    `<rect width="${width}" height="${height}" fill="var(--surface)"/>`,
+    `<rect class="bg" width="${width}" height="${height}" fill="${LIGHT.surface}"/>`,
+    `<g class="ink" fill="${LIGHT.ink}">`,
     `<text x="${GAP}" y="24" font-size="15" font-weight="600">Type-check cost against project size</text>`,
-    `<text x="${GAP}" y="42" class="muted">${escape(`${results.sha.slice(0, 12)} · ${results.runner} · median of ${results.runs} warm runs · flat bottom-row lines are linear`)}</text>`,
+    `<text x="${GAP}" y="42" class="muted" fill="${LIGHT.muted}">${escape(`${results.sha.slice(0, 12)} · ${results.runner} · median of ${results.runs} warm runs · flat bottom-row lines are linear`)}</text>`,
   ];
   let legendX = GAP;
   tools.forEach((cell, index) => {
     const dash = cell.vize ? "" : ' stroke-dasharray="5 3"';
     out.push(
-      `<line x1="${legendX}" y1="58" x2="${legendX + 22}" y2="58" class="line" stroke="var(--s${index})"${dash}/>`,
-      `<circle cx="${legendX + 11}" cy="58" r="4" class="dot" fill="var(--s${index})"/>`,
+      `<line x1="${legendX}" y1="58" x2="${legendX + 22}" y2="58" ${line(index)}${dash}/>`,
+      `<circle cx="${legendX + 11}" cy="58" r="4" ${dot(index)}/>`,
       `<text x="${legendX + 28}" y="62">${escape(cell.label)}</text>`,
     );
     legendX += 40 + cell.label.length * 6.2;
@@ -119,23 +124,23 @@ export function renderScalingSvg(results: ScalingResults): string {
     const px = (sfcs: number) => x0 + PAD.left + (sfcs / maxSize) * plotW;
     const py = (value: number) => y0 + PAD.top + plotH - (value / top) * plotH;
     out.push(
-      `<text x="${x0}" y="${y0 + 14}" font-weight="600">${escape(panel.title)} <tspan class="muted" font-weight="400">(${panel.unit})</tspan></text>`,
+      `<text x="${x0}" y="${y0 + 14}" font-weight="600">${escape(panel.title)} <tspan class="muted" fill="${LIGHT.muted}" font-weight="400">(${panel.unit})</tspan></text>`,
     );
     for (let tick = 0; tick <= 4; tick++) {
       const value = (top * tick) / 4;
       const y = py(value);
       out.push(
-        `<line x1="${x0 + PAD.left}" y1="${y}" x2="${x0 + PAD.left + plotW}" y2="${y}" class="grid"/>`,
-        `<text x="${x0 + PAD.left - 6}" y="${y + 4}" text-anchor="end" class="muted">${label(value)}</text>`,
+        `<line x1="${x0 + PAD.left}" y1="${y}" x2="${x0 + PAD.left + plotW}" y2="${y}" class="grid" stroke="${LIGHT.grid}"/>`,
+        `<text x="${x0 + PAD.left - 6}" y="${y + 4}" text-anchor="end" class="muted" fill="${LIGHT.muted}">${label(value)}</text>`,
       );
     }
     for (const sfcs of sizes) {
       out.push(
-        `<text x="${px(sfcs)}" y="${y0 + PANEL_H - PAD.bottom + 16}" text-anchor="middle" class="muted">${sfcs >= 1000 ? `${sfcs / 1000}k` : sfcs}</text>`,
+        `<text x="${px(sfcs)}" y="${y0 + PANEL_H - PAD.bottom + 16}" text-anchor="middle" class="muted" fill="${LIGHT.muted}">${sfcs >= 1000 ? `${sfcs / 1000}k` : sfcs}</text>`,
       );
     }
     out.push(
-      `<text x="${x0 + PAD.left + plotW / 2}" y="${y0 + PANEL_H - 4}" text-anchor="middle" class="muted">SFCs</text>`,
+      `<text x="${x0 + PAD.left + plotW / 2}" y="${y0 + PANEL_H - 4}" text-anchor="middle" class="muted" fill="${LIGHT.muted}">SFCs</text>`,
     );
     tools.forEach((cell, index) => {
       const points = rows
@@ -148,15 +153,15 @@ export function renderScalingSvg(results: ScalingResults): string {
       if (points.length === 0) return;
       const dash = cell.vize ? "" : ' stroke-dasharray="5 3"';
       out.push(
-        `<polyline class="line" stroke="var(--s${index})"${dash} points="${points.map((p) => `${px(p.sfcs).toFixed(1)},${py(p.value).toFixed(1)}`).join(" ")}"/>`,
+        `<polyline ${line(index)}${dash} points="${points.map((p) => `${px(p.sfcs).toFixed(1)},${py(p.value).toFixed(1)}`).join(" ")}"/>`,
       );
       for (const point of points) {
         out.push(
-          `<circle cx="${px(point.sfcs).toFixed(1)}" cy="${py(point.value).toFixed(1)}" r="4" class="dot" fill="var(--s${index})"><title>${escape(`${cell.label}, ${point.sfcs} SFCs: ${label(point.value)} ${panel.unit}`)}</title></circle>`,
+          `<circle cx="${px(point.sfcs).toFixed(1)}" cy="${py(point.value).toFixed(1)}" r="4" ${dot(index)}><title>${escape(`${cell.label}, ${point.sfcs} SFCs: ${label(point.value)} ${panel.unit}`)}</title></circle>`,
         );
       }
     });
   });
-  out.push("</svg>");
+  out.push("</g>", "</svg>");
   return `${out.join("\n")}\n`;
 }
