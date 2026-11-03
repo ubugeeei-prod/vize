@@ -164,19 +164,82 @@ function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   assert.deepEqual(report, before);
 }
 
+// #11652 posts the PR test report after the unchanged gate; invert exactly that.
+const testReportSteps = [
+  {
+    name: "Download test case reports",
+    id: "cases",
+    if: "${{ !cancelled() }}",
+    "continue-on-error": true,
+    uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+    with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" },
+  },
+  {
+    name: "Report test results",
+    if: "${{ !cancelled() }}",
+    "continue-on-error": true,
+    env: {
+      GITHUB_TOKEN: "${{ github.token }}",
+      TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
+      TEST_REPORT_CASES: "${{ steps.cases.outcome }}",
+      TEST_REPORT_CASES_DIR: "${{ runner.temp }}/test-cases",
+      TEST_REPORT_HEAD_SHA:
+        "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
+      TEST_REPORT_PR_NUMBER:
+        "${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}",
+    },
+    run: "node tools/support/compat/github/comment-test-report.ts",
+  },
+];
+
+function restoreTestReportComment(workflow: Workflow, original: Workflow) {
+  const before = original.jobs["test-report"];
+  const steps = before.steps ?? [];
+  const gate = steps.at(-1);
+  assert.equal(gate?.name, "Require every needed job to succeed");
+  assert.deepEqual(workflow.jobs["test-report"], {
+    ...before,
+    permissions: { ...(before.permissions as Record<string, string>), "pull-requests": "write" },
+    steps: [...steps.slice(0, -1), { ...gate, id: "gate" }, ...testReportSteps],
+  });
+  workflow.jobs["test-report"] = structuredClone(before);
+}
+
+// The same change names each tooling shard's case packet after its job.
+function restoreToolingCasePacketJob(workflow: Workflow, original: Workflow) {
+  const before = original.jobs["affected-tooling"];
+  const steps = before.steps ?? [];
+  const worker = steps.at(-1);
+  assert.equal(worker?.uses, "./.github/actions/test-affected-tooling");
+  assert.deepEqual(workflow.jobs["affected-tooling"], {
+    ...before,
+    steps: [
+      ...steps.slice(0, -1),
+      {
+        ...worker,
+        with: { ...(worker.with as Record<string, string>), job: before.name },
+      },
+    ],
+  });
+  workflow.jobs["affected-tooling"] = structuredClone(before);
+}
+
 test("the seven runner selectors and exact runtime steps preserve every original job", () => {
   let changed = 0,
     protectedJobs = 0;
   for (const { specification, before, after } of workflows) {
     const restored = structuredClone(after);
-    if (specification.name === "check")
+    if (specification.name === "check") {
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreTestReportComment(restored, before);
+    }
     if (specification.name === "pr-source-checks") {
       restoreHistoryToolchainSelection(
         restored.jobs["ci-selection-tests"],
         before.jobs["ci-selection-tests"],
       );
       restoreEmptyPrToolingBuild(restored, before);
+      restoreToolingCasePacketJob(restored, before);
     }
     for (const id of specification.jobs) {
       const original = before.jobs[id],
@@ -342,4 +405,41 @@ test("full scheduled and manual native producers keep their original runner", ()
     const expected = fastEvents.includes(event) ? hosted : oldRunner;
     assert.equal(evaluate(selector, context(event, "true", false)), expected, event);
   }
+});
+
+test("test report inversions reject any other change to the report or tooling jobs", () => {
+  const find = (name: string) => {
+    const entry = workflows.find((candidate) => candidate.specification.name === name);
+    assert(entry);
+    return entry;
+  };
+  const check = find("check");
+  for (const mutate of [
+    (current: Workflow) => {
+      current.jobs["test-report"].permissions = { contents: "write" };
+    },
+    (current: Workflow) => {
+      const steps = current.jobs["test-report"].steps;
+      assert(steps);
+      steps.at(-1)!.run = "true";
+    },
+    (current: Workflow) => {
+      const steps = current.jobs["test-report"].steps;
+      assert(steps);
+      delete steps.at(-1)!["continue-on-error"];
+    },
+    (current: Workflow) => {
+      current.jobs["test-report"].steps?.push({ name: "Another step", run: "true" });
+    },
+  ]) {
+    const current = structuredClone(check.after);
+    mutate(current);
+    assert.throws(() => restoreTestReportComment(current, check.before), assert.AssertionError);
+  }
+  const source = find("pr-source-checks");
+  const renamed = structuredClone(source.after);
+  const worker = renamed.jobs["affected-tooling"].steps?.at(-1);
+  assert(worker);
+  worker.with = { ...(worker.with as Record<string, string>), job: "Affected tooling" };
+  assert.throws(() => restoreToolingCasePacketJob(renamed, source.before), assert.AssertionError);
 });
