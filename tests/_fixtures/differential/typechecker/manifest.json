@@ -13182,6 +13182,45 @@
       }
     },
     {
+      "id": "typechecker/regression/vendored-vue-declaration-11496",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "vendored-vue-declaration-11496/Foo.vue.txt",
+          "sha256": "a5a05e4cf723919af42c1f7d9b8f1ebe6162ea3ccd269d3a5e263d68c47c2267",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vendored-vue-declaration-11496/Probe.vue.txt",
+          "sha256": "c4757fa5bc0f176cc7d144d556a1bfd18d9de4052277aed370f2f7d325463ebd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vendored-vue-declaration-11496/tsconfig.json.txt",
+          "sha256": "6d39de5662d14f91613ca88af39480946ca02215d4f856cc623c9b59279cf13e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_vendored_vue_declaration_cli::consumers_of_emitted_component_declarations_report_vue_tsc_diagnostics; reported #11496 consumer of a vendored Foo.vue.d.ts emitted by vize check --declaration and by vue-tsc, with a valid control and genuine wrong-value, missing-prop and wrong-listener diagnostics matched against vue-tsc. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/windows-verbatim-overlay-11145",
       "state": "active",
       "targets": [

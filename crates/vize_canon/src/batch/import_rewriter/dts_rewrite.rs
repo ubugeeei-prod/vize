@@ -23,11 +23,9 @@ pub(super) fn rewrite_relative_dts_specifier(
     if !(path.starts_with("./") || path.starts_with("../")) {
         return None;
     }
-    if path.ends_with(".vue") {
-        return None;
-    }
     // Use the same candidate order as reachability: an adjacent source file
-    // must win over a declaration, and authored .js imports can resolve .d.ts.
+    // must win over a declaration, authored .js imports can resolve .d.ts, and
+    // a .vue import without its SFC resolves the .vue.d.ts beside it.
     let resolved = resolve_dependency(path, source_dir, project_root, &[])?;
     if !is_declaration_path(&resolved) {
         return None;
