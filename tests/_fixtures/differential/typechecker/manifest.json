@@ -12007,6 +12007,40 @@
       }
     },
     {
+      "id": "typechecker/regression/art-generic-attribute-11575",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "art-generic-attribute-11575/Generic.art.vue.txt",
+          "sha256": "59f619141311989958f2f575de5fe9202ff0156b10871002d277c8326239a092",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "art-generic-attribute-11575/tsconfig.json.txt",
+          "sha256": "bc8a3b395534eaaf1f7e36d242a0274b432003aa1b3dd4f06bf77107b8d8b179",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "tests/tooling/lsp-art-generic-attribute.test.ts; reported #11575 Art script setup generic attribute, whose type parameters were absent from every Art projection. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/cold-package-shadow-routes-11265",
       "state": "active",
       "targets": [

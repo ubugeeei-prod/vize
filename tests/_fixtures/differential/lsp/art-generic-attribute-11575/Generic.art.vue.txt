@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string">
+const props = defineProps<{ value: T }>();
+const local: T = props.value;
+</script>
+<art title="Generic"><variant name="Default"><div>{{ local }}</div></variant></art>

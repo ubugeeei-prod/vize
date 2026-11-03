@@ -46,7 +46,7 @@ pub(crate) struct GenericParameter {
 /// Prepared once, then borrowed by every projection consumer. Invalid input
 /// retains its authored spelling so native TypeScript still diagnoses it.
 #[derive(Debug)]
-pub(crate) struct GenericParameters {
+pub struct GenericParameters {
     raw: String,
     trailing_line_comment: bool,
     pub(crate) parameters: Vec<GenericParameter>,
@@ -75,7 +75,7 @@ impl GenericParameters {
     }
 
     /// The plan of `<script setup generic="...">`, anchored at its value.
-    pub(crate) fn from_setup(
+    pub fn from_setup(
         source: &str,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     ) -> Option<Self> {
@@ -270,12 +270,13 @@ impl GenericParameters {
         plan
     }
 
-    #[cfg(test)]
-    pub(crate) fn raw(&self) -> &str {
+    /// The authored attribute value.
+    pub fn raw(&self) -> &str {
         &self.raw
     }
 
-    pub(crate) fn authored(&self) -> &str {
+    /// The list as written into a signature.
+    pub fn authored(&self) -> &str {
         &self.authored
     }
 
@@ -286,7 +287,7 @@ impl GenericParameters {
 
     /// Rows of [`Self::authored`] written at generated `start`: the one
     /// authored owner of the attribute, for diagnostics and navigation alike.
-    pub(crate) fn authored_rows(&self, start: usize) -> impl Iterator<Item = VizeMapping> + '_ {
+    pub fn authored_rows(&self, start: usize) -> impl Iterator<Item = VizeMapping> + '_ {
         self.origin.into_iter().flat_map(move |origin| {
             self.raw_rows.iter().map(move |(generated, authored)| {
                 VizeMapping::new(

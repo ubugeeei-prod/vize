@@ -34,7 +34,7 @@ mod reference_paths;
 pub(crate) use generator::generic_recovery;
 pub(crate) use reference_paths::validate_reference_paths;
 pub(crate) mod generic_parameters;
-pub use generic_parameters::authored_generic_range;
+pub use generic_parameters::{GenericParameters, authored_generic_range};
 mod helpers;
 mod import_meta;
 pub mod incremental;
@@ -77,9 +77,9 @@ mod unknown_props_tests;
 
 pub use generator::setup_helpers::owned_emit_navigation_source_ranges;
 pub use generator::{
-    entry::generate_virtual_ts_with_split_offsets, generate_virtual_ts,
-    generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_legacy_vue2,
-    generate_virtual_ts_with_offsets_options_api,
+    entry::generate_virtual_ts_with_generic, entry::generate_virtual_ts_with_split_offsets,
+    generate_virtual_ts, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
 #[cfg(feature = "native")]

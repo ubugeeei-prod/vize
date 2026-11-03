@@ -772,6 +772,50 @@
       }
     },
     {
+      "id": "lsp/regression/art-generic-attribute-11575",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "art-generic-attribute-11575",
+        "files": [
+          {
+            "path": "Generic.art.vue.txt",
+            "sha256": "59f619141311989958f2f575de5fe9202ff0156b10871002d277c8326239a092"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "bc8a3b395534eaaf1f7e36d242a0274b432003aa1b3dd4f06bf77107b8d8b179"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-generic-attribute-11575/case.json",
+        "sha256": "1d1889de73e927666e75d0dded57d82fbee4d81889a59f6e5ebac0607b8b02f8"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/art-range-formatting-6098",
       "state": "active",
       "targets": [

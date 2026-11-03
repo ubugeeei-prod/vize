@@ -4,6 +4,7 @@
 
 use vize_croquis::Croquis;
 
+use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput};
 
 use super::generate_virtual_ts_with_offsets_and_checks;
@@ -76,6 +77,37 @@ pub fn generate_virtual_ts_with_split_offsets(
         options,
         VirtualTsGenerationOptions {
             split_script_setup_offsets,
+            ..Default::default()
+        },
+    )
+}
+
+/// [`generate_virtual_ts_with_split_offsets`] with the descriptor's anchored
+/// `<script setup generic>` plan, so the setup signature maps onto the attribute.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the split entry plus the anchored plan"
+)]
+pub fn generate_virtual_ts_with_generic(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    split_script_setup_offsets: Option<(usize, usize)>,
+    generic: Option<&GenericParameters>,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            split_script_setup_offsets,
+            generic_parameters: generic,
             ..Default::default()
         },
     )
