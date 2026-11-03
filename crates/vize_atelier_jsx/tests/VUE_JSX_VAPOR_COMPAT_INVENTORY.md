@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers twenty-three behaviors. It is not a claim that the
+The current bounded cohort covers twenty-five behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -45,6 +45,8 @@ a reviewed update to the executable verdict inventory.
 | `directives/v-model-text`           | equivalent | input events and direct state patches preserve the live model binding           |
 | `directives/v-show-value`           | equivalent | value-sensitive visibility updates match both real JSX references               |
 | `directives/v-show-component-value` | equivalent | value-sensitive component visibility matches both real JSX references           |
+| `directives/v-html-value`           | equivalent | value-sensitive raw HTML matches each backend's own JSX reference               |
+| `children/dynamic-value`            | equivalent | value-sensitive child values match each backend's own JSX reference             |
 | `components/scoped-default-slot`    | equivalent | component props and a scoped slot closure update independently                  |
 | `components/named-slot-updates`     | equivalent | named slot captures and component props update independently                    |
 
@@ -103,6 +105,23 @@ identity: Babel retains the truthy branch, while `vue-jsx-vapor` replaces it
 when the truthy condition value changes. The executable verdict pins that
 identity difference while still requiring identical DOM, text and diagnostics
 across all phases.
+
+The v-html-value and child-value rows are the value-sensitive counterparts of
+the Babel oracle's equivalent `directives/v_html` and `optimize/text_only` rows.
+At some phases the two references disagree with each other, without Vize:
+
+- v-html, phases 3 and 4: after `NaN`, Vue's VDOM renderer keeps the stale
+  markup for `null` and `undefined`. `patchElement` clears `innerHTML` only
+  when the previous value is truthy. Vapor's `setHtml` clears it.
+- child value, phase 8: `vue-jsx-vapor` stringifies the nested VNode to
+  `[object Object]`, while Babel renders its DOM.
+
+Each verdict records those phases as `referenceConflicts`. The oracle still
+requires Vize Vapor to equal `vue-jsx-vapor` and Vize VDOM to equal Babel in
+every phase. It allows the two Vize backends to differ only at the recorded
+phases, and only while the references still differ there. `expectedVdomText`
+and `expectedVdomElementIdentities` pin the VDOM side of each conflict. The
+differences are upstream's; Vize does not paper over either runtime.
 
 Run the focused oracle with:
 
