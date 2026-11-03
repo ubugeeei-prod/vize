@@ -5,7 +5,7 @@ use super::helpers::{
 use vize_carton::config::VueVersion;
 
 const PUBLIC_BASE_GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
-const PUBLIC_BASE_ALIAS: &str = "type $ComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
+const PUBLIC_BASE_ALIAS: &str = "type $ComponentPublicBase = $MappedOmit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
 const TEMPLATE_CONTEXT_GUARD: &str = "    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.";
 const TEMPLATE_CONTEXT_ALIAS: &str = "    type __Ctx = import('vue').ComponentPublicInstance;";
 

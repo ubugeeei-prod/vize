@@ -273,7 +273,7 @@ type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & s
 type $PublicSlots<T> = [keyof T] extends [never]
   ? import("vue").ComponentPublicInstance["$slots"]
   : T;
-type $ComponentPublicBase = Omit<
+type $ComponentPublicBase = $MappedOmit<
   // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
   import("vue").ComponentPublicInstance,
   "$props" | "$emit" | "$slots"

@@ -34,9 +34,10 @@ pub(super) fn slot_resolver_field(
 /// diagnostics and mapped key witnesses can prevent generic inference. They accept Vue's global
 /// HTML attr surface (`id`, camelized `aria-*`, `data*`, etc.) even when the
 /// generated child is closed, matching the strict non-generic checker. What
-/// they must not need is an unconditional string index: generated parents
-/// already know whether this generated child can fall attributes through, so
-/// arbitrary unknown props should only be accepted by a real fallthrough target.
+/// they must not need is an unconditional string index when unknown props are
+/// checked: generated parents already know whether this generated child can
+/// fall attributes through. An explicitly open project policy keeps its tail
+/// open even when inheritAttrs:false leaves no forwarding target.
 /// Keep the generic fallthrough tail value-open: intersecting native element
 /// props here makes declared component props such as `color` collide with DOM
 /// attributes, while non-generic usages still get value-sensitive fallthrough
@@ -45,6 +46,7 @@ pub(super) fn generic_check_props_param(
     generic_names: &str,
     fallthrough_props_ref: Option<&str>,
     props_type: &str,
+    check_unknown_props: bool,
     check_unknown_fallthrough_props: bool,
     strict_component_attrs: bool,
 ) -> String {
@@ -53,6 +55,13 @@ pub(super) fn generic_check_props_param(
     );
     if !strict_component_attrs {
         param.push_str(" & $ComponentGlobalHtmlAttrs");
+    }
+    // A parent's explicit checkUnknownProps policy applies to generic children
+    // too, even when inheritAttrs:false leaves no fallthrough target. The
+    // declared Props<T> side still checks required names and their value types.
+    if !check_unknown_props {
+        param.push_str(" & Record<string, unknown>");
+        return param;
     }
     if let Some(fallthrough) = fallthrough_props_ref {
         if check_unknown_fallthrough_props || strict_component_attrs {
@@ -78,6 +87,7 @@ mod tests {
                 Some("Partial<$NativeElement<\"span\">>"),
                 "Props",
                 true,
+                true,
                 false
             ),
             vize_l0::cstr!(
@@ -89,25 +99,36 @@ mod tests {
                 "T",
                 Some("Partial<$NativeElement<\"span\">>"),
                 "Props",
+                true,
                 false,
                 false
             ),
             vize_l0::cstr!("{closed} & Record<string, unknown>")
         );
         assert_eq!(
-            generic_check_props_param("T", None, "Props", true, false),
+            generic_check_props_param("T", None, "Props", true, true, false),
             closed
         );
         assert_eq!(
-            generic_check_props_param("T", None, "Props", false, false),
+            generic_check_props_param("T", None, "Props", true, false, false),
             closed
         );
+    }
+    #[test]
+    fn explicit_open_unknown_props_preserves_the_declared_generic_contract() {
+        let expected = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>";
+        for fallthrough in [None, Some("Partial<$NativeElement<\"span\">>")] {
+            assert_eq!(
+                generic_check_props_param("T", fallthrough, "Props", false, false, false),
+                expected
+            );
+        }
     }
     #[test]
     fn strict_component_attrs_keeps_only_declared_public_and_inferred_keys() {
         let declared = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps";
         assert_eq!(
-            generic_check_props_param("T", None, "Props", false, true),
+            generic_check_props_param("T", None, "Props", true, false, true),
             declared
         );
         assert_eq!(
@@ -115,6 +136,7 @@ mod tests {
                 "T",
                 Some("Partial<$NativeElement<\"div\">>"),
                 "Props",
+                true,
                 false,
                 true
             ),

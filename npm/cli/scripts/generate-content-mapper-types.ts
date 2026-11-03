@@ -17,7 +17,7 @@ const sources = [
 const contents = sources.map((source) => readFileSync(path.join(root, source), "utf8"));
 const componentPublicBaseIgnore =
   "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
-const componentPublicBaseDeclaration = "type $ComponentPublicBase = Omit<";
+const componentPublicBaseDeclaration = "type $ComponentPublicBase = $MappedOmit<";
 const rawDeclarations = contents.join("\n").replaceAll("\r\n", "\n");
 assert.ok(
   rawDeclarations.includes(`${componentPublicBaseIgnore}\n${componentPublicBaseDeclaration}`),
