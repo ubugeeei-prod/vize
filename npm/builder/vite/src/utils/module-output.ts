@@ -11,6 +11,7 @@ type AstNode = {
   [key: string]: unknown;
 };
 
+/** The native `moduleShape`: offsets are UTF-8 bytes into the module. */
 export type ModuleOutputInfo = {
   hasDefaultExport: boolean;
   hasSfcMainDefined: boolean;
@@ -20,12 +21,14 @@ export type ModuleOutputInfo = {
   defaultExportStart: number | null;
   /** End offset of the whole `export default ...` statement, or `null`. */
   defaultExportEnd: number | null;
-  /**
-   * Whether the default export's declaration is exactly the `_sfc_main`
-   * identifier -- the only shape {@link insertBeforeSfcMainDefaultExport} acts on.
-   */
+  /** Whether the default export's declaration is exactly the `_sfc_main` identifier. */
   defaultExportIsSfcMain: boolean;
 };
+
+/** oxc and string indices count UTF-16 units; the native shape counts UTF-8 bytes. */
+function byteOffset(code: string, index: number | null): number | null {
+  return index == null ? null : Buffer.byteLength(code.slice(0, index));
+}
 
 function isNode(value: unknown): value is AstNode {
   return value != null && typeof value === "object" && typeof (value as AstNode).type === "string";
@@ -149,8 +152,8 @@ function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
     hasSfcMainDefined: false,
     hasNamedRenderExport: false,
     hasNamedSsrRenderExport: false,
-    defaultExportStart,
-    defaultExportKeywordEnd: defaultExportStart + EXPORT_DEFAULT.length,
+    defaultExportStart: byteOffset(code, defaultExportStart),
+    defaultExportKeywordEnd: byteOffset(code, defaultExportStart + EXPORT_DEFAULT.length),
     // The fast path is only taken when `_sfc_main` does not occur anywhere in
     // the module, so the default export cannot be that identifier and no caller
     // needs the statement's end offset.
@@ -196,48 +199,9 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
     }),
     hasNamedRenderExport: exportedNames.includes("render"),
     hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
-    defaultExportKeywordEnd,
-    defaultExportStart,
-    defaultExportEnd: getNodeEnd(defaultExport),
+    defaultExportKeywordEnd: byteOffset(code, defaultExportKeywordEnd),
+    defaultExportStart: byteOffset(code, defaultExportStart),
+    defaultExportEnd: byteOffset(code, getNodeEnd(defaultExport)),
     defaultExportIsSfcMain: isSfcMainDefaultExport(defaultExport),
   };
-}
-
-export function rewriteDefaultExportToSfcMain(
-  code: string,
-  moduleInfo: Pick<ModuleOutputInfo, "defaultExportKeywordEnd" | "defaultExportStart"> = {
-    defaultExportKeywordEnd: null,
-    defaultExportStart: null,
-  },
-): string {
-  let exportStart = moduleInfo.defaultExportStart;
-  let keywordEnd = moduleInfo.defaultExportKeywordEnd;
-  if (exportStart == null || keywordEnd == null) {
-    const defaultExport = findDefaultExport(parseProgram(code));
-    exportStart = getNodeStart(defaultExport);
-    keywordEnd = defaultExport ? getExportDefaultKeywordEnd(code, defaultExport) : null;
-  }
-  if (exportStart == null || keywordEnd == null) {
-    return code;
-  }
-
-  return `${code.slice(0, exportStart)}const ${SFC_MAIN_NAME} =${code.slice(keywordEnd)}`;
-}
-
-/**
- * Insert `insertion` before `export default _sfc_main`. `moduleInfo` must
- * describe `code` exactly (offsets are used verbatim), so the module is never
- * parsed again (#3425).
- */
-export function insertBeforeSfcMainDefaultExport(
-  code: string,
-  insertion: string,
-  moduleInfo: Pick<ModuleOutputInfo, "defaultExportStart" | "defaultExportIsSfcMain">,
-): string {
-  const exportStart = moduleInfo.defaultExportStart;
-  if (!moduleInfo.defaultExportIsSfcMain || exportStart == null) {
-    return code;
-  }
-
-  return `${code.slice(0, exportStart)}${insertion}\n${code.slice(exportStart)}`;
 }

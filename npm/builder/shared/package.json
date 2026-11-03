@@ -6,6 +6,7 @@
   "exports": {
     "./mapped-module": "./mapped-module.ts",
     "./module-output": "./module-output.ts",
+    "./native-shape": "./native-shape.ts",
     "./hot-reload": "./hot-reload.ts"
   },
   "dependencies": {

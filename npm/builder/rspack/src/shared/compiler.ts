@@ -209,6 +209,7 @@ export function compileFile(
     isCustomElement,
     templateAssetUrls,
     macroArtifacts: result.macroArtifacts ?? [],
+    moduleShape: result.moduleShape,
   };
 
   // Only cache successful compilations

@@ -4,9 +4,9 @@
  *
  * The native compiler returns a map for the module it emitted. `generateOutput`
  * then rewrites that module: it prepends a `<style>` injection, splices style
- * imports in after the last static import, inserts CSS-module wiring before the
- * default export, rewrites `export default` to `const _sfc_main =`, and appends
- * `__scopeId`/HMR code. All of those are whole-line insertions or same-line
+ * imports in after the last static import, rewrites `export default` to
+ * `const _sfc_main =`, and appends `__scopeId`, CSS-module wiring and HMR
+ * code. All of those are whole-line insertions or same-line
  * substitutions, which is exactly the class of edit a v3 `mappings` string can
  * absorb without being decoded:
  *
@@ -89,5 +89,10 @@ export class MappedModule {
     const editLine = countNewlines(previous.slice(0, prefix));
     const startsAtLineStart = prefix === 0 || previous.charCodeAt(prefix - 1) === 10;
     this.map = shiftMappedLines(this.map, startsAtLineStart ? editLine : editLine + 1, addedLines);
+  }
+
+  /** Replace `code[start, end)`, in UTF-16 indices. */
+  replace(start: number, end: number, text: string): void {
+    this.edit(`${this.code.slice(0, start)}${text}${this.code.slice(end)}`);
   }
 }

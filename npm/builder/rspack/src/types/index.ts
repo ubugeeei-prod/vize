@@ -1,5 +1,6 @@
 /** Public adapter types; native compiler types remain re-exported here. */
 
+import type { ModuleShapeNapi } from "@vizejs/native";
 import type { MacroArtifact, SfcCompileOptionsNapi } from "./native.ts";
 export type * from "./native.ts";
 
@@ -83,6 +84,8 @@ export interface CompiledModule {
   templateAssetUrls: TemplateAssetUrl[];
   /** Compile-time macro artifacts extracted from the source SFC. */
   macroArtifacts?: MacroArtifact[];
+  /** Shape of `code` reported by the native compiler; absent when compilation failed. */
+  moduleShape?: ModuleShapeNapi;
 }
 
 // Loader Options Types
