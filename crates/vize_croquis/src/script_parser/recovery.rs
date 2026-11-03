@@ -25,32 +25,65 @@ pub fn parse_program_for_analysis<'a>(
     source: &'a str,
     source_type: SourceType,
 ) -> ParserReturn<'a> {
+    let original = parse_original_for_analysis(allocator, source, source_type);
+    match repair(allocator, source, &original) {
+        Some(mut repaired) => {
+            repaired.diagnostics = original.diagnostics;
+            repaired
+        }
+        None => original,
+    }
+}
+
+/// The authored parse that [`recover_program_for_analysis`] may repair.
+pub fn parse_original_for_analysis<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    source_type: SourceType,
+) -> ParserReturn<'a> {
     vize_carton::micro_count!("croquis.oxc.original.bytes", source.len());
-    let original = vize_carton::micro_span!(
+    vize_carton::micro_span!(
         "croquis.oxc.original",
         Parser::new(allocator, source, source_type).parse()
-    );
+    )
+}
+
+/// The repaired parse [`parse_program_for_analysis`] would analyze in place
+/// of a failed `original` of `source`, or `None` when `original` stands.
+pub fn recover_program_for_analysis<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    original: &ParserReturn<'_>,
+) -> Option<ParserReturn<'a>> {
+    repair(allocator, source, original).map(|mut repaired| {
+        repaired.diagnostics.clone_from(&original.diagnostics);
+        repaired
+    })
+}
+
+/// A repaired parse of `source` whose diagnostics the caller replaces with
+/// the authored ones.
+fn repair<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    original: &ParserReturn<'_>,
+) -> Option<ParserReturn<'a>> {
     if !original.panicked && original.diagnostics.is_empty() {
-        return original;
+        return None;
     }
+    let source_type = original.program.source_type;
 
     let (range, replacement, attempts) = if original.panicked {
         // The old first retry parsed these identical bytes only to recover the
         // same operator diagnostic. Reuse it, keeping the other three attempts.
-        let Some(range) = missing_member_operator(&original, source)
-            .or_else(|| incomplete_call_operator(&original, source))
-            .or_else(|| incomplete_call_before_declaration(source))
-        else {
-            return original;
-        };
+        let range = missing_member_operator(original, source)
+            .or_else(|| incomplete_call_operator(original, source))
+            .or_else(|| incomplete_call_before_declaration(source))?;
         let replacement = if range.len() == 2 { "  " } else { " " };
         (range, replacement, 3)
     } else {
-        let Some(range) = incomplete_call_operator(&original, source)
-            .or_else(|| incomplete_call_before_declaration(source))
-        else {
-            return original;
-        };
+        let range = incomplete_call_operator(original, source)
+            .or_else(|| incomplete_call_before_declaration(source))?;
         (range, " ", 4)
     };
     let mut analysis = String::from(source);
@@ -69,8 +102,7 @@ pub fn parse_program_for_analysis<'a>(
             // authored bytes and keep the incomplete operator visible to the
             // native TypeScript diagnostic owner.
             parsed.program.source_text = source;
-            parsed.diagnostics = original.diagnostics;
-            return parsed;
+            return Some(parsed);
         }
         let Some(range) = missing_member_operator(&parsed, view)
             .or_else(|| incomplete_call_operator(&parsed, view))
@@ -80,7 +112,7 @@ pub fn parse_program_for_analysis<'a>(
         };
         analysis.replace_range(range.clone(), if range.len() == 2 { "  " } else { " " });
     }
-    original
+    None
 }
 
 /// A fatal parse can report only the unmatched call's eventual closing point,

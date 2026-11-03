@@ -8,7 +8,6 @@ use super::resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
 use super::{SfcCroquisAnalysis, SfcCroquisOptions, script_content_for_descriptor, unused};
-use crate::types::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_carton::profile;
 use vize_croquis::Drawer;
@@ -29,7 +28,7 @@ pub(super) struct DescriptorObservation<'a> {
 }
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
-    descriptor: &SfcDescriptor<'_>,
+    scripts: &super::SfcScriptParses<'_>,
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
@@ -37,6 +36,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     sources: Option<&crate::script::TypeSourceSnapshot>,
     observation: DescriptorObservation<'_>,
 ) -> SfcCroquisAnalysis {
+    let descriptor = scripts.descriptor();
     let DescriptorObservation {
         occurrences,
         module_exports,
@@ -49,6 +49,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     let mut summary = if CAPTURE {
         let (summary, captured) = analyze_scripts_with_occurrences(
             descriptor,
+            scripts,
             options,
             mode.options_api,
             mode.legacy_vue2,
@@ -58,6 +59,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     } else if let Some(exports) = module_exports {
         let (summary, observed_exports) = analyze_scripts_with_empty_module_exports(
             descriptor,
+            scripts,
             options,
             mode.options_api,
             mode.legacy_vue2,
@@ -65,7 +67,13 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         *exports = observed_exports;
         summary
     } else {
-        analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2)
+        analyze_scripts(
+            descriptor,
+            scripts,
+            options,
+            mode.options_api,
+            mode.legacy_vue2,
+        )
     };
     if let Some(filename) = resolve_filename {
         match sources {

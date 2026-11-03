@@ -3,7 +3,7 @@
 use super::analysis::{
     DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
 };
-use super::{SfcCroquisAnalysis, SfcCroquisOptions};
+use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_croquis::script_parser::AuthoredModuleExport;
@@ -41,8 +41,10 @@ pub fn analyze_sfc_descriptor_with_module_exports(
     legacy_vue2: bool,
 ) -> (SfcCroquisAnalysis, Option<Vec<AuthoredModuleExport>>) {
     let mut exports = None;
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     let analysis = analyze_sfc_descriptor_resolved_impl::<false>(
-        descriptor,
+        &scripts,
         root,
         options,
         DescriptorAnalysisMode {

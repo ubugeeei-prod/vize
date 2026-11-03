@@ -22,8 +22,10 @@ pub(super) fn script_summary(linter: &Linter, descriptor: &SfcDescriptor<'_>) ->
     let root = parsed.as_ref().and_then(|(root, errors)| {
         (!Linter::has_fatal_template_parse_errors(errors)).then_some(root)
     });
+    let script_allocator = oxc_allocator::Allocator::default();
+    let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let mut summary =
-        super::super::super::analyze_descriptor_for_lint(descriptor, root, unused, false);
+        super::super::super::analyze_descriptor_for_lint(&scripts, root, unused, false);
     if let Some(root) = root {
         let reads = v_for_source_reads(root);
         summary.unused_bindings.retain(|name| !reads.contains(name));

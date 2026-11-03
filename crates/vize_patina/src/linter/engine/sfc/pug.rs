@@ -63,10 +63,15 @@ impl Linter {
                 // No partial tree is evidence for template-dependent rules.
                 // Script, style and SFC rules still inspect their original bytes,
                 // just as they do after a fatal HTML template parse error.
-                let mut result = self.lint_sfc_level(source, filename, Some(&descriptor));
+                let script_allocator = oxc_allocator::Allocator::default();
+                let scripts =
+                    crate::linter::sfc_scripts::lint_scripts(&script_allocator, &descriptor);
+                let mut result =
+                    self.lint_sfc_level(source, filename, Some((&descriptor, &scripts)));
                 super::super::super::script_rules::append_builtin_script_diagnostics(
                     self,
                     &descriptor,
+                    &scripts,
                     &mut result,
                     None,
                     None,

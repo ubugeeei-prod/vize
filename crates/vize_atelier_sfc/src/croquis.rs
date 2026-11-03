@@ -10,6 +10,7 @@ mod module_exports;
 mod occurrences;
 mod resolved;
 mod script_demand;
+mod script_parses;
 mod source_offsets;
 mod unused;
 
@@ -28,6 +29,7 @@ pub use occurrences::{
 pub use resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
+pub use script_parses::SfcScriptParses;
 use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr};
 use vize_croquis::{Croquis, DrawerOptions};
@@ -155,13 +157,13 @@ pub fn analyze_sfc_descriptor(
 /// consumer. Ordinary descriptor callers retain their existing allocation path.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_template_reuse(
-    descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
     analyze_sfc_descriptor_resolved_impl::<false>(
-        descriptor,
+        scripts,
         template_ast,
         options,
         DescriptorAnalysisMode {
@@ -216,8 +218,10 @@ fn analyze_sfc_descriptor_with_context_impl(
     legacy_vue2: bool,
     include_script_content: bool,
 ) -> SfcCroquisAnalysis {
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
-        descriptor,
+        &scripts,
         template_ast,
         options,
         DescriptorAnalysisMode {
@@ -248,8 +252,10 @@ pub fn analyze_sfc_descriptor_resolved(
     legacy_vue2: bool,
     filename: &str,
 ) -> SfcCroquisAnalysis {
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
-        descriptor,
+        &scripts,
         template_ast,
         options,
         DescriptorAnalysisMode {
@@ -274,8 +280,10 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
     filename: &str,
     sources: &crate::script::TypeSourceSnapshot,
 ) -> SfcCroquisAnalysis {
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
-        descriptor,
+        &scripts,
         template_ast,
         options,
         DescriptorAnalysisMode {
