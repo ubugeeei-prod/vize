@@ -1,0 +1,50 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createVNode as _createVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[-->`)
+  _push(_ssrRenderComponent(_resolveComponent("Head"), null, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_resolveComponent("Title"), null, {
+          default: _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`${_ssrInterpolate(_ctx.count)} Foo`)
+            } else {
+              return [_createTextVNode(_toDisplayString(_ctx.count) + " Foo")]
+            }
+          }),
+          _: 1
+        }, _parent, _scopeId))
+      } else {
+        return [_createVNode(_resolveComponent("Title"), null, { default: _withCtx(() => [_createTextVNode(_toDisplayString(_ctx.count) + " Foo")]), _: 1 })]
+      }
+    }),
+    _: 1
+  }, _parent))
+  _push(_ssrRenderComponent(_resolveComponent("Meta"), null, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`Foo ${_ssrInterpolate(_ctx.count)}`)
+      } else {
+        return [_createTextVNode("Foo " + _toDisplayString(_ctx.count))]
+      }
+    }),
+    _: 1
+  }, _parent))
+  _push(_ssrRenderComponent(_resolveComponent("Group"), null, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`${_ssrInterpolate(_ctx.count)} ${_ssrInterpolate(_ctx.name)}`)
+      } else {
+        return [_createTextVNode(_toDisplayString(_ctx.count) + " " + _toDisplayString(_ctx.name))]
+      }
+    }),
+    _: 1
+  }, _parent))
+  _push(`<!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -64,7 +64,22 @@ const compilerDialectPromotionIds = new Set([
   "compiler/sfc/scoped-checkout-stability-10067",
 ]);
 
+// Rows whose reference bytes a later compiler fix re-pinned. Only the
+// reference hash may differ; every other field keeps its custody.
+const compilerReferenceRepins = new Map([
+  ["compiler/sfc/vue2-preserve-comment-edges-10065", "#11593 merges slot VNode text runs"],
+]);
+
+function withoutReferenceHash({ reference, ...row }) {
+  const { sha256: _sha256, ...rest } = reference;
+  return { ...row, reference: rest };
+}
+
 function assertPreservedCompilerCase(currentRow, originalRow) {
+  if (compilerReferenceRepins.has(originalRow.id)) {
+    assert.deepEqual(withoutReferenceHash(currentRow), withoutReferenceHash(originalRow));
+    return;
+  }
   if (!compilerDialectPromotionIds.has(originalRow.id)) {
     assert.deepEqual(currentRow, originalRow);
     return;
@@ -94,6 +109,17 @@ await test("binding registration preserves every previous compiler row and pins 
       before.cases.find((row) => row.id === scoped.id),
     ),
   );
+  // A re-pinned row still keeps every field but its reference hash.
+  for (const id of compilerReferenceRepins.keys()) {
+    const repinned = structuredClone(current.cases.find((row) => row.id === id));
+    repinned.reference.path = "foreign/module.expected.txt";
+    assert.throws(() =>
+      assertPreservedCompilerCase(
+        repinned,
+        before.cases.find((row) => row.id === id),
+      ),
+    );
+  }
   for (const pack of before.runtimePacks)
     assert.deepEqual(
       current.runtimePacks.find((candidate) => candidate.path === pack.path),

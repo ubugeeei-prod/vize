@@ -9,7 +9,7 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
       if (_push) {
         _push(`${_ssrInterpolate($setup.a)} `)
       } else {
-        return [_createTextVNode(_toDisplayString($setup.a)), _createTextVNode(" ")]
+        return [_createTextVNode(_toDisplayString($setup.a) + " ")]
       }
     }),
     footer: _withCtx((_, _push, _parent, _scopeId) => {

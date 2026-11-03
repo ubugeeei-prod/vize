@@ -74,49 +74,93 @@ impl<'a> SsrCodegenContext<'a> {
         &mut self,
         children: &[TemplateChildNode<'a>],
     ) -> std::vec::Vec<String> {
-        let mut expressions = std::vec::Vec::new();
-        for child in vize_atelier_core::walk_probe::ssr_children(children) {
-            if let Some(expr) = self.vnode_child_expression(child) {
-                expressions.push(expr);
-            }
-        }
-        expressions
+        self.vnode_child_expressions_of(vize_atelier_core::walk_probe::ssr_children(children))
     }
 
     fn vnode_child_expressions_from_refs(
         &mut self,
         children: &[&TemplateChildNode<'a>],
     ) -> std::vec::Vec<String> {
+        self.vnode_child_expressions_of(
+            vize_atelier_core::walk_probe::ssr_children(children).copied(),
+        )
+    }
+
+    /// Children as VNode expressions. Adjacent text and interpolations become
+    /// one text VNode, as Vue's `transformText` joins them (#11593).
+    fn vnode_child_expressions_of<'n>(
+        &mut self,
+        children: impl Iterator<Item = &'n TemplateChildNode<'a>>,
+    ) -> std::vec::Vec<String>
+    where
+        'a: 'n,
+    {
         let mut expressions = std::vec::Vec::new();
-        for child in vize_atelier_core::walk_probe::ssr_children(children) {
+        let mut run = std::vec::Vec::new();
+        for child in children {
+            if self.push_text_part(child, &mut run) {
+                continue;
+            }
+            self.flush_text_run(&mut run, &mut expressions);
             if let Some(expr) = self.vnode_child_expression(child) {
                 expressions.push(expr);
             }
         }
+        self.flush_text_run(&mut run, &mut expressions);
         expressions
+    }
+
+    /// `child`'s part of a text run: `"text"` or `_toDisplayString(exp)`.
+    /// False for a child that is not text.
+    fn push_text_part(
+        &mut self,
+        child: &TemplateChildNode<'a>,
+        run: &mut std::vec::Vec<String>,
+    ) -> bool {
+        match child {
+            TemplateChildNode::Text(text) => {
+                if !text.content.is_empty() {
+                    run.push(quoted_js_string(text.content));
+                }
+                true
+            }
+            TemplateChildNode::Interpolation(interp) => {
+                self.use_core_helper(RuntimeHelper::ToDisplayString);
+                let mut out = String::from("_toDisplayString(");
+                out.push_str(&self.expression_to_string(&interp.content));
+                out.push(')');
+                run.push(out);
+                true
+            }
+            _ => false,
+        }
+    }
+
+    fn flush_text_run(
+        &mut self,
+        run: &mut std::vec::Vec<String>,
+        expressions: &mut std::vec::Vec<String>,
+    ) {
+        if run.is_empty() {
+            return;
+        }
+        self.use_core_helper(RuntimeHelper::CreateText);
+        let mut out = String::from("_createTextVNode(");
+        out.push_str(&run.join(" + "));
+        out.push(')');
+        expressions.push(out);
+        run.clear();
     }
 
     fn vnode_child_expression(&mut self, child: &TemplateChildNode<'a>) -> Option<String> {
         match child {
             TemplateChildNode::Element(el) => self.vnode_element_expression(el),
-            TemplateChildNode::Text(text) => {
-                if text.content.is_empty() {
-                    return None;
-                }
-                self.use_core_helper(RuntimeHelper::CreateText);
-                let mut out = String::from("_createTextVNode(");
-                out.push_str(&quoted_js_string(text.content));
-                out.push(')');
-                Some(out)
-            }
-            TemplateChildNode::Interpolation(interp) => {
-                self.use_core_helper(RuntimeHelper::CreateText);
-                self.use_core_helper(RuntimeHelper::ToDisplayString);
-                let exp = self.expression_to_string(&interp.content);
-                let mut out = String::from("_createTextVNode(_toDisplayString(");
-                out.push_str(&exp);
-                out.push_str("))");
-                Some(out)
+            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
+                let mut run = std::vec::Vec::new();
+                let mut expressions = std::vec::Vec::new();
+                self.push_text_part(child, &mut run);
+                self.flush_text_run(&mut run, &mut expressions);
+                expressions.pop()
             }
             TemplateChildNode::Comment(comment) if comment.directive.is_some() => None,
             TemplateChildNode::Comment(comment) => {

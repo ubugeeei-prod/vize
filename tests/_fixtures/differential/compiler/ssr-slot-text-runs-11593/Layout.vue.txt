@@ -1,0 +1,7 @@
+<template>
+  <Head>
+    <Title>{{ count }} Foo</Title>
+  </Head>
+  <Meta>Foo {{ count }}</Meta>
+  <Group>{{ count }} {{ name }}</Group>
+</template>
