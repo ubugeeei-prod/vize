@@ -69,11 +69,8 @@ const serializedDavinci = /["'`]davinci\.[a-z0-9_]+[. ]/g;
 const capturePattern =
   /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
 
-// This gate's own definition and tests must spell the names they ban.
-const gateFiles = new Set([
-  "tools/commands/davinci/completion-gates.ts",
-  "tests/tooling/davinci-completion-gates.test.ts",
-]);
+// The gate's definition must spell the names it bans.
+const gateFiles = new Set(["tools/commands/davinci/completion-gates.ts"]);
 
 const exemptPath = (file: string) =>
   file.startsWith("docs/") ||
