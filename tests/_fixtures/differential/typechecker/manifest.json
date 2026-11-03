@@ -13761,7 +13761,7 @@
       "id": "typechecker/regression/semantic-diagnostic-provenance-11626",
       "state": "active",
       "targets": [
-        "stdio"
+        "batch"
       ],
       "inputs": [
         {
@@ -13781,7 +13781,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "tests/tooling/lsp-script-syntax-prompt.test.ts::an unrelated edit retains a semantic TS1xxx diagnostic in the prompt; actual native7.0.2 TS1355 retention and repair through Canon diagnostic provenance. Input-only registration, no batch diagnostic pack or backend parity qualification."
+            "selector": "tests/tooling/lsp-script-syntax-prompt.test.ts::an unrelated edit retains a semantic TS1xxx diagnostic in the prompt; actual native7.0.2 TS1355 retention and repair through Canon diagnostic provenance, plus vize check full TS1355/repair control. Planned batch input registration, no historical diagnostic pack or backend parity qualification."
           }
         ]
       }
