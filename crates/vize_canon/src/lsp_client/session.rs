@@ -185,7 +185,8 @@ impl CorsaProjectClient {
         // project. Preserve its external identity for navigation results.
         if !restored {
             self.session_document_uris.remove(uri);
-            self.external_document_uris.remove(document_uri.as_str());
+            self.external_document_uris
+                .remove(crate::file_uri::file_uri_identity(&document_uri).as_str());
         }
         if self.document_texts.remove(uri).is_some() {
             self.editor_lsp_documents_dirty = true;
@@ -266,10 +267,11 @@ impl CorsaProjectClient {
             .session_document_uris
             .insert(uri.into(), mapped.clone())
         {
-            self.external_document_uris.remove(previous.as_str());
+            self.external_document_uris
+                .remove(crate::file_uri::file_uri_identity(&previous).as_str());
         }
         self.external_document_uris
-            .insert(mapped.clone(), uri.into());
+            .insert(crate::file_uri::file_uri_identity(&mapped), uri.into());
         mapped
     }
 
@@ -284,17 +286,17 @@ impl CorsaProjectClient {
         super::utils::remap_json_uris(value, &self.external_document_uris);
     }
 
+    pub(super) fn remap_query_uris(&self, value: &mut Value, request: &str) {
+        super::utils::remap_query_uris(
+            value,
+            &self.external_document_uris,
+            request,
+            self.overlay_storage.authored_root(),
+        );
+    }
+
     pub(super) fn remap_reference_result_uris(&self, value: &mut Value) {
-        // The native editor can return the same owned materialized identities
-        // as the API. Only Location.uri is protocol identity here; retain all
-        // coordinates, unknown entries and opaque payloads without rewriting.
-        for location in value.as_array_mut().into_iter().flatten() {
-            if let Some(Value::String(uri)) = location.get_mut("uri")
-                && let Some(mapped) = self.external_document_uris.get(uri.as_str())
-            {
-                *uri = mapped.as_str().into();
-            }
-        }
+        self.remap_result_uris(value);
     }
 }
 

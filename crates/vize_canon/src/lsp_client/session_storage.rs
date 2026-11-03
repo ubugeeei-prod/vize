@@ -11,6 +11,7 @@ use vize_l0::{String, cstr};
 
 pub(super) struct SessionStorage {
     root: PathBuf,
+    authored_root: PathBuf,
     directory: Option<tempfile::TempDir>,
     retain_after_failure: AtomicBool,
 }
@@ -62,6 +63,7 @@ impl SessionStorage {
         }
         Ok(Self {
             root,
+            authored_root: authored,
             directory: Some(directory),
             retain_after_failure: AtomicBool::new(false),
         })
@@ -69,6 +71,10 @@ impl SessionStorage {
 
     pub(super) fn root(&self) -> &Path {
         &self.root
+    }
+
+    pub(super) fn authored_root(&self) -> &Path {
+        &self.authored_root
     }
 
     pub(super) fn create_scratch_root(&self) -> Result<PathBuf, String> {

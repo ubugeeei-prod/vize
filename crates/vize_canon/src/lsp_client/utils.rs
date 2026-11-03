@@ -25,29 +25,89 @@ pub(super) fn convert_diagnostics<T: std::borrow::Borrow<Diagnostic>>(
 }
 
 pub(super) fn remap_json_uris(value: &mut Value, mappings: &FxHashMap<String, String>) {
+    remap_protocol_uris(value, &|uri| {
+        mappings
+            .get(crate::file_uri::file_uri_identity(uri).as_str())
+            .cloned()
+    });
+}
+
+pub(super) fn remap_query_uris(
+    value: &mut Value,
+    mappings: &FxHashMap<String, String>,
+    request: &str,
+    authored_root: &std::path::Path,
+) {
+    let mut spellings = Vec::new();
+    if let Some(path) = crate::file_uri::file_uri_to_path(request) {
+        for authored in path
+            .parent()
+            .into_iter()
+            .flat_map(std::path::Path::ancestors)
+        {
+            let Ok(physical) = authored.canonicalize() else {
+                break;
+            };
+            let physical =
+                crate::file_uri::file_uri_to_path(&crate::file_uri::path_to_file_uri(&physical));
+            let Some(physical) = physical else {
+                break;
+            };
+            if !physical.starts_with(authored_root) {
+                break;
+            }
+            if physical == authored {
+                break;
+            }
+            spellings.push((physical, authored.to_path_buf()));
+        }
+    }
+    remap_protocol_uris(value, &|uri| {
+        let identity = crate::file_uri::file_uri_identity(uri);
+        if let Some(mapped) = mappings.get(identity.as_str()) {
+            return Some(mapped.clone());
+        }
+        let path = crate::file_uri::file_uri_to_path(&identity)?;
+        for (physical, authored) in &spellings {
+            if let Ok(relative) = path.strip_prefix(physical) {
+                return Some(crate::file_uri::path_to_file_uri(&authored.join(relative)));
+            }
+        }
+        None
+    });
+}
+
+pub(super) fn remap_protocol_uris(value: &mut Value, mapping: &impl Fn(&str) -> Option<String>) {
     match value {
         Value::Array(items) => {
             for item in items {
-                remap_json_uris(item, mappings);
+                remap_protocol_uris(item, mapping);
             }
         }
         Value::Object(object) => {
-            let mut replacements = Vec::new();
             for (key, item) in object.iter_mut() {
-                if let Some(mapped) = mappings.get(key.as_str()) {
-                    replacements.push((key.clone(), mapped.clone()));
+                match key.as_str() {
+                    "data" | "command" | "arguments" => {}
+                    "uri" | "targetUri" | "oldUri" | "newUri" => {
+                        if let Some(mapped) = item.as_str().and_then(mapping) {
+                            *item = Value::String(mapped.as_str().into());
+                        }
+                    }
+                    "changes" => {
+                        if let Some(changes) = item.as_object_mut() {
+                            let replacements = changes
+                                .keys()
+                                .filter_map(|key| mapping(key).map(|mapped| (key.clone(), mapped)))
+                                .collect::<Vec<_>>();
+                            for (old, new) in replacements {
+                                if let Some(edits) = changes.remove(&old) {
+                                    changes.insert(new.as_str().into(), edits);
+                                }
+                            }
+                        }
+                    }
+                    _ => remap_protocol_uris(item, mapping),
                 }
-                remap_json_uris(item, mappings);
-            }
-            for (old_key, new_key) in replacements {
-                if let Some(value) = object.remove(old_key.as_str()) {
-                    object.insert(new_key.as_str().into(), value);
-                }
-            }
-        }
-        Value::String(text) => {
-            if let Some(mapped) = mappings.get(text.as_str()) {
-                *text = mapped.as_str().into();
             }
         }
         _ => {}
@@ -65,4 +125,36 @@ where
         .map_err(|error| cstr!("Failed to encode Corsa result: {error}"))?;
     remap_json_uris(&mut value, mappings);
     serde_json::from_value(value).map_err(|error| cstr!("Failed to decode Corsa result: {error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remap_json_uris;
+    use serde_json::json;
+    use vize_l0::{FxHashMap, String};
+
+    #[test]
+    fn remapping_changes_only_protocol_uris_and_workspace_edit_keys() {
+        let native = "file:///native/part:name.ts";
+        let external = "file:///authored/part:name.ts";
+        let mappings = FxHashMap::from_iter([(String::from(native), String::from(external))]);
+        let mut response = json!({
+            "uri":native, "targetUri":"file:///native/part%3Aname.ts",
+            "oldUri":native, "newUri":native,
+            "edit":{"changes":{native:[{"newText":native}]}},
+            "data":{"uri":native}, "command":{"arguments":[{"uri":native}]},
+            "message":native, "contents":native,
+        });
+        remap_json_uris(&mut response, &mappings);
+        assert_eq!(
+            response,
+            json!({
+                "uri":external, "targetUri":external,
+                "oldUri":external, "newUri":external,
+                "edit":{"changes":{external:[{"newText":native}]}},
+                "data":{"uri":native}, "command":{"arguments":[{"uri":native}]},
+                "message":native, "contents":native,
+            })
+        );
+    }
 }

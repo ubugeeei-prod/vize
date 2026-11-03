@@ -4,7 +4,7 @@ use super::EditorLspSession;
 use crate::lsp_client::CorsaProjectClient;
 use corsa::runtime::block_on;
 use serde_json::Value;
-use vize_l0::{String, cstr};
+use vize_l0::{cstr, String};
 
 struct InlayHintRequest;
 
@@ -76,8 +76,9 @@ impl CorsaProjectClient {
         if !self.document_texts.contains_key(uri) {
             return Ok(None);
         }
-        let mut response =
-            self.request_with_editor_lsp_recovery(|session| session.inlay_hints(uri, start, end))?;
+        let mut response = self.request_with_editor_lsp_query_recovery(uri, |session, uri| {
+            session.inlay_hints(uri, start, end)
+        })?;
         if let Some(value) = &mut response {
             // `data` and command arguments are opaque native payloads. Only
             // protocol label locations carry remappable document identities.

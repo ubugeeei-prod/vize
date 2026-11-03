@@ -82,9 +82,11 @@ impl CorsaProjectClient {
             }
             self.overlay_versions.remove(uri.as_str());
             if let Some(mapped) = self.session_document_uris.remove(uri.as_str()) {
-                self.external_document_uris.remove(mapped.as_str());
+                self.external_document_uris
+                    .remove(crate::file_uri::file_uri_identity(&mapped).as_str());
             }
-            self.external_document_uris.remove(uri.as_str());
+            self.external_document_uris
+                .remove(crate::file_uri::file_uri_identity(&uri).as_str());
             self.diagnostics.remove(uri.as_str());
         }
         Ok(())

@@ -8,6 +8,24 @@ use crate::file_uri::path_to_file_uri;
 use corsa::CorsaError;
 use corsa::api::{ApiMode, DocumentIdentifier};
 
+#[cfg(unix)]
+#[test]
+fn linked_workspace_virtual_documents_keep_their_import_namespace() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("workspace");
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    std::fs::write(root.join("src/Widget.art.vue"), "<art />").unwrap();
+    let alias = directory.path().join("linked-workspace");
+    std::os::unix::fs::symlink(&root, &alias).unwrap();
+    let canonical_root = root.canonicalize().unwrap();
+    let uri = path_to_file_uri(&alias.join("src/Widget.art.vue.art_variant_0.template.ts"));
+    let storage = super::super::session_storage::SessionStorage::new(&canonical_root).unwrap();
+    assert_eq!(
+        build_session_document_uri(&uri, &canonical_root, storage.root(), true),
+        uri
+    );
+}
+
 // Keep in-project virtual `.vue.ts` overlays at real paths so relative
 // script imports resolve against the source tree.
 #[test]

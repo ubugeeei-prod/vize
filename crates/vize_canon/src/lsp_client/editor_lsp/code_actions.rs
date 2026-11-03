@@ -1,8 +1,8 @@
 //! Range-action diagnostics and edits share one synchronized editor snapshot.
 
 use corsa::runtime::block_on;
-use serde_json::{Value, json};
-use vize_l0::{String, cstr};
+use serde_json::{json, Value};
+use vize_l0::{cstr, String};
 
 use super::{CorsaProjectClient, EditorLspSession};
 use crate::LspRange;
@@ -25,7 +25,9 @@ impl CorsaProjectClient {
         if !self.document_texts.contains_key(uri) || kinds.is_empty() {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| session.code_actions(uri, range, kinds))
+        self.request_with_editor_lsp_query_recovery(uri, |session, uri| {
+            session.code_actions(uri, range, kinds)
+        })
     }
 
     /// Whole-document source actions (organize, sort or remove imports, fix
@@ -38,7 +40,9 @@ impl CorsaProjectClient {
         if !self.document_texts.contains_key(uri) || kinds.is_empty() {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| session.source_actions(uri, kinds))
+        self.request_with_editor_lsp_query_recovery(uri, |session, uri| {
+            session.source_actions(uri, kinds)
+        })
     }
 }
 

@@ -85,7 +85,8 @@ impl CorsaProjectClient {
         self.document_texts.remove(uri);
         self.overlay_versions.remove(uri);
         if let Some(mapped) = self.session_document_uris.remove(uri) {
-            self.external_document_uris.remove(mapped.as_str());
+            self.external_document_uris
+                .remove(crate::file_uri::file_uri_identity(&mapped).as_str());
         }
         // The existing full synchronization sends didClose before the next
         // semantic request. Native readonly fallback then sees the real disk

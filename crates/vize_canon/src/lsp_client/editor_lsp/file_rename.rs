@@ -20,10 +20,23 @@ impl CorsaProjectClient {
             return Ok(None);
         }
 
-        let result =
-            self.request_with_editor_lsp_recovery(|session| session.will_rename_files(renames));
+        let native = renames
+            .iter()
+            .map(|(old, new)| (self.editor_document_uri(old), self.editor_document_uri(new)))
+            .collect::<Vec<_>>();
+        let native_renames = native
+            .iter()
+            .map(|(old, new)| (old.as_str(), new.as_str()))
+            .collect::<Vec<_>>();
+        let result = self
+            .request_with_editor_lsp_recovery(|session| session.will_rename_files(&native_renames));
         match result {
-            Ok(edit) => {
+            Ok(mut edit) => {
+                if let Some(value) = &mut edit
+                    && let Some((request, _)) = renames.first()
+                {
+                    self.remap_query_uris(value, request);
+                }
                 self.editor_lsp_will_rename_supported = Some(true);
                 Ok(edit)
             }
