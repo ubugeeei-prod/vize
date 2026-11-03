@@ -414,6 +414,15 @@ if (process.argv.includes("--reference")) {
         "vdom",
       ));
       assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
+      // Source maps route VDOM through the Relief codegen; both must agree.
+      assert.deepEqual(Object.keys(compiled.vdomSourceMapped), ["code", "functionName"]);
+      row.vdomSourceMapped = await trace(
+        compiled.vdomSourceMapped.code,
+        compiled.vdomSourceMapped.functionName,
+        spec,
+        "vdom",
+      );
+      assert.deepEqual(row.vdomSourceMapped, vdom, `${spec.id}: source-mapped VDOM`);
       const conflicts = verdicts.cases[spec.id].referenceConflicts ?? [];
       assert.deepEqual(
         vdom.flatMap((phase, index) => (isDeepStrictEqual(phase, actual[index]) ? [] : [index])),

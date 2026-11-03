@@ -172,6 +172,89 @@
       ]
     },
     {
+      "id": "props/dynamic-class-value",
+      "babelCorpusId": "props/class_dynamic",
+      "valueMatrix": true,
+      "source": "const App = () => <main id=\"probe\" class={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
+      "id": "props/dynamic-style-value",
+      "babelCorpusId": "props/style_dynamic",
+      "valueMatrix": true,
+      "source": "const App = () => <main style={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
+      "id": "components/class-value",
+      "babelCorpusId": "optimize/component_props",
+      "valueMatrix": true,
+      "source": "const App = () => <FixtureCard class={state.value} title=\"Class\"/>;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": [
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|"
+      ],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ]
+    },
+    {
       "id": "directives/v-html-value",
       "babelCorpusId": "directives/v_html",
       "valueMatrix": true,

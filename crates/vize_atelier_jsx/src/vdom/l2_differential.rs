@@ -48,6 +48,26 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "element class",
+            "const A = () => <div class={c} />;",
+            JsxLang::Jsx,
+        ),
+        (
+            "element class with props",
+            "const A = () => <div id=\"a\" class={c} />;",
+            JsxLang::Jsx,
+        ),
+        (
+            "element static and dynamic class",
+            "const A = () => <div class=\"a\" class={c} />;",
+            JsxLang::Jsx,
+        ),
+        (
+            "component class",
+            "const A = () => <B class={c} title=\"ok\" />;",
+            JsxLang::Jsx,
+        ),
+        (
             "element event",
             "const A = () => <button onClick={save} />;",
             JsxLang::Jsx,

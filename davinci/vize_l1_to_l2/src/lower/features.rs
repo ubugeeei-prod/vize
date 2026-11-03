@@ -56,6 +56,8 @@ pub enum OpFamily {
     Model,
     /// A JSX-owned dynamic child whose value is normalized by the renderer.
     JsxChild,
+    /// A JSX-owned `class` binding, normalized as `createVNode` does.
+    JsxClass,
 }
 
 /// Feature bits the lowering observed while building L2.
@@ -104,6 +106,12 @@ impl LoweringFeatures {
         self.holds(OpFamily::JsxChild)
     }
 
+    /// Whether a JSX `class` value reaches the runtime as authored.
+    #[must_use]
+    pub const fn has_jsx_class_bindings(self) -> bool {
+        self.holds(OpFamily::JsxClass)
+    }
+
     /// The same bits with `family` observed.
     #[must_use]
     pub const fn observing(self, family: OpFamily) -> Self {
@@ -126,6 +134,7 @@ impl OpFamily {
             OpFamily::TextCompound => 1 << 3,
             OpFamily::Model => 1 << 4,
             OpFamily::JsxChild => 1 << 5,
+            OpFamily::JsxClass => 1 << 6,
         }
     }
 }
@@ -134,13 +143,14 @@ impl OpFamily {
 mod tests {
     use super::{LoweringFeatures, OpFamily};
 
-    const EVERY: [OpFamily; 6] = [
+    const EVERY: [OpFamily; 7] = [
         OpFamily::If,
         OpFamily::For,
         OpFamily::SlotCarrier,
         OpFamily::TextCompound,
         OpFamily::Model,
         OpFamily::JsxChild,
+        OpFamily::JsxClass,
     ];
 
     #[test]
@@ -148,6 +158,7 @@ mod tests {
         let features = LoweringFeatures::EMPTY;
         assert!(!features.has_model_bindings());
         assert!(!features.has_jsx_child_values());
+        assert!(!features.has_jsx_class_bindings());
         assert!(!features.has_if_ops());
         assert!(!features.has_for_ops());
         assert!(!features.has_slot_carriers());
