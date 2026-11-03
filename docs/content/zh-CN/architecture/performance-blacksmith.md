@@ -10,21 +10,21 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T10:47:09.539Z | 3        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41620714772) · [86abbb6da5e3](https://github.com/ubugeeei-prod/vize/commit/86abbb6da5e30504b344120b0f2e62e451388f98) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 | 项目              | 文件数 | 比较工具               | 比较工具中位数 | Vize 1T | Vize max | 速度比     |
 | ----------------- | ------ | ---------------------- | -------------- | ------- | -------- | ---------- |
-| SFC 编译          | 3,000  | @vue/compiler-sfc (1T) | 3.40s          | 798.9ms | 62.1ms   | **54.7x**  |
-| 大型 SFC 编译     | 1      | @vue/compiler-sfc (1T) | 56.5ms         | 17.3ms  | 14.6ms   | **3.9x**   |
-| 大型 SFC 类型检查 | 1      | vue-tsc                | 1.30s          | 102.6ms | 102.5ms  | **12.7x**  |
-| Lint              | 3,000  | eslint-plugin-vue (1T) | 19.61s         | 1.38s   | 188.0ms  | **104.3x** |
-| 格式化            | 3,000  | Prettier CLI           | 29.70s         | 1.25s   | 475.9ms  | **62.4x**  |
-| 类型检查          | 500    | vue-tsc                | 6.49s          | 429.5ms | 350.3ms  | **18.5x**  |
-| Vite 构建         | 1,000  | @vitejs/plugin-vue     | 1.54s          | n/a     | 497.1ms  | **3.1x**   |
-| Nuxt 构建         | 250    | Nuxt default compiler  | 2.72s          | n/a     | 2.48s    | **1.1x**   |
-| Musea             | 240    | n/a                    | n/a            | n/a     | 58.9ms   | n/a        |
+| SFC 编译          | 15,000 | @vue/compiler-sfc (1T) | 15.98s         | 3.63s   | 283.7ms  | **56.3x**  |
+| 大型 SFC 编译     | 1      | @vue/compiler-sfc (1T) | 175.2ms        | 42.8ms  | 40.6ms   | **4.3x**   |
+| 大型 SFC 类型检查 | 1      | vue-tsc                | 2.44s          | 153.0ms | 151.6ms  | **16.1x**  |
+| Lint              | 15,000 | eslint-plugin-vue (1T) | 96.97s         | 6.44s   | 507.5ms  | **191.1x** |
+| 格式化            | 15,000 | Prettier CLI           | 139.20s        | 5.23s   | 1.39s    | **100.5x** |
+| 类型检查          | 500    | vue-tsc                | 6.46s          | 439.4ms | 365.1ms  | **17.7x**  |
+| Vite 构建         | 1,000  | @vitejs/plugin-vue     | 1.47s          | n/a     | 494.4ms  | **3.0x**   |
+| Nuxt 构建         | 500    | Nuxt default compiler  | 3.60s          | n/a     | 3.30s    | **1.1x**   |
+| Musea             | 240    | n/a                    | n/a            | n/a     | 56.8ms   | n/a        |
 
 类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
 
@@ -35,7 +35,7 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 工具                     | 版本                                                                                          | 二进制 SHA-256                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>569cf0dfc50c97564244d1503c13506a8520e10a7f7479cbfcb7c8cb2a803594</code> |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>aa9f4058cae9f773d10a55b59111419398edeaff0f33e07c0fce556d6827e38f</code> |
 | tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
 | vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
 | verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
@@ -59,48 +59,48 @@ Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/viz
 
 | 引擎类别                         | 对比项                            |  中位数 | 相对同类最快项 |
 | -------------------------------- | --------------------------------- | ------: | -------------: |
-| JavaScript TypeScript 引擎 (tsc) | vue-tsc                           |   1.30s |          1.00x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (max)                  | 102.5ms |          1.00x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (1T)                   | 102.6ms |          1.00x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 4)         | 103.6ms |          1.01x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 8)         | 105.2ms |          1.03x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 16)        | 105.7ms |          1.03x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 32)        | 108.0ms |          1.05x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 4)  | 343.2ms |          3.35x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 8)  | 345.9ms |          3.37x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper                 | 346.0ms |          3.37x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 32) | 353.7ms |          3.45x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 16) | 354.0ms |          3.45x |
-| 原生 TypeScript 引擎 (tsgo)      | verter-tsc                        |   1.56s |         15.25x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   1.67s |         16.27x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 32)  |   1.67s |         16.31x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper                  |   1.68s |         16.34x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 8)   |   1.68s |         16.40x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 16)  |   1.78s |         17.34x |
-| undefined                        | tsrs + Vize mapper                | 185.0ms |          1.00x |
-| undefined                        | tsrs + Vize mapper (--fast)       | 189.2ms |          1.02x |
-| undefined                        | tsrs + Vue mapper (--fast)        |   1.47s |          7.94x |
-| undefined                        | tsrs + Vue mapper                 |   1.56s |          8.42x |
+| JavaScript TypeScript 引擎 (tsc) | vue-tsc                           |   2.44s |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 8)         | 150.9ms |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (max)                  | 151.6ms |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 4)         | 151.6ms |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 16)        | 152.2ms |          1.01x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (1T)                   | 153.0ms |          1.01x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 32)        | 154.7ms |          1.02x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 8)  |   1.85s |         12.24x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 16) |   1.89s |         12.55x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 32) |   1.91s |         12.67x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 4)  |   1.93s |         12.78x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper                 |   1.94s |         12.87x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   9.10s |         60.28x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 16)  |   9.11s |         60.41x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 32)  |   9.17s |         60.79x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper                  |   9.31s |         61.70x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 8)   |   9.35s |         61.98x |
+| 原生 TypeScript 引擎 (tsgo)      | verter-tsc                        |  11.89s |         78.77x |
+| undefined                        | tsrs + Vize mapper                | 669.8ms |          1.00x |
+| undefined                        | tsrs + Vize mapper (--fast)       | 672.2ms |          1.00x |
+| undefined                        | tsrs + Vue mapper (--fast)        |   7.74s |         11.55x |
+| undefined                        | tsrs + Vue mapper                 |   7.83s |         11.69x |
 
 速度比仅比较使用相同原生 tsgo 引擎的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
 
 Golar typecheck (预检): 验证未通过，不公布耗时或排名。
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1019","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1226","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1019","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1226","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","10196","90","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10265","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10403","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","10196","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10265","90","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10403","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Golar (lint+check) (预检): 验证未通过，不公布耗时或排名。
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1042","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1042","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","10219","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10265","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10587","90","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","10219","90","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10265","90","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","10587","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 类型检查工作验证（严格模板检查；预热前验证；每次运行重新核对诊断）:
 
 | 对比项                            | 最小错误注入 | 语料库错误注入 | 诊断数 | 退出状态 | 诊断 SHA-256                                                       |
 | --------------------------------- | -----------: | -------------- | -----: | -------: | ------------------------------------------------------------------ |
-| vue-tsc                           |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| vue-tsc                           |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
 | verter-tsc                        |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 | Vize check (1T)                   |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 | Vize check (max)                  |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
@@ -113,55 +113,55 @@ missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__Ch
 | tsc + Vize mapper (--checkers 8)  |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 | tsc + Vize mapper (--checkers 16) |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 | tsc + Vize mapper (--checkers 32) |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| tsc + Vue mapper                  |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| tsc + Vue mapper (--checkers 4)   |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| tsc + Vue mapper (--checkers 8)   |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| tsc + Vue mapper (--checkers 16)  |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| tsc + Vue mapper (--checkers 32)  |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsc + Vue mapper                  |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
+| tsc + Vue mapper (--checkers 4)   |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
+| tsc + Vue mapper (--checkers 8)   |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
+| tsc + Vue mapper (--checkers 16)  |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
+| tsc + Vue mapper (--checkers 32)  |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
 | tsrs + Vize mapper                |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 | tsrs + Vize mapper (--fast)       |            4 | 通过           |      0 |        0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| tsrs + Vue mapper                 |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| tsrs + Vue mapper (--fast)        |            4 | 通过           |    300 |        2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsrs + Vue mapper                 |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
+| tsrs + Vue mapper (--fast)        |            4 | 通过           |    900 |        2 | `aac5d95e88190f44c2d2e4e7b04d55a2c43a10f49b44cfafa328b259c9440b86` |
 
 #### 类型检查: 按引擎类别分别排名
 
 | 引擎类别                         | 对比项                            |  中位数 | 相对同类最快项 |
 | -------------------------------- | --------------------------------- | ------: | -------------: |
-| JavaScript TypeScript 引擎 (tsc) | vue-tsc                           |   6.49s |          1.00x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 16) | 237.0ms |          1.00x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 8)  | 239.2ms |          1.01x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 32) | 250.9ms |          1.06x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 4)  | 256.3ms |          1.08x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper                 | 257.6ms |          1.09x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 32)        | 339.1ms |          1.43x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (max)                  | 350.3ms |          1.48x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 4)         | 350.9ms |          1.48x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (1T)                   | 429.5ms |          1.81x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 16)        | 468.0ms |          1.97x |
-| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 8)         | 518.7ms |          2.19x |
-| 原生 TypeScript 引擎 (tsgo)      | verter-tsc                        |   2.09s |          8.84x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 16)  |   2.77s |         11.69x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 32)  |   2.79s |         11.77x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 8)   |   2.83s |         11.95x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper                  |   2.97s |         12.54x |
-| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   2.98s |         12.57x |
-| undefined                        | tsrs + Vize mapper (--fast)       | 197.8ms |          1.00x |
-| undefined                        | tsrs + Vize mapper                | 208.9ms |          1.06x |
-| undefined                        | tsrs + Vue mapper (--fast)        |   2.63s |         13.31x |
-| undefined                        | tsrs + Vue mapper                 |   2.72s |         13.74x |
+| JavaScript TypeScript 引擎 (tsc) | vue-tsc                           |   6.46s |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 16) | 252.6ms |          1.00x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 8)  | 255.5ms |          1.01x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 32) | 269.8ms |          1.07x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper (--checkers 4)  | 270.8ms |          1.07x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vize mapper                 | 272.2ms |          1.08x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 32)        | 347.2ms |          1.37x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (max)                  | 365.1ms |          1.45x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 4)         | 365.7ms |          1.45x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (1T)                   | 439.4ms |          1.74x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 16)        | 471.9ms |          1.87x |
+| 原生 TypeScript 引擎 (tsgo)      | Vize check (--checkers 8)         | 519.8ms |          2.06x |
+| 原生 TypeScript 引擎 (tsgo)      | verter-tsc                        |   2.09s |          8.25x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 16)  |   2.74s |         10.83x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 32)  |   2.74s |         10.87x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 8)   |   2.79s |         11.03x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper                  |   2.88s |         11.40x |
+| 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   2.92s |         11.55x |
+| undefined                        | tsrs + Vize mapper (--fast)       | 216.4ms |          1.00x |
+| undefined                        | tsrs + Vize mapper                | 223.3ms |          1.03x |
+| undefined                        | tsrs + Vue mapper (--fast)        |   2.63s |         12.16x |
+| undefined                        | tsrs + Vue mapper                 |   2.71s |         12.51x |
 
 速度比仅比较使用相同原生 tsgo 引擎的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
 
 Golar typecheck (预检): 验证未通过，不公布耗时或排名。
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0027.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0107.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0027.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0107.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0037.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0067.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0077.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0037.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0067.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0077.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Golar (lint+check) (预检): 验证未通过，不公布耗时或排名。
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0067.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0117.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0067.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0117.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0047.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0187.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0047.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0187.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 类型检查工作验证（严格模板检查；预热前验证；每次运行重新核对诊断）:
@@ -195,120 +195,120 @@ missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__Ch
 
 ### SFC 编译
 
-| 对比项                                    | 中位数 (ms) | 各次耗时 (ms)                |
-| ----------------------------------------- | ----------- | ---------------------------- |
-| @vue/compiler-sfc (1T)                    | 3398.737    | 3396.896, 3410.584, 3398.737 |
-| @vue/compiler-sfc (32 workers)            | 1534.313    | 1452.104, 1534.313, 1590.801 |
-| Vize native loop (1T)                     | 798.93      | 804.587, 798.023, 798.93     |
-| Vize native batch results (max)           | 62.12       | 63.821, 62.12, 55.132        |
-| Vize native batch stats-only (core max)   | 38.669      | 40.214, 38.669, 37.187       |
-| Vize batch sequence (1→32T, measures 32T) | 39.222      | 39.222, 39.983, 39.114       |
-| Vize batch sequence (32T→1, measures 1T)  | 636.517     | 630.232, 636.517, 640.009    |
+| 对比项                                    | 中位数 (ms) | 各次耗时 (ms)                                         |
+| ----------------------------------------- | ----------- | ----------------------------------------------------- |
+| @vue/compiler-sfc (1T)                    | 15981.157   | 16072.875, 16032.188, 15981.157, 15977.767, 15905.227 |
+| @vue/compiler-sfc (32 workers)            | 5918.952    | 5949.085, 5709.528, 5659.05, 5918.952, 5927.695       |
+| Vize native loop (1T)                     | 3625.102    | 3650.838, 3644.235, 3625.102, 3622.512, 3613.461      |
+| Vize native batch results (max)           | 283.672     | 286.813, 277.833, 285.357, 278.487, 283.672           |
+| Vize native batch stats-only (core max)   | 163.504     | 164.539, 162.207, 163.504, 162.337, 165.709           |
+| Vize batch sequence (1→32T, measures 32T) | 171.926     | 171.926, 171.536, 173.685, 170.844, 173.379           |
+| Vize batch sequence (32T→1, measures 1T)  | 2812.078    | 2800.572, 2802.923, 2818.787, 2812.078, 2818.034      |
 
 ### 大型 SFC 编译
 
-| 对比项                                    | 中位数 (ms) | 各次耗时 (ms)            |
-| ----------------------------------------- | ----------- | ------------------------ |
-| @vue/compiler-sfc (1T)                    | 56.52       | 60.022, 56.52, 56.187    |
-| @vue/compiler-sfc (1 workers)             | 198.092     | 198.092, 200.24, 197.403 |
-| Vize native loop (1T)                     | 17.32       | 16.947, 18.215, 17.32    |
-| Vize native batch results (max)           | 14.588      | 14.588, 15.296, 14.539   |
-| Vize native batch stats-only (core max)   | 14.37       | 14.37, 14.502, 12.236    |
-| Vize batch sequence (1→32T, measures 32T) | 14.026      | 13.421, 14.481, 14.026   |
-| Vize batch sequence (32T→1, measures 1T)  | 16.177      | 16.256, 16.177, 14.483   |
+| 对比项                                    | 中位数 (ms) | 各次耗时 (ms)                               |
+| ----------------------------------------- | ----------- | ------------------------------------------- |
+| @vue/compiler-sfc (1T)                    | 175.235     | 179.6, 174.539, 175.235, 176.662, 172.984   |
+| @vue/compiler-sfc (1 workers)             | 412.926     | 410.683, 412.926, 417.664, 409.033, 432.903 |
+| Vize native loop (1T)                     | 42.841      | 42.841, 40.296, 43.081, 40.137, 43.228      |
+| Vize native batch results (max)           | 40.577      | 40.498, 40.577, 40.145, 43.155, 40.633      |
+| Vize native batch stats-only (core max)   | 34.763      | 34.529, 35.419, 34.763, 40.048, 34.656      |
+| Vize batch sequence (1→32T, measures 32T) | 40.644      | 40.644, 36.467, 41.203, 36.067, 40.653      |
+| Vize batch sequence (32T→1, measures 1T)  | 44.941      | 45.962, 40.75, 44.941, 36.765, 48.373       |
 
 ### 大型 SFC 类型检查
 
-| 对比项                            | 中位数 (ms) | 各次耗时 (ms)                |
-| --------------------------------- | ----------- | ---------------------------- |
-| vue-tsc                           | 1301.695    | 1301.695, 1272.645, 1317.054 |
-| verter-tsc                        | 1563.127    | 1563.127, 1548.454, 1578.932 |
-| Vize check (1T)                   | 102.637     | 102.639, 102.637, 101.388    |
-| Vize check (max)                  | 102.525     | 105.996, 102.505, 102.525    |
-| Vize check (--checkers 4)         | 103.616     | 103.127, 103.616, 107.568    |
-| Vize check (--checkers 8)         | 105.237     | 103.542, 105.237, 109.305    |
-| Vize check (--checkers 16)        | 105.749     | 104.266, 108.936, 105.749    |
-| Vize check (--checkers 32)        | 107.965     | 109.191, 107.822, 107.965    |
-| tsc + Vize mapper                 | 345.966     | 345.966, 339.935, 353.489    |
-| tsc + Vize mapper (--checkers 4)  | 343.23      | 336.813, 344.46, 343.23      |
-| tsc + Vize mapper (--checkers 8)  | 345.85      | 345.85, 354.149, 341.304     |
-| tsc + Vize mapper (--checkers 16) | 354.012     | 354.012, 353.215, 369.709    |
-| tsc + Vize mapper (--checkers 32) | 353.723     | 342.671, 364.811, 353.723    |
-| tsc + Vue mapper                  | 1675.79     | 1659.426, 1798.389, 1675.79  |
-| tsc + Vue mapper (--checkers 4)   | 1668.092    | 1665.826, 1676.623, 1668.092 |
-| tsc + Vue mapper (--checkers 8)   | 1681.632    | 1681.632, 1745.093, 1677.01  |
-| tsc + Vue mapper (--checkers 16)  | 1777.256    | 1797.502, 1777.256, 1658.904 |
-| tsc + Vue mapper (--checkers 32)  | 1672.427    | 1780.031, 1672.427, 1647.234 |
-| tsrs + Vize mapper                | 185.011     | 192.443, 185.011, 184.457    |
-| tsrs + Vize mapper (--fast)       | 189.153     | 189.153, 190.174, 188.375    |
-| tsrs + Vue mapper                 | 1558.187    | 1564.61, 1464.035, 1558.187  |
-| tsrs + Vue mapper (--fast)        | 1469.363    | 1412.733, 1469.363, 1566.638 |
+| 对比项                            | 中位数 (ms) | 各次耗时 (ms)                                        |
+| --------------------------------- | ----------- | ---------------------------------------------------- |
+| vue-tsc                           | 2439.136    | 2439.136, 2451.869, 2447.458, 2414.411, 2414.483     |
+| verter-tsc                        | 11885.769   | 11796.219, 11858.504, 11890.161, 11990.71, 11885.769 |
+| Vize check (1T)                   | 152.963     | 152.963, 150.472, 153.244, 150.121, 160.157          |
+| Vize check (max)                  | 151.615     | 152.151, 149.077, 145.429, 151.615, 153.385          |
+| Vize check (--checkers 4)         | 151.622     | 152.95, 152.427, 147.442, 151.622, 150.396           |
+| Vize check (--checkers 8)         | 150.889     | 150.24, 150.889, 151.199, 151.554, 149.988           |
+| Vize check (--checkers 16)        | 152.195     | 154.639, 152.195, 151.804, 154.568, 151.038          |
+| Vize check (--checkers 32)        | 154.692     | 154.692, 151.257, 155.612, 156.563, 153.287          |
+| tsc + Vize mapper                 | 1941.361    | 1853.298, 1892.359, 1947.377, 1955.495, 1941.361     |
+| tsc + Vize mapper (--checkers 4)  | 1929.022    | 1828.485, 1929.022, 1978.372, 1891.128, 1949.043     |
+| tsc + Vize mapper (--checkers 8)  | 1847.089    | 1847.089, 1835.972, 1794.061, 1877.097, 1865.555     |
+| tsc + Vize mapper (--checkers 16) | 1893.655    | 1893.655, 1915.96, 1855.63, 1832.04, 1900.073        |
+| tsc + Vize mapper (--checkers 32) | 1911.199    | 1866.565, 1913.623, 1902.38, 1913.211, 1911.199      |
+| tsc + Vue mapper                  | 9309.933    | 8893.701, 9492.985, 8976.822, 9540.417, 9309.933     |
+| tsc + Vue mapper (--checkers 4)   | 9095.035    | 9224.146, 9473.934, 9046.824, 9017.244, 9095.035     |
+| tsc + Vue mapper (--checkers 8)   | 9352.268    | 9027.209, 9352.268, 9353.294, 9435.197, 9306.777     |
+| tsc + Vue mapper (--checkers 16)  | 9114.878    | 9081.328, 9244.748, 9151.939, 9111.595, 9114.878     |
+| tsc + Vue mapper (--checkers 32)  | 9173.029    | 9448.45, 9586.696, 9163.867, 9169.687, 9173.029      |
+| tsrs + Vize mapper                | 669.846     | 671.58, 663.407, 669.335, 669.846, 673.446           |
+| tsrs + Vize mapper (--fast)       | 672.206     | 670.68, 672.206, 668.953, 673.06, 675.424            |
+| tsrs + Vue mapper                 | 7828.085    | 7743.725, 7978.183, 7771.661, 7828.085, 8003.794     |
+| tsrs + Vue mapper (--fast)        | 7735.357    | 7735.357, 7692.527, 7553.029, 8012.336, 7831.897     |
 
 ### Lint
 
-| 对比项                         | 中位数 (ms) | 各次耗时 (ms)                   |
-| ------------------------------ | ----------- | ------------------------------- |
-| eslint-plugin-vue (1T)         | 19614.885   | 19614.885, 19683.584, 19342.237 |
-| eslint-plugin-vue (32 workers) | 6747.594    | 6693.32, 6854.812, 6747.594     |
-| Vize lint (1T)                 | 1380.31     | 1380.31, 1371.681, 1383.912     |
-| Vize lint (max)                | 187.988     | 187.988, 184.379, 193.246       |
+| 对比项                         | 中位数 (ms) | 各次耗时 (ms)                                         |
+| ------------------------------ | ----------- | ----------------------------------------------------- |
+| eslint-plugin-vue (1T)         | 96973.478   | 96973.478, 97414.486, 96368.069, 97857.288, 95820.695 |
+| eslint-plugin-vue (32 workers) | 25422.855   | 25154.031, 25150.24, 25422.855, 26184.724, 26309.188  |
+| Vize lint (1T)                 | 6443.046    | 6474.325, 6443.478, 6443.046, 6419.834, 6441.729      |
+| Vize lint (max)                | 507.513     | 509.614, 504.21, 507.513, 506.65, 537.684             |
 
 ### 格式化
 
-| 对比项         | 中位数 (ms) | 各次耗时 (ms)                   |
-| -------------- | ----------- | ------------------------------- |
-| Prettier CLI   | 29698.371   | 29463.825, 29698.371, 29837.563 |
-| Vize fmt (1T)  | 1251.361    | 1252.998, 1251.361, 1248.451    |
-| Vize fmt (max) | 475.876     | 475.876, 468.998, 487.553       |
+| 对比项         | 中位数 (ms) | 各次耗时 (ms)                                             |
+| -------------- | ----------- | --------------------------------------------------------- |
+| Prettier CLI   | 139199.433  | 140495.182, 140711.89, 138713.258, 138753.906, 139199.433 |
+| Vize fmt (1T)  | 5233.612    | 5333.045, 5233.612, 5128.355, 5198.286, 5329.268          |
+| Vize fmt (max) | 1385.124    | 1529.889, 1367.832, 1401.375, 1385.124, 1383.87           |
 
 ### 类型检查
 
-| 对比项                            | 中位数 (ms) | 各次耗时 (ms)                |
-| --------------------------------- | ----------- | ---------------------------- |
-| vue-tsc                           | 6493.659    | 6493.659, 6545.564, 6489.659 |
-| verter-tsc                        | 2094.7      | 2078.193, 2094.7, 2098.751   |
-| Vize check (1T)                   | 429.493     | 424.122, 429.77, 429.493     |
-| Vize check (max)                  | 350.335     | 515.632, 348.455, 350.335    |
-| Vize check (--checkers 4)         | 350.884     | 350.884, 460.198, 333.902    |
-| Vize check (--checkers 8)         | 518.677     | 536.643, 336.839, 518.677    |
-| Vize check (--checkers 16)        | 467.991     | 467.991, 324.765, 473.006    |
-| Vize check (--checkers 32)        | 339.117     | 346.608, 339.117, 335.772    |
-| tsc + Vize mapper                 | 257.57      | 257.57, 251.749, 258.316     |
-| tsc + Vize mapper (--checkers 4)  | 256.282     | 253.24, 256.282, 260.022     |
-| tsc + Vize mapper (--checkers 8)  | 239.217     | 237.324, 239.217, 243.35     |
-| tsc + Vize mapper (--checkers 16) | 237.031     | 248.554, 231.765, 237.031    |
-| tsc + Vize mapper (--checkers 32) | 250.909     | 245.288, 250.909, 251.271    |
-| tsc + Vue mapper                  | 2972.059    | 2936.273, 2972.059, 3000.883 |
-| tsc + Vue mapper (--checkers 4)   | 2978.693    | 2978.693, 2984.258, 2941.982 |
-| tsc + Vue mapper (--checkers 8)   | 2831.957    | 2831.957, 2818.23, 2876.81   |
-| tsc + Vue mapper (--checkers 16)  | 2769.742    | 2769.742, 2751.921, 2784.755 |
-| tsc + Vue mapper (--checkers 32)  | 2788.824    | 2786.615, 2788.824, 2838.04  |
-| tsrs + Vize mapper                | 208.9       | 201.59, 215.336, 208.9       |
-| tsrs + Vize mapper (--fast)       | 197.817     | 197.817, 193.173, 201.227    |
-| tsrs + Vue mapper                 | 2718.007    | 2673.53, 2718.007, 2742.425  |
-| tsrs + Vue mapper (--fast)        | 2633.232    | 2613.856, 2633.232, 2744.786 |
+| 对比项                            | 中位数 (ms) | 各次耗时 (ms)                                    |
+| --------------------------------- | ----------- | ------------------------------------------------ |
+| vue-tsc                           | 6462.227    | 6519.608, 6435.815, 6487.481, 6409.477, 6462.227 |
+| verter-tsc                        | 2085.217    | 2095.764, 2085.217, 2102.841, 2082.566, 2061.614 |
+| Vize check (1T)                   | 439.404     | 439.404, 441.429, 440.477, 438.861, 427.323      |
+| Vize check (max)                  | 365.094     | 519.452, 367.76, 349.785, 351.955, 365.094       |
+| Vize check (--checkers 4)         | 365.721     | 365.721, 468.866, 358.637, 468.096, 364.543      |
+| Vize check (--checkers 8)         | 519.767     | 519.767, 339.101, 530.692, 340.561, 524.992      |
+| Vize check (--checkers 16)        | 471.901     | 475.16, 340.385, 471.901, 341.94, 475.892        |
+| Vize check (--checkers 32)        | 347.155     | 338.258, 347.988, 349.399, 344.633, 347.155      |
+| tsc + Vize mapper                 | 272.23      | 266.666, 268.859, 272.23, 276.438, 281.394       |
+| tsc + Vize mapper (--checkers 4)  | 270.755     | 281.002, 269.385, 270.388, 270.755, 273.901      |
+| tsc + Vize mapper (--checkers 8)  | 255.521     | 257.02, 253.493, 255.521, 256.893, 254.753       |
+| tsc + Vize mapper (--checkers 16) | 252.645     | 252.777, 250.935, 254.538, 251.875, 252.645      |
+| tsc + Vize mapper (--checkers 32) | 269.771     | 270.303, 269.771, 268.935, 270.78, 269.329       |
+| tsc + Vue mapper                  | 2880.213    | 2941.05, 2912.284, 2879.3, 2880.213, 2833.698    |
+| tsc + Vue mapper (--checkers 4)   | 2918.447    | 2908.849, 2991.753, 2886.425, 2950.9, 2918.447   |
+| tsc + Vue mapper (--checkers 8)   | 2786.216    | 2788.205, 2794.627, 2746.823, 2760.911, 2786.216 |
+| tsc + Vue mapper (--checkers 16)  | 2735.306    | 2771.973, 2808.21, 2689.414, 2735.306, 2720.928  |
+| tsc + Vue mapper (--checkers 32)  | 2744.929    | 2765.198, 2736.906, 2757.202, 2744.929, 2735.814 |
+| tsrs + Vize mapper                | 223.266     | 223.266, 222.843, 222.323, 226.628, 230.099      |
+| tsrs + Vize mapper (--fast)       | 216.434     | 220.042, 211.406, 216.434, 216.003, 218.458      |
+| tsrs + Vue mapper                 | 2708.144    | 2786.527, 2708.144, 2718.907, 2659.642, 2693.668 |
+| tsrs + Vue mapper (--fast)        | 2631.803    | 2631.089, 2646.54, 2697.358, 2608.456, 2631.803  |
 
 ### Vite 构建
 
-| 对比项              | 中位数 (ms) | 各次耗时 (ms)                |
-| ------------------- | ----------- | ---------------------------- |
-| @vitejs/plugin-vue  | 1541.155    | 1614.263, 1537.987, 1541.155 |
-| @vizejs/vite-plugin | 497.118     | 507.7, 497.118, 482.351      |
+| 对比项              | 中位数 (ms) | 各次耗时 (ms)                                   |
+| ------------------- | ----------- | ----------------------------------------------- |
+| @vitejs/plugin-vue  | 1465.898    | 1480.021, 1441.378, 1583.278, 1465.898, 1440.76 |
+| @vizejs/vite-plugin | 494.355     | 489.769, 492.801, 494.355, 503.461, 495.749     |
 
 ### Nuxt 构建
 
-| 对比项                | 中位数 (ms) | 各次耗时 (ms)                |
-| --------------------- | ----------- | ---------------------------- |
-| Nuxt default compiler | 2721.526    | 2721.526, 2772.552, 2718.209 |
-| @vizejs/nuxt          | 2484.568    | 2496.039, 2468.446, 2484.568 |
+| 对比项                | 中位数 (ms) | 各次耗时 (ms)                                    |
+| --------------------- | ----------- | ------------------------------------------------ |
+| Nuxt default compiler | 3604.379    | 3458.778, 3636.522, 3604.379, 3597.107, 3648.514 |
+| @vizejs/nuxt          | 3297.486    | 3297.486, 3283.597, 3312.676, 3341.444, 3272.831 |
 
 ### Musea
 
-| 对比项                                                         | 中位数 (ms) | 各次耗时 (ms)          |
-| -------------------------------------------------------------- | ----------- | ---------------------- |
-| options: preserve configured Rollup inputs                     | 0.003       | 0.013, 0.003, 0.002    |
-| buildStart: scan + parse art files                             | 23.962      | 23.962, 23.83, 23.971  |
-| load: generate art modules                                     | 31.61       | 31.61, 37.161, 30.487  |
-| transform: TS to JS on generated modules                       | 3.892       | 3.892, 4.083, 3.734    |
-| musea-nuxt: resolve Nuxt mock specifiers                       | 0.064       | 0.101, 0.064, 0.044    |
-| whole plugin: config + options + buildStart + load + transform | 58.927      | 59.035, 58.927, 58.067 |
+| 对比项                                                         | 中位数 (ms) | 各次耗时 (ms)                          |
+| -------------------------------------------------------------- | ----------- | -------------------------------------- |
+| options: preserve configured Rollup inputs                     | 0.003       | 0.011, 0.004, 0.002, 0.003, 0.002      |
+| buildStart: scan + parse art files                             | 22.079      | 23.268, 22.079, 22.341, 21.135, 21.545 |
+| load: generate art modules                                     | 30.8        | 30.843, 36.023, 30.509, 30.8, 30.152   |
+| transform: TS to JS on generated modules                       | 3.838       | 3.838, 4.059, 3.789, 3.849, 3.741      |
+| musea-nuxt: resolve Nuxt mock specifiers                       | 0.05        | 0.097, 0.072, 0.042, 0.05, 0.046       |
+| whole plugin: config + options + buildStart + load + transform | 56.816      | 58.093, 57.583, 56.816, 56.624, 55.911 |

@@ -16,21 +16,21 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 | Runner                                   | Measured                 | Runs | Warmups |
 | ---------------------------------------- | ------------------------ | ---- | ------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T10:47:09.539Z | 3    | 1       |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5    | 1       |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41620714772) · [86abbb6da5e3](https://github.com/ubugeeei-prod/vize/commit/86abbb6da5e30504b344120b0f2e62e451388f98) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 The local linter, formatter and implementation profiles below are historical measurements, not results from this snapshot. Their recorded workstation is a MacBook Pro M2 Max (12 cores, 96 GB RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 and Vue v3.6.0-beta.10.
 
 ## Benchmark: SFC Compile
 
-Files: **3,000** (12,302,100 bytes).
+Files: **15,000** (61,516,500 bytes).
 
 |               | @vue/compiler-sfc | Vize    | Speedup   |
 | ------------- | ----------------- | ------- | --------- |
-| 1T            | 3.40s             | 798.9ms | **4.3x**  |
-| workers / max | 1.53s             | 62.1ms  | **24.7x** |
-| 1T / max      | 3.40s             | 62.1ms  | **54.7x** |
+| 1T            | 15.98s            | 3.63s   | **4.4x**  |
+| workers / max | 5.92s             | 283.7ms | **20.9x** |
+| 1T / max      | 15.98s            | 283.7ms | **56.3x** |
 
 [Full methodology and evidence](./performance-blacksmith.md)
 
@@ -39,7 +39,7 @@ Files: **3,000** (12,302,100 bytes).
 
 | Tool                     | Version                                                                                       | Binary SHA-256                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>569cf0dfc50c97564244d1503c13506a8520e10a7f7479cbfcb7c8cb2a803594</code> |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>aa9f4058cae9f773d10a55b59111419398edeaff0f33e07c0fce556d6827e38f</code> |
 | tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
 | vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
 | verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
@@ -281,14 +281,14 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 | Runner                                   | Measured                 | Runs | Warmups |
 | ---------------------------------------- | ------------------------ | ---- | ------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T10:47:09.539Z | 3    | 1       |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5    | 1       |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41620714772) · [86abbb6da5e3](https://github.com/ubugeeei-prod/vize/commit/86abbb6da5e30504b344120b0f2e62e451388f98) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 | Surface              | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup   |
 | -------------------- | ----- | ------------- | --------------- | ------- | -------- | --------- |
-| Type check           | 500   | vue-tsc       | 6.49s           | 429.5ms | 350.3ms  | **18.5x** |
-| Large SFC type check | 1     | vue-tsc       | 1.30s           | 102.6ms | 102.5ms  | **12.7x** |
+| Type check           | 500   | vue-tsc       | 6.46s           | 439.4ms | 365.1ms  | **17.7x** |
+| Large SFC type check | 1     | vue-tsc       | 2.44s           | 153.0ms | 151.6ms  | **16.1x** |
 
 Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
@@ -335,15 +335,15 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 | Runner                                   | Measured                 | Runs | Warmups |
 | ---------------------------------------- | ------------------------ | ---- | ------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T10:47:09.539Z | 3    | 1       |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5    | 1       |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41620714772) · [86abbb6da5e3](https://github.com/ubugeeei-prod/vize/commit/86abbb6da5e30504b344120b0f2e62e451388f98) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 Files: **1,000**.
 
 |            | @vitejs/plugin-vue | @vizejs/vite-plugin | Speedup  |
 | ---------- | ------------------ | ------------------- | -------- |
-| Vite build | 1.54s              | 497.1ms             | **3.1x** |
+| Vite build | 1.47s              | 494.4ms             | **3.0x** |
 
 [Full methodology and evidence](./performance-blacksmith.md)
 
