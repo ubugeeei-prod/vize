@@ -17,7 +17,10 @@ pub(super) use ambient::AmbientProjection;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::{Croquis, ScopeKind, TypeExport};
 
+use super::generics::HoistedGenericAliases;
+use super::script_module::{NamespaceHoistPlan, ScriptModulePlan};
 use super::spans::merge_overlapping_spans;
+use crate::virtual_ts::generic_parameters::GenericParameters;
 
 /// Where each authored declaration of a two-block SFC lives once the virtual
 /// module is generated.
@@ -94,6 +97,27 @@ impl ScriptBlockScopes {
             .is_some_and(|source| source.starts_with("export"))
     }
 
+    /// Derive both projection scopes from the same generic dependency plan.
+    pub(super) fn plan(
+        &self,
+        summary: &Croquis,
+        script: Option<&str>,
+        generic: Option<&GenericParameters>,
+        module: &ScriptModulePlan,
+        namespaces: &NamespaceHoistPlan,
+    ) -> (Option<HoistedGenericAliases>, Vec<(u32, u32)>) {
+        let aliases = HoistedGenericAliases::collect(summary, script, generic);
+        let spans = vize_carton::profile!("canon.virtual_ts.collect_module_spans", {
+            self.module_spans(
+                summary,
+                script,
+                module.module_spans(summary, namespaces),
+                aliases.as_ref(),
+            )
+        });
+        (aliases, spans)
+    }
+
     /// Module-scope spans contributed by the classic block plus every type
     /// declaration that genuinely belongs at module scope.
     pub(super) fn module_spans(
@@ -101,13 +125,18 @@ impl ScriptBlockScopes {
         summary: &Croquis,
         script: Option<&str>,
         extra: Vec<(u32, u32)>,
+        aliases: Option<&HoistedGenericAliases>,
     ) -> Vec<(u32, u32)> {
         let mut spans = extra;
         spans.extend(self.classic_spans.iter().copied());
         for export in &summary.type_exports {
             // Non-hoisted types reference setup-scope values via `typeof` and
             // must stay inside `__setup` so TS can resolve them.
-            if export.hoisted && !self.shadows_classic_name(export, script) {
+            if export.hoisted
+                && !self.shadows_classic_name(export, script)
+                && !aliases
+                    .is_some_and(|aliases| aliases.keeps_in_setup((export.start, export.end)))
+            {
                 spans.push((export.start, export.end));
             }
         }
@@ -226,7 +255,7 @@ mod tests {
         // Only the classic declaration is emitted at module scope; the
         // setup-local one keeps Vue's shadowing instead of colliding there.
         assert_eq!(
-            scopes.module_spans(&summary, Some(script.as_str()), Vec::new()),
+            scopes.module_spans(&summary, Some(script.as_str()), Vec::new(), None),
             [(0, classic_len)]
         );
         assert_eq!(
@@ -246,7 +275,7 @@ mod tests {
         // Vue lifts an exported setup declaration to module scope too, so both
         // authored ranges must stay there for the genuine duplicate report.
         assert_eq!(
-            scopes.module_spans(&summary, Some(script.as_str()), Vec::new()),
+            scopes.module_spans(&summary, Some(script.as_str()), Vec::new(), None),
             [(0, classic_len), (classic_len + 1, script.len() as u32 - 1)]
         );
     }
@@ -283,7 +312,7 @@ mod tests {
         let scopes = ScriptBlockScopes::collect(&summary, Some(script.as_str()), true);
 
         assert_eq!(
-            scopes.module_spans(&summary, Some(script.as_str()), Vec::new()),
+            scopes.module_spans(&summary, Some(script.as_str()), Vec::new(), None),
             [(0, classic_len), (setup_start, script.len() as u32 - 1)]
         );
     }
@@ -319,7 +348,7 @@ mod tests {
         let scopes = ScriptBlockScopes::collect(&summary, Some(script.as_str()), true);
 
         assert_eq!(
-            scopes.module_spans(&summary, Some(script.as_str()), Vec::new()),
+            scopes.module_spans(&summary, Some(script.as_str()), Vec::new(), None),
             [(0, classic_len)]
         );
     }
@@ -331,7 +360,7 @@ mod tests {
 
         assert!(!scopes.owns(0));
         assert_eq!(
-            scopes.module_spans(&summary, Some(script.as_str()), Vec::new()),
+            scopes.module_spans(&summary, Some(script.as_str()), Vec::new(), None),
             [(0, 26), (classic_len + 1, script.len() as u32 - 1)]
         );
     }

@@ -52,6 +52,7 @@ mod check_entry_ignores_cli;
 mod check_explicit_tsconfig_files_node_modules_cli;
 mod check_flow_depth_isolation_cli;
 mod check_function_props_cli;
+mod check_generic_dependent_scope_cli;
 mod check_hoisted_workspace_cli;
 mod check_imported_raw_callback_cli;
 mod check_importer_scoped_package_cli;
