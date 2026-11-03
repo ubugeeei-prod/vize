@@ -58,8 +58,8 @@ function files(cwd: string, prefix = ""): string[] {
 
 function assertExpectedOutputs(output: string, expected: Record<string, string>) {
   const pairs = output
-    .trimEnd()
     .split("\n")
+    .filter((line) => line !== "")
     .map((line) => {
       const pair = /^([a-z][a-z-]*)=(true|false)$/.exec(line);
       assert.ok(pair, `invalid planner output pair: ${line}`);
@@ -88,6 +88,8 @@ test("expected output pairs retain strict keys without imposing key order", () =
     packet + "unexpected=true\n",
     packet + "apps=true\n",
     packet.replace("apps=true", "apps=1"),
+    packet.replace("apps=true\n", "apps=true \n"),
+    packet.replace("apps=true\n", "apps=true\r\n"),
   ])
     assert.throws(() => assertExpectedOutputs(invalid, expected));
 });
