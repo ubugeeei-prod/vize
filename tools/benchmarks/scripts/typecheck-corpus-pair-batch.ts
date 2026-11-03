@@ -23,6 +23,7 @@ export function runBatchCheck(
   buildDir: string,
   projectDir: string,
   corsaPath: string,
+  env: Record<string, string> = {},
 ): Diagnostic[] {
   const result = spawnSync(
     process.execPath,
@@ -42,7 +43,7 @@ export function runBatchCheck(
       cwd: projectDir,
       encoding: "utf8",
       maxBuffer: 1 << 30,
-      env: { ...process.env, NO_COLOR: "1" },
+      env: { ...process.env, NO_COLOR: "1", ...env },
     },
   );
   if (result.error) throw result.error;
@@ -56,6 +57,8 @@ export type BatchMapperDiff = {
   mapper: number;
   batchOnly: Diagnostic[];
   mapperOnly: Diagnostic[];
+  /** `vize check` at a wider Corsa checker width: what it reports differently from one checker. */
+  wide?: { checkers: number; added: Diagnostic[]; removed: Diagnostic[] };
 };
 
 const key = ([file, , line, column, code]: Diagnostic) => `${file}:${line}:${column} ${code}`;
@@ -95,6 +98,12 @@ export function renderBatchDiff(diffs: BatchMapperDiff[]): string {
       "",
       `\`vize check\` reports ${diff.batch} diagnostics, tsc with the Vize mapper ${diff.mapper}; ${diff.batchOnly.length} only in batch, ${diff.mapperOnly.length} only through the mapper.`,
       "",
+      ...(diff.wide
+        ? [
+            `With \`VIZE_CHECKERS=${diff.wide.checkers}\`, vize check adds ${diff.wide.added.length} and drops ${diff.wide.removed.length} diagnostics against one checker.`,
+            "",
+          ]
+        : []),
       ...(["batchOnly", "mapperOnly"] as const).flatMap((side) =>
         diff[side].length === 0
           ? []

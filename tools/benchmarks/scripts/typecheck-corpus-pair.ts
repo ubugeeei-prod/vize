@@ -430,11 +430,17 @@ function main(): void {
       const project = projects(corpus, "head");
       const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
       if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
-      return diffBatchMapper(
-        corpus.id,
-        runBatchCheck(resolve(values.head), project, corsa),
-        mapper,
-      );
+      const one = runBatchCheck(resolve(values.head), project, corsa);
+      // vize check pins one Corsa checker for determinism (#3905); measure what width changes.
+      const checkers = 8;
+      const wide = runBatchCheck(resolve(values.head), project, corsa, {
+        VIZE_CHECKERS: String(checkers),
+      });
+      const widened = diffBatchMapper(corpus.id, wide, one);
+      return {
+        ...diffBatchMapper(corpus.id, one, mapper),
+        wide: { checkers, added: widened.batchOnly, removed: widened.mapperOnly },
+      };
     });
     writeFileSync(join(out, "batch-vs-mapper.json"), `${JSON.stringify(diffs, null, 1)}\n`);
     writeFileSync(join(out, "batch-vs-mapper.md"), renderBatchDiff(diffs));
