@@ -1,7 +1,8 @@
 /**
  * Real-corpus type-check pair: misskey and n8n checked by tsc and tsrs
  * (TypeScript 7.1 hosts) through the base and head Vize mappers, with Vue's
- * mapper as the reference.
+ * mapper as the reference. vue-tsc (TypeScript 6, the benchmark workspace's
+ * pin) checks the same tsconfig once per corpus as a second reference.
  *
  *   node typecheck-corpus-pair.ts --base <worktree> --head <worktree> \
  *     --base-sha <sha> --head-sha <sha> --runs 5 --work <dir> --out <dir>
@@ -13,6 +14,7 @@
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -29,6 +31,7 @@ import {
 } from "./typecheck-corpus-pair-parse.ts";
 import {
   type PairResults,
+  type ReferenceResult,
   renderPairSummary,
   summarizePair,
 } from "./typecheck-corpus-pair-report.ts";
@@ -61,6 +64,7 @@ const repoRoot = resolve(scriptsDir, "..", "..", "..");
 const CORPUS_PACKAGES_DIR = resolve(scriptsDir, "..", "typecheck-corpora");
 const PROBE_SCRIPT = join(scriptsDir, "content-mapper-byte-probe.ts");
 const GNU_TIME = "/usr/bin/time";
+const VUE_TSC_DIR = join(scriptsDir, "node_modules", "vue-tsc");
 
 type Host = (typeof MAPPER_HOSTS)[number];
 /** Each host at the setting the pair compares: tsc's default, tsrs's `--fast`. */
@@ -187,29 +191,33 @@ type HostRun = {
   fingerprint: string;
 };
 
-function hostRun(
+export const hostArgs = (
   host: Host,
-  bin: string,
+  cwd: string,
+  tsconfig: string,
+  extraArgs: string[] = [],
+): string[] => [
+  "--noEmit",
+  ...PAIR_HOST_ARGS[host.id],
+  "--runExternalCode",
+  "--extendedDiagnostics",
+  "--pretty",
+  "false",
+  ...extraArgs,
+  "-p",
+  join(cwd, tsconfig),
+];
+
+function hostRun(
+  command: string[],
   cwd: string,
   tsconfig: string,
   timeFile: string,
   env: Record<string, string> = {},
-  extraArgs: string[] = [],
 ): HostRun {
-  const args = [
-    "--noEmit",
-    ...PAIR_HOST_ARGS[host.id],
-    "--runExternalCode",
-    "--extendedDiagnostics",
-    "--pretty",
-    "false",
-    ...extraArgs,
-    "-p",
-    join(cwd, tsconfig),
-  ];
   const result = runTypecheckCommand(
     GNU_TIME,
-    ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, bin, ...args],
+    ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, ...command],
     { cwd, env },
   ) as { ms: number; cpuMs: number | null; status: number | null; stdout: string; stderr: string };
   if (result.cpuMs == null) throw new Error("process-tree CPU needs Linux /proc/self/stat");
@@ -241,6 +249,21 @@ function packageVersion(dir: string, name: string): string {
       version: string;
     }
   ).version;
+}
+
+/** vue-tsc and the TypeScript it resolves; a missing install is an error. */
+function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
+  const dir = realpathSync(VUE_TSC_DIR);
+  const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
+    version: string;
+    bin: { "vue-tsc": string };
+  };
+  const typescript = createRequire(join(dir, "package.json")).resolve("typescript/package.json");
+  return {
+    bin: join(dir, manifest.bin["vue-tsc"]),
+    vueTsc: manifest.version,
+    typescript: (JSON.parse(readFileSync(typescript, "utf8")) as { version: string }).version,
+  };
 }
 
 function requireGnuTime(): string {
@@ -276,6 +299,7 @@ function main(): void {
     if (!/^[0-9a-f]{40}$/u.test(sha)) throw new Error(`not a full SHA: ${sha}`);
   }
   const gnuTime = requireGnuTime();
+  const vueTsc = resolveVueTsc();
   const builds = {
     base: resolveMapperHosts(TYPECHECK_HOSTS_DIR, join(resolve(values.base), "npm", "cli")),
     head: resolveMapperHosts(TYPECHECK_HOSTS_DIR, join(resolve(values.head), "npm", "cli")),
@@ -304,11 +328,20 @@ function main(): void {
     const key = laneKey(lane);
     const record = join(work, "time", `${key}.probe.jsonl`);
     writeFileSync(record, "");
+    const tsconfig = probeTsconfig(mapperOf(lane.variant));
     const run = hostRun(
-      lane.host,
-      bin(lane.host),
+      [
+        bin(lane.host),
+        ...hostArgs(
+          lane.host,
+          cwd(lane),
+          tsconfig,
+          // Per-SFC check time for the projection report; tsrs writes no trace.
+          lane.host.id === "tsc" ? ["--generateTrace", join(work, "traces", key)] : [],
+        ),
+      ],
       cwd(lane),
-      probeTsconfig(mapperOf(lane.variant)),
+      tsconfig,
       join(work, "time", `${key}.probe.time`),
       {
         VIZE_MAPPER_PROBE_RECORD: record,
@@ -320,8 +353,6 @@ function main(): void {
             }
           : {}),
       },
-      // Per-SFC check time for the projection report; tsrs writes no trace.
-      lane.host.id === "tsc" ? ["--generateTrace", join(work, "traces", key)] : [],
     );
     const probe = summarizeProbe(readFileSync(record, "utf8"));
     if (probe.errors.length > 0)
@@ -366,11 +397,11 @@ function main(): void {
         for (const variant of runOrder(VARIANTS, run)) {
           const lane = { corpus, host, variant };
           const key = laneKey(lane);
+          const tsconfig = mapperTsconfigName(mapperOf(variant));
           const result = hostRun(
-            host,
-            bin(host),
+            [bin(host), ...hostArgs(host, cwd(lane), tsconfig)],
             cwd(lane),
-            mapperTsconfigName(mapperOf(variant)),
+            tsconfig,
             join(work, "time", `${key}.${run}.time`),
           );
           timed.set(key, [...(timed.get(key) ?? []), result]);
@@ -381,6 +412,42 @@ function main(): void {
       }
     }
   }
+
+  // One untimed vue-tsc run per corpus on the tsconfig both mapper configs extend.
+  const references: ReferenceResult[] = CORPORA.map((corpus) => {
+    const dir = projects(corpus, "base");
+    const run = hostRun(
+      [
+        process.execPath,
+        "--max-old-space-size=16384",
+        vueTsc.bin,
+        "--noEmit",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false",
+        "-p",
+        join(dir, "tsconfig.json"),
+      ],
+      dir,
+      "tsconfig.json",
+      join(work, "time", `${corpus.id}-vue-tsc.time`),
+    );
+    writeFileSync(
+      join(out, "diagnostics", `${corpus.id}-vue-tsc.json`),
+      `${JSON.stringify(run.diagnostics, null, 1)}\n`,
+    );
+    console.log(
+      `${corpus.id}-vue-tsc: cpu ${(run.cpuMs / 1000).toFixed(2)}s, ${run.diagnostics.length} diagnostics`,
+    );
+    return {
+      corpus: corpus.id,
+      tool: "vue-tsc",
+      cpuMs: run.cpuMs,
+      maxRssKb: run.time.maxRssKb,
+      fingerprint: run.fingerprint,
+      diagnostics: run.diagnostics,
+    };
+  });
 
   const results: PairResults = {
     schemaVersion: 1,
@@ -400,8 +467,11 @@ function main(): void {
         "@vue/content-mapper": packageVersion(TYPECHECK_HOSTS_DIR, "@vue/content-mapper"),
         vue: packageVersion(CORPUS_PACKAGES_DIR, "vue"),
         "@types/node": packageVersion(CORPUS_PACKAGES_DIR, "@types/node"),
+        "vue-tsc": vueTsc.vueTsc,
+        "vue-tsc typescript": vueTsc.typescript,
       },
     },
+    references,
     lanes: lanes.map((lane) => {
       const key = laneKey(lane);
       const runsOf = timed.get(key) ?? [];
@@ -452,9 +522,13 @@ function main(): void {
     ...lane,
     diagnosticCount: diagnostics.length,
   }));
+  const leanReferences = references.map(({ diagnostics, ...reference }) => ({
+    ...reference,
+    diagnosticCount: diagnostics.length,
+  }));
   writeFileSync(
     join(out, "results.json"),
-    `${JSON.stringify({ ...results, lanes: lean, summary }, null, 1)}\n`,
+    `${JSON.stringify({ ...results, lanes: lean, references: leanReferences, summary }, null, 1)}\n`,
   );
   writeFileSync(join(out, "summary.md"), renderPairSummary(results, summary));
   if (summary.unstable.length > 0) {

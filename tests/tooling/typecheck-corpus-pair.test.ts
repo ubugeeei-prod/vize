@@ -36,7 +36,7 @@ import {
   diffBatchMapper,
   renderBatchDiff,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-batch.ts";
-import { PAIR_HOST_ARGS } from "../../tools/benchmarks/scripts/typecheck-corpus-pair.ts";
+import { hostArgs, PAIR_HOST_ARGS } from "../../tools/benchmarks/scripts/typecheck-corpus-pair.ts";
 import { MAPPER_HOSTS } from "../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
 import { root } from "./support/github-workflows.ts";
 
@@ -310,8 +310,20 @@ void test("the summary tables medians per lane and reports diagnostic identity",
         "@vue/content-mapper": "4.0.0-alpha.3",
         vue: "3.5.44",
         "@types/node": "26.6.6",
+        "vue-tsc": "3.3.11",
+        "vue-tsc typescript": "6.0.3",
       },
     },
+    references: [
+      {
+        corpus: "misskey",
+        tool: "vue-tsc",
+        cpuMs: 30_000,
+        maxRssKb: 1024 * 900,
+        fingerprint: "c".repeat(64),
+        diagnostics: [d("1"), d("4")],
+      },
+    ],
     lanes: [
       lane("tsc", "vize-base", [10_000, 12_000, 11_000], [d("1")]),
       lane("tsc", "vize-head", [9_000, 9_900, 9_500], [d("1")]),
@@ -330,7 +342,23 @@ void test("the summary tables medians per lane and reports diagnostic identity",
     ],
   );
   assert.deepEqual(summary.unstable, []);
+  // vize-base is compared to head above, so only head and Vue's mapper face the reference.
+  assert.deepEqual(
+    summary.agreement.map((e) => [e.host, e.variant, e.shared, e.laneOnly, e.referenceOnly]),
+    [
+      ["tsc", "vize-head", 1, 0, 1],
+      ["tsc", "vue", 1, 1, 1],
+      ["tsrs", "vize-head", 1, 1, 1],
+      ["tsrs", "vue", 1, 0, 1],
+    ],
+  );
   const markdown = renderPairSummary(results, summary);
+  assert.match(markdown, /### Agreement with vue-tsc 3\.3\.11 \(typescript 6\.0\.3\)/u);
+  assert.match(markdown, /\| misskey \| tsc \| vue \| 2 \| 1 \| 1 \| 1 \|/u);
+  assert.match(
+    markdown,
+    /- misskey \/ vue-tsc: 2 diagnostics, CPU 30\.00 s, max RSS 900 MB, sha256 `cccccccccccc`/u,
+  );
   assert.match(
     markdown,
     /\| misskey frontend \(583 SFC\) \| tsc Vize base \| tsc Vize head \| Δ \| tsc Vue \| tsrs Vize base/u,
@@ -369,6 +397,23 @@ void test("the pair runs tsc at its default and tsrs at --fast, each a published
       published.some((args) => args.join(" ") === PAIR_HOST_ARGS[host.id].join(" ")),
       host.id,
     );
+  }
+});
+
+void test("mapper commands preserve the pair settings and projection trace arguments", () => {
+  for (const host of MAPPER_HOSTS) {
+    const extraArgs = host.id === "tsc" ? ["--generateTrace", "/work/traces"] : [];
+    assert.deepEqual(hostArgs(host, "/work/project", "tsconfig.mapper.json", extraArgs), [
+      "--noEmit",
+      ...PAIR_HOST_ARGS[host.id],
+      "--runExternalCode",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false",
+      ...extraArgs,
+      "-p",
+      "/work/project/tsconfig.mapper.json",
+    ]);
   }
 });
 
