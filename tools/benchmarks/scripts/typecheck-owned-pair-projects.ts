@@ -1,0 +1,131 @@
+/** Prepare one physical workload per cohort; every source role checks those same bytes. */
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { cpSync, lstatSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { CORPORA } from "./typecheck-corpus-pair.ts";
+import { generateScaleProject, type ScaleProject } from "./scale-project-generator.ts";
+import { prepareMapperPackages, type MapperHosts } from "./typecheck-mapper-hosts.ts";
+import { snapshotInputs, writeJson } from "./typecheck-owned-pair-evidence.ts";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+export type Workload = {
+  id: string;
+  directory: string;
+  sfcs: number;
+  generated: ScaleProject | null;
+};
+export const OWNED_WORKLOADS = [
+  { id: "misskey", sfcs: 583 },
+  { id: "n8n", sfcs: 1113 },
+  { id: "vue-20000", sfcs: 20000 },
+  { id: "nuxt-2500", sfcs: 2500 },
+  { id: "nuxt-10000", sfcs: 10000 },
+] as const;
+
+export function installRole(workload: Workload, hosts: MapperHosts) {
+  prepareMapperPackages(workload.directory, hosts);
+  if (workload.generated?.kind === "nuxt") {
+    // Batch and mapper deliberately use the exact same app program, not the solution root.
+    writeJson(join(workload.directory, "tsconfig.json"), {
+      extends: "./.nuxt/tsconfig.app.json",
+      compilerOptions: { incremental: false },
+    });
+  }
+}
+
+export function prepareOwnedWorkload(
+  id: string,
+  work: string,
+  out: string,
+  hosts: MapperHosts,
+): Workload {
+  const specification = OWNED_WORKLOADS.find((entry) => entry.id === id);
+  assert.ok(specification);
+  const directory = join(work, id);
+  assert.ok(!lstatSync(directory, { throwIfNoEntry: false }), "workload directory must be new");
+  mkdirSync(directory, { recursive: true });
+  const real = CORPORA.find((entry) => entry.id === id);
+  let generated: ScaleProject | null = null;
+  const kind = id.startsWith("nuxt-") ? "nuxt" : "vue";
+  if (real) {
+    for (const entry of real.copy)
+      cpSync(join(root, real.source, entry), join(directory, entry), { recursive: true });
+    writeJson(join(directory, "tsconfig.json"), real.tsconfig);
+  } else {
+    generated = generateScaleProject({ kind, sfcs: specification.sfcs, seed: 0, plants: true });
+    assert.equal(generated.sfcs, specification.sfcs);
+    for (const [file, contents] of generated.files) {
+      mkdirSync(dirname(join(directory, file)), { recursive: true });
+      writeFileSync(join(directory, file), contents);
+    }
+  }
+  const packages = join(
+    root,
+    "tools/benchmarks",
+    kind === "nuxt" && !real ? "nuxt-app" : "typecheck-corpora",
+    "node_modules",
+  );
+  cpSync(packages, join(directory, "node_modules"), { recursive: true, verbatimSymlinks: true });
+  if (kind === "nuxt" && generated) {
+    const command = [join(packages, "nuxt/bin/nuxt.mjs"), "prepare", directory];
+    const prepared = spawnSync(process.execPath, command, {
+      cwd: directory,
+      env: { ...process.env, CI: "1", NUXT_TELEMETRY_DISABLED: "1" },
+      maxBuffer: 64 << 20,
+    });
+    mkdirSync(join(out, "prepare", id), { recursive: true });
+    writeFileSync(join(out, "prepare", id, "stdout.raw"), prepared.stdout ?? Buffer.alloc(0));
+    writeFileSync(join(out, "prepare", id, "stderr.raw"), prepared.stderr ?? Buffer.alloc(0));
+    writeJson(join(out, "prepare", id, "run.json"), {
+      command,
+      status: prepared.status,
+      error: prepared.error?.message ?? null,
+    });
+    assert.equal(prepared.status, 0, "Nuxt preparation failed; retained complete raw output");
+  }
+  const workload = { id, directory, sfcs: specification.sfcs, generated };
+  installRole(workload, hosts);
+  clearProjectCaches(directory);
+  writeJson(join(out, `${id}-inputs.json`), snapshotInputs(directory));
+  if (generated) writeJson(join(out, `${id}-plants.json`), generated.plants);
+  return workload;
+}
+
+/** Delete only declared caches in this owned workload, never a linked dependency store. */
+export function clearProjectCaches(directory: string) {
+  const removed: string[] = [];
+  const remove = (file: string) => {
+    const absolute = join(directory, file),
+      entry = lstatSync(absolute, { throwIfNoEntry: false });
+    if (!entry) return;
+    const owner = realpathSync(directory),
+      parent = realpathSync(dirname(absolute));
+    assert.ok(
+      parent === owner || parent.startsWith(`${owner}/`),
+      `cache owner escapes workload: ${file}`,
+    );
+    assert.ok(!entry.isSymbolicLink(), `refuse linked cache: ${file}`);
+    rmSync(absolute, { recursive: true, force: true });
+    removed.push(file);
+  };
+  for (const file of [
+    "node_modules/.cache",
+    "node_modules/.vize",
+    "node_modules/.vite",
+    ".nuxt/cache",
+    ".nuxt/.cache",
+  ])
+    remove(file);
+  const walk = (prefix: string) => {
+    for (const entry of readdirSync(join(directory, prefix), { withFileTypes: true })) {
+      if (!prefix && entry.name === "node_modules") continue;
+      const file = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.name.endsWith(".tsbuildinfo")) remove(file);
+      else if (entry.isDirectory()) walk(file);
+    }
+  };
+  walk("");
+  return removed;
+}
