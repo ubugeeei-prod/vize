@@ -276,3 +276,12 @@ void test("template-only render output gains a default component export", () => 
     `export function render(_ctx, _cache) {\n  return null;\n}\nconst _sfc_main = { render, __scopeId: "data-v-test1234" };\nexport default _sfc_main;`,
   );
 });
+
+void test("a hand-built module without moduleShape fails with the compileFile contract", () => {
+  const withoutShape = compiledModule("const _sfc_main = {};\nexport default _sfc_main;\n");
+  delete withoutShape.moduleShape;
+  assert.throws(() => generateOutput(withoutShape, { requestPath: "./App.vue" }), {
+    message:
+      "[vize] generateOutput requires moduleShape; pass the CompiledModule returned by compileFile",
+  });
+});

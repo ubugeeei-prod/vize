@@ -38,7 +38,7 @@ export function generateOutputWithMap(
   const shape = compiled.moduleShape;
   if (!shape) {
     throw new Error(
-      "[vize] The native compiler's output does not parse, so it reported no module shape.",
+      "[vize] generateOutput requires moduleShape; pass the CompiledModule returned by compileFile",
     );
   }
 
