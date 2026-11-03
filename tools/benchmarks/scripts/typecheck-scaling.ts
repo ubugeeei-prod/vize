@@ -107,6 +107,7 @@ function measure(
   timeFile: string,
   timeoutMs: number,
   timed: boolean,
+  extraEnv: Record<string, string> = {},
 ): Measured {
   const [command, argv] = timed
     ? [GNU_TIME, ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, bin, ...args]]
@@ -121,6 +122,7 @@ function measure(
       FORCE_COLOR: "0",
       XDG_CACHE_HOME: cacheDir,
       NODE_OPTIONS,
+      ...extraEnv,
     },
     encoding: "utf8",
     maxBuffer: 1024 * 1024 * 1024,
@@ -365,33 +367,33 @@ function main(): void {
         const artifacts = join(dir, "node_modules", ".vize", "check-profile");
         if (existsSync(artifacts))
           cpSync(artifacts, join(profileDir, "check-profile"), { recursive: true });
-        // Checker-width identity: the same check pinned to one Corsa checker.
-        const pinned = spawnSync(base.bin, base.args, {
-          cwd: dir,
-          env: {
-            ...process.env,
-            NO_COLOR: "1",
-            FORCE_COLOR: "0",
-            XDG_CACHE_HOME: mkdtempSync(join(work, "cache-")),
-            NODE_OPTIONS,
-            VIZE_CHECKERS: "1",
-          },
-          encoding: "utf8",
-          maxBuffer: 1024 * 1024 * 1024,
-        });
-        const lane = results.cells.find(
-          (cell) =>
-            cell.tool === "vize-check" && cell.kind === corpus.kind && cell.sfcs === corpus.sfcs,
-        );
-        const one = parseRun(
-          { status: pinned.status, stdout: pinned.stdout, stderr: pinned.stderr },
-          dir,
-          vize.format,
-        );
-        writeFileSync(
-          join(profileDir, "checker-width.txt"),
-          `default fingerprint ${lane?.cold?.fingerprint ?? "n/a"}\npinned-1 fingerprint ${one.fingerprint}\n${lane?.cold?.fingerprint === one.fingerprint ? "IDENTICAL" : "DIFFERENT"}\n`,
-        );
+        // Checker-width sweep: wall, CPU, RSS and diagnostic identity per Corsa width.
+        const sweep: Record<string, unknown>[] = [];
+        let reference: string | null = null;
+        for (const width of (process.env.VIZE_SCALING_WIDTHS ?? "1,2,4,8,16,32").split(",")) {
+          const run = measure(
+            base.bin,
+            base.args,
+            dir,
+            mkdtempSync(join(work, "cache-")),
+            join(work, `width-${width}.time`),
+            options.timeoutMs,
+            true,
+            { VIZE_CHECKERS: width },
+          );
+          const parsed = parseRun(run.output, dir, vize.format);
+          reference ??= parsed.fingerprint;
+          sweep.push({
+            width: Number(width),
+            wallMs: Math.round(run.wallMs),
+            cpuMs: run.cpuMs,
+            maxRssKb: run.maxRssKb,
+            diagnostics: parsed.diagnostics.length,
+            identical: parsed.fingerprint === reference,
+          });
+          console.log(`width ${width} @ ${corpus.sfcs}: ${JSON.stringify(sweep.at(-1))}`);
+        }
+        writeFileSync(join(profileDir, "width-sweep.json"), `${JSON.stringify(sweep, null, 1)}\n`);
       }
     }
     if (!values.keep) rmSync(dir, { recursive: true, force: true });
