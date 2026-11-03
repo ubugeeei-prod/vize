@@ -9,7 +9,7 @@ pub(super) struct ComponentState {
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_component_definition(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     component_name: &str,
     is_ts: bool,

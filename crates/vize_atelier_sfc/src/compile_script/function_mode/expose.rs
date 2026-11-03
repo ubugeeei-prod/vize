@@ -1,7 +1,7 @@
 use crate::script::ScriptCompileContext;
 
 /// Emit the __expose() call to the output buffer.
-pub(super) fn emit_expose(output: &mut vize_carton::Vec<u8>, ctx: &ScriptCompileContext) {
+pub(super) fn emit_expose(output: &mut Vec<u8>, ctx: &ScriptCompileContext) {
     if let Some(ref expose_macro) = ctx.macros.define_expose {
         // args contains the argument content (e.g., "{ foo, bar }")
         let args = expose_macro.args.trim();

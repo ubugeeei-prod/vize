@@ -18,7 +18,7 @@ pub(super) struct SetupBindingInputs<'a> {
 /// Emit the render function return statement or setup binding return.
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_render_return(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     template: &TemplateParts<'_>,
     setup_bindings: SetupBindingInputs<'_>,
     is_ts: bool,

@@ -42,7 +42,7 @@ pub(super) fn compile_script_setup_inline_body(
     user_imports: Vec<String>,
     ts_declarations: Vec<String>,
     setup_code: String,
-    mut output: vize_carton::Vec<u8>,
+    mut output: Vec<u8>,
     preserved_normal_script: Option<String>,
     needs_merge_defaults: bool,
     with_defaults_values: Option<WithDefaultsValues>,
@@ -243,7 +243,7 @@ pub(super) fn compile_script_setup_inline_body(
     // would only add work to the hot SFC compile path.
     #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let output_str: std::string::String =
-        unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
+        unsafe { std::string::String::from_utf8_unchecked(output) };
 
     let final_code: String = if is_ts {
         annotate_event_params(&output_str, &mut tracer)
@@ -291,7 +291,7 @@ fn should_preserve_nuxt_use_head_import(code: &str) -> bool {
     code.contains("useSeoMeta(") && import_block_has_local_from(code, "#imports", "useHead")
 }
 
-fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
+fn ensure_blank_line(output: &mut Vec<u8>) {
     match output.as_slice() {
         bytes if bytes.ends_with(b"\n\n") => {}
         bytes if bytes.ends_with(b"\n") => output.push(b'\n'),

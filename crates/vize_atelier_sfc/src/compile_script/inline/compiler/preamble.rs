@@ -19,7 +19,7 @@ pub(super) struct PreambleState {
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_preamble(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     template: &TemplateParts<'_>,
     user_imports: &[String],
     ts_declarations: &[String],
@@ -290,7 +290,7 @@ fn normal_script_imports(
     (parse_script_content(script, is_ts, None).0, Vec::new())
 }
 
-fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
+fn ensure_blank_line(output: &mut Vec<u8>) {
     match output.as_slice() {
         bytes if bytes.ends_with(b"\n\n") => {}
         bytes if bytes.ends_with(b"\n") => output.push(b'\n'),

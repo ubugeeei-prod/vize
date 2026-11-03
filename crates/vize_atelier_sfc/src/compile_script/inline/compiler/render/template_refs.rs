@@ -4,7 +4,7 @@ use crate::{script::ScriptCompileContext, types::BindingType};
 use vize_carton::String;
 
 pub(super) fn emit_setter(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     setup_bindings: &[String],
     ctx: &ScriptCompileContext,
 ) {
@@ -64,8 +64,7 @@ mod tests {
         ] {
             ctx.bindings.bindings.insert(String::from(name), kind);
         }
-        let allocator = vize_carton::Allocator::default();
-        let mut output = vize_carton::Vec::new_in(&&allocator);
+        let mut output = Vec::new();
         emit_setter(&mut output, &bindings, &ctx);
         assert_eq!(
             output.as_slice(),
@@ -75,8 +74,7 @@ mod tests {
 
     #[test]
     fn setter_without_ref_capable_bindings_keeps_the_original_factory() {
-        let allocator = vize_carton::Allocator::default();
-        let mut output = vize_carton::Vec::new_in(&&allocator);
+        let mut output = Vec::new();
         emit_setter(&mut output, &[], &ScriptCompileContext::new(""));
         assert_eq!(
             output.as_slice(),
