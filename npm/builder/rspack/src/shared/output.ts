@@ -106,8 +106,11 @@ export function generateOutputWithMap(
             ? [`module=${typeof style.module === "string" ? style.module : "true"}`]
             : []),
           ...(isCustomElement ? ["inline"] : []),
+          // A `<style src>` block's module is the src file itself, as in
+          // vue-loader, so its relative references resolve from its directory.
+          ...(style.src ? ["src"] : []),
         ];
-        const request = `${options.requestPath}?${queryParts.join("&")}`;
+        const request = `${style.src ?? options.requestPath}?${queryParts.join("&")}`;
 
         if (isCustomElement) {
           return `import _style_${style.index} from ${JSON.stringify(request)};`;

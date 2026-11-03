@@ -26,6 +26,12 @@ export default function vizeStyleLoader(
     return;
   }
 
+  // A `<style src>` request's resource is the src file itself.
+  if (params.has("src")) {
+    callback(null, source);
+    return;
+  }
+
   const index = parseInt(params.get("index") || "0", 10);
 
   this.addDependency(resourcePath);
