@@ -17,17 +17,10 @@ import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 // #11519: LSP push replaces a URI's whole set, so a lint/parser publication
 // for a new version must keep the latest type diagnostics, moved to its text.
-const SOURCE = `<script setup lang="ts">
-const items = [1, 2, 3];
-const broken: number = "wrong";
-</script>
-
-<template>
-  <ul>
-    <li v-for="item in items">{{ item }}</li>
-  </ul>
-</template>
-`;
+const SOURCE = fs.readFileSync(
+  path.join(root, "tests/_fixtures/differential/lsp/type-diagnostic-retention-11519/App.vue.txt"),
+  "utf8",
+);
 
 type Position = { line: number; character: number };
 type Edit = { start: Position; end: Position; text: string };
