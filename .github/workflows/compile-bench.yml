@@ -1,9 +1,11 @@
 name: Compile Benchmark
 
 # Compile-only measurements on the README runner class: wall, CPU-seconds
-# (user+sys) and load cost per build, single-thread and parallel apart, plus a
-# perf profile. Published natives cover release history; source builds cover
-# unreleased commits.
+# (user+sys) and load cost per build, single-thread and parallel apart.
+# compare: the pushed commit against its merge base with main, both built from
+# source in the shipped release profile; fails when their corpus output differs.
+# verify: the compiler crate's tests and clippy. Opt in with [published]
+# (release history from npm) and [profile] (frame-pointer perf profile).
 
 on:
   push:
@@ -28,11 +30,13 @@ env:
   COMPILE_BENCH_FILES: "3000"
   COMPILE_BENCH_VERSIONS: ${{ inputs.versions || '0.424.10 0.425.1 0.429.2 0.441.0 0.481.0 0.511.0 0.541.0 0.571.0 0.601.0 0.631.0 0.646.0 0.661.0' }}
   COMPILE_BENCH_PROFILE_VERSIONS: ${{ inputs.profile_versions || '0.424.10 0.661.0' }}
+  # Crates the verify job tests and lints.
+  COMPILE_BENCH_VERIFY: "-p vize_atelier_sfc"
 
 jobs:
   published:
     name: published
-    if: ${{ !contains(github.event.head_commit.message, '[skip published]') }}
+    if: ${{ contains(github.event.head_commit.message, '[published]') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     permissions:
@@ -116,8 +120,9 @@ jobs:
             profiles/
           retention-days: 30
 
-  source:
-    name: source
+  profile:
+    name: profile
+    if: ${{ contains(github.event.head_commit.message, '[profile]') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     permissions:
@@ -215,3 +220,144 @@ jobs:
             compile-source.json
             profiles/
           retention-days: 30
+
+  compare:
+    name: compare
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 50
+
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Check out the merge base
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=50 origin main
+          base=$(git merge-base HEAD FETCH_HEAD)
+          echo "BASE_SHA=$base" >> "$GITHUB_ENV"
+          git worktree add --detach "$RUNNER_TEMP/base" "$base"
+
+      # Separate target dirs: two checkouts sharing one overwrite each other.
+      - name: Build base and head natives
+        run: |
+          set -euo pipefail
+          for side in base head; do
+            dir=$PWD
+            if [[ $side == base ]]; then dir=$RUNNER_TEMP/base; fi
+            (cd "$dir" && CARGO_TARGET_DIR="$RUNNER_TEMP/target-$side" cargo build --release -p vize_vitrine --features napi,legacy --lib)
+            cp "$RUNNER_TEMP/target-$side/release/libvize_vitrine.so" "$RUNNER_TEMP/$side.node"
+            rm -rf "$RUNNER_TEMP/target-$side"
+          done
+
+      - name: Generate benchmark corpus
+        run: node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES"
+
+      - name: Measure base against head
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/compile-history.ts \
+            --input tools/benchmarks/scripts/__in__ \
+            --vue "$PWD/tools/benchmarks/scripts/node_modules/@vue/compiler-sfc" \
+            --native "base-${BASE_SHA::10}=$RUNNER_TEMP/base.node" \
+            --native "head-${GITHUB_SHA::10}=$RUNNER_TEMP/head.node" \
+            --runs 5 --warmups 2 --rounds 4 \
+            --out compile-compare.md --json compile-compare.json
+          cat compile-compare.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Count instructions
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic
+          sudo sysctl -w kernel.perf_event_paranoid=-1
+          perf_bin=""
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
+          done
+          test -n "$perf_bin"
+          input="$PWD/tools/benchmarks/scripts/__in__"
+          {
+            echo
+            echo "perf stat, one process: 1 warmup + 5 passes"
+            echo
+            echo "| Build | Mode | Instructions | Cycles | Task clock |"
+            echo "| --- | --- | ---: | ---: | ---: |"
+          } >> compile-compare.md
+          for mode in loop1t batch1t batchmax; do
+            for side in base head; do
+              spec=$(printf '{"label":"%s","kind":"native","path":"%s","mode":"%s"}' "$side" "$RUNNER_TEMP/$side.node" "$mode")
+              "$perf_bin" stat -x, -e instructions,cycles,task-clock -o "stat-$side-$mode.csv" \
+                node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
+              node -e 'const [f, side, mode] = process.argv.slice(1); const rows = Object.fromEntries(require("fs").readFileSync(f, "utf8").split("\n").filter((l) => /^[0-9]/.test(l)).map((l) => { const c = l.split(","); return [c[2], Number(c[0])]; })); console.log(`| ${side} | ${mode} | ${(rows.instructions / 1e9).toFixed(3)}G | ${(rows.cycles / 1e9).toFixed(3)}G | ${rows["task-clock"].toFixed(1)} ms |`)' "stat-$side-$mode.csv" "$side" "$mode" >> compile-compare.md
+            done
+          done
+          cat compile-compare.md
+
+      - name: Require identical output
+        run: |
+          node -e '
+            const { rows } = JSON.parse(require("fs").readFileSync("compile-compare.json", "utf8"));
+            let ok = true;
+            for (const mode of ["loop1t", "batch1t", "batchmax"]) {
+              const hashes = new Set(rows.filter((row) => row.mode === mode).map((row) => row.outputSha256));
+              if (hashes.size !== 1) { ok = false; console.error(`${mode}: output differs between base and head`); }
+            }
+            if (!ok) process.exit(1);
+          '
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: compile-bench-compare
+          path: |
+            compile-compare.md
+            compile-compare.json
+            stat-*.csv
+          retention-days: 30
+
+  verify:
+    name: verify
+    if: ${{ !contains(github.event.head_commit.message, '[skip verify]') }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: compile-bench-verify
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - name: Clippy
+        run: cargo clippy $COMPILE_BENCH_VERIFY -- -D warnings -D clippy::wildcard_imports
+
+      - name: Test
+        run: cargo test $COMPILE_BENCH_VERIFY
