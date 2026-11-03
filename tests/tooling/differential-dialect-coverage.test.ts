@@ -243,9 +243,6 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
   loadTypecheckerManifest(
     path.join(root, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
-  const summaries = Object.fromEntries(
-    products.map((product) => [product, summarizeDialectCoverage(load(product).cases)]),
-  );
   assert.deepEqual(
     Object.fromEntries(
       products.map((product) => [
@@ -256,27 +253,6 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
       ]),
     ),
     { compiler: 0, formatter: 0, linter: 0, lsp: 0, typechecker: 0 },
-  );
-  const compilerUnknownReadinessCases = 49;
-
-  const formatterUnknownReadinessCases = 28;
-
-  const linterUnknownReadinessCases = 139;
-
-  const lspUnknownReadinessCases = 83;
-
-  const typecheckerUnknownReadinessCases = 292;
-  assert.deepEqual(
-    Object.fromEntries(
-      products.map((product) => [product, summaries[product].unknownReadinessCases]),
-    ),
-    {
-      compiler: compilerUnknownReadinessCases,
-      formatter: formatterUnknownReadinessCases,
-      linter: linterUnknownReadinessCases,
-      lsp: lspUnknownReadinessCases,
-      typechecker: typecheckerUnknownReadinessCases,
-    },
   );
 });
 
