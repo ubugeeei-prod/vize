@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/type-diagnostic-retention-11519",
+  "provenance": {
+    "fixCommit": "0d68bdf8b247f351362948874594623b254dd7a2",
+    "witnessPath": "tests/tooling/lsp-type-diagnostic-retention.test.ts",
+    "witnessTest": "lint publications after an edit keep the moved type diagnostics",
+    "inputOrigin": "minimal SFC with one type error and one repairable lint warning",
+    "contractOrigin": "authored folding ranges of the pinned SFC"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "81ffb53ce7cdc43eaf707162d7a408ec8de3da724b6e434ca475c244a6f89621"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "92b30c08f345be57fce01c9a93e133242647802f00f6c17e4b67befe65e60807"
+  },
+  "scope": "Folding provides a completed request barrier. The witness test consumes these bytes with type checking on and checks every publication after each edit."
+}

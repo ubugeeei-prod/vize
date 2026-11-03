@@ -3214,6 +3214,47 @@
       }
     },
     {
+      "id": "lsp/regression/type-diagnostic-retention-11519",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "type-diagnostic-retention-11519",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "81ffb53ce7cdc43eaf707162d7a408ec8de3da724b6e434ca475c244a6f89621"
+          }
+        ]
+      },
+      "case": {
+        "path": "type-diagnostic-retention-11519/case.json",
+        "sha256": "6cdedb26d9d6cf12febac6b08b1e1e142434c25703ea02c72fc0037bf2cebf13"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/unused-disable-config-10930",
       "state": "active",
       "targets": [

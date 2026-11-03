@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const items = [1, 2, 3];
+const broken: number = "wrong";
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</template>

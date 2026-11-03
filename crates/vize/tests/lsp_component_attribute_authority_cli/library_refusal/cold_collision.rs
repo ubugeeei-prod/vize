@@ -91,6 +91,7 @@ fn cold_literal_event_preserves_the_same_name_value_and_renames_every_owned_site
                 2,
                 *name == "src/App.vue",
                 json!([]),
+                json!([]),
             );
             actual_files.push(json!({"file":name,"text":text,"disk":std::fs::read_to_string(fixture.project.path().join(name)).unwrap(),"diagnostics":diagnostics}));
         }
@@ -103,7 +104,8 @@ fn cold_literal_event_preserves_the_same_name_value_and_renames_every_owned_site
         }
         let mut independent = Vec::new();
         for (name, text) in goldens {
-            let diagnostics = safe_update::publish(&mut fixture, name, text, 3, false, json!([]));
+            let diagnostics =
+                safe_update::publish(&mut fixture, name, text, 3, false, json!([]), json!([]));
             independent.push(json!({"file":name,"text":text,"disk":std::fs::read_to_string(fixture.project.path().join(name)).unwrap(),"version":3,"diagnostics":diagnostics}));
         }
         let actual = json!({"references":references,"rename":rename,"applicationErrors":application_errors,"files":actual_files,"independentRepair":independent});

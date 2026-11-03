@@ -14,7 +14,9 @@ use super::{MaestroServer, RetainedDiagnostics};
 use crate::{
     ide::{
         DiagnosticService,
-        diagnostics::{PreparedInitialApiDiagnostics, with_native_diagnostic_progress},
+        diagnostics::{
+            CombinedDiagnostics, PreparedInitialApiDiagnostics, with_native_diagnostic_progress,
+        },
     },
     server::{
         diagnostic_publishing::CollectedDiagnostics,
@@ -111,7 +113,7 @@ impl MaestroServer {
             || self.publish_pending_native_diagnostics(uri, expected, world.stamp, &sync),
         )
         .await;
-        let Some(diagnostics) = diagnostics else {
+        let Some(combined) = diagnostics else {
             return;
         };
         if !world.is_current(&self.state) {
@@ -119,7 +121,8 @@ impl MaestroServer {
         }
         let collected = CollectedDiagnostics {
             version: expected,
-            diagnostics,
+            native: combined.native_family(),
+            diagnostics: combined.diagnostics,
             stamp: Some(world.stamp),
         };
         drop(document_guard);
@@ -134,7 +137,7 @@ impl MaestroServer {
         world: &InitialApiWorld,
         scope: CorsaRequestScope<'_>,
         sync: &[Diagnostic],
-    ) -> Option<Vec<Diagnostic>> {
+    ) -> Option<CombinedDiagnostics> {
         let read = match DiagnosticService::prepare_initial_api_diagnostics(
             &self.state,
             &world.uri,

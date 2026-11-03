@@ -135,8 +135,8 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
       "configurations",
     ]);
   }
-  assert.equal(originals, 80);
-  assert.equal(loaded.cases.length, 83);
+  assert.equal(originals, 83);
+  assert.equal(loaded.cases.length, 86);
 });
 
 void test("link layout rejects unknown, unpinned, cyclic, colliding and escaping source metadata", () => {

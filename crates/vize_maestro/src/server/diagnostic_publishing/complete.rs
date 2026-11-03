@@ -31,6 +31,8 @@ impl MaestroServer {
             diagnostics,
             #[cfg(feature = "native")]
             stamp,
+            #[cfg(feature = "native")]
+            native,
         } = collected;
         #[cfg(feature = "native")]
         if self.state.project_context_retired()
@@ -62,6 +64,11 @@ impl MaestroServer {
         let retained = super::super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         #[cfg(feature = "native")]
         let mut publication = if let Some(stamp) = stamp {
+            // Before the claim: an edit after this anchor moves it, and the
+            // claim then refuses the old version.
+            if let Some(native) = native {
+                self.state.documents.carry_native(uri, version, native);
+            }
             let document = self.state.diagnostic_lock(uri);
             let claim = document.claim(
                 &self.state,

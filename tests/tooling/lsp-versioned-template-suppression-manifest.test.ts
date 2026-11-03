@@ -67,8 +67,8 @@ void test("selected no-fix suppression preserves the whole original diagnostic a
     workspace: { workspaceEdit: { documentChanges: true } },
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, capabilities);
-  assert.equal(loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID).length, 82);
-  assert.equal(loaded.cases.length, 83);
+  assert.equal(loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID).length, 85);
+  assert.equal(loaded.cases.length, 86);
 });
 
 void test("closed one-suppression loader refuses altered identity, diagnostic, pin and whole-response metadata", () => {

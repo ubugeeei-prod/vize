@@ -15,8 +15,9 @@ pub(in crate::server) struct SyncDiagnostics {
 
 impl MaestroServer {
     /// The version identifies the edited source, including prompt feedback.
-    /// Edits also publish empty sets to clear a repaired lint/parser warning.
-    /// This pass does not own or retire the pending complete diagnostic job.
+    /// Edits also publish to clear a repaired lint/parser warning, with the
+    /// latest native family moved to the new text. This pass does not own or
+    /// retire the pending complete diagnostic job.
     pub(in crate::server) async fn publish_changed_sync_diagnostics(
         &self,
         uri: &Url,
@@ -38,9 +39,10 @@ impl MaestroServer {
         }
         self.state
             .cache_lint_hover_diagnostics(uri, version, &diagnostics);
-        let notification =
-            self.client
-                .publish_diagnostics(uri.clone(), diagnostics.clone(), Some(version));
+        let published = self.with_carried_native(uri, version, diagnostics.clone());
+        let notification = self
+            .client
+            .publish_diagnostics(uri.clone(), published, Some(version));
         futures::pin_mut!(notification);
         let document = self.state.diagnostic_lock(uri);
         let mut queued = false;
