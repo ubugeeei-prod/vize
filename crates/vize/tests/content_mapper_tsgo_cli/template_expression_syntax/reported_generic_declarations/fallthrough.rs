@@ -11,7 +11,7 @@ use std::{
 use vize_l0::String;
 
 fn outputs(root: &Path) -> Vec<(String, Vec<u8>)> {
-    let mut entries = Vec::new();
+    let mut entries: Vec<(String, Vec<u8>)> = Vec::new();
     if root.is_dir() {
         for entry in fs::read_dir(root).unwrap() {
             let entry = entry.unwrap();
