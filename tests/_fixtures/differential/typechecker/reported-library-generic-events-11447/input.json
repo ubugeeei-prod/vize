@@ -1,0 +1,36 @@
+{
+  "schema": "vize.reportedLibraryGenericEvents.originalInputs.v1",
+  "cases": [
+    {
+      "issue": 11447,
+      "reportSha256": "c7ab1bfb96493087260ef6fd137e315128d83ed7b029dd5168faede76430b64e",
+      "inputsSha256": "fae9e15d3793a140b5296b53ff7a9216bbf60d32c284ee776450efe9dcce1257",
+      "files": [
+        {
+          "path": "package.json",
+          "text": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+          "bytes": 200,
+          "sha256": "5fd563a7cc4254a3337dd0e02a175915ad23311fa6c813ac3507af091b9f1de6"
+        },
+        {
+          "path": "tsconfig.json",
+          "text": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+          "bytes": 279,
+          "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297"
+        },
+        {
+          "path": "src/lib.ts",
+          "text": "import type { VNode } from \"vue\";\n\nexport declare const Foo: <TBar>(\n  props: NonNullable<Awaited<typeof setup>>[\"props\"],\n  setup?: Promise<{ props: { modelValue?: TBar; \"onUpdate:modelValue\"?: (value: TBar) => void } }>,\n) => VNode & { __ctx?: NonNullable<Awaited<typeof setup>> };\n",
+          "bytes": 284,
+          "sha256": "fc626bb9f1530c093dc053c44af993bc698effcf284af77970361963c6aab4f5"
+        },
+        {
+          "path": "src/Probe.vue",
+          "text": "<script setup lang=\"ts\" generic=\"TBaz extends string\">\nimport { Foo } from \"./lib\";\n\nconst model = defineModel<TBaz>({ required: true });\n</script>\n\n<template>\n  <Foo\n    :model-value=\"model\"\n    @update:model-value=\"\n      (value) => {\n        if (typeof value === 'string') model = value;\n      }\n    \"\n  />\n</template>\n",
+          "bytes": 322,
+          "sha256": "5763e4285484a0ddd7f8b0a8ac30c76571aab7c336dcddc541a93e8d8dc15ae4"
+        }
+      ]
+    }
+  ]
+}
