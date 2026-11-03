@@ -388,15 +388,15 @@ fn compile_sfc_inner(
             codegen_options.runtime_module_name.as_str(),
         );
 
-    // Parse the script setup once, as TSX for `lang="tsx"`/`"jsx"`. Croquis, the
-    // macro context and (unless v-model demotion rewrites the content below) the
-    // inline statement sectioning reuse this AST. `None` means the parser panicked.
+    // Parse the script setup once. Croquis binding analysis, the macro
+    // context analysis, and (unless v-model demotion rewrites the content
+    // below) the inline compiler's statement sectioning all reuse this AST
+    // instead of independently re-parsing identical content. `None` means the
+    // parser panicked; each stage then falls back to its legacy parse path,
+    // which reproduces the historical panicked behavior.
     let setup_ast_allocator = oxc_allocator::Allocator::default();
-    let setup_program = crate::script::parse_script_setup_program(
-        &setup_ast_allocator,
-        &script_setup_content,
-        script_setup.lang.as_deref(),
-    );
+    let setup_program =
+        crate::script::parse_script_setup_program(&setup_ast_allocator, &script_setup_content);
     setup_exports::validate(setup_program.as_ref(), &script_setup_content, descriptor)?;
 
     // 1. Croquis parser: rich analysis with ReactivityTracker

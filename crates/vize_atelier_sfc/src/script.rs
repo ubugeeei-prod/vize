@@ -121,15 +121,6 @@ pub(crate) fn parse_script_text<'a>(
     parsed
 }
 
-/// Source type for `<script setup>` content. Plain scripts parse as
-/// TypeScript like every other stage; JSX dialects need the TSX grammar.
-pub fn script_setup_source_type(lang: Option<&str>) -> oxc_span::SourceType {
-    match lang {
-        Some("tsx" | "jsx") => oxc_span::SourceType::tsx(),
-        _ => oxc_span::SourceType::from_path("script.ts").unwrap_or_default(),
-    }
-}
-
 /// Analyze script setup and return a croquis Croquis.
 ///
 /// This uses vize_croquis for the core analysis and converts
@@ -148,20 +139,28 @@ pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
 /// Returns `None` when bounded edit recovery cannot produce a complete
 /// program; callers fall back to the legacy per-stage parse paths.
 ///
-/// `tsx` and `jsx` setup scripts may contain JSX, which the TypeScript
-/// grammar rejects, so their authored `lang` selects the TSX grammar.
+/// A `lang="tsx"` or `"jsx"` setup script may contain JSX, which the
+/// TypeScript grammar rejects; such content is read with the TSX grammar.
 pub fn parse_script_setup_program<'a>(
     allocator: &'a oxc_allocator::Allocator,
     content: &'a str,
-    lang: Option<&str>,
 ) -> Option<oxc_ast::ast::Program<'a>> {
     use vize_carton::profile;
 
-    let source_type = script_setup_source_type(lang);
+    // Same source type as the per-stage parsers this replaces
+    // (croquis `parse_script_setup`, `ScriptCompileContext::parse_with_oxc`,
+    // and `extract_script_sections` all parse as "script.ts").
+    let source_type = oxc_span::SourceType::from_path("script.ts").unwrap_or_default();
     let ret = profile!(
         "atelier.sfc.script_setup.oxc_parse",
         vize_croquis::script_parser::parse_program_for_analysis(allocator, content, source_type)
     );
+    if (ret.panicked || !ret.diagnostics.is_empty()) && content.contains('<') {
+        let jsx = oxc_parser::Parser::new(allocator, content, source_type.with_jsx(true)).parse();
+        if !jsx.panicked && jsx.diagnostics.is_empty() {
+            return Some(jsx.program);
+        }
+    }
     (!ret.panicked).then_some(ret.program)
 }
 
@@ -183,8 +182,7 @@ function pick(item: Item): void {
 }
 "#;
         let allocator = oxc_allocator::Allocator::default();
-        let program =
-            parse_script_setup_program(&allocator, source, None).expect("recovered program");
+        let program = parse_script_setup_program(&allocator, source).expect("recovered program");
         assert_eq!(program.source_text, source);
         assert_eq!(program.body.len(), 7);
         let summary = analyze_script_setup_program_to_summary(&program, source);
