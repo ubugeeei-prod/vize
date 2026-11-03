@@ -61,11 +61,12 @@ fn scope_bound_targets_declare_their_alias_inside_that_scope() {
         let declarations = template
             .match_indices(declaration.as_str())
             .collect::<Vec<_>>();
-        assert_eq!(declarations.len(), 2, "{alias}");
-        assert!(
-            !template.contains(cstr!("\n  {declaration}").as_str()),
-            "{alias}"
-        );
+        // Both sit in a scope body, one level below the template root.
+        let indents = declarations
+            .iter()
+            .map(|(at, _)| &template[template[..*at].rfind('\n').expect("line") + 1..*at])
+            .collect::<Vec<_>>();
+        assert_eq!(indents, ["    ", "    "], "{alias}");
         let mut from = 0;
         for ((declared, _), opener) in declarations.iter().zip(openers) {
             let opened = from + template[from..].find(opener).expect("scope opener");
@@ -73,8 +74,9 @@ fn scope_bound_targets_declare_their_alias_inside_that_scope() {
             from = opened + opener.len();
         }
         // Nothing before the scope's first declaration reads the alias.
-        assert!(
-            !template[..declarations[0].0].contains(alias.as_str()),
+        assert_eq!(
+            template.find(alias.as_str()),
+            Some(declarations[0].0 + "const ".len()),
             "{alias}"
         );
     }
