@@ -98,7 +98,7 @@ pub use directive::MarkupDirective;
 pub use element::MarkupElement;
 pub use l2::{L2Markup, L2Template};
 pub use node::{MarkupNode, MarkupText};
-pub use rule::MarkupRule;
+pub use rule::{MarkupLevel, MarkupRule};
 pub use scope::{MarkupConditional, MarkupList};
 pub use visitor::MarkupDocumentVisitor;
 
