@@ -10,6 +10,7 @@
  */
 
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -24,6 +25,40 @@ import {
   recompiledCount,
   restoredCount,
 } from "../test/precompile-cache-project.ts";
+
+/**
+ * Two cold runs of `root` in a child process. The kill switch is a process-wide
+ * env var and warnings reach the process console, while the sibling suites run
+ * concurrently in this one (#11566), so neither may be changed here.
+ */
+function isolatedColdRuns(root: string, env: NodeJS.ProcessEnv = {}) {
+  const helpers = JSON.stringify(
+    new URL("../test/precompile-cache-project.ts", import.meta.url).href,
+  );
+  const script = `
+const { coldRun, manifestFiles } = await import(${helpers});
+const runs = [];
+for (let i = 0; i < 2; i++) {
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args.map(String).join(" "));
+  const { log } = await coldRun(${JSON.stringify(root)});
+  runs.push({ log, warnings, manifests: manifestFiles(${JSON.stringify(root)}).length });
+}
+process.stdout.write(JSON.stringify(runs));`;
+  const childEnv = { ...process.env };
+  delete childEnv[PRECOMPILE_CACHE_ENV];
+  const child = spawnSync(
+    process.execPath,
+    ["--no-warnings", "--input-type=module", "-e", script],
+    {
+      env: { ...childEnv, ...env },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(child.status, 0, child.stderr);
+  const runs: { log: string; warnings: string[]; manifests: number }[] = JSON.parse(child.stdout);
+  return runs;
+}
 
 // ---------------------------------------------------------------------------
 // Hit path: a second cold process reuses the manifest.
@@ -56,21 +91,12 @@ import { reactive } from "vue";
 const form = reactive({ name: "" });
 </script>
 <template><input v-model="form" /></template>`);
-  const warnings: string[] = [];
-  const originalWarn = console.warn;
-  console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
-  try {
-    const first = await coldRun(root);
-    assert.equal(recompiledCount(first.log), 1);
-    assert.ok(warnings.some((message) => message.includes("v-model")));
-    warnings.length = 0;
-    const second = await coldRun(root);
-    assert.equal(restoredCount(second.log), 0, "warned sources cannot restore silently");
-    assert.equal(recompiledCount(second.log), 1);
-    assert.ok(warnings.some((message) => message.includes("v-model")));
-  } finally {
-    console.warn = originalWarn;
-  }
+  const [first, second] = isolatedColdRuns(root);
+  assert.equal(recompiledCount(first.log), 1);
+  assert.ok(first.warnings.some((message) => message.includes("v-model")));
+  assert.equal(restoredCount(second.log), 0, "warned sources cannot restore silently");
+  assert.equal(recompiledCount(second.log), 1);
+  assert.ok(second.warnings.some((message) => message.includes("v-model")));
 }
 
 // ---------------------------------------------------------------------------
@@ -190,21 +216,16 @@ const form = reactive({ name: "" });
 // Env kill switch: no reads, no writes.
 // ---------------------------------------------------------------------------
 {
-  const { root } = makeProject(BASE_SOURCE);
-  const previous = process.env[PRECOMPILE_CACHE_ENV];
-  process.env[PRECOMPILE_CACHE_ENV] = "0";
-  try {
-    await coldRun(root);
-    assert.deepEqual(manifestFiles(root), [], "a disabled cache must not write a manifest");
-    const second = await coldRun(root);
-    assert.equal(restoredCount(second.log), 0, "a disabled cache must never restore");
-  } finally {
-    if (previous === undefined) {
-      delete process.env[PRECOMPILE_CACHE_ENV];
-    } else {
-      process.env[PRECOMPILE_CACHE_ENV] = previous;
-    }
-  }
+  const [first, second] = isolatedColdRuns(makeProject(BASE_SOURCE).root, {
+    [PRECOMPILE_CACHE_ENV]: "0",
+  });
+  assert.equal(first.manifests, 0, "a disabled cache must not write a manifest");
+  assert.equal(restoredCount(second.log), 0, "a disabled cache must never restore");
+
+  // Control: the same isolated runs, cache on, write and restore.
+  const [cold, warm] = isolatedColdRuns(makeProject(BASE_SOURCE).root);
+  assert.equal(cold.manifests, 1);
+  assert.equal(restoredCount(warm.log), 1);
 }
 
 console.log("✅ vite-plugin-vize precompile cache staleness tests passed!");
