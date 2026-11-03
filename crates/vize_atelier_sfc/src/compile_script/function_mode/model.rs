@@ -5,10 +5,7 @@ use vize_carton::String;
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 /// Emit `defineModel` bindings and return their binding names.
-pub(super) fn emit_model_bindings(
-    output: &mut vize_carton::Vec<u8>,
-    ctx: &ScriptCompileContext,
-) -> Vec<String> {
+pub(super) fn emit_model_bindings(output: &mut Vec<u8>, ctx: &ScriptCompileContext) -> Vec<String> {
     let mut binding_names = Vec::new();
     for model_call in &ctx.macros.define_models {
         if let Some(ref binding_name) = model_call.binding_name {

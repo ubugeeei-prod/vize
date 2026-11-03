@@ -68,7 +68,7 @@ fn transform_css_var_expression(
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_setup_body(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     model_infos: &[ModelInfo],
     setup_body_lines: &[String],

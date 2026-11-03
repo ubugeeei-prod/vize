@@ -53,9 +53,8 @@ pub fn compile_script_setup(
     ctx.analyze();
     validate_macro_scope_and_props(&ctx, 0, content)?;
 
-    // Arena-allocated Vec on this worker's pooled arena (P1-11), not a fresh one.
-    let bump = vize_carton::pool::acquire();
-    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&*bump);
+    // Assembled in the heap buffer that becomes the returned code.
+    let mut output: Vec<u8> = Vec::with_capacity(4096);
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
@@ -295,7 +294,7 @@ pub fn compile_script_setup(
     // blocks in function mode.
     #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let output_str: std::string::String =
-        unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
+        unsafe { std::string::String::from_utf8_unchecked(output) };
 
     // Transform TypeScript to JavaScript only when output is not TS.
     let mut final_code: String = if is_ts {
@@ -319,7 +318,7 @@ pub fn compile_script_setup(
 ///
 /// Handles regular defineProps, destructured props with defaults, and type-based props.
 fn emit_props_definition(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     has_props_destructure: bool,
     needs_prop_type: bool,
@@ -491,11 +490,7 @@ fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
 /// Emit emits definition to the output buffer.
 ///
 /// Combines defineEmits and defineModel emit events.
-fn emit_emits_definition(
-    output: &mut vize_carton::Vec<u8>,
-    ctx: &ScriptCompileContext,
-    model_names: &[String],
-) {
+fn emit_emits_definition(output: &mut Vec<u8>, ctx: &ScriptCompileContext, model_names: &[String]) {
     let mut all_emits: Vec<String> = Vec::new();
 
     // Add emits from defineEmits

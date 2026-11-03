@@ -16,7 +16,7 @@ pub(super) fn extract(content: &str) -> (Vec<String>, Vec<String>, Vec<String>) 
     })
 }
 
-pub(super) fn emit_module_scope(output: &mut vize_carton::Vec<u8>, declarations: &[String]) {
+pub(super) fn emit_module_scope(output: &mut Vec<u8>, declarations: &[String]) {
     for declaration in declarations {
         output.extend_from_slice(declaration.as_bytes());
         output.push(b'\n');
