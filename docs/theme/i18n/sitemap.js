@@ -28,7 +28,6 @@
     /^\/blog\/releases\/\d{4}-\d{2}-\d{2}-/,
     /^\/reference\/(?:ui|composables)(?:\/|$)/,
     /^\/guide\/(?:ui|composables)\/.+/,
-    /^\/guide\/(?:compiler-)?configuration-reference$/,
     /^\/rules\/(?:reference|project)\//,
     // Reached from their parent page: Experimentals links to both of these in
     // every locale, so listing them again would only lengthen the sidebar.
@@ -59,49 +58,40 @@
   //
   // `paths` lists the pages all five locales publish. `pathsByLocale` adds the
   // pages only some locales have; each list must repeat the common paths.
-  const startPaths = [
-    "/",
-    "/getting-started",
-    "/guide/content-mapper",
-    "/philosophy",
-    "/guide/configuration",
-  ];
-  const projectSetupPaths = [
-    "/guide/vite-plugin",
-    "/integrations/nuxt",
-    "/integrations/void",
-    "/guide/workflows",
-    "/guide/jsx",
-    "/guide/jsx-babel-compat",
-    "/guide/unplugin",
-  ];
-  const staticAnalysisPaths = [
-    "/guide/static-analysis",
-    "/guide/analysis-diagnostics",
-    "/guide/cross-file-complexity",
-    "/guide/oxlint",
-    "/guide/comment-annotations",
-    "/integrations/vscode",
-  ];
-  const checkSettingsPaths = [
-    "/guide/static-analysis",
-    "/guide/language-server",
-    "/guide/analysis-diagnostics",
+  // `section` derives both from one ordered list: zh-CN, pt-BR and fr publish
+  // every page except these.
+  const englishAndJapaneseOnly = new Set([
+    "/guide/init",
+    "/guide/vite-plus",
+    "/guide/migration",
     "/guide/lint-execution",
-    "/guide/check-performance",
-    "/guide/cross-file-complexity",
-    "/guide/oxlint",
-    "/guide/comment-annotations",
-    "/integrations/vscode",
-  ];
-  const formatterPaths = [
     "/guide/formatter",
     "/guide/formatter-import-sorting",
     "/guide/formatter-indent-width",
     "/guide/formatter-line-endings",
     "/guide/formatter-property-quotes",
     "/guide/formatter-jsx-quotes",
-  ];
+    "/guide/type-checking",
+    "/guide/check-performance",
+    "/guide/language-server",
+    "/guide/vite-plus-editor",
+    "/guide/vapor",
+    "/guide/jsr",
+    "/guide/vue-configuration",
+    "/guide/vite-scoped-compiler",
+    "/guide/experimentals",
+    "/guide/musea-globals",
+    "/guide/musea-capture",
+    "/guide/musea-snapshots",
+    "/guide/musea-hosting",
+    "/guide/doctor",
+  ]);
+  const section = (key, paths) => {
+    const common = paths.filter((path) => !englishAndJapaneseOnly.has(path));
+    return common.length === paths.length
+      ? { key, paths }
+      : { key, paths: common, pathsByLocale: { en: paths, ja: paths } };
+  };
   const authoredRulePaths = [
     "/rules",
     "/rules/all",
@@ -130,92 +120,81 @@
     "/rules/accessibility-interactions",
     "/rules/accessibility-structure",
   ];
-  const componentPaths = [
-    "/guide/musea",
-    "/guide/musea-globals",
-    "/guide/musea-capture",
-    "/guide/musea-snapshots",
-    "/guide/musea-hosting",
-    "/guide/ui-styles",
-    "/guide/ui",
-    "/guide/composables",
-    "/guide/lib-pull",
-    "/guide/auto-imports",
-  ];
-  const toolPaths = [
-    "/guide/cli",
-    "/guide/doctor",
-    "/guide/compiler-inspector",
-    "/integrations/mcp",
-    "/guide/wasm",
-    "/guide/troubleshooting",
-    "/guide/testing",
-  ];
 
-  // `key` selects the section heading from a locale's `ui.groups`.
+  // `key` selects the section heading from a locale's `ui.groups`. Product
+  // sections come first, then the rule reference, then the project itself.
   sitemap.navGroups = [
-    {
-      key: "start",
-      paths: startPaths,
-      pathsByLocale: {
-        en: [
-          "/",
-          "/getting-started",
-          "/guide/content-mapper",
-          "/guide/type-checking",
-          "/philosophy",
-          "/guide/vite-plus",
-          "/guide/vite-plus-editor",
-          "/guide/init",
-          "/guide/migration",
-          "/guide/configuration",
-        ],
-        ja: [
-          "/",
-          "/getting-started",
-          "/guide/content-mapper",
-          "/guide/type-checking",
-          "/philosophy",
-          "/guide/vite-plus",
-          "/guide/vite-plus-editor",
-          "/guide/init",
-          "/guide/migration",
-          "/guide/configuration",
-        ],
-      },
-    },
-    {
-      key: "projectSetup",
-      paths: projectSetupPaths,
-      pathsByLocale: {
-        en: [
-          ...projectSetupPaths,
-          "/guide/vapor",
-          "/guide/jsr",
-          "/guide/vue-configuration",
-          "/guide/vite-scoped-compiler",
-          "/guide/experimentals",
-        ],
-        ja: [
-          ...projectSetupPaths,
-          "/guide/vapor",
-          "/guide/jsr",
-          "/guide/vue-configuration",
-          "/guide/vite-scoped-compiler",
-          "/guide/experimentals",
-        ],
-      },
-    },
-    {
-      key: "staticAnalysis",
-      paths: staticAnalysisPaths,
-      pathsByLocale: { en: checkSettingsPaths, ja: checkSettingsPaths },
-    },
-    {
-      key: "formatting",
-      paths: [],
-      pathsByLocale: { en: formatterPaths, ja: formatterPaths },
-    },
+    section("start", [
+      "/",
+      "/getting-started",
+      "/philosophy",
+      "/guide/init",
+      "/guide/vite-plus",
+      "/guide/workflows",
+      "/guide/migration",
+      "/guide/troubleshooting",
+    ]),
+    section("linter", [
+      "/guide/static-analysis",
+      "/guide/lint-execution",
+      "/guide/analysis-diagnostics",
+      "/guide/comment-annotations",
+      "/guide/cross-file-complexity",
+      "/guide/oxlint",
+    ]),
+    section("formatter", [
+      "/guide/formatter",
+      "/guide/formatter-import-sorting",
+      "/guide/formatter-indent-width",
+      "/guide/formatter-line-endings",
+      "/guide/formatter-property-quotes",
+      "/guide/formatter-jsx-quotes",
+    ]),
+    section("typeChecker", [
+      "/guide/type-checking",
+      "/guide/content-mapper",
+      "/guide/check-performance",
+    ]),
+    section("editor", [
+      "/guide/language-server",
+      "/guide/vite-plus-editor",
+      "/integrations/vscode",
+    ]),
+    section("compiler", [
+      "/guide/vite-plugin",
+      "/integrations/nuxt",
+      "/integrations/void",
+      "/guide/unplugin",
+      "/guide/jsx",
+      "/guide/jsx-babel-compat",
+      "/guide/vapor",
+      "/guide/compiler-inspector",
+      "/guide/wasm",
+      "/guide/jsr",
+    ]),
+    section("configuration", [
+      "/guide/configuration",
+      "/guide/configuration-reference",
+      "/guide/compiler-configuration-reference",
+      "/guide/vue-configuration",
+      "/guide/vite-scoped-compiler",
+      "/guide/experimentals",
+    ]),
+    // The MCP server serves Musea's component metadata to assistants.
+    section("components", [
+      "/guide/musea",
+      "/guide/musea-globals",
+      "/guide/musea-capture",
+      "/guide/musea-snapshots",
+      "/guide/musea-hosting",
+      "/integrations/mcp",
+      "/guide/ui-styles",
+      "/guide/ui",
+      "/guide/composables",
+      "/guide/lib-pull",
+      "/guide/auto-imports",
+    ]),
+    section("tools", ["/guide/cli", "/guide/doctor", "/guide/testing"]),
     {
       key: "rules",
       paths: rulePaths,
@@ -232,37 +211,17 @@
       paths: [],
       pathsByLocale: { en: ruleGuidePaths, ja: ruleGuidePaths },
     },
-    {
-      key: "tooling",
-      paths: [
-        "/guide/musea",
-        "/guide/ui-styles",
-        "/guide/ui",
-        "/guide/composables",
-        "/guide/lib-pull",
-        "/guide/auto-imports",
-      ],
-      pathsByLocale: { en: componentPaths, ja: componentPaths },
-    },
-    {
-      key: "tools",
-      paths: toolPaths.filter((path) => path !== "/guide/doctor"),
-      pathsByLocale: { en: toolPaths, ja: toolPaths },
-    },
-    {
-      key: "architecture",
-      paths: [
-        "/stability",
-        "/credits",
-        "/contributing",
-        "/architecture/overview",
-        "/architecture/crates",
-        "/architecture/source-guide",
-        "/architecture/language-engineering-practices",
-        "/architecture/performance",
-        "/architecture/performance-blacksmith",
-      ],
-    },
+    section("architecture", [
+      "/stability",
+      "/contributing",
+      "/credits",
+      "/architecture/overview",
+      "/architecture/crates",
+      "/architecture/source-guide",
+      "/architecture/language-engineering-practices",
+      "/architecture/performance",
+      "/architecture/performance-blacksmith",
+    ]),
     {
       key: "blog",
       paths: sitemap.blogNavigationPaths,
