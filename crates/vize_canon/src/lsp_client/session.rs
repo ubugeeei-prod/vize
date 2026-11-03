@@ -277,8 +277,7 @@ impl CorsaProjectClient {
         &self,
         diagnostics: Vec<super::PhasedDiagnostic>,
     ) -> Vec<super::PhasedDiagnostic> {
-        super::utils::remap_serialized_uris(diagnostics.clone(), &self.external_document_uris)
-            .unwrap_or(diagnostics)
+        super::diagnostic_phase::remap_diagnostics(diagnostics, &self.external_document_uris)
     }
 
     pub(super) fn remap_result_uris(&self, value: &mut Value) {

@@ -5,7 +5,6 @@ use super::super::{
     PhasedDiagnostic,
     diagnostics_api::{document_identifier_uri, phased_file_diagnostics},
     session::uri_document_identifier,
-    utils::remap_serialized_uris,
 };
 use super::{InitialDiagnosticsRead, native_diagnostics};
 use corsa::{
@@ -188,7 +187,6 @@ impl DiagnosticReadView<'_> {
     }
 
     fn remap(&self, diagnostics: Vec<PhasedDiagnostic>) -> Vec<PhasedDiagnostic> {
-        remap_serialized_uris(diagnostics.clone(), self.external_document_uris)
-            .unwrap_or(diagnostics)
+        super::super::diagnostic_phase::remap_diagnostics(diagnostics, self.external_document_uris)
     }
 }

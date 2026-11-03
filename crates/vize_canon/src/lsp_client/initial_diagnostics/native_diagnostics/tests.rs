@@ -295,8 +295,12 @@ fn framed_complete_result_uses_original_snapshot_encoded_text_not_live_disk() {
 #[test]
 fn framed_phase_comes_from_each_completed_compiler_kind_not_the_code() {
     use crate::corsa_bridge::DiagnosticPhase;
-    let row = json!({"fileName":"/workspace/a #.ts","pos":0,"end":5,
-        "code":1192,"category":1,"text":"same code across kinds"});
+    let fixture: Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+    )))
+    .unwrap();
+    let row = fixture["compilerKindDiagnostic"].clone();
     let mut replies = KINDS
         .iter()
         .map(|method| (*method, json!([row.clone()])))

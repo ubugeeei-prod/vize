@@ -17,7 +17,6 @@ use std::{
 const URI: &str = "file:///workspace/a%20%23.ts";
 const FILE: &str = "/workspace/a #.ts";
 const SNAPSHOT: &str = "n0000000000000001";
-const ENCODED_TEXT: &str = "AAAABQAAAAAAAAAAAAAAAAAAAAAAAAAALAAAAEQAAACGAAAAtgAAALYAAAAAAAAAIAAAACAAAAAxAAAAMQAAAEIAAABjb25zdCBlbW9qaSA9ICfwn5iAJzsNCi8vIGNhZsOpDS93b3Jrc3BhY2UvYSAjLnRzL3dvcmtzcGFjZS9hICMudHMAAAAAAgAAAAQAAAAAAAAAAwAAAP///////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwEAAAAAAAAdAAAAAAAAAAAAAAAAAACAAAAAAA==";
 const PROJECT: &str = "p./workspace/tsconfig.json";
 
 struct Peer {
@@ -35,6 +34,11 @@ impl Peer {
         let root = tempfile::tempdir().unwrap();
         let pipe = root.path().join("normal-read.sock");
         let listener = UnixListener::bind(&pipe).unwrap();
+        let fixture: Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        )))
+        .unwrap();
         let worker = thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
             stream
@@ -69,10 +73,8 @@ impl Peer {
                         continue;
                     }
                     "getSyntacticDiagnostics" | "getSuggestionDiagnostics" => json!([]),
-                    "getSemanticDiagnostics" => json!([{
-                        "fileName":FILE,"pos":0,"end":5,"category":1,"code":1192,"text":"no default export"
-                    }]),
-                    "getSourceFile" => json!({"data":ENCODED_TEXT}),
+                    "getSemanticDiagnostics" => fixture["warmSemantic"].clone(),
+                    "getSourceFile" => json!({"data":fixture["encodedSnapshotSource"]}),
                     "release" => Value::Null,
                     _ => panic!("unexpected normal provenance RPC {method}"),
                 };

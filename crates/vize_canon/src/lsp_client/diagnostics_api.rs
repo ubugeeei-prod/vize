@@ -91,8 +91,13 @@ mod tests {
     #[test]
     fn api_phase_comes_from_the_owned_bucket_not_the_diagnostic_code() {
         use crate::corsa_bridge::DiagnosticPhase;
-        let mut same_code = diagnostic("same diagnostic code");
-        same_code.code = Some(lsp_types::NumberOrString::Number(1192));
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        )))
+        .unwrap();
+        let same_code: Diagnostic =
+            serde_json::from_value(fixture["bucketDiagnostic"].clone()).unwrap();
         let response = FileDiagnosticsResponse {
             file: DocumentIdentifier::from("/workspace/App.vue.ts"),
             syntactic: vec![same_code.clone()],
