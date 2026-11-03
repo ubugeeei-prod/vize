@@ -6,6 +6,9 @@ name: LSP vs Vue language tools
 # CPU and PSS/RSS, CPU per edit and p50/p99 latency of correct answers.
 # Report only: it gates nothing. Pinned to `cpus` cores so the numbers resemble
 # a developer laptop; `compare_ref` adds a second vize row for before/after.
+# The tsserver row is Vize's backend for TypeScript 5.7-6.x: the project's
+# tsserver with this commit's @vizejs/typescript-vue-plugin, the like-for-like
+# counterpart of the Volar row.
 
 on:
   workflow_dispatch:
@@ -38,6 +41,10 @@ on:
         description: npm spec of the vize package whose content mapper the tsgo row loads
         required: false
         default: "latest"
+      tsserver_plugin:
+        description: Add the project-TypeScript row, tsserver with this commit's @vizejs/typescript-vue-plugin
+        type: boolean
+        default: true
       vize_env:
         description: Optional space-separated KEY=VALUE pairs for every vize row (diagnosis runs, e.g. VIZE_TRACE_EDITOR_PREPARATION=1)
         required: false
@@ -66,6 +73,8 @@ env:
   VIZE_ENV: ${{ inputs.vize_env || '' }}
   TSGO_MAPPER: ${{ inputs.tsgo_mapper || '' }}
   MAPPER_VIZE: ${{ inputs.mapper_vize || 'latest' }}
+  # Pull requests measure it too; only a dispatch can turn it off.
+  TSSERVER_PLUGIN: ${{ github.event_name == 'pull_request' || inputs.tsserver_plugin }}
 
 jobs:
   plan:
@@ -136,6 +145,20 @@ jobs:
             "typescript@$ts" "@typescript/typescript-linux-x64@$corsa"
           node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
 
+      - name: Stage the tsserver plugin row (this commit's plugin and native addon)
+        if: ${{ env.TSSERVER_PLUGIN == 'true' }}
+        run: |
+          # Same profile as the vize rows; published addons use `release`.
+          cargo build --profile ci-opt -p vize_vitrine --features napi,legacy
+          root="$RUNNER_TEMP/tsserver-plugin/node_modules"
+          mkdir -p "$root/@vizejs"
+          cp -R npm/native "$root/@vizejs/native"
+          cp target/ci-opt/libvize_vitrine.so "$root/@vizejs/native/vize-vitrine.linux-x64-gnu.node"
+          cp -R npm/typescript-plugin "$root/@vizejs/typescript-vue-plugin"
+          rm -rf "$root/@vizejs/native/node_modules" "$root/@vizejs/typescript-vue-plugin/node_modules"
+          # The project's TypeScript: the same tsserver the Volar row runs.
+          ln -s "$RUNNER_TEMP/tools/node_modules/typescript" "$root/typescript"
+
       - name: Install the content-mapper row (TypeScript native LSP + published vize mapper)
         if: ${{ env.TSGO_MAPPER != '' }}
         run: |
@@ -163,6 +186,9 @@ jobs:
             args+=(--vize-env "head:$assignment" --meta "env=$assignment")
             if [ -n "$COMPARE_REF" ]; then args+=(--vize-env "compare:$assignment"); fi
           done
+          if [ "$TSSERVER_PLUGIN" = true ]; then
+            args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
+          fi
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
