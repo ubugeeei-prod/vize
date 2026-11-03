@@ -352,8 +352,13 @@ fn apply_replacements(
             });
             code.push_str(": ");
         }
+        let receiver_start = code.len();
         append!(code, "{receiver}[\"");
         let key_start = code.len();
+        diagnostic_prefixes.push(SpreadRewriteSegment {
+            generated: receiver_start..key_start,
+            source: replacement.source.clone(),
+        });
         code.push_str(name);
         segments.push(SpreadRewriteSegment {
             generated: key_start..code.len(),

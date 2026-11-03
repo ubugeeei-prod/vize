@@ -73,7 +73,6 @@ impl<'a> TemplateBindingAccess<'a> {
             infer_dollar_el: source.check_options.infer_template_dollar_el,
             receiver: String::from("__ctx"),
             cache: RefCell::default(),
-            diagnostic_prefixes: RefCell::default(),
         }));
         result.prepare_instance_context();
         result

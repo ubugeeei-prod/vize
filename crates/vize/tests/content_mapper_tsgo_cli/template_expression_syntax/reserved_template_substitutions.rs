@@ -83,10 +83,16 @@ fn composed_reserved_keys_preserve_authored_argument_diagnostics() {
             fs::copy(&config, project.path().join("tsconfig.json")).unwrap();
             let original = original.replace('\n', newline);
             let invalid = original.replace("needsNumber(from.length)", "needsNumber(from)");
+            let invalid_static =
+                original.replace("needsNumber(from.length)", "needsNumber(static)");
             for (source, expected) in [
                 (original.as_str(), ""),
                 (
                     invalid.as_str(),
+                    "Probe.vue(5,41): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n",
+                ),
+                (
+                    invalid_static.as_str(),
                     "Probe.vue(5,41): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n",
                 ),
                 (original.as_str(), ""),

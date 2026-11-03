@@ -45,21 +45,12 @@ impl PreparedInstanceRewrite {
             (Some(reserved), Some(instance)) => Some(BindingRewrite {
                 code: instance.code,
                 segments: compose(&reserved.segments, &instance.segments),
-                diagnostic_prefixes: instance
-                    .diagnostic_prefixes
-                    .into_iter()
-                    .filter_map(|prefix| {
-                        let inner = reserved.segments.iter().find(|inner| {
-                            inner.generated.start <= prefix.source.start
-                                && prefix.source.end <= inner.generated.end
-                        })?;
-                        Some(SpreadRewriteSegment {
-                            generated: prefix.generated,
-                            source: inner.source.start + prefix.source.start - inner.generated.start
-                                ..inner.source.start + prefix.source.end - inner.generated.start,
-                        })
-                    })
-                    .collect(),
+                diagnostic_prefixes: compose_diagnostic_prefixes(
+                    &reserved.segments,
+                    &reserved.diagnostic_prefixes,
+                    &instance.segments,
+                    &instance.diagnostic_prefixes,
+                ),
             }),
         }
     }
@@ -129,6 +120,54 @@ pub(super) fn compose(
     result
 }
 
+/// Diagnostic anchors are not affine: preserve their entire receiver range
+/// while transporting its position through unchanged navigation segments.
+pub(super) fn compose_diagnostic_prefixes(
+    first: &[SpreadRewriteSegment],
+    first_prefixes: &[SpreadRewriteSegment],
+    second: &[SpreadRewriteSegment],
+    second_prefixes: &[SpreadRewriteSegment],
+) -> Vec<SpreadRewriteSegment> {
+    let mut result = Vec::with_capacity(first_prefixes.len() + second_prefixes.len());
+    let mut index = 0;
+    for prefix in second_prefixes {
+        while first
+            .get(index)
+            .is_some_and(|row| row.generated.end <= prefix.source.start)
+        {
+            index += 1;
+        }
+        if let Some(row) = first.get(index).filter(|row| {
+            row.generated.start <= prefix.source.start && prefix.source.end <= row.generated.end
+        }) {
+            result.push(SpreadRewriteSegment {
+                generated: prefix.generated.clone(),
+                source: row.source.start + prefix.source.start - row.generated.start
+                    ..row.source.start + prefix.source.end - row.generated.start,
+            });
+        }
+    }
+    let mut index = 0;
+    for prefix in first_prefixes {
+        while second
+            .get(index)
+            .is_some_and(|row| row.source.end <= prefix.generated.start)
+        {
+            index += 1;
+        }
+        if let Some(row) = second.get(index).filter(|row| {
+            row.source.start <= prefix.generated.start && prefix.generated.end <= row.source.end
+        }) {
+            result.push(SpreadRewriteSegment {
+                generated: row.generated.start + prefix.generated.start - row.source.start
+                    ..row.generated.start + prefix.generated.end - row.source.start,
+                source: prefix.source.clone(),
+            });
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -185,10 +224,19 @@ mod tests {
         let expression = "class + $ghost.known";
         let actual = rewrite(expression, &bindings).unwrap();
         assert_eq!(actual.code, "props[\"class\"] + __ctx.$ghost.known");
-        assert_eq!(actual.diagnostic_prefixes.len(), 1);
+        assert_eq!(actual.diagnostic_prefixes.len(), 2);
         let prefix = actual.diagnostic_prefixes.first().unwrap();
         assert_eq!(actual.code.get(prefix.generated.clone()), Some("__ctx."));
         assert_eq!(expression.get(prefix.source.clone()), Some("$ghost"));
+        let reserved_prefix = actual.diagnostic_prefixes.last().unwrap();
+        assert_eq!(
+            actual.code.get(reserved_prefix.generated.clone()),
+            Some("props[\"")
+        );
+        assert_eq!(
+            expression.get(reserved_prefix.source.clone()),
+            Some("class")
+        );
         let mut emitted = Vec::new();
         for base in [100, 1000] {
             bindings.record_instance_diagnostic_prefix(crate::virtual_ts::VizeMapping {

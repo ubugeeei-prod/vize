@@ -178,6 +178,16 @@ fn combined_reserved_rewrites_map_both_keys_to_authored_bytes() {
                     .contains(&(generated_start + receiver_start + extra_byte))
             }));
         }
+        let mut diagnostics = Vec::new();
+        bindings.append_instance_diagnostic_prefixes(&mut diagnostics);
+        diagnostics.sort_by_key(|row| row.gen_range.start);
+        assert_eq!(
+            diagnostics,
+            vec![
+                VizeMapping::new(generated(7, 14), source(7, 13)),
+                VizeMapping::new(generated(26, 33), source(17, 21)),
+            ]
+        );
     }
 }
 

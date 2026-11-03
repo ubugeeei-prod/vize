@@ -12,6 +12,12 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::String;
 use vize_carton::append;
 
+#[derive(Default)]
+struct BindingSpans {
+    navigation: Vec<VizeSubSpan>,
+    diagnostics: Vec<super::spread_reserved_props::SpreadRewriteSegment>,
+}
+
 enum TemplatePart {
     Text,
     Substitution(usize),
@@ -39,13 +45,14 @@ pub(super) fn rewrite_reserved_with_segments(
     expression: &str,
     bindings: &TemplateBindingAccess,
 ) -> Option<super::spread_reserved_props::BindingRewrite> {
-    let mut spans = Some(Vec::new());
+    let mut spans = Some(BindingSpans::default());
     let code = rewrite_binding(expression, bindings, &mut spans)?;
+    let spans = spans.unwrap_or_default();
     Some(super::spread_reserved_props::BindingRewrite {
         code,
-        diagnostic_prefixes: Vec::new(),
+        diagnostic_prefixes: spans.diagnostics,
         segments: spans
-            .unwrap_or_default()
+            .navigation
             .into_iter()
             .map(|span| super::spread_reserved_props::SpreadRewriteSegment {
                 generated: span.gen_range,
@@ -101,7 +108,7 @@ pub(super) fn map_rewritten_binding_source(
 fn rewrite_binding(
     expression: &str,
     template_binding_access: &TemplateBindingAccess,
-    spans: &mut Option<Vec<VizeSubSpan>>,
+    spans: &mut Option<BindingSpans>,
 ) -> Option<String> {
     if !template_binding_access.has_reserved_bindings() {
         return None;
@@ -204,14 +211,26 @@ fn rewrite_binding(
                     && is_object_shorthand(bytes, start, i);
                 if let Some(spans) = spans.as_mut() {
                     if copied_source < start {
-                        spans.push(VizeSubSpan {
+                        spans.navigation.push(VizeSubSpan {
                             gen_range: copied_generated..output.len(),
                             src_range: copied_source..start,
                         });
                     }
                     let shorthand_prefix = if shorthand { ident.len() + 2 } else { 0 };
                     let key = output.len() + shorthand_prefix + receiver.len() + 2;
-                    spans.push(VizeSubSpan {
+                    if shorthand {
+                        spans.navigation.push(VizeSubSpan {
+                            gen_range: output.len()..output.len() + ident.len(),
+                            src_range: start..i,
+                        });
+                    }
+                    spans
+                        .diagnostics
+                        .push(super::spread_reserved_props::SpreadRewriteSegment {
+                            generated: output.len() + shorthand_prefix..key,
+                            source: start..i,
+                        });
+                    spans.navigation.push(VizeSubSpan {
                         gen_range: key..key + ident.len(),
                         src_range: start..i,
                     });
@@ -241,7 +260,7 @@ fn rewrite_binding(
         && changed
         && copied_source < len
     {
-        spans.push(VizeSubSpan {
+        spans.navigation.push(VizeSubSpan {
             gen_range: copied_generated..output.len(),
             src_range: copied_source..len,
         });
@@ -264,19 +283,29 @@ fn rewrite_binding(
             template_binding_access.scope_id(),
         ) {
             if let Some(spans) = spans.as_mut() {
-                let segments = if changed {
+                let (segments, diagnostics) = if changed {
                     let first = spans
+                        .navigation
                         .iter()
                         .map(|span| super::spread_reserved_props::SpreadRewriteSegment {
                             generated: span.gen_range.clone(),
                             source: span.src_range.clone(),
                         })
                         .collect::<Vec<_>>();
-                    super::instance_rewrite::compose(&first, &rewrite.segments)
+                    (
+                        super::instance_rewrite::compose(&first, &rewrite.segments),
+                        super::instance_rewrite::compose_diagnostic_prefixes(
+                            &first,
+                            &spans.diagnostics,
+                            &rewrite.segments,
+                            &rewrite.diagnostic_prefixes,
+                        ),
+                    )
                 } else {
-                    rewrite.segments
+                    (rewrite.segments, rewrite.diagnostic_prefixes)
                 };
-                *spans = segments
+                spans.diagnostics = diagnostics;
+                spans.navigation = segments
                     .into_iter()
                     .map(|segment| VizeSubSpan {
                         gen_range: segment.generated,
