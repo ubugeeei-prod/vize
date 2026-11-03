@@ -296,9 +296,12 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         return null;
       }
 
-      const { compiled, warnings } = compileVueModule(id, code, options, cache);
+      const { compiled, warnings, dependencies } = compileVueModule(id, code, options, cache);
       for (const warning of warnings) {
         this.warn(`[vize] ${warning}`);
+      }
+      for (const dependency of dependencies) {
+        this.addWatchFile(dependency);
       }
 
       const generated = generateOutput(compiled, {

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { compileVueModule } from "./compiler.ts";
 import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
@@ -64,76 +67,122 @@ void test("external style dependency guards preserve lexical and delegated CSS b
   }
 });
 
-void test("source-aware compilation refuses external CSS before cache insertion and retains inline output", (t) => {
-  const options = normalizeOptions({ isProduction: true, root: "/project", sourceMap: true });
-  const cases = [
+void test("#11456 compilation inlines style src, keeps inline output and refuses imports before caching", (t) => {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-style-src-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(root, "foo.css"), ".foo {\n  color: red;\n}\n");
+  const filePath = path.join(root, "Foo.vue");
+  const options = normalizeOptions({ isProduction: true, root, sourceMap: true });
+  const cases: Array<
+    { id: string; source: string } & (
+      | { expected: { scoped: boolean; dependencies: string[] } }
+      | { error: RegExp }
+    )
+  > = [
     {
       id: "reported-src",
       source:
         '<template><button class="foo">Foo</button></template>\n<style scoped src="./foo.css"></style>',
-      refused: true,
+      expected: { scoped: true, dependencies: [path.join(root, "foo.css")] },
+    },
+    {
+      id: "plain-src",
+      source: '<template><button class="foo" /></template><style src="./foo.css"></style>',
+      expected: { scoped: false, dependencies: [path.join(root, "foo.css")] },
+    },
+    {
+      id: "self-closing-src",
+      source:
+        "<template><button class=\"foo\" /></template><style scoped src='./foo.css' /><style>.b {color:red}</style>",
+      expected: { scoped: true, dependencies: [path.join(root, "foo.css")] },
+    },
+    {
+      id: "missing-src",
+      source: '<template><button /></template><style scoped src="./missing.css"></style>',
+      error: /<style src="\.\/missing\.css"> not found/,
     },
     {
       id: "inline-import",
       source: '<template><button /></template><style scoped>@import "./foo.css";</style>',
-      refused: true,
+      error: /CSS @import in <style> is not supported/,
     },
     {
       id: "script-literal",
       source:
-        "<script setup>const source = '<style src=\"./foo.css\"></style>'</script><template>{{ source }}</template><style scoped>.foo {color:red}</style>",
-      refused: false,
+        "<script setup>const source = '<style src=\"./missing.css\"></style>'</script><template>{{ source }}</template><style scoped>.foo {color:red}</style>",
+      expected: { scoped: true, dependencies: [] },
     },
     {
       id: "comment-literal",
       source:
-        '<template><button /></template><!-- <style src="./foo.css"></style> --><style>.foo {color:red}</style>',
-      refused: false,
+        '<template><button /></template><!-- <style src="./missing.css"></style> --><style>.foo {color:red}</style>',
+      expected: { scoped: false, dependencies: [] },
     },
     {
       id: "inline-scoped",
       source:
         '<template><button class="foo">Foo</button></template><style scoped>.foo { color: red; }</style>',
-      refused: false,
+      expected: { scoped: true, dependencies: [] },
     },
   ];
   const outcomes = cases.map((item) => {
     const cache = new Map<string, CachedCompiledModule>();
     try {
-      const first = compileVueModule("/project/Foo.vue", item.source, options, cache);
-      const second = compileVueModule("/project/Foo.vue", item.source, options, cache);
-      const output = generateOutput(first.compiled, {
-        isProduction: true,
-        isDev: false,
-        filePath: "/project/Foo.vue",
-      });
-      return { ...item, state: "returned", first, second, output, cache: [...cache] };
+      const first = compileVueModule(filePath, item.source, options, cache);
+      const second = compileVueModule(filePath, item.source, options, cache);
+      const output = generateOutput(first.compiled, { isProduction: true, isDev: false, filePath });
+      return { item, first, second, output, cacheSize: cache.size, message: null };
     } catch (error) {
-      return {
-        ...item,
-        state: "threw",
-        error:
-          error instanceof Error
-            ? { name: error.name, message: error.message, stack: error.stack }
-            : error,
-        cache: [...cache],
-      };
+      const message = error instanceof Error ? error.message : String(error);
+      return { item, first: null, second: null, output: "", cacheSize: cache.size, message };
     }
   });
-  t.diagnostic(JSON.stringify({ schema: "vize.unplugin.styleDependencyCompilation.v1", outcomes }));
-  for (const actual of outcomes) {
-    if (actual.refused) {
-      assert.equal(actual.state, "threw", actual.id);
-      assert.deepEqual(actual.cache, [], actual.id);
-      assert.match(JSON.stringify(actual.error), /not supported by @vizejs\/unplugin/);
-    } else {
-      assert.equal(actual.state, "returned", actual.id);
-      assert.deepEqual(actual.second?.compiled, actual.first?.compiled, actual.id);
-      assert.match(actual.output ?? "", /__vize_css__/);
-      assert.match(actual.first?.compiled.css ?? "", /color:\s*red/);
-      if (actual.id !== "comment-literal") {
-        assert.match(actual.first?.compiled.css ?? "", /\[data-v-/);
-      }
+  t.diagnostic(
+    JSON.stringify({
+      schema: "vize.unplugin.styleSrcCompilation.v2",
+      outcomes: outcomes.map(({ item, first, message }) => ({
+        id: item.id,
+        css: first?.compiled.css ?? null,
+        dependencies: first?.dependencies ?? null,
+        message,
+      })),
+    }),
+  );
+  for (const { item, first, second, output, cacheSize, message } of outcomes) {
+    if ("error" in item) {
+      assert.match(message ?? "", item.error, item.id);
+      assert.equal(cacheSize, 0, item.id);
+      continue;
     }
+    assert.equal(message, null, item.id);
+    assert.ok(first && second, item.id);
+    assert.equal(second.compiled, first.compiled, item.id);
+    assert.deepEqual(first.dependencies, item.expected.dependencies, item.id);
+    assert.deepEqual(second.dependencies, item.expected.dependencies, item.id);
+    assert.ok(
+      first.compiled.styles.every((style) => style.src === null),
+      item.id,
+    );
+    assert.match(output, /__vize_css__/, item.id);
+    assert.match(first.compiled.css ?? "", /color:\s*red/, item.id);
+    assert.equal(/\.foo\[data-v-/.test(first.compiled.css ?? ""), item.expected.scoped, item.id);
   }
+});
+
+void test("#11456 an edited style src file invalidates the compile cache", (t) => {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-style-src-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const css = path.join(root, "foo.css");
+  const filePath = path.join(root, "Foo.vue");
+  const source = '<template><b class="foo" /></template><style scoped src="./foo.css"></style>';
+  const options = normalizeOptions({ isProduction: true, root });
+  const cache = new Map<string, CachedCompiledModule>();
+  fs.writeFileSync(css, ".foo { color: red; }");
+  const first = compileVueModule(filePath, source, options, cache).compiled;
+  fs.writeFileSync(css, ".foo { color: blue; }");
+  const second = compileVueModule(filePath, source, options, cache).compiled;
+  assert.match(first.css ?? "", /red/);
+  assert.match(second.css ?? "", /blue/);
+  assert.doesNotMatch(second.css ?? "", /red/);
+  assert.equal(second.scopeId, first.scopeId);
 });

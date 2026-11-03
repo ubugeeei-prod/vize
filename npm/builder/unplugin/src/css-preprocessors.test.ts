@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import "./test/setup.ts";
@@ -13,11 +14,11 @@ const STYLE_MARKER = ".__vize_style_";
 // `node_modules` to satisfy the plugin's request matching.
 const SYNTHETIC_ID = path.join(packageRoot, "App.vue");
 
-function createPlugin() {
+function createPlugin(root = createFakePreprocessorRoot("css-preprocessors")) {
   return vizeUnplugin.raw(
     {
       isProduction: true,
-      root: createFakePreprocessorRoot("css-preprocessors"),
+      root,
     },
     {
       framework: "rollup",
@@ -30,11 +31,12 @@ function createPlugin() {
 //   transform(source, id)  -> caches compiled module + style blocks
 //   resolveId(importId)    -> STYLE_MARKER virtual id (carries vize-file)
 //   load(virtualId)        -> { code } read back from the cache
-async function runPipeline(source: string, importRegex: RegExp) {
-  const plugin = createPlugin();
-  const ctx = { warn() {} };
+async function runPipeline(source: string, importRegex: RegExp, id = SYNTHETIC_ID) {
+  const plugin = createPlugin(id === SYNTHETIC_ID ? undefined : path.dirname(id));
+  const watched: string[] = [];
+  const ctx = { warn() {}, addWatchFile: (file: string) => watched.push(file) };
 
-  const transformed = await plugin.transform?.call(ctx as never, source, SYNTHETIC_ID);
+  const transformed = await plugin.transform?.call(ctx as never, source, id);
   if (!transformed || typeof transformed !== "object") {
     throw new Error("transform() returned no result");
   }
@@ -45,7 +47,7 @@ async function runPipeline(source: string, importRegex: RegExp) {
   }
   const importId = match[1];
 
-  const resolvedId = await plugin.resolveId?.call({} as never, importId, SYNTHETIC_ID, {
+  const resolvedId = await plugin.resolveId?.call({} as never, importId, id, {
     isEntry: false,
   });
   if (typeof resolvedId !== "string") {
@@ -63,6 +65,7 @@ async function runPipeline(source: string, importRegex: RegExp) {
     resolvedId,
     loadInclude: plugin.loadInclude?.call({} as never, resolvedId),
     loadedCss: loaded.code,
+    watched,
   };
 }
 
@@ -189,4 +192,39 @@ void test("plain non-module css is inlined, not delegated", async (t) => {
 
   // And resolveId on a would-be style request for this plain css is moot: the
   // transform never produced one, confirming the inline path was taken.
+});
+
+void test("#11456 scss and css-module src blocks delegate the file's content", async (t) => {
+  const root = createFakePreprocessorRoot("css-preprocessors-src");
+  fs.mkdirSync(path.join(root, "styles"), { recursive: true });
+  fs.writeFileSync(path.join(root, "styles", "a.scss"), "$c: red; .a { color: $c; }");
+  fs.writeFileSync(path.join(root, "styles", "m.css"), ".root { color: seagreen; }");
+  const id = path.join(root, "App.vue");
+
+  const scss = await runPipeline(
+    `<template><div class="a">x</div></template>
+<style scoped lang="scss" src="./styles/a.scss"></style>`,
+    /import "([^"]+)";/,
+    id,
+  );
+  const scopeId = scss.importId.match(/scoped=(data-v-[0-9a-f]+)/)?.[1];
+  t.assert.ok(scopeId, "scoped query on the delegated request");
+  t.assert.match(scss.importId, /lang=scss/);
+  t.assert.ok(scss.loadedCss.includes(`.a[${scopeId}]`), "file content preprocessed and scoped");
+  t.assert.ok(!scss.loadedCss.includes("$c"), "preprocessor ran on the file content");
+  t.assert.deepEqual(scss.watched, [path.join(root, "styles", "a.scss")]);
+
+  const cssModule = await runPipeline(
+    `<template><div :class="$style.root">x</div></template>
+<style module src="./styles/m.css"></style>`,
+    /import \$style from "([^"]+)";/,
+    id,
+  );
+  t.assert.match(cssModule.transformCode, /__cssModules\["\$style"\] = \$style;/);
+  t.assert.match(cssModule.resolvedId, /\.module\.css\?/);
+  t.assert.ok(
+    cssModule.loadedCss.includes(".root { color: seagreen; }"),
+    "module file content loaded",
+  );
+  t.assert.deepEqual(cssModule.watched, [path.join(root, "styles", "m.css")]);
 });
