@@ -175,6 +175,12 @@ exemple. Dans le dépôt, lancez `pnpm gallery:ui` dans `examples/vite-musea` : 
 
 ## Versionnement et mises à jour sûres
 
+Chaque fichier est écrit dans un fichier temporaire du même répertoire avant sa création ou son
+remplacement. Si le processus est interrompu, un fichier existant conserve son ancien contenu ou le
+nouveau contenu complet ; un nouveau fichier est absent ou complet. Les écritures n'utilisent pas
+`fsync` et ne garantissent donc pas la conservation des données après une coupure de courant. Une
+opération portant sur plusieurs fichiers peut être interrompue entre deux écritures.
+
 `vize-lib.lock.json` (à committer) enregistre, pour chaque élément, le paquet et la version exacte d'origine, le
 `contentHash` du registre, s'il a été demandé explicitement ou ajouté comme dépendance, et le SHA-256 de chaque
 fichier au moment de la copie. Ces empreintes servent de base de fusion à une comparaison à trois voies entre

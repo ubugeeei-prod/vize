@@ -149,7 +149,8 @@ pub fn project_relative_dir(root: &Path, dir: &Path) -> LibResult<String> {
 
 /// Write `contents` to `path`, creating parent directories; existing files are
 /// replaced through [`crate::commands::atomic_write::atomic_write`] and new files
-/// are persisted from an exclusive temporary sibling.
+/// are persisted from an exclusive temporary sibling. Both paths protect against
+/// process interruption without fsync or a power-loss durability guarantee.
 pub fn write_file(path: &Path, contents: &[u8]) -> LibResult<()> {
     let parent = path
         .parent()
@@ -167,7 +168,7 @@ pub fn write_file(path: &Path, contents: &[u8]) -> LibResult<()> {
         .map_err(|error| LibError::io("create a temporary file in", parent, &error))?;
     temporary
         .write_all(contents)
-        .and_then(|()| temporary.as_file().sync_all())
+        .and_then(|()| temporary.flush())
         .map_err(|error| LibError::io("write", path, &error))?;
     temporary
         .persist_noclobber(path)
