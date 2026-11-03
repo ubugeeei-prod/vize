@@ -1,4 +1,7 @@
-/** Medians, diagnostic identity and the Markdown table of the real-corpus type-check pair. */
+/**
+ * Medians, diagnostic identity, agreement with the vue-tsc reference and the
+ * Markdown table of the real-corpus type-check pair.
+ */
 
 import {
   type Diagnostic,
@@ -35,6 +38,16 @@ export type LaneResult = {
   runs: LaneRun[];
 };
 
+/** One untimed run of a reference checker on a corpus's own tsconfig. */
+export type ReferenceResult = {
+  corpus: string;
+  tool: "vue-tsc";
+  cpuMs: number;
+  maxRssKb: number;
+  fingerprint: string;
+  diagnostics: Diagnostic[];
+};
+
 export type PairResults = {
   schemaVersion: 1;
   base: { sha: string };
@@ -42,6 +55,7 @@ export type PairResults = {
   runs: number;
   measurement: Record<string, unknown> & { runner: string; packages: Record<string, string> };
   lanes: LaneResult[];
+  references: ReferenceResult[];
 };
 
 export type LaneSummary = {
@@ -70,7 +84,23 @@ export type Identity = {
   removed: Diagnostic[];
 };
 
-export type PairSummary = { lanes: LaneSummary[]; identity: Identity[]; unstable: string[] };
+/** A lane's diagnostics against the reference's: shared, lane-only, reference-only. */
+export type Agreement = {
+  corpus: string;
+  host: string;
+  variant: LaneResult["variant"];
+  reference: ReferenceResult["tool"];
+  shared: number;
+  laneOnly: number;
+  referenceOnly: number;
+};
+
+export type PairSummary = {
+  lanes: LaneSummary[];
+  identity: Identity[];
+  agreement: Agreement[];
+  unstable: string[];
+};
 
 const laneName = (lane: { corpus: string; host: string; variant: string }) =>
   `${lane.corpus}-${lane.host}-${lane.variant}`;
@@ -126,7 +156,23 @@ export function summarizePair(results: PairResults): PairSummary {
       removed,
     };
   });
-  return { lanes, identity, unstable: unstableLanes(results.lanes) };
+  const agreement = results.references.flatMap((reference) =>
+    results.lanes
+      .filter((lane) => lane.corpus === reference.corpus && lane.variant !== "vize-base")
+      .map((lane): Agreement => {
+        const { added, removed } = diffDiagnostics(reference.diagnostics, lane.diagnostics);
+        return {
+          corpus: lane.corpus,
+          host: lane.host,
+          variant: lane.variant,
+          reference: reference.tool,
+          shared: lane.diagnostics.length - added.length,
+          laneOnly: added.length,
+          referenceOnly: removed.length,
+        };
+      }),
+  );
+  return { lanes, identity, agreement, unstable: unstableLanes(results.lanes) };
 }
 
 const integer = (value: number) => Math.round(value).toLocaleString("en-US");
@@ -227,6 +273,29 @@ export function renderPairSummary(results: PairResults, summary: PairSummary): s
   }
   lines.push("### Diagnostic identity (Vize base vs head)", "");
   for (const entry of summary.identity) lines.push(...identityLines(entry));
+  if (results.references.length > 0) {
+    lines.push(
+      "",
+      `### Agreement with vue-tsc ${packages["vue-tsc"]} (typescript ${packages["vue-tsc typescript"]})`,
+      "",
+      "One untimed vue-tsc run per corpus on the tsconfig both mapper configs extend, so all three read the same `vueCompilerOptions`. Diagnostics match on (file, kind, line, column, code, message). Lists are in `diagnostics/<corpus>-vue-tsc.json`.",
+      "",
+      "| corpus | host | lane | lane total | shared | lane only | vue-tsc only |",
+      "| --- | --- | --- | ---: | ---: | ---: | ---: |",
+    );
+    for (const entry of summary.agreement) {
+      const total = entry.shared + entry.laneOnly;
+      lines.push(
+        `| ${entry.corpus} | ${entry.host} | ${entry.variant} | ${integer(total)} | ${integer(entry.shared)} | ${integer(entry.laneOnly)} | ${integer(entry.referenceOnly)} |`,
+      );
+    }
+    lines.push("");
+    for (const reference of results.references) {
+      lines.push(
+        `- ${reference.corpus} / ${reference.tool}: ${reference.diagnostics.length} diagnostics, CPU ${fixed(2)(reference.cpuMs / 1000)} s, max RSS ${fixed(0)(reference.maxRssKb / 1024)} MB, sha256 \`${shortSha(reference.fingerprint)}\``,
+      );
+    }
+  }
   if (summary.unstable.length > 0) {
     lines.push("", `**Unstable diagnostics across runs:** ${summary.unstable.join(", ")}`);
   }
