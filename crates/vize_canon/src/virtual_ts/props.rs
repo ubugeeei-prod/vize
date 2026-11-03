@@ -40,6 +40,17 @@ pub(crate) fn setup_anchor_identifier(
     }
 }
 
+/// `defineModel()` props are declared by the template props projection, but
+/// Croquis records no script binding for them.
+pub(crate) fn is_template_model_prop(summary: &Croquis, name: &str) -> bool {
+    summary
+        .macros
+        .models()
+        .iter()
+        .any(|model| model.name.as_str() == name)
+        && !template_bindings::should_skip_template_prop_binding(summary, name)
+}
+
 fn inner_macro_type(type_args: &str) -> &str {
     type_args
         .strip_prefix('<')

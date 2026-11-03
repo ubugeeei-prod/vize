@@ -37,6 +37,7 @@ pub(super) fn is_visible_template_binding(
     template_offset: u32,
 ) -> bool {
     super::super::super::script_facts::contains_binding(summary, name)
+        || crate::virtual_ts::props::is_template_model_prop(summary, name)
         || binds_in_enclosing_template_scope(summary, name, template_offset)
 }
 
@@ -50,7 +51,9 @@ pub(super) fn is_visible_template_binding_in_scope(
     name: &str,
     scope_id: ScopeId,
 ) -> bool {
-    if super::super::super::script_facts::contains_binding(summary, name) {
+    if super::super::super::script_facts::contains_binding(summary, name)
+        || crate::virtual_ts::props::is_template_model_prop(summary, name)
+    {
         return true;
     }
     let mut current = Some(scope_id);

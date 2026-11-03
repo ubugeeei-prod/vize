@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const model = defineModel<string>();
+void model;
+</script>
+<template><div>{{ modelValue?.toUpperCase() }} {{ modelValu }} {{ modelValue.length }}</div></template>
