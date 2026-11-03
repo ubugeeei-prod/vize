@@ -92,7 +92,9 @@ jobs:
         run: |
           args=()
           for id in $FIXTURES; do args+=(--fixture "$id"); done
-          echo "jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")" >> "$GITHUB_OUTPUT"
+          # Assigned first, so an unknown fixture fails this step instead of planning nothing.
+          jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")
+          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
 
   bench:
     name: lsp-vs-volar (${{ matrix.job.name }})

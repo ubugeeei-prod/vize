@@ -228,8 +228,10 @@ async function main() {
     const run = all[spec.id];
     const home = mkdtempSync(join(os.tmpdir(), "lsp-bench-home-"));
     const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
-    const restore = factory.setup?.(workspace, spec);
+    let restore: (() => void) | undefined;
     try {
+      // A setup that throws (e.g. a mapper already declared) is this session's crash, not the job's.
+      restore = factory.setup?.(workspace, spec);
       const result = await runSession(
         factory.create(workspace, env),
         spec,
