@@ -1,0 +1,9 @@
+{
+  "genericPackage": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+  "genericConfig": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+  "genericSource": "<script setup lang=\"ts\" generic=\"TBaz\">\ntype Foo = { value: TBaz };\n\ninterface Bar {\n  items: Foo[];\n}\ndefineProps<Bar>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "declarationPackage": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.650.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+  "declarationConfig": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+  "declarationSource": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\ndefineEmits<{ change: [] }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "declarationConsumer": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" disabled />\n</template>\n"
+}
