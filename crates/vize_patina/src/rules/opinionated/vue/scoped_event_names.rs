@@ -24,6 +24,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::builtins::is_builtin_component;
 use vize_l0::cstr;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
 
@@ -45,17 +46,14 @@ const COMMON_SUFFIXES: &[&str] = &[
 pub struct ScopedEventNames;
 
 impl ScopedEventNames {
-    /// Whether `element` is a Vue component with an author-owned event surface.
+    /// Whether `element` has an author-owned component event surface.
     ///
     /// Native elements expose platform event names (`click`, `contextmenu`,
     /// `keyup`, ...), so they cannot adopt `context:event` names.
-    fn is_component(element: &ElementNode<'_>) -> bool {
-        element.tag_type == ElementType::Component
-            || element
-                .tag
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_uppercase())
+    /// Framework components own fixed contracts; a dynamic target can also
+    /// resolve to a native element with platform-owned event names.
+    fn has_author_owned_events(element: &ElementNode<'_>) -> bool {
+        element.tag_type == ElementType::Component && !is_builtin_component(element.tag)
     }
 
     /// Check if an event name could benefit from scoping
@@ -98,7 +96,7 @@ impl Rule for ScopedEventNames {
             return;
         }
 
-        if !Self::is_component(element) {
+        if !Self::has_author_owned_events(element) {
             return;
         }
 
@@ -167,6 +165,40 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn framework_and_dynamic_targets_do_not_own_event_naming() {
+        let linter = create_linter();
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/dynamic-event-owner-11728/PlatformTargets.vue.txt"
+        ));
+        let result = linter.lint_sfc(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+        assert!(
+            result.diagnostics.is_empty(),
+            "{source}: {:?}",
+            result.diagnostics
+        );
+        let authored = linter.lint_sfc(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/dynamic-event-owner-11728/AuthorOwned.vue.txt"
+        )), "test.vue");
+        assert_eq!(authored.warning_count, 1, "{:?}", authored.diagnostics);
+        assert_eq!(
+            authored
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.rule_name)
+                .collect::<Vec<_>>(),
+            ["vue/scoped-event-names"]
+        );
     }
 
     #[test]

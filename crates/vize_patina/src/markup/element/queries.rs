@@ -144,10 +144,17 @@ pub(super) fn l2_template_is_special(
 }
 
 /// The Vue parser's lint-mode component rule (no DOM `is_native_tag`): a core
-/// built-in component or a tag starting with an uppercase letter.
-pub(in crate::markup) fn is_lint_component(tag: &str) -> bool {
-    matches!(
-        tag,
-        "Teleport" | "Suspense" | "KeepAlive" | "BaseTransition" | "Transition" | "TransitionGroup"
-    ) || tag.chars().next().is_some_and(char::is_uppercase)
+/// built-in component, an active dynamic component, or an uppercase tag.
+pub(in crate::markup) fn is_lint_component(tag: &str, dynamic_component: bool) -> bool {
+    (dynamic_component && tag == "component")
+        || matches!(
+            tag,
+            "Teleport"
+                | "Suspense"
+                | "KeepAlive"
+                | "BaseTransition"
+                | "Transition"
+                | "TransitionGroup"
+        )
+        || tag.chars().next().is_some_and(char::is_uppercase)
 }

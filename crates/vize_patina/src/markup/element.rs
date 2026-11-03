@@ -162,7 +162,7 @@ impl<'a> MarkupElement<'a> {
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {
-                        if is_lint_component(tag) {
+                        if is_lint_component(tag, matches!(op, L2ElementOp::Component(_))) {
                             MarkupElementKind::Component
                         } else {
                             MarkupElementKind::Element
