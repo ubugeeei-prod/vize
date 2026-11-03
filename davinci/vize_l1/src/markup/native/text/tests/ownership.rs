@@ -168,24 +168,20 @@ fn entity_spelling_refuses_before_decode_and_the_next_original_text_stays_availa
 }
 
 #[test]
-fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
--> Result<(), &'static str> {
+fn long_vue_directive_arguments_preserve_original_root_text_custody() -> Result<(), &'static str> {
     let arena = Allocator::default();
     let source = "<template>  original<div v-pre:[([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([key])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]>body</div></template>";
     let owner = selected(&arena, source)?;
-    assert_eq!(owner.component().carrier().unsupported.len(), 1);
-    assert_eq!(
-        owner.component().carrier().unsupported[0].error,
-        crate::markup::DirectiveNameError::NestingLimit
-    );
+    assert_eq!(owner.component().carrier().unsupported.len(), 0);
     let child = owner.children().next().ok_or("original text prefix")?;
     let original = child.surface();
     let before = arena.allocated_bytes();
-    assert!(matches!(
-        owner.prepare_condensed_root_text(child),
-        Err(Kind::RecoveredComponent)
-    ));
-    assert_eq!(arena.allocated_bytes(), before);
+    let receipt = owner
+        .prepare_condensed_root_text(child)
+        .map_err(|_| "original root text")?;
+    assert_eq!(receipt.content(), Some(" original"));
+    assert!(receipt.admitted_for_root_at(&owner, 0).is_some());
+    assert_eq!(arena.allocated_bytes() - before, 10);
     assert!(core::ptr::eq(
         owner
             .children()
@@ -194,11 +190,10 @@ fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
             .surface(),
         original
     ));
-    assert!(!owner.component().carrier().unsupported.is_empty());
+    assert_eq!(owner.component().carrier().unsupported.len(), 0);
     crate::markup::check_fidelity(&owner.component().carrier().tree)
         .map_err(|_| "original recovered fidelity")?;
-    // Repeated identical delimiters share one run in the actual bounded
-    // scanner. They cannot be used as an invented unsupported witness.
+    // Repeated and alternating delimiters follow the same Vue lexical states.
     let accepted = selected(
         &arena,
         "<template>  original<div v-pre:[((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((key))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))]>body</div></template>",
