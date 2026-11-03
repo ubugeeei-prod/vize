@@ -219,7 +219,6 @@ crates/vize_canon/src/corsa_bridge/vue_document_tests.rs	13
 crates/vize_canon/src/corsa_bridge/vue_document_tsx_tests.rs	4
 crates/vize_canon/src/corsa_bridge/vue_project_mapping_tests.rs	3
 crates/vize_canon/src/corsa_session_cache/tests.rs	1
-crates/vize_canon/src/lsp_client/diagnostics/tests.rs	1
 crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers/tests.rs	1
 crates/vize_canon/src/package_route/tests.rs	1
 crates/vize_canon/src/package_route/tests/lifecycle.rs	4
