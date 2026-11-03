@@ -1,7 +1,7 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
-use super::l2::surface::element_at;
+use super::l2::surface::{element_at, element_with_v_pre_at};
 use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
 use super::{MarkupElementKind, relief_scopes, span_to_range};
@@ -39,6 +39,7 @@ pub(super) enum MarkupElementInner<'a> {
         op: L2ElementOp<'a>,
         doc: &'a L2Markup<'a>,
         surface: Option<&'a vize_l1::markup::Element<'a>>,
+        frozen: bool,
     },
     /// An authored `<template>` carrier L2 unwrapped into a `ui.if` branch or
     /// `ui.for` region: its surface comes from L1, its children from the
@@ -82,11 +83,24 @@ impl<'a> MarkupElement<'a> {
     /// Wrap an L2 element-shaped op, locating its authored L1 element when the
     /// artifact carries a surface tree.
     pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
-        let surface = doc
+        let original = doc
             .surface
             .filter(|_| !op.is_synthesized(doc))
-            .and_then(|tree| element_at(tree, op.span().start));
-        Self::from_inner(MarkupElementInner::L2 { op, doc, surface })
+            .and_then(|tree| {
+                if op.tag() == "component" {
+                    element_with_v_pre_at(tree, op.span().start)
+                } else {
+                    element_at(tree, op.span().start).map(|element| (element, false))
+                }
+            });
+        let (surface, frozen) =
+            original.map_or((None, false), |(element, frozen)| (Some(element), frozen));
+        Self::from_inner(MarkupElementInner::L2 {
+            op,
+            doc,
+            surface,
+            frozen,
+        })
     }
 
     pub(super) const fn from_l2_carrier(
@@ -146,7 +160,12 @@ impl<'a> MarkupElement<'a> {
                 op: L2ElementOp::Slot(_),
                 ..
             } => MarkupElementKind::Slot,
-            MarkupElementInner::L2 { op, surface, doc } => {
+            MarkupElementInner::L2 {
+                op,
+                surface,
+                doc,
+                frozen,
+            } => {
                 let tag = match surface {
                     Some(element) => element.tag(),
                     None => op.tag(),
@@ -157,12 +176,12 @@ impl<'a> MarkupElement<'a> {
                         MarkupElementKind::Template
                     }
                     // A template classifies the way the lint-mode parse does: a
-                    // component is a core built-in or a capitalized tag. L2's
+                    // component is active Vue syntax or a capitalized tag. L2's
                     // element/component split is DOM resolution (`is_native_tag`),
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {
-                        if is_lint_component(tag, matches!(op, L2ElementOp::Component(_))) {
+                        if is_lint_component(tag, !frozen) {
                             MarkupElementKind::Component
                         } else {
                             MarkupElementKind::Element

@@ -7,7 +7,7 @@ use crate::markup::parse::{SurfaceError, SurfaceParseOptions, construct_with_lin
 use crate::markup::surface::{LintTagFact, SurfaceTree};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
-use super::VueDirectives;
+use super::{VueDirectives, is_lint_component};
 use crate::dialect::vue::surface::{HeaderPolicy, SurfacePolicy, sink::VueSink};
 use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
 
@@ -71,16 +71,7 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
             LintTagFact::Slot
         } else if tag == "template" && structural_template {
             LintTagFact::Template
-        } else if matches!(
-            tag,
-            "Teleport"
-                | "Suspense"
-                | "KeepAlive"
-                | "BaseTransition"
-                | "Transition"
-                | "TransitionGroup"
-        ) || tag.chars().next().is_some_and(char::is_uppercase)
-        {
+        } else if is_lint_component(tag, !verbatim) {
             LintTagFact::Component
         } else {
             LintTagFact::Element

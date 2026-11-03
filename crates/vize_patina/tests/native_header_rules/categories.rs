@@ -22,7 +22,7 @@ fn original_intrinsic_categories_keep_components_custom_tags_and_opaque_is_contr
         ("aÉFoo", "", false),
         ("teleport", "", false),
         ("transition-group", "", false),
-        ("component", ":is='view'", false),
+        ("component", ":is='view'", true),
         ("input", "is='Foo' :is='view'", false),
         ("Foo", "is='input'", true),
         ("INPUT", "", true),
@@ -162,6 +162,34 @@ fn original_raw_text_children_do_not_turn_authored_lookalikes_into_elements() {
                     4
                 }
             );
+        }
+    }
+}
+
+#[test]
+fn dynamic_components_preserve_literal_pre_and_native_header_controls() {
+    for (body, warnings) in [
+        ("<component autofocus accesskey></component>", 0),
+        ("<component is='button' autofocus accesskey></component>", 0),
+        ("<component :is='view' autofocus accesskey></component>", 0),
+        (
+            "<component v-pre :is='view' autofocus accesskey></component>",
+            1,
+        ),
+        (
+            "<section v-pre><component :is='view' autofocus accesskey></component></section>",
+            1,
+        ),
+        ("<input is='Foo' :is='view' autofocus accesskey />", 1),
+        ("<my-element autofocus accesskey></my-element>", 1),
+    ] {
+        let source = cstr!("<template>{body}</template>");
+        for rule in HeaderRule::ATTRIBUTES {
+            for locale in LOCALES {
+                let result = parity(&source, locale, rule);
+                assert_eq!(result["error_count"], 0, "{body}: {rule:?}");
+                assert_eq!(result["warning_count"], warnings, "{body}: {rule:?}");
+            }
         }
     }
 }

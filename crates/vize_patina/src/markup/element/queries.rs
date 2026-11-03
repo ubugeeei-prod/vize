@@ -9,6 +9,7 @@ use crate::markup::l2::surface::{SurfaceDirective, attr_span};
 use crate::markup::l2::{L2ElementOp, L2Markup};
 use crate::markup::node::MarkupNode;
 use vize_l0::String;
+pub(in crate::markup) use vize_l1::dialect::vue3::is_lint_component;
 use vize_relief::ElementNode;
 
 impl<'a> MarkupElement<'a> {
@@ -141,20 +142,4 @@ pub(super) fn l2_template_is_special(
             .iter()
             .any(|binding| matches!(binding, vize_l2::op::BindingOp::SlotContent(_))),
     }
-}
-
-/// The Vue parser's lint-mode component rule (no DOM `is_native_tag`): a core
-/// built-in component, an active dynamic component, or an uppercase tag.
-pub(in crate::markup) fn is_lint_component(tag: &str, dynamic_component: bool) -> bool {
-    (dynamic_component && tag == "component")
-        || matches!(
-            tag,
-            "Teleport"
-                | "Suspense"
-                | "KeepAlive"
-                | "BaseTransition"
-                | "Transition"
-                | "TransitionGroup"
-        )
-        || tag.chars().next().is_some_and(char::is_uppercase)
 }

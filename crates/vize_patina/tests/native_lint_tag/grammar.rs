@@ -28,8 +28,8 @@ fn actual_registered_sfc_classification_matches_case_custom_and_opaque_is_contro
         ),
         (
             "<component :is='view' autofocus></component>",
-            MarkupElementKind::Element,
-            1,
+            MarkupElementKind::Component,
+            0,
         ),
         (
             "<input is='Foo' :is='view' autofocus />",
