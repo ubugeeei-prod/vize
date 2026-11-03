@@ -12,6 +12,22 @@ const job = workflow.jobs["page-route-cli-editor"];
 const action = parse(
   readFileSync(new URL(".github/actions/check-router-page-types/action.yml", root), "utf8"),
 );
+const producer = parse(
+  readFileSync(new URL(".github/workflows/full-source-cli.yml", root), "utf8"),
+);
+
+void test("the page consumer installs the producer's pinned linker before source restoration", () => {
+  const linker = producer.jobs.cli.steps.find((step) =>
+    step.uses?.startsWith("wild-linker/action@"),
+  );
+  const expected = job.steps.find((step) => step.uses === linker.uses);
+  assert.ok(expected, "runtime identity requires the source producer's linker installation");
+  assert.deepEqual(expected.with, linker.with);
+  assert.ok(
+    job.steps.indexOf(expected) <
+      job.steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli"),
+  );
+});
 
 void test("the published page oracle consumes only the same-run original source producer", () => {
   assert.deepEqual(job.needs, ["source-cli"]);
