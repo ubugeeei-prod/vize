@@ -505,7 +505,7 @@
       },
       "reference": {
         "path": "component-v-once-10815/module.expected.txt",
-        "sha256": "a20c7685e9e2f8af4776c7e520d88176cea3cd721f269ffa9c0c331c645697fc",
+        "sha256": "051dff34422d23f637440f7dcb7f78417ea4893e89811de1db006f85aaf8c8fd",
         "source": "crates/vize_atelier_dom/tests/component_v_once.rs:component_v_once_keeps_props_listeners_and_slots_in_both_lanes; SSR source coverage only"
       },
       "adapters": {
@@ -2126,6 +2126,52 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-slot-text-runs-11593",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ssr-slot-text-runs-11593",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "d53e44ded54b0de882835bccb240f44417801d93bf10bdec49d1981ba14dcc0b",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-slot-text-runs-11593/module.expected.txt",
+        "sha256": "330ca9c91385fa33a893a76d08213fa233e0361f3e09016172c8cce60c2dc4e9",
+        "source": "crates/vize_atelier_ssr/tests/vnode_text_runs.rs:a_slot_text_run_is_one_text_vnode; each slot VNode fallback matches @vue/compiler-sfc 3.5.44 compileTemplate({ ssr: true }) text runs"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SSR has not been qualified for this input; this row guards the legacy and L4 slot VNode fallback text runs only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11593",
+        "reporter": "Q16solver"
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-transition-children-11594",
       "state": "active",
       "targets": ["ssr"],
@@ -2617,7 +2663,7 @@
       },
       "reference": {
         "path": "vue2-preserve-comment-edges-10065/module.expected.txt",
-        "sha256": "144fbf422e71e4e406e811594503d52666096f1eb9df39f39091f329216024f8",
+        "sha256": "e8b30ee45756a7df4fa72a747bb4621b2afca115b196f4cc28f706c199ae1e7a",
         "source": "crates/vize/tests/build_vue2_preserve_cli.rs:vue2_preserve_matches_vue2_comment_and_named_slot_edges"
       },
       "adapters": {

@@ -9,7 +9,7 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
       if (_push) {
         _push(`text ${_ssrInterpolate($setup.label)}`)
       } else {
-        return [_createTextVNode("text "), _createTextVNode(_toDisplayString($setup.label))]
+        return [_createTextVNode("text " + _toDisplayString($setup.label))]
       }
     }),
     _: 1
