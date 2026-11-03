@@ -316,6 +316,33 @@ void test(
   }),
 );
 
+void test(
+  "an oversized report is cut at a line within GitHub's comment limit and points to the summary",
+  withSummary(async (summary) => {
+    const failures = Array.from({ length: 400 }, (_, index) =>
+      job(`Affected tooling (${"shard-".repeat(20)}${index})`, "failure", 1000 + index, 9),
+    );
+    const github = fakeGitHub({
+      [`GET ${jobsUrl}`]: { body: { jobs: [...failures, job("test-report", null, 9)] } },
+      [`GET ${commentsUrl}`]: { body: [] },
+      [`GET ${api}/pulls/7`]: { body: { head: { sha: SHA } } },
+      [`POST ${api}/issues/7/comments`]: { body: { id: 51 } },
+    });
+    await publishTestReport(environment(summary, "7"), github.fetchImpl);
+    const post = github.calls.find((call) => call.method === "POST");
+    const body = (JSON.parse(post?.body ?? "{}") as { body: string }).body;
+    const note = `\n\nTruncated: the [run summary](${server}/actions/runs/200/attempts/2) holds the whole report.`;
+    assert.ok(body.length <= 65_000, `${body.length}`);
+    assert.ok(body.endsWith(note));
+    assert.deepEqual(commentRun(body), run);
+    // Whole lines only: the last kept entry is complete.
+    assert.match(body.slice(0, -note.length).split("\n").at(-1) ?? "", /#step:9:1\)$/);
+    const whole = readFileSync(summary, "utf8");
+    assert.ok(whole.length > 65_000);
+    assert.ok(whole.includes("shard-399"));
+  }),
+);
+
 test("the test report refuses inputs it cannot place", () => {
   const valid = {
     GITHUB_API_URL: "https://api.github.com",
