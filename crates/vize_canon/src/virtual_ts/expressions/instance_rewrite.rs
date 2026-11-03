@@ -138,17 +138,17 @@ pub(super) fn compose_diagnostic_prefixes(
             {
                 index += 1;
             }
-            if let Some(row) = first.get(index).filter(|row| {
-                row.generated.start <= prefix.source.start && prefix.source.end <= row.generated.end
-            }) {
-                Some(SpreadRewriteSegment {
+            first
+                .get(index)
+                .filter(|row| {
+                    row.generated.start <= prefix.source.start
+                        && prefix.source.end <= row.generated.end
+                })
+                .map(|row| SpreadRewriteSegment {
                     generated: prefix.generated.clone(),
                     source: row.source.start + prefix.source.start - row.generated.start
                         ..row.source.start + prefix.source.end - row.generated.start,
                 })
-            } else {
-                None
-            }
         })
         .peekable();
     let mut index = 0;
@@ -161,17 +161,17 @@ pub(super) fn compose_diagnostic_prefixes(
             {
                 index += 1;
             }
-            if let Some(row) = second.get(index).filter(|row| {
-                row.source.start <= prefix.generated.start && prefix.generated.end <= row.source.end
-            }) {
-                Some(SpreadRewriteSegment {
+            second
+                .get(index)
+                .filter(|row| {
+                    row.source.start <= prefix.generated.start
+                        && prefix.generated.end <= row.source.end
+                })
+                .map(|row| SpreadRewriteSegment {
                     generated: row.generated.start + prefix.generated.start - row.source.start
                         ..row.generated.start + prefix.generated.end - row.source.start,
                     source: prefix.source.clone(),
                 })
-            } else {
-                None
-            }
         })
         .peekable();
     let mut result = Vec::with_capacity(first_prefixes.len() + second_prefixes.len());
