@@ -20,6 +20,7 @@ mod generic_constructor_slots;
 mod global_component_listener_11373;
 mod global_components;
 mod incomplete_tags;
+mod inference_copy_bodies_11451_11452;
 mod javascript_check_js;
 mod let_anchor_assignment;
 mod long_prop_kebab_case;
