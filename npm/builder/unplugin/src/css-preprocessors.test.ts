@@ -6,8 +6,6 @@ import { vizeUnplugin } from "./unplugin.ts";
 import { createFakePreprocessorRoot } from "./test/fake-preprocessors.ts";
 import { packageRoot } from "./test/helpers.ts";
 
-const STYLE_MARKER = ".__vize_style_";
-
 // A synthetic id is enough: the SFC source is passed directly to transform(),
 // which caches the compiled module + styles in-memory, so the .vue file never
 // needs to exist on disk. The path only has to end in `.vue` and avoid
@@ -29,7 +27,7 @@ function createPlugin(root = createFakePreprocessorRoot("css-preprocessors")) {
 // Drives the full virtual-style delegation pipeline against ONE fresh plugin
 // instance so the in-memory transform cache is clean:
 //   transform(source, id)  -> caches compiled module + style blocks
-//   resolveId(importId)    -> STYLE_MARKER virtual id (carries vize-file)
+//   resolveId(importId)    -> the same id, claimed by the plugin
 //   load(virtualId)        -> { code } read back from the cache
 async function runPipeline(source: string, importRegex: RegExp, id = SYNTHETIC_ID) {
   const plugin = createPlugin(id === SYNTHETIC_ID ? undefined : path.dirname(id));
@@ -79,17 +77,15 @@ void test("scss scoped style is delegated through transform -> resolveId -> load
   // transform() emits a side-effect style import with the right query.
   t.assert.match(transformCode, /import "[^"]+\.vue\?[^"]*type=style[^"]*";/);
   t.assert.match(importId, /type=style/);
-  t.assert.match(importId, /lang=scss/);
+  // Named as plain CSS: load() runs the project's preprocessor before scoping.
+  t.assert.match(importId, /&lang\.css$/);
   // Scoped preprocessor styles carry a scoped=data-v-<id> query.
   t.assert.match(importId, /scoped=data-v-[0-9a-f]+/);
   const scopeMatch = importId.match(/scoped=(data-v-[0-9a-f]+)/);
   t.assert.ok(scopeMatch, "expected a data-v scope id in the import query");
   const scopeId = scopeMatch[1];
 
-  // resolveId() hands back the STYLE_MARKER virtual id, named as plain CSS
-  // because load() runs the project's preprocessor before scoping.
-  t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.css\?/);
+  t.assert.equal(resolvedId, importId);
   t.assert.equal(loadInclude, true);
 
   t.assert.ok(loadedCss.includes(`.a[${scopeId}]`), "compiled rule scoped in place");
@@ -104,12 +100,11 @@ void test("less style (non-scoped) is delegated and returned verbatim", async (t
   );
 
   t.assert.match(importId, /type=style/);
-  t.assert.match(importId, /lang=less/);
+  t.assert.match(importId, /&lang\.less$/);
   // Not scoped: no scope query is emitted.
   t.assert.ok(!/scoped=/.test(importId), "non-scoped style has no scoped query");
 
-  t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.less\?/);
+  t.assert.equal(resolvedId, importId);
   t.assert.equal(loadInclude, true);
 
   // Non-scoped preprocessor content passes through untouched (no scope wrapper).
@@ -126,14 +121,13 @@ void test("stylus scoped style is preprocessed, then scoped", async (t) => {
   );
 
   t.assert.match(importId, /type=style/);
-  t.assert.match(importId, /lang=stylus/);
+  t.assert.match(importId, /&lang\.css$/);
   t.assert.match(importId, /scoped=data-v-[0-9a-f]+/);
   const scopeMatch = importId.match(/scoped=(data-v-[0-9a-f]+)/);
   t.assert.ok(scopeMatch, "expected a data-v scope id in the import query");
   const scopeId = scopeMatch[1];
 
-  t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.css\?/);
+  t.assert.equal(resolvedId, importId);
   t.assert.equal(loadInclude, true);
 
   t.assert.ok(loadedCss.includes(`.a[${scopeId}]`), "compiled stylus rule scoped in place");
@@ -153,10 +147,8 @@ void test("css-module style is delegated via a default import binding", async (t
   t.assert.match(transformCode, /__cssModules\["\$style"\] = \$style;/);
 
   t.assert.match(importId, /type=style/);
-  t.assert.match(importId, /module=/);
-
-  t.assert.ok(resolvedId.includes(STYLE_MARKER), "resolved id contains the STYLE_MARKER");
-  t.assert.match(resolvedId, /\.module\.css\?/);
+  t.assert.match(importId, /&module&lang\.module\.css$/);
+  t.assert.equal(resolvedId, importId);
   t.assert.equal(loadInclude, true);
 
   // The loaded css is the (plain css) module content, non-empty.
@@ -209,7 +201,7 @@ void test("#11456 scss and css-module src blocks delegate the file's content", a
   );
   const scopeId = scss.importId.match(/scoped=(data-v-[0-9a-f]+)/)?.[1];
   t.assert.ok(scopeId, "scoped query on the delegated request");
-  t.assert.match(scss.importId, /lang=scss/);
+  t.assert.match(scss.importId, /&lang\.css$/);
   t.assert.ok(scss.loadedCss.includes(`.a[${scopeId}]`), "file content preprocessed and scoped");
   t.assert.ok(!scss.loadedCss.includes("$c"), "preprocessor ran on the file content");
   t.assert.deepEqual(scss.watched, [path.join(root, "styles", "a.scss")]);
@@ -221,7 +213,7 @@ void test("#11456 scss and css-module src blocks delegate the file's content", a
     id,
   );
   t.assert.match(cssModule.transformCode, /__cssModules\["\$style"\] = \$style;/);
-  t.assert.match(cssModule.resolvedId, /\.module\.css\?/);
+  t.assert.match(cssModule.resolvedId, /&lang\.module\.css$/);
   t.assert.ok(
     cssModule.loadedCss.includes(".root { color: seagreen; }"),
     "module file content loaded",

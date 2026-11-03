@@ -93,7 +93,7 @@ void test("rollup: the project's preprocessor runs before scoping", async (t: Te
   const root = createFakePreprocessorRoot("rollup-scoped-preprocessor");
 
   const styles: string[] = [];
-  const styleFiles: string[] = [];
+  const styleIds: string[] = [];
   const bundle = await rollup({
     input: resolveFixturePath(FIXTURE, "entry.ts"),
     external: ["vue"],
@@ -103,7 +103,7 @@ void test("rollup: the project's preprocessor runs before scoping", async (t: Te
         name: "collect-css",
         transform(code, id) {
           if (!id.includes("type=style")) return null;
-          styleFiles.push(id.split("?")[0]);
+          styleIds.push(id);
           styles.push(code);
           return { code: "export default undefined;", map: null };
         },
@@ -113,8 +113,8 @@ void test("rollup: the project's preprocessor runs before scoping", async (t: Te
   await bundle.close();
 
   t.assert.equal(styles.length, 2);
-  for (const file of styleFiles) {
-    t.assert.ok(file.endsWith(".css"), `style id is not plain CSS: ${file}`);
+  for (const id of styleIds) {
+    t.assert.ok(id.endsWith(".css"), `style id is not plain CSS: ${id}`);
   }
   assertVueScopedCss(t, styles.join("\n"));
 });

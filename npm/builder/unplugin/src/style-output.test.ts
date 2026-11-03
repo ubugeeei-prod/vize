@@ -230,15 +230,15 @@ void test("generateOutput (c): delegated scss (scoped) + css module emits style 
     { isProduction: true, isDev: false, filePath: "/proj/App.vue" },
   );
 
-  // scoped scss block -> side-effect style import carrying scoped=data-v-<scopeId>
+  // scoped scss block -> side-effect import of the compiled, scoped CSS
   t.assert.match(
     out,
-    /import "\/proj\/App\.vue\?vue=&type=style&index=0&lang=scss&scoped=data-v-abc123";/,
+    /import "\/proj\/App\.vue\?vue&type=style&index=0&scoped=data-v-abc123&lang\.css";/,
   );
-  // unnamed css module -> default-binding import using $style, lang defaults to css, module= (empty)
+  // unnamed css module -> default-binding import using $style, lang defaults to css
   t.assert.match(
     out,
-    /import \$style from "\/proj\/App\.vue\?vue=&type=style&index=1&lang=css&module=";/,
+    /import \$style from "\/proj\/App\.vue\?vue&type=style&index=1&module&lang\.module\.css";/,
   );
   // __cssModules wiring
   t.assert.match(out, /_sfc_main\.__cssModules = _sfc_main\.__cssModules \|\| \{\};/);
@@ -264,7 +264,7 @@ void test("generateOutput (c'): named css module uses its name as binding and ur
 
   t.assert.match(
     out,
-    /import cls from "\/proj\/App\.vue\?vue=&type=style&index=0&lang=css&module=cls";/,
+    /import cls from "\/proj\/App\.vue\?vue&type=style&index=0&module=cls&lang\.module\.css";/,
   );
   t.assert.match(out, /_sfc_main\.__cssModules\["cls"\] = cls;/);
 });
@@ -280,7 +280,7 @@ void test("generateOutput (c''): delegated styles require filePath; without it f
   );
 
   // no filePath => no delegated style import is emitted
-  t.assert.equal(out.includes("?vue=&type=style"), false);
+  t.assert.equal(out.includes("?vue&type=style"), false);
   t.assert.equal(out.includes("__cssModules"), false);
 });
 

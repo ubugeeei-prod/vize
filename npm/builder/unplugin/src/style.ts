@@ -1,4 +1,5 @@
 import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
+import { styleRequestId } from "./request.ts";
 import { isPreprocessorLang } from "./style-scope.ts";
 import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
@@ -116,19 +117,9 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     const cssModuleImports: string[] = [];
 
     for (const block of compiled.styles) {
-      const lang = block.lang ?? "css";
-      const params = new URLSearchParams();
-      params.set("vue", "");
-      params.set("type", "style");
-      params.set("index", String(block.index));
-      params.set("lang", lang);
-
-      if (block.scoped) {
-        params.set("scoped", `data-v-${compiled.scopeId}`);
-      }
-
       const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
       const styleFile = styleRequest?.(block, scoped);
+      const styleId = styleFile ?? styleRequestId(filePath, block, scoped);
 
       if (isCssModule(block)) {
         const bindingName = typeof block.module === "string" ? block.module : "$style";
@@ -141,15 +132,10 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
             `const ${bindingName} = ${CSS_MODULE_LOCALS}(${namespace});`,
           );
         } else {
-          const moduleParams = new URLSearchParams(params);
-          moduleParams.set("module", typeof block.module === "string" ? block.module : "");
-          const moduleUrl = `${filePath}?${moduleParams.toString()}`;
-          cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(moduleUrl)};`);
+          cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(styleId)};`);
         }
       } else {
-        styleImports.push(
-          `import ${JSON.stringify(styleFile ?? `${filePath}?${params.toString()}`)};`,
-        );
+        styleImports.push(`import ${JSON.stringify(styleId)};`);
       }
     }
 

@@ -8,7 +8,10 @@ import { prepareOutputDir, resolveFixturePath } from "./helpers.ts";
  * real preprocessors installed.
  */
 export function createFakePreprocessorRoot(name: string): string {
-  const root = prepareOutputDir(name);
+  return writeFakePreprocessors(prepareOutputDir(name));
+}
+
+export function writeFakePreprocessors(root: string): string {
   const fakeScss = JSON.stringify(resolveFixturePath("scoped-preprocessor", "fake-scss.cjs"));
   const packages: Record<string, string> = {
     sass: `const { compile } = require(${fakeScss});\nexports.compileString = (source) => ({ css: compile(source) });\n`,

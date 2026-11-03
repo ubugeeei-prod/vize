@@ -1,7 +1,5 @@
 import { isPreprocessorLang } from "./style-scope.ts";
-import type { ParsedVueRequest, ParsedVueRequestQuery } from "./types.ts";
-
-const STYLE_MARKER = ".__vize_style_";
+import type { ParsedVueRequest, ParsedVueRequestQuery, StyleBlockInfo } from "./types.ts";
 
 export function isVueFile(id: string): boolean {
   return id.endsWith(".vue");
@@ -22,55 +20,49 @@ export function isVueStyleRequest(id: string): boolean {
   return query.vue && query.type === "style";
 }
 
-export function isVirtualStyleId(id: string): boolean {
-  return id.includes(STYLE_MARKER);
+/**
+ * The module id of a delegated style block, in Vue's request shape:
+ * `App.vue?vue&type=style&index=0[&scoped=…][&module[=name]]&lang.<ext>`.
+ *
+ * CSS pipelines classify a module by the extension that ends the id, and treat
+ * a query on a stylesheet path as another import kind (`?raw`, `?inline`), so
+ * the path stays the SFC and `<ext>` names what `load` returns: a scoped
+ * preprocessor block is compiled before scoping, so it is CSS.
+ */
+export function styleRequestId(
+  filePath: string,
+  block: StyleBlockInfo,
+  scoped: string | null,
+): string {
+  const lang = block.lang ?? "css";
+  const delivered = scoped && isPreprocessorLang(lang) ? "css" : lang;
+  let query = `vue&type=style&index=${block.index}`;
+  if (scoped) {
+    query += `&scoped=${encodeURIComponent(scoped)}`;
+  }
+  if (block.module !== false) {
+    query +=
+      typeof block.module === "string" ? `&module=${encodeURIComponent(block.module)}` : "&module";
+  }
+  const ext = block.module === false ? delivered : `module.${delivered}`;
+  return `${filePath}?${query}&lang.${ext}`;
 }
 
 export function parseVueRequest(id: string): ParsedVueRequest {
-  const [path, rawQuery = ""] = id.split("?", 2);
+  const [filename, rawQuery = ""] = id.split("?", 2);
   const params = new URLSearchParams(rawQuery);
-  const filename = params.get("vize-file") ?? path;
   const moduleValue = params.has("module") ? params.get("module") || true : false;
   const indexValue = params.get("index");
   const query: ParsedVueRequestQuery = {
     vue: params.has("vue"),
     type: params.get("type"),
     index: indexValue === null ? null : Number.parseInt(indexValue, 10),
-    lang: params.get("lang"),
     module: moduleValue,
     scoped: params.get("scoped"),
-    vizeFile: params.get("vize-file"),
   };
 
   return {
     filename,
-    path,
     query,
   };
-}
-
-export function createVirtualStyleId(id: string): string {
-  const { filename, query } = parseVueRequest(id);
-  const index = query.index ?? 0;
-  const lang = query.lang ?? "css";
-  // Scoped preprocessor blocks load as compiled CSS (see loadStyleBlock).
-  const fileLang = query.scoped && isPreprocessorLang(lang) ? "css" : lang;
-  const suffix = query.module !== false ? `.module.${fileLang}` : `.${fileLang}`;
-  const params = new URLSearchParams();
-
-  params.set("vue", "");
-  params.set("type", "style");
-  params.set("index", String(index));
-  params.set("lang", lang);
-  params.set("vize-file", filename);
-
-  if (query.scoped) {
-    params.set("scoped", query.scoped);
-  }
-
-  if (query.module !== false) {
-    params.set("module", typeof query.module === "string" ? query.module : "");
-  }
-
-  return `${filename}${STYLE_MARKER}${index}${suffix}?${params.toString()}`;
 }
