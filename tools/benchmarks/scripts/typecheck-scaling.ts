@@ -52,8 +52,11 @@ import {
   renderSummary,
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
+import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
+import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
 import {
   NUXT_BUILD,
+  NUXT_BUILD_VIZE,
   NUXT_ENV,
   type ScalingEnv,
   type ScalingTool,
@@ -168,19 +171,26 @@ function runOnce(
   }
   const format = lane.tool.format;
   const build = format === "build";
+  // The @vizejs/nuxt build has its own copy of the app, differing only in nuxt.config.ts.
+  const cwd = lane.tool.id === "nuxt-build-vize" ? `${dir}-vize` : dir;
   if (build) {
-    for (const path of [".output", "node_modules/.cache", "node_modules/.vite"]) {
-      rmSync(join(dir, path), { recursive: true, force: true });
+    for (const path of [
+      ".output",
+      "node_modules/.cache",
+      "node_modules/.vite",
+      "node_modules/.vize",
+    ]) {
+      rmSync(join(cwd, path), { recursive: true, force: true });
     }
   }
-  const { bin, args, stats } = invocation(lane.tool, env, dir, corpus.kind);
+  const { bin, args, stats } = invocation(lane.tool, env, cwd, corpus.kind);
   const cacheDir = mkdtempSync(join(options.work, "cache-"));
   const tag = `${lane.tool.id}-${corpus.kind}-${corpus.sfcs}`;
   try {
     const run = measure(
       bin,
       args,
-      dir,
+      cwd,
       cacheDir,
       join(options.work, `${tag}.time`),
       options.timeoutMs,
@@ -188,13 +198,13 @@ function runOnce(
       corpus.kind === "nuxt" ? NUXT_ENV : {},
     );
     if (format === "build") {
-      const assets = join(dir, ".output", "public", "_nuxt");
+      const assets = join(cwd, ".output", "public", "_nuxt");
       const scripts = existsSync(assets)
         ? readdirSync(assets).filter((file) => file.endsWith(".js"))
         : [];
       if (
         run.output.status !== 0 ||
-        !existsSync(join(dir, ".output", "public", "index.html")) ||
+        !existsSync(join(cwd, ".output", "public", "index.html")) ||
         scripts.length === 0
       ) {
         throw new Error(
@@ -289,6 +299,10 @@ function main(): void {
   const timed = process.platform === "linux";
   const gnuTime = timed ? gnuTimeVersion() : null;
   const env = resolveScalingEnv(resolve(values.target));
+  // As the README benchmark does: the target's @vizejs/nuxt joins the pinned Nuxt install.
+  if (nuxtSizes.length > 0 && env.nuxtModules && env.vizeNuxtDir) {
+    prepareNuxtBenchInstall(NUXT_APP_DIR, env.vizeNuxtDir);
+  }
   const work = resolve(values.work);
   const out = resolve(values.out);
   mkdirSync(join(out, "diagnostics"), { recursive: true });
@@ -355,31 +369,39 @@ function main(): void {
       join(out, "plants", `${corpus.kind}-${corpus.sfcs}.json`),
       `${JSON.stringify(corpus.plants, null, 1)}\n`,
     );
-    const lanes: Lane[] = [...tools, ...(corpus.kind === "nuxt" ? [NUXT_BUILD] : [])].map(
-      (tool) => {
-        const cell: Cell = {
-          tool: tool.id,
-          label: tool.label,
-          vize: tool.vize,
-          kind: corpus.kind,
-          sfcs: corpus.sfcs,
-          plants: corpus.plants.length,
-          mode:
-            tool.id === "nuxt-build"
-              ? "build"
-              : corpus.kind === "monorepo"
-                ? tool.id === "vize-check"
-                  ? "solution root"
-                  : "-b"
-                : "-p",
-          cold: null,
-          runs: [],
-          refused: prepareError,
-        };
-        results.cells.push(cell);
-        return { cell, tool, firstFingerprint: null };
-      },
-    );
+    if (corpus.kind === "nuxt" && env.vizeNuxtDir) {
+      writeProject(`${dir}-vize`, corpus.files);
+      writeFileSync(join(`${dir}-vize`, "nuxt.config.ts"), nuxtConfig([VIZE_NUXT_MODULE]));
+      prepareProjectPackages(`${dir}-vize`, env, "nuxt");
+    }
+    const nuxtLanes = corpus.kind === "nuxt" ? [NUXT_BUILD, NUXT_BUILD_VIZE] : [];
+    const lanes: Lane[] = [...tools, ...nuxtLanes].map((tool) => {
+      const cell: Cell = {
+        tool: tool.id,
+        label: tool.label,
+        vize: tool.vize,
+        kind: corpus.kind,
+        sfcs: corpus.sfcs,
+        plants: corpus.plants.length,
+        mode:
+          tool.format === "build"
+            ? "build"
+            : corpus.kind === "monorepo"
+              ? tool.id === "vize-check"
+                ? "solution root"
+                : "-b"
+              : "-p",
+        cold: null,
+        runs: [],
+        refused:
+          prepareError ??
+          (tool.id === "nuxt-build-vize" && !env.vizeNuxtDir
+            ? "@vizejs/nuxt is not built in the target (vp run --workspace-root build:nuxt-stack)"
+            : null),
+      };
+      results.cells.push(cell);
+      return { cell, tool, firstFingerprint: null };
+    });
     const label = `${corpus.kind} ${corpus.sfcs} SFCs (${corpus.features} features, ${corpus.plants.length} plants)`;
     console.log(`== ${label}`);
     for (const [index, phase] of [
@@ -405,7 +427,9 @@ function main(): void {
       }
       if (!timed) break;
     }
-    if (!values.keep) rmSync(dir, { recursive: true, force: true });
+    if (!values.keep) {
+      for (const path of [dir, `${dir}-vize`]) rmSync(path, { recursive: true, force: true });
+    }
   }
   save();
   const refused = results.cells.filter((cell) => cell.refused);

@@ -50,7 +50,8 @@ export type ToolId =
   | "tsrs-fast-vize-mapper"
   | "vue-tsc"
   | "tsc-vue-mapper"
-  | "nuxt-build";
+  | "nuxt-build"
+  | "nuxt-build-vize";
 export type ScalingTool = {
   id: ToolId;
   label: string;
@@ -66,6 +67,12 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
 /** Timed on Nuxt projects only; gated on a built client entry instead of diagnostics. */
+export const NUXT_BUILD_VIZE: ScalingTool = {
+  id: "nuxt-build-vize",
+  label: "nuxt build + @vizejs/nuxt",
+  vize: true,
+  format: "build",
+};
 export const NUXT_BUILD: ScalingTool = {
   id: "nuxt-build",
   label: "nuxt build",
@@ -83,6 +90,8 @@ export type ScalingEnv = {
   hosts: MapperHosts;
   /** tools/benchmarks/nuxt-app/node_modules when installed. */
   nuxtModules: string | null;
+  /** The target's built @vizejs/nuxt, or null when it is not built. */
+  vizeNuxtDir: string | null;
 };
 export type Invocation = { bin: string; args: string[]; stats: boolean };
 
@@ -117,6 +126,9 @@ export function resolveScalingEnv(target: string, hostsDir = TYPECHECK_HOSTS_DIR
     vueTsc: must(join(vueTscDir, "bin", "vue-tsc.js"), "vue-tsc's bin"),
     vueDir: realpathSync(must(join(benchModules, "vue"), "vue")),
     hosts: resolveMapperHosts(hostsDir, cliDir),
+    vizeNuxtDir: existsSync(join(target, "npm", "framework", "nuxt", "dist"))
+      ? join(target, "npm", "framework", "nuxt")
+      : null,
     nuxtModules: existsSync(join(NUXT_APP_DIR, "node_modules", "nuxt"))
       ? join(NUXT_APP_DIR, "node_modules")
       : null,
@@ -234,6 +246,7 @@ export function invocation(
         stats: !build,
       };
     case "nuxt-build":
+    case "nuxt-build-vize":
       if (kind !== "nuxt") throw new Error("nuxt build runs on Nuxt projects only");
       return { bin: env.node, args: [nuxtCli(env), "build", cwd], stats: false };
   }
@@ -318,6 +331,7 @@ export function collectProvenance(env: ScalingEnv, hostsDir = TYPECHECK_HOSTS_DI
       ? {
           nuxt: entry(manifestVersion(join(env.nuxtModules, "nuxt")), null),
           "vue (nuxt-app)": entry(manifestVersion(join(env.nuxtModules, "vue")), null),
+          "@vizejs/nuxt": entry(env.vizeNuxtDir ? manifestVersion(env.vizeNuxtDir) : null, null),
         }
       : {}),
     node: entry(process.version, process.execPath),

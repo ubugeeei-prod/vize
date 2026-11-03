@@ -99,18 +99,29 @@ export function nuxtApp(): Source {
 }
 
 /** A client-only build with no type check in `nuxt build`, strict templates for checkers. */
-export const NUXT_CONFIG = `import { defineNuxtConfig } from "nuxt/config";
+export type NuxtModule = { name: string; from: string };
 
-export default defineNuxtConfig({
-  devtools: { enabled: false },
-  telemetry: false,
-  ssr: false,
-  typescript: {
-    typeCheck: false,
-    tsConfig: { vueCompilerOptions: { strictTemplates: true } },
-  },
-});
-`;
+/** `nuxt.config.ts` with `modules` imported by name, e.g. `{ name: "vizeNuxt", from: "@vizejs/nuxt" }`. */
+export function nuxtConfig(modules: readonly NuxtModule[] = []): string {
+  return [
+    'import { defineNuxtConfig } from "nuxt/config";',
+    ...modules.map((module) => `import ${module.name} from "${module.from}";`),
+    "",
+    "export default defineNuxtConfig({",
+    "  devtools: { enabled: false },",
+    "  telemetry: false,",
+    "  ssr: false,",
+    `  modules: [${modules.map((module) => module.name).join(", ")}],`,
+    "  typescript: {",
+    "    typeCheck: false,",
+    "    tsConfig: { vueCompilerOptions: { strictTemplates: true } },",
+    "  },",
+    "});",
+    "",
+  ].join("\n");
+}
+export const NUXT_CONFIG = nuxtConfig();
+export const VIZE_NUXT_MODULE: NuxtModule = { name: "vizeNuxt", from: "@vizejs/nuxt" };
 
 /** Nuxt 4's solution tsconfig; `nuxt prepare` writes the referenced configs. */
 export const NUXT_TSCONFIG = {

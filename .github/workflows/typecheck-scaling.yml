@@ -92,7 +92,13 @@ jobs:
           cargo --version
           vp run --workspace-root build:native > "$RUNNER_TEMP/build-native.log" 2>&1 || { tail -n 80 "$RUNNER_TEMP/build-native.log"; exit 1; }
           tail -n 20 "$RUNNER_TEMP/build-native.log"
-          vp run --filter './npm/cli' build
+          if [[ -n "$NUXT_SIZES" ]]; then
+            # The @vizejs/nuxt build lane loads the module and its Vite plugin as well.
+            vp run --workspace-root build:vite-plugin
+            vp run --workspace-root build:nuxt-stack
+          else
+            vp run --filter './npm/cli' build
+          fi
           git rev-parse HEAD
       - name: Measure
         env:
