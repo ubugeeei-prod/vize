@@ -1,7 +1,7 @@
 //! Model Vue's module and setup lexical frames using the same authored AST.
 //! Only private rule-local nodes are rearranged; reference spans stay physical.
 
-use super::BROWSER_GLOBALS;
+use super::NoBrowserGlobalsInSsr;
 use oxc_allocator::{Allocator, ArenaVec};
 use oxc_ast::{
     ast::{
@@ -22,7 +22,7 @@ pub(super) struct Source {
 }
 
 pub(super) fn candidate(source: &str) -> bool {
-    source.contains('\\') || BROWSER_GLOBALS.iter().any(|name| source.contains(name))
+    NoBrowserGlobalsInSsr::may_read(source, NoBrowserGlobalsInSsr::is_browser_global_static)
 }
 
 pub(super) fn prepare(descriptor: &SfcDescriptor<'_>) -> Option<Source> {
