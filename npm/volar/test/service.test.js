@@ -360,9 +360,10 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
       e.languageService.getSemanticDiagnostics(file),
     );
     // The wrong listener parameter and the wrong prop both survive (#11657).
+    const anchors = [eventParent.indexOf('="(value'), eventParent.indexOf("foo-bar")];
     assert.deepEqual(
       errors.map((diagnostic) => [diagnostic.code, diagnostic.start]),
-      [[2322, eventParent.indexOf('="(value')], [2322, eventParent.indexOf("foo-bar")]],
+      anchors.map((start) => [2322, start]),
     );
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
