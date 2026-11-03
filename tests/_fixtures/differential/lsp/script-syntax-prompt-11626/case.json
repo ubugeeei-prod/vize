@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "lsp/regression/script-syntax-prompt-11626",
+  "provenance": {
+    "fixCommit": "77b8ab06bb47dd92d885697afd933cf1f8ea06cc",
+    "issue": 11626,
+    "witnessPath": "tests/tooling/lsp-script-syntax-prompt.test.ts",
+    "witnessTest": "a new script syntax error reaches the prompt publication",
+    "inputOrigin": "minimal TypeScript SFC with one type error; the witness types a syntax error above it, edits elsewhere, then removes it",
+    "contractOrigin": "authored folding ranges of the pinned SFC"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "5f907d85598d3013ed3fa5ec5232e245d40c8d28946abf3f31f42eb042ded187"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "c8bb6f12ea7f48d5a0276ae2607b90609f756c87f698f24de88cb9b0082a0a9d"
+  },
+  "scope": "Folding provides a completed request barrier. The witness test consumes these bytes with type checking on and checks each prompt publication's syntax and moved type errors."
+}

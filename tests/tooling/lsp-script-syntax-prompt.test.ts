@@ -19,7 +19,7 @@ import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 // syntax error for the new text at once, beside the moved type error; it must
 // not wait for the native pass of that text.
 const SOURCE = fs.readFileSync(
-  path.join(root, "tests/_fixtures/differential/lsp/type-diagnostic-retention-11519/App.vue.txt"),
+  path.join(root, "tests/_fixtures/differential/lsp/script-syntax-prompt-11626/App.vue.txt"),
   "utf8",
 );
 const SYNTAX_LINE = 2;
