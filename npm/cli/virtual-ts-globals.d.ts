@@ -45,9 +45,9 @@ declare global {
       : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void
         ? __I
         : never;
-  type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V
+  type __RuntimePropValue<T> = T extends (...args: any[]) => infer V
     ? V
-    : T extends (...args: any[]) => infer V
+    : T extends abstract new (...args: any[]) => infer V
       ? V
       : never;
   type __RuntimePropCtorInner<T> = T extends null | undefined

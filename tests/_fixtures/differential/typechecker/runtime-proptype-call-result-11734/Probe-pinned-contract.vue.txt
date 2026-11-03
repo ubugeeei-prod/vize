@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { PropType } from './PropType-3.5.44';
+interface Editor { groups?: { id: string }[] }
+const props = defineProps({ editor: { type: Object as PropType<Editor>, required: true } });
+const group = props.editor.groups?.find((item) => item.id === 'x');
+const wrong: number = props.editor;
+</script>
+
+<template><div>{{ group }} {{ wrong }}</div></template>

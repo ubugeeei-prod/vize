@@ -13667,6 +13667,105 @@
       }
     },
     {
+      "id": "typechecker/runtime-proptype-call-result-11734/object-proptype-retains-editor",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "runtime_proptype_keeps_typed_callbacks_and_wrong_assignment",
+      "sourceRevision": "13b901140c193e5d9bc111994b5558e6304ad5b2",
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "path": "runtime-proptype-call-result-11734/Probe.vue.txt",
+          "sha256": "652a3dc70c3d88bd01e811d0ae8699f7b99476e35f5142ad0d65c5d968124a86"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-proptype-call-result-11734/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        },
+        {
+          "file": "contract-provenance.json",
+          "path": "runtime-proptype-call-result-11734/contract-provenance.json",
+          "sha256": "381bb2dbedb2976ed1535241aa99268c317eacfc860fd80d2b0783ea390b1e43"
+        },
+        {
+          "file": "cases.json",
+          "path": "runtime-proptype-call-result-11734/cases.json",
+          "sha256": "4493cb4ecff192edcf9c6d056e54435d47aa4634e6eb2d2b679df77732fa33c0",
+          "role": "complete-production-batch-diagnostic-oracle"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/runtime-proptype-call-result-11734/pinned-vue-3-5-44-proptype-contract",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "runtime_proptype_keeps_typed_callbacks_and_wrong_assignment",
+      "sourceRevision": "13b901140c193e5d9bc111994b5558e6304ad5b2",
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "path": "runtime-proptype-call-result-11734/Probe-pinned-contract.vue.txt",
+          "sha256": "9346bf5d85e9b81ec54c4608f6637de73b166e68dec30415142c0a4f9d06832c"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-proptype-call-result-11734/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        },
+        {
+          "file": "PropType-3.5.44.ts",
+          "path": "runtime-proptype-call-result-11734/PropType-3.5.44.ts.txt",
+          "sha256": "6ccbaa74c524e0b0c8524ce36fdc07f61423b5d91c36168a63b670fd369a8455"
+        },
+        {
+          "file": "contract-provenance.json",
+          "path": "runtime-proptype-call-result-11734/contract-provenance.json",
+          "sha256": "381bb2dbedb2976ed1535241aa99268c317eacfc860fd80d2b0783ea390b1e43"
+        },
+        {
+          "file": "cases.json",
+          "path": "runtime-proptype-call-result-11734/cases.json",
+          "sha256": "4493cb4ecff192edcf9c6d056e54435d47aa4634e6eb2d2b679df77732fa33c0",
+          "role": "complete-production-batch-diagnostic-oracle"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
       "targets": ["batch"],

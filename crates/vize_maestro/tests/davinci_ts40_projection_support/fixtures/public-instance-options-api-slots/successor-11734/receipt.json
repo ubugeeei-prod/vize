@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "pullRequest": 11738,
+  "issue": 11734,
+  "predecessor": {
+    "path": "successor-11591/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "8af2a7df287fda7ec93192c08b6c8668e0478da3c0efda2dc3615d58d41c735c"
+  },
+  "successor": {
+    "path": "successor-11734/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "641d711aac2e741427d132ebecb6ef4d5d0cb0f41fcb204ec782e9d2c49e54a9"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 0,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "capture": {
+    "runId": 41683162237,
+    "artifactId": 13254461285,
+    "sourceRevision": "dce7dc4d7274836bd812f520c9b9bba8cb20c5a1",
+    "pullRequestHead": "f12058bb98613b5fd2070211f02309cb2f42ab12"
+  },
+  "scope": "Issue #11734 reorders call and construct inference in __RuntimePropValue. Only generated text hashes change; byte lengths, mappings, diagnostics and authored hits remain exact."
+}

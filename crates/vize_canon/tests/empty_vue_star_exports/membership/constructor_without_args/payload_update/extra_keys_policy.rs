@@ -111,6 +111,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::runtime_prop_call::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -125,7 +126,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 pub(super) fn preamble_before(current: &str) -> String {
     invert(
-        current,
+        &super::runtime_prop_call::preamble_before(current),
         PREAMBLE_EDITS,
         PREAMBLE_BEFORE_BYTES,
         PREAMBLE_BEFORE_SHA,
@@ -173,15 +174,19 @@ mod tests {
     #[test]
     fn current_assets_preamble_and_sdk_reconstruct_only_the_extra_keys_layer() {
         for file in &FILES {
-            let body = current(file.path);
+            let body =
+                super::super::runtime_prop_call::source_before(file.path, current(file.path));
             assert_eq!(
-                redo(source_before(file.path, body.clone()), file.edits),
+                redo(source_before(file.path, current(file.path)), file.edits),
                 body
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(redo(preamble_before(preamble), PREAMBLE_EDITS), preamble);
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
+        assert_eq!(
+            redo(preamble_before(preamble), PREAMBLE_EDITS),
+            super::super::runtime_prop_call::preamble_before(preamble)
+        );
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
         retain_provenance(&mut manifest);

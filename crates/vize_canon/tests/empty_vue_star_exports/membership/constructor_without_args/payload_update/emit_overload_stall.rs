@@ -149,7 +149,7 @@ mod tests {
             super::super::public_base_keys::source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
         let public = source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
         assert_eq!(public.replacen(PUBLIC_BEFORE, PUBLIC_AFTER, 1), newer);
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(
             source_before(other, CURRENT_ASSET.to_owned()),
             CURRENT_ASSET
