@@ -4,10 +4,9 @@
 //! reactive patches: IME composition, `.lazy`, `.trim`, `.number`, checkbox
 //! booleans and arrays, radios, single/multiple/numeric selects, member paths
 //! and controls recreated by `v-if`. Rust lowers every case and commits the
-//! exact graph/value Dumps. The Lean model reference computes the expected
-//! observations and both mounted Vue runtimes must reproduce them. Regenerate
-//! with `VIZE_UPDATE_MODEL_REFERENCE=1`, then
-//! `lake exe impetoRef --write-model-reference`.
+//! exact graph/value Dumps. The independent model reference computes the
+//! expected observations and both mounted Vue runtimes must reproduce them.
+//! `VIZE_UPDATE_MODEL_REFERENCE=1` regenerates all three files of each matrix.
 
 #![allow(
     clippy::disallowed_macros,
@@ -188,8 +187,18 @@ fn lowered(source: &str) -> (String, String) {
 
 fn check_lines(path: &Path, lines: &[Value]) {
     let actual: String = lines.iter().map(|line| format!("{line}\n")).collect();
+    check_text(path, &actual);
+}
+
+/// The committed observations the independent reference computes for `stem`.
+fn check_behavior(fixtures: &Path, stem: &str) {
+    let actual = davinci_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
+    check_text(&fixtures.join(format!("{stem}.behavior.jsonl")), &actual);
+}
+
+fn check_text(path: &Path, actual: &str) {
     if std::env::var("VIZE_UPDATE_MODEL_REFERENCE").as_deref() == Ok("1") {
-        std::fs::write(path, &actual).unwrap();
+        std::fs::write(path, actual).unwrap();
     }
     assert_eq!(
         actual,
@@ -282,9 +291,10 @@ fn emit(stem: &str, cases: Vec<Case>) {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = davinci_test_support::l3_reference::fixtures();
     check_lines(&fixtures.join(format!("{stem}.cases.jsonl")), &rows);
     check_lines(&fixtures.join(format!("{stem}.lowered.jsonl")), &graphs);
+    check_behavior(&fixtures, stem);
 }
 
 #[test]
