@@ -24,6 +24,8 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) component_type_name: &'a str,
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
+    /// Alias that is `true` for a vue-tsc generic library export.
+    pub(super) library: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
@@ -134,11 +136,16 @@ pub(super) fn generate_inferred_emit_args(
             });
         }
     }
+    // A vue-tsc library export is called itself, so the bound props
+    // instantiate its generics and its `__ctx` carries the listener props.
     if first_listener {
         append!(
             *ts,
-            "{}type {resolver_type} = {emit_props_factory}<typeof {}>;\n",
+            "{}type {resolver_type} = {} extends true ? (component: typeof {}) => typeof {} : {emit_props_factory}<typeof {}>;\n",
             ctx.indent,
+            ctx.library,
+            ctx.component_ref,
+            ctx.component_ref,
             ctx.component_ref,
         );
     }
@@ -309,8 +316,9 @@ pub(super) fn generate_inferred_emit_args(
     }
     append!(
         *ts,
-        "{}type {inferred_args} = typeof {emit_props} extends {{ {}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
+        "{}type {inferred_args} = ({} extends true ? typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}} : typeof {emit_props}) extends {{ {}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
         ctx.indent,
+        ctx.library,
         ctx.prop_key,
     );
     Some(inferred_args)
