@@ -32,6 +32,7 @@ env:
 jobs:
   published:
     name: published
+    if: ${{ !contains(github.event.head_commit.message, '[skip published]') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     permissions:
@@ -145,12 +146,15 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
 
-      # Shipped release profile, with line tables kept for symbolized profiles.
+      # Shipped release profile plus line tables and frame pointers, so perf
+      # can attribute inclusive time to compiler stages.
       - name: Build native with symbols
         env:
           CARGO_PROFILE_RELEASE_DEBUG: line-tables-only
           CARGO_PROFILE_RELEASE_STRIP: none
-        run: vp run --workspace-root build:native
+        run: |
+          export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
+          vp run --workspace-root build:native
 
       - name: Generate benchmark corpus
         run: node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES"
@@ -175,7 +179,7 @@ jobs:
             --out compile-source.md --json compile-source.json
           cat compile-source.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Profile source single-thread compile
+      - name: Profile source compile
         run: |
           set -euo pipefail
           sudo apt-get update -qq
@@ -188,18 +192,19 @@ jobs:
           test -n "$perf_bin"
           mkdir -p profiles
           node_file=$(ls "$PWD"/npm/native/*.node)
-          spec=$(printf '{"label":"source","kind":"native","path":"%s","mode":"loop1t"}' "$node_file")
           input="$PWD/tools/benchmarks/scripts/__in__"
-          "$perf_bin" stat -e task-clock,instructions,cycles,cache-misses,branch-misses -o profiles/source.stat.txt \
-            node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-          "$perf_bin" record -F 999 --call-graph dwarf,16384 -o profiles/source.perf.data \
-            node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 3 --warmups 1 > /dev/null
-          "$perf_bin" report -i profiles/source.perf.data --no-children --sort dso,symbol --stdio --percent-limit 0.3 2> /dev/null | head -200 > profiles/source.self.txt
-          "$perf_bin" report -i profiles/source.perf.data --children --sort symbol --stdio -g none --percent-limit 0.5 2> /dev/null | head -300 > profiles/source.children.txt
-          "$perf_bin" report -i profiles/source.perf.data --no-children --sort srcline --stdio --percent-limit 0.3 2> /dev/null | head -150 > profiles/source.srcline.txt || true
-          "$perf_bin" script -i profiles/source.perf.data 2> /dev/null | gzip > profiles/source.perf-script.txt.gz
-          for f in stat self children srcline; do echo "::group::source $f"; cat "profiles/source.$f.txt"; echo "::endgroup::"; done
-          rm profiles/source.perf.data
+          for mode in loop1t batchmax; do
+            spec=$(printf '{"label":"source","kind":"native","path":"%s","mode":"%s"}' "$node_file" "$mode")
+            "$perf_bin" stat -e task-clock,instructions,cycles,cache-misses -o "profiles/$mode.stat.txt" \
+              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
+            "$perf_bin" record -F 2999 --call-graph fp -o "profiles/$mode.perf.data" \
+              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
+            "$perf_bin" report -i "profiles/$mode.perf.data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 2> /dev/null | head -250 > "profiles/$mode.self.txt"
+            "$perf_bin" report -i "profiles/$mode.perf.data" --children --sort symbol --stdio -g none --percent-limit 0.3 2> /dev/null | head -400 > "profiles/$mode.children.txt"
+            "$perf_bin" script -i "profiles/$mode.perf.data" 2> /dev/null | gzip > "profiles/$mode.perf-script.txt.gz"
+            for f in stat self children; do echo "::group::$mode $f"; head -120 "profiles/$mode.$f.txt"; echo "::endgroup::"; done
+            rm "profiles/$mode.perf.data"
+          done
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
