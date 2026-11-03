@@ -62,8 +62,9 @@ void test("the gate accepts exactly the planted errors and refuses anything else
     [false, 1, 1],
   );
   const mapperPlants: Plant[] = [PLANTS[0] as Plant, PLANTS[1] as Plant];
-  assert.equal(gate("tsc-vize-mapper", [exact[0] as Diagnostic], mapperPlants).ok, true);
-  assert.equal(gate("tsc-vize-mapper", exact.slice(0, 2), mapperPlants).ok, false);
+  // The mapper lanes report the `v-model` plant since #11643, like every tool.
+  assert.equal(gate("tsc-vize-mapper", exact.slice(0, 2), mapperPlants).ok, true);
+  assert.equal(gate("tsc-vize-mapper", [exact[0] as Diagnostic], mapperPlants).ok, false);
   const doubled = gate("tool", [...exact, diagnostic("src/b.vue", 9, "TS2322")], PLANTS);
   assert.deepEqual([doubled.ok, doubled.unexpected.length], [false, 1]);
 });
