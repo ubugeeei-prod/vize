@@ -13,12 +13,14 @@ mod template_offsets;
 mod visibility;
 use core::fmt;
 use index_vec::IndexVec;
+use std::borrow::Cow;
 
 use vize_carton::{
     CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
 };
 use vize_relief::BindingType;
 
+use super::globals::{BindingMap, StandardGlobals, UNIVERSAL};
 use super::types::{
     BlockScopeData, CallbackScopeData, ClientOnlyScopeData, ClosureScopeData,
     EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData, NonScriptSetupScopeData,
@@ -35,15 +37,16 @@ pub struct Scope {
     pub parents: ParentScopes,
     /// Kind of scope
     pub kind: ScopeKind,
-    /// Bindings declared in this scope
-    bindings: FxHashMap<CompactString, ScopeBinding>,
+    /// Bindings declared in this scope. A standard global scope borrows its
+    /// shared table until the first write.
+    bindings: Cow<'static, BindingMap>,
     /// Scope-specific data
-    data: ScopeData,
+    data: Cow<'static, ScopeData>,
     /// Source span
     pub span: Span,
 }
 
-struct SortedBindings<'a>(&'a FxHashMap<CompactString, ScopeBinding>);
+struct SortedBindings<'a>(&'a BindingMap);
 
 impl fmt::Debug for SortedBindings<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -81,8 +84,8 @@ impl Scope {
             id,
             parents: parent.map(|p| smallvec![p]).unwrap_or_default(),
             kind,
-            bindings: FxHashMap::default(),
-            data: ScopeData::None,
+            bindings: Cow::Owned(BindingMap::default()),
+            data: Cow::Owned(ScopeData::None),
             span: Span::default(),
         }
     }
@@ -94,8 +97,8 @@ impl Scope {
             id,
             parents,
             kind,
-            bindings: FxHashMap::default(),
-            data: ScopeData::None,
+            bindings: Cow::Owned(BindingMap::default()),
+            data: Cow::Owned(ScopeData::None),
             span: Span::default(),
         }
     }
@@ -113,8 +116,8 @@ impl Scope {
             id,
             parents: parent.map(|p| smallvec![p]).unwrap_or_default(),
             kind,
-            bindings: FxHashMap::default(),
-            data: ScopeData::None,
+            bindings: Cow::Owned(BindingMap::default()),
+            data: Cow::Owned(ScopeData::None),
             span: Span::new(start, end),
         }
     }
@@ -132,9 +135,26 @@ impl Scope {
             id,
             parents,
             kind,
-            bindings: FxHashMap::default(),
-            data: ScopeData::None,
+            bindings: Cow::Owned(BindingMap::default()),
+            data: Cow::Owned(ScopeData::None),
             span: Span::new(start, end),
+        }
+    }
+
+    /// A standard global scope borrowing its shared table.
+    #[inline]
+    pub(crate) fn standard(
+        id: ScopeId,
+        parent: Option<ScopeId>,
+        globals: &'static StandardGlobals,
+    ) -> Self {
+        Self {
+            id,
+            parents: parent.map(|p| smallvec![p]).unwrap_or_default(),
+            kind: globals.kind,
+            bindings: Cow::Borrowed(&globals.bindings),
+            data: Cow::Borrowed(&globals.data),
+            span: Span::default(),
         }
     }
 
@@ -155,7 +175,7 @@ impl Scope {
     /// Set scope-specific data
     #[inline]
     pub fn set_data(&mut self, data: ScopeData) {
-        self.data = data;
+        self.data = Cow::Owned(data);
     }
 
     /// Get scope-specific data
@@ -167,7 +187,7 @@ impl Scope {
     /// Add a binding to this scope
     #[inline]
     pub fn add_binding(&mut self, name: CompactString, binding: ScopeBinding) {
-        self.bindings.insert(name, binding);
+        self.bindings.to_mut().insert(name, binding);
     }
 
     /// Get a binding by name (only in this scope, not parents)
@@ -179,7 +199,12 @@ impl Scope {
     /// Get a mutable binding by name
     #[inline]
     pub fn get_binding_mut(&mut self, name: &str) -> Option<&mut ScopeBinding> {
-        self.bindings.get_mut(name)
+        match &mut self.bindings {
+            Cow::Owned(bindings) => bindings.get_mut(name),
+            // A miss leaves the shared table borrowed.
+            Cow::Borrowed(bindings) if !bindings.contains_key(name) => None,
+            bindings => bindings.to_mut().get_mut(name),
+        }
     }
 
     /// Check if this scope has a binding
@@ -202,7 +227,7 @@ impl Scope {
 
     /// Get display name for this scope (includes hook name for ClientOnly scopes)
     pub fn display_name(&self) -> String {
-        match (&self.kind, &self.data) {
+        match (&self.kind, self.data()) {
             (ScopeKind::ClientOnly, ScopeData::ClientOnly(data)) => {
                 // Use hook name without "on" prefix: onMounted -> mounted
                 data.hook_name
@@ -240,108 +265,27 @@ impl Default for ScopeChain {
     }
 }
 
-/// ECMAScript standard built-in globals (ECMA-262)
-const JS_UNIVERSAL_GLOBALS: &[&str] = &[
-    "AggregateError",
-    "arguments", // Function scope closure
-    "Array",
-    "ArrayBuffer",
-    "AsyncFunction",
-    "AsyncGenerator",
-    "AsyncGeneratorFunction",
-    "AsyncIterator",
-    "Atomics",
-    "BigInt",
-    "BigInt64Array",
-    "BigUint64Array",
-    "Boolean",
-    "console", // Non-standard but universally available
-    "DataView",
-    "Date",
-    "decodeURI",
-    "decodeURIComponent",
-    "encodeURI",
-    "encodeURIComponent",
-    "Error",
-    "eval",
-    "EvalError",
-    "Float32Array",
-    "Float64Array",
-    "Function",
-    "Generator",
-    "GeneratorFunction",
-    "globalThis",
-    "Infinity",
-    "Int16Array",
-    "Int32Array",
-    "Int8Array",
-    "Intl",
-    "isFinite",
-    "isNaN",
-    "Iterator",
-    "JSON",
-    "Map",
-    "Math",
-    "NaN",
-    "Number",
-    "Object",
-    "parseFloat",
-    "parseInt",
-    "Promise",
-    "Proxy",
-    "RangeError",
-    "ReferenceError",
-    "Reflect",
-    "RegExp",
-    "Set",
-    "SharedArrayBuffer",
-    "String",
-    "Symbol",
-    "SyntaxError",
-    "this", // Function scope closure
-    "TypeError",
-    "Uint16Array",
-    "Uint32Array",
-    "Uint8Array",
-    "Uint8ClampedArray",
-    "undefined",
-    "URIError",
-    "WeakMap",
-    "WeakSet",
-];
-
 impl ScopeChain {
     /// Create a new scope chain with JS universal globals as root
     /// ECMAScript standard built-ins only (ECMA-262)
     #[inline]
     pub fn new() -> Self {
-        let mut root = Scope::new(ScopeId::ROOT, None, ScopeKind::JsGlobalUniversal);
-        for name in JS_UNIVERSAL_GLOBALS {
-            root.add_binding(
-                CompactString::new(name),
-                ScopeBinding::new(BindingType::JsGlobalUniversal, 0),
-            );
-        }
-        Self {
-            scopes: IndexVec::from_vec(vec![root]),
-            current: ScopeId::ROOT,
-            dynamic_v_slot_scopes: FxHashSet::default(),
-            directive_expression_offsets: FxHashMap::default(),
-        }
+        Self::with_root(IndexVec::from_vec(vec![Self::root()]))
     }
 
     /// Create with pre-allocated capacity
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
-        let mut root = Scope::new(ScopeId::ROOT, None, ScopeKind::JsGlobalUniversal);
-        for name in JS_UNIVERSAL_GLOBALS {
-            root.add_binding(
-                CompactString::new(name),
-                ScopeBinding::new(BindingType::JsGlobalUniversal, 0),
-            );
-        }
         let mut scopes = IndexVec::with_capacity(capacity);
-        scopes.push(root);
+        scopes.push(Self::root());
+        Self::with_root(scopes)
+    }
+
+    fn root() -> Scope {
+        Scope::standard(ScopeId::ROOT, None, &UNIVERSAL)
+    }
+
+    fn with_root(scopes: IndexVec<ScopeId, Scope>) -> Self {
         Self {
             scopes,
             current: ScopeId::ROOT,
@@ -397,7 +341,7 @@ impl ScopeChain {
             }
 
             scope.span.shift(delta);
-            for binding in scope.bindings.values_mut() {
+            for binding in scope.bindings.to_mut().values_mut() {
                 binding.shift_declaration_offset(delta);
             }
         }
@@ -481,5 +425,7 @@ impl ScopeChain {
     }
 }
 
+#[cfg(test)]
+mod standard_globals_tests;
 #[cfg(test)]
 mod tests;

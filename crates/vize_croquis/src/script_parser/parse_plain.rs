@@ -3,13 +3,13 @@
 use oxc_allocator::Allocator;
 use oxc_span::SourceType;
 
-use super::globals::setup_global_scopes;
 use super::module_exports::{ModuleExportCapture, parse_script_plain};
 use super::process;
 use super::recovery::parse_program_for_analysis;
 use super::result::{ScriptParseResult, ScriptParserOptions};
 use crate::croquis::BindingMetadata;
 use crate::scope::NonScriptSetupScopeData;
+use crate::scope::setup_global_scopes;
 use vize_carton::profile;
 
 /// Parse non-script-setup (Options API) source code using OXC parser.

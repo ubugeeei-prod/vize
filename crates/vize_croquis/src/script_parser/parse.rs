@@ -4,7 +4,6 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_span::SourceType;
 
-use super::globals::setup_global_scopes;
 use super::module_exports::ModuleExportCapture;
 pub(crate) use super::module_exports::parse_script_setup_for_unused;
 use super::process;
@@ -12,6 +11,7 @@ use super::recovery::parse_program_for_analysis;
 use super::result::ScriptParseResult;
 use crate::croquis::BindingMetadata;
 use crate::scope::ScriptSetupScopeData;
+use crate::scope::setup_global_scopes;
 use vize_carton::{CompactString, profile};
 
 /// Parse script setup source code using OXC parser with an optional generic parameter.
