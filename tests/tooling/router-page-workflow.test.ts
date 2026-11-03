@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -15,6 +16,22 @@ const action = parse(
 const producer = parse(
   readFileSync(new URL(".github/workflows/full-source-cli.yml", root), "utf8"),
 );
+
+void test("page implementation, oracle and action dependencies trigger qualification", () => {
+  const patterns = workflow.on.pull_request.paths;
+  for (const file of [
+    "crates/vize_canon/src/virtual_ts/mapping/model/generated_ranges.rs",
+    ".github/actions/check-router-page-types/action.yml",
+    "tests/snapshots/check/vue-router-page-route-oracle.ts",
+    "tests/fixtures/typechecker/page-route-types/cli-observer.ts",
+    "tests/tooling/router-experimental-check.test.ts",
+  ]) {
+    assert.ok(
+      patterns.some((pattern) => matchesGlob(file, pattern)),
+      file,
+    );
+  }
+});
 
 void test("the page consumer installs the producer's pinned linker before source restoration", () => {
   const linker = producer.jobs.cli.steps.find((step) =>
@@ -87,16 +104,24 @@ void test("the unchanged complete page oracle keeps native host and source-build
   assert.equal(oracle[0].if, undefined, "a prior failed step must not turn qualification green");
 });
 
-void test("both raw packet families and all source receipts survive oracle failure", () => {
+void test("all raw packet families and source receipts survive oracle failure", () => {
   const upload = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
   assert.equal(upload.if, "always()");
-  assert.deepEqual(upload.with.path.trim().split("\n"), [
-    "target/differential/router-page-types/",
-    "target/differential/router-page-types-secondary/",
-    "target/ci/vize.differential-build.json",
-    "target/ci/vize.source-build.json",
-    "target/ci/vize.source-use.json",
-  ]);
+  assert.deepEqual(
+    upload.with.path
+      .trim()
+      .split("\n")
+      .map((line) => line.trim())
+      .sort(),
+    [
+      "target/differential/experimental-router-check/",
+      "target/differential/router-page-types/",
+      "target/differential/router-page-types-secondary/",
+      "target/ci/vize.differential-build.json",
+      "target/ci/vize.source-build.json",
+      "target/ci/vize.source-use.json",
+    ].sort(),
+  );
   assert.equal(upload.with["if-no-files-found"], "error");
   assert.ok(
     job.steps.indexOf(upload) >

@@ -4,16 +4,21 @@ on:
   pull_request:
     paths:
       - .github/workflows/router-preview-conformance.yml
+      - .github/actions/check-router-page-types/**
+      - tests/snapshots/check/vue-router-page-route-oracle.ts
+      - tests/fixtures/typechecker/page-route-types/**
       - tests/fixtures/typechecker/experimental-router-preview-593d7ad/**
       - tests/fixtures/typechecker/experimental-router-mapper-host/**
       - tests/fixtures/typechecker/experimental-router-project-capability/**
       - tests/_fixtures/differential/typechecker/router-mapper-capability-10579/**
       - tests/tooling/router-preview-*.ts
       - tests/tooling/router-page-workflow.test.ts
+      - tests/tooling/router-experimental-*.ts
       - tests/tooling/support/router-preview/**
       - tests/tooling/support/router-experimental-provider.ts
       - crates/vize_canon/src/batch/virtual_project/typed_router/**
       - crates/vize_canon/src/batch/virtual_project/typed_router.rs
+      - crates/vize_canon/src/virtual_ts/mapping/model/generated_ranges.rs
       - crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs
       - crates/vize_canon/src/batch/virtual_project/content_mapper_config/**
       - crates/vize_canon/src/batch/virtual_project/content_mapper/project_context.rs
@@ -202,6 +207,7 @@ jobs:
         with:
           name: router-page-cli-editor-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            target/differential/experimental-router-check/
             target/differential/router-page-types/
             target/differential/router-page-types-secondary/
             target/ci/vize.differential-build.json
