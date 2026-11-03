@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const n = 1
+const s = "x"
+const obj = { fooBar: 1 }
+function takesString(v: string) { return v }
+</script>
+<template>
+  <Child foo-bar="ok" @save-item="(value: number) => undefined" />
+  <Child foo-bar="ok" @save-item="takesString(n)" />
+  <Child foo-bar="ok" @save-item="(v) => takesString(n)" />
+  <Child :foo-bar="n" />
+  <Child v-bind="obj" />
+  <Child foo-bar="ok" :items="[s]" />
+  <p>{{ takesString(n) }}</p>
+  <p :title="takesString(n)" />
+  <p v-if="takesString(n)">a</p>
+  <p v-for="x in takesString(n)" :key="x">b</p>
+  <p v-show="takesString(n)">c</p>
+  <Child foo-bar="ok" v-slot="{ n: m }">{{ takesString(m) }}</Child>
+  <p @click="takesString(n)" />
+  <p @click.stop="(e: number) => e" />
+  <p :class="{ a: takesString(n) }" />
+  <p :style="[takesString(n)]" />
+  <component :is="Child" foo-bar="ok" @save-item="(value: number) => undefined" />
+</template>

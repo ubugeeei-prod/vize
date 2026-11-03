@@ -14,7 +14,7 @@ impl ContentMapperTransform {
         self.diagnostic_directives = unmapped_ignores(
             self.diagnostic_directives.take(),
             &self.mappings,
-            self.text.len(),
+            &self.text,
         );
         self
     }
@@ -23,8 +23,9 @@ impl ContentMapperTransform {
 pub(super) fn unmapped_ignores(
     directives: Option<ContentMapperDiagnosticDirectives>,
     spans: &[ContentMapperSpan],
-    generated_len: usize,
+    generated: &str,
 ) -> Option<ContentMapperDiagnosticDirectives> {
+    let generated_len = generated.len();
     let mut mapped = spans
         .iter()
         .filter(|ContentMapperSpan([_, length, ..])| *length > 0)
@@ -34,8 +35,9 @@ pub(super) fn unmapped_ignores(
     let mut unmapped = Vec::new();
     let mut cursor = 0;
     for range in mapped {
-        if cursor < range.start {
-            unmapped.push(cursor..range.start);
+        let end = opening_parentheses(generated.as_bytes(), cursor, range.start);
+        if cursor < end {
+            unmapped.push(cursor..end);
         }
         cursor = cursor.max(range.end);
     }
@@ -97,4 +99,21 @@ pub(super) fn unmapped_ignores(
         .directives
         .sort_by_key(|directive| directive.0[2]);
     Some(directives)
+}
+
+/// Parentheses opening a mapped span belong to the authored expression they
+/// wrap: TypeScript anchors that expression's errors at the first `(`, so a
+/// start-based ignore there would drop an authored check (#11657).
+fn opening_parentheses(generated: &[u8], floor: usize, span_start: usize) -> usize {
+    let mut end = span_start;
+    let mut position = span_start;
+    while position > floor {
+        match generated.get(position - 1) {
+            Some(b'(') => end = position - 1,
+            Some(byte) if byte.is_ascii_whitespace() => {}
+            _ => break,
+        }
+        position -= 1;
+    }
+    end
 }
