@@ -393,7 +393,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                     ts,
                     mappings,
                     (component_type_name.as_str(), idx),
-                    prop,
+                    (usage, prop, source_context),
                     generated_value.text.as_str(),
                     target_source,
                     (expr_indent.as_str(), ctx.hoist_shared_preamble),

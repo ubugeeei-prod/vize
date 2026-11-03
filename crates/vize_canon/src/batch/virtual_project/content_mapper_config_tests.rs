@@ -27,6 +27,13 @@ fn expected_options(
     options
 }
 
+/// `strictTemplates` also turns on `strictVModel` (#11643).
+fn strict_templates() -> ContentMapperTransformOptions {
+    let mut options = ContentMapperTransformOptions::default();
+    options.strict_v_model = true;
+    options
+}
+
 fn expected_watches(root: &Path, names: &[&str]) -> Vec<vize_l0::String> {
     let mut paths: Vec<_> = names
         .iter()
@@ -153,7 +160,7 @@ fn shared_chain_obeys_jsonc_array_precedence_and_explicit_false() {
     let configuration = load(&path);
     assert_eq!(
         configuration.transform_options,
-        expected_options(Default::default(), true, false, false, true, false)
+        expected_options(strict_templates(), true, false, false, true, false)
     );
     assert_eq!(
         configuration.watched_files,
@@ -209,14 +216,14 @@ fn dynamic_identity_is_stable_and_tracks_inherited_option_changes() {
     let before = load(&path);
     assert_eq!(
         before.transform_options,
-        expected_options(Default::default(), true, true, false, true, false)
+        expected_options(strict_templates(), true, true, false, true, false)
     );
     assert_eq!(before.config_identity, load(&path).config_identity);
     std::fs::write(&base, r#"{"vueCompilerOptions":{"strictTemplates":true,"checkUnknownProps":false,"strictCssModules":true}}"#).unwrap();
     let after = load(&path);
     assert_eq!(
         after.transform_options,
-        expected_options(Default::default(), true, false, false, true, true)
+        expected_options(strict_templates(), true, false, false, true, true)
     );
     assert_ne!(before.config_identity, after.config_identity);
     assert_eq!(before.watched_files, after.watched_files);

@@ -104,6 +104,8 @@ pub(crate) struct DiagnosticOwnership {
     unproven: FxHashSet<InputOwner>,
     callback_primaries: Vec<Range<usize>>,
     independent_reads: vize_carton::FxHashMap<InputOwner, independent_reads::PreparedReads>,
+    /// Owners whose `v-model` write-back was emitted (`strictVModel`).
+    model_write_backs: FxHashSet<InputOwner>,
 }
 
 impl DiagnosticOwnership {
@@ -186,6 +188,26 @@ impl DiagnosticOwnership {
                 valid: true,
             });
         }
+    }
+
+    /// The `strictVModel` write-back assigns to the bound target, so it reports
+    /// the target's own errors as well as the write. It becomes the value's
+    /// primary, and the props literal's copy of the target becomes its echo.
+    pub(crate) fn record_model_write_back(
+        &mut self,
+        owner: InputOwner,
+        generated: Range<usize>,
+        authored: Range<usize>,
+    ) {
+        if self.unproven.contains(&owner.with_role(InputRole::Value)) {
+            return;
+        }
+        self.model_write_backs.insert(owner);
+        self.record_projection(owner, generated, authored, false, true);
+    }
+
+    pub(crate) fn writes_back_model(&self, owner: InputOwner) -> bool {
+        self.model_write_backs.contains(&owner)
     }
 
     pub(crate) fn record_bare_navigation(
@@ -309,6 +331,7 @@ impl DiagnosticOwnership {
     /// Deferred root buffers are rebased with their text, before publication.
     pub(crate) fn append_rebased(&mut self, other: Self, offset: usize) {
         self.unproven.extend(other.unproven);
+        self.model_write_backs.extend(other.model_write_backs);
         self.callback_primaries.extend(
             other
                 .callback_primaries
