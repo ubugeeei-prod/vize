@@ -2307,7 +2307,7 @@
       "reference": {
         "path": "tsx-setup-jsx-bindings/module.expected.txt",
         "sha256": "ca2a19012875878dbef9c5cff6862e87a4eaaa90f066614444f53517b4f0dc06",
-        "source": "crates/vize_atelier_sfc/src/compile/tests/tsx_setup.rs:tsx_setup_keeps_macros_and_bindings_beside_jsx"
+        "source": "crates/vize_atelier_sfc/src/script/tsx_setup_tests.rs:tsx_setup_keeps_macros_and_bindings_beside_jsx"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

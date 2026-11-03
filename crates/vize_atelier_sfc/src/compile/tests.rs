@@ -5,7 +5,6 @@ mod options_api_events;
 mod page_meta;
 mod props_rest;
 mod scoped;
-mod tsx_setup;
 mod vapor;
 use super::{compile_sfc, helpers, normal_script};
 use crate::types::{

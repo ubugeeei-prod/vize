@@ -4,13 +4,14 @@
 //! collecting rewrites while respecting lexical scoping and shadowing.
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, Class, ClassElement, Expression, FormalParameters, Function, Program,
-    PropertyKey, Statement,
+    Argument, BindingPattern, Expression, FormalParameters, Function, Program, PropertyKey,
+    Statement,
 };
 use vize_carton::FxHashMap;
 
 use super::helpers::gen_props_access_exp;
 
+mod class;
 mod jsx;
 use vize_carton::{String, ToCompactString};
 
@@ -117,7 +118,7 @@ pub(crate) fn collect_from_statement<'a>(
             if let Some(id) = &class.id {
                 local_bindings.insert(id.name.to_compact_string(), true);
             }
-            collect_from_class(class, source, local_to_key, local_bindings, rewrites);
+            class::collect_from_class(class, source, local_to_key, local_bindings, rewrites);
         }
         Statement::ForStatement(for_stmt) => {
             let mut inner_bindings = local_bindings.clone();
@@ -389,7 +390,7 @@ pub(crate) fn collect_from_expression<'a>(
             collect_from_function(func, source, local_to_key, local_bindings, rewrites);
         }
         Expression::ClassExpression(class) => {
-            collect_from_class(class, source, local_to_key, local_bindings, rewrites);
+            class::collect_from_class(class, source, local_to_key, local_bindings, rewrites);
         }
         Expression::BinaryExpression(bin) => {
             collect_from_expression(&bin.left, source, local_to_key, local_bindings, rewrites);
@@ -895,85 +896,6 @@ fn collect_from_function<'a>(
     if let Some(body) = &func.body {
         for stmt in body.statements.iter() {
             collect_from_statement(stmt, source, local_to_key, &mut inner_bindings, rewrites);
-        }
-    }
-}
-
-fn collect_from_class<'a>(
-    class: &Class<'a>,
-    source: &str,
-    local_to_key: &FxHashMap<&str, &str>,
-    local_bindings: &FxHashMap<String, bool>,
-    rewrites: &mut Vec<(usize, usize, String)>,
-) {
-    let mut inner_bindings = local_bindings.clone();
-    if let Some(id) = &class.id {
-        inner_bindings.insert(id.name.to_compact_string(), true);
-    }
-    if let Some(super_class) = &class.super_class {
-        collect_from_expression(super_class, source, local_to_key, &inner_bindings, rewrites);
-    }
-    for elem in class.body.body.iter() {
-        match elem {
-            ClassElement::MethodDefinition(method) => {
-                if method.computed {
-                    collect_from_property_key(
-                        &method.key,
-                        source,
-                        local_to_key,
-                        &inner_bindings,
-                        rewrites,
-                    );
-                }
-                collect_from_function(
-                    &method.value,
-                    source,
-                    local_to_key,
-                    &inner_bindings,
-                    rewrites,
-                );
-            }
-            ClassElement::PropertyDefinition(prop) => {
-                if prop.computed {
-                    collect_from_property_key(
-                        &prop.key,
-                        source,
-                        local_to_key,
-                        &inner_bindings,
-                        rewrites,
-                    );
-                }
-                if let Some(value) = &prop.value {
-                    collect_from_expression(value, source, local_to_key, &inner_bindings, rewrites);
-                }
-            }
-            ClassElement::AccessorProperty(prop) => {
-                if prop.computed {
-                    collect_from_property_key(
-                        &prop.key,
-                        source,
-                        local_to_key,
-                        &inner_bindings,
-                        rewrites,
-                    );
-                }
-                if let Some(value) = &prop.value {
-                    collect_from_expression(value, source, local_to_key, &inner_bindings, rewrites);
-                }
-            }
-            ClassElement::StaticBlock(block) => {
-                let mut block_bindings = inner_bindings.clone();
-                for stmt in block.body.iter() {
-                    collect_from_statement(
-                        stmt,
-                        source,
-                        local_to_key,
-                        &mut block_bindings,
-                        rewrites,
-                    );
-                }
-            }
-            ClassElement::TSIndexSignature(_) => {}
         }
     }
 }

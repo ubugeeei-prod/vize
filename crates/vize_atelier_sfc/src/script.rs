@@ -18,6 +18,8 @@ mod define_props_destructure;
 mod define_slots;
 mod import_usage_check;
 mod static_expression;
+#[cfg(test)]
+mod tsx_setup_tests;
 pub(crate) mod type_resolution;
 mod utils;
 
@@ -145,16 +147,10 @@ pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
 ///
 /// Returns `None` when bounded edit recovery cannot produce a complete
 /// program; callers fall back to the legacy per-stage parse paths.
+///
+/// `tsx` and `jsx` setup scripts may contain JSX, which the TypeScript
+/// grammar rejects, so their authored `lang` selects the TSX grammar.
 pub fn parse_script_setup_program<'a>(
-    allocator: &'a oxc_allocator::Allocator,
-    content: &'a str,
-) -> Option<oxc_ast::ast::Program<'a>> {
-    parse_script_setup_program_for_lang(allocator, content, None)
-}
-
-/// [`parse_script_setup_program`] for an authored `lang`: `tsx` and `jsx`
-/// setup scripts may contain JSX, which the TypeScript grammar rejects.
-pub fn parse_script_setup_program_for_lang<'a>(
     allocator: &'a oxc_allocator::Allocator,
     content: &'a str,
     lang: Option<&str>,
@@ -187,7 +183,8 @@ function pick(item: Item): void {
 }
 "#;
         let allocator = oxc_allocator::Allocator::default();
-        let program = parse_script_setup_program(&allocator, source).expect("recovered program");
+        let program =
+            parse_script_setup_program(&allocator, source, None).expect("recovered program");
         assert_eq!(program.source_text, source);
         assert_eq!(program.body.len(), 7);
         let summary = analyze_script_setup_program_to_summary(&program, source);

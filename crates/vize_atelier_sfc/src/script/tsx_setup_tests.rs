@@ -1,6 +1,6 @@
 //! `<script setup lang="tsx">` may hold JSX. Parsing it with the TypeScript
 //! grammar failed, which dropped every macro and setup binding.
-use super::super::compile_sfc;
+use crate::compile_sfc;
 use crate::types::SfcCompileOptions;
 use crate::{SfcParseOptions, parse_sfc};
 

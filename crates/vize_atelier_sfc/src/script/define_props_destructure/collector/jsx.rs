@@ -44,7 +44,13 @@ pub(super) fn collect_from_element(
             ),
         }
     }
-    collect_from_children(&element.children, source, local_to_key, local_bindings, rewrites);
+    collect_from_children(
+        &element.children,
+        source,
+        local_to_key,
+        local_bindings,
+        rewrites,
+    );
 }
 
 pub(super) fn collect_from_fragment(
@@ -54,7 +60,13 @@ pub(super) fn collect_from_fragment(
     local_bindings: &FxHashMap<String, bool>,
     rewrites: &mut Vec<(usize, usize, String)>,
 ) {
-    collect_from_children(&fragment.children, source, local_to_key, local_bindings, rewrites);
+    collect_from_children(
+        &fragment.children,
+        source,
+        local_to_key,
+        local_bindings,
+        rewrites,
+    );
 }
 
 fn collect_from_children(
