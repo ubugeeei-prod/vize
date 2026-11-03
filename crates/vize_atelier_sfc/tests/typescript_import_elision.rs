@@ -249,6 +249,19 @@ fn a_template_scope_name_does_not_keep_a_type_import() {
     );
 }
 
+/// A setup body may `await` at its top level, where `await {` takes an
+/// object operand: the piece is erased under the module goal.
+#[test]
+fn a_setup_body_awaiting_an_object_literal_is_erased() {
+    assert_imports(
+        &sfc(
+            "import { shout } from './shout'\nconst value: number = 1\nawait { value }\nshout(String(value))",
+            "<p>x</p>",
+        ),
+        &["import { shout } from './shout'"],
+    );
+}
+
 /// JavaScript sources are emitted as written: nothing is elided.
 #[test]
 fn javascript_sources_keep_every_import() {

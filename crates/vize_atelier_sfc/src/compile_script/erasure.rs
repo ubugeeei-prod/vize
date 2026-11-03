@@ -230,7 +230,9 @@ impl Erasure {
         code: &'a str,
         record: bool,
     ) -> Option<Program<'a>> {
-        let parsed = crate::script::parse_script_text(allocator, code, SourceType::ts());
+        // The module goal: a setup body may `await` at its top level.
+        let source_type = SourceType::ts().with_module(true);
+        let parsed = crate::script::parse_script_text(allocator, code, source_type);
         if parsed.panicked || !parsed.diagnostics.is_empty() {
             self.unknown = true;
             return None;
