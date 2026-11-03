@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { resolveVuePackageDir } from "./check-gate-env.mjs";
 import { createSurface, ENGINE_CLASSES_BY_SURFACE } from "./compare-tools-report.mjs";
+import { withEmptyUserCache } from "./empty-user-cache.ts";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
 import {
   CHECKER_SETTINGS,
@@ -157,22 +158,25 @@ export function createTypecheckToolVariants({
       setting,
       files: fileCount,
       format: "json",
+      // A reused cache would replay the previous run's diagnostics (empty-user-cache.ts).
       run: (cwd) =>
-        runCommand(
-          vizeBin,
-          [
-            "check",
-            ".",
-            "--quiet",
-            "--format",
-            "json",
-            "--tsconfig",
-            join(cwd, "tsconfig.json"),
-            "--corsa-path",
-            corsaPath,
-            ...args,
-          ],
-          { cwd, env },
+        withEmptyUserCache((cache) =>
+          runCommand(
+            vizeBin,
+            [
+              "check",
+              ".",
+              "--quiet",
+              "--format",
+              "json",
+              "--tsconfig",
+              join(cwd, "tsconfig.json"),
+              "--corsa-path",
+              corsaPath,
+              ...args,
+            ],
+            { cwd, env: { ...env, ...cache } },
+          ),
         ),
     })),
     ...(mapperHosts ? createMapperLanes({ fileCount, hosts: mapperHosts, cpus, runCommand }) : []),

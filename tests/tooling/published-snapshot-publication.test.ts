@@ -23,6 +23,37 @@ const artifact = JSON.parse(read(RESULT_PATH));
 const reviewedJapaneseMarker =
   "<!-- Reviewed translation; source: architecture/performance-blacksmith.md; scope: complete document -->";
 
+test("every locale labels the tsrs engine class in both ranking tables", async () => {
+  const outputs = await preparePublication(artifact, read);
+  const labels = {
+    en: "native TypeScript port (tsrs)",
+    ja: "ネイティブ TypeScript ポート (tsrs)",
+    "zh-CN": "原生 TypeScript 移植版 (tsrs)",
+    fr: "Portage TypeScript natif (tsrs)",
+    "pt-BR": "Port nativo de TypeScript (tsrs)",
+  };
+  for (const [locale, label] of Object.entries(labels)) {
+    assert.equal(diagnosticText(locale).group({ engineClass: "tsrs-native", label }), label);
+    const page = outputs.get(
+      performancePath(locale).replace(/performance\.md$/u, "performance-blacksmith.md"),
+    );
+    for (const surface of artifact.surfaces) {
+      const group = surface.engineClassRanking?.find(
+        (entry: { engineClass: string; rows: unknown[] }) => entry.engineClass === "tsrs-native",
+      );
+      if (!group) continue;
+      const section = page
+        .split(`#### ${diagnosticText(locale).heading(surface)}\n`)[1]
+        ?.split("\n#### ")[0];
+      assert.ok(section, `${locale}/${surface.id}`);
+      const rows = section
+        .split("\n")
+        .filter((line: string) => line.split("|")[1]?.trim() === label);
+      assert.equal(rows.length, group.rows.length, `${locale}/${surface.id}`);
+    }
+  }
+});
+
 test("one publisher reproduces the README, JSON and all ten public pages exactly", async () => {
   const outputs = await preparePublication(artifact, read);
   assert.equal(outputs.size, 12);
