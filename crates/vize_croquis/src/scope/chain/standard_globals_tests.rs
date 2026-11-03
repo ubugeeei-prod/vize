@@ -93,6 +93,48 @@ fn shared_globals_answer_like_the_per_file_insert_loop() {
 }
 
 #[test]
+fn seeded_global_lookups_keep_independently_named_bindings() {
+    let mut seeded = shared(120);
+    for (kind, binding_type, names) in [
+        (
+            ScopeKind::JsGlobalUniversal,
+            BindingType::JsGlobalUniversal,
+            ["Math", "JSON"],
+        ),
+        (
+            ScopeKind::JsGlobalBrowser,
+            BindingType::JsGlobalBrowser,
+            ["window", "document"],
+        ),
+        (
+            ScopeKind::JsGlobalNode,
+            BindingType::JsGlobalNode,
+            ["process", "Buffer"],
+        ),
+        (
+            ScopeKind::VueGlobal,
+            BindingType::VueGlobal,
+            ["$emit", "$slots"],
+        ),
+    ] {
+        let scope = seeded.find_scope_by_kind(kind).expect("standard scope");
+        seeded.set_current(scope);
+        for name in names {
+            assert_eq!(
+                seeded.lookup(name).map(|(owner, binding)| (
+                    owner.kind,
+                    binding.binding_type,
+                    binding.declaration_offset,
+                )),
+                Some((kind, binding_type, 0)),
+                "{name}",
+            );
+        }
+        assert_eq!(seeded.lookup("notAStandardGlobal").map(|_| ()), None);
+    }
+}
+
+#[test]
 fn a_miss_keeps_the_table_shared_and_a_write_takes_an_identical_copy() {
     let mut original = per_file(64);
     let mut seeded = shared(64);
