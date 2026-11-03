@@ -100,6 +100,41 @@ fn sfc(script: &str, template: &str) -> String {
 }
 
 #[test]
+fn compiler_helper_names_in_non_reference_positions_do_not_keep_imports() {
+    for script in [
+        "const label = '_createCommentVNode'; const show = true",
+        "const label = { '_createCommentVNode': true }; const show = true",
+        "const label = { _createCommentVNode: true }; const show = true",
+        "const label = /_createCommentVNode/; const show = true",
+        "const label = `_createCommentVNode`; const show = true",
+        "const label = true; const show = true; // _createCommentVNode",
+    ] {
+        let source = sfc(
+            script,
+            "<div v-if=\"show\">{{ label }}</div><div v-else>off</div>",
+        );
+        let code = compile(&source, Shape::Inline);
+        assert_eq!(
+            code.lines().next(),
+            Some(
+                "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\""
+            ),
+            "{script}\n{code}",
+        );
+    }
+    let code = compile(
+        &sfc("const show = true", "<div v-if=\"show\">on</div>"),
+        Shape::Inline,
+    );
+    assert_eq!(
+        code.lines().next(),
+        Some(
+            "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\""
+        ),
+    );
+}
+
+#[test]
 fn an_import_used_only_in_the_template_is_kept() {
     assert_imports(
         &sfc(
