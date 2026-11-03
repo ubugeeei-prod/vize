@@ -90,10 +90,16 @@ test("a fast empty or wrong answer is a failure, not a sample", () => {
 });
 
 test("protocol answers normalize across both editors' shapes", () => {
-  assert.deepEqual(completionLabels({ items: [{ label: "a" }, { label: { label: "b" } }] }), [
-    "a",
-    "b",
-  ]);
+  assert.deepEqual(
+    completionLabels({
+      items: [
+        { label: "a" },
+        { label: { label: "b" } },
+        { label: "channel?", filterText: "channel", insertText: "channel" },
+      ],
+    }),
+    ["a", "b", "channel"],
+  );
   const range = { start: { line: 3, character: 4 }, end: { line: 3, character: 5 } };
   assert.deepEqual(
     lspLocations([
