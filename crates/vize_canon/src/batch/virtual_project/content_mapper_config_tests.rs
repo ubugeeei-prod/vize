@@ -19,18 +19,20 @@ fn expected_options(
     directives: bool,
     css: bool,
 ) -> ContentMapperTransformOptions {
-    options.check_unknown_components = components;
-    options.check_unknown_props = unknown;
-    options.check_unknown_fallthrough_props = fallthrough;
-    options.check_unknown_directives = directives;
-    options.strict_css_modules = css;
+    options.checks.check_unknown_components = components;
+    options.checks.check_unknown_props = unknown;
+    options.checks.check_unknown_fallthrough_props = fallthrough;
+    options.checks.check_unknown_directives = directives;
+    options.checks.strict_css_modules = css;
     options
 }
 
-/// `strictTemplates` also turns on `strictVModel` (#11643).
+/// `strictTemplates` also turns on `checkUnknownEvents` and `strictVModel`
+/// (#11643, #11688).
 fn strict_templates() -> ContentMapperTransformOptions {
     let mut options = ContentMapperTransformOptions::default();
-    options.strict_v_model = true;
+    options.checks.check_unknown_events = true;
+    options.checks.strict_v_model = true;
     options
 }
 
@@ -306,7 +308,7 @@ fn vue3_target_drops_intrinsic_attribute_excess_checks() {
     .unwrap();
     let configured = load(&path);
     assert_eq!(
-        configured.transform_options.vue_compiler_target,
+        configured.transform_options.checks.vue_compiler_target,
         Some(VueVersion::V3)
     );
     let generated = generate_vue_content_mapper_transform_with_options(
@@ -324,7 +326,7 @@ fn vue3_target_drops_intrinsic_attribute_excess_checks() {
     )
     .unwrap();
     let omitted = load(&path);
-    assert_eq!(omitted.transform_options.vue_compiler_target, None);
+    assert_eq!(omitted.transform_options.checks.vue_compiler_target, None);
     let checked = generate_vue_content_mapper_transform_with_options(
         Path::new("src/Native.vue"),
         INTRINSIC_SFC,
@@ -371,7 +373,7 @@ fn auto_target_retains_nearer_missing_candidates_and_repair_without_numeric_prob
     std::fs::write(&config, r#"{"vueCompilerOptions":{"target":"auto"}}"#).unwrap();
     let before = load(&config);
     assert_eq!(
-        before.transform_options.vue_compiler_target,
+        before.transform_options.checks.vue_compiler_target,
         Some(VueVersion::V2_7)
     );
     let mut expected = expected_watches(
@@ -396,7 +398,7 @@ fn auto_target_retains_nearer_missing_candidates_and_repair_without_numeric_prob
     std::fs::write(&nearer, r#"{"version":"3.5.0"}"#).unwrap();
     let created = load(&config);
     assert_eq!(
-        created.transform_options.vue_compiler_target,
+        created.transform_options.checks.vue_compiler_target,
         Some(VueVersion::V3)
     );
     assert_ne!(created.config_identity, before.config_identity);
@@ -440,7 +442,7 @@ fn auto_target_watches_installed_vue_and_identity_follows_the_resolved_dialect()
     .unwrap();
     let vue2 = load(&path);
     assert_eq!(
-        vue2.transform_options.vue_compiler_target,
+        vue2.transform_options.checks.vue_compiler_target,
         Some(VueVersion::V2_7)
     );
     let watched = vue2
@@ -453,7 +455,7 @@ fn auto_target_watches_installed_vue_and_identity_follows_the_resolved_dialect()
     std::fs::write(&manifest, r#"{"version":"3.5.0"}"#).unwrap();
     let vue3 = load(&path);
     assert_eq!(
-        vue3.transform_options.vue_compiler_target,
+        vue3.transform_options.checks.vue_compiler_target,
         Some(VueVersion::V3)
     );
     assert_ne!(vue2.config_identity, vue3.config_identity);

@@ -14322,6 +14322,55 @@
       }
     },
     {
+      "id": "typechecker/regression/vue-compiler-options-mapper-11688",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "vue-compiler-options-mapper-11688/ComponentRoot.vue.txt",
+          "sha256": "3f3fa9551070bc1aff9e9e5001ec97b5f291c09d11a2878d1f92af75747aecc1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/StyleClasses.vue.txt",
+          "sha256": "57b00f47c8efc73347b5fd0f145a56615a821e4db9e737f596211a795c68ce8c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/StyleImport.vue.txt",
+          "sha256": "80d6befa88911c24095b664408ad6813fd12ce5ecfd6b0f1c4a37959e9264a7e",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/TemplateGlobals.vue.txt",
+          "sha256": "05588a410950e3d625e3189c8cedaa7d6c3f7c30a587e9da74b6c8efdef4c896",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/VaporDirective.vue.txt",
+          "sha256": "51aae5787cad6964cbbe24fb52cf8eadb2f9a3d3208b991c89b6ca4a6bf413e2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_config::vue_options_projection_tests (every_check_option_changes_the_mapper_projection, every_check_option_has_a_projection_row) and vue_check_options_tests (every_check_option_resolves_identically_in_both_hosts, check_options_are_read_only_by_the_shared_resolver); #11688 vize check and the content mapper resolve every vueCompilerOptions check key through one function, and each key changes the mapper projection. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/windows-verbatim-overlay-11145",
       "state": "active",
       "targets": [

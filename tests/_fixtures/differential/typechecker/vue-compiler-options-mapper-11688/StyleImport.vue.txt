@@ -1,0 +1,7 @@
+<script setup lang="ts">
+</script>
+<template><div :class="$style.local" /></template>
+<style module>
+@import "./shared.module.css";
+.local { color: red; }
+</style>
