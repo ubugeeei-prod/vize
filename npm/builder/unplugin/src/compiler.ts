@@ -11,6 +11,7 @@ import type {
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
 import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
 import { inlineSfcSrcBlocks } from "./src-blocks.ts";
+import type { SfcSrcResolutions } from "../../shared/sfc-src.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -49,9 +50,10 @@ export function compileVueModule(
   source: string,
   options: NormalizedVizeUnpluginOptions,
   cache: Map<string, CachedCompiledModule>,
+  srcResolutions?: SfcSrcResolutions,
 ): { compiled: CompiledModule; warnings: string[]; dependencies: string[] } {
   // Hash the inlined source so an edited `src` file invalidates the cache.
-  const { source: inlined, dependencies } = inlineSfcSrcBlocks(filePath, source);
+  const { source: inlined, dependencies } = inlineSfcSrcBlocks(filePath, source, srcResolutions);
   const sourceHash = buildSourceHash(inlined);
   const signature = buildSignature(options);
   const cached = cache.get(filePath);

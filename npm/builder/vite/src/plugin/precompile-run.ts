@@ -31,6 +31,7 @@ import {
 } from "./state.ts";
 import { compileScopedBatch } from "./precompile-scopes.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import { prepareSfcSrcRequests, type HostResolve } from "./src-requests.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
 
 /** Known SFC diagnostics from speculative startup compilation, without I/O failures. */
@@ -76,6 +77,7 @@ function openCacheForRun(
 export async function compileAll(
   state: VizePluginState,
   owners: readonly PrecompileInputOwner[] = [],
+  resolve?: HostResolve,
 ): Promise<void> {
   const startTime = performance.now();
   const files = await glob(state.scanPatterns!, {
@@ -212,6 +214,11 @@ export async function compileAll(
       continue;
     }
 
+    if (resolve) {
+      for (const file of fileContents) {
+        await prepareSfcSrcRequests(state, resolve, file.path, file.source);
+      }
+    }
     const result = compileScopedBatch(fileContents, state);
 
     const chunkFailedCount = result.results.filter(

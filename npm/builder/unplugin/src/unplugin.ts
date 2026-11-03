@@ -1,9 +1,12 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import path from "node:path";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
 import { compileJsxModule, compileVueModule } from "./compiler.ts";
+import { listSfcSrcBlocks } from "./src-blocks.ts";
+import { isRelativeSfcSrc, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
 import {
   createVirtualStyleId,
   isJsxFile,
@@ -170,6 +173,7 @@ export function injectWebpackVueDefines(
 }
 
 async function loadStyleBlock(
+  context: unknown,
   id: string,
   options: NormalizedVizeUnpluginOptions,
   cache: Map<string, CachedCompiledModule>,
@@ -184,7 +188,8 @@ async function loadStyleBlock(
 
   if (!compiled && fs.existsSync(request.filename)) {
     const source = fs.readFileSync(request.filename, "utf8");
-    compiled = compileVueModule(request.filename, source, options, cache).compiled;
+    const resolutions = await resolveSrcRequests(context, request.filename, source);
+    compiled = compileVueModule(request.filename, source, options, cache, resolutions).compiled;
   }
 
   const block = compiled?.styles[index];
@@ -208,6 +213,62 @@ async function loadStyleBlock(
       ? await preprocessStyle(source, block.lang, request.filename, options.root)
       : source;
   return scopeCss(css, scoped);
+}
+
+type HostResolve = (request: string, importer: string) => Promise<string | null | undefined>;
+type RollupLikeResolve = (
+  source: string,
+  importer: string,
+  options: { skipSelf: boolean },
+) => Promise<{ id: string; external?: boolean | string } | null | undefined>;
+type LoaderResolve = (context: string, request: string) => Promise<string>;
+type EsbuildResolve = (
+  path: string,
+  options: { kind: "import-statement"; resolveDir: string; importer: string },
+) => Promise<{ path: string; external: boolean; errors: unknown[] }>;
+
+/** The bundler's own module resolver, or null for a host that offers none. */
+function hostResolver(context: unknown): HostResolve | null {
+  const ctx = context as { resolve?: RollupLikeResolve; getNativeBuildContext?: () => unknown };
+  if (typeof ctx.resolve === "function") {
+    const resolve = ctx.resolve;
+    return async (request, importer) => {
+      const result = await resolve.call(context, request, importer, { skipSelf: true });
+      // An external module is not bundled, so there is no file to inline.
+      return result && !result.external ? result.id : null;
+    };
+  }
+  const native = ctx.getNativeBuildContext?.() as
+    | { framework: string; loaderContext?: { getResolve: () => LoaderResolve } }
+    | { framework: "esbuild"; build: { resolve: EsbuildResolve } }
+    | undefined;
+  if (native && "loaderContext" in native && native.loaderContext) {
+    const resolve = native.loaderContext.getResolve();
+    return (request, importer) => resolve(path.dirname(importer), request).catch(() => null);
+  }
+  if (native && "build" in native) {
+    const { build } = native;
+    return async (request, importer) => {
+      const result = await build.resolve(request, {
+        kind: "import-statement",
+        resolveDir: path.dirname(importer),
+        importer,
+      });
+      return result.errors.length > 0 || result.external ? null : result.path;
+    };
+  }
+  return null;
+}
+
+/** Resolve the SFC's `src` module requests (packages, aliases) with the bundler. */
+async function resolveSrcRequests(
+  context: unknown,
+  importer: string,
+  source: string,
+): Promise<Map<string, string> | undefined> {
+  const requests = listSfcSrcBlocks(importer, source).filter((src) => !isRelativeSfcSrc(src));
+  const resolve = requests.length > 0 ? hostResolver(context) : null;
+  return resolve ? resolveSfcSrcRequests(importer, requests, resolve) : undefined;
 }
 
 type VizeUnpluginInput = VizeUnpluginOptions | undefined;
@@ -248,7 +309,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       }
 
       return {
-        code: await loadStyleBlock(id, options, cache),
+        code: await loadStyleBlock(this, id, options, cache),
         map: null,
       };
     },
@@ -300,7 +361,14 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         return null;
       }
 
-      const { compiled, warnings, dependencies } = compileVueModule(id, code, options, cache);
+      const resolutions = await resolveSrcRequests(this, id, code);
+      const { compiled, warnings, dependencies } = compileVueModule(
+        id,
+        code,
+        options,
+        cache,
+        resolutions,
+      );
       for (const warning of warnings) {
         this.warn(`[vize] ${warning}`);
       }
