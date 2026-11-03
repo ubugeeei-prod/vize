@@ -8,7 +8,6 @@ import type {
 
 import { toPluginVisibleVirtualId } from "../virtual.ts";
 import { handleHotUpdateHook } from "./hmr.ts";
-import { viteHostResolve } from "./src-requests.ts";
 import type { VizePluginState } from "./state.ts";
 
 export async function handleHotUpdateEnvironmentHook(
@@ -34,9 +33,7 @@ export async function handleHotUpdateEnvironmentHook(
       ensureAcceptingClientModule: (vueFile) =>
         environment.moduleGraph.ensureEntryFromUrl(toPluginVisibleVirtualId(vueFile), false),
       requireAcceptingClientModule: true,
-      resolve: viteHostResolve((request, importer) =>
-        environment.pluginContainer.resolveId(request, importer),
-      ),
+      resolve: (request, importer) => environment.pluginContainer.resolveId(request, importer),
       onRecompileError: () => {
         recompileFailed = true;
       },

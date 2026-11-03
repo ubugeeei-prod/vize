@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { compileVueModule } from "./compiler.ts";
-import { assertInlinedStyleSrc } from "./style-dependencies.ts";
+import { assertSfcStyleSrcImports } from "../../shared/sfc-src.ts";
 import { generateOutput, toStyleBlockInfo } from "./style.ts";
 import { normalizeOptions } from "./unplugin.ts";
 import type { CachedCompiledModule, StyleBlockNapi } from "./types.ts";
@@ -16,7 +16,7 @@ function block(content: string, extra: Partial<StyleBlockNapi> = {}): StyleBlock
 void test("external style dependency guards preserve lexical and delegated CSS boundaries", (t) => {
   // Injection runs only when no block needs a host CSS pipeline (see generateOutput).
   const check = (style: StyleBlockNapi) => {
-    assertInlinedStyleSrc([style], "/project/Foo.vue");
+    assertSfcStyleSrcImports("/project/Foo.vue", [style]);
     const info = toStyleBlockInfo(style);
     const compiled = {
       code: "export default {}",
@@ -89,7 +89,10 @@ void test("external style dependency guards preserve lexical and delegated CSS b
           lang: /<style lang=\\"(?:scss|less)\\"> needs a bundler CSS pipeline/,
         }[actual.error],
       );
-      assert.match(JSON.stringify(actual.outcome), /@vizejs\/vite-plugin/);
+      // Both plugins share the `src` inliner, so only `@import` has the other plugin to go to.
+      if (actual.error === "import") {
+        assert.match(JSON.stringify(actual.outcome), /@vizejs\/vite-plugin/);
+      }
     }
   }
 });

@@ -5,7 +5,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { build, type Rollup } from "vite";
 import { parseSfc } from "@vizejs/native";
-import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
+import {
+  inlineSfcSrcBlocks,
+  listSfcSrcRequests,
+  type SfcSrcResolutions,
+} from "../../shared/sfc-src.ts";
 import { compileFile } from "./compiler.ts";
 import { vize } from "./index.ts";
 import { prepareSfcSrcRequests } from "./plugin/src-requests.ts";
@@ -37,7 +41,11 @@ function project(t: { after: (fn: () => void) => void }) {
 }
 
 /** `scan: false` skips the startup precompile, so `load` compiles on demand. */
-async function viteBuild(root: string, scan = true): Promise<string> {
+async function viteBuild(
+  root: string,
+  scan = true,
+  external: (string | RegExp)[] = [],
+): Promise<string> {
   const result = (await build({
     root,
     configFile: false,
@@ -48,7 +56,7 @@ async function viteBuild(root: string, scan = true): Promise<string> {
       write: false,
       minify: false,
       lib: { entry: path.join(root, "entry.js"), formats: ["es"], fileName: "index" },
-      rolldownOptions: { external: ["vue"] },
+      rolldownOptions: { external: ["vue", ...external] },
     },
   })) as Rollup.RollupOutput | Rollup.RollupOutput[];
   return (Array.isArray(result) ? result : [result])
@@ -100,6 +108,28 @@ const s = '<style src="./missing.css"></style>'
   }
 });
 
+void test("#11494 vite build keeps an external style src as an import", async (t) => {
+  const { root, write } = project(t);
+  for (const scan of [true, false]) {
+    write("src/Foo.vue", SOURCE);
+    const output = await viteBuild(root, scan, [/^fake-normalize\//]);
+    assert.match(output, /import "fake-normalize\/n\.css";/);
+    assert.doesNotMatch(output, /line-height/);
+    // A script imports the component from it.
+    write("src/Foo.vue", `<script src="fake-normalize/opts.js"></script>\n${SOURCE}`);
+    assert.match(
+      await viteBuild(root, scan, [/^fake-normalize\//]),
+      /import \w+ from "fake-normalize\/opts\.js";/,
+    );
+    // Negative control: scoped styles need the file, which an external has not.
+    write("src/Foo.vue", SOURCE.replace("<style src", "<style scoped src"));
+    await assert.rejects(
+      viteBuild(root, scan, [/^fake-normalize\//]),
+      /<style scoped src="fake-normalize\/n\.css"> resolved to an external module; a scoped style needs its contents/,
+    );
+  }
+});
+
 void test("#11482 the synchronous compile reads module requests from prepared resolutions", async (t) => {
   const { root, file } = project(t);
   const css = path.join(root, "node_modules/fake-normalize/n.css");
@@ -118,14 +148,14 @@ void test("#11482 the synchronous compile reads module requests from prepared re
     fileCompilerOptions: undefined,
     viteBuildSourcemap: false,
     root,
-    srcResolutions: new Map<string, Map<string, string>>(),
+    srcResolutions: new Map<string, SfcSrcResolutions>(),
   };
   const requests: string[] = [];
   await prepareSfcSrcRequests(
     state,
     async (request, importer) => {
       requests.push(`${request} from ${importer}`);
-      return `${css}?direct`;
+      return { id: `${css}?direct` };
     },
     file,
     SOURCE,

@@ -31,7 +31,8 @@ import {
 } from "./state.ts";
 import { compileScopedBatch } from "./precompile-scopes.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { prepareSfcSrcRequests, type HostResolve } from "./src-requests.ts";
+import type { HostResolve } from "../../../shared/sfc-src.ts";
+import { prepareSfcSrcRequests } from "./src-requests.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
 
 /** Known SFC diagnostics from speculative startup compilation, without I/O failures. */

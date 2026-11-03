@@ -4,7 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parseSfc } from "@vizejs/native";
-import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
+import {
+  assertSfcStyleSrcImports,
+  inlineSfcSrcBlocks,
+  listSfcSrcRequests,
+  type SfcSrcResolution,
+} from "../../shared/sfc-src.ts";
 
 void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-blocks-")));
@@ -60,6 +65,7 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
         source: item.inlined,
         dependencies: item.dependencies,
         styleSrcs: new Map(item.styleSrcs),
+        imports: [],
       },
       item.id,
     );
@@ -75,7 +81,7 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   ]) {
     assert.deepEqual(
       inlineSfcSrcBlocks(parseSfc, file, source),
-      { source, dependencies: [], styleSrcs: new Map() },
+      { source, dependencies: [], styleSrcs: new Map(), imports: [] },
       source,
     );
   }
@@ -97,17 +103,18 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
   fs.writeFileSync(path.join(root, "n.css"), "html{line-height:1.15}");
   fs.writeFileSync(path.join(root, "src", "near.css"), ".near{color:olive}");
   const file = path.join(root, "src", "Foo.vue");
-  const inline = (src: string, resolutions?: Map<string, string>) =>
+  const inline = (src: string, resolutions?: Map<string, SfcSrcResolution>) =>
     inlineSfcSrcBlocks(parseSfc, file, `<style src="${src}"></style>`, resolutions);
   const resolutions = new Map([
-    ["fake-normalize/n.css", path.join(root, "n.css")],
-    [path.join(root, "n.css"), path.join(root, "n.css")],
+    ["fake-normalize/n.css", { file: path.join(root, "n.css") }],
+    [path.join(root, "n.css"), { file: path.join(root, "n.css") }],
   ]);
 
   assert.deepEqual(inline("fake-normalize/n.css", resolutions), {
     source: "<style>\nhtml{line-height:1.15}\n</style>",
     dependencies: [path.join(root, "n.css")],
     styleSrcs: new Map([[0, path.join(root, "n.css")]]),
+    imports: [],
   });
   // Absolute paths are module requests too.
   assert.match(inline(path.join(root, "n.css"), resolutions).source, /line-height/);
@@ -128,5 +135,65 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
   assert.deepEqual(
     listSfcSrcRequests(parseSfc, file, '<style src="a.css"></style><style src="./b.css" />'),
     ["a.css"],
+  );
+});
+
+void test("#11494 an external src module stays an import", () => {
+  const file = "/project/src/Foo.vue";
+  const external = new Map([["sibling-pkg/x.css", { external: true } as const]]);
+  const ext = (source: string) =>
+    inlineSfcSrcBlocks(
+      parseSfc,
+      file,
+      source,
+      new Map([...external, ["sibling-pkg/x.js", { external: true }]]),
+    );
+
+  // A style is left for the output to import; a script imports the module.
+  for (const source of [
+    '<template><b/></template>\n<style src="sibling-pkg/x.css"></style>',
+    '<template><b/></template>\n<style lang="scss" src="sibling-pkg/x.css" />',
+  ]) {
+    assert.deepEqual(ext(source), {
+      source,
+      dependencies: [],
+      styleSrcs: new Map(),
+      imports: ["sibling-pkg/x.css"],
+    });
+  }
+  assert.deepEqual(ext('<script lang="ts" src="sibling-pkg/x.js"></script>'), {
+    source:
+      '<script lang="ts">\nimport __vize_src_main__ from "sibling-pkg/x.js";\nexport * from "sibling-pkg/x.js";\nexport default __vize_src_main__;\n</script>',
+    dependencies: [],
+    styleSrcs: new Map(),
+    imports: [],
+  });
+
+  // Negative controls: blocks compiled into the component need the file.
+  for (const [source, reason] of [
+    ['<style scoped src="sibling-pkg/x.css"></style>', "a scoped style needs its contents"],
+    ['<style module src="sibling-pkg/x.css"></style>', "a CSS module needs its contents"],
+    ['<template src="sibling-pkg/x.css"></template>', "the template is compiled into"],
+    ['<script setup src="sibling-pkg/x.js"></script>', "<script setup> is compiled into"],
+  ]) {
+    assert.throws(
+      () => ext(source),
+      (error: Error) => {
+        assert.match(error.message, /resolved to an external module/, source);
+        assert.ok(error.message.includes(reason), error.message);
+        return true;
+      },
+    );
+  }
+
+  // Only an external style may stay uninlined.
+  assertSfcStyleSrcImports(
+    file,
+    [{ src: "sibling-pkg/x.css" }, { src: null }],
+    ["sibling-pkg/x.css"],
+  );
+  assert.throws(
+    () => assertSfcStyleSrcImports(file, [{ src: "./a.css" }], ["sibling-pkg/x.css"]),
+    /<style src="\.\/a\.css"> could not be inlined/,
   );
 });

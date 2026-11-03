@@ -24,7 +24,7 @@ import {
   resolveComponentsCssFileName,
 } from "./hmr.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
-import { prepareLoadSrcRequests, viteHostResolve } from "./src-requests.ts";
+import { prepareLoadSrcRequests } from "./src-requests.ts";
 import { createManifestPlugin } from "./manifest.ts";
 import {
   createPostTransformPlugin,
@@ -271,9 +271,7 @@ export function vize(
         await compileAll(
           { ...state, extractCss: shouldExtractCssForBuild(state, this) },
           precompileInputOwners(this, precompileConfig),
-          viteHostResolve((request, importer) =>
-            this.resolve(request, importer, { skipSelf: true }),
-          ),
+          (request, importer) => this.resolve(request, importer, { skipSelf: true }),
         );
       } catch (error) {
         if (!(error instanceof PrecompileDiagnosticsError)) throw error;
@@ -292,7 +290,7 @@ export function vize(
     async load(id, loadOptions) {
       const sfcSource = await prepareLoadSrcRequests(
         state,
-        viteHostResolve((request, importer) => this.resolve(request, importer, { skipSelf: true })),
+        (request, importer) => this.resolve(request, importer, { skipSelf: true }),
         id,
       );
       return loadHook(state, id, {
@@ -324,7 +322,7 @@ export function vize(
       const container =
         ctx.server.environments?.client?.pluginContainer ?? ctx.server.pluginContainer;
       return handleHotUpdateHook(state, ctx, {
-        resolve: viteHostResolve((request, importer) => container.resolveId(request, importer)),
+        resolve: (request, importer) => container.resolveId(request, importer),
       });
     },
 

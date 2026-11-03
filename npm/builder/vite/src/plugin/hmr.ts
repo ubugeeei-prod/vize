@@ -17,7 +17,8 @@ import {
   preferAcceptingClientModules,
 } from "./hmr-module-graph.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { prepareSfcSrcRequests, type HostResolve } from "./src-requests.ts";
+import type { HostResolve } from "../../../shared/sfc-src.ts";
+import { prepareSfcSrcRequests } from "./src-requests.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
