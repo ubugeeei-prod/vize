@@ -938,7 +938,7 @@ assert.match(
 );
 assert.match(
   ssrScopedSlotCompiled.code,
-  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  /Object\.defineProperty\(__returned__, '__isScriptSetup'/,
   "SSR script setup should mark returned bindings as script setup bindings",
 );
 assert.match(
@@ -992,7 +992,7 @@ assert.match(
 );
 assert.match(
   ssrNormalScriptImportCompiled.code,
-  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  /Object\.defineProperty\(__returned__, '__isScriptSetup'/,
   "SSR normal-script template bindings should be returned as script setup bindings",
 );
 assert.match(

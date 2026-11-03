@@ -599,11 +599,13 @@ await test(
       functionStats: withoutTiming(row.functionStats),
       syntax: row.syntax,
     });
-    const advance = (row) => advanceRuntimeOptionReference(row, sourceFiles);
-    assert.deepEqual(
-      defaults(completeCases()).map(comparable),
-      defaults(before).map(advance).map(comparable),
+    const { parse } = require(
+      join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/@babel/parser"),
     );
+    const current = defaults(completeCases());
+    const advance = (row, index) =>
+      advanceRuntimeOptionReference(row, sourceFiles, current[index], parse);
+    assert.deepEqual(current.map(comparable), defaults(before).map(advance).map(comparable));
   },
 );
 

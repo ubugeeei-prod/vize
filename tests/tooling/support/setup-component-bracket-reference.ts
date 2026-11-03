@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { closedSetupReference, type ExposurePacket } from "./script-setup-default-expose.ts";
+import {
+  isTypeScriptSource,
+  type ParseModule,
+  typescriptErasureReference,
+} from "./typescript-erasure-reference.ts";
 
 type ComponentModuleShape = NonNullable<ExposurePacket["moduleShape"]> & {
   defaultExportStart?: number;
@@ -50,19 +55,26 @@ export function setupComponentBracketReference(
   return out;
 }
 
+// `erased` is the current row: a TypeScript source's packets advance by the
+// per-piece erasure only after its program, offsets and map check out.
 export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   row: T,
   sourceFiles: readonly string[],
+  erased: RuntimeOptionRow,
+  parse: ParseModule,
 ): T {
+  assert.equal(erased.target, row.target);
+  assert.deepEqual(erased.options, row.options);
   const out = structuredClone(row);
-  if (out.single)
-    out.single = out.single.map((packet, index) =>
-      closedSetupReference(packet, sourceFiles[index]),
-    );
-  if (out.batch)
-    out.batch.results = out.batch.results.map((packet, index) =>
-      closedSetupReference(packet, sourceFiles[index]),
-    );
+  const advance = (packets: ExposurePacket[], current: ExposurePacket[] | undefined) =>
+    packets.map((packet, index) => {
+      const closed = closedSetupReference(packet, sourceFiles[index]);
+      if (!isTypeScriptSource(sourceFiles[index])) return closed;
+      assert.ok(current?.[index], "the current row holds every TypeScript packet");
+      return typescriptErasureReference(closed, current[index], parse);
+    });
+  if (out.single) out.single = advance(out.single, erased.single);
+  if (out.batch) out.batch.results = advance(out.batch.results, erased.batch?.results);
   if (row.target === "dom" && row.options.inlineTemplate === undefined && out.single && out.batch) {
     out.single[7] = setupComponentBracketReference(out.single[7], "Lazy");
     out.batch.results[7] = setupComponentBracketReference(out.batch.results[7], "Lazy");

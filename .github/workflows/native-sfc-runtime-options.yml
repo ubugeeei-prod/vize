@@ -15,6 +15,7 @@ on:
       - tests/tooling/native-sfc-runtime-options.test.mjs
       - tests/tooling/support/script-setup-default-expose.ts
       - tests/tooling/support/setup-component-bracket-reference.ts
+      - tests/tooling/support/typescript-erasure-reference.ts
       - tests/_fixtures/differential/compiler/sfc-runtime-options-native/**
       - npm/native/**
       - crates/vize_vitrine/src/napi/**
@@ -53,12 +54,14 @@ jobs:
             tests/tooling/native-sfc-runtime-options.test.mjs
             tests/tooling/support/script-setup-default-expose.ts
             tests/tooling/support/setup-component-bracket-reference.ts
+            tests/tooling/support/typescript-erasure-reference.ts
           sparse-checkout-cone-mode: false
       - run: |
           cp qualification/tests/tooling/native-sfc-runtime-options.test.mjs tests/tooling/native-sfc-runtime-options.test.mjs
           mkdir -p tests/tooling/support
           cp qualification/tests/tooling/support/script-setup-default-expose.ts tests/tooling/support/script-setup-default-expose.ts
           cp qualification/tests/tooling/support/setup-component-bracket-reference.ts tests/tooling/support/setup-component-bracket-reference.ts
+          cp qualification/tests/tooling/support/typescript-erasure-reference.ts tests/tooling/support/typescript-erasure-reference.ts
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
