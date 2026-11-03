@@ -1,0 +1,13 @@
+<script>
+import { helper } from "./mixin";
+export default {
+  mixins: [helper],
+  methods: {
+    check() {
+      this.greet("valid").toFixed();
+      return this.greet("valid").toUpperCase();
+    },
+  },
+};
+</script>
+<template><span /></template>

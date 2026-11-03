@@ -1,0 +1,11 @@
+<!-- 雪😀 -->
+<script>
+import { helper } from "./mixin";
+export default {
+  mixins: [helper],
+  methods: {
+    check() { return this.greet("雪😀").toUpperCase(); },
+  },
+};
+</script>
+<template><span /></template>
