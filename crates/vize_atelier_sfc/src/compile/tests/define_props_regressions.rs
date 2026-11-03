@@ -235,9 +235,9 @@ const props = withDefaults(defineProps<Props>(), { as: "button" })
         result.code
     );
     assert!(
-        result.code.contains(
-            "as: { type: String, required: false, default: \"button\""
-        ),
+        result
+            .code
+            .contains("as: { type: String, required: false, default: \"button\""),
         "withDefaults must retain the inherited prop default:\n{}",
         result.code
     );

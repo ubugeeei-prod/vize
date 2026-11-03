@@ -165,7 +165,10 @@ fn dynamic_loop_ref_keeps_complete_separate_template_result() {
     );
     let actual = serde_json::to_value(actual).expect("serialize complete public Result");
     let expected = support::typescript_erasure::advance(expected, &actual);
-    assert_eq!(actual, expected, "complete SFC result changed for fix b01f36701");
+    assert_eq!(
+        actual, expected,
+        "complete SFC result changed for fix b01f36701"
+    );
 }
 
 #[test]

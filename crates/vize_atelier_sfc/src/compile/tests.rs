@@ -2010,20 +2010,12 @@ const model = defineModel<T | T[]>({
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
     assert!(!result.code.contains("[null, Array]"), "{}", result.code);
-    assert!(
-        result
-            .code
-            .contains("title: { type: null, required: true }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("\"modelValue\": { type: null, ...{ required: true } }"),
-        "{}",
-        result.code
-    );
+    for runtime in [
+        "title: { type: null, required: true }",
+        "\"modelValue\": { type: null, ...{ required: true } }",
+    ] {
+        assert!(result.code.contains(runtime), "{}", result.code);
+    }
 }
 
 #[test]
@@ -2301,35 +2293,37 @@ const props = withDefaults(defineProps<MkPaginationOptions & {
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains(
-            "autoLoad: { type: Boolean, required: false, default: true }"
-        ),
+        result
+            .code
+            .contains("autoLoad: { type: Boolean, required: false, default: true }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("direction: { type: String, required: false, default: \"down\" }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("pullToRefresh: { type: Boolean, required: false, default: true }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("withControl: { type: Boolean, required: false, default: true }"),
         "{}",
         result.code
     );
     assert!(
         result.code.contains(
-            "direction: { type: String, required: false, default: \"down\" }"
+            "forceDisableInfiniteScroll: { type: Boolean, required: false, default: false }"
         ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains(
-            "pullToRefresh: { type: Boolean, required: false, default: true }"
-        ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains(
-            "withControl: { type: Boolean, required: false, default: true }"
-        ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("forceDisableInfiniteScroll: { type: Boolean, required: false, default: false }"),
         "{}",
         result.code
     );

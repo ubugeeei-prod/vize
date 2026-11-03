@@ -73,7 +73,10 @@ fn separate_template_render_collision_keeps_complete_module_result() {
     );
     let actual = serde_json::to_value(actual).expect("serialize complete public Result");
     let expected = support::typescript_erasure::advance(expected, &actual);
-    assert_eq!(actual, expected, "complete SFC result changed for fix fe724476c");
+    assert_eq!(
+        actual, expected,
+        "complete SFC result changed for fix fe724476c"
+    );
 }
 
 #[test]
