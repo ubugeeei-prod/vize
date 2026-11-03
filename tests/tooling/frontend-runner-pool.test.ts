@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts";
 
 type Step = { name?: string; if?: string; [key: string]: unknown };
 type Job = { "runs-on"?: string; if?: string; steps?: Step[]; [key: string]: unknown };
@@ -14,11 +15,13 @@ const fastEvents = ["pull_request", "merge_group", "push"];
 const selectors = [
   {
     name: "check",
+    file: ".github/workflows/check.yml",
     jobs: ["iteration-plan", "fmt-rust", "check-js", "security-audit", "node-engine-compat"],
     original: "0577d82da5d8cd83b109422085d84902edb51c0a0e45407f09301f54c9a1b451",
   },
   {
     name: "pr-source-checks",
+    file: ".github/workflows/pr-source-checks.yml",
     jobs: ["pr-source-plan", "ci-selection-tests"],
     original: "660eee19156f5ec124d70852c5777ec2a95025f14aa95cd0b6b07ce33d8a1007",
   },
@@ -32,10 +35,7 @@ const workflows = selectors.map((specification) => {
     "utf8",
   );
   assert.equal(createHash("sha256").update(before).digest("hex"), specification.original);
-  const after = fs.readFileSync(
-    new URL("../../.github/workflows/" + specification.name + ".yml", import.meta.url),
-    "utf8",
-  );
+  const after = fs.readFileSync(new URL("../../" + specification.file, import.meta.url), "utf8");
   return { specification, before: parse(before) as Workflow, after: parse(after) as Workflow };
 });
 function expression(value: string) {
@@ -230,6 +230,8 @@ test("the seven runner selectors and exact runtime steps preserve every original
   for (const { specification, before, after } of workflows) {
     const restored = structuredClone(after);
     if (specification.name === "check") {
+      for (const site of ["iteration-plan", "test-report"] as const)
+        restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
       restoreTestReportComment(restored, before);
     }
