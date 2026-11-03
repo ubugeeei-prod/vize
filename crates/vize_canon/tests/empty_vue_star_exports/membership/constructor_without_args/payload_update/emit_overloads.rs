@@ -169,7 +169,7 @@ mod tests {
             PREAMBLE_BEFORE_SHA
         );
         let other_path =
-            "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
+            "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(
             source_before(other_path, CURRENT_STALL_ASSET.to_owned()),
             CURRENT_STALL_ASSET
