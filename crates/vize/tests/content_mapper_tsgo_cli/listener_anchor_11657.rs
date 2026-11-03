@@ -15,6 +15,12 @@ const CHILD: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/typechecker/listener-anchor-11657/Child.vue.txt"
 ));
 
+/// Every template wrapper form the generator emits, one authored error each.
+const FORMS: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/listener-anchor-11657/Forms.vue.txt"
+));
+
 /// `(file, template)`. Every wrong value is an authored error.
 const CASES: [(&str, &str); 4] = [
     (
@@ -53,6 +59,7 @@ fn checks_anchored_at_wrapping_parentheses_stay_reported() {
     install_vue_package(project);
     std::fs::create_dir(project.join("src")).unwrap();
     std::fs::write(project.join("src/Child.vue"), CHILD).unwrap();
+    std::fs::write(project.join("src/Forms.vue"), FORMS).unwrap();
     for (name, template) in CASES {
         std::fs::write(
             project.join(cstr!("src/{name}.vue").as_str()),
@@ -79,16 +86,38 @@ fn checks_anchored_at_wrapping_parentheses_stay_reported() {
         .unwrap()
         .lines()
         .filter(|line| line.starts_with("src/"))
-        .map(str::trim)
+        // Anchor and code only: the two hosts may flatten messages differently.
+        .map(|line| {
+            line.split_once(": ").map_or(line, |(at, rest)| {
+                &line[..at.len() + 2 + rest.find(':').unwrap_or(rest.len())]
+            })
+        })
         .collect::<Vec<_>>();
     lines.sort_unstable();
     assert_eq!(
         lines,
         [
-            "src/Expression.vue(5,24): error TS2322: Type '(value: number) => number' is not assignable to type '(value: string) => any'.",
-            "src/Handler.vue(5,33): error TS2322: Type '(value: number) => undefined' is not assignable to type '(value: string) => any'.",
-            "src/HandlerAndProp.vue(5,11): error TS2322: Type 'number' is not assignable to type 'string'.",
-            "src/HandlerAndProp.vue(5,33): error TS2322: Type '(value: number) => undefined' is not assignable to type '(value: string) => any'.",
+            "src/Expression.vue(5,24): error TS2322",
+            "src/Forms.vue(10,47): error TS2345",
+            "src/Forms.vue(11,54): error TS2345",
+            "src/Forms.vue(12,11): error TS2322",
+            "src/Forms.vue(13,4): error TS2345",
+            "src/Forms.vue(14,32): error TS2322",
+            "src/Forms.vue(15,21): error TS2345",
+            "src/Forms.vue(16,26): error TS2345",
+            "src/Forms.vue(17,24): error TS2345",
+            "src/Forms.vue(18,30): error TS2345",
+            "src/Forms.vue(19,26): error TS2345",
+            "src/Forms.vue(20,56): error TS2345",
+            "src/Forms.vue(21,26): error TS2345",
+            "src/Forms.vue(22,19): error TS2345",
+            "src/Forms.vue(23,31): error TS2345",
+            "src/Forms.vue(24,27): error TS2345",
+            "src/Forms.vue(25,49): error TS2322",
+            "src/Forms.vue(9,33): error TS2322",
+            "src/Handler.vue(5,33): error TS2322",
+            "src/HandlerAndProp.vue(5,11): error TS2322",
+            "src/HandlerAndProp.vue(5,33): error TS2322",
         ],
         "{}",
         output_text(&output)

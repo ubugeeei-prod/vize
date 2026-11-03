@@ -12560,7 +12560,12 @@
       "inputs": [
         {
           "path": "listener-anchor-11657/Child.vue.txt",
-          "sha256": "7a526776accb615b86e0d2143f043a9a365e9d0547432bbf428116c82736336a",
+          "sha256": "8b5a73c863e02e7bcfef78f5f97be6681e9ca0cd6b73a595d39b09439d90ef0d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "listener-anchor-11657/Forms.vue.txt",
+          "sha256": "f54864ebfce7f3e3e50ef1c1e03aed18397002de22e5b7a502a9f748e587c17b",
           "role": "regression-reproduction"
         },
         {
@@ -12580,7 +12585,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "content_mapper_tsgo_cli::listener_anchor_11657::checks_anchored_at_wrapping_parentheses_stay_reported and content_mapper::directive_tests::disjoint::parentheses_opening_an_authored_span_stay_reportable; #11657 a wrong listener payload anchored at its wrapping `(` is reported through the content mapper, as by vize check. Input-only registration, no diagnostic pack."
+            "selector": "content_mapper_tsgo_cli::listener_anchor_11657::checks_anchored_at_wrapping_parentheses_stay_reported and content_mapper::directive_tests::disjoint::parentheses_opening_an_authored_span_stay_reportable; #11657 every template wrapper form with one authored error is reported through the content mapper, as by vize check, including a wrong listener payload anchored at its wrapping `(`. Input-only registration, no diagnostic pack."
           }
         ]
       }

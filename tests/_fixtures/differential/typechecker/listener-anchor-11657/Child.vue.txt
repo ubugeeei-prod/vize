@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineProps<{ fooBar: string }>()
+defineProps<{ fooBar: string; items?: number[] }>()
 defineEmits<{ saveItem: [value: string] }>()
+defineSlots<{ default(props: { n: number }): any }>()
 </script>
 <template><div /></template>
