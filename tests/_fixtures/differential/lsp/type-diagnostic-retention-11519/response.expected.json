@@ -1,15 +1,15 @@
 [
   {
-    "startLine": 0,
-    "endLine": 2,
-    "kind": "region",
-    "collapsedText": "script setup"
-  },
-  {
     "startLine": 5,
     "endLine": 8,
     "kind": "region",
     "collapsedText": "template"
+  },
+  {
+    "startLine": 0,
+    "endLine": 2,
+    "kind": "region",
+    "collapsedText": "script setup"
   },
   {
     "startLine": 6,

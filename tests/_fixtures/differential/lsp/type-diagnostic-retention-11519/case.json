@@ -25,7 +25,7 @@
   "method": "textDocument/foldingRange",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "92dfef9e8603730cd7c37bfc47cfbe695e07d4940588cec9fb903cd1ec04750e"
+    "sha256": "92b30c08f345be57fce01c9a93e133242647802f00f6c17e4b67befe65e60807"
   },
   "scope": "Folding provides a completed request barrier. The witness test consumes these bytes with type checking on and checks every publication after each edit."
 }

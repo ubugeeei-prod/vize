@@ -73,9 +73,9 @@ void test("only the exact supporting-client profile changes initialization witho
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, before);
   const earlier = loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
-  assert.equal(earlier.length, 82);
-  assert.equal(earlier.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 81);
-  assert.equal(loaded.cases.length, 83);
+  assert.equal(earlier.length, 85);
+  assert.equal(earlier.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 84);
+  assert.equal(loaded.cases.length, 86);
 });
 
 void test("the closed whole import contract refuses foreign metadata, altered pins and partial responses", () => {

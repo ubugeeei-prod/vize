@@ -183,19 +183,19 @@ void test("source-built stdio preserves unadvertised originals and explicit vers
     comparison: { state: "not-compared", reason: NATIVE_REASON },
   });
   const earlier = report.rows.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
-  assert.equal(earlier.length, 82);
+  assert.equal(earlier.length, 85);
   assert.deepEqual(
     earlier.filter((row) => row.legacy.state === "unsupported").map((row) => row.id),
     [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID],
   );
-  assert.equal(earlier.filter((row) => row.legacy.verdict === "matched-reference").length, 80);
+  assert.equal(earlier.filter((row) => row.legacy.verdict === "matched-reference").length, 83);
   assert.deepEqual(report.summary, {
-    plannedCases: 83,
-    legacyMatches: 80,
+    plannedCases: 86,
+    legacyMatches: 83,
     legacyFailures: 0,
     legacyUnsupported: 3,
     baselineDrift: 0,
-    nativeUnsupported: 83,
+    nativeUnsupported: 86,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,

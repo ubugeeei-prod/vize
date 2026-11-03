@@ -3230,7 +3230,7 @@
       },
       "case": {
         "path": "type-diagnostic-retention-11519/case.json",
-        "sha256": "cae25fbd5c8bfbc64f978e8593009c7a14954b0f648890b32e643a9d239784fa"
+        "sha256": "6cdedb26d9d6cf12febac6b08b1e1e142434c25703ea02c72fc0037bf2cebf13"
       },
       "requestCount": 1,
       "initializationOptions": {
