@@ -11919,6 +11919,40 @@
           }
         },
     {
+      "id": "typechecker/page-route-normalization-11776",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "page-route-normalization-11776/Probe.vue.txt",
+          "sha256": "89d656a2689ea2285416aa6fc69efc36506c72e03a164362669985d094799043",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "page-route-normalization-11776/tsconfig.json.txt",
+          "sha256": "ba1be9d335274508794ac8385854f12a95b9b6d8817c58e07de13663921a7a47",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "normalized_typescript_before_route_call_keeps_page_specialization physically consumes these inputs, checks LF/CRLF and decoded/escaped route calls and exact following diagnostic endpoints. Source CLI synthetic-provider clean/wrong-type controls are separate from the unchanged official Router CLI/editor oracle. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
       "targets": [
