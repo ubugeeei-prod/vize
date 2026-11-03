@@ -14,7 +14,15 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { availableParallelism, totalmem } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -23,13 +31,12 @@ import { parseArgs } from "node:util";
 
 import { reapedChildCpuMs } from "./typecheck-command.mjs";
 import {
-  type Corpus,
-  generateMonorepo,
-  generateProject,
+  type ScaleProject,
+  generateScaleProject,
   monorepoMapperConfigs,
   monorepoOutDir,
-  writeCorpus,
-} from "./typecheck-scaling-corpus.ts";
+  writeProject,
+} from "./scale-project-generator.ts";
 import {
   STAT_KEYS,
   type ProcessOutput,
@@ -45,12 +52,18 @@ import {
   renderSummary,
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
+import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
+import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
 import {
+  NUXT_BUILD,
+  NUXT_BUILD_VIZE,
+  NUXT_ENV,
   type ScalingEnv,
   type ScalingTool,
   TOOLS,
   collectProvenance,
   invocation,
+  nuxtCli,
   prepareProjectPackages,
   resolveScalingEnv,
 } from "./typecheck-scaling-tools.ts";
@@ -98,6 +111,7 @@ function measure(
   timeFile: string,
   timeoutMs: number,
   timed: boolean,
+  extraEnv: Record<string, string> = {},
 ): Measured {
   const [command, argv] = timed
     ? [GNU_TIME, ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, bin, ...args]]
@@ -112,6 +126,7 @@ function measure(
       FORCE_COLOR: "0",
       XDG_CACHE_HOME: cacheDir,
       NODE_OPTIONS,
+      ...extraEnv,
     },
     encoding: "utf8",
     maxBuffer: 1024 * 1024 * 1024,
@@ -143,7 +158,7 @@ type Lane = { cell: Cell; tool: ScalingTool; firstFingerprint: string | null };
 
 function runOnce(
   lane: Lane,
-  corpus: Corpus,
+  corpus: ScaleProject,
   dir: string,
   env: ScalingEnv,
   options: { work: string; out: string; timeoutMs: number; timed: boolean },
@@ -154,22 +169,64 @@ function runOnce(
       if (entry.startsWith(monorepoOutDir(""))) rmSync(join(dir, name, entry), { recursive: true });
     }
   }
-  const { bin, args, stats } = invocation(lane.tool, env, dir, corpus.kind);
+  const format = lane.tool.format;
+  const build = format === "build";
+  // The @vizejs/nuxt build has its own copy of the app, differing only in nuxt.config.ts.
+  const cwd = lane.tool.id === "nuxt-build-vize" ? `${dir}-vize` : dir;
+  if (build) {
+    for (const path of [
+      ".output",
+      "node_modules/.cache",
+      "node_modules/.vite",
+      "node_modules/.vize",
+    ]) {
+      rmSync(join(cwd, path), { recursive: true, force: true });
+    }
+  }
+  const { bin, args, stats } = invocation(lane.tool, env, cwd, corpus.kind);
   const cacheDir = mkdtempSync(join(options.work, "cache-"));
   const tag = `${lane.tool.id}-${corpus.kind}-${corpus.sfcs}`;
   try {
     const run = measure(
       bin,
       args,
-      dir,
+      cwd,
       cacheDir,
       join(options.work, `${tag}.time`),
       options.timeoutMs,
       options.timed,
+      corpus.kind === "nuxt" ? NUXT_ENV : {},
     );
+    if (format === "build") {
+      const assets = join(cwd, ".output", "public", "_nuxt");
+      const scripts = existsSync(assets)
+        ? readdirSync(assets).filter((file) => file.endsWith(".js"))
+        : [];
+      // A client build with no SSR still ships the node-server entry, and every route is its own chunk.
+      if (
+        run.output.status !== 0 ||
+        !existsSync(join(cwd, ".output", "server", "index.mjs")) ||
+        scripts.length < corpus.features
+      ) {
+        throw new Error(
+          `nuxt build exited ${run.output.status} with ${scripts.length} client scripts for ${corpus.features} routes\n${run.output.stderr.slice(-3000)}`,
+        );
+      }
+      return {
+        wallMs: run.wallMs,
+        cpuMs: run.cpuMs,
+        maxRssKb: run.maxRssKb,
+        errors: 0,
+        warnings: 0,
+        fingerprint: `${scripts.length} scripts`,
+        types: null,
+        instantiations: null,
+        checkTimeS: null,
+      };
+    }
     let parsed: ReturnType<typeof parseRun>;
     try {
-      parsed = parseRun(run.output, dir, lane.tool.format);
+      parsed = parseRun(run.output, dir, format);
     } catch (error) {
       throw new Error(
         `${(error as Error).message.slice(0, 4000)}\nstderr:\n${run.output.stderr.slice(-2000)}`,
@@ -212,6 +269,7 @@ function main(): void {
       runs: { type: "string", default: "3" },
       "monorepo-sfcs": { type: "string", default: "5000" },
       "monorepo-packages": { type: "string", default: "6" },
+      "nuxt-sizes": { type: "string", default: "" },
       tools: { type: "string", default: TOOLS.map((tool) => tool.id).join(",") },
       "timeout-min": { type: "string", default: "45" },
       runner: { type: "string", default: process.env.VIZE_SCALING_RUNNER_LABEL ?? "local" },
@@ -226,10 +284,13 @@ function main(): void {
   }
   const runs = Number(values.runs);
   if (!Number.isInteger(runs) || runs < 1) throw new Error("--runs must be a positive integer");
-  const sizes = values.sizes
-    .split(",")
-    .filter((size) => size.trim())
-    .map(Number);
+  const list = (value: string) =>
+    value
+      .split(",")
+      .filter((size) => size.trim())
+      .map(Number);
+  const sizes = list(values.sizes);
+  const nuxtSizes = list(values["nuxt-sizes"]);
   const monorepoSfcs = Number(values["monorepo-sfcs"]);
   const tools = values.tools.split(",").map((id) => {
     const tool = TOOLS.find((candidate) => candidate.id === id);
@@ -239,6 +300,10 @@ function main(): void {
   const timed = process.platform === "linux";
   const gnuTime = timed ? gnuTimeVersion() : null;
   const env = resolveScalingEnv(resolve(values.target));
+  // As the README benchmark does: the target's @vizejs/nuxt joins the pinned Nuxt install.
+  if (nuxtSizes.length > 0 && env.nuxtModules && env.vizeNuxtDir) {
+    prepareNuxtBenchInstall(NUXT_APP_DIR, env.vizeNuxtDir);
+  }
   const work = resolve(values.work);
   const out = resolve(values.out);
   mkdirSync(join(out, "diagnostics"), { recursive: true });
@@ -264,27 +329,54 @@ function main(): void {
     writeFileSync(join(out, "summary.md"), renderSummary(results));
     writeFileSync(join(out, "scaling.svg"), renderScalingSvg(results));
   };
-  const corpora: (() => Corpus)[] = [
-    ...sizes.map((sfcs) => () => generateProject(sfcs)),
+  const corpora: (() => ScaleProject)[] = [
+    ...sizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "vue" })),
     ...(monorepoSfcs > 0
-      ? [() => generateMonorepo(monorepoSfcs, Number(values["monorepo-packages"]))]
+      ? [
+          () =>
+            generateScaleProject({
+              sfcs: monorepoSfcs,
+              kind: "monorepo",
+              featurePackages: Number(values["monorepo-packages"]),
+            }),
+        ]
       : []),
+    ...nuxtSizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "nuxt" })),
   ];
   for (const make of corpora) {
     const corpus = make();
     const dir = join(work, `${corpus.kind}-${corpus.sfcs}`);
-    writeCorpus(dir, corpus.files);
-    prepareProjectPackages(dir, env);
+    writeProject(dir, corpus.files);
+    prepareProjectPackages(dir, env, corpus.kind);
     if (corpus.kind === "monorepo") {
       for (const mapper of CONTENT_MAPPERS) {
-        writeCorpus(dir, monorepoMapperConfigs(corpus, mapper, mapperTsconfigName(mapper)), false);
+        writeProject(dir, monorepoMapperConfigs(corpus, mapper, mapperTsconfigName(mapper)), false);
       }
     }
+    // Nuxt writes .nuxt/ (tsconfigs, components.d.ts, imports.d.ts); untimed, every lane needs it.
+    const prepared =
+      corpus.kind === "nuxt"
+        ? spawnSync(env.node, [nuxtCli(env), "prepare", dir], {
+            cwd: dir,
+            encoding: "utf8",
+            env: { ...process.env, ...NUXT_ENV },
+          })
+        : null;
+    const prepareError =
+      prepared && prepared.status !== 0
+        ? `nuxt prepare exited ${prepared.status}\n${`${prepared.stdout}${prepared.stderr}`.slice(-3000)}`
+        : null;
     writeFileSync(
       join(out, "plants", `${corpus.kind}-${corpus.sfcs}.json`),
       `${JSON.stringify(corpus.plants, null, 1)}\n`,
     );
-    const lanes: Lane[] = tools.map((tool) => {
+    if (corpus.kind === "nuxt" && env.vizeNuxtDir) {
+      writeProject(`${dir}-vize`, corpus.files);
+      writeFileSync(join(`${dir}-vize`, "nuxt.config.ts"), nuxtConfig([VIZE_NUXT_MODULE]));
+      prepareProjectPackages(`${dir}-vize`, env, "nuxt");
+    }
+    const nuxtLanes = corpus.kind === "nuxt" ? [NUXT_BUILD, NUXT_BUILD_VIZE] : [];
+    const lanes: Lane[] = [...tools, ...nuxtLanes].map((tool) => {
       const cell: Cell = {
         tool: tool.id,
         label: tool.label,
@@ -292,10 +384,21 @@ function main(): void {
         kind: corpus.kind,
         sfcs: corpus.sfcs,
         plants: corpus.plants.length,
-        mode: corpus.kind === "project" ? "-p" : tool.id === "vize-check" ? "solution root" : "-b",
+        mode:
+          tool.format === "build"
+            ? "build"
+            : corpus.kind === "monorepo"
+              ? tool.id === "vize-check"
+                ? "solution root"
+                : "-b"
+              : "-p",
         cold: null,
         runs: [],
-        refused: null,
+        refused:
+          prepareError ??
+          (tool.id === "nuxt-build-vize" && !env.vizeNuxtDir
+            ? "@vizejs/nuxt is not built in the target (vp run --workspace-root build:nuxt-stack)"
+            : null),
       };
       results.cells.push(cell);
       return { cell, tool, firstFingerprint: null };
@@ -325,7 +428,9 @@ function main(): void {
       }
       if (!timed) break;
     }
-    if (!values.keep) rmSync(dir, { recursive: true, force: true });
+    if (!values.keep) {
+      for (const path of [dir, `${dir}-vize`]) rmSync(path, { recursive: true, force: true });
+    }
   }
   save();
   const refused = results.cells.filter((cell) => cell.refused);

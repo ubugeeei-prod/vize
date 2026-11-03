@@ -1,16 +1,18 @@
 /**
- * Feature pages, widget chains and the app root of the type-check scaling
- * corpus. Plants follow typecheck-scaling-sfc.ts: one construct per line,
- * recorded by its 1-based line.
+ * Feature pages, widget chains and the app root of the generated scale
+ * projects. Plants follow scale-project-sfc.ts: one construct per line,
+ * recorded by its 1-based line. In a Nuxt project the page is the feature's
+ * panel component and its rows come from an auto-imported composable.
  */
 
 import {
+  type Ctx,
   type PlantKind,
   type Source,
-  type Spec,
+  featureDir,
   layerName,
   widgetName,
-} from "./typecheck-scaling-sfc.ts";
+} from "./scale-project-sfc.ts";
 
 function builder() {
   const lines: string[] = [];
@@ -30,24 +32,36 @@ function builder() {
 export const childPages = (k: number, features: number): number[] =>
   [2 * k + 1, 2 * k + 2].filter((child) => child < features);
 
-export function page(k: number, features: number, planted: boolean, to: Spec): Source {
-  const children = childPages(k, features);
+/** Rows a feature starts with; the seed varies it per feature. */
+export const rowCount = (k: number, seed: number): number => 6 + ((k + seed) % 5);
+
+export function page(k: number, features: number, planted: boolean, ctx: Ctx): Source {
+  const dir = featureDir(k);
+  const used = [
+    ...["KitAction", "KitCard", "KitField", "KitList", "KitSelect", "KitTabs"].map((name) => [
+      `kit/${name}.vue`,
+      name,
+    ]),
+    [`${dir}/${layerName(0)}.vue`, layerName(0)],
+    [`${dir}/${widgetName(1)}.vue`, widgetName(1)],
+    ...childPages(k, features).map((child) => [`${featureDir(child)}/Page.vue`, `Page${child}`]),
+  ].map(([logical, local]) => ({ local, ...ctx.component(logical as string, local as string) }));
+  const tag = (local: string) => used.find((use) => use.local === local)?.tag ?? local;
+  const children = childPages(k, features).map((child) => tag(`Page${child}`));
+  const [layer0, widget1] = [tag(layerName(0)), tag(widgetName(1))];
   const out = builder();
   out.add(
     '<script setup lang="ts">',
     'import { ref } from "vue";',
-    ...["KitCard", "KitField", "KitList", "KitSelect", "KitTabs"].map(
-      (name) => `import ${name} from "${to(`kit/${name}.vue`)}";`,
-    ),
-    `import ${layerName(0)} from "./${layerName(0)}.vue";`,
-    `import ${widgetName(1)} from "./${widgetName(1)}.vue";`,
-    `import { TABS_${k}, makeRows${k}, toneOf${k}, type Row${k}, type Tab${k} } from "./model";`,
-    ...children.map(
-      (child) => `import Page${child} from "${to(`${featureDir(child)}/Page.vue`)}";`,
-    ),
+    ...used.flatMap((use) => use.imports),
+    `import { TABS_${k}, ${ctx.nuxt ? "" : `makeRows${k}, `}toneOf${k}, type Row${k}, type Tab${k} } from "${ctx.to(`${dir}/model.ts`)}";`,
     "",
-    `const rows = ref<Row${k}[]>(makeRows${k}(8));`,
-    'const query = ref("");',
+    ...(ctx.nuxt
+      ? [`const { rows, query } = useFeature${k}();`]
+      : [
+          `const rows = ref<Row${k}[]>(makeRows${k}(${rowCount(k, ctx.seed)}));`,
+          'const query = ref("");',
+        ]),
     `const picked = ref<Row${k} | undefined>(undefined);`,
     `const tab = ref<Tab${k}>("overview${k}");`,
     'const note = ref("");',
@@ -63,6 +77,9 @@ export function page(k: number, features: number, planted: boolean, to: Spec): S
           "function onPlantCommit(value: number): void {",
           "  count.value = value;",
           "}",
+          "function takesLabel(value: string): string {",
+          "  return value;",
+          "}",
         ]
       : []),
     "</script>",
@@ -73,12 +90,12 @@ export function page(k: number, features: number, planted: boolean, to: Spec): S
     "      <template #tab=\"{ tab: name, active }\"><GIcon :name=\"active ? 'star' : 'flag'\" /><span>{{ name }}</span></template>",
     '      <template #panel="{ tab: current }"><span>{{ current }}</span></template>',
     "    </KitTabs>",
-    `    <${layerName(0)} :rows="rows" v-model:query="query" :limit="20" @row-click="onRowClick">`,
+    `    <${layer0} :rows="rows" v-model:query="query" :limit="20" @row-click="onRowClick">`,
     '      <template #row="{ row, index, level }">',
     `        <span>{{ row.score${k}.toFixed(level) }} {{ index }}</span>`,
     `        <GBadge :count="row.tags${k}.length" :tone="toneOf${k}(row)" />`,
     "      </template>",
-    `    </${layerName(0)}>`,
+    `    </${layer0}>`,
     '    <KitSelect v-model="picked" :options="rows" :label-of="(row) => row.label">',
     `      <template #option="{ option, label, active }"><GAvatar :user="{ name: label }" /><b v-if="active">{{ option.score${k} }}</b></template>`,
     "    </KitSelect>",
@@ -89,13 +106,14 @@ export function page(k: number, features: number, planted: boolean, to: Spec): S
     '    <KitField v-model="note" v-model:touched="noteTouched" label="Note" @blur-commit="(value) => (note = value.trim())" @clear-request="note = \'\'">',
     '      <template #hint="{ length, touched }"><GTooltip :text="`${length}`"><GSpinner v-if="!touched" /></GTooltip></template>',
     "    </KitField>",
-    `    <${widgetName(1)} :rows="rows" v-model:filter="query" @apply-filter="(value) => (query = value)" />`,
+    `    <${widget1} :rows="rows" v-model:filter="query" @apply-filter="(value) => (query = value)" />`,
+    '    <KitAction action-label="Save" @save-item="(value) => (note = value)" />',
   );
   if (planted) {
     out.plant("generic", `    <KitSelect :options="rows" :label-of="(row) => row.score${k}" />`);
     out.plant(
       "slot",
-      `    <${layerName(0)} :rows="rows" query=""><template #row="{ row }">{{ row.missing${k} }}</template></${layerName(0)}>`,
+      `    <${layer0} :rows="rows" query=""><template #row="{ row }">{{ row.missing${k} }}</template></${layer0}>`,
     );
     out.plant(
       "emit-template",
@@ -103,17 +121,28 @@ export function page(k: number, features: number, planted: boolean, to: Spec): S
     );
     out.plant("v-model", '    <KitField v-model="climate" label="Plant" />');
     out.plant("global", "    <GBadge :count=\"'many'\" />");
+    // #11657: an annotated inline handler and a statement handler on a kebab-cased camelCase emit.
+    out.plant(
+      "listener-arrow",
+      '    <KitAction action-label="Plant" @save-item="(value: number) => undefined" />',
+    );
+    out.plant(
+      "listener-prop",
+      '    <KitAction :action-label="1" @save-item="(value: number) => undefined" />',
+    );
+    out.plant(
+      "listener-statement",
+      '    <KitAction action-label="Plant" @save-item="takesLabel(count)" />',
+    );
   }
   out.add(
     "    <template #actions=\"{ close, tone }\"><GButton :variant=\"tone === 'danger' ? 'primary' : 'ghost'\" @press=\"close()\" /></template>",
     "  </KitCard>",
-    ...children.map((child) => `  <Page${child} />`),
+    ...children.map((child) => `  <${child} />`),
     "</template>",
   );
   return { lines: out.lines, plants: out.plants };
 }
-
-export const featureDir = (k: number): string => `features/f${String(k).padStart(4, "0")}`;
 
 const widgetContract = [
   'const emit = defineEmits<{ "update:filter": [value: string]; "apply-filter": [value: string] }>();',
@@ -129,11 +158,18 @@ export function widget(
   index: number,
   last: boolean,
   planted: boolean,
-  to: Spec,
+  ctx: Ctx,
 ): Source {
-  const next = last ? null : widgetName(index + 1);
+  const dir = featureDir(k);
+  const nextUse = last
+    ? null
+    : ctx.component(`${dir}/${widgetName(index + 1)}.vue`, widgetName(index + 1));
+  const next = nextUse?.tag ?? null;
   const out = builder();
-  const nextImport = next ? [`import ${next} from "./${next}.vue";`] : [];
+  const nextImport = nextUse?.imports ?? [];
+  const model = ctx.to(`${dir}/model.ts`);
+  const kit = (name: string) => ctx.component(`kit/${name}.vue`, name);
+  const [list, field, tabs] = [kit("KitList"), kit("KitField"), kit("KitTabs")];
   const forward = next
     ? `<${next} :rows="rows" :filter="filter" @update:filter="(value) => emit('update:filter', value)" @apply-filter="(value) => emit('apply-filter', value)" />`
     : null;
@@ -142,7 +178,7 @@ export function widget(
   if (shape === 0) {
     out.add(
       'import { computed } from "vue";',
-      `import type { Row${k} } from "./model";`,
+      `import type { Row${k} } from "${model}";`,
       ...nextImport,
       `const props = defineProps<{ rows: Row${k}[]; filter: string }>();`,
       ...widgetContract,
@@ -151,8 +187,8 @@ export function widget(
   } else if (shape === 1) {
     out.add(
       'import { ref } from "vue";',
-      `import KitList from "${to("kit/KitList.vue")}";`,
-      `import type { Row${k} } from "./model";`,
+      ...list.imports,
+      `import type { Row${k} } from "${model}";`,
       ...nextImport,
       `defineProps<{ rows: Row${k}[]; filter: string }>();`,
       ...widgetContract,
@@ -164,9 +200,9 @@ export function widget(
     );
   } else {
     out.add(
-      `import KitField from "${to("kit/KitField.vue")}";`,
-      `import KitTabs from "${to("kit/KitTabs.vue")}";`,
-      `import { TABS_${k}, type Row${k}, type Tab${k} } from "./model";`,
+      ...field.imports,
+      ...tabs.imports,
+      `import { TABS_${k}, type Row${k}, type Tab${k} } from "${model}";`,
       ...nextImport,
       `defineProps<{ rows: Row${k}[] }>();`,
       'const filter = defineModel<string>("filter", { required: true });',
@@ -191,19 +227,19 @@ export function widget(
     );
   } else if (shape === 1) {
     out.add(
-      `  <KitList :items="rows" sort-key="tags${k}" @select="(item) => select(item)">`,
+      `  <${list.tag} :items="rows" sort-key="tags${k}" @select="(item) => select(item)">`,
       '    <template #header="{ count }"><GBadge :count="count" tone="info" /></template>',
       '    <template #default="{ item, value }">',
       '      <span v-for="tag in value ?? []" :key="tag">{{ tag.length }} {{ item.label }} {{ filter }}</span>',
       "    </template>",
-      "  </KitList>",
+      `  </${list.tag}>`,
     );
   } else {
     out.add(
-      `  <KitTabs v-model="tab" :tabs="TABS_${k}">`,
+      `  <${tabs.tag} v-model="tab" :tabs="TABS_${k}">`,
       "    <template #tab=\"{ tab: name, active }\"><GIcon :name=\"active ? 'check' : 'cross'\" />{{ name }}</template>",
-      '    <template #panel="{ tab: current }"><KitField v-model="filter" :label="current" @blur-commit="(value) => emit(\'apply-filter\', value)" /></template>',
-      "  </KitTabs>",
+      '    <template #panel="{ tab: current }"><${field.tag} v-model="filter" :label="current" @blur-commit="(value) => emit(\'apply-filter\', value)" /></template>',
+      `  </${tabs.tag}>`,
     );
   }
   if (next) {
@@ -217,15 +253,17 @@ export function widget(
   return { lines: out.lines, plants: out.plants };
 }
 
-export function app(to: Spec): Source {
+/** The single project's root; a Nuxt project's root is `app.vue` with its index page. */
+export function app(ctx: Ctx): Source {
+  const root = ctx.component(`${featureDir(0)}/Page.vue`, "Page0");
   return {
     lines: [
       '<script setup lang="ts">',
-      `import Page0 from "${to(`${featureDir(0)}/Page.vue`)}";`,
+      ...root.imports,
       "</script>",
       "",
       "<template>",
-      "  <Page0 />",
+      `  <${root.tag} />`,
       "</template>",
     ],
     plants: [],
