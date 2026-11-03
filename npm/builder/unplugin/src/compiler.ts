@@ -1,12 +1,15 @@
 import { createHash } from "node:crypto";
 import * as native from "@vizejs/native";
 import { prependMappedJsxCode } from "../../shared/source-map.ts";
+import { styleRequestId } from "./request.ts";
 import type {
   CompiledModule,
+  HostCss,
   NormalizedVizeUnpluginOptions,
   CachedCompiledModule,
   JsxCompileResultNapi,
   SfcCompileResultNapi,
+  StyleBlockInfo,
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
 import { assertInlinedStyleSrc } from "./style-dependencies.ts";
@@ -123,11 +126,18 @@ export function compileVueModule(
   };
 }
 
+export interface JsxStyleOutput {
+  hostCss: HostCss;
+  /** Overrides the `?vue&type=style` import specifier (webpack style files). */
+  styleRequest?: (block: StyleBlockInfo, scoped: null) => string;
+}
+
 export function compileJsxModule(
   filePath: string,
   source: string,
   options: NormalizedVizeUnpluginOptions,
-): { code: string; map: string | null; warnings: string[] } {
+  output: JsxStyleOutput,
+): { code: string; map: string | null; warnings: string[]; styles: StyleBlockInfo[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
@@ -141,26 +151,37 @@ export function compileJsxModule(
     throw new Error(result.errors.join("\n"));
   }
 
-  // A `.jsx`/`.tsx` component's `<style scoped>` becomes emitted CSS through the
-  // same inline-injection path plain SFC `<style>` blocks use (#1495, #1533).
-  // The compiler already scope-rewrites each block (the `data-v-<hash>` attr is
-  // baked into the selectors and injected into the render output), so the blocks
-  // are concatenated and emitted verbatim.
-  const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
-  let code = result.code;
-  let map = result.map ?? null;
-  if (css) {
-    const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
-    ({ code, map } = prependMappedJsxCode(
-      code,
-      map,
-      prependInlineStyleInjection("", css, styleKey),
-    ));
+  // A `.jsx`/`.tsx` component's `<style scoped>` blocks take the SFC `<style>`
+  // path (#1495, #1533, #11520): style modules where the host bundles CSS,
+  // run-time injection where nothing does. The compiler already scope-rewrites
+  // each block, so a style module holds plain, unscoped-again CSS.
+  const scoped = result.scopedStyles ?? [];
+  const styles = scoped.map((style, index): StyleBlockInfo => ({
+    content: style.css,
+    src: null,
+    lang: "css",
+    scoped: false,
+    module: false,
+    index,
+  }));
+  let prefix = "";
+  if (styles.length > 0 && output.hostCss === "none") {
+    const css = styles.map((style) => style.content).join("\n");
+    const styleKey = scoped[0].scopeId.replace(/^data-v-/, "");
+    prefix = prependInlineStyleInjection("", css, styleKey);
+  } else {
+    for (const block of styles) {
+      const id =
+        output.styleRequest?.(block, null) ?? styleRequestId(filePath, block, null, output.hostCss);
+      prefix += `import ${JSON.stringify(id)};\n`;
+    }
   }
+  const { code, map } = prependMappedJsxCode(result.code, result.map ?? null, prefix);
 
   return {
     code,
     map,
     warnings: result.warnings,
+    styles,
   };
 }

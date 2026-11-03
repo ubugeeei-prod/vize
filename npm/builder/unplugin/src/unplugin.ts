@@ -27,6 +27,7 @@ import type {
   CompiledModule,
   HostCss,
   NormalizedVizeUnpluginOptions,
+  StyleBlockInfo,
   VizeTemplateSyntax,
   VizeVueVersion,
   VizeUnpluginOptions,
@@ -171,11 +172,24 @@ async function loadStyleBlock(
   id: string,
   options: NormalizedVizeUnpluginOptions,
   cache: Map<string, CachedCompiledModule>,
+  jsxStyles: Map<string, StyleBlockInfo[]>,
 ): Promise<string> {
   const request = parseVueRequest(id);
   const index = request.query.index ?? -1;
   if (index < 0) {
     return "";
+  }
+
+  if (isJsxFile(request.filename)) {
+    // The compiler scoped JSX CSS already.
+    const styles =
+      jsxStyles.get(request.filename) ??
+      (fs.existsSync(request.filename)
+        ? compileJsxModule(request.filename, fs.readFileSync(request.filename, "utf8"), options, {
+            hostCss: "preprocessors",
+          }).styles
+        : []);
+    return styles[index]?.content ?? "";
   }
 
   let compiled: CompiledModule | undefined = cache.get(request.filename)?.compiled;
@@ -304,8 +318,23 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
   const options = normalizeOptions(rawOptions);
   const filter = createFilter(options.include, options.exclude);
   const cache = new Map<string, CachedCompiledModule>();
+  const jsxStyles = new Map<string, StyleBlockInfo[]>();
   const webpackStyleFiles = meta.framework === "webpack";
   let virtualModules: ReturnType<typeof findVirtualModules>;
+  /** A webpack style block is a virtual file the host's rules match (webpack-styles.ts). */
+  const writeWebpackStyle = (
+    id: string,
+    block: StyleBlockInfo,
+    scoped: string | null,
+    content: string,
+  ): string => {
+    const stylePath = webpackStylePath(id, block, scoped);
+    if (!virtualModules) {
+      throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
+    }
+    virtualModules.writeModule(stylePath, content);
+    return webpackStyleRequest(stylePath, block);
+  };
   let loadedStyles = false;
   const rollupHooks = {
     buildStart() {
@@ -346,7 +375,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
 
       loadedStyles = true;
       return {
-        code: await loadStyleBlock(this, id, options, cache),
+        code: await loadStyleBlock(this, id, options, cache, jsxStyles),
         map: null,
       };
     },
@@ -379,15 +408,25 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         if (!filter(id)) {
           return null;
         }
-        const { code: jsxCode, map: jsxMap, warnings } = compileJsxModule(id, code, options);
+        const {
+          code: jsxCode,
+          map: jsxMap,
+          warnings,
+          styles,
+        } = compileJsxModule(id, code, options, {
+          hostCss: hostCss(this, meta.framework),
+          styleRequest: webpackStyleFiles
+            ? (block, scoped) => writeWebpackStyle(id, block, scoped, block.content)
+            : undefined,
+        });
+        jsxStyles.set(id, styles);
         for (const warning of warnings) {
           this.warn(`[vize] ${warning}`);
         }
         // HMR (deferred, #1533): the JSX compiler emits a render-function-only
         // module with no component object to attach a Vue HMR record to (unlike
         // the `.vue` path's `_sfc_main`), so a state-preserving boundary awaits
-        // the JSX component-wrapper output. Source map + preamble plumbing land
-        // now (`map` above, preamble inside `compileJsxModule`).
+        // the JSX component-wrapper output.
         return {
           code: jsxCode,
           map: jsxMap,
@@ -419,21 +458,17 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         hostCss: hostCss(this, meta.framework),
         filePath: id,
         styleRequest: webpackStyleFiles
-          ? (block, scoped) => {
-              const stylePath = webpackStylePath(id, block, scoped);
-              if (!virtualModules) {
-                throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
-              }
-              virtualModules.writeModule(
-                stylePath,
+          ? (block, scoped) =>
+              writeWebpackStyle(
+                id,
+                block,
+                scoped,
                 transformStyleVars(
                   block.content,
                   compiled.scopeId,
                   options.isProduction ? id : undefined,
                 ),
-              );
-              return webpackStyleRequest(stylePath, block);
-            }
+              )
           : undefined,
       });
 
@@ -448,6 +483,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       if (isVueFile(id)) {
         cache.delete(id);
       }
+      jsxStyles.delete(id);
     },
 
     rollup: rollupHooks,
