@@ -176,6 +176,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.transition_group(attached, name, inherit, css_vars)?;
             }
             "Teleport" | "teleport" => self.teleport(attached, no_inherit)?,
+            "Transition" | "transition" => self.transition(attached, inherit)?,
             _ if is_transparent_builtin(name) => self.children(Flags {
                 inherit_attrs: inherit,
                 ..no_inherit
@@ -335,6 +336,37 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(", ");
         self.ctx.push(disabled.as_deref().unwrap_or("false"));
         self.ctx.push(", _parent)\n");
+        Ok(())
+    }
+
+    /// Vue's `ssrProcessTransition`: the client's `BaseTransition` renders its
+    /// first non-comment child, so the server drops direct comments
+    /// (vuejs/core#5351) and nested fragments, and an `appear` transition
+    /// hydrates from a `<template>`.
+    fn transition(&mut self, attached: &Attached<'_, '_>, inherit: bool) -> Result<()> {
+        let appear = attached.iter().any(|segment| match segment.source {
+            Source::Attribute(attr) => attr.name == "appear",
+            Source::Binding(l2::BindingOp::Bind(bind)) => {
+                matches!(bind.name, Some(DynamicName::Static("appear")))
+            }
+            _ => false,
+        });
+        if appear {
+            self.ctx.push_string_part_static("<template>");
+        }
+        self.children_keeping_comments(
+            Flags {
+                as_fragment: false,
+                disable_nested_fragments: true,
+                disable_comments: false,
+                inherit_attrs: inherit,
+                css_vars: false,
+            },
+            false,
+        )?;
+        if appear {
+            self.ctx.push_string_part_static("</template>");
+        }
         Ok(())
     }
 

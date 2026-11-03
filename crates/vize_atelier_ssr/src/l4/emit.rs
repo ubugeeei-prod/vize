@@ -133,6 +133,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_children_with_fallthrough_attrs` over the plan: emit the
     /// child list at the cursor up to (not including) its closing segment.
     fn children(&mut self, flags: Flags) -> Result<()> {
+        self.children_keeping_comments(flags, true)
+    }
+
+    /// `children`, dropping the list's direct comments when `comments` is
+    /// false (a `<Transition>`'s, see `transition`).
+    fn children_keeping_comments(&mut self, flags: Flags, comments: bool) -> Result<()> {
         let shape = self.scan_region(self.pos)?;
         let fallthrough = match shape.candidates.as_slice() {
             [only] if flags.inherit_attrs && !flags.as_fragment => Some(*only),
@@ -144,6 +150,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         while let Some(segment) = self.segments.get(self.pos).copied() {
             if is_close(segment.kind) {
                 break;
+            }
+            if !comments && segment.kind == Kind::Comment {
+                self.pos += 1;
+                continue;
             }
             let inherit = fallthrough == Some(self.pos);
             self.child(segment, flags, inherit)?;
