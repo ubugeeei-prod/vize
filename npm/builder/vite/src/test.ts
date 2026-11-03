@@ -17,6 +17,7 @@ import "./options-api-events.test.ts";
 import "./output-ast.test.ts";
 import "./output-module-info.test.ts";
 import "./native-shape-binding.test.ts";
+import "./module-export-trivia.test.ts";
 import "./css-module-output.test.ts";
 import "./module-shape-fallback.test.ts";
 import "./tree-shaking.test.ts";

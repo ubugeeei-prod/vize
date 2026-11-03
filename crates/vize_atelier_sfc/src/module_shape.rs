@@ -42,10 +42,11 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Declaration, ExportDefaultDeclarationKind, Program, Statement, VariableDeclaration,
+    Comment, Declaration, ExportDefaultDeclarationKind, Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use oxc_syntax::{identifier::is_white_space, line_terminator::is_line_terminator};
 use vize_carton::profile;
 
 /// The identifier the SFC compiler binds a component to before exporting it.
@@ -90,7 +91,7 @@ pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
         return None;
     }
 
-    Some(shape_from_program(code, &parsed.program))
+    shape_from_program(code, &parsed.program)
 }
 
 /// Finalize compiler output and derive its shape from the same parse.
@@ -148,6 +149,7 @@ fn finalize(
             .diagnostics
             .is_empty()
             .then(|| shape_from_program(&code, &parsed.program))
+            .flatten()
     };
     if shape.is_some() {
         return (code, shape, map);
@@ -168,7 +170,7 @@ fn finalize(
     (stripped, shape, map)
 }
 
-fn shape_from_program(code: &str, program: &Program<'_>) -> SfcModuleShape {
+fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShape> {
     let mut shape = SfcModuleShape::default();
     for statement in &program.body {
         match statement {
@@ -178,7 +180,7 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> SfcModuleShape {
                 shape.default_export_start = Some(span.start);
                 shape.default_export_end = Some(span.end);
                 shape.default_export_keyword_end =
-                    keyword_end(code, span.start).or(Some(span.start));
+                    Some(keyword_end(code, span.start, &program.comments)?);
                 shape.default_export_is_sfc_main = exports_sfc_main(&export.declaration);
             }
             Statement::VariableDeclaration(declaration) => {
@@ -203,24 +205,34 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> SfcModuleShape {
             _ => {}
         }
     }
-    shape
+    Some(shape)
 }
 
 /// End of the `export default` keyword pair starting at `start`.
 ///
 /// The emitter always writes the two words separated by a single space, but a
 /// user's own `<script>` reaches this output verbatim and may not, so the gap is
-/// measured rather than assumed.
-fn keyword_end(code: &str, start: u32) -> Option<u32> {
+/// measured rather than assumed. Comments come from the existing module parse.
+fn keyword_end(code: &str, start: u32, comments: &[Comment]) -> Option<u32> {
     let rest = code.get(start as usize..)?;
     let after_export = rest.strip_prefix("export")?;
-    let gap = after_export.len() - after_export.trim_start().len();
-    let after_gap = after_export.trim_start();
-    if !after_gap.starts_with("default") {
-        return None;
+    let mut cursor = code.len() - after_export.len();
+    let mut comment_index = comments.partition_point(|comment| comment.span.end as usize <= cursor);
+    loop {
+        let rest = code.get(cursor..)?;
+        let after_space = rest.trim_start_matches(|c| is_white_space(c) || is_line_terminator(c));
+        cursor += rest.len() - after_space.len();
+        let Some(comment) = comments
+            .get(comment_index)
+            .filter(|comment| comment.span.start as usize == cursor)
+        else {
+            break;
+        };
+        cursor = comment.span.end as usize;
+        comment_index += 1;
     }
-    let consumed = "export".len() + gap + "default".len();
-    Some(start + u32::try_from(consumed).ok()?)
+    code.get(cursor..)?.strip_prefix("default")?;
+    u32::try_from(cursor + "default".len()).ok()
 }
 
 fn exports_sfc_main(declaration: &ExportDefaultDeclarationKind<'_>) -> bool {
