@@ -14,7 +14,8 @@ pub(super) fn record(
         return;
     };
     let owner = match expression.kind {
-        TemplateExpressionKind::VBind => checks
+        // A component v-model value is a prop like `:prop` (#11655).
+        TemplateExpressionKind::VBind | TemplateExpressionKind::VModel => checks
             .prop_expression_owners
             .and_then(|owners| {
                 owners.get(&(
