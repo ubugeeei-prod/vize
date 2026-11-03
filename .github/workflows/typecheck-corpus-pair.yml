@@ -1,0 +1,111 @@
+name: Type-check corpus pair
+run-name: "Type-check corpus pair ${{ inputs.base_sha }}...${{ inputs.head_sha }}"
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full 40-hex baseline commit
+        type: string
+        required: true
+      head_sha:
+        description: Full 40-hex candidate commit
+        type: string
+        required: true
+      runs:
+        description: Timed runs per lane (median reported)
+        type: string
+        default: "5"
+permissions: { contents: read }
+concurrency:
+  group: typecheck-corpus-pair-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  measure:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.head_sha }}
+      RUNS: ${{ inputs.runs }}
+    steps:
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "$HEAD_SHA" ]]
+          [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Check out base and head beside the driver
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          git worktree add --detach "$RUNNER_TEMP/pair-base" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/pair-head" "$HEAD_SHA"
+      - name: Hydrate the pinned corpora and install the locked hosts and corpus packages
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/n8n
+          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+          npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
+          if ! /usr/bin/time --version 2>&1 | grep -q 'GNU time'; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends time
+          fi
+          /usr/bin/time --version
+      - name: Test the pair parsers and the byte probe
+        run: node --test tests/tooling/typecheck-corpus-pair.test.ts
+      - name: Build the native binding and the vize package for base and head
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            (
+              cd "$RUNNER_TEMP/pair-$role"
+              vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
+            )
+          done
+          for role in base head; do
+            (cd "$RUNNER_TEMP/pair-$role" && vp run --workspace-root build:native > "$RUNNER_TEMP/build-$role.log" 2>&1) &
+          done
+          status=0
+          for job in $(jobs -p); do wait "$job" || status=1; done
+          for role in base head; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
+          [[ "$status" == 0 ]]
+          for role in base head; do
+            (cd "$RUNNER_TEMP/pair-$role" && vp run --filter './npm/cli' build)
+            git -C "$RUNNER_TEMP/pair-$role" rev-parse HEAD
+          done
+      - name: Measure both corpora
+        env:
+          VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: |
+          node tools/benchmarks/scripts/typecheck-corpus-pair.ts \
+            --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" \
+            --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" --runs "$RUNS" \
+            --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+      - name: Write job summary
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/pair-out/summary.md" ]]; then cat "$RUNNER_TEMP/pair-out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typecheck-corpus-pair-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/pair-out/
+            ${{ runner.temp }}/build-*.log
+          if-no-files-found: warn
+          retention-days: 30

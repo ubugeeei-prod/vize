@@ -1,0 +1,9 @@
+{
+  "name": "vize-benchmark-typecheck-corpora",
+  "private": true,
+  "description": "Pinned packages the real-project type-check corpora resolve: Vue 3.5 and Node types.",
+  "dependencies": {
+    "@types/node": "26.6.6",
+    "vue": "3.5.44"
+  }
+}
