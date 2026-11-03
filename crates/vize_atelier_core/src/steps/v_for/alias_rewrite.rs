@@ -49,3 +49,23 @@ pub(crate) fn process_for_alias<'a>(
     rewritten.is_ref_transformed = true;
     ExpressionNode::Simple(rewritten)
 }
+
+/// An annotated alias (`item: Item`) enters the TS lane as its JavaScript
+/// parameter, so every later reader sees the erased pattern.
+pub(crate) fn erase_for_alias<'a>(
+    allocator: &'a vize_l0::Allocator,
+    alias: &mut Option<ExpressionNode<'a>>,
+) {
+    let Some(ExpressionNode::Simple(node)) = alias.as_ref() else {
+        return;
+    };
+    let Some(js) = crate::steps::erase_typescript_params(node.content) else {
+        return;
+    };
+    let loc = node.loc.clone();
+    let content = allocator.alloc_str(js.as_str());
+    if let Some(ExpressionNode::Simple(mut erased)) = alias_node(allocator, content) {
+        erased.loc = loc;
+        *alias = Some(ExpressionNode::Simple(erased));
+    }
+}

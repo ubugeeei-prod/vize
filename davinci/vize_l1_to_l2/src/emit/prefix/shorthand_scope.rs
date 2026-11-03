@@ -9,7 +9,11 @@ fn a_destructured_for_alias_keeps_object_shorthand() {
     let mut scope = PrefixScope::new(Some(&table), true, false, false);
     scope.push_for([Some("{ id, description }"), None, None]);
     let content = "open({\n  id,\n  description: description ?? '',\n})";
-    let rewritten = rewrite_expression(content, None, &scope, false);
+    let content = super::Content {
+        text: crate::emit::js_comment::RawJs::Borrowed(content),
+        offset: None,
+    };
+    let rewritten = rewrite_expression(&super::erase(&scope, &content, None), &scope, false);
     let stripped = strip_scope_prefixes_for_slot_params(&scope, rewritten.code.as_str());
     assert!(
         stripped.contains("$setup.open"),

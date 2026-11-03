@@ -21,7 +21,7 @@ use crate::lane::TransformContext;
 
 use super::{
     parse_checks::parse_as_params, reparse::rewrite_reparsed, retained_rewrite::rewrite_retained,
-    typescript::strip_typescript_from_expression,
+    typescript::erase_typescript,
 };
 
 fn is_identifier_continue(c: char) -> bool {
@@ -158,7 +158,7 @@ pub(crate) fn rewrite_expression(
         // identity outcome keeps the retained byte proof; changed bytes
         // stay on the legacy chain — with the guard scans still skipped,
         // which the same armature proof covers.
-        let js_content = strip_typescript_from_expression(content);
+        let js_content = erase_typescript(content, true);
         if js_content.as_str() == content {
             return rewrite_retained(js, ctx, as_params, guard_maybe_ref_write);
         }
@@ -193,9 +193,9 @@ pub(crate) fn rewrite_expression(
             parse_error: (!overflows).then(|| String::new("mismatched expression delimiters")),
         };
     }
-    // First, if this is TypeScript, strip type annotations
+    // First, if this is TypeScript, erase it
     let js_content = if ctx.options.is_ts {
-        strip_typescript_from_expression(content)
+        erase_typescript(content, false)
     } else {
         String::new(content)
     };

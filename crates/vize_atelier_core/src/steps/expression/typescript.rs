@@ -204,6 +204,47 @@ fn is_ident_char(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
 }
 
+/// The JavaScript spelling of authored template text under `is_ts`, the TS
+/// lane's one erasure. The stripper below is gated on a text scan; what the
+/// scan misses is decided by the parse. `proven_js`: a retained AST passed
+/// the JS-module dialect gate for these bytes.
+pub fn erase_typescript(content: &str, proven_js: bool) -> String {
+    let stripped = strip_typescript_from_expression(content);
+    if proven_js || stripped.as_str() != content || is_javascript(content) {
+        return stripped;
+    }
+    reprint_expression(content)
+        .or_else(|| reprint_program(content))
+        .unwrap_or(stripped)
+}
+
+/// A parameter list (slot props, a `v-for` alias) as JavaScript; `None`
+/// when it already is, or when it does not parse as TypeScript either.
+pub fn erase_typescript_params(params: &str) -> Option<String> {
+    if !super::expression_is_safe_to_parse(params) {
+        return None;
+    }
+    let mut arrow = String::with_capacity(params.len() + 12);
+    arrow.push('(');
+    arrow.push_str(params);
+    arrow.push_str("\n) => null");
+    let allocator = crate::expr_parse_probe::parse_arena();
+    if Parser::new(&allocator, &arrow, SourceType::default().with_module(true))
+        .parse_expression()
+        .is_ok()
+    {
+        return None;
+    }
+    let mut wrapped = String::new("const _p_ = ");
+    wrapped.push_str(&arrow);
+    wrapped.push(';');
+    transform_print(&wrapped, |printed| {
+        let rest = printed.strip_prefix("const _p_ = (")?;
+        let (inner, _) = rest.rsplit_once(") => null;")?;
+        Some(String::new(inner))
+    })
+}
+
 /// Strip TypeScript type annotations from an expression
 pub fn strip_typescript_from_expression(content: &str) -> String {
     // Skip parsing for inputs that would overflow the parser stack — return
@@ -217,19 +258,61 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
         return String::new(content);
     }
 
-    let allocator = crate::expr_parse_probe::parse_arena();
-    let source_type = SourceType::ts();
-
     // Wrap in a dummy statement to make it parseable
     let mut wrapped = String::with_capacity(content.len() + 18);
     wrapped.push_str("const _expr_ = (");
     wrapped.push_str(content);
     wrapped.push_str(");");
-    let parser = Parser::new(&allocator, &wrapped, source_type);
-    let parse_result = parser.parse();
+    // Fallback: return original content
+    transform_print(&wrapped, extract_initializer).unwrap_or_else(|| String::new(content))
+}
 
+/// The legacy chain's two JS parses: the wrapped expression, then the
+/// program. Unparseable depth is not this lane's to decide.
+fn is_javascript(content: &str) -> bool {
+    if !super::expression_is_safe_to_parse(content) {
+        return true;
+    }
+    let source_type = SourceType::default().with_module(true);
+    let mut wrapped = String::with_capacity(content.len() + 3);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push_str("\n)");
+    let expression = crate::expr_parse_probe::parse_arena();
+    if Parser::new(&expression, &wrapped, source_type)
+        .parse_expression()
+        .is_ok()
+    {
+        return true;
+    }
+    let program = crate::expr_parse_probe::parse_arena();
+    Parser::new(&program, content, source_type)
+        .parse()
+        .diagnostics
+        .is_empty()
+}
+
+/// TypeScript the scan missed, as one expression.
+fn reprint_expression(content: &str) -> Option<String> {
+    let mut wrapped = String::with_capacity(content.len() + 19);
+    wrapped.push_str("const _expr_ = (");
+    wrapped.push_str(content);
+    wrapped.push_str("\n);");
+    transform_print(&wrapped, extract_initializer)
+}
+
+/// TypeScript the scan missed, as a statement list (a handler body).
+fn reprint_program(content: &str) -> Option<String> {
+    transform_print(content, |printed| Some(String::new(printed.trim_end())))
+}
+
+/// Parse as TypeScript, erase, print, and `finish` the printed text;
+/// `None` on any diagnostic.
+fn transform_print<T>(source: &str, finish: impl FnOnce(&str) -> Option<T>) -> Option<T> {
+    let allocator = crate::expr_parse_probe::parse_arena();
+    let parse_result = Parser::new(&allocator, source, SourceType::ts()).parse();
     if !parse_result.diagnostics.is_empty() {
-        return String::new(content);
+        return None;
     }
 
     let mut program = parse_result.program;
@@ -241,7 +324,7 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
         .build(&program);
 
     if !semantic_ret.diagnostics.is_empty() {
-        return String::new(content);
+        return None;
     }
 
     let scoping = semantic_ret.semantic.into_scoping();
@@ -252,30 +335,25 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
         .build_with_scoping(scoping, &mut program);
 
     if !ret.diagnostics.is_empty() {
-        return String::new(content);
+        return None;
     }
 
-    // Generate JavaScript code
-    let js_code = Codegen::new().build(&program).code;
+    finish(&Codegen::new().build(&program).code)
+}
 
-    // Extract the expression from the generated code
+/// The printed program is `const _expr_ = …;`, with the parentheses kept
+/// or dropped by the printer; slice the initializer back out.
+fn extract_initializer(js_code: &str) -> Option<String> {
     // The output can be: "const _expr_ = (...);\n" or "const _expr_ = ...;\n"
     // (codegen may remove unnecessary parentheses)
-    let prefix = "const _expr_ = ";
-    if let Some((_, rest)) = js_code.split_once(prefix) {
-        // Find the semicolon at the end
-        if let Some((expr, _)) = rest.rsplit_once(';') {
-            // Remove surrounding parentheses if present
-            let expr = expr.trim();
-            if has_matching_outer_parens(expr) {
-                return String::new(expr.get(1..expr.len() - 1).unwrap_or_default());
-            }
-            return String::new(expr);
-        }
+    let (_, rest) = js_code.split_once("const _expr_ = ")?;
+    let (expr, _) = rest.rsplit_once(';')?;
+    // Remove surrounding parentheses if present
+    let expr = expr.trim();
+    if has_matching_outer_parens(expr) {
+        return Some(String::new(expr.get(1..expr.len() - 1).unwrap_or_default()));
     }
-
-    // Fallback: return original content
-    String::new(content)
+    Some(String::new(expr))
 }
 
 /// Check if the outermost parens in a string are actually matching.

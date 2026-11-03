@@ -44,7 +44,7 @@ pub use shape_checks::{
     is_typescript_function_expression_node,
 };
 use shape_checks::{is_function_shape, is_handler_reference_shape};
-pub use typescript::strip_typescript_from_expression;
+pub use typescript::{erase_typescript, erase_typescript_params, strip_typescript_from_expression};
 pub use vize_relief::{ExpressionScope, for_each_function_var};
 
 /// An authored empty directive value has no runtime expression, while its
@@ -250,8 +250,14 @@ fn process_expression_shape<'a>(
         compound_key = branch_key && !is_simple_identifier(content) && result.has_identifiers;
         result.code
     } else if ctx.options.is_ts {
-        // Only strip TypeScript, no prefixing
-        strip_typescript_from_expression(content)
+        // Only erase TypeScript, no prefixing
+        let retained = crate::retained::retained_whole_expression(&normalized);
+        erase_typescript(
+            content,
+            retained
+                .as_ref()
+                .is_some_and(crate::retained::js_module_compatible),
+        )
     } else {
         String::new(content)
     };

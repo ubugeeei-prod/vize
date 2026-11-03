@@ -4247,6 +4247,8 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "insta",
+ "oxc_allocator",
+ "oxc_span",
  "phf 0.13.1",
  "serde",
  "serde_json",
@@ -4257,6 +4259,7 @@ dependencies = [
  "vize_curator",
  "vize_l0",
  "vize_l1_to_l2",
+ "vize_oxc_parser",
 ]
 
 [[package]]

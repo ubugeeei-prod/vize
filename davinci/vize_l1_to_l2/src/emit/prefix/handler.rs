@@ -6,6 +6,7 @@
 
 use vize_l0::String;
 
+use super::Erased;
 use super::globals::is_simple_identifier;
 use super::rewrite::{Retained, RewriteResult, rewrite_expression};
 use super::scope::PrefixScope;
@@ -14,39 +15,33 @@ use super::shape::{
     is_function_expression_node,
 };
 use super::strip::strip_scope_prefixes_for_slot_params;
-use super::strip_typescript_from_expression;
 
 /// `process_inline_handler` over the node's content (the padded attribute
 /// value the shipped transform held).
 pub(super) fn process_inline_handler(
-    content: &str,
-    retained: Option<Retained<'_, '_>>,
+    js: &Erased<'_, '_, '_>,
     scope: &mut PrefixScope<'_>,
 ) -> RewriteResult {
-    process_classified_handler(content, retained, scope).0
+    process_classified_handler(js, scope).0
 }
 
 /// [`process_inline_handler`] plus whether the authored handler is a method
 /// reference: rewriting `fn` to `_unref(fn)` must not turn it into a statement.
 pub(super) fn process_classified_handler(
-    content: &str,
-    retained: Option<Retained<'_, '_>>,
+    js: &Erased<'_, '_, '_>,
     scope: &mut PrefixScope<'_>,
 ) -> (RewriteResult, bool) {
-    // The function/reference shape is read off the TS-stripped text; the
-    // retained AST still applies only while that text is the node's own
-    // bytes. The *rewrite* below re-strips from the original.
-    let stripped = scope
-        .is_ts()
-        .then(|| strip_typescript_from_expression(content));
-    let shape_source = stripped.as_ref().map_or(content, String::as_str);
-    let is_function = if shape_source == content {
-        is_function_expression_node(content, retained)
+    let content = js.authored;
+    let retained = js.retained;
+    // The function shape is read off the erased text; the retained AST
+    // still applies only while that text is the node's own bytes.
+    let is_function = if js.changed() {
+        is_function_expression(js.js())
     } else {
-        is_function_expression(shape_source)
+        is_function_expression_node(content, retained)
     };
     if is_function {
-        return (process(content, retained, scope), false);
+        return (process(js, scope), false);
     }
     // Only the function check reads the stripped text; the reference check
     // is the shipped lane's, over the node's own bytes.
@@ -72,11 +67,11 @@ pub(super) fn process_classified_handler(
             };
             return (result, true);
         }
-        return (process(content, retained, scope), true);
+        return (process(js, scope), true);
     }
     let mark = scope.mark();
     scope.push_event();
-    let rewritten = process(content, retained, scope);
+    let rewritten = process(js, scope);
     scope.pop(mark);
     let mut code = String::with_capacity(rewritten.code.len() + 13);
     if rewritten.code.contains(';') {
@@ -107,20 +102,12 @@ pub(super) fn is_reference(content: &str, retained: Option<Retained<'_, '_>>) ->
 
 /// The handler body itself: rewritten when identifiers are prefixed,
 /// type-erased alone when only `is_ts` is on.
-fn process(
-    content: &str,
-    retained: Option<Retained<'_, '_>>,
-    scope: &PrefixScope<'_>,
-) -> RewriteResult {
+fn process(js: &Erased<'_, '_, '_>, scope: &PrefixScope<'_>) -> RewriteResult {
     if scope.prefixes_identifiers() {
-        return rewrite_expression(content, retained, scope, false);
+        return rewrite_expression(js, scope, false);
     }
     RewriteResult {
-        code: if scope.is_ts() {
-            strip_typescript_from_expression(content)
-        } else {
-            String::from(content)
-        },
+        code: String::from(js.js()),
         used_unref: false,
         used_is_ref: false,
         has_identifier_references: false,

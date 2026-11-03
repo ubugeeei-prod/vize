@@ -308,9 +308,15 @@ pub(super) fn prefixed_alias(
     if !cx.prefixing() {
         return Ok(None);
     }
-    super::for_bindings::rewrite_for_alias_expressions(alias, |expr| {
-        cx.prefixed_text(expr, Site::Expression)
-    })
+    let erased = cx
+        .is_ts
+        .then(|| super::prefix::erase_typescript_params(alias))
+        .flatten();
+    let rewritten = super::for_bindings::rewrite_for_alias_expressions(
+        erased.as_deref().unwrap_or(alias),
+        |expr| cx.prefixed_text(expr, Site::Expression),
+    )?;
+    Ok(rewritten.or(erased))
 }
 
 pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<RawJs<'a>, EmitError> {
