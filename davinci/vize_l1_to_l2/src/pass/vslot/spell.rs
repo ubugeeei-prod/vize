@@ -9,7 +9,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::{String, cstr};
 use vize_l2::op::{DynamicName, SlotContentOp};
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::{ScopeBinding, ScopeOrigin};
 
 use super::consume::{Channels, SlotSpelling};
@@ -18,7 +18,7 @@ use crate::lower::simple_identifier;
 
 /// Canonicalize one spelling and consume its scope.
 pub(super) fn spelling(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     content: &SlotContentOp<'_>,
 ) -> SlotSpelling {
@@ -37,14 +37,14 @@ pub(super) fn spelling(
 /// `default` under [`RULE_DEFAULT_NAME`], a dynamic argument ignores
 /// modifiers and stays pessimal.
 fn canonical_name(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     content: &SlotContentOp<'_>,
 ) -> (SlotName, bool) {
     match &content.name {
         None => {
             let text = fold("default", &content.modifiers);
-            channels.provenance.push(ProvenanceRecord {
+            channels.provenance.record(|| ProvenanceRecord {
                 rule: String::from(RULE_DEFAULT_NAME),
                 node: id,
                 // The name position was unauthored — the empty before is
@@ -95,7 +95,7 @@ fn fold(base: &str, modifiers: &[&str]) -> String {
 /// bindings byte-equal with what the params surface derives through the
 /// same one scanner (`simple_identifier`, the #4365 discipline).
 fn consume_scope(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     id: Option<NodeId>,
     content: &SlotContentOp<'_>,
 ) -> SlotParams {
@@ -147,7 +147,7 @@ fn consume_scope(
         Some(name) => SlotBound::Named(String::from(name)),
         None => SlotBound::Pending,
     };
-    channels.provenance.push(ProvenanceRecord {
+    channels.provenance.record(|| ProvenanceRecord {
         rule: String::from("pass.v-slot.scope"),
         node: Some(id),
         before: cstr!(

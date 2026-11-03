@@ -20,6 +20,7 @@ use vize_l0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
 use vize_l1::markup::{Attribute, Element, SurfaceChild};
 
 use vize_l2::op::{IfBranch, IfOp, Namespace, Op, Region};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, BranchKind, analyze, attr_text, element_core};
@@ -54,7 +55,7 @@ type Branch<'a, 't> = (
 /// run lane (`lower::text::lower_text_run` — merging), everything else
 /// as before.
 pub(crate) fn lower_children<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
@@ -62,7 +63,7 @@ pub(crate) fn lower_children<'a>(
 }
 
 fn lower_children_guarded<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
@@ -94,7 +95,7 @@ fn lower_children_guarded<'a>(
                             "error.v-else-orphan",
                             None,
                             attr_slice(cx, attr),
-                            String::default(),
+                            String::default,
                             attr_span(cx, attr),
                         );
                         out.push(lower_with_for(cx, element, &analyzed, ns));
@@ -131,7 +132,7 @@ fn is_branch_gap(child: &SurfaceChild<'_>) -> bool {
 /// Lower a `v-if` chain starting at `start`. Returns the index just past
 /// the last consumed sibling.
 fn lower_if_group<'a, 't>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &'t [SurfaceChild<'a>],
     start: usize,
     (first, first_analyzed, first_attr): (&'t Element<'a>, Analyzed<'a>, &'t Attribute<'a>),
@@ -179,7 +180,7 @@ fn lower_if_group<'a, 't>(
         "lower.if",
         node,
         attr_slice(cx, first_attr),
-        cstr!("ui.if branches={}", branches.len()),
+        || cstr!("ui.if branches={}", branches.len()),
         span,
     );
 
@@ -198,7 +199,7 @@ fn lower_if_group<'a, 't>(
                     "drop.branch-gap",
                     None,
                     token.text,
-                    String::default(),
+                    String::default,
                     gap_span,
                 );
             }
@@ -275,7 +276,7 @@ fn lower_if_group<'a, 't>(
 /// `v-for` wrap when it has one, its children directly when it is an
 /// unwrapped `<template>`, the element op otherwise.
 fn branch_body<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
@@ -315,7 +316,7 @@ fn branch_body<'a>(
 
 /// Lower an element, wrapping it in its `ui.for` when it carries one.
 pub(crate) fn lower_with_for<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,

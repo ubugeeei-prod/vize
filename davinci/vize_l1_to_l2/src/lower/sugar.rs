@@ -14,6 +14,7 @@ use vize_l0::{Box, String, cstr};
 use vize_l1::markup::Element;
 
 use vize_l2::op::{BindingOp, VueSlotScopeOp};
+use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
@@ -23,7 +24,11 @@ use super::expr::expr_at;
 
 /// Whether this element should consume `slot-scope`/`scope` (and the
 /// companion static `slot`) into a dialect binding.
-pub(crate) fn should_take(cx: &Cx<'_>, element: &Element<'_>, analyzed: &Analyzed<'_>) -> bool {
+pub(crate) fn should_take(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    element: &Element<'_>,
+    analyzed: &Analyzed<'_>,
+) -> bool {
     cx.caps.scoped_slot_attrs
         && !has_v_slot(analyzed)
         && scope_attr_index(element, analyzed).is_some()
@@ -66,7 +71,7 @@ pub(crate) fn companion_slot_index(
 /// this binding so the 1:1 rewrite to `ui.slot-content` keeps the same
 /// side-table entry.
 pub(crate) fn lower_slot_scope<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     attr: &vize_l1::markup::Attribute<'a>,
     companion_slot: Option<usize>,
@@ -99,7 +104,7 @@ pub(crate) fn lower_slot_scope<'a>(
             },
         );
     }
-    let after = match name {
+    let after = || match name {
         None => String::from("vue.slot-scope"),
         Some(text) => cstr!("vue.slot-scope \"{text}\""),
     };

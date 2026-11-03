@@ -3,12 +3,13 @@
 use vize_l0::{Box, String};
 use vize_l1::markup::Attribute;
 use vize_l2::op::{BindingOp, VueCloakOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::Directive;
 
 pub(crate) fn lower_cloak<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     _directive: &Directive<'a>,
 ) -> BindingOp<'a> {
@@ -18,7 +19,7 @@ pub(crate) fn lower_cloak<'a>(
         "lower.vue-cloak",
         node,
         attr_slice(cx, attr),
-        String::from("vue.cloak"),
+        || String::from("vue.cloak"),
         span,
     );
     BindingOp::VueCloak(Box::new_in(VueCloakOp { span }, &cx.allocator))

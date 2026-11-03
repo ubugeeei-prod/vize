@@ -30,7 +30,7 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 
 use vize_l2::op::Region;
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::ScopeFacts;
 
 #[cfg(feature = "davinci-benchmark-profile")]
@@ -86,7 +86,9 @@ pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_fi
 /// The L2 artifact one lowering produces: the op tree plus the three
 /// fact channels, all live even when diagnostics are present (the
 /// Lean-InfoTree survival property — kept fragments, not rollback).
-pub struct Lowered<'a> {
+/// `P` is the provenance sink the consumer chose; by default every
+/// decision is kept.
+pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// The compile arena this artifact was lowered into. The legalizing
     /// pass allocates rewritten expressions and inserted listeners here.
     pub allocator: &'a Allocator,
@@ -103,8 +105,8 @@ pub struct Lowered<'a> {
     /// outlive the arena.
     pub diagnostics: StdVec<Diagnostic>,
     /// One record per lowering decision, in decision order, dropped
-    /// content included (`vize_l2::provenance`).
-    pub provenance: StdVec<ProvenanceRecord>,
+    /// content included (`vize_l2::provenance`), when `P` keeps records.
+    pub provenance: P,
     /// Hygiene scope facts per binding-introducing op
     /// (`vize_l2::scope`).
     pub scopes: SideTable<ScopeFacts>,
@@ -182,7 +184,7 @@ pub fn lower_preserving_comments<'a>(
     lower_with_caps_and_comment_policy(allocator, tree, errors, LegacyCaps::VUE3, true, &[], None)
 }
 
-pub(crate) fn lower_with_caps_and_comment_policy<'a>(
+pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
@@ -190,7 +192,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a>(
     preserve_comments: bool,
     custom_element_patterns: &[String],
     custom_element_predicate: Option<fn(&str) -> bool>,
-) -> Lowered<'a> {
+) -> Lowered<'a, P> {
     let Ok(root) = SourceRoot::new(tree.source) else {
         return oversized_source(allocator, tree.source, caps);
     };
@@ -246,7 +248,7 @@ struct LowerCustomElements<'a> {
     predicate: Option<fn(&str) -> bool>,
 }
 
-fn lower_source_block_with_caps_and_comment_policy<'a>(
+fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
@@ -254,7 +256,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
     caps: LegacyCaps,
     preserve_comments: bool,
     custom_elements: LowerCustomElements<'_>,
-) -> Lowered<'a> {
+) -> Lowered<'a, P> {
     debug_assert!(
         tree.source.as_ptr() == block.source().as_ptr()
             && tree.source.len() == block.source().len(),
@@ -276,11 +278,11 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
 /// [`vize_l1::markup::parse`] refuses such sources, so a tree reaching here was
 /// built by hand. Nothing can be spanned inside it: lowering yields an
 /// empty root and one diagnostic instead of mis-measured ops.
-fn oversized_source<'a>(
+fn oversized_source<'a, P: Default>(
     allocator: &'a Allocator,
     source: &'a str,
     caps: LegacyCaps,
-) -> Lowered<'a> {
+) -> Lowered<'a, P> {
     Lowered {
         allocator,
         source,
@@ -292,7 +294,7 @@ fn oversized_source<'a>(
             Span::new(0, 0),
             "the template source is too large to address with u32 offsets; nothing was lowered",
         )],
-        provenance: StdVec::new(),
+        provenance: P::default(),
         scopes: SideTable::new(),
         texts: SideTable::new(),
         for_facts: SideTable::new(),
@@ -316,7 +318,7 @@ fn surface_error_span(block: SourceBlock<'_>, offset: u32) -> Span {
     })
 }
 
-impl fmt::Debug for Lowered<'_> {
+impl<P: fmt::Debug> fmt::Debug for Lowered<'_, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Lowered")
             .field("root", &self.root)

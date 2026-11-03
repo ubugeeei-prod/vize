@@ -1,10 +1,10 @@
-//! Attribution of full provenance; never changes its retention or spelling.
+//! Attribution of kept provenance; never changes its retention or spelling.
 //! Heap capacities are retained storage, not allocation traffic or peak usage.
 
 use vize_l0::profiler::{ProfileGuard, global_profiler};
 use vize_l2::provenance::ProvenanceRecord;
 
-/// The caller has already built `after`, so its allocation is excluded here.
+/// `after` is built before this span opens, so its allocation is excluded.
 pub(super) fn record_guard() -> Option<ProfileGuard> {
     global_profiler().global_span("l1_to_l2.provenance.record")
 }

@@ -19,6 +19,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::{Span, String, cstr};
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::Cx;
 
@@ -26,21 +27,25 @@ mod coordinates;
 
 /// Trim `text` and return the trimmed slice with its authored span.
 /// Trimming keeps the slice a source slice, so spans stay exact.
-pub(crate) fn trimmed<'a>(cx: &Cx<'a>, text: &'a str) -> (&'a str, Span) {
+pub(crate) fn trimmed<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&'a str, Span) {
     let slice = text.trim();
     (slice, cx.span_of(slice))
 }
 
 /// Lower one expression position: trim, then admit through the shared
 /// JS rule. Total — refused text comes back as the classified escape.
-pub(crate) fn expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+pub(crate) fn expr_at<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
     let (slice, span) = trimmed(cx, text);
     coordinates::expression(cx, slice, span, false)
 }
 
 /// The same dialect selection for synthesized shorthand text at an authored
 /// argument span. Such text may be arena-owned rather than an L0 slice.
-pub(crate) fn expression_in<'a>(cx: &Cx<'a>, slice: &'a str, span: Span) -> ExprRef<'a> {
+pub(crate) fn expression_in<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    slice: &'a str,
+    span: Span,
+) -> ExprRef<'a> {
     if let Some(dialect) = cx.foreign_dialect {
         return ExprRef::Foreign(cx.allocator.alloc(ForeignExpr {
             dialect: dialect.name,
@@ -55,7 +60,7 @@ pub(crate) fn expression_in<'a>(cx: &Cx<'a>, slice: &'a str, span: Span) -> Expr
 /// `v-on` handler admission: a lone expression keeps the retained JS
 /// payload, while a valid statement body that cannot be represented by one
 /// expression is classified explicitly as `Opaque(MultiStatement)`.
-pub(crate) fn handler_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+pub(crate) fn handler_expr_at<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
     let expr = expr_at(cx, text);
     let ExprRef::Opaque(opaque) = expr else {
         return expr;
@@ -66,7 +71,7 @@ pub(crate) fn handler_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     opaque_at(cx, OpaqueReason::MultiStatement, opaque.source, opaque.span)
 }
 
-fn parses_as_handler_body(cx: &Cx<'_>, source: &str) -> bool {
+fn parses_as_handler_body(cx: &Cx<'_, impl ProvenanceSink>, source: &str) -> bool {
     if contains_module_declaration(cx, source) {
         return false;
     }
@@ -87,7 +92,7 @@ fn parses_as_handler_body(cx: &Cx<'_>, source: &str) -> bool {
     semantic.diagnostics.is_empty()
 }
 
-fn contains_module_declaration(cx: &Cx<'_>, source: &str) -> bool {
+fn contains_module_declaration(cx: &Cx<'_, impl ProvenanceSink>, source: &str) -> bool {
     let parsed = Parser::new(
         cx.allocator.as_oxc(),
         source,
@@ -111,7 +116,7 @@ fn contains_module_declaration(cx: &Cx<'_>, source: &str) -> bool {
 /// Interpolation / `v-bind` value admission: Vue 2 pipe filters first
 /// when the dialect asks, so `|` is not bitwise-OR. Other directive
 /// expressions stay on [`expr_at`].
-pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
     if cx.foreign_dialect.is_some() {
         return expr_at(cx, text);
     }
@@ -123,7 +128,7 @@ pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
 /// lowering can assign, because they are facts about where the text came
 /// from, never recoverable from the text (P2-5b).
 pub(crate) fn opaque_at<'a>(
-    cx: &Cx<'a>,
+    cx: &Cx<'a, impl ProvenanceSink>,
     reason: OpaqueReason,
     slice: &'a str,
     span: Span,

@@ -8,6 +8,7 @@ use vize_l0::{Box, String, cstr};
 use vize_l1::markup::Attribute;
 
 use vize_l2::op::{BindingOp, VueMemoOp, VueOnceOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::binding::defer;
 use super::cx::{Cx, attr_slice, attr_span};
@@ -17,7 +18,7 @@ use super::expr::{desc, expr_at};
 
 /// Bare `v-once` (no argument, modifier, or value) → `vue.once`.
 pub(crate) fn lower_once<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
@@ -37,7 +38,7 @@ pub(crate) fn lower_once<'a>(
         "lower.vue-once",
         node,
         attr_slice(cx, attr),
-        String::from("vue.once"),
+        || String::from("vue.once"),
         span,
     );
     Some(BindingOp::VueOnce(Box::new_in(
@@ -48,7 +49,7 @@ pub(crate) fn lower_once<'a>(
 
 /// `v-memo="…"` with a value and no argument or modifier → `vue.memo`.
 pub(crate) fn lower_memo<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
@@ -75,7 +76,7 @@ pub(crate) fn lower_memo<'a>(
         "lower.vue-memo",
         node,
         attr_slice(cx, attr),
-        cstr!("vue.memo {}", desc(&value)),
+        || cstr!("vue.memo {}", desc(&value)),
         span,
     );
     Some(BindingOp::VueMemo(Box::new_in(

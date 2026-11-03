@@ -10,7 +10,7 @@ use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Span, String, ensure_sufficient_stack};
 use vize_l2::op::{BindingOp, Op};
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 
 use super::super::walk::PageWalk;
@@ -20,19 +20,19 @@ use crate::lower::{ForWrapper, WrapperKeys};
 
 /// The pass's channels: the read-only scope table, the unified output
 /// channels, and the pass state.
-pub(super) struct Channels<'l> {
+pub(super) struct Channels<'l, P> {
     pub scopes: &'l SideTable<ScopeFacts>,
     pub wrappers: &'l SideTable<WrapperKeys>,
     pub for_wrappers: &'l SideTable<ForWrapper>,
     pub diagnostics: &'l mut StdVec<Diagnostic>,
-    pub provenance: &'l mut StdVec<ProvenanceRecord>,
+    pub provenance: &'l mut P,
     /// Every consumed slot-scope tag, for the freshness law.
     pub seen_tags: StdVec<ScopeTag>,
     /// The published facts, keyed by `ui.component` id.
     pub facts: SideTable<SlotFacts>,
 }
 
-impl Channels<'_> {
+impl<P: ProvenanceSink> Channels<'_, P> {
     /// One user error plus its provenance record, the vif shape.
     pub(super) fn error(
         &mut self,
@@ -40,7 +40,7 @@ impl Channels<'_> {
         message: &'static str,
         rule: &'static str,
         node: Option<NodeId>,
-        before: String,
+        before: impl FnOnce() -> String,
     ) {
         self.diagnostics.push(Diagnostic::legacy_error(
             &crate::exemptions::V_SLOT,
@@ -48,10 +48,10 @@ impl Channels<'_> {
             span,
             String::from(message),
         ));
-        self.provenance.push(ProvenanceRecord {
+        self.provenance.record(|| ProvenanceRecord {
             rule: String::from(rule),
             node,
-            before,
+            before: before(),
             after: String::default(),
             span,
         });
@@ -184,7 +184,7 @@ fn for_region_default_slot(from_template: bool, views: &[ChildView]) -> bool {
 /// Visit one region's ops in page order, returning their views.
 pub(super) fn region<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     ops: &[Op<'a>],
 ) -> StdVec<ChildView> {
     ensure_sufficient_stack(|| {
@@ -196,7 +196,11 @@ pub(super) fn region<'a>(
     })
 }
 
-fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> ChildView {
+fn visit<'a>(
+    walk: &mut PageWalk,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
+    op: &Op<'a>,
+) -> ChildView {
     let id = walk.mint();
     match op {
         Op::Element(element) => {
@@ -215,7 +219,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                         MISPLACED_MESSAGE,
                         "error.v-slot-misplaced",
                         id,
-                        String::default(),
+                        String::default,
                     );
                 }
                 // A slot-carrying non-template element never anchors the
@@ -316,7 +320,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                     MISPLACED_MESSAGE,
                     "error.v-slot-misplaced",
                     id,
-                    String::default(),
+                    String::default,
                 );
             }
             let _views = region(walk, channels, &slot.fallback.ops);
@@ -336,7 +340,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
 /// `ui.slot-content` ones.
 fn bindings<'a>(
     walk: &mut PageWalk,
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     list: &[BindingOp<'a>],
 ) -> StdVec<SlotSpelling> {
     let mut slots = StdVec::new();

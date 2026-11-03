@@ -7,6 +7,7 @@
 //! attributes stay recorded drops.
 
 use alloc::vec::Vec as StdVec;
+use vize_l2::provenance::ProvenanceSink;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String, cstr};
@@ -124,7 +125,7 @@ const _: () = {
 /// admits it — a recorded quirk the differential lane counts rather
 /// than imitates).
 pub(crate) fn capture_wrapper_key<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
 ) -> Option<(usize, WrapperKey)> {
@@ -167,7 +168,7 @@ pub(crate) fn capture_wrapper_key<'a>(
 
 /// Static attributes that ride on a lowered `<template v-for>` fragment.
 pub(crate) fn capture_wrapper_attrs<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     captured_key: Option<usize>,
@@ -233,7 +234,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
 /// The first runtime directive (`v-show` or a custom directive) on a
 /// `<template v-for>` wrapper; the shipped lane keeps it on the fragment.
 pub(crate) fn runtime_directive(
-    cx: &Cx<'_>,
+    cx: &Cx<'_, impl ProvenanceSink>,
     element: &Element<'_>,
     analyzed: &Analyzed<'_>,
 ) -> Option<Span> {
@@ -267,7 +268,7 @@ pub(crate) fn chain_once_attr(element: &Element<'_>, analyzed: &Analyzed<'_>) ->
 
 /// Record one captured wrapper key under provenance.
 pub(crate) fn record_wrapper_key(
-    cx: &mut Cx<'_>,
+    cx: &mut Cx<'_, impl ProvenanceSink>,
     node: Option<NodeId>,
     key: &WrapperKey,
     branch: usize,
@@ -281,7 +282,7 @@ pub(crate) fn record_wrapper_key(
         "lower.branch-wrapper-key",
         node,
         spelling,
-        cstr!("wrapper key branch={branch}"),
+        || cstr!("wrapper key branch={branch}"),
         *span,
     );
 }
@@ -293,7 +294,7 @@ pub(crate) fn record_wrapper_key(
 /// series 5), and `extra_captured` the attributes another wrapper fact
 /// carries; neither is a drop.
 pub(crate) fn record_template_drops_except<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     captured: Option<usize>,
@@ -318,7 +319,7 @@ pub(crate) fn record_template_drops_except<'a>(
             "drop.template-attribute",
             None,
             attr_slice(cx, attr),
-            String::default(),
+            String::default,
             attr_span(cx, attr),
         );
     }

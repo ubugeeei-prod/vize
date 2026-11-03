@@ -10,6 +10,7 @@ use vize_l1::markup::Element;
 
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{ForBinding, ForOp, Namespace, Op, Region};
+use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
 pub use vize_l2::analysis::for_facts::{ForName, ForParts};
@@ -32,7 +33,7 @@ mod tests;
 /// Build the `ui.for` for an element's `v-for` — or, when the directive
 /// carries no expression at all, the kept fragment without it.
 pub(crate) fn lower_for<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
@@ -55,7 +56,7 @@ pub(crate) fn lower_for<'a>(
             "error.v-for-no-expression",
             None,
             attr_slice(cx, attr),
-            String::default(),
+            String::default,
             attr_span(cx, attr),
         );
         return element_core(cx, element, analyzed, ns);
@@ -86,7 +87,7 @@ pub(crate) fn lower_for<'a>(
                 "error.v-for-malformed",
                 node,
                 text,
-                String::from("ui.for source=opaque(for-value) value=opaque(for-value)"),
+                || String::from("ui.for source=opaque(for-value) value=opaque(for-value)"),
                 text_span,
             );
             let binding = ForBinding {
@@ -144,7 +145,7 @@ pub(crate) fn lower_for<'a>(
                 "lower.for",
                 node,
                 text,
-                cstr!("ui.for source={} value={}", desc(&source), desc(&value)),
+                || cstr!("ui.for source={} value={}", desc(&source), desc(&value)),
                 text_span,
             );
             let binding = ForBinding {
@@ -203,14 +204,17 @@ pub(crate) fn lower_for<'a>(
 
 /// The zero-width escape at the alias's position (absent alias, or the
 /// undecomposable whole).
-fn value_hole<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+fn value_hole<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
     let hole = text.get(..0).unwrap_or(text);
     let span = cx.span_of(hole);
     opaque_at(cx, OpaqueReason::ForValue, hole, span)
 }
 
 /// An optional key/index position: present iff authored non-empty.
-fn alias_position<'a>(cx: &mut Cx<'a>, slice: Option<&&'a str>) -> Option<ExprRef<'a>> {
+fn alias_position<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    slice: Option<&&'a str>,
+) -> Option<ExprRef<'a>> {
     match slice {
         Some(slice) if !slice.is_empty() => Some(expr_at(cx, slice)),
         _ => None,
