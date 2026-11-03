@@ -28,6 +28,11 @@ No CSS ships.
 | G10 | no provider | mount an item                                               | throws `VIZE_UI_CONTEXT_MISSING`                                                                         | `items require a ListboxGrid provider`                                           |
 | G11 | pure helper | `moveInGrid`                                                | empty grids, ragged last rows, page moves, and row-wrap opt-out are deterministic                        | `pure grid navigation handles empty grids, ragged rows, and page moves`          |
 
+IME composition leaves selection and the active option unchanged and does not
+cancel composing key events, including Enter, Space, and Ctrl+A. Once composition
+ends, those keys retain their normal single- and multiple-selection behavior
+(`IME ... preserves ... grid selection`).
+
 ## SSR
 
 Ids come from the deterministic-id primitive; server markup is byte-identical

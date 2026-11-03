@@ -166,6 +166,40 @@ test("Enter and Space select in single mode; selectionFollowsFocus selects on ar
   follow.unmount();
 });
 
+for (const multiple of [false, true]) {
+  for (const key of ["Enter", " ", ...(multiple ? ["a"] : [])]) {
+    test(`IME ${JSON.stringify(key)} preserves ${multiple ? "multiple" : "single"} grid selection`, async () => {
+      const handle = mountGrid({ multiple });
+      try {
+        handle.root().focus();
+        await press(handle, "ArrowRight");
+        const event = await press(handle, key, { ctrlKey: key === "a", isComposing: true });
+
+        assert.equal(event.defaultPrevented, false);
+        assert.equal(active(handle), "Green");
+        assert.equal(
+          handle.getByRole("option", { name: "Green" }).getAttribute("aria-selected"),
+          "false",
+        );
+        assert.deepEqual(handle.recorded(), []);
+
+        const committed = await press(handle, key, { ctrlKey: key === "a" });
+        assert.equal(committed.defaultPrevented, true);
+        assert.equal(
+          handle.getByRole("option", { name: "Green" }).getAttribute("aria-selected"),
+          "true",
+        );
+        assert.deepEqual(
+          handle.recorded().map(({ event }) => event),
+          ["update:modelValue", "change"],
+        );
+      } finally {
+        handle.unmount();
+      }
+    });
+  }
+}
+
 test("multiple mode toggles, extends with Shift+arrows, and selects all with Ctrl+A", async () => {
   const handle = mountGrid({ multiple: true });
   handle.root().focus();

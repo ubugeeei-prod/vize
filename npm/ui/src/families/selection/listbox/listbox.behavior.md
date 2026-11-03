@@ -33,6 +33,7 @@ Styling is owned by consumers through parts, slots, CSS, and data attributes.
 | Home / End               | Moves the active option to the first or last navigable item.                                                | Same as single.                      |
 | Printable grapheme       | Runs locale-aware typeahead over option text and moves only active state.                                   | Same as single.                      |
 | Enter / Space            | Selects the active option.                                                                                  | Toggles the active option.           |
+| IME composition          | Leaves selection and active state unchanged without canceling the composing key event.                      | Same as single.                      |
 | Pointer click            | Selects the clicked enabled option.                                                                         | Toggles the clicked enabled option.  |
 | Disabled item            | Is exposed with `aria-disabled`, omitted from active navigation and typeahead, and cannot change selection. | Same as single.                      |
 | Controlled value         | Emits the requested value and waits for the parent to accept it.                                            | Same as single with readonly arrays. |

@@ -192,7 +192,12 @@ function onFocus(event: FocusEvent): void {
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (disabledState.value || event.defaultPrevented || event.target !== event.currentTarget) {
+  if (
+    disabledState.value ||
+    event.defaultPrevented ||
+    event.isComposing ||
+    event.target !== event.currentTarget
+  ) {
     return;
   }
   const move = gridMoveFromKey(event);
