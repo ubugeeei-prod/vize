@@ -4,7 +4,9 @@ import ts from "typescript";
 const declarations = new WeakMap<ts.SourceFile, ReadonlyMap<string, string>>();
 
 function compilerOptions(file: string): ts.CompilerOptions {
-  const configPath = ts.findConfigFile(path.dirname(file), ts.sys.fileExists);
+  const configPath = ts.findConfigFile(path.dirname(file), (candidate) =>
+    ts.sys.fileExists(candidate),
+  );
   if (configPath == null)
     return {
       target: ts.ScriptTarget.ES2022,
@@ -12,7 +14,7 @@ function compilerOptions(file: string): ts.CompilerOptions {
       moduleResolution: ts.ModuleResolutionKind.Bundler,
       strict: true,
     };
-  const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  const config = ts.readConfigFile(configPath, (candidate) => ts.sys.readFile(candidate));
   if (config.error != null)
     throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
   const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
