@@ -21,16 +21,16 @@ use chunk::{contains_comment, format_chunk};
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use comment_scan::{SegmentKind, has_nested_comment, split_top_level_comments};
+use comment_scan::{CssSegment, SegmentKind, split_standalone_comments};
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
 use vize_l0::{String, ToCompactString};
 
 /// Format CSS content using lightningcss.
 ///
-/// Top-level (depth 0) comments are extracted before parsing and re-inserted
+/// Comments between complete rules are extracted before parsing and re-inserted
 /// at their original boundaries, because lightningcss drops non-license
-/// comments during parse. Nested comments keep the original block text instead
-/// of risking silent data loss.
+/// comments during parse. Comments inside a rule keep the original block text
+/// because detaching them would change or split its syntax.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     // Re-quote before layout so a second pass lays out the same tokens.
     if options.normalize_css_quotes {
@@ -73,19 +73,19 @@ fn format_style_layout(source: &str, options: &FormatOptions) -> Result<String, 
         return Ok(String::default());
     }
 
-    if has_nested_comment(source) {
-        return Ok(trimmed.to_compact_string());
-    }
-
     if !contains_comment(source) {
         return format_chunk(trimmed, options);
     }
 
-    format_with_preserved_top_level_comments(source, options)
+    match split_standalone_comments(source) {
+        Some(segments) => format_with_preserved_top_level_comments(source, segments, options),
+        None => Ok(trimmed.to_compact_string()),
+    }
 }
 
 fn format_with_preserved_top_level_comments(
     source: &str,
+    segments: Vec<CssSegment<'_>>,
     options: &FormatOptions,
 ) -> Result<String, FormatError> {
     let newline = options.newline_string();
@@ -93,7 +93,7 @@ fn format_with_preserved_top_level_comments(
     let mut emitted_any = false;
     let mut separator_lines = 1;
 
-    for segment in split_top_level_comments(source) {
+    for segment in segments {
         match segment.kind {
             SegmentKind::Code => {
                 let trimmed_chunk = segment.content.trim();

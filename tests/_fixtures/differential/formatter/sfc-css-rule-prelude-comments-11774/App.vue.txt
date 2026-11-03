@@ -1,0 +1,3 @@
+<style scoped>
+.foo/* selector */.bar { color: red; }
+</style>
