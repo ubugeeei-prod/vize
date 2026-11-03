@@ -6,12 +6,10 @@
 //! stays in `lower/text.rs`.
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::provenance::ProvenanceSink;
-
 use vize_l0::{Allocator, String, StringBuilder};
 use vize_l1::markup::SurfaceChild;
 
-use super::super::cx::Cx;
+use super::lane::Lane;
 
 /// Whether `tag` suppresses condensing for its whole subtree: the
 /// shipped `is_pre_tag` (`tag == "pre"`).
@@ -29,13 +27,13 @@ pub(super) fn is_vue_ws(c: char) -> bool {
 /// Whether `child` is a comment this compile is not preserving — a
 /// child the shipped lane never built, so the text rules must look past
 /// it in every direction.
-fn invisible_comment(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> bool {
-    !cx.preserve_comments() && matches!(child, SurfaceChild::Comment(_))
+fn invisible_comment(lane: &Lane<'_>, child: &SurfaceChild<'_>) -> bool {
+    !lane.preserve_comments() && matches!(child, SurfaceChild::Comment(_))
 }
 
 /// The plan for one text child, computed list-wide before lowering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum TextAction<'a> {
+pub enum TextAction<'a> {
     /// Lower as authored.
     Keep,
     /// Lower with this content (a condensed rewrite, or the single
@@ -176,10 +174,7 @@ struct TextGroup {
     has_newline: bool,
 }
 
-fn text_groups<'a>(
-    cx: &Cx<'a, impl ProvenanceSink>,
-    children: &[SurfaceChild<'a>],
-) -> StdVec<TextGroup> {
+fn text_groups<'a>(lane: &Lane<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGroup> {
     let mut groups = StdVec::new();
     let mut i = 0usize;
     while i < children.len() {
@@ -199,13 +194,15 @@ fn text_groups<'a>(
         let mut end_offset = None;
         while let Some(child) = children.get(i) {
             let (offset, len, end) = match child {
-                SurfaceChild::Text(token) if token.leading.is_empty() => {
-                    (cx.offset(token.text), token.text.len() as u32, None::<u32>)
-                }
+                SurfaceChild::Text(token) if token.leading.is_empty() => (
+                    lane.offset(token.text),
+                    token.text.len() as u32,
+                    None::<u32>,
+                ),
                 SurfaceChild::Comment(token)
-                    if invisible_comment(cx, child) && token.leading.is_empty() =>
+                    if invisible_comment(lane, child) && token.leading.is_empty() =>
                 {
-                    (cx.offset(token.text), 0, Some(cx.token_span(token).end))
+                    (lane.offset(token.text), 0, Some(lane.token_span(token).end))
                 }
                 _ => break,
             };
@@ -252,15 +249,15 @@ fn text_groups<'a>(
 /// (on parser output, one node each — the algorithm is then armature's
 /// exactly). All-`Keep` inside a suppressed subtree.
 pub(crate) fn plan_whitespace<'a>(
-    cx: &Cx<'a, impl ProvenanceSink>,
+    lane: &Lane<'a>,
     children: &[SurfaceChild<'a>],
 ) -> StdVec<TextAction<'a>> {
     let mut plan: StdVec<TextAction<'a>> = StdVec::new();
     plan.resize(children.len(), TextAction::Keep);
-    if cx.condense_suppressed() {
+    if lane.condense_suppressed() {
         return plan;
     }
-    let groups = text_groups(cx, children);
+    let groups = text_groups(lane, children);
 
     // Leading and trailing whitespace-only text is removed
     // unconditionally (`whitespace.rs:74-95`), group-wise.
@@ -330,7 +327,7 @@ pub(crate) fn plan_whitespace<'a>(
             if group.texts == 1
                 && let Some(SurfaceChild::Text(token)) = children.get(group.first_text)
                 && !token.text.chars().all(is_vue_ws)
-                && let Some(condensed) = condense_internal(cx.allocator, token.text)
+                && let Some(condensed) = condense_internal(lane.allocator(), token.text)
                 && let Some(slot) = plan.get_mut(group.first_text)
             {
                 *slot = TextAction::Content(condensed);
@@ -356,15 +353,11 @@ fn drop_members(plan: &mut [TextAction<'_>], group: &TextGroup) {
 /// gap — a comment, a dropped node or recovered junk between two
 /// children is a hard run boundary, so a merged span is always the
 /// authored bytes and the parts stay span-contiguous).
-pub(super) fn extends_run(
-    cx: &Cx<'_, impl ProvenanceSink>,
-    child: &SurfaceChild<'_>,
-    end: u32,
-) -> bool {
+pub(super) fn extends_run(lane: &Lane<'_>, child: &SurfaceChild<'_>, end: u32) -> bool {
     match child {
-        SurfaceChild::Text(token) => token.leading.is_empty() && cx.offset(token.text) == end,
+        SurfaceChild::Text(token) => token.leading.is_empty() && lane.offset(token.text) == end,
         SurfaceChild::Interpolation(node) => {
-            node.open.leading.is_empty() && cx.offset(node.open.text) == end
+            node.open.leading.is_empty() && lane.offset(node.open.text) == end
         }
         _ => false,
     }

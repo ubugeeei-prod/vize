@@ -72,7 +72,7 @@ pub(super) fn consume(cx: &mut Cx<'_, impl ProvenanceSink>, attribute: &Attribut
 }
 
 /// An element's own namespace, entered by tag.
-pub(super) fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
+pub fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
     if is_svg_tag(tag) {
         Namespace::Svg
     } else if is_math_ml_tag(tag) {
@@ -84,7 +84,7 @@ pub(super) fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
 
 /// The namespace an element's children live in (the integration points
 /// return to HTML).
-pub(super) fn children_ns(own: Namespace, tag: &str) -> Namespace {
+pub fn children_ns(own: Namespace, tag: &str) -> Namespace {
     match own {
         Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
         Namespace::MathMl

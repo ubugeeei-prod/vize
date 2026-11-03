@@ -32,7 +32,7 @@ mod custom_element;
 mod for_parts;
 mod span;
 mod text_parent;
-use text_parent::TextWhitespace;
+use super::text::{Lane, TextLane, TextSource, TextWhitespace};
 
 pub(crate) struct Cx<'a, P> {
     pub allocator: &'a Allocator,
@@ -127,9 +127,18 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
         self.features = self.features.observing(family);
     }
 
-    /// Whether the walk is inside a condense-suppressing subtree.
-    pub(crate) fn condense_suppressed(&self) -> bool {
-        self.text_whitespace != TextWhitespace::Normal
+    /// The text rules of the child list being lowered.
+    pub(crate) fn text_lane(&self) -> Lane<'a> {
+        Lane {
+            src: TextSource::new(self.allocator, self.block),
+            rules: TextLane {
+                preserve_comments: self.preserve_comments,
+                whitespace: self.text_whitespace,
+                ignore_newline_at: self.ignore_newline_at,
+                in_pre: self.condense_depth > 0,
+                frozen: self.v_pre_suppressed(),
+            },
+        }
     }
 
     /// Whether the walk is inside a `v-pre` subtree.
@@ -257,23 +266,11 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     /// is a slice of the one source (`vize_l1`'s P1-10 contract), so
     /// this is pointer arithmetic, never a search.
     pub(crate) fn offset(&self, slice: &str) -> u32 {
-        match self.block.offset_of(slice) {
-            Some(offset) => offset,
-            None => {
-                debug_assert!(
-                    false,
-                    "L1 handed the lowering a string that is not a block slice"
-                );
-                self.block.start()
-            }
-        }
+        super::text::block_offset(self.block, slice)
     }
 
     pub(crate) fn span_of(&self, slice: &str) -> Span {
-        self.block.span_of(slice).unwrap_or_else(|| {
-            let start = self.offset(slice);
-            Span::new(start, start.saturating_add(slice.len() as u32))
-        })
+        super::text::block_span(self.block, slice)
     }
 
     /// The span of a token's own text (`leading` excluded; a `Missing`
