@@ -18,17 +18,18 @@ pub(super) fn emit_unresolved_components(
     options: &VirtualTsOptions,
     global_components: &GlobalComponentPlan,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
-) {
-    let components = vize_croquis::facts::used_component_name_list(summary);
+) -> Vec<CompactString> {
+    let mut components = vize_croquis::facts::used_component_name_list(summary);
     if components.is_empty() {
-        return;
+        return components;
     }
     if components
         .iter()
         .all(|component| vize_croquis::drawer::is_dynamic_component_alias(component.as_str()))
     {
         ts.push_str("\n  // Mark used components as referenced\n");
-        return;
+        components.clear();
+        return components;
     }
     crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
         let external_template_bindings: FxHashSet<&str> = options
@@ -72,9 +73,9 @@ pub(super) fn emit_unresolved_components(
         }
 
         ts.push_str("\n  // Mark used components as referenced\n");
-        for component in &components {
+        components.retain_mut(|component| {
             if vize_croquis::drawer::is_dynamic_component_alias(component.as_str()) {
-                continue;
+                return false;
             }
             let safe = component_binding_reference_with_bindings(
                 summary,
@@ -84,8 +85,12 @@ pub(super) fn emit_unresolved_components(
                 component.as_str(),
             );
             append!(*ts, "  void {safe};\n");
-        }
+            *component = safe;
+            true
+        });
     });
+    components.sort_unstable();
+    components
 }
 
 fn component_name_matches_external_template_binding(

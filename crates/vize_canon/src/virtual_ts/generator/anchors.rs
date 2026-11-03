@@ -1,8 +1,10 @@
 //! Setup binding anchor emission for template-used names.
 
+use super::global_components::GlobalComponentPlan;
 use super::imports::{IdentifierUsage, ValueImportNames, collect_setup_binding_anchor_names};
+use crate::virtual_ts::types::VirtualTsOptions;
 use std::ops::Range;
-use vize_carton::{FxHashSet, String, append, profile};
+use vize_carton::{CompactString, FxHashSet, String, append, profile};
 use vize_croquis::{BindingType, Croquis};
 
 /// Header comment for the anchor list; the wording differs when unused-local
@@ -88,7 +90,37 @@ pub(super) struct SetupBindingAnchors<'a> {
 }
 
 impl SetupBindingAnchors<'_> {
+    pub(super) fn emit_with_components(
+        &self,
+        ts: &mut String,
+        options: &VirtualTsOptions,
+        global_components: &GlobalComponentPlan<'_>,
+        type_only_imports: &FxHashSet<CompactString>,
+    ) {
+        let value_reads = super::unresolved_components::emit_unresolved_components(
+            ts,
+            self.summary,
+            options,
+            global_components,
+            type_only_imports,
+        );
+        self.emit_with_value_reads(
+            ts,
+            "canon.virtual_ts.emit_setup_binding_anchors",
+            &value_reads,
+        );
+    }
+
     pub(super) fn emit(&self, ts: &mut String, label: &'static str) {
+        self.emit_with_value_reads(ts, label, &[]);
+    }
+
+    fn emit_with_value_reads(
+        &self,
+        ts: &mut String,
+        label: &'static str,
+        value_reads: &[CompactString],
+    ) {
         profile!(
             label,
             emit_setup_binding_anchors(
@@ -99,7 +131,10 @@ impl SetupBindingAnchors<'_> {
                 self.preserve_unused_diagnostics
                     .then_some(self.template_usage_names),
                 self.template_value_usage_names,
-                setup_binding_anchor_comment(self.preserve_unused_diagnostics),
+                (
+                    setup_binding_anchor_comment(self.preserve_unused_diagnostics),
+                    value_reads
+                ),
             )
         );
     }
@@ -112,8 +147,9 @@ fn emit_setup_binding_anchors(
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
     template_value_names: &FxHashSet<String>,
-    comment: &str,
+    references: (&str, &[CompactString]),
 ) {
+    let (comment, component_value_reads) = references;
     if !crate::virtual_ts::script_facts::has_typed_bindings(summary) {
         return;
     }
@@ -136,7 +172,15 @@ fn emit_setup_binding_anchors(
             let value_import = imports.bindings.contains(name.as_str());
             let kind = bindings.binding_type(name.as_str());
             let name = crate::virtual_ts::props::setup_anchor_identifier(summary, name, kind);
-            if is_reserved_anchor_name(&name) {
+            // The exact same lexical scope already read these component values.
+            // Namespace members do not establish a read of a different anchor.
+            // Imports without a real value read keep their const-enum-safe query.
+            if is_reserved_anchor_name(&name)
+                || (value_import
+                    && component_value_reads
+                        .binary_search_by(|read| read.as_str().cmp(name.as_str()))
+                        .is_ok())
+            {
                 continue;
             }
             if first {
@@ -220,6 +264,9 @@ mod contextual_names;
 mod value_import_names;
 
 #[cfg(test)]
+mod component_value_reads;
+
+#[cfg(test)]
 mod tests {
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
@@ -282,7 +329,10 @@ mod tests {
             &usage,
             None,
             &Default::default(),
-            "Reference setup bindings (used in template/CSS v-bind)",
+            (
+                "Reference setup bindings (used in template/CSS v-bind)",
+                &[],
+            ),
         );
         assert_eq!(
             anchors.as_str(),
@@ -338,7 +388,10 @@ const state = ref(State.Idle);"#;
             &usage,
             None,
             &Default::default(),
-            "Reference setup bindings (used in template/CSS v-bind)",
+            (
+                "Reference setup bindings (used in template/CSS v-bind)",
+                &[],
+            ),
         );
 
         assert_eq!(
@@ -373,7 +426,10 @@ onMounted(() => { stop = () => {}; count++; });"#;
             &usage,
             None,
             &Default::default(),
-            "Reference setup bindings (used in template/CSS v-bind)",
+            (
+                "Reference setup bindings (used in template/CSS v-bind)",
+                &[],
+            ),
         );
 
         assert_eq!(

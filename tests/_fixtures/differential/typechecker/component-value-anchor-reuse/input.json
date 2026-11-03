@@ -1,0 +1,47 @@
+{
+  "schema": "vize.component-value-anchor-reuse.v1",
+  "cases": [
+    {
+      "id": "direct",
+      "source": "<script setup lang=\"ts\">\nimport Child from './Child.vue';\n</script>\n<template><Child /></template>\n",
+      "expectedValueReads": ["  void Child;"],
+      "expectedBindingAnchors": []
+    },
+    {
+      "id": "alias",
+      "source": "<script setup lang=\"ts\">\nimport { Child as LocalChild } from './components';\n</script>\n<template><LocalChild /></template>\n",
+      "expectedValueReads": ["  void LocalChild;"],
+      "expectedBindingAnchors": []
+    },
+    {
+      "id": "kebab",
+      "source": "<script setup lang=\"ts\">\nimport FooBar from './FooBar.vue';\n</script>\n<template><foo-bar /></template>\n",
+      "expectedValueReads": ["  void FooBar;"],
+      "expectedBindingAnchors": []
+    },
+    {
+      "id": "namespace",
+      "source": "<script setup lang=\"ts\">\nimport * as UI from './components';\nvoid UI.Child;\n</script>\n<template><UI.Child /></template>\n",
+      "expectedValueReads": ["  void UI.Child;"],
+      "expectedBindingAnchors": ["  void (null as unknown as keyof typeof UI);"]
+    },
+    {
+      "id": "const-enum",
+      "source": "<script setup lang=\"ts\">\nimport { State } from './state';\n</script>\n<template>{{ State.Idle }}</template>\n",
+      "expectedValueReads": [],
+      "expectedBindingAnchors": ["  void (null as unknown as keyof typeof State);"]
+    },
+    {
+      "id": "local",
+      "source": "<script setup lang=\"ts\">\nconst Child = {};\n</script>\n<template><Child /></template>\n",
+      "expectedValueReads": ["  void Child;"],
+      "expectedBindingAnchors": ["  void Child;"]
+    },
+    {
+      "id": "type-only",
+      "source": "<script setup lang=\"ts\">\nimport type Child from './Child.vue';\n</script>\n<template><Child /></template>\n",
+      "expectedValueReads": ["  void $Component_Child;"],
+      "expectedBindingAnchors": []
+    }
+  ]
+}

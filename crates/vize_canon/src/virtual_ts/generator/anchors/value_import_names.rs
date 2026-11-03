@@ -80,7 +80,7 @@ fn pinned_import_facts_keep_whole_sets_and_both_anchor_modes() {
         &usage,
         Some(&names(&["aliased", "local"])),
         &names(&["local"]),
-        LABEL,
+        (LABEL, &[]),
     );
     assert_eq!(
         type_only_output.as_str(),
@@ -128,7 +128,7 @@ fn import_facts_own_their_generation_and_preserve_the_binding_filter() {
         &first_usage,
         None,
         &names(&["first"]),
-        LABEL,
+        (LABEL, &[]),
     );
     assert_eq!(
         output.as_str(),
