@@ -49,6 +49,9 @@ in
         cmp \
           ${vize.src}/crates/vize_carton/src/config/loader/module-runtime.mjs \
           ${root + /crates/vize_carton/src/config/loader/module-runtime.mjs}
+        cmp \
+          ${vize.src}/crates/vize_carton/src/config/loader/vite-runtime-validation.js \
+          ${root + /crates/vize_carton/src/config/loader/vite-runtime-validation.js}
         test ! -e ${vize.src}/playground/package.json
         test ! -e ${vize.src}/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
         touch "$out"
