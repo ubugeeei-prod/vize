@@ -166,6 +166,8 @@ pub enum TemplateExpressionKind {
     VHtml,
     /// v-text content: v-text="text"
     VText,
+    /// v-memo dependency expressions: v-memo="[dependencies]"
+    VMemo,
     /// v-model: v-model="value"
     VModel,
     /// Runtime property or slot argument: `:[name]` or `#[name]`.
@@ -193,6 +195,7 @@ impl TemplateExpressionKind {
             Self::VShow => "VShow",
             Self::VHtml => "VHtml",
             Self::VText => "VText",
+            Self::VMemo => "VMemo",
             Self::VModel => "VModel",
             Self::DynamicDirectiveArgument => "DynamicDirectiveArgument",
             Self::DynamicEventArgument => "DynamicEventArgument",

@@ -12630,6 +12630,50 @@
       }
     },
     {
+      "id": "typechecker/regression/memo-expression-11733",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "memo-expression-11733/Memo.vue.txt",
+          "sha256": "7ffdff08f6defe65af8d7c1de498a6c017134f76b5a8ad9d2af458ad8381534c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/Missing.vue.txt",
+          "sha256": "50f7ad550cedd43a4e327ae6a31498e37f2a382d3681d0537644978462916c81",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/Unused.vue.txt",
+          "sha256": "632fe91631217ef191888774ac416dbcbbddfb926722bff410ceba18df2cbe3b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/util.ts.txt",
+          "sha256": "3d000c5f4f0f4379e4d008a2edad09d2e3e0d05171af42fc35515fea1653e4d3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::memo_expression::memo_dependencies_check_members_and_preserve_unused_controls; reported #11733 valid v-memo dependency reads plus missing-property and unused-import negative controls under real host, LF/CRLF and noUnusedLocals false/true."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-component-v-for-source",
       "state": "active",
       "targets": [
