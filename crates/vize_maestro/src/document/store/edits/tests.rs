@@ -222,14 +222,13 @@ fn carried_native_family_does_not_own_the_edited_script_syntax() {
         owns_script_syntax: true,
     };
     assert!(store.carry_native(&uri(), 1, family));
-    assert_eq!(
+    assert!(
         store.carried_native(&uri(), 1).unwrap().owns_script_syntax,
-        true,
         "the family owns the text it was computed on"
     );
     assert!(store.apply_changes(&uri(), vec![edit(range((1, 0), (1, 0)), "const = ;\n")], 2));
     let carried = store.carried_native(&uri(), 2).unwrap();
-    assert_eq!(carried.owns_script_syntax, false);
+    assert!(!carried.owns_script_syntax);
     // Its syntax error described the old text; the type error stays.
     assert_eq!(
         carried.diagnostics,
