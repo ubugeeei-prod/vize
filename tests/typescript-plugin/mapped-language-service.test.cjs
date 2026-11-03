@@ -4,6 +4,7 @@ const { createMappedLanguageService } = require("../../npm/typescript-plugin/lan
 const helper = require("../../npm/native/language-projection.js");
 const { LanguageFeature: F } = helper;
 const ts = require("../node_modules/typescript");
+require("./classifications.test.cjs");
 
 void test("feature dispatch maps Unicode authored spans and keeps edits within exact verbatim text", () => {
   const file = "/src/日本語.vue";
