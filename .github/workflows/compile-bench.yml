@@ -42,6 +42,8 @@ env:
   COMPILE_BENCH_BASE: ${{ inputs.base || '' }}
   # Crates the verify job tests and lints.
   COMPILE_BENCH_VERIFY: "-p vize_atelier_sfc"
+  # A-1b-ii changes TS-source output by design; JS-source output must not change.
+  COMPILE_BENCH_TS_OUTPUT_MAY_CHANGE: "true"
 
 jobs:
   published:
