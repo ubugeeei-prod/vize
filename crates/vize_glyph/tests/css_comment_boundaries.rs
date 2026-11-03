@@ -30,15 +30,18 @@ fn sfc_style_comments_keep_selector_adjacency() {
 #[test]
 fn comments_between_complete_rules_still_allow_formatting() {
     let options = FormatOptions::default();
-    for source in [
-        ".a{color:red}\n/* between */\n.b{color:blue}",
-        "@import url(\"theme.css\");\n/* between */\n.b{color:blue}",
+    for (source, expected) in [
+        (
+            ".a{color:red}\n/* between */\n.b{color:blue}",
+            ".a {\n  color: red;\n}\n/* between */\n.b {\n  color: blue;\n}",
+        ),
+        (
+            "@import url(\"theme.css\");\n/* between */\n.b{color:blue}",
+            "@import url(\"theme.css\");\n/* between */\n.b {\n  color: blue;\n}",
+        ),
     ] {
         let formatted = format_style(source, &options).unwrap();
-        assert!(
-            formatted.contains("/* between */\n.b {\n  color: blue;\n}"),
-            "{formatted}"
-        );
+        assert_eq!(formatted.as_str(), expected);
         assert_eq!(format_style(&formatted, &options).unwrap(), formatted);
     }
 }

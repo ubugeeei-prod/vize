@@ -816,7 +816,13 @@
             "runtimeFileName": "App.vue"
           }
         ],
-        "config": []
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "62eb601bf81800462e717cb05f449b4104dfe402db4c12f97477f3745a69f51a",
+            "role": "project-vue-version-and-default-formatter-options"
+          }
+        ]
       },
       "provenance": {
         "issues": [],
@@ -864,7 +870,7 @@
               "vue3-sfc",
               "css-scoped"
             ],
-            "selector": "default Vue version with --no-config"
+            "selector": "explicit Vue 3 with default formatter options"
           }
         ]
       },
