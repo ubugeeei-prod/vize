@@ -33,7 +33,10 @@ env:
   # Config setups for the history sweep (vite, json, none).
   LINTFMT_BENCH_SETUPS: "json,none"
   # Source refs the profile job builds; empty means the merge base and HEAD.
-  LINTFMT_BENCH_PROFILE_REFS: "v0.424.10 HEAD"
+  LINTFMT_BENCH_PROFILE_REFS: "v0.428.1 HEAD"
+  # Extra lint arguments and the tasks the profile job records.
+  LINTFMT_BENCH_PROFILE_LINT_ARGS: "--no-config --preset ecosystem"
+  LINTFMT_BENCH_PROFILE_TASKS: "lint"
   LINTFMT_BENCH_BASE: ""
   LINTFMT_BENCH_VERIFY: "-p vize_patina -p vize_glyph"
 
@@ -284,12 +287,14 @@ jobs:
           data="$RUNNER_TEMP/perf.data"
           for label in $PROFILE_LABELS; do
             bin="$RUNNER_TEMP/bins/$label"
-            (cd "$corpus" && "$bin" lint . --quiet --profile) > "profiles/$label.lint-phases.txt" 2>&1 || true
-            for task in lint fmt; do
+            # shellcheck disable=SC2086
+            (cd "$corpus" && "$bin" lint . --quiet --profile $LINTFMT_BENCH_PROFILE_LINT_ARGS) > "profiles/$label.lint-phases.txt" 2>&1 || true
+            for task in $LINTFMT_BENCH_PROFILE_TASKS; do
               for threads in 1t max; do
                 out="$PWD/profiles/$label.$task.$threads"
                 if [[ $task == lint ]]; then
-                  cwd="$corpus"; cmd=("$bin" lint . --quiet)
+                  # shellcheck disable=SC2206
+                  cwd="$corpus"; cmd=("$bin" lint . --quiet $LINTFMT_BENCH_PROFILE_LINT_ARGS)
                 else
                   cwd="$RUNNER_TEMP/fmt-$label-$threads"; rm -rf "$cwd"; mkdir -p "$cwd"
                   cp "$corpus"/*.vue "$corpus/vite.config.mjs" "$cwd/"
