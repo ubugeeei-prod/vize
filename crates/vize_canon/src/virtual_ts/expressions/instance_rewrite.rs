@@ -128,43 +128,63 @@ pub(super) fn compose_diagnostic_prefixes(
     second: &[SpreadRewriteSegment],
     second_prefixes: &[SpreadRewriteSegment],
 ) -> Vec<SpreadRewriteSegment> {
+    let mut index = 0;
+    let mut second_anchors = second_prefixes
+        .iter()
+        .filter_map(|prefix| {
+            while first
+                .get(index)
+                .is_some_and(|row| row.generated.end <= prefix.source.start)
+            {
+                index += 1;
+            }
+            if let Some(row) = first.get(index).filter(|row| {
+                row.generated.start <= prefix.source.start && prefix.source.end <= row.generated.end
+            }) {
+                Some(SpreadRewriteSegment {
+                    generated: prefix.generated.clone(),
+                    source: row.source.start + prefix.source.start - row.generated.start
+                        ..row.source.start + prefix.source.end - row.generated.start,
+                })
+            } else {
+                None
+            }
+        })
+        .peekable();
+    let mut index = 0;
+    let mut first_anchors = first_prefixes
+        .iter()
+        .filter_map(|prefix| {
+            while second
+                .get(index)
+                .is_some_and(|row| row.source.end <= prefix.generated.start)
+            {
+                index += 1;
+            }
+            if let Some(row) = second.get(index).filter(|row| {
+                row.source.start <= prefix.generated.start && prefix.generated.end <= row.source.end
+            }) {
+                Some(SpreadRewriteSegment {
+                    generated: row.generated.start + prefix.generated.start - row.source.start
+                        ..row.generated.start + prefix.generated.end - row.source.start,
+                    source: prefix.source.clone(),
+                })
+            } else {
+                None
+            }
+        })
+        .peekable();
     let mut result = Vec::with_capacity(first_prefixes.len() + second_prefixes.len());
-    let mut index = 0;
-    for prefix in second_prefixes {
-        while first
-            .get(index)
-            .is_some_and(|row| row.generated.end <= prefix.source.start)
-        {
-            index += 1;
-        }
-        if let Some(row) = first.get(index).filter(|row| {
-            row.generated.start <= prefix.source.start && prefix.source.end <= row.generated.end
-        }) {
-            result.push(SpreadRewriteSegment {
-                generated: prefix.generated.clone(),
-                source: row.source.start + prefix.source.start - row.generated.start
-                    ..row.source.start + prefix.source.end - row.generated.start,
-            });
+    // Keep the next composition's cursor monotonic without sorting or rescanning.
+    while let (Some(first), Some(second)) = (first_anchors.peek(), second_anchors.peek()) {
+        if first.generated.start <= second.generated.start {
+            result.extend(first_anchors.next());
+        } else {
+            result.extend(second_anchors.next());
         }
     }
-    let mut index = 0;
-    for prefix in first_prefixes {
-        while second
-            .get(index)
-            .is_some_and(|row| row.source.end <= prefix.generated.start)
-        {
-            index += 1;
-        }
-        if let Some(row) = second.get(index).filter(|row| {
-            row.source.start <= prefix.generated.start && prefix.generated.end <= row.source.end
-        }) {
-            result.push(SpreadRewriteSegment {
-                generated: row.generated.start + prefix.generated.start - row.source.start
-                    ..row.generated.start + prefix.generated.end - row.source.start,
-                source: prefix.source.clone(),
-            });
-        }
-    }
+    result.extend(first_anchors);
+    result.extend(second_anchors);
     result
 }
 
@@ -176,6 +196,30 @@ mod tests {
     use vize_croquis::{Analyzer, AnalyzerOptions, ScopeId};
 
     mod receiver_plan;
+
+    #[test]
+    fn lexical_contextual_and_instance_diagnostic_anchors_all_survive() {
+        let summary = Analyzer::with_options(AnalyzerOptions::full()).finish();
+        let options = VirtualTsOptions::default();
+        let bindings = TemplateBindingAccess::from_props(
+            ["static".into(), "from".into()].into_iter().collect(),
+        )
+        .with_instance_globals(&summary, &options, &[], false, true);
+        for (expression, expected) in [
+            ("static + from + $ghost", vec!["static", "from", "$ghost"]),
+            ("static + $ghost + from", vec!["static", "$ghost", "from"]),
+        ] {
+            let actual = rewrite(expression, &bindings).unwrap();
+            assert_eq!(
+                actual
+                    .diagnostic_prefixes
+                    .iter()
+                    .map(|prefix| expression.get(prefix.source.clone()).unwrap())
+                    .collect::<Vec<_>>(),
+                expected
+            );
+        }
+    }
 
     #[test]
     fn semantic_reads_preserve_keys_literals_types_and_function_bindings() {
@@ -225,10 +269,10 @@ mod tests {
         let actual = rewrite(expression, &bindings).unwrap();
         assert_eq!(actual.code, "props[\"class\"] + __ctx.$ghost.known");
         assert_eq!(actual.diagnostic_prefixes.len(), 2);
-        let prefix = actual.diagnostic_prefixes.first().unwrap();
+        let prefix = actual.diagnostic_prefixes.last().unwrap();
         assert_eq!(actual.code.get(prefix.generated.clone()), Some("__ctx."));
         assert_eq!(expression.get(prefix.source.clone()), Some("$ghost"));
-        let reserved_prefix = actual.diagnostic_prefixes.last().unwrap();
+        let reserved_prefix = actual.diagnostic_prefixes.first().unwrap();
         assert_eq!(
             actual.code.get(reserved_prefix.generated.clone()),
             Some("props[\"")

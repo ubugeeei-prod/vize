@@ -465,10 +465,25 @@ mod tests {
 
     #[test]
     fn reserved_property_navigation_maps_only_authored_bytes() {
-        for expression in ["from", "{ from }", "`雪 ${from}`"] {
+        for (expression, expected) in [
+            ("from", vec![(7..11, 0..4)]),
+            (
+                "{ from }",
+                vec![(0..2, 0..2), (2..6, 2..6), (15..19, 2..6), (21..23, 6..8)],
+            ),
+            (
+                "`雪 ${from}`",
+                vec![(0..7, 0..7), (14..18, 7..11), (20..22, 11..13)],
+            ),
+        ] {
             let rewritten = rewrite(expression, &props(&["from"]))
                 .expect("reserved reads must keep their symbol identity");
-            assert!(!rewritten.segments.is_empty());
+            let actual = rewritten
+                .segments
+                .iter()
+                .map(|segment| (segment.generated.clone(), segment.source.clone()))
+                .collect::<Vec<_>>();
+            assert_eq!(actual, expected, "{expression}");
             for segment in &rewritten.segments {
                 assert_eq!(
                     rewritten.code.get(segment.generated.clone()),

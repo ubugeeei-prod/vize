@@ -66,10 +66,10 @@ fn composed_reserved_keys_preserve_authored_argument_diagnostics() {
         eprintln!("exact Content Mapper conformance requires {TSGO_ENV}");
         return;
     };
-    let config = workspace_root().join(
-        "tests/_fixtures/differential/typechecker/reserved-template-substitutions-11729/tsconfig.json.txt",
-    );
-    let original = "<script setup lang=\"ts\">\ndefineProps<{ static: string; from: string }>()\nconst needsNumber = (value: number) => value\n</script>\n<template>{{ `雪 ${static} ${needsNumber(from.length)}` }}</template>\n";
+    let fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/composed-reserved-binding-spans-11768");
+    let config = fixture.join("tsconfig.json.txt");
+    let original = fs::read_to_string(fixture.join("Probe.vue.txt")).unwrap();
     let mut hosts = vec![tsgo];
     if let Some(tsrs) = std::env::var_os("VIZE_TEST_CONTENT_MAPPER_TSRS") {
         hosts.push(PathBuf::from(tsrs));
