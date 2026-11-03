@@ -50,6 +50,7 @@ void test("codename scan counts paths, lines and serialized ids but not aliases 
       "crates/vize/src/profile.rs": 'record("davinci.expr.parses"); bench("davinci.rs");\n',
       "docs/davinci/plan/folio-format.md": "Folio and Impeto\n",
       "CHANGELOG.md": "impeto\n",
+      "tools/commands/davinci/completion-gates.ts": '"impeto",\n',
       "tests/_fixtures/run/cargo.jsonl": '{"impeto": 1}\n',
       "tests/_fixtures/differential/compiler/case/observed-base.json": '"davinci.s3_vapor.x"\n',
     }),

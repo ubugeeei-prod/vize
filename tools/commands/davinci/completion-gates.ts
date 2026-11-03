@@ -69,8 +69,17 @@ const serializedDavinci = /["'`]davinci\.[a-z0-9_]+[. ]/g;
 const capturePattern =
   /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
 
+// This gate's own definition and tests must spell the names they ban.
+const gateFiles = new Set([
+  "tools/commands/davinci/completion-gates.ts",
+  "tests/tooling/davinci-completion-gates.test.ts",
+]);
+
 const exemptPath = (file: string) =>
-  file.startsWith("docs/") || file === "CHANGELOG.md" || capturePattern.test(file);
+  file.startsWith("docs/") ||
+  file === "CHANGELOG.md" ||
+  gateFiles.has(file) ||
+  capturePattern.test(file);
 
 export interface CodenameReport {
   readonly paths: number;
