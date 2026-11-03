@@ -19,7 +19,7 @@ use vize_tool_support::common;
 
 const USAGE: &str = "Usage: rust-script tools/commands/editors/vscode/sync-typescript-plugin.rs <stage|inject> [vsix]";
 const PACKAGE_PATH: &str = "node_modules/@vizejs/typescript-vue-plugin";
-const PLUGIN_FILES: [&str; 10] = [
+const PLUGIN_FILES: &[&str] = &[
     "README.md",
     "component-contracts.cjs",
     "import-resolution.cjs",
