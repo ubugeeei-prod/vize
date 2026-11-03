@@ -107,7 +107,7 @@ mod tests {
     use crate::ide::IdeContext;
     use crate::server::ServerState;
 
-    #[cfg(unix)]
+    #[cfg(all(unix, feature = "native"))]
     #[test]
     fn resolved_import_alias_keeps_the_authored_workspace_spelling() {
         let directory = tempfile::tempdir().unwrap();

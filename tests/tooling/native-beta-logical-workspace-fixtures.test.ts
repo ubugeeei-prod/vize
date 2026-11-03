@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
@@ -13,11 +14,9 @@ import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legac
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 import { summarizeDialectCoverage } from "../differential/harness.mjs";
 import { readLogicalSourceActor } from "./support/logical-source-actor.ts";
+import { newNativeDocumentIdentityCases } from "../../tools/support/compat/github/native-document-identity-fixtures.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-// Private integration preparation can use the actual consumer owner's checkout.
-// Every source still has to match the same literal authority hashes.
-const sourceRoot = process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT ?? root;
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
 const fixtureRoot =
   "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/";
@@ -36,6 +35,55 @@ oldManifest.protocolCases = oldManifest.protocolCases.filter(
   (value: { id: string }) => value.id !== LOGICAL_WORKSPACE_PROTOCOL_ID,
 );
 const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+const componentSource = "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs";
+type Read = (side: "base" | "head", file: string) => Buffer | null;
+
+// The old actor retains its exact component source. Authenticate the complete
+// current transition before reconstructing that one historical source image.
+function historicalComponent(readCurrent: Read): Buffer {
+  const identity = manifest.nativeDocumentIdentityCases[0];
+  const archive = readCurrent("head", identity.sourceArchive.path);
+  assert.ok(archive);
+  const originals: Record<string, string> = JSON.parse(gunzipSync(archive).toString("utf8"));
+  const prior = structuredClone(manifest);
+  delete prior.nativeDocumentIdentityCases;
+  const admitted = newNativeDocumentIdentityCases(
+    undefined,
+    manifest.nativeDocumentIdentityCases,
+    (side, file) => {
+      if (side === "base" && file === manifestPath) return Buffer.from(JSON.stringify(prior));
+      if (side === "base" && Object.hasOwn(originals, file))
+        return Buffer.from(originals[file]!, "base64");
+      return readCurrent(side, file);
+    },
+  );
+  assert.ok(admitted.sources.has(componentSource));
+  const source = Buffer.from(originals[componentSource]!, "base64");
+  const historical = authority.production.files.find(
+    (entry: { path: string }) => entry.path === componentSource,
+  );
+  assert.equal(historical.changed, false);
+  assert.equal(sha(source), historical.afterSha256);
+  assert.equal(source.length, historical.afterBytes);
+  return source;
+}
+const readCurrent: Read = (_, file) => {
+  try {
+    return fs.readFileSync(path.join(root, file));
+  } catch {
+    return null;
+  }
+};
+const componentHistory = historicalComponent(readCurrent);
+
+// An explicit integration checkout always supplies its own actual bytes.
+function headSource(file: string, overrideRoot = process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT) {
+  if (overrideRoot === undefined && file === componentSource) return componentHistory;
+  if (overrideRoot === undefined && productionActor?.has(file)) return productionActor.get(file)!;
+  return fs.readFileSync(
+    path.join(file.startsWith(fixtureRoot) ? root : (overrideRoot ?? root), file),
+  );
+}
 function read(side: "base" | "head", file: string): Buffer | null {
   if (file === manifestPath)
     return Buffer.from(JSON.stringify(side === "base" ? oldManifest : manifest));
@@ -45,19 +93,38 @@ function read(side: "base" | "head", file: string): Buffer | null {
         cwd: root,
         stdio: ["ignore", "pipe", "ignore"],
       });
-    // Production bytes belong to the sealed registration actor. Current
-    // observer/tooling bytes remain independently authenticated below.
-    if (
-      !process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT &&
-      authority.production.files.some((entry: { path: string }) => entry.path === file)
-    ) {
-      return productionActor?.get(file) ?? null;
-    }
-    return fs.readFileSync(path.join(file.startsWith(fixtureRoot) ? root : sourceRoot, file));
+    return headSource(file);
   } catch {
     return null;
   }
 }
+
+void test("historical component reconstruction requires current source custody and preserves explicit readers", () => {
+  assert.notDeepEqual(headSource(componentSource, root), componentHistory);
+  assert.deepEqual(
+    headSource(authority.consumer.observer.path),
+    readCurrent("head", authority.consumer.observer.path),
+  );
+  assert.deepEqual(
+    headSource(authority.consumer.helper.path),
+    readCurrent("head", authority.consumer.helper.path),
+  );
+  assert.deepEqual(
+    headSource(authority.production.files[5].path),
+    readCurrent("head", authority.production.files[5].path),
+  );
+  const identity = manifest.nativeDocumentIdentityCases[0];
+  for (const file of [
+    componentSource,
+    identity.sourceArchive.path,
+    ...identity.inputs.map((input: { path: string }) => input.path),
+    ...identity.tests.map((consumer: { source: string }) => consumer.source),
+  ]) {
+    assert.throws(() =>
+      historicalComponent((side, target) => (target === file ? null : readCurrent(side, target))),
+    );
+  }
+});
 type Overrides = Record<string, Buffer | null>;
 function validate(rows: unknown = [row], previous: unknown = [], overrides: Overrides = {}) {
   return newLogicalWorkspaceProtocolCases(previous, rows, (side, file) =>
