@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
-import { publicInstanceReference } from "./public-instance-reference.js";
+import { currentVolarReference } from "./public-instance-reference.js";
 import {
   directory,
   workspace,
@@ -508,5 +508,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(packets, publicInstanceReference(expected));
+  assert.deepEqual(packets, currentVolarReference(expected));
 });

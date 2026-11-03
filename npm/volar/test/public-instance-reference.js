@@ -53,7 +53,7 @@ function withoutUnmappedListenerCheck(packets) {
 // This source-owned display successor has no new native-capture credit. The
 // original26/38 native packet archives retain their complete historical bytes.
 export function publicInstanceReference(packets) {
-  const out = withoutUnmappedListenerCheck(historicalPublicInstanceReference(packets));
+  const out = historicalPublicInstanceReference(packets);
   for (const [packetName, index, name] of changes) {
     const diagnostic = out.find((row) => row.name === packetName).result[index];
     assert.equal(
@@ -63,4 +63,9 @@ export function publicInstanceReference(packets) {
     diagnostic.messageText = `Property '${name}' does not exist on type '$TemplateInstance'.`;
   }
   return out;
+}
+
+/** The current native expectation: the display successor, then #11472. */
+export function currentVolarReference(packets) {
+  return withoutUnmappedListenerCheck(publicInstanceReference(packets));
 }

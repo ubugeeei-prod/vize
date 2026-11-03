@@ -74,6 +74,7 @@ fn transform_with_router_context(
     typed_router: Option<super::typed_router::Config<'_>>,
     type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
 ) -> CorsaResult<ContentMapperTransform> {
+    // Every public entry point lands here, so each gets the complete table.
     vize_l0::profile!(
         "canon.content_mapper.transform",
         transform_with_shared_sources(
@@ -84,6 +85,7 @@ fn transform_with_router_context(
             Some(Default::default()),
             type_sources,
         )
+        .map(ContentMapperTransform::with_unmapped_ignores)
     )
 }
 
@@ -99,7 +101,7 @@ fn transform_with_diagnostic_ownership(
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     >,
 ) -> CorsaResult<ContentMapperTransform> {
-    assemble_transform(
+    transform_with_shared_sources(
         path,
         content,
         transform_options,
@@ -109,29 +111,7 @@ fn transform_with_diagnostic_ownership(
     )
 }
 
-// Every entry point returns the complete directive table, unmapped ignores included.
 fn transform_with_shared_sources(
-    path: &Path,
-    content: &str,
-    transform_options: ContentMapperTransformOptions,
-    typed_router: Option<super::typed_router::Config<'_>>,
-    diagnostic_ownership: Option<
-        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
-    >,
-    type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
-) -> CorsaResult<ContentMapperTransform> {
-    assemble_transform(
-        path,
-        content,
-        transform_options,
-        typed_router,
-        diagnostic_ownership,
-        type_sources,
-    )
-    .map(ContentMapperTransform::with_unmapped_ignores)
-}
-
-fn assemble_transform(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,
