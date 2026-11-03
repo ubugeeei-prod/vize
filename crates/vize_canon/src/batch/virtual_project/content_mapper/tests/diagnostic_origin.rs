@@ -143,3 +143,39 @@ import Child from './Child.vue'
         authored(source, "<template>", "Child", 0)
     );
 }
+
+/// A `/* */` comment inside a prop value keeps the value's exact geometry.
+/// The prop copies used to strip it, which shortened the generated value, so
+/// an error inside it mapped to the start of the attribute value instead
+/// (#11655, n8n `ChatView.vue`: 758:22 instead of 760:18).
+#[test]
+fn commented_prop_values_keep_exact_diagnostic_origins() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/prop-value-comment-geometry-11655/Page.vue.txt"
+    ));
+    let transform =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let ignored = |at: usize| {
+        transform
+            .diagnostic_directives
+            .iter()
+            .flat_map(|table| &table.directives)
+            .any(|directive| {
+                let [_, _, start, end, policy, _] = directive.0;
+                policy == 0 && start <= at && at < end
+            })
+    };
+    let expected = authored(source, "<template>", "type", 0);
+    let origins: Vec<_> = transform
+        .text
+        .match_indices("message.type")
+        .map(|(at, _)| at + "message.".len())
+        .filter(|start| !ignored(*start))
+        .map(|start| diagnostic_origin(&transform.mappings, start..start + "type".len()))
+        .collect();
+    assert!(!origins.is_empty(), "{}", transform.text);
+    for origin in origins {
+        assert_eq!(origin, expected, "{}", transform.text);
+    }
+}

@@ -202,5 +202,6 @@ fn unchanged_and_disabled_values_retain_no_mapping_metadata() {
     let prop = prop(" /* disabled */ $ghost.value ");
     let span = generated_prop_span(&prop, &disabled).unwrap();
     assert!(span.binding_source.is_none());
-    assert_eq!(span.text, String::from("   $ghost.value "));
+    // Blanked, not stripped: the comment keeps its width (#11655).
+    assert_eq!(span.text, String::from("                $ghost.value "));
 }

@@ -12870,6 +12870,35 @@
       }
     },
     {
+      "id": "typechecker/regression/prop-value-comment-geometry-11655",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "prop-value-comment-geometry-11655/Page.vue.txt",
+          "sha256": "880c9c40e4787c928c27c8f2810307013929dd8866079233537b4e1e2bf5f1f0",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::diagnostic_origin::commented_prop_values_keep_exact_diagnostic_origins; #11655 a /* */ or // comment inside a component prop value is blanked, not stripped, so the value keeps its authored width and an error inside it maps to its exact authored token instead of the start of the attribute value. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-commented-vif-11378",
       "state": "active",
       "targets": [

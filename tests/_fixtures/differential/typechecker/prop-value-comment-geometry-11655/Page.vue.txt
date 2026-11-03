@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Bubble from "./Bubble.vue";
+const message = { id: "a" };
+const box = null as HTMLElement | null;
+</script>
+<template>
+  <Bubble
+    :min-height="
+      message.type === 'ai' && box
+        ? box.offsetHeight -
+          30 /* padding-top */ -
+          200 // padding-bottom
+        : undefined
+    "
+  />
+</template>

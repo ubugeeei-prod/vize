@@ -98,16 +98,25 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
             "actual diagnostic consumer honors this authored callee"
         );
         let property_start = row.span.gen_range.end;
+        // The bare statement strips comments; prop copies blank them to keep
+        // the authored width (#11655).
+        let blanked = expected_row
+            .3
+            .replace("( '", &format!("({}'", " ".repeat("/* inner */".len())));
+        let tail = output.code.get(property_start..).unwrap();
+        let spelling = if tail.get(..blanked.len()) == Some(blanked.as_str()) {
+            blanked.as_str()
+        } else {
+            expected_row.3
+        };
         assert_eq!(
-            output
-                .code
-                .get(property_start..property_start + expected_row.3.len()),
-            Some(expected_row.3),
+            tail.get(..spelling.len()),
+            Some(spelling),
             "all call syntax and type arguments remain authored"
         );
         if source.start == template.find("/* comment */greet").unwrap() + "/* comment */".len() {
             let argument = template.find("/* inner */'x'").unwrap() + "/* inner */".len();
-            let generated_argument = property_start + "greet( ".len();
+            let generated_argument = property_start + tail.find("'x'").unwrap();
             assert_eq!(
                 output
                     .mapping
