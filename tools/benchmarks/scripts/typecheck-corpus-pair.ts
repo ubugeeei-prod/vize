@@ -50,6 +50,8 @@ const PROBE_SCRIPT = join(scriptsDir, "content-mapper-byte-probe.ts");
 const GNU_TIME = "/usr/bin/time";
 
 type Host = (typeof MAPPER_HOSTS)[number];
+/** Each host at the setting the pair compares: tsc's default, tsrs's `--fast`. */
+export const PAIR_HOST_ARGS: Record<Host["id"], string[]> = { tsc: [], tsrs: ["--fast"] };
 type Mapper = (typeof CONTENT_MAPPERS)[number];
 
 const shared = {
@@ -182,7 +184,7 @@ function hostRun(
 ): HostRun {
   const args = [
     "--noEmit",
-    ...host.args,
+    ...PAIR_HOST_ARGS[host.id],
     "--runExternalCode",
     "--extendedDiagnostics",
     "--pretty",
