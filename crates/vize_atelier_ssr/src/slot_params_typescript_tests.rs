@@ -76,9 +76,8 @@ fn typed_slot_params_leave_as_javascript_on_both_lanes() {
     );
 }
 
-/// Negative control: JavaScript params keep their authored bytes in either
-/// mode. Erasure is decided by the parse, never by the text scan, which
-/// fires on these strings and used to reprint `'x as y'` as `"x as y"`.
+/// Negative control: TS-looking JavaScript keeps its authored bytes in
+/// either mode, as it always did.
 #[test]
 fn javascript_slot_params_keep_their_bytes() {
     for is_ts in [false, true] {
@@ -90,10 +89,24 @@ fn javascript_slot_params_keep_their_bytes() {
             card("default", "{ label = 'a as b' }", "label"),
             "is_ts: {is_ts}"
         );
-        assert_eq!(
-            both_lanes(r#"<Card #default="{ 'x as y': z }">{{ z }}</Card>"#, is_ts),
-            card("default", "{ 'x as y': z }", "z"),
-            "is_ts: {is_ts}"
-        );
+    }
+}
+
+/// Erasure is decided by the parse, never by the text scan. The scan fires
+/// on these string keys, and the old strip, run whatever `is_ts` was,
+/// reprinted the JavaScript (`{ "x as y": z }`).
+#[test]
+fn scan_tripping_string_keys_are_not_reprinted() {
+    for is_ts in [false, true] {
+        for (params, read) in [("{ 'x as y': z }", "z"), ("{ 'a!': b }", "b")] {
+            assert_eq!(
+                both_lanes(
+                    &cstr!("<Card #default=\"{params}\">{{{{ {read} }}}}</Card>"),
+                    is_ts
+                ),
+                card("default", params, read),
+                "is_ts: {is_ts}"
+            );
+        }
     }
 }
