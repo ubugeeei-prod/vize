@@ -50,7 +50,6 @@ pub use self::entry::{
     generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use self::fallthrough::fallthrough_component_root_starts;
-use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 pub(crate) use self::imports::extract_declared_name;
 use self::imports::{
@@ -201,10 +200,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .map(|script| script_module::collect(script, recover_lone_setup, generation_options))
         .unwrap_or_default();
     let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
-    let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
-        let module_spans = module_plan.module_spans(summary, &namespace_hoist);
-        script_blocks.module_spans(summary, script_content, module_spans)
-    });
+    let (hoisted_generic_aliases, mut module_spans) = script_blocks.plan(
+        summary,
+        script_content,
+        generic_parameters,
+        &module_plan,
+        &namespace_hoist,
+    );
     let glued_import = glued_import::GluedImportSection::plan(
         script_content,
         generation_options.split_script_setup_offsets,
@@ -291,8 +293,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             setup_imports.emit_import_anchors(&mut ts);
         });
     }
-    let hoisted_generic_aliases =
-        HoistedGenericAliases::collect(summary, script_content, generic_parameters);
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_module_aliases(&mut ts);
     }

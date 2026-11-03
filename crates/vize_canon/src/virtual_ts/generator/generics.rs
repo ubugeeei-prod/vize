@@ -40,6 +40,7 @@ pub(super) struct HoistedGenericAliases {
     generic_names: String,
     type_names: Vec<String>,
     dependent_declarations: Vec<String>,
+    setup_declaration_spans: FxHashSet<(u32, u32)>,
 }
 
 impl HoistedGenericAliases {
@@ -104,13 +105,52 @@ impl HoistedGenericAliases {
                 }
             }
         }
+        // Public declarations and the aliases read by $HoistedGeneric must
+        // retain their module dependencies. A terminal local dependent instead
+        // belongs only to its authored setup scope and keeps that source map.
+        let dependencies: FxHashMap<_, _> = candidates
+            .iter()
+            .map(|(export, _, references)| (export.name.as_str(), references))
+            .collect();
+        let mut module_needed: FxHashSet<CompactString> = type_names
+            .iter()
+            .map(|name| CompactString::from(name.as_str()))
+            .collect();
+        module_needed.extend(candidates.iter().filter_map(|(export, _, _)| {
+            let source = script.get(export.start as usize..export.end as usize)?;
+            let classic = summary.scopes.iter().any(|scope| {
+                matches!(scope.kind, ScopeKind::NonScriptSetup)
+                    && scope.span.start <= export.start
+                    && export.start < scope.span.end
+            });
+            (classic || source.starts_with("export")).then(|| export.name.clone())
+        }));
+        let mut queue: VecDeque<_> = module_needed.iter().cloned().collect();
+        while let Some(name) = queue.pop_front() {
+            for dependency in dependencies
+                .get(name.as_str())
+                .into_iter()
+                .flat_map(|refs| refs.iter())
+            {
+                if module_needed.insert(dependency.clone()) {
+                    queue.push_back(dependency.clone());
+                }
+            }
+        }
+        let dependent = |name: &CompactString| {
+            reached.contains(name) && !type_names.iter().any(|root| root.as_str() == name.as_str())
+        };
+        let setup_declaration_spans = candidates
+            .iter()
+            .filter(|(export, _, _)| {
+                dependent(&export.name) && !module_needed.contains(&export.name)
+            })
+            .map(|(export, _, _)| (export.start, export.end))
+            .collect();
         let dependent_declarations = candidates
             .iter()
             .filter(|(export, _, _)| {
-                reached.contains(&export.name)
-                    && !type_names
-                        .iter()
-                        .any(|name| name.as_str() == export.name.as_str())
+                dependent(&export.name) && module_needed.contains(&export.name)
             })
             .map(|(_, source, _)| String::from(*source))
             .collect();
@@ -120,7 +160,12 @@ impl HoistedGenericAliases {
             generic_names,
             type_names,
             dependent_declarations,
+            setup_declaration_spans,
         })
+    }
+
+    pub(super) fn keeps_in_setup(&self, span: (u32, u32)) -> bool {
+        self.setup_declaration_spans.contains(&span)
     }
 
     pub(super) fn emit_module_aliases(&self, ts: &mut String) {
@@ -289,6 +334,71 @@ mod tests {
                 "  interface Payload { value: Alias }\n",
             )
         );
+    }
+
+    #[test]
+    fn terminal_local_dependents_keep_their_original_setup_scope() {
+        let script = "type Foo = { value: T }; type Baz = Foo[]; interface Bar { items: Baz } defineProps<Bar>();";
+        let mut analyzer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        analyzer.analyze_script_setup_with_generic(script, Some("T"));
+        let summary = analyzer.finish();
+        let generic = super::GenericParameters::parse("T");
+        let aliases =
+            HoistedGenericAliases::collect(&summary, Some(script), Some(&generic)).unwrap();
+        let spans =
+            super::super::script_blocks::ScriptBlockScopes::collect(&summary, Some(script), true)
+                .module_spans(&summary, Some(script), Vec::new(), Some(&aliases));
+        let declarations: Vec<_> = spans
+            .iter()
+            .map(|&(start, end)| script.get(start as usize..end as usize).unwrap())
+            .collect();
+        assert_eq!(declarations, vec!["type Foo = { value: T };"]);
+        let mut setup = String::default();
+        aliases.emit_setup_aliases(&mut setup);
+        assert_eq!(setup.as_str(), "  type Foo = $HoistedGeneric0<T>;\n");
+        let relocated: Vec<_> = summary
+            .type_exports
+            .iter()
+            .filter(|export| aliases.keeps_in_setup((export.start, export.end)))
+            .map(|export| export.name.as_str())
+            .collect();
+        assert_eq!(relocated, vec!["Baz", "Bar"]);
+    }
+
+    #[test]
+    fn exported_declarations_retain_their_module_dependency_closure() {
+        let script =
+            "type Foo = { value: T }; type Baz = Foo[]; export interface Bar { items: Baz }";
+        let mut analyzer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        analyzer.analyze_script_setup_with_generic(script, Some("T"));
+        let summary = analyzer.finish();
+        let generic = super::GenericParameters::parse("T");
+        let aliases =
+            HoistedGenericAliases::collect(&summary, Some(script), Some(&generic)).unwrap();
+        let spans =
+            super::super::script_blocks::ScriptBlockScopes::collect(&summary, Some(script), true)
+                .module_spans(&summary, Some(script), Vec::new(), Some(&aliases));
+        let declarations: Vec<_> = spans
+            .iter()
+            .map(|&(start, end)| script.get(start as usize..end as usize).unwrap())
+            .collect();
+        assert_eq!(
+            declarations,
+            vec![
+                "type Foo = { value: T };",
+                "type Baz = Foo[];",
+                "export interface Bar { items: Baz }"
+            ]
+        );
+        let mut setup = String::default();
+        aliases.emit_setup_aliases(&mut setup);
+        assert_eq!(
+            setup.as_str(),
+            "  type Foo = $HoistedGeneric0<T>;\n  type Baz = Foo[];\n  interface Bar { items: Baz }\n"
+        );
+        assert_eq!(aliases.setup_declaration_spans.len(), 0);
     }
 
     #[test]

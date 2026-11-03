@@ -12031,6 +12031,40 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-alias-dependent-scope-11450",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-alias-dependent-scope-11450/Probe.vue.txt",
+          "sha256": "9acaad5b586fb49c62b7955d92b8e6642e9e976e9af22813717cb91db79802a9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-alias-dependent-scope-11450/tsconfig.json.txt",
+          "sha256": "39d8f4d6629e95679d7bf3b60fbd1d17c7255c35199768c5eb47d2f4128532c7",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies; reported #11450 generic setup whose interface reads a generic alias, with type-alias, transitive, emits, slots and module-alias reader variants plus genuine unused and value-error controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-alias-slots-11360",
       "state": "active",
       "targets": [
