@@ -59,15 +59,13 @@ const onClose = () => undefined
     );
     // One component contract derives the child's props, emit props and
     // library shape once; each event then reads them for its own key.
-    for alias in ["__library =", "__props =", "__emit_props ="] {
+    for alias in [
+        "__library = typeof MyChild ",
+        "__props = typeof MyChild ",
+        "__emit_props = typeof MyChild ",
+    ] {
         assert_eq!(
-            output
-                .code
-                .lines()
-                .filter(
-                    |line| line.trim_start().starts_with("type __MyChild_") && line.contains(alias)
-                )
-                .count(),
+            output.code.matches(alias).count(),
             1,
             "{alias} should be declared once for both events: {}",
             output.code

@@ -261,7 +261,8 @@ test("callback certificate is covered by exact-head materialization and producer
   const emitted = producer
     .split("\n")
     .filter((line) => line.trim().startsWith('"') && line.includes("__vizeEmitProps"));
-  assert.equal(emitted.length, 2);
+  // The native-root gate is emitted once, in each component's fallthrough box.
+  assert.equal(emitted.length, 1);
   for (const line of emitted) {
     const literal = JSON.parse(line.trim().replace(/,$/u, "")) as string;
     const rendered = literal

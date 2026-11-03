@@ -449,14 +449,9 @@ const save = () => undefined
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    for alias in ["__library =", "_click_prop_args ="] {
+    for alias in ["__library = typeof MyButton ", "_click_prop_args = "] {
         assert_eq!(
-            output
-                .code
-                .lines()
-                .filter(|line| line.trim_start().starts_with("type __MyButton_")
-                    && line.contains(alias))
-                .count(),
+            output.code.matches(alias).count(),
             2,
             "each sibling generated guard must declare the {alias} contract it references: {}",
             output.code
