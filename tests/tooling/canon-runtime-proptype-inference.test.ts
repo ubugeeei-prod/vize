@@ -8,6 +8,7 @@ const root = new URL("../../", import.meta.url);
 const assets = [
   "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
   "npm/cli/virtual-ts-globals.d.ts",
+  "npm/cli/generated/content-mapper-types.d.ts",
 ];
 
 function runtimeHelpers(asset: string): string {
@@ -73,17 +74,22 @@ for (const asset of assets) {
     const host = ts.createCompilerHost(options);
     const original = host.getSourceFile.bind(host);
     host.getSourceFile = (name, language, error, fresh) =>
-      name === file ? ts.createSourceFile(name, text, language, true) : original(name, language, error, fresh);
+      name === file
+        ? ts.createSourceFile(name, text, language, true)
+        : original(name, language, error, fresh);
     const program = ts.createProgram([file], options, host);
     assert.deepEqual(
-      ts.getPreEmitDiagnostics(program).map(diagnostic => ({
+      ts.getPreEmitDiagnostics(program).map((diagnostic) => ({
         code: diagnostic.code,
         message: ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
       })),
       [
         { code: 2322, message: "Type 'Editor' is not assignable to type 'number'." },
         { code: 2322, message: "Type 'Editor' is not assignable to type 'number'." },
-        { code: 2345, message: "Argument of type 'number' is not assignable to parameter of type 'string'." },
+        {
+          code: 2345,
+          message: "Argument of type 'number' is not assignable to parameter of type 'string'.",
+        },
         { code: 2322, message: "Type 'Item' is not assignable to type 'number'." },
       ],
     );
