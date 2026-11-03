@@ -9,6 +9,7 @@ import type {
   SfcCompileResultNapi,
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
+import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -80,6 +81,8 @@ export function compileVueModule(
   if (result.errors.length > 0) {
     throw new Error(result.errors.join("\n"));
   }
+
+  assertSupportedStyleDependencies(result.styles, filePath);
 
   const compiled: CompiledModule = {
     code: result.code,
