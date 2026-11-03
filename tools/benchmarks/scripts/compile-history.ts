@@ -35,6 +35,9 @@ type ChildResult = {
   failed: number;
   outputBytes: number;
   outputSha256: string;
+  /** Hashes over files whose source has no TypeScript script, and over the rest. */
+  outputSha256Js: string;
+  outputSha256Ts: string;
 };
 type SourceFile = { filename: string; source: string };
 
@@ -143,12 +146,17 @@ function runChild(spec: Spec, input: string, runs: number, warmups: number): Chi
   }
   const [codes, failed] = last;
   const hash = createHash("sha256");
+  const byLang = { js: createHash("sha256"), ts: createHash("sha256") };
+  const tsScript = /<script\b[^>]*\blang=["']tsx?["']/;
   let outputBytes = 0;
-  for (const code of codes) {
+  codes.forEach((code, index) => {
     hash.update(code);
     hash.update("\0");
+    const lang = tsScript.test(files[index]?.source ?? "") ? byLang.ts : byLang.js;
+    lang.update(code);
+    lang.update("\0");
     outputBytes += Buffer.byteLength(code);
-  }
+  });
   return {
     load,
     runs: samples,
@@ -157,6 +165,8 @@ function runChild(spec: Spec, input: string, runs: number, warmups: number): Chi
     failed,
     outputBytes,
     outputSha256: hash.digest("hex"),
+    outputSha256Js: byLang.js.digest("hex"),
+    outputSha256Ts: byLang.ts.digest("hex"),
   };
 }
 
@@ -260,6 +270,8 @@ function main(): void {
       failed: first?.failed ?? 0,
       outputBytes: first?.outputBytes ?? 0,
       outputSha256: first?.outputSha256 ?? "",
+      outputSha256Js: first?.outputSha256Js ?? "",
+      outputSha256Ts: first?.outputSha256Ts ?? "",
       stableOutput: results.every((result) => result.outputSha256 === first?.outputSha256),
       samples,
     };
@@ -273,8 +285,8 @@ function main(): void {
     "",
     "Wall and CPU are medians per pass. CPU = user+sys over all threads. Ratios divide @vue/compiler-sfc (1T) by the row. In native = the batch's own `timeMs` (excludes JS<->native conversion).",
     "",
-    "| Build | Mode | Wall | In native | CPU | CPU/Wall | Wall ratio | CPU ratio | Load wall | Load CPU | Peak RSS | Failed | Output bytes | Output SHA-256 |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+    "| Build | Mode | Wall | In native | CPU | CPU/Wall | Wall ratio | CPU ratio | Load wall | Load CPU | Peak RSS | Failed | Output bytes | Output SHA-256 | JS-source / TS-source SHA-256 |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
     ...rows.map((row) =>
       [
         row.label,
@@ -291,6 +303,7 @@ function main(): void {
         `${row.failed}`,
         `${row.outputBytes}`,
         `\`${row.outputSha256.slice(0, 16)}\`${row.stableOutput ? "" : " (unstable)"}`,
+        `\`${row.outputSha256Js.slice(0, 12)}\` / \`${row.outputSha256Ts.slice(0, 12)}\``,
       ].join(" | ").replace(/^/, "| ").concat(" |"),
     ),
     "",
