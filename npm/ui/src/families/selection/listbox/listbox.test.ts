@@ -187,6 +187,29 @@ test("multiple selection toggles independent options and emits readonly arrays",
   handle.unmount();
 });
 
+test("navigation accepts bubbled keys from noneditable option content", async () => {
+  const handle = mountListbox({ ariaLabel: "Letters" });
+  try {
+    const root = handle.getByRole("listbox", { name: "Letters" });
+    root.focus();
+    const content = handle.getByRole("option", { name: "Alpha" }).querySelector("span");
+    assert.ok(content);
+    const event = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowDown",
+    });
+    content.dispatchEvent(event);
+    await nextTick();
+
+    assert.equal(event.defaultPrevented, true);
+    assert.equal(root.getAttribute("aria-activedescendant"), optionIds(root).bravo);
+    assert.deepEqual(handle.recorded(), []);
+  } finally {
+    handle.unmount();
+  }
+});
+
 for (const selectionMode of ["single", "multiple"] as const) {
   for (const key of ["Enter", " "]) {
     test(`IME ${JSON.stringify(key)} preserves ${selectionMode} listbox selection`, async () => {
