@@ -36,8 +36,14 @@ exit 0
 
 #[test]
 fn cli_checker_count_overrides_environment_for_single_and_sharded_programs() {
+    let default_width = std::thread::available_parallelism()
+        .map(usize::from)
+        .unwrap_or(1)
+        .min(8)
+        .to_string();
     for (explicit, environment, servers, expected) in [
-        (None, None, "1", "1"),
+        (None, None, "1", default_width.as_str()),
+        (None, None, "2", "1"),
         (None, Some("6"), "1", "6"),
         (Some("4"), Some("1"), "1", "4"),
         (Some("4"), Some("1"), "2", "4"),
