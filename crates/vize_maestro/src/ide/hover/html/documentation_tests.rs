@@ -173,7 +173,8 @@ fn native_other_namespaces_and_builtins_return_the_original_hover_without_html_l
 #[test]
 fn carrying_native_category_preserves_the_complete_virtual_document_and_definition_offsets() {
     const PREFIX: &str = "/// <reference lib=\"es2022\" />\n/// <reference lib=\"dom\" />\n/// <reference lib=\"dom.iterable\" />\ntype $DomElement = ";
-    const SUFFIX: &str = ";\ndeclare const __vizeDomElement: $DomElement;\n__vizeDomElement;\n";
+    const SUFFIX: &str =
+        ";\ndeclare const __vizeDomElement: $DomElement;\n__vizeDomElement;\nexport {};\n";
     for (tag, category, expression, hover_offset) in [
         (
             "button",

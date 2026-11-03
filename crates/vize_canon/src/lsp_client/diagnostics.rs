@@ -432,21 +432,10 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<(EditorLspDiagnosticDocuments, EditorLspDiagnosticPairs), String> {
-        let mut documents = FxHashMap::default();
-        let current_documents = self
-            .document_texts
-            .iter()
-            .map(|(uri, text)| (uri.clone(), text.clone()))
-            .collect::<Vec<_>>();
-
-        for (uri, text) in current_documents {
-            let document_uri = self.editor_lsp_diagnostic_document_uri(uri.as_str());
-            documents.insert(document_uri, text);
-        }
-
+        let mut documents = self.editor_documents();
         let mut pairs = Vec::with_capacity(uris.len());
         for uri in uris {
-            let document_uri = self.editor_lsp_diagnostic_document_uri(uri.as_str());
+            let document_uri = self.editor_document_uri(uri.as_str());
             let text = documents
                 .get(document_uri.as_str())
                 .cloned()
@@ -459,14 +448,6 @@ impl CorsaProjectClient {
         }
 
         Ok((documents, pairs))
-    }
-
-    fn editor_lsp_diagnostic_document_uri(&mut self, uri: &str) -> String {
-        if self.materialized_project_session {
-            self.session_document_uri(uri)
-        } else {
-            uri.into()
-        }
     }
 }
 
