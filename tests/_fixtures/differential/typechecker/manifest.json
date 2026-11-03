@@ -10359,6 +10359,53 @@
       }
     },
     {
+      "id": "typechecker/runtime-proptype-call-result-11734/object-proptype-retains-editor",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "runtime-proptype-call-result-11734",
+      "case": "object-proptype-retains-editor",
+      "test": "runtime_proptype_keeps_typed_callbacks_and_wrong_assignment",
+      "regressionCommit": "34931f09220289f8d88e8198d05aaa80c7277d9b",
+      "sourceRevision": "13b901140c193e5d9bc111994b5558e6304ad5b2",
+      "packReference": {
+        "path": "runtime-proptype-call-result-11734/cases.json",
+        "sha256": "c87986adfc25f1bd4038d81b367235ceb31529c0b6b555f92647d70365a4ba96"
+      },
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "path": "runtime-proptype-call-result-11734/Probe.vue.txt",
+          "sha256": "652a3dc70c3d88bd01e811d0ae8699f7b99476e35f5142ad0d65c5d968124a86"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-proptype-call-result-11734/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/setup-custom-properties/script-setup-custom-properties",
       "state": "active",
       "targets": [
