@@ -169,8 +169,7 @@ impl Visit<'_> for IdentifierVisitor<'_> {
     ) {
         let before = self.rewrites.len();
         self.visit_identifier_reference(&property.binding);
-        if self.rewrites.len() != before {
-            let (_, _, replacement) = self.rewrites.last_mut().expect("identifier rewrite");
+        if let Some((_, _, replacement)) = self.rewrites.get_mut(before) {
             let mut expanded = String::from(property.binding.name.as_str());
             expanded.push_str(": ");
             expanded.push_str(replacement);
