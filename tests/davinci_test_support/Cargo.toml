@@ -17,6 +17,8 @@ native-process = ["dep:vize_carton"]
 native-dom = ["dep:vize_l1", "dep:vize_l1_to_l2", "dep:vize_l2"]
 ssr = ["dep:vize_atelier_core", "dep:vize_atelier_ssr"]
 panic-boundary = []
+# Independent L3 reference and graph checker (no `vize_l3` dependency).
+l3-reference = []
 
 [dependencies]
 vize_canon = { workspace = true, features = ["native"], optional = true }
