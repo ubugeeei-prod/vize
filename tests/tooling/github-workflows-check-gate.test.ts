@@ -110,7 +110,7 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.equal(aggregate["continue-on-error"], undefined);
   assert.deepEqual(
     reportSteps.slice(reportSteps.indexOf(aggregate) + 1).map((step) => step["continue-on-error"]),
-    [true],
+    [true, true],
   );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");

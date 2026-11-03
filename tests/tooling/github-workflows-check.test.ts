@@ -85,6 +85,8 @@ test("the required test-report job posts its result after the gate decides it", 
     name?: string;
     if?: string;
     run?: string;
+    uses?: string;
+    with?: Record<string, string>;
     env?: Record<string, string>;
     "continue-on-error"?: boolean;
   };
@@ -94,12 +96,22 @@ test("the required test-report job posts its result after the gate decides it", 
   assert.equal(steps[gate].id, "gate");
   assert.deepEqual(steps.slice(gate + 1), [
     {
+      name: "Download test case reports",
+      id: "cases",
+      if: "${{ !cancelled() }}",
+      "continue-on-error": true,
+      uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+      with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" },
+    },
+    {
       name: "Report test results",
       if: "${{ !cancelled() }}",
       "continue-on-error": true,
       env: {
         GITHUB_TOKEN: "${{ github.token }}",
         TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
+        TEST_REPORT_CASES: "${{ steps.cases.outcome }}",
+        TEST_REPORT_CASES_DIR: "${{ runner.temp }}/test-cases",
         TEST_REPORT_HEAD_SHA:
           "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
         TEST_REPORT_PR_NUMBER:

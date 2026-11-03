@@ -3,53 +3,36 @@
  * same-repository pull request, to one PR comment that later runs update in place.
  * The gate step decides the required check; this only reports its outcome.
  */
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { asArray, asNumber, asRecord, asString, parseJson } from "../../json-value.ts";
+import { readPackets, type TestCasePacket } from "./test-cases.ts";
+import {
+  renderTestReport,
+  runUrl,
+  type ReportInput,
+  type RunIdentity,
+  type WorkflowJob,
+} from "./test-report-markdown.ts";
+
+export { renderTestReport, type RunIdentity, type WorkflowJob };
 
 export const TEST_REPORT_MARKER = "<!-- vize-test-report -->";
 const BOT = "github-actions[bot]";
-const REPORT_JOB = "test-report";
 // GitHub rejects comment bodies over 65,536 characters.
 const MAX_COMMENT_LENGTH = 65_000;
 const STATE =
   /^<!-- vize-test-report-run sha=([0-9a-f]{40,64}) run=([1-9]\d*) attempt=([1-9]\d*) -->$/;
-const FAILED = new Set(["failure", "timed_out", "startup_failure", "action_required"]);
-
-export type Gate = "success" | "failure";
-export interface RunIdentity {
-  readonly headSha: string;
-  readonly runId: number;
-  readonly runAttempt: number;
-}
-export interface WorkflowStep {
-  readonly name: string;
-  readonly number: number;
-  readonly conclusion: string | null;
-}
-export interface WorkflowJob {
-  readonly name: string;
-  readonly status: string;
-  readonly conclusion: string | null;
-  readonly url: string | null;
-  readonly steps: readonly WorkflowStep[];
-}
 export interface IssueComment {
   readonly id: number;
   readonly login: string | null;
   readonly body: string;
 }
-export interface ReportInput {
-  readonly jobs: readonly WorkflowJob[];
-  readonly gate: Gate;
-  readonly run: RunIdentity;
-  readonly serverUrl: string;
-  readonly repository: string;
-  readonly workflow: string;
-}
-export interface ReportEnv extends Omit<ReportInput, "jobs"> {
+export interface ReportEnv extends Omit<ReportInput, "jobs" | "packets"> {
   readonly apiUrl: string;
+  /** Where the case packets were downloaded, or null when the download failed. */
+  readonly casesDir: string | null;
   readonly token: string;
   readonly summaryPath: string;
   /** Null when the token cannot write: fork pull requests and merge groups. */
@@ -89,90 +72,6 @@ export function mayReplace(
   );
 }
 
-type Bucket = "passed" | "failed" | "skipped" | "other";
-const BUCKETS: readonly Bucket[] = ["passed", "failed", "skipped", "other"];
-
-function bucket(job: WorkflowJob): Bucket {
-  if (job.conclusion === "success") return "passed";
-  if (job.conclusion === "skipped") return "skipped";
-  return job.conclusion !== null && FAILED.has(job.conclusion) ? "failed" : "other";
-}
-
-function escape(text: string): string {
-  return text
-    .replace(/[\\[\]|*_`]/g, "\\$&")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\r?\n/g, " ");
-}
-
-function link(text: string, url: string | null): string {
-  return url === null ? escape(text) : `[${escape(text)}](${url})`;
-}
-
-// Matrix legs share a suite: "Rust tests (Compiler)" belongs to "Rust tests".
-function suiteName(job: string): string {
-  return job.replace(/ \([^()]*\)$/, "");
-}
-
-function runUrl({ serverUrl, repository, run }: Omit<ReportInput, "jobs">): string {
-  return `${serverUrl}/${repository}/actions/runs/${run.runId}/attempts/${run.runAttempt}`;
-}
-
-export function renderTestReport(input: ReportInput): string {
-  const { run, serverUrl, repository } = input;
-  const reportJob = input.jobs.find((job) => job.name === REPORT_JOB);
-  if (!reportJob) throw new Error(`The run has no ${REPORT_JOB} job`);
-  const jobs = input.jobs.filter((job) => job !== reportJob);
-  const repo = `${serverUrl}/${repository}`;
-  const totals = { passed: 0, failed: 0, skipped: 0, other: 0 };
-  const suites = new Map<string, Record<Bucket, number>>();
-  for (const job of jobs) {
-    const name = suiteName(job.name);
-    const row = suites.get(name) ?? { passed: 0, failed: 0, skipped: 0, other: 0 };
-    row[bucket(job)] += 1;
-    totals[bucket(job)] += 1;
-    suites.set(name, row);
-  }
-  const ran = ([, row]: [string, Record<Bucket, number>]) =>
-    row.passed + row.failed + row.other > 0;
-  const rank = (row: Record<Bucket, number>) => (row.failed ? 0 : row.other ? 1 : 2);
-  const rows = [...suites]
-    .filter(ran)
-    .sort(([a, left], [b, right]) => rank(left) - rank(right) || a.localeCompare(b));
-  const notRun = [...suites]
-    .filter((suite) => !ran(suite))
-    .map(([name]) => escape(name))
-    .sort((a, b) => a.localeCompare(b));
-  const problems = jobs
-    .filter((job) => bucket(job) === "failed" || bucket(job) === "other")
-    .map((job) => {
-      const steps = job.steps
-        .filter((step) => step.conclusion !== null && FAILED.has(step.conclusion))
-        .map((step) => `, step ${link(step.name, job.url && `${job.url}#step:${step.number}:1`)}`);
-      return `- ${job.conclusion ?? job.status}: ${link(job.name, job.url)}${steps.join("")}`;
-    });
-  const lines = [
-    `## Test report: ${input.gate === "success" ? "passed" : "failed"}`,
-    "",
-    `Head [\`${run.headSha.slice(0, 12)}\`](${repo}/commit/${run.headSha}) · ` +
-      `[${escape(input.workflow)} run ${run.runId}, attempt ${run.runAttempt}]` +
-      `(${runUrl(input)})`,
-    `Gate: ${link(REPORT_JOB, reportJob.url)}`,
-    "",
-    `${jobs.length} jobs: ${BUCKETS.map((key) => `${totals[key]} ${key}`).join(", ")}`,
-    "",
-    "| Suite | Passed | Failed | Skipped | Other |",
-    "| --- | ---: | ---: | ---: | ---: |",
-    ...rows.map(
-      ([name, row]) => `| ${escape(name)} | ${BUCKETS.map((key) => row[key]).join(" | ")} |`,
-    ),
-  ];
-  if (notRun.length) lines.push("", `Not run: ${notRun.join(", ")}`);
-  if (problems.length) lines.push("", "### Failed and unfinished jobs", "", ...problems);
-  return lines.join("\n");
-}
-
 function commentBody(run: RunIdentity, report: string, runUrl: string): string {
   const body = `${TEST_REPORT_MARKER}\n${stateLine(run)}\n${report}`;
   if (body.length <= MAX_COMMENT_LENGTH) return body;
@@ -199,6 +98,9 @@ export function readEnv(env: Readonly<Record<string, string | undefined>>): Repo
     throw new Error(`TEST_REPORT_GATE must be success or failure, not ${gate}`);
   const headSha = required(env, "TEST_REPORT_HEAD_SHA");
   if (!/^[0-9a-f]{40,64}$/.test(headSha)) throw new Error("TEST_REPORT_HEAD_SHA must be a commit");
+  const cases = required(env, "TEST_REPORT_CASES");
+  if (cases !== "success" && cases !== "failure")
+    throw new Error(`TEST_REPORT_CASES must be success or failure, not ${cases}`);
   const pullRequest = env.TEST_REPORT_PR_NUMBER ?? "";
   if (pullRequest !== "" && !/^[1-9]\d*$/.test(pullRequest))
     throw new Error("TEST_REPORT_PR_NUMBER must be empty or a pull request number");
@@ -215,6 +117,7 @@ export function readEnv(env: Readonly<Record<string, string | undefined>>): Repo
     apiUrl: required(env, "GITHUB_API_URL"),
     token: required(env, "GITHUB_TOKEN"),
     summaryPath: required(env, "GITHUB_STEP_SUMMARY"),
+    casesDir: cases === "success" ? required(env, "TEST_REPORT_CASES_DIR") : null,
     pullRequest: pullRequest === "" ? null : Number(pullRequest),
   };
 }
@@ -291,7 +194,14 @@ export async function publishTestReport(env: ReportEnv, fetchImpl: typeof fetch)
     `${repo}/actions/runs/${env.run.runId}/jobs?filter=latest&per_page=100`,
     (data) => asArray(asRecord(data, "jobs page").jobs, "jobs"),
   );
-  const report = renderTestReport({ ...env, jobs: jobs.map(parseJob) });
+  // The download creates no directory when no job published cases.
+  const packets: TestCasePacket[] | null =
+    env.casesDir === null
+      ? null
+      : existsSync(env.casesDir)
+        ? readPackets(env.casesDir, env.run.runAttempt)
+        : [];
+  const report = renderTestReport({ ...env, jobs: jobs.map(parseJob), packets });
   appendFileSync(env.summaryPath, `${report}\n`);
   if (env.pullRequest === null)
     return "No PR comment: fork pull requests and merge groups get only the step summary";

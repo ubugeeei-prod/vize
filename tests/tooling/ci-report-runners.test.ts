@@ -109,7 +109,8 @@ const reports = [
       },
       run: "node tools/support/compat/github/require-needs-success.ts --check-report",
     },
-    // Runs after the gate and never decides the check.
+    // Run after the gate and never decide the check.
+    after: ["Download test case reports", "Report test results"],
     report: "node tools/support/compat/github/comment-test-report.ts",
   },
 ];
@@ -124,10 +125,15 @@ for (const expected of reports) {
     assert.deepEqual(job.permissions, expected.permissions);
     assert.equal(job.if, expected.if);
     assert.equal(job["timeout-minutes"], expected.timeout);
-    const report = "report" in expected ? [expected.report] : [];
-    assert.deepEqual(job.steps.at(-1 - report.length), expected.leaf);
-    for (const step of job.steps.slice(job.steps.length - report.length))
-      assert.equal(step["continue-on-error"], true);
+    const after = expected.after ?? [];
+    const report = expected.report === undefined ? [] : [expected.report];
+    assert.deepEqual(job.steps.at(-1 - after.length), expected.leaf);
+    const tail = job.steps.slice(job.steps.length - after.length);
+    assert.deepEqual(
+      tail.map((step) => step.name),
+      after,
+    );
+    for (const step of tail) assert.equal(step["continue-on-error"], true);
     assert.deepEqual(
       job.steps.filter((step) => Object.hasOwn(step, "run")).map((step) => step.run),
       [expected.leaf.run, ...report],

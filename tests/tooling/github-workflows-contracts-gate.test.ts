@@ -99,7 +99,7 @@ test("retiring the WIT lane preserves the required source report and existing Ch
   assert.equal(aggregate["continue-on-error"], undefined);
   assert.deepEqual(
     reportSteps.slice(reportSteps.indexOf(aggregate) + 1).map((step) => step["continue-on-error"]),
-    [true],
+    [true, true],
   );
   assert.deepEqual(check.permissions, { contents: "read" });
   assert.deepEqual(source.permissions, {

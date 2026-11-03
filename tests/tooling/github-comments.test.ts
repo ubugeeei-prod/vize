@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -96,64 +96,120 @@ test("PR test report comments match only the GitHub Actions comment that starts 
   assert.equal(managed(`<!-- vize-test-report:${SHA} -->\n## Detailed Test Report`), false);
 });
 
-test("the test report counts every suite, links each failure and names its run and head", () => {
-  const report = renderTestReport({
-    jobs,
-    gate: "failure",
-    run,
-    serverUrl: "https://github.com",
-    repository: "ubugeeei-prod/vize",
-    workflow: "Check",
-  });
+const rustCompiler = "Rust tests (Compiler)";
+const rustTypes = "Rust tests (Type checker)";
+const testCase = (path: string, name: string, outcome: "passed" | "failed" | "skipped") => ({
+  path,
+  name,
+  outcome,
+});
+const packets = [
+  {
+    version: 1 as const,
+    job: rustCompiler,
+    attempt: 1,
+    cases: [
+      testCase("crates/vize_armature", "vize_armature a", "passed"),
+      testCase("crates/vize_armature", "vize_armature b", "passed"),
+      testCase("crates/vize_atelier_sfc", "vize_atelier_sfc compile::x_y", "failed"),
+      testCase("crates/vize_atelier_vapor", "vize_atelier_vapor v", "passed"),
+      testCase("crates/vize", "vize::integration lint_rules::z", "passed"),
+      testCase("crates/vize", "vize::integration build_cli::w", "skipped"),
+    ],
+  },
+  {
+    version: 1 as const,
+    job: rustTypes,
+    attempt: 2,
+    cases: [
+      testCase("crates/vize_canon", "vize_canon t", "passed"),
+      testCase("crates/vize_canon", "vize_canon::integration check::y", "failed"),
+    ],
+  },
+];
+const input = {
+  jobs,
+  packets,
+  gate: "failure" as const,
+  run,
+  serverUrl: "https://github.com",
+  repository: "ubugeeei-prod/vize",
+  workflow: "Check",
+};
+
+test("the test report counts cases by product area and lists each failed case", () => {
+  const report = renderTestReport(input);
   assert.match(report, /^## Test report: failed$/m);
   assert.ok(report.includes(`[\`${SHA.slice(0, 12)}\`](${server}/commit/${SHA})`));
   assert.ok(report.includes(`[Check run 200, attempt 2](${server}/actions/runs/200/attempts/2)`));
-  assert.ok(report.includes(`Gate: [test-report](${server}/actions/runs/200/job/9)`));
-  assert.match(report, /^6 jobs: 2 passed, 1 failed, 2 skipped, 1 other$/m);
+  assert.ok(report.includes(`gate [test-report](${server}/actions/runs/200/job/9)`));
+  assert.match(report, /^\*\*8 test cases: 5 passed, 2 failed, 1 skipped\*\*$/m);
+  const areas = report
+    .split("\n")
+    .filter((line) => /^\| [A-Z*]/.test(line) && !line.startsWith("| Area"));
+  assert.deepEqual(areas.slice(0, 6), [
+    "| Compiler | 2 | 1 | 0 | 3 |",
+    "| Vapor | 1 | 0 | 0 | 1 |",
+    "| Type checker | 1 | 1 | 0 | 2 |",
+    "| Linter | 1 | 0 | 0 | 1 |",
+    "| CLI | 0 | 0 | 1 | 1 |",
+    "| **Total** | 5 | 2 | 1 | 8 |",
+  ]);
+  assert.match(report, /^Counted from 2 test job reports\./m);
+  const rustJob = (id: number) => `${server}/actions/runs/200/job/${id}`;
+  assert.ok(
+    report.includes(
+      `- Compiler: vize\\_atelier\\_sfc compile::x\\_y · [${rustCompiler}](${rustJob(2)})\n` +
+        `- Type checker: vize\\_canon::integration check::y · [${rustTypes}](${rustJob(3)})`,
+    ),
+  );
+  // Jobs stay collapsed, open only when a job failed.
   assert.match(
     report,
-    /^\| PR source checks \/ PR Rust workspace products \/ Rust tests \| 1 \| 1 \| 0 \| 0 \|$/m,
+    /^<details open>\n<summary>6 jobs: 2 passed, 1 failed, 2 skipped, 1 other<\/summary>$/m,
   );
-  assert.match(report, /^\| PR source checks \/ Native runtime \| 0 \| 0 \| 0 \| 1 \|$/m);
-  assert.match(report, /^\| fmt-rust \| 1 \| 0 \| 0 \| 0 \|$/m);
+  assert.match(
+    report,
+    /^\| PR source checks \/ PR Rust workspace products \/ Rust tests \| 1 \| 1 \| 0 \| 0 \| 2 \|$/m,
+  );
+  assert.match(report, /^\| PR source checks \/ Native runtime \| 0 \| 0 \| 0 \| 1 \| 0 \|$/m);
   assert.match(report, /^Not run: cargo-semver-checks, nix-flake$/m);
-  // Failures come first.
   assert.ok(report.indexOf("Rust tests |") < report.indexOf("fmt-rust |"));
   assert.ok(
     report.includes(
-      `- failure: [PR source checks / PR Rust workspace products / Rust tests (Compiler)](${server}/actions/runs/200/job/2), step [Run \\| the tests](${server}/actions/runs/200/job/2#step:7:1)`,
+      `- failure: [PR source checks / PR Rust workspace products / Rust tests (Compiler)](${rustJob(2)}), step [Run \\| the tests](${rustJob(2)}#step:7:1)`,
     ),
   );
   assert.ok(
-    report.includes(
-      `- cancelled: [PR source checks / Native runtime (ssr)](${server}/actions/runs/200/job/4)`,
-    ),
+    report.includes(`- cancelled: [PR source checks / Native runtime (ssr)](${rustJob(4)})`),
   );
   assert.doesNotMatch(report, /\| test-report \|/);
-  assert.doesNotMatch(report, /- \w+: \[fmt-rust\]/);
+  assert.ok(report.indexOf("| Area |") < report.indexOf("<details"));
 
   const passed = renderTestReport({
+    ...input,
     jobs: jobs.filter(
       (entry) => entry.conclusion !== "failure" && entry.conclusion !== "cancelled",
     ),
+    packets: [],
     gate: "success",
-    run,
-    serverUrl: "https://github.com",
-    repository: "ubugeeei-prod/vize",
-    workflow: "Check",
   });
   assert.match(passed, /^## Test report: passed$/m);
-  assert.doesNotMatch(passed, /Failed and unfinished jobs/);
+  assert.match(passed, /^\*\*0 test cases: 0 passed, 0 failed, 0 skipped\*\*$/m);
+  assert.match(passed, /^<details>$/m);
+  assert.doesNotMatch(passed, /Failed test cases|Failed and unfinished jobs/);
+  assert.match(
+    renderTestReport({ ...input, packets: null }),
+    /^Test case reports could not be downloaded; the \[run\]/m,
+  );
+  // A packet must come from a job of this run.
+  assert.throws(
+    () => renderTestReport({ ...input, packets: [{ ...packets[0], job: "Rust tests (Gone)" }] }),
+    /0 jobs match case packet Rust tests \(Gone\)/,
+  );
   assert.throws(
     () =>
-      renderTestReport({
-        jobs: jobs.filter((entry) => entry.name !== "test-report"),
-        gate: "success",
-        run,
-        serverUrl: "https://github.com",
-        repository: "ubugeeei-prod/vize",
-        workflow: "Check",
-      }),
+      renderTestReport({ ...input, jobs: jobs.filter((entry) => entry.name !== "test-report") }),
     /no test-report job/,
   );
 });
@@ -199,31 +255,42 @@ function fakeGitHub(routes: Record<string, { body: unknown; link?: string }>) {
 const api = "https://api.github.com/repos/ubugeeei-prod/vize";
 const jobsUrl = `${api}/actions/runs/200/jobs?filter=latest&per_page=100`;
 const commentsUrl = `${api}/issues/7/comments?per_page=100`;
-function environment(summary: string, pr: string) {
+function environment(directory: string, pr: string, cases = "success") {
   return readEnv({
     GITHUB_API_URL: "https://api.github.com",
     GITHUB_REPOSITORY: "ubugeeei-prod/vize",
     GITHUB_RUN_ATTEMPT: "2",
     GITHUB_RUN_ID: "200",
     GITHUB_SERVER_URL: "https://github.com",
-    GITHUB_STEP_SUMMARY: summary,
+    GITHUB_STEP_SUMMARY: path.join(directory, "summary.md"),
     GITHUB_TOKEN: "token",
     GITHUB_WORKFLOW: "Check",
     TEST_REPORT_GATE: "failure",
     TEST_REPORT_HEAD_SHA: SHA,
     TEST_REPORT_PR_NUMBER: pr,
+    TEST_REPORT_CASES: cases,
+    TEST_REPORT_CASES_DIR: path.join(directory, "cases"),
   });
 }
-function withSummary(check: (summary: string) => Promise<void>) {
+function inDirectory(check: (directory: string) => Promise<void>) {
   return async () => {
     const directory = mkdtempSync(path.join(tmpdir(), "vize-test-report-"));
     try {
-      await check(path.join(directory, "summary.md"));
+      await check(directory);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
   };
 }
+// The download keeps one directory per artifact, or none for a single one.
+function writePackets(directory: string, written: readonly object[]) {
+  written.forEach((entry, index) => {
+    const dir = path.join(directory, "cases", `test-cases-${index}`);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, `test-cases-${index}.json`), JSON.stringify(entry));
+  });
+}
+const summaryOf = (directory: string) => readFileSync(path.join(directory, "summary.md"), "utf8");
 const jobPages = {
   [`GET ${jobsUrl}`]: {
     body: { total_count: apiJobs.length, jobs: apiJobs.slice(0, 3) },
@@ -236,7 +303,14 @@ const state = (headSha: string, runId: number, runAttempt: number) =>
 
 void test(
   "a same-repository PR gets one comment, updated in place on later runs",
-  withSummary(async (summary) => {
+  inDirectory(async (directory) => {
+    // Attempt 2 re-ran the type checker job; its attempt 1 packet is stale.
+    const stale = {
+      ...packets[1],
+      attempt: 1,
+      cases: [testCase("crates/vize_canon", "old", "failed")],
+    };
+    writePackets(directory, [packets[0], stale, packets[1]]);
     const created = fakeGitHub({
       ...jobPages,
       [`GET ${commentsUrl}`]: { body: [{ id: 1, user: { login: "someone" }, body: "LGTM" }] },
@@ -244,15 +318,16 @@ void test(
       [`POST ${api}/issues/7/comments`]: { body: { id: 50 } },
     });
     assert.equal(
-      await publishTestReport(environment(summary, "7"), created.fetchImpl),
+      await publishTestReport(environment(directory, "7"), created.fetchImpl),
       "Created test report comment 50",
     );
     const post = created.calls.find((call) => call.method === "POST");
     const body = (JSON.parse(post?.body ?? "{}") as { body: string }).body;
     assert.ok(body.startsWith(`${TEST_REPORT_MARKER}\n`));
     assert.deepEqual(commentRun(body), run);
-    assert.ok(body.includes(`Rust tests (Compiler)](${server}/actions/runs/200/job/2)`));
-    assert.equal(readFileSync(summary, "utf8"), `${body.split("\n").slice(2).join("\n")}\n`);
+    assert.match(body, /^\*\*8 test cases: 5 passed, 2 failed, 1 skipped\*\*$/m);
+    assert.doesNotMatch(body, /: old ·/);
+    assert.equal(summaryOf(directory), `${body.split("\n").slice(2).join("\n")}\n`);
 
     const updated = fakeGitHub({
       ...jobPages,
@@ -266,7 +341,7 @@ void test(
       [`PATCH ${api}/issues/comments/40`]: { body: { id: 40 } },
     });
     assert.equal(
-      await publishTestReport(environment(summary, "7"), updated.fetchImpl),
+      await publishTestReport(environment(directory, "7"), updated.fetchImpl),
       "Updated test report comment 40",
     );
     assert.equal(updated.calls.filter((call) => call.method === "POST").length, 0);
@@ -275,7 +350,7 @@ void test(
 
 void test(
   "a superseded run keeps the newer comment and still writes its step summary",
-  withSummary(async (summary) => {
+  inDirectory(async (directory) => {
     for (const [prHead, existing] of [
       [OTHER_SHA, state(SHA, 100, 1)],
       [SHA, state(SHA, 200, 3)],
@@ -288,7 +363,7 @@ void test(
         [`GET ${api}/pulls/7`]: { body: { head: { sha: prHead } } },
       });
       assert.match(
-        await publishTestReport(environment(summary, "7"), github.fetchImpl),
+        await publishTestReport(environment(directory, "7"), github.fetchImpl),
         /^Kept test report comment 40: superseded/,
       );
       assert.deepEqual(
@@ -296,39 +371,45 @@ void test(
         [],
       );
     }
-    assert.match(readFileSync(summary, "utf8"), /## Test report: failed/);
+    // No job published cases, so the download made no directory.
+    assert.match(summaryOf(directory), /\*\*0 test cases: 0 passed, 0 failed, 0 skipped\*\*/);
   }),
 );
 
 void test(
   "a fork PR or merge group writes only the step summary",
-  withSummary(async (summary) => {
+  inDirectory(async (directory) => {
     const github = fakeGitHub(jobPages);
     assert.match(
-      await publishTestReport(environment(summary, ""), github.fetchImpl),
+      await publishTestReport(environment(directory, "", "failure"), github.fetchImpl),
       /^No PR comment/,
     );
     assert.deepEqual(
       github.calls.map((call) => call.url),
       [jobsUrl, `${jobsUrl}&page=2`],
     );
-    assert.match(readFileSync(summary, "utf8"), /## Test report: failed/);
+    assert.match(summaryOf(directory), /^Test case reports could not be downloaded/m);
   }),
 );
 
 void test(
   "an oversized report is cut at a line within GitHub's comment limit and points to the summary",
-  withSummary(async (summary) => {
-    const failures = Array.from({ length: 400 }, (_, index) =>
-      job(`Affected tooling (${"shard-".repeat(20)}${index})`, "failure", 1000 + index, 9),
+  inDirectory(async (directory) => {
+    const failures = Array.from({ length: 2000 }, (_, index) =>
+      testCase(
+        "crates/vize_canon",
+        `vize_canon ${"case_".repeat(10)}${String(index).padStart(4, "0")}`,
+        "failed",
+      ),
     );
+    writePackets(directory, [{ ...packets[1], cases: failures }]);
     const github = fakeGitHub({
-      [`GET ${jobsUrl}`]: { body: { jobs: [...failures, job("test-report", null, 9)] } },
+      ...jobPages,
       [`GET ${commentsUrl}`]: { body: [] },
       [`GET ${api}/pulls/7`]: { body: { head: { sha: SHA } } },
       [`POST ${api}/issues/7/comments`]: { body: { id: 51 } },
     });
-    await publishTestReport(environment(summary, "7"), github.fetchImpl);
+    await publishTestReport(environment(directory, "7"), github.fetchImpl);
     const post = github.calls.find((call) => call.method === "POST");
     const body = (JSON.parse(post?.body ?? "{}") as { body: string }).body;
     const note = `\n\nTruncated: the [run summary](${server}/actions/runs/200/attempts/2) holds the whole report.`;
@@ -336,10 +417,10 @@ void test(
     assert.ok(body.endsWith(note));
     assert.deepEqual(commentRun(body), run);
     // Whole lines only: the last kept entry is complete.
-    assert.match(body.slice(0, -note.length).split("\n").at(-1) ?? "", /#step:9:1\)$/);
-    const whole = readFileSync(summary, "utf8");
+    assert.match(body.slice(0, -note.length).split("\n").at(-1) ?? "", /job\/3\)$/);
+    const whole = summaryOf(directory);
     assert.ok(whole.length > 65_000);
-    assert.ok(whole.includes("shard-399"));
+    assert.ok(whole.includes("case\\_1999"));
   }),
 );
 
@@ -356,8 +437,14 @@ test("the test report refuses inputs it cannot place", () => {
     TEST_REPORT_GATE: "success",
     TEST_REPORT_HEAD_SHA: SHA,
     TEST_REPORT_PR_NUMBER: "",
+    TEST_REPORT_CASES: "success",
+    TEST_REPORT_CASES_DIR: "cases",
   };
   assert.equal(readEnv(valid).pullRequest, null);
+  assert.equal(readEnv(valid).casesDir, "cases");
+  assert.equal(readEnv({ ...valid, TEST_REPORT_CASES: "failure" }).casesDir, null);
+  assert.throws(() => readEnv({ ...valid, TEST_REPORT_CASES: "skipped" }), /TEST_REPORT_CASES/);
+  assert.throws(() => readEnv({ ...valid, TEST_REPORT_CASES_DIR: "" }), /TEST_REPORT_CASES_DIR/);
   assert.throws(() => readEnv({ ...valid, TEST_REPORT_GATE: "skipped" }), /TEST_REPORT_GATE/);
   assert.throws(() => readEnv({ ...valid, TEST_REPORT_HEAD_SHA: "main" }), /TEST_REPORT_HEAD_SHA/);
   assert.throws(() => readEnv({ ...valid, TEST_REPORT_PR_NUMBER: "7 " }), /TEST_REPORT_PR_NUMBER/);
@@ -366,7 +453,7 @@ test("the test report refuses inputs it cannot place", () => {
 
 void test(
   "pagination never sends the token outside the API host",
-  withSummary(async (summary) => {
+  inDirectory(async (directory) => {
     const github = fakeGitHub({
       [`GET ${jobsUrl}`]: {
         body: { total_count: 1, jobs: apiJobs.slice(0, 1) },
@@ -374,7 +461,7 @@ void test(
       },
     });
     await assert.rejects(
-      publishTestReport(environment(summary, ""), github.fetchImpl),
+      publishTestReport(environment(directory, ""), github.fetchImpl),
       /outside https:\/\/api\.github\.com/,
     );
     assert.equal(github.calls.length, 1);
