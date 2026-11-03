@@ -111,6 +111,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::checker_augmentations::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -176,7 +177,7 @@ mod tests {
             let body = current(file.path);
             assert_eq!(
                 redo(source_before(file.path, body.clone()), file.edits),
-                body
+                super::super::checker_augmentations::source_before(file.path, body)
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;

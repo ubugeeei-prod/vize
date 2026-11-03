@@ -319,3 +319,48 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         assert_eq!(found, expected, "{id}\n{stdout}");
     }
 }
+
+/// #11630: a mapper declaration brings no checker-only globals into its consumer.
+#[test]
+fn mapper_declarations_bring_no_checker_globals_into_consumers() {
+    let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(None) else {
+        return;
+    };
+    let uses = "import Foo from \"./vendor/Foo.vue\";\nvoid Foo;\n";
+    let nuxt = "declare global {\n  interface ImportMeta {\n    client: boolean;\n  }\n}\n";
+    let function_component =
+        "const Fn = (props: { label: string }) => props as unknown as import(\"vue\").VNode;\n";
+    let cases: [(&str, String, Vec<(u32, u32, u32)>); 4] = [
+        (
+            "import-meta-from-vize-only",
+            vize_l0::cstr!("{uses}export const client: boolean = import.meta.client;\n").into(),
+            vec![(3, 44, 2339)],
+        ),
+        (
+            "import-meta-from-nuxt",
+            vize_l0::cstr!("{uses}{nuxt}export const client: boolean = import.meta.client;\n")
+                .into(),
+            vec![],
+        ),
+        (
+            "jsx-class-from-vize-only",
+            vize_l0::cstr!(
+                "{uses}{function_component}export const fn = <Fn label=\"x\" class=\"y\" />;\n"
+            )
+            .into(),
+            vec![(4, 33, 2322)],
+        ),
+        (
+            "jsx-class-from-vue",
+            vize_l0::cstr!(
+                "{uses}export const owned = <Foo class=\"y\" style=\"color: red\" />;\n"
+            )
+            .into(),
+            vec![],
+        ),
+    ];
+    for (id, probe, expected) in cases {
+        let (found, stdout) = consume(&corsa, EMIT_ONLY, &probe, TSX_CONFIG);
+        assert_eq!(found, expected, "{id}\n{stdout}");
+    }
+}
