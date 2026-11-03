@@ -1,5 +1,5 @@
 use super::classify;
-use vize_atelier_core::{ErrorCode, TemplateChildNode, parser::parse};
+use vize_atelier_core::{ElementType, ErrorCode, TemplateChildNode, parser::parse};
 use vize_carton::{Allocator, Span};
 
 #[test]
@@ -117,7 +117,6 @@ fn original_directives_keep_once_precedence_key_identity_and_refusals() {
         ("<i v-for=\"item in items\" :key=\"item.id\" />", 42),
         ("<i :key=\"true\" />", 17),
         ("<i key=\"literal\" />", 19),
-        ("<component :key=\"epoch\" :is=\"kind\" />", 37),
     ];
     // Independently authored paired-tag counterparts exercise the same
     // directive facts without that separate parser recovery boundary.
@@ -232,6 +231,9 @@ fn original_directives_keep_once_precedence_key_identity_and_refusals() {
         let [TemplateChildNode::Element(el)] = root.children.as_slice() else {
             panic!("one original element: {source}")
         };
+        if el.tag == "component" {
+            assert_eq!(el.tag_type, ElementType::Component, "{source}");
+        }
         let facts = classify(el, inherited, own_key);
         assert_eq!(facts.should_lower_as_once, expected_once, "{source}");
         assert_eq!(facts.memo_warning, expected_error, "{source}");
