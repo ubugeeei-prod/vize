@@ -5,7 +5,6 @@ use std::fs;
 
 mod emit_overload_stall;
 mod emit_overloads;
-mod emit_props_input;
 mod public_instance;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
@@ -107,10 +106,7 @@ fn previous(current: &str, record: &Value) -> String {
 /// Only the eleven named files can be projected; every other source-cone
 /// member is read unchanged and remains subject to its existing frozen hash.
 pub(super) fn source_before(path: &str) -> String {
-    let actual = emit_props_input::source_before(
-        path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
-    );
+    let actual = fs::read_to_string(support::repository().join(path)).unwrap();
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return emit_overloads::source_before(path, actual);
     };
@@ -152,7 +148,6 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     public_instance::retain_provenance(manifest);
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);
-    emit_props_input::retain_provenance(manifest);
 }
 
 #[cfg(test)]

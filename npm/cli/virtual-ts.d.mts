@@ -125,7 +125,7 @@ declare function __vizeConstructorEmitProps<P, E>(
 ): (props: P) => __EmitProps<E>;
 type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(
   component: new (props: P, ...args: any[]) => { $emit: E },
-) => (props: unknown) => __EmitProps<E>;
+) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any }
   ? C extends { readonly __vizeComponentMarker: true }
     ? $ConstructorEmitPropsFactory<

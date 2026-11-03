@@ -118,11 +118,7 @@ fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference
             .contains("type $EmitOwnedKeys<C> = $ComponentOwnKeys<")
     );
     assert!(modern.code.contains("type $ComponentOwnKeys<P = {}, E = {}> = keyof $PublicComponentInputProps | $ComponentMetadataKeys<P> | $ComponentMetadataKeys<E>;"));
-    assert!(
-        modern
-            .code
-            .contains(") => (props: unknown) => __EmitProps<E>;")
-    );
+    assert!(modern.code.contains("<A>(props: $EmitInput<P,"));
     assert!(
         legacy
             .code
