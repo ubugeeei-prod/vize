@@ -76,7 +76,7 @@ const route = useRoute()
     assert!(
         result
             .code
-            .contains("import { useRoute } from \"#imports\""),
+            .contains("import { useRoute } from '#imports'"),
         "{}",
         result.code
     );

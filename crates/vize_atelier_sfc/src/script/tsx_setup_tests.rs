@@ -22,24 +22,31 @@ const render = () => <button onClick={() => emit('inc', count.value)}>{count.val
 <template><div @click="count++">{{ count }}<component :is="render" /></div></template>"#;
     assert_eq!(
         compile(source),
-        r##"import { resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, createTextVNode as _createTextVNode } from "vue";
-import { ref } from "vue";
+        r##"import { resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, createTextVNode as _createTextVNode } from "vue"
+
+import { ref } from 'vue'
+
+
 export default {
-  __name: "anonymous",
+  __name: 'anonymous',
   emits: ["inc"],
   setup(__props, { emit: __emit }) {
-    const emit = __emit;
-    const count = ref(0);
-    const render = () => <button onClick={() => emit("inc", count.value)}>{count.value}</button>;
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = ($event) => count.value++) }, [_createTextVNode(
-        _toDisplayString(count.value),
-        1
-        /* TEXT */
-      ), (_openBlock(), _createBlock(_resolveDynamicComponent(render)))]);
-    };
-  }
-};"##
+
+const emit = __emit
+const count = ref(0);
+const render = () => <button onClick={() => emit("inc", count.value)}>{count.value}</button>;
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", {
+    onClick: _cache[0] || (_cache[0] = $event => (count.value++))
+  }, [
+    _createTextVNode(_toDisplayString(count.value), 1 /* TEXT */),
+    (_openBlock(), _createBlock(_resolveDynamicComponent(render)))
+  ]))
+}
+}
+
+}"##
     );
 }
 
@@ -52,27 +59,25 @@ const view = <ul title={title}>{items.map((item) => <li>{item}</li>)}{...items}<
 <template><component :is="() => view" /></template>"#;
     assert_eq!(
         compile(source),
-        r##"import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, unref as _unref } from "vue";
+        r##"import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, unref as _unref } from "vue"
+
+
 export default {
-  __name: "anonymous",
+  __name: 'anonymous',
   props: {
-    title: {
-      type: String,
-      required: false,
-      default: "x"
-    },
-    items: {
-      type: Array,
-      required: true
-    }
+    title: { type: String, required: false, default: "x" },
+    items: { type: Array, required: true }
   },
   setup(__props) {
-    const view = <ul title={__props.title}>{__props.items.map((item) => <li>{item}</li>)}{...__props.items}</ul>;
-    return (_ctx, _cache) => {
-      return _openBlock(), _createBlock(_resolveDynamicComponent(() => _unref(view)));
-    };
-  }
-};"##
+
+const view = <ul title={__props.title}>{__props.items.map((item) => <li>{item}</li>)}{...__props.items}</ul>;
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(() => _unref(view))))
+}
+}
+
+}"##
     );
 }
 
@@ -86,18 +91,24 @@ const Item = (props: { text: string }): JSX.Element => <b>{props.text}</b>
 <template><Item :text="label" /></template>"#;
     assert_eq!(
         compile(source),
-        r##"import { openBlock as _openBlock, createBlock as _createBlock } from "vue";
-import { ref } from "vue";
+        r##"import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+import { ref } from 'vue'
+
+
 export default {
-  __name: "anonymous",
+  __name: 'anonymous',
   setup(__props) {
-    const label = ref("a");
-    const Item = (props) => <b>{props.text}</b>;
-    return (_ctx, _cache) => {
-      return _openBlock(), _createBlock(Item, { text: label.value }, null, 8, ["text"]);
-    };
-  }
-};"##
+
+const label = ref("a");
+const Item = (props) => <b>{props.text}</b>;
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(Item, { text: label.value }, null, 8 /* PROPS */, ["text"]))
+}
+}
+
+}"##
     );
 }
 

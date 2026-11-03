@@ -205,7 +205,7 @@ import { Child } from "./components";
     assert!(
         result
             .code
-            .contains(r#"import { Child } from "./components";"#),
+            .contains("import { Child } from './components'"),
         "script setup import should be preserved. Got:\n{}",
         result.code
     );

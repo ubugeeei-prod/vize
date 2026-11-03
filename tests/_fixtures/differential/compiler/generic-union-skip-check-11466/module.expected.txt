@@ -1,52 +1,34 @@
-import { useModel as _useModel, mergeModels as _mergeModels } from "vue";
-import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
-import { mergeProps as _mergeProps } from "vue";
+import { useModel as _useModel, mergeModels as _mergeModels } from 'vue'
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<button${_ssrRenderAttrs(_mergeProps({ disabled: $setup.open === true }, _attrs))}>${_ssrInterpolate($setup.props.label)}</button>`);
+  _push(`<button${_ssrRenderAttrs(_mergeProps({ disabled: $setup.open === true }, _attrs))}>${_ssrInterpolate($setup.props.label)}</button>`)
 }
+
 export default {
-  __name: "Layout",
-  props: /*@__PURE__*/ _mergeModels({
-    flag: {
-      type: Boolean,
-      required: false,
-      skipCheck: true
-    },
-    run: {
-      type: Function,
-      required: false,
-      skipCheck: true,
-      default: () => {}
-    },
-    field: {
-      type: null,
-      required: false
-    },
-    label: {
-      type: null,
-      required: false
-    }
+  __name: 'Layout',
+  props: /*@__PURE__*/_mergeModels({
+    flag: { type: Boolean, required: false, skipCheck: true },
+    run: { type: Function, required: false, skipCheck: true, default: () => {} },
+    field: { type: null, required: false },
+    label: { type: null, required: false }
   }, {
-    "open": {
-      type: Boolean,
-      skipCheck: true
-    },
-    "openModifiers": {}
+    "open": { type: Boolean, skipCheck: true },
+    "openModifiers": {},
   }),
   emits: ["update:open"],
-  ssrRender,
+  ssrRender: ssrRender,
   setup(__props, { expose: __expose }) {
-    __expose();
-    const props = __props;
-    const open = _useModel(__props, "open");
-    const __returned__ = {
-      open,
-      props
-    };
-    Object.defineProperty(__returned__, "__isScriptSetup", {
-      enumerable: false,
-      value: true
-    });
-    return __returned__;
-  }
-};
+  __expose();
+
+const props = __props
+const open = _useModel(__props, "open")
+
+const __returned__ = { open, props }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

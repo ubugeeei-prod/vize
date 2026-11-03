@@ -17,8 +17,8 @@ const __sfc__ = /*@__PURE__*/_defineComponent({
 }),
   setup(__props, { expose: __expose, emit: __emit }) {
   __expose();
-  const doubled = computed(() => __props.count * 2)
-  const itemCount = computed(() => __props.items.length)
+  const doubled = computed(() => __props.count * 2);
+  const itemCount = computed(() => __props.items.length);
   const __returned__ = { computed, doubled, itemCount, watch }
   Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
   return __returned__

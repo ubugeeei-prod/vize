@@ -4,6 +4,7 @@
 //! following the Vue.js core output format.
 
 pub(crate) mod artifacts;
+pub(crate) mod erasure;
 pub mod function_mode;
 pub mod import_utils;
 pub mod inline;

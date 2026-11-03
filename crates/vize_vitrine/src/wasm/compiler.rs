@@ -17,7 +17,6 @@ use wasm_bindgen::prelude::*;
 use crate::template_syntax::resolve_template_syntax;
 use vize_atelier_core::options::CustomElementMatcher;
 use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
-use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
     SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions, parse_sfc,
@@ -220,7 +219,7 @@ impl Compiler {
             template_syntax,
         )
         .map_err(|error| JsValue::from_str(&error.message))?;
-        let mut template_result = if let Some(template) = &template_view.template {
+        let template_result = if let Some(template) = &template_view.template {
             match compile_internal(&template.content, &opts, use_vapor, None) {
                 Ok(r) => Some(r),
                 Err(e) => return Err(JsValue::from_str(&e)),
@@ -283,18 +282,8 @@ impl Compiler {
         )
         .map_err(|error| JsValue::from_str(&error.message))?;
 
-        let script_code = if source_is_ts && !output_is_ts {
-            transform_typescript_to_js(&sfc_result.code).to_string()
-        } else {
-            sfc_result.code.to_string()
-        };
-
-        if source_is_ts
-            && !output_is_ts
-            && let Some(template_result) = template_result.as_mut()
-        {
-            template_result.code = transform_typescript_to_js(&template_result.code).to_string();
-        }
+        // Both outputs are JavaScript unless TypeScript output was asked for.
+        let script_code = sfc_result.code.to_string();
 
         let binding_metadata = sfc_result
             .bindings
