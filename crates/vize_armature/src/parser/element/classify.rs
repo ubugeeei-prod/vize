@@ -101,11 +101,11 @@ impl<'a> Parser<'a> {
 
         // The dynamic component is Vue syntax in every parser entry point.
         // Compiler policies additionally resolve authored static Vue casts.
-        !self.in_v_pre
+        (self.options.is_native_tag.is_some() || tag == "component")
+            && !self.in_v_pre
             && !element.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"))
             && (tag == "component"
-                || self.options.is_native_tag.is_some()
-                    && element.props.iter().any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "is" && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))))
+                || element.props.iter().any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "is" && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))))
     }
 
     /// Resolve the foreign (SVG/MathML) namespace for a start tag whose
