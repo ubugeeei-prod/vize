@@ -253,22 +253,34 @@ pub fn is_expression_trailing_trivia(content: &str) -> bool {
     }
 }
 
-pub fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
-    while let Some(&byte) = bytes.get(i) {
-        // Line comments end at any ECMAScript line terminator: LF, CR, LS
-        // (U+2028), or PS (U+2029). Stopping only at LF let a bare CR hide
-        // parsed code from the guard (#3185).
-        match byte {
-            b'\n' | b'\r' => break,
-            0xe2 if bytes.get(i + 1) == Some(&0x80)
-                && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
+/// Locate the complete ECMAScript terminator following line-comment content.
+///
+/// CRLF is one terminator. At EOF the returned range is empty. Returning both
+/// boundaries lets scanners consume the terminator and update locations without
+/// rescanning the comment body. Quoted strings have different newline rules.
+pub fn line_comment_terminator(bytes: &[u8], start: usize) -> core::ops::Range<usize> {
+    let rest = bytes.get(start..).unwrap_or_default();
+    for offset in memchr::memchr3_iter(b'\n', b'\r', 0xe2, rest) {
+        let at = start + offset;
+        let width = match bytes.get(at) {
+            Some(b'\n') => 1,
+            Some(b'\r') => 1 + usize::from(bytes.get(at + 1) == Some(&b'\n')),
+            Some(0xe2)
+                if bytes.get(at + 1) == Some(&0x80)
+                    && matches!(bytes.get(at + 2), Some(0xa8 | 0xa9)) =>
             {
-                break;
+                3
             }
-            _ => i += 1,
-        }
+            _ => continue,
+        };
+        return at..at + width;
     }
-    i
+    let end = start + rest.len();
+    end..end
+}
+
+pub fn skip_line_comment(bytes: &[u8], start: usize) -> usize {
+    line_comment_terminator(bytes, start).start
 }
 
 fn skip_closed_block_comment(bytes: &[u8], i: usize) -> Option<usize> {

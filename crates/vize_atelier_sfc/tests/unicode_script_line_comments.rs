@@ -64,11 +64,21 @@ fn check_packet(code: &str, ssr: bool) -> Result<(), String> {
 }
 
 #[test]
-fn unicode_comment_terminators_preserve_all_eight_public_sfc_packets() {
+fn export_trivia_preserves_all_thirty_six_public_sfc_packets() {
     let mut failures = Vec::new();
     for prefix in ["", "const label = '雪😀';\r\n"] {
-        for newline in ["\u{2028}", "\u{2029}"] {
-            let code = cstr!("{prefix}export// note{newline}default {{ label: '雪' }};");
+        for gap in [
+            " ",
+            "\r\n",
+            "/* note */",
+            "/**//**/",
+            "/* default decoy */ \r\n// export decoy\r\n",
+            "\u{feff}",
+            "\u{2003}/* 😀 */\u{feff}",
+            "// note\u{2028}",
+            "// note\u{2029}",
+        ] {
+            let code = cstr!("{prefix}export{gap}default {{ label: '雪' }};");
             for ssr in [false, true] {
                 if let Err(error) = check_packet(&code, ssr) {
                     failures.push(error);
