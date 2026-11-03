@@ -147,7 +147,7 @@ fn schedule_contract_codes_match_the_independent_reference() {
         }
     }
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/formal/impeto/fixtures/schedule-contract.txt");
+        .join("../../tests/fixtures/l3-reference/schedule-contract.txt");
     if std::env::var("VIZE_UPDATE_SCHEDULE_CONTRACT_FIXTURE").as_deref() == Ok("1") {
         std::fs::write(&path, &actual).unwrap();
     }

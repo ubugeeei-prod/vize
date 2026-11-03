@@ -80,11 +80,11 @@ fn mounted_scenario_rejects_missing_and_malformed_fields() {
 #[test]
 fn mounted_dynamic_button_updates_and_dispatches_events() {
     let scenario: Scenario = serde_json::from_str(include_str!(
-        "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.scenario.json"
+        "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.scenario.json"
     ))
     .unwrap();
     let mut expected: Value = serde_json::from_str(include_str!(
-        "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.behavior.json"
+        "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.behavior.json"
     ))
     .unwrap();
     for source in [
@@ -98,7 +98,7 @@ fn mounted_dynamic_button_updates_and_dispatches_events() {
         );
         assert_eq!(
             trace, expected,
-            "mounted behavior differs from Lean reference"
+            "mounted behavior differs from the L3 reference"
         );
         for snapshot in expected.as_array_mut().unwrap() {
             snapshot["events"] = json!([]);
@@ -109,16 +109,16 @@ fn mounted_dynamic_button_updates_and_dispatches_events() {
 #[test]
 fn mounted_branch_and_slot_fallback_update_together() {
     let scenario: Scenario = serde_json::from_str(include_str!(
-        "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.scenario.json"
+        "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.scenario.json"
     ))
     .unwrap();
     let expected: Value = serde_json::from_str(include_str!(
-        "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.behavior.json"
+        "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.behavior.json"
     ))
     .unwrap();
     let trace = assert_backends(
         include_str!(
-            "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.template.txt"
+            "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.template.txt"
         )
         .trim_end(),
         Value::Object(scenario.context),
@@ -126,7 +126,7 @@ fn mounted_branch_and_slot_fallback_update_together() {
     );
     assert_eq!(
         trace, expected,
-        "mounted control/slot behavior differs from Lean reference"
+        "mounted control/slot behavior differs from the L3 reference"
     );
 }
 

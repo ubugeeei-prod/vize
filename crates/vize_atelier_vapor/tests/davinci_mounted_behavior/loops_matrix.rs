@@ -2,7 +2,7 @@
 //!
 //! Each case in `ivm-matrix.cases.jsonl` is compiled by both backends and
 //! driven through its scenario. Every observation (tree, delivered events and
-//! actual element lifetimes) must equal the Lean reference's from-scratch
+//! actual element lifetimes) must equal the L3 reference's from-scratch
 //! render in `ivm-matrix.behavior.jsonl`.
 //!
 //! Upstream runtime defects may be pinned exactly instead of hidden, in
@@ -22,7 +22,7 @@ const GAP_FAMILY: &str = "object-positional-";
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/formal/impeto/fixtures")
+        .join("../../tests/fixtures/l3-reference")
         .join(name)
 }
 

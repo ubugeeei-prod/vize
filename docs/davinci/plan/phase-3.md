@@ -61,7 +61,8 @@ total lowering skeleton, and exported partition fact contract. _Closed
 to the same record.
 
 **P3-4 Lean reference + differential.** `tests/formal/impeto/` Lean package
-(CI-lenient lane per charter #39): executable small-step semantics for L3 ops
+(CI-lenient lane per charter #39; since 2026-11-03 the Rust reference in
+`tests/davinci_test_support/src/l3_reference`, #10825): executable small-step semantics for L3 ops
 under both Vapor and VDOM interpretations; runner compares compiled-output
 behavior traces vs reference on L3 fixtures (TS-28). _Accept:_ runner in CI
 on the fixture ladder. The 2026-09-15 compiled-runtime slice evaluates emitted

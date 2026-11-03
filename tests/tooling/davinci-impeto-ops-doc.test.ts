@@ -17,9 +17,11 @@ function rustMnemonics(): string[] {
   ];
 }
 
-function leanParserMnemonics(): string[] {
-  const syntax = readRepoFile("tests", "formal", "impeto", "Impeto", "Syntax.lean");
-  return [...syntax.matchAll(/\| "(l3\.[^"]+)" => some \.[A-Za-z]+/gu)].map((match) => match[1]);
+const referenceRoot = ["tests", "davinci_test_support", "src", "l3_reference"] as const;
+
+function referenceParserMnemonics(): string[] {
+  const syntax = readRepoFile(...referenceRoot, "program.rs");
+  return [...syntax.matchAll(/^ *"(l3\.[^"]+)" => Self::[A-Za-z]+,$/gmu)].map((match) => match[1]);
 }
 
 function tableRows(): Map<string, { vapor: string; vdom: string }> {
@@ -43,13 +45,13 @@ function tableRows(): Map<string, { vapor: string; vdom: string }> {
   return rows;
 }
 
-function leanTraceLabels(functionName: "interpretVDom" | "interpretVapor"): string[] {
-  const semantics = readRepoFile("tests", "formal", "impeto", "Impeto", "Semantics.lean");
-  const start = semantics.indexOf(`def ${functionName}`);
+function referenceTraceLabels(functionName: "vdom" | "vapor"): string[] {
+  const semantics = readRepoFile(...referenceRoot, "trace.rs");
+  const start = semantics.indexOf(`fn ${functionName}(`);
   assert.notEqual(start, -1, `${functionName} is missing`);
-  const end = semantics.indexOf("\ndef ", start + 1);
+  const end = semantics.indexOf("\nfn ", start + 1);
   const block = semantics.slice(start, end === -1 ? undefined : end);
-  return [...block.matchAll(/\| \.[A-Za-z]+ => "([^"]+)"/gu)].map((match) => match[1]);
+  return [...block.matchAll(/OpKind::[A-Za-z]+ => "([^"]+)"/gu)].map((match) => match[1]);
 }
 
 test("P3-5 Impeto op reference covers the Rust mnemonic set exactly once", () => {
@@ -57,19 +59,19 @@ test("P3-5 Impeto op reference covers the Rust mnemonic set exactly once", () =>
   const rows = tableRows();
 
   assert.deepEqual([...rows.keys()], expected);
-  assert.deepEqual(leanParserMnemonics(), expected);
+  assert.deepEqual(referenceParserMnemonics(), expected);
 });
 
-test("P3-5 Impeto op reference records the executable Lean trace labels", () => {
+test("P3-5 Impeto op reference records the executable reference trace labels", () => {
   const rows = [...tableRows().values()];
 
   assert.deepEqual(
     rows.map((row) => row.vdom),
-    leanTraceLabels("interpretVDom"),
+    referenceTraceLabels("vdom"),
   );
   assert.deepEqual(
     rows.map((row) => row.vapor),
-    leanTraceLabels("interpretVapor"),
+    referenceTraceLabels("vapor"),
   );
 });
 

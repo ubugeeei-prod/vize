@@ -83,7 +83,7 @@
     "tooling/davinci-dom-corpus-dehydrate.test.ts",
     "tooling/davinci-dom-corpus-real-project-workflow.test.ts",
     "tooling/davinci-fpfn-pilots.test.ts",
-    "tooling/davinci-lean-reference.test.ts",
+    "tooling/davinci-l3-reference.test.ts",
     "tooling/davinci-loop-reference.test.ts",
     "tooling/davinci-optimization-budgets.test.ts",
     "tooling/davinci-phase2-ledger.test.ts",

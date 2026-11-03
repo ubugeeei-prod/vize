@@ -3,7 +3,7 @@
 //! Every case in `slot-reference.cases.jsonl` mounts the compiled template
 //! under a caller that supplies its slots (static text or one displayed slot
 //! prop). Each full observation, including element lifetimes, must equal the
-//! independent Lean reference in `slot-reference.behavior.jsonl`.
+//! independent L3 reference in `slot-reference.behavior.jsonl`.
 
 use crate::davinci_mounted_behavior::runtime::mounted_trace_with_slots;
 use serde_json::Value;
@@ -11,7 +11,7 @@ use std::path::Path;
 
 fn lines(name: &str) -> Vec<Value> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/formal/impeto/fixtures")
+        .join("../../tests/fixtures/l3-reference")
         .join(name);
     std::fs::read_to_string(path)
         .unwrap()
@@ -21,7 +21,7 @@ fn lines(name: &str) -> Vec<Value> {
 }
 
 #[test]
-fn mounted_supplied_slots_match_the_lean_reference() {
+fn mounted_supplied_slots_match_the_reference() {
     let cases = lines("slot-reference.cases.jsonl");
     let behaviors = lines("slot-reference.behavior.jsonl");
     assert_eq!(cases.len(), behaviors.len());
