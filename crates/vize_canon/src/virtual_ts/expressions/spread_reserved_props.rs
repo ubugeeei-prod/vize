@@ -343,15 +343,23 @@ fn apply_replacements(
             });
             source_cursor = replacement.source.end;
             continue;
-        } else if replacement.shorthand {
-            append!(code, "{name}: {receiver}[\"{name}\"]");
-        } else {
-            append!(code, "{receiver}[\"{name}\"]");
         }
+        if replacement.shorthand {
+            code.push_str(name);
+            segments.push(SpreadRewriteSegment {
+                generated: generated_start..code.len(),
+                source: replacement.source.clone(),
+            });
+            code.push_str(": ");
+        }
+        append!(code, "{receiver}[\"");
+        let key_start = code.len();
+        code.push_str(name);
         segments.push(SpreadRewriteSegment {
-            generated: generated_start..code.len(),
+            generated: key_start..code.len(),
             source: replacement.source.clone(),
         });
+        code.push_str("\"]");
         source_cursor = replacement.source.end;
     }
     push_source_segment(
@@ -448,5 +456,21 @@ mod tests {
             generated_missing - segment.generated.start,
             source_missing - segment.source.start,
         );
+    }
+
+    #[test]
+    fn reserved_property_navigation_maps_only_authored_bytes() {
+        for expression in ["from", "{ from }", "`雪 ${from}`"] {
+            let rewritten = rewrite(expression, &props(&["from"]))
+                .expect("reserved reads must keep their symbol identity");
+            assert!(!rewritten.segments.is_empty());
+            for segment in &rewritten.segments {
+                assert_eq!(
+                    rewritten.code.get(segment.generated.clone()),
+                    expression.get(segment.source.clone()),
+                    "{expression}"
+                );
+            }
+        }
     }
 }
