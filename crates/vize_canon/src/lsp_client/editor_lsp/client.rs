@@ -4,7 +4,6 @@
 use corsa::runtime::block_on;
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
-use std::borrow::Cow;
 use std::path::PathBuf;
 use vize_l0::{FxHashMap, String, cstr};
 
@@ -281,41 +280,77 @@ impl CorsaProjectClient {
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
         self.validate_logical_workspace_documents(&self.document_texts)?;
         self.ensure_editor_transport()?;
+        let documents = self
+            .editor_lsp_documents_dirty
+            .then(|| self.editor_documents());
         let session = self
             .editor_lsp
             .as_mut()
             .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
-        if self.editor_lsp_documents_dirty {
-            session.synchronize(&self.document_texts)?;
+        if let Some(documents) = documents {
+            session.synchronize(&documents)?;
             self.editor_lsp_documents_dirty = false;
         }
         Ok(session)
     }
 
+    /// The editor transport mirrors one set: every retained document under
+    /// each identity a request reads it by. A request view only adds or
+    /// overrides documents for that request; it never closes another retained
+    /// document, so diagnostics and position queries stop reopening the
+    /// project under each other's identities (#11548).
     fn editor_lsp_session_for_documents(
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<&mut EditorLspSession, String> {
-        // A query subset cannot close another retained logical buffer. Only
-        // explicit lifecycle mutations remove that owner's retained inputs.
-        // Materialized callers already supply the mapped native namespace.
-        let documents = if self.logical_workspace_overlays {
-            logical_query_documents(&self.document_texts, documents)
-        } else {
-            Cow::Borrowed(documents)
-        };
-        self.validate_logical_workspace_documents(&documents)?;
-        let keep_dirty_after_sync = !document_maps_equal(&documents, &self.document_texts);
+        self.validate_logical_workspace_documents(documents)?;
+        let retained = self.editor_documents();
+        let mut view = retained.clone();
+        view.extend(
+            documents
+                .iter()
+                .map(|(uri, text)| (uri.clone(), text.clone())),
+        );
+        let keep_dirty_after_sync = !document_maps_equal(&view, &retained);
         self.ensure_editor_transport()?;
         let session = self
             .editor_lsp
             .as_mut()
             .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
-        if self.editor_lsp_documents_dirty || !session.has_documents(&documents) {
-            session.synchronize(&documents)?;
+        if self.editor_lsp_documents_dirty || !session.has_documents(&view) {
+            session.synchronize(&view)?;
             self.editor_lsp_documents_dirty = keep_dirty_after_sync;
         }
         Ok(session)
+    }
+
+    /// A retained document's diagnostic identity: its native materialized
+    /// URI in a materialized project, otherwise the URI itself.
+    pub(in crate::lsp_client) fn editor_document_uri(&mut self, uri: &str) -> String {
+        if self.materialized_project_session {
+            self.session_document_uri(uri)
+        } else {
+            uri.into()
+        }
+    }
+
+    /// Every retained document under its query identity (the caller's URI)
+    /// and its diagnostic identity, when the two differ.
+    pub(in crate::lsp_client) fn editor_documents(&mut self) -> FxHashMap<String, String> {
+        let retained = self
+            .document_texts
+            .iter()
+            .map(|(uri, text)| (uri.clone(), text.clone()))
+            .collect::<Vec<_>>();
+        let mut documents = FxHashMap::default();
+        for (uri, text) in retained {
+            let native = self.editor_document_uri(uri.as_str());
+            if native != uri {
+                documents.insert(native, text.clone());
+            }
+            documents.insert(uri, text);
+        }
+        documents
     }
 
     #[cfg(test)]
@@ -371,22 +406,6 @@ impl CorsaProjectClient {
         self.overlay_storage.observe_retirement(&result);
         result
     }
-}
-
-fn logical_query_documents<'a>(
-    retained: &FxHashMap<String, String>,
-    requested: &'a FxHashMap<String, String>,
-) -> Cow<'a, FxHashMap<String, String>> {
-    if retained.keys().all(|uri| requested.contains_key(uri)) {
-        return Cow::Borrowed(requested);
-    }
-    let mut documents = retained.clone();
-    documents.extend(
-        requested
-            .iter()
-            .map(|(uri, text)| (uri.clone(), text.clone())),
-    );
-    Cow::Owned(documents)
 }
 
 fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {
