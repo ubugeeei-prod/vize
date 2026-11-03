@@ -38,7 +38,15 @@ jobs:
       engines: ${{ steps.plan.outputs.engines }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 2 }
+        with:
+          fetch-depth: 2
+          # Plan diffs read Git trees; only the selector runtime needs blobs.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/plan-check-inputs.ts
+            /tools/support/compat/github/comparison-base.ts
+            /tools/support/github/opinionated-source-inputs.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Validate explicit release qualification
