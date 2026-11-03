@@ -7,7 +7,10 @@ import {
   historicalSetupCode,
   type ExposurePacket,
 } from "./support/script-setup-default-expose.ts";
-import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
+import {
+  assertDefaultRuntimeOptionPackets,
+  setupComponentBracketReference,
+} from "./support/setup-component-bracket-reference.ts";
 import {
   type ParseModule,
   typescriptErasureReference,
@@ -24,6 +27,55 @@ const fixture = JSON.parse(
     packets: { source: string; before: ExposurePacket; after: ExposurePacket }[];
   };
 };
+
+test("runtime matrix comparison retains semantic fields and excludes only timings", () => {
+  const packet = { code: "export default {}", errors: [], warnings: [] };
+  const row = {
+    target: "dom",
+    options: { inlineTemplate: true },
+    single: [packet],
+    batch: { results: [packet], timeMs: 1 },
+    stats: { outputBytes: Buffer.byteLength(packet.code), timeMs: 2 },
+    function: { code: "return {}" },
+    functionBatch: { results: [{ code: "return {}" }], timeMs: 3 },
+    functionStats: { outputBytes: 9, timeMs: 4 },
+    syntax: { single: true },
+  };
+  const before = [row];
+  const current = structuredClone(before);
+  current[0].batch.timeMs = 11;
+  current[0].stats.timeMs = 12;
+  current[0].functionBatch.timeMs = 13;
+  current[0].functionStats.timeMs = 14;
+  const source = ["<script>export default {}</script>"];
+  const parse: ParseModule = () => {
+    throw new Error("JavaScript packets do not require a reprint parser");
+  };
+  assertDefaultRuntimeOptionPackets(before, current, source, parse);
+  for (const mutate of [
+    (changed: typeof row) => {
+      changed.syntax.single = false;
+    },
+    (changed: typeof row) => {
+      changed.function.code += "\nvoid 1;";
+    },
+    (changed: typeof row) => {
+      changed.functionBatch.results[0].code += "\nvoid 1;";
+    },
+    (changed: typeof row) => {
+      changed.functionStats.outputBytes += 1;
+    },
+    (changed: typeof row) => {
+      changed.single[0].code += "\nvoid 1;";
+    },
+  ]) {
+    const changed = structuredClone(current);
+    mutate(changed[0]);
+    assert.throws(() => assertDefaultRuntimeOptionPackets(before, changed, source, parse), {
+      code: "ERR_ASSERTION",
+    });
+  }
+});
 
 test("the reviewed exposure edit preserves complete captured code, maps and descriptors", () => {
   assert.equal(fixture.packets.length, 3);

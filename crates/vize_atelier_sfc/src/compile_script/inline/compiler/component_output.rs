@@ -24,7 +24,7 @@ pub(super) fn emit_component_definition(
     template: &TemplateParts<'_>,
     vapor_render_alias: Option<&str>,
     css_modules: &[CssModuleMapping],
-    mut erasure: Option<&mut Erasure>,
+    erasure: Option<&mut Erasure>,
 ) -> ComponentState {
     // Start export default
     output.push(b'\n');
@@ -53,7 +53,7 @@ pub(super) fn emit_component_definition(
         if is_vapor {
             // Vapor wraps the merged options with Object.assign inside the helper.
             output.extend_from_slice(b"export default /*@__PURE__*/");
-            emit_runtime_helper(output, erasure.as_deref_mut(), "_defineVaporComponent");
+            emit_runtime_helper(output, erasure, "_defineVaporComponent");
             output.extend_from_slice(b"(Object.assign(");
             output.extend_from_slice(options_args.as_bytes());
             output.extend_from_slice(b", {\n");
@@ -61,7 +61,7 @@ pub(super) fn emit_component_definition(
             // TypeScript: spread the options into the _defineComponent call,
             // matching @vue/compiler-sfc (`_defineComponent({ ...{ … }, __name, … })`).
             output.extend_from_slice(b"export default /*@__PURE__*/");
-            emit_runtime_helper(output, erasure.as_deref_mut(), "_defineComponent");
+            emit_runtime_helper(output, erasure, "_defineComponent");
             output.extend_from_slice(b"({\n  ...");
             output.extend_from_slice(options_args.as_bytes());
             output.extend_from_slice(b",\n");
@@ -76,19 +76,19 @@ pub(super) fn emit_component_definition(
         // Use Object.assign to merge with setup component
         if is_vapor {
             output.extend_from_slice(b"export default /*@__PURE__*/");
-            emit_runtime_helper(output, erasure.as_deref_mut(), "_defineVaporComponent");
+            emit_runtime_helper(output, erasure, "_defineVaporComponent");
             output.extend_from_slice(b"(Object.assign(__default__, {\n");
         } else {
             output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(__default__, {\n");
         }
     } else if is_vapor {
         output.extend_from_slice(b"export default /*@__PURE__*/");
-        emit_runtime_helper(output, erasure.as_deref_mut(), "_defineVaporComponent");
+        emit_runtime_helper(output, erasure, "_defineVaporComponent");
         output.extend_from_slice(b"({\n");
     } else if is_ts {
         // TypeScript: use _defineComponent with __PURE__ annotation
         output.extend_from_slice(b"export default /*@__PURE__*/");
-        emit_runtime_helper(output, erasure.as_deref_mut(), "_defineComponent");
+        emit_runtime_helper(output, erasure, "_defineComponent");
         output.extend_from_slice(b"({\n");
     } else {
         output.extend_from_slice(b"export default {\n");

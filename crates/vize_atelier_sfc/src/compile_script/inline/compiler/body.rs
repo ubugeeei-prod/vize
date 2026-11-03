@@ -234,7 +234,10 @@ pub(super) fn compile_script_setup_inline_body(
             .collect();
         // SAFETY: the render return is ASCII glue around UTF-8 template code.
         let render_return = unsafe { std::str::from_utf8_unchecked(&render_return) };
-        for generated in [render_return, template.hoisted, template.render_fn] {
+        for generated in [render_return, template.hoisted, template.render_fn]
+            .into_iter()
+            .filter(|piece| !piece.is_empty())
+        {
             erasure.javascript(generated);
         }
         // Erased macro arguments count where they are emitted.

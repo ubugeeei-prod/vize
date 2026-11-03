@@ -13,7 +13,7 @@ type ComponentModuleShape = NonNullable<ExposurePacket["moduleShape"]> & {
 
 type RuntimeOptionRow = {
   target: string;
-  options: { inlineTemplate?: unknown };
+  options: { inlineTemplate?: unknown; [key: string]: unknown };
   single?: ExposurePacket[];
   batch?: { results: ExposurePacket[] };
   stats?: { outputBytes: number };
@@ -88,4 +88,40 @@ export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
     );
   }
   return out;
+}
+
+export function assertDefaultRuntimeOptionPackets(
+  before: RuntimeOptionRow[],
+  actual: RuntimeOptionRow[],
+  sourceFiles: readonly string[],
+  parse: ParseModule,
+): void {
+  const defaults = (rows: RuntimeOptionRow[]) =>
+    rows.filter(
+      (row) =>
+        row.options.runtimeModuleName === undefined && row.options.runtimeGlobalName === undefined,
+    );
+  const withoutTiming = (row: unknown) => {
+    if (!row) return row;
+    const { timeMs: _timeMs, ...rest } = row as Record<string, unknown>;
+    return rest;
+  };
+  const comparable = (row: RuntimeOptionRow) => ({
+    target: row.target,
+    options: row.options,
+    single: row.single,
+    batch: withoutTiming(row.batch),
+    stats: withoutTiming(row.stats),
+    function: row.function,
+    functionBatch: withoutTiming(row.functionBatch),
+    functionStats: withoutTiming(row.functionStats),
+    syntax: row.syntax,
+  });
+  const current = defaults(actual);
+  const advance = (row: RuntimeOptionRow, index: number) => {
+    const erased = current[index];
+    assert.ok(erased, "the current matrix retains every baseline row");
+    return advanceRuntimeOptionReference(row, sourceFiles, erased, parse);
+  };
+  assert.deepEqual(current.map(comparable), defaults(before).map(advance).map(comparable));
 }
