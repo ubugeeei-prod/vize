@@ -64,10 +64,10 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
             1,
             "{code}"
         );
-        assert!(
-            code.contains(
-                "const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<"
-            ),
+        assert_eq!(
+            code.matches("const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<")
+                .count(),
+            1,
             "{code}"
         );
     }
