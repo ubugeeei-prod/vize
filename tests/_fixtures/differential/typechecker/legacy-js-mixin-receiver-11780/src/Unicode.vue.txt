@@ -1,0 +1,15 @@
+<!-- 雪😀 -->
+<script>
+import { helper } from "./mixin";
+export default {
+  mixins: [helper],
+  methods: {
+    check() {
+      this.MISSING_EDGE_MEMBER_DO_NOT_EXIST;
+      this.greet(123);
+      return this.greet("ok");
+    },
+  },
+};
+</script>
+<template><span /></template>
