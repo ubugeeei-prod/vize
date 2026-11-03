@@ -58,7 +58,7 @@ const CHECK_VARIANTS = [
   ...SETTING_VARIANTS,
 ];
 
-const CHECK_ENGINE_CLASSES = {
+const CHECK_ENGINE_CLASSES: Record<string, string> = {
   "golar-default": "tsgo-native",
   "golar-typecheck": "tsgo-native",
   "verter-tsc": "tsgo-native",
