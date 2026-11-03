@@ -54,6 +54,9 @@ export async function loadStyleBlock(
   if (!compiled || !block) {
     return "";
   }
+  if (block.srcFile) {
+    (context as { addWatchFile?: (file: string) => void }).addWatchFile?.(block.srcFile);
+  }
   const source = transformStyleVars(
     block.content,
     compiled.scopeId,
@@ -65,7 +68,7 @@ export async function loadStyleBlock(
   // through the host's loaders instead (webpack-styles.ts).
   const css =
     block.lang && isPreprocessorLang(block.lang) && request.query.lang === "css"
-      ? await preprocessStyle(source, block.lang, request.filename, options.root)
+      ? await preprocessStyle(source, block.lang, block.srcFile ?? request.filename, options.root)
       : source;
   const scoped = request.query.scoped;
   return scoped ? scopeCss(css, scoped) : css;

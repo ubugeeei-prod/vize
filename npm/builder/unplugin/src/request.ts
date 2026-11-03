@@ -29,6 +29,12 @@ export function isVueStyleRequest(id: string): boolean {
  * the path stays the SFC and `<ext>` names what `load` returns. A preprocessor
  * block arrives compiled when it is scoped (scoping follows preprocessing) or
  * when the host compiles no preprocessor language.
+ *
+ * A `<style src>` block's module sits beside its src file, as
+ * `styles/a.css.__vize_style_0?vue&type=style&index=0&owner=<SFC>&lang.css`,
+ * so every host resolves the file's relative `@import`, `@use` and `url()`
+ * from its own directory. The path names no real file and no SFC; `owner`
+ * names the SFC that holds the block.
  */
 export function styleRequestId(
   filePath: string,
@@ -40,6 +46,9 @@ export function styleRequestId(
   const compiled = scoped !== null || hostCss !== "preprocessors";
   const delivered = compiled && isPreprocessorLang(lang) ? "css" : lang;
   let query = `vue&type=style&index=${block.index}`;
+  if (block.srcFile) {
+    query += `&owner=${encodeURIComponent(filePath)}`;
+  }
   if (scoped) {
     query += `&scoped=${encodeURIComponent(scoped)}`;
   }
@@ -48,12 +57,20 @@ export function styleRequestId(
       typeof block.module === "string" ? `&module=${encodeURIComponent(block.module)}` : "&module";
   }
   const ext = block.module === false ? delivered : `module.${delivered}`;
-  return `${filePath}?${query}&lang.${ext}`;
+  const path = block.srcFile ? styleSrcModulePath(block.srcFile, block.index) : filePath;
+  return `${path}?${query}&lang.${ext}`;
+}
+
+/** Where a `<style src>` block's module sits: beside the src file, under no real name. */
+export function styleSrcModulePath(src: string, index: number): string {
+  return `${src}.__vize_style_${index}`;
 }
 
 export function parseVueRequest(id: string): ParsedVueRequest {
-  const [filename, rawQuery = ""] = id.split("?", 2);
+  const [path, rawQuery = ""] = id.split("?", 2);
   const params = new URLSearchParams(rawQuery);
+  // A `<style src>` module's path is beside its src file (see styleRequestId).
+  const filename = params.get("owner") ?? path;
   const moduleValue = params.has("module") ? params.get("module") || true : false;
   const indexValue = params.get("index");
   const langKey = [...params.keys()].find((key) => key.startsWith("lang."));
