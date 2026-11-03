@@ -166,13 +166,14 @@ pub(super) fn generate_component_event_types(
     let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
     let return_type = cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
+    let library = cstr!("{prop_args}_library");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
     // A vue-tsc generic library export instantiates its generics with their
-    // constraints here; its listener stays untyped rather than wrong.
+    // constraints here, so its payload comes from the bound-props call below.
     if first_contract {
         append!(
             *ts,
-            "{indent}type {prop_args}_library = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+            "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
         );
     }
     // Constructor `$props` contains ambient DOM listeners. For a generated,
@@ -276,6 +277,7 @@ pub(super) fn generate_component_event_types(
             component_type_name: &component_type_name,
             safe_event_name: &safe_event_name,
             prop_key: &prop_key,
+            library: &library,
             template_binding_access,
             template_ast,
             source_context,

@@ -68,3 +68,119 @@ const loose = items as any[]
         ]
     );
 }
+
+/// #11447: a listener payload comes from the instantiated `__ctx` props, as
+/// vue-tsc infers it. It was `any`, so a `typeof` guard narrowed it to
+/// `string` and the assignment to a generic model failed.
+#[test]
+fn listener_payloads_of_generic_library_children_use_the_inferred_parameters() {
+    let library = r#"import type { VNode } from "vue";
+
+export declare const Foo: <TBar>(
+  props: NonNullable<Awaited<typeof setup>>["props"],
+  setup?: Promise<{ props: { modelValue?: TBar; "onUpdate:modelValue"?: (value: TBar) => void } }>,
+) => VNode & { __ctx?: NonNullable<Awaited<typeof setup>> };
+"#;
+    let probe = r#"<script setup lang="ts" generic="TBaz extends string">
+import { Foo } from "./lib";
+
+const model = defineModel<TBaz>({ required: true });
+</script>
+
+<template>
+  <Foo
+    :model-value="model"
+    @update:model-value="
+      (value) => {
+        if (typeof value === 'string') model = value;
+      }
+    "
+  />
+</template>
+"#;
+    let variant = |from: &str, to: &str| {
+        assert_eq!(probe.matches(from).count(), 1, "variant preimage");
+        probe.replacen(from, to, 1)
+    };
+    let unconstrained = variant("TBaz extends string", "TBaz");
+    let event = variant(
+        "\"\n      (value) => {\n        if (typeof value === 'string') model = value;\n      }\n    \"",
+        "\"if (typeof $event === 'string') model = $event\"",
+    );
+    let dotted = variant("<Foo\n", "<Parts.Foo\n").replacen(
+        "import { Foo } from \"./lib\";",
+        "import { Foo } from \"./lib\";\nconst Parts = { Foo };",
+        1,
+    );
+    let poison = variant(
+        "if (typeof value === 'string') model = value;",
+        "const payload: never = value;",
+    );
+    let unknown = variant("(value) =>", "(value: unknown) =>");
+    let plain = variant("from \"./lib\"", "from \"./plain\"");
+    let plain_library = library.replacen(
+        "VNode & { __ctx?: NonNullable<Awaited<typeof setup>> }",
+        "VNode",
+        1,
+    );
+    assert_eq!(
+        project::check(&[
+            ("src/lib.ts", library),
+            ("src/plain.ts", &plain_library),
+            ("src/Probe.vue", probe),
+            ("src/Unconstrained.vue", &unconstrained),
+            ("src/Event.vue", &event),
+            ("src/Dotted.vue", &dotted),
+            ("src/Poison.vue", &poison),
+            ("src/Unknown.vue", &unknown),
+            ("src/Plain.vue", &plain),
+        ]),
+        [
+            "src/Plain.vue(12,40): error TS2322: Type 'string' is not assignable to type 'TBaz'.\n'string' is assignable to the constraint of type 'TBaz', but 'TBaz' could be instantiated with a different subtype of constraint 'string'.",
+            "src/Poison.vue(12,15): error TS2322: Type 'TBaz' is not assignable to type 'never'.\nType 'string' is not assignable to type 'never'.",
+            "src/Unknown.vue(12,40): error TS2322: Type 'string' is not assignable to type 'TBaz'.\n'string' is assignable to the constraint of type 'TBaz', but 'TBaz' could be instantiated with a different subtype of constraint 'string'.",
+        ]
+    );
+}
+
+/// Every listener of one library usage reads the same instantiated call.
+#[test]
+fn second_listeners_of_generic_library_children_keep_their_payloads() {
+    let library = r#"import type { VNode } from "vue";
+
+export declare const Foo: <TBar>(
+  props: NonNullable<Awaited<typeof setup>>["props"],
+  setup?: Promise<{ props: { modelValue?: TBar; "onUpdate:modelValue"?: (value: TBar) => void; onPick?: (value: TBar, index: number) => void } }>,
+) => VNode & { __ctx?: NonNullable<Awaited<typeof setup>> };
+"#;
+    let probe = r#"<script setup lang="ts" generic="TBaz extends string">
+import { Foo } from "./lib";
+
+const model = defineModel<TBaz>({ required: true });
+</script>
+
+<template>
+  <Foo
+    :model-value="model"
+    @update:model-value="(value) => { if (typeof value === 'string') model = value; }"
+    @pick="(value, index) => { const n: number = index; if (typeof value === 'string') model = value; }"
+  />
+</template>
+"#;
+    let wrong = probe.replacen(
+        "const n: number = index; if (typeof value === 'string') model = value;",
+        "const n: string = index; const v: never = value;",
+        1,
+    );
+    assert_eq!(
+        project::check(&[
+            ("src/lib.ts", library),
+            ("src/Probe.vue", probe),
+            ("src/Wrong.vue", &wrong),
+        ]),
+        [
+            "src/Wrong.vue(11,38): error TS2322: Type 'number' is not assignable to type 'string'.",
+            "src/Wrong.vue(11,63): error TS2322: Type 'TBaz' is not assignable to type 'never'.\nType 'string' is not assignable to type 'never'.",
+        ]
+    );
+}
