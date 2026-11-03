@@ -149,46 +149,15 @@ assert.deepEqual(
   "analyzeModuleOutput reports the default export's end offset and whether it is `_sfc_main`",
 );
 
-// Reusing the caller's analysis must produce exactly what a fresh parse does,
-// in both insertion modes.
+// The insertion is the documented rewrite: pinned for one `_sfc_main` shape and
+// one non-`_sfc_main` shape, which the function must leave alone.
 const INSERTION = '_sfc_main.__scopeId = "data-v-1a2b3c4d";';
-for (const normalizeSemicolon of [false, true]) {
-  assert.deepEqual(
-    NAMES.map((name) => [
-      name,
-      insertBeforeSfcMainDefaultExport(SHAPES[name], INSERTION, {
-        normalizeSemicolon,
-        moduleInfo: EXPECTED[name],
-      }),
-    ]),
-    NAMES.map((name) => [
-      name,
-      insertBeforeSfcMainDefaultExport(SHAPES[name], INSERTION, { normalizeSemicolon }),
-    ]),
-    `passing moduleInfo changes nothing (normalizeSemicolon: ${normalizeSemicolon})`,
-  );
-}
-
-// And the insertion itself is still the documented rewrite, not just
-// self-consistent: pinned for one `_sfc_main` shape and one non-`_sfc_main`
-// shape, which the function must leave alone.
 assert.equal(
-  insertBeforeSfcMainDefaultExport(SHAPES.scriptOnly, INSERTION, {
-    moduleInfo: EXPECTED.scriptOnly,
-  }),
+  insertBeforeSfcMainDefaultExport(SHAPES.scriptOnly, INSERTION, EXPECTED.scriptOnly),
   "const _sfc_main = {\n  name: 'Foo'\n};\n_sfc_main.__scopeId = \"data-v-1a2b3c4d\";\nexport default _sfc_main",
 );
 assert.equal(
-  insertBeforeSfcMainDefaultExport(SHAPES.scriptOnly, INSERTION, {
-    normalizeSemicolon: true,
-    moduleInfo: EXPECTED.scriptOnly,
-  }),
-  "const _sfc_main = {\n  name: 'Foo'\n};\n_sfc_main.__scopeId = \"data-v-1a2b3c4d\";\nexport default _sfc_main;",
-);
-assert.equal(
-  insertBeforeSfcMainDefaultExport(SHAPES.scriptSetupPlain, INSERTION, {
-    moduleInfo: EXPECTED.scriptSetupPlain,
-  }),
+  insertBeforeSfcMainDefaultExport(SHAPES.scriptSetupPlain, INSERTION, EXPECTED.scriptSetupPlain),
   SHAPES.scriptSetupPlain,
 );
 
