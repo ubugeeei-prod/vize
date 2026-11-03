@@ -12,7 +12,7 @@ use super::{
     prefix::{get_identifier_prefix, is_simple_identifier},
     rewrite::{report_invalid_expression, rewrite_expression, rewrite_props_aliases},
     shape_checks::{is_event_handler_reference_node, is_function_expression_node},
-    typescript::strip_typescript_from_expression,
+    typescript::erase_typescript,
 };
 
 use vize_relief::JsExpression;
@@ -54,19 +54,22 @@ fn process_inline_handler_role<'a>(
     }
 
     let content = &normalized.content;
-    let ts_stripped_content = if ctx.options.is_ts {
-        Some(strip_typescript_from_expression(content))
-    } else {
-        None
-    };
+    // The retained AST applies wherever the checked text is still the node's
+    // own bytes (P1-7); TS-erased text that changed falls back.
+    let retained: Option<JsExpression<'_>> =
+        crate::retained::retained_whole_expression(&normalized);
+    let ts_stripped_content = ctx.options.is_ts.then(|| {
+        erase_typescript(
+            content,
+            retained
+                .as_ref()
+                .is_some_and(crate::retained::js_module_compatible),
+        )
+    });
     let function_check_source = ts_stripped_content
         .as_ref()
         .map(|s| s.as_str())
         .unwrap_or(content);
-    // The retained AST applies wherever the checked text is still the node's
-    // own bytes (P1-7); TS-stripped text that changed falls back.
-    let retained: Option<JsExpression<'_>> =
-        crate::retained::retained_whole_expression(&normalized);
     let is_function = if function_check_source == *content {
         is_function_expression_node(&normalized)
     } else {
@@ -163,8 +166,8 @@ fn process_inline_handler_role<'a>(
                 }
                 result.code
             }
-        } else if ctx.options.is_ts {
-            strip_typescript_from_expression(content)
+        } else if let Some(erased) = &ts_stripped_content {
+            erased.clone()
         } else {
             (*content).into()
         };
@@ -211,9 +214,9 @@ fn process_inline_handler_role<'a>(
             report_invalid_expression(ctx, detail, &normalized.loc);
         }
         result.code
-    } else if ctx.options.is_ts {
-        // Strip TypeScript type annotations even without prefix_identifiers
-        strip_typescript_from_expression(content)
+    } else if let Some(erased) = ts_stripped_content {
+        // Erase TypeScript even without prefix_identifiers
+        erased
     } else {
         (*content).into()
     };

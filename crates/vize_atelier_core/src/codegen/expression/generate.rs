@@ -80,7 +80,7 @@ pub fn generate_event_handler(
                 // (`event: MouseEvent`) are types too; limiting the strip to
                 // ` as ` left the JS parse failing and host globals bare.
                 let ts_stripped: String = if ctx.options.is_ts {
-                    crate::steps::strip_typescript_from_expression(content)
+                    crate::steps::erase_typescript(content, false)
                 } else {
                     (*content).into()
                 };

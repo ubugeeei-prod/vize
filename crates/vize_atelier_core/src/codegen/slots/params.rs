@@ -27,6 +27,11 @@ pub(super) fn slot_parameters(
     ctx: &CodegenContext,
 ) -> Option<(String, Vec<String>)> {
     let raw = get_slot_props(dir, &ctx.source)?;
+    if ctx.options.is_ts
+        && let Some(js) = crate::steps::erase_typescript_params(&raw)
+    {
+        return Some(erased_parameters(js, ctx));
+    }
     let Some(ExpressionNode::Simple(node)) = &dir.exp else {
         return Some((raw, vec![]));
     };
@@ -40,6 +45,21 @@ pub(super) fn slot_parameters(
         return Some((raw, vec![]));
     };
     Some(prefix_retained_defaults(retained.raw, parameters, ctx))
+}
+
+/// Type-erased params carry no retained AST: their own parse decides the
+/// bindings and the defaults.
+fn erased_parameters(js: String, ctx: &CodegenContext) -> (String, Vec<String>) {
+    let allocator = crate::expr_parse_probe::parse_arena();
+    let Ok(parameters) = oxc_parser::Parser::new(
+        &allocator,
+        &js,
+        oxc_span::SourceType::default().with_module(true),
+    )
+    .parse_slot_parameters() else {
+        return (js, vec![]);
+    };
+    prefix_retained_defaults(&js, &parameters, ctx)
 }
 
 #[cfg(test)]

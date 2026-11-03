@@ -1040,10 +1040,10 @@ const label = 'ready'
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
+    // Render code is JavaScript even for TypeScript output: the annotation
+    // leaves at the template lane's type-erasure boundary.
     assert!(
-        result
-            .code
-            .contains("({ open, close }: { open: boolean, close?: () => void }) =>"),
+        result.code.contains("_withCtx(({ open, close }) =>"),
         "{}",
         result.code
     );

@@ -10,7 +10,7 @@
 use vize_l0::{Allocator, String};
 use vize_l2::expr::JsExpr;
 
-use super::super::prefix::strip_typescript_from_expression;
+use super::super::prefix::{erase_typescript, retained_expression_is_js};
 use super::static_expr::is_static_bound_expr;
 
 pub(in crate::emit) struct TsView {
@@ -46,6 +46,6 @@ pub(in crate::emit) fn ts_view(js: &JsExpr<'_>, is_ts: bool) -> Option<TsView> {
         return None;
     }
     let source = super::super::js::js_expr_source(js);
-    let text = strip_typescript_from_expression(source.as_str());
+    let text = erase_typescript(source.as_str(), retained_expression_is_js(js));
     (text.as_str() != source.as_str()).then_some(TsView { text })
 }

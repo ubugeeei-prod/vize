@@ -2344,6 +2344,49 @@
       }
     },
     {
+      "id": "compiler/sfc/template-ts-unscanned-erasure",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-ts-unscanned-erasure",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "812c9f7a7bb9ec16363da49424a0756aa811ea6a4a94caa8fdd3ce05c016fdb9",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-ts-unscanned-erasure/module.expected.txt",
+        "sha256": "11ea28c47e731b492c3a949235aafe1f3be99fe6471690022c5240ba106b1e2a",
+        "source": "crates/vize_atelier_dom/tests/l2_is_ts.rs:unscanned_typescript_is_prefixed_after_erasure"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards the legacy template type erasure only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/tsx-setup-jsx-bindings",
       "state": "active",
       "targets": ["ssr"],

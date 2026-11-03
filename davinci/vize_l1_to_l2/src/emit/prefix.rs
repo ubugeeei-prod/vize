@@ -38,13 +38,18 @@ pub(super) use rewrite::slot_params_syntax_valid;
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::prefix_slot_defaults;
 #[cfg(feature = "typescript")]
-pub(in crate::emit) use typescript::strip_typescript_from_expression;
+pub(in crate::emit) use typescript::{erase_typescript, erase_typescript_params};
 
 /// Without the `typescript` feature the emit refuses an `is_ts` request up
-/// front (`emit_dom_with_options`), so nothing reaches a stripper.
+/// front (`emit_dom_with_options`), so nothing reaches an eraser.
 #[cfg(not(feature = "typescript"))]
-pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String {
+pub(in crate::emit) fn erase_typescript(content: &str, _proven_js: bool) -> String {
     String::from(content)
+}
+
+#[cfg(not(feature = "typescript"))]
+pub(in crate::emit) fn erase_typescript_params(_params: &str) -> Option<String> {
+    None
 }
 
 /// Whether the whole handler is a reference, rather than a statement body.
@@ -103,6 +108,58 @@ impl Content<'_> {
             offset,
         })
     }
+}
+
+/// An authored expression past the lane's one TypeScript boundary: every
+/// reader below takes its JavaScript from here, never from the node.
+struct Erased<'c, 'r, 'a> {
+    /// The node's own text.
+    authored: &'c str,
+    /// Its JavaScript spelling, when erasure changed the bytes.
+    erased: Option<String>,
+    /// The retained AST of `authored`, where it sits in that text.
+    retained: Option<Retained<'r, 'a>>,
+    /// Whether `retained` passed the JS-module dialect gate, when known.
+    proven_js: Option<bool>,
+}
+
+impl Erased<'_, '_, '_> {
+    fn js(&self) -> &str {
+        self.erased.as_deref().unwrap_or(self.authored)
+    }
+
+    fn changed(&self) -> bool {
+        self.erased.is_some()
+    }
+
+    fn proven_js(&self) -> bool {
+        self.proven_js.unwrap_or_else(|| {
+            self.retained
+                .is_some_and(|js| compat::js_module_compatible(js.ast, js.source))
+        })
+    }
+}
+
+/// Type-erase `content` once, under `is_ts`.
+fn erase<'c, 'r, 'a>(
+    scope: &PrefixScope<'_>,
+    content: &'c Content<'_>,
+    js: Option<&'r JsExpr<'a>>,
+) -> Erased<'c, 'r, 'a> {
+    let authored = content.text.as_str();
+    let mut erased = Erased {
+        authored,
+        erased: None,
+        retained: content.retained(js),
+        proven_js: None,
+    };
+    if scope.is_ts() {
+        let proven_js = erased.proven_js();
+        let text = erase_typescript(authored, proven_js);
+        erased.erased = (text.as_str() != authored).then_some(text);
+        erased.proven_js = Some(proven_js);
+    }
+    erased
 }
 
 /// Recover the shipped content for an expression authored at `span`
@@ -197,17 +254,16 @@ pub(super) fn prefix_expression(
     // `process_expression`: with `prefix_identifiers` off the TS lane only
     // type-erases, and the node is still marked rewritten — so the codegen
     // consumption runs either way.
+    let js = erase(scope, content, js);
     if !scope.prefixes_identifiers() {
-        let stripped = strip_typescript_from_expression(content.text.as_str());
         return Ok(Prefixed {
-            text: consume(scope, stripped, site),
+            text: consume(scope, String::from(js.js()), site),
             used_unref: false,
             used_is_ref: false,
             has_identifier_references: false,
         });
     }
-    let retained = content.retained(js);
-    let rewritten = rewrite::rewrite_expression(content.text.as_str(), retained, scope, false);
+    let rewritten = rewrite::rewrite_expression(&js, scope, false);
     if rewritten.parse_error {
         return Err(Refused);
     }
@@ -246,9 +302,8 @@ pub(super) fn prefix_handler(
     js: Option<&JsExpr<'_>>,
     for_caching: bool,
 ) -> Result<Prefixed, Refused> {
-    let retained = content.retained(js);
-    let (processed, is_reference) =
-        handler::process_classified_handler(content.text.as_str(), retained, scope);
+    let js = erase(scope, content, js);
+    let (processed, is_reference) = handler::process_classified_handler(&js, scope);
     if processed.parse_error {
         return Err(Refused);
     }
@@ -267,8 +322,8 @@ pub(super) fn prefix_inline_handler(
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
 ) -> Result<Prefixed, Refused> {
-    let retained = content.retained(js);
-    let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
+    let js = erase(scope, content, js);
+    let processed = handler::process_inline_handler(&js, scope);
     if processed.parse_error {
         return Err(Refused);
     }

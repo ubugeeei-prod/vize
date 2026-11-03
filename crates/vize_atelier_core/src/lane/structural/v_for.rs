@@ -66,6 +66,11 @@ pub(in crate::lane) fn transform_for_scope<'a>(
     let mut value_alias = parse_result.value;
     let mut key_alias = parse_result.key;
     let mut index_alias = parse_result.index;
+    if ctx.options.is_ts {
+        for alias in [&mut value_alias, &mut key_alias, &mut index_alias] {
+            crate::steps::v_for::erase_for_alias(allocator, alias);
+        }
+    }
 
     // Process source expression with binding-aware identifier prefixing
     // This ensures imports and refs are correctly handled (e.g., _unref(PRESETS) instead of _ctx.PRESETS)
