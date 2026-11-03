@@ -2,10 +2,10 @@
 
 use vize_l0::{String, ToCompactString};
 
-use super::TemplateCodeSections;
 use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
+use super::{TemplateBlockCompileResult, TemplateCodeSections};
 
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
@@ -47,6 +47,41 @@ pub(crate) fn slice_template_parts(
     let render_body = String::new(body);
 
     (imports, hoisted, preamble, render_body, "render")
+}
+
+/// Imports, hoists and the whole render function of a compiled template:
+/// sliced from its recorded sections when its lane records them (DOM).
+pub(crate) fn template_parts_full(
+    output: &TemplateBlockCompileResult,
+) -> (String, String, String, &'static str) {
+    match &output.sections {
+        Some(sections) => slice_template_parts_full(&output.code, sections),
+        None => extract_template_parts_full(&output.code),
+    }
+}
+
+/// [`extract_template_parts_full`] over emission-recorded sections: only the
+/// preamble is line-scanned, and the render function is its recorded section
+/// instead of a brace-counted line range.
+pub(crate) fn slice_template_parts_full(
+    template_code: &str,
+    sections: &TemplateCodeSections,
+) -> (String, String, String, &'static str) {
+    let (start, end) = sections.function;
+    let (imports, hoisted, _, _) =
+        extract_template_parts_full(template_code.get(..start).unwrap_or_default());
+    let function = template_code.get(start..end).unwrap_or_default();
+    let mut render_fn = String::with_capacity(function.len() + 1);
+    for line in function.lines() {
+        render_fn.push_str(line);
+        render_fn.push('\n');
+    }
+    let render_fn_name = function
+        .lines()
+        .next()
+        .and_then(|line| detect_render_export_name(line.trim()))
+        .unwrap_or("");
+    (imports, hoisted, render_fn, render_fn_name)
 }
 
 fn is_vapor_template_declaration(line: &str) -> bool {

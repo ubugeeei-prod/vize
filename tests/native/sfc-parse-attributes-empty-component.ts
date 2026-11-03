@@ -22,7 +22,7 @@ export const emptyCompileReference = JSON.parse(referenceBytes.toString("utf8"))
 };
 
 export const emptyCompileSourceBlobs = {
-  "crates/vize_atelier_sfc/src/compile.rs": "73dac21158fb72588268f617d9b439554f064fa1",
+  "crates/vize_atelier_sfc/src/compile.rs": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
   "crates/vize_atelier_sfc/src/compile/empty_component.rs":
     "33ee8b8b1f6e8085cccfb609c1781ccecc6877b9",
   "crates/vize_vitrine/src/napi/sfc/compile.rs": "e8a1b34ac5268c71573347506dfdeb6d6fc9ccb0",
