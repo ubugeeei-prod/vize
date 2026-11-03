@@ -27,6 +27,7 @@ mod javascript_check_js;
 mod let_anchor_assignment;
 mod listener_anchor_11657;
 mod long_prop_kebab_case;
+mod memo_expression;
 mod module_default_export;
 mod nested_callback_11361;
 mod optional_prop_spacing;
