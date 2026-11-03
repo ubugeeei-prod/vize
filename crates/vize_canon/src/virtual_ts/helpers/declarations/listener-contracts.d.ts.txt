@@ -1,4 +1,4 @@
-declare module "vize:virtual-ts" {
+declare module "vize:virtual-ts-listeners" {
 // Component listener contracts shared by every generated module in a batch
 // project. Each alias is the per-event text the generator used to inline,
 // with the component or boxed contract as a parameter: TypeScript then

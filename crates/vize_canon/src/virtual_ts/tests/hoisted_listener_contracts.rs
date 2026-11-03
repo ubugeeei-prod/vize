@@ -39,7 +39,7 @@ fn generate(hoist_shared_preamble: bool) -> String {
 }
 
 fn helper(name: &str) -> String {
-    format!("import(\"vize:virtual-ts\").{name}<")
+    format!("import(\"vize:virtual-ts-listeners\").{name}<")
 }
 
 #[test]
@@ -86,8 +86,8 @@ fn hoisted_listeners_read_component_and_event_contracts_from_shared_helpers() {
 fn every_hoisted_listener_helper_is_exported_by_the_shared_module() {
     let code = generate(true);
     let mut referenced = 0;
-    for (at, _) in code.match_indices("import(\"vize:virtual-ts\").$Listener") {
-        let name = &code[at + "import(\"vize:virtual-ts\").".len()..];
+    for (at, _) in code.match_indices("import(\"vize:virtual-ts-listeners\").$Listener") {
+        let name = &code[at + "import(\"vize:virtual-ts-listeners\").".len()..];
         let name = &name[..name.find('<').unwrap()];
         assert_eq!(
             SHARED_PREAMBLE_DTS

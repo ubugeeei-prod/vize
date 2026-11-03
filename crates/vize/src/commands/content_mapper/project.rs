@@ -175,10 +175,12 @@ fn installed_virtual_ts_module(config_file_name: &Path) -> bool {
     let Some(project_directory) = config_file_name.parent() else {
         return false;
     };
+    // Hoisted text also imports `vize/virtual-ts-listeners`; an older package
+    // without it keeps the standalone per-file helpers.
     project_directory.ancestors().any(|directory| {
-        directory
-            .join("node_modules/vize/virtual-ts.d.ts")
-            .is_file()
+        ["virtual-ts.d.ts", "virtual-ts-listeners.d.ts"]
+            .iter()
+            .all(|file| directory.join("node_modules/vize").join(file).is_file())
     })
 }
 

@@ -1,6 +1,5 @@
 import type {} from "./virtual-ts-globals.js" with { "resolution-mode": "import" };
 import type {} from "./virtual-ts-patterns.js" with { "resolution-mode": "import" };
-export type * from "./virtual-ts-listeners.js" with { "resolution-mode": "import" };
 // Generated from the shared virtual TypeScript helpers. Do not edit.
 // One module for every content-mapper virtual file.
 // Template-ref widening. Hoisted-only, deliberately absent from the per-file

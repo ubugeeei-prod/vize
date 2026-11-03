@@ -12,7 +12,7 @@ const read = (path: string) => fs.readFileSync(new URL(path, repo), "utf8");
 const helpers = read(
   "crates/vize_canon/src/virtual_ts/helpers/declarations/listener-contracts.d.ts.txt",
 )
-  .replace(/^declare module "vize:virtual-ts" \{\n/u, "")
+  .replace(/^declare module "vize:virtual-ts-listeners" \{\n/u, "")
   .replace(/\}\n$/u, "")
   .replace(/^export /gmu, "");
 const generator = [

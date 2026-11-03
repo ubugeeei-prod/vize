@@ -72,7 +72,7 @@ shared_type_refs! {
 /// so these exist only in the hoisted module.
 macro_rules! hoisted_type_refs {
     ($($name:ident => $exported:literal),+ $(,)?) => {
-        $(pub(crate) const $name: &str = concat!("import(\"vize:virtual-ts\").", $exported);)+
+        $(pub(crate) const $name: &str = concat!("import(\"vize:virtual-ts-listeners\").", $exported);)+
     };
 }
 

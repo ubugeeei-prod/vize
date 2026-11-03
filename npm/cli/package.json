@@ -66,6 +66,9 @@
       },
       "types": "./virtual-ts.d.ts"
     },
+    "./virtual-ts-listeners": {
+      "types": "./virtual-ts-listeners.d.ts"
+    },
     "./content-mapper-helpers": {
       "import": {
         "types": "./content-mapper-helpers.d.mts"
