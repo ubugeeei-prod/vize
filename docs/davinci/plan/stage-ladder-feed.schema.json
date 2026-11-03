@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/stage-ladder-feed.schema.json",
   "title": "Davinci stage ladder feed",
-  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version the stage view negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producers: the inspector payload embeds it under `stageFeed`, and the wasm `analyzeSfc` result carries the full L1 -> L2 -> L3 stage ladder next to the croquis alias. Transport is deliberately unspecified here - that decision is P2-19.",
+  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version the stage view negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producer: the `vize inspector` payload embeds it under `stageFeed`. Transport is deliberately unspecified here - that decision is P2-19.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "command", "pages"],
@@ -16,7 +16,7 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "Producing surface (for example `davinci-opt`, `inspector`, `analyze-sfc`)."
+      "description": "Producing surface (for example `inspector`)."
     },
     "pages": {
       "type": "array",
@@ -34,7 +34,7 @@
             "type": "string",
             "minLength": 1,
             "pattern": "^[a-z][a-z0-9-]*$",
-            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-plan` (the transform plan's walks), `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `davinci-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
+            "description": "Stage (or stage page family) that produced the page, for example `s1` for the inspector's L1 surface page."
           },
           "pass": {
             "type": "string",
@@ -51,7 +51,7 @@
     },
     "remarks": {
       "type": "array",
-      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into the artifact the pipeline lowered (the frame of that file's pages: the template content for the inspector and analyzeSfc). Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: docs/davinci/plan/remarks-format.md.",
+      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into the artifact the pipeline lowered (the frame of that file's pages: the template content for the inspector). Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: docs/davinci/plan/remarks-format.md.",
       "items": {
         "type": "object",
         "additionalProperties": false,

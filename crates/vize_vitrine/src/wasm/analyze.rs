@@ -10,36 +10,21 @@ use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
 mod bindings;
 mod entry;
 mod input;
-mod stages;
 pub use entry::analyze_sfc_wasm;
-pub(crate) use stages::HostClock;
 
 /// The `analyzeSfc` result as a plain `serde_json::Value` - the whole
 /// analysis short of the FFI conversion, so native tests can pin the
-/// croquis alias and the stage feed byte-exactly (P2-18).
+/// croquis alias byte-exactly.
 #[cfg(test)]
 pub(super) fn analyze_sfc_json(source: &str, filename: &str) -> Result<serde_json::Value, String> {
     analyze_sfc_json_with_options(source, filename, false, false)
 }
 
-#[cfg(test)]
 pub(super) fn analyze_sfc_json_with_options(
     source: &str,
     filename: &str,
     in_tag_comments: bool,
     patterned_template: bool,
-) -> Result<serde_json::Value, String> {
-    analyze_sfc_json_with_clock(source, filename, in_tag_comments, patterned_template, &|| 0)
-}
-
-/// [`analyze_sfc_json_with_options`] with the host clock that times the
-/// stage ladder steps (`stageProfile`).
-pub(super) fn analyze_sfc_json_with_clock(
-    source: &str,
-    filename: &str,
-    in_tag_comments: bool,
-    patterned_template: bool,
-    clock: HostClock<'_>,
 ) -> Result<serde_json::Value, String> {
     let (descriptor, template_offset, analysis) =
         input::analyze(source, filename, in_tag_comments, patterned_template)?;
@@ -222,27 +207,6 @@ pub(super) fn analyze_sfc_json_with_clock(
         })
         .collect();
 
-    // The stage feed (P2-18, C-2/C-5) - L1, the L2 lowering and per-pass
-    // pages, the L3 graph/partition/value pages, and (P3-13) the inline HTML
-    // template's optimization remarks in the pages' byte frame - and the same
-    // run's step timings as a P0-11 profile document (C-3), from `vize_curator`.
-    let include_stage_remarks = descriptor
-        .template
-        .as_ref()
-        .filter(|template| {
-            template.src.is_none() && template.lang.as_deref().is_none_or(|lang| lang == "html")
-        })
-        .is_some();
-    let (stage_feed, stage_profile) = stages::stage_members(
-        filename,
-        descriptor
-            .template
-            .as_ref()
-            .map(|template| template.content.as_ref()),
-        include_stage_remarks,
-        clock,
-    );
-
     let diagnostics = input::diagnostics(source, template_offset, &summary);
     let warnings = summary
         .pattern_diagnostics
@@ -308,14 +272,11 @@ pub(super) fn analyze_sfc_json_with_clock(
         // `vir` is deprecated in favor of the folio alias below; both carry
         // the same croquis folio text for now (Davinci P0-10). Consumers
         // should migrate to `folio.croquis`. Byte-identity of the two keys
-        // is pinned by `wasm::tests_stage_feed` (P2-18); the stage pages live
-        // in the sibling `stageFeed` member, not in this alias object.
+        // is pinned by `wasm::tests`.
         "vir": vir.as_str(),
         "folio": {
             "croquis": vir.as_str(),
         },
-        "stageFeed": stage_feed,
-        "stageProfile": stage_profile,
     });
 
     Ok(result)
