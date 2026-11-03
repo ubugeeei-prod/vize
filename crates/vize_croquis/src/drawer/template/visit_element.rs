@@ -68,12 +68,27 @@ impl Drawer {
         }
         let mut subtree_end = None;
 
-        let component_usage_name =
-            if is_component || crate::builtins::is_runtime_builtin_component(tag) {
-                Some(CompactString::new(tag))
-            } else {
-                self.dynamic_component_target(el, tag)
-            };
+        let directive_state = self.collect_element_directive_state(el, &mut subtree_end);
+        let vif_condition = self.apply_element_conditional(directive_state.conditional);
+        // Vue evaluates v-if before same-element v-for aliases exist. Keep the
+        // conditional expression in the incoming scope, while retaining its
+        // guard metadata for virtual TypeScript control-flow narrowing.
+        let vif_guard_pushed = self.push_element_vif_guard(vif_condition.as_ref());
+        self.process_element_conditional_directive(el, scope_vars);
+
+        // Decide a dynamic target once, with its own guard and before its own
+        // v-for scope, so the usage and its listeners share one owner.
+        let is_builtin = crate::builtins::is_runtime_builtin_component(tag);
+        let dynamic_target = if is_component || is_builtin {
+            None
+        } else {
+            self.dynamic_component_target(el, tag)
+        };
+        let component_usage_name = if is_component || is_builtin {
+            Some(CompactString::new(tag))
+        } else {
+            dynamic_target.clone()
+        };
 
         if self.options.track_usage {
             if let Some(component_name) = component_usage_name.as_ref() {
@@ -84,13 +99,6 @@ impl Drawer {
         }
 
         let mut component_usage = self.start_component_usage(el, component_usage_name.as_ref());
-        let directive_state = self.collect_element_directive_state(el, &mut subtree_end);
-        let vif_condition = self.apply_element_conditional(directive_state.conditional);
-        // Vue evaluates v-if before same-element v-for aliases exist. Keep the
-        // conditional expression in the incoming scope, while retaining its
-        // guard metadata for virtual TypeScript control-flow narrowing.
-        let vif_guard_pushed = self.push_element_vif_guard(vif_condition.as_ref());
-        self.process_element_conditional_directive(el, scope_vars);
         if let Some(ref mut usage) = component_usage {
             usage.vif_guard = self.current_vif_guard();
         }
@@ -117,7 +125,12 @@ impl Drawer {
             self.collect_element_ids(el, is_component)
         );
 
-        self.process_element_directives(el, scope_vars, is_component, tag);
+        let event_target_component = if is_component {
+            Some(CompactString::new(tag))
+        } else {
+            dynamic_target
+        };
+        self.process_element_directives(el, scope_vars, event_target_component);
         self.check_element_directive_refs(el, scope_vars);
 
         let slot_vars_count = self.enter_element_slot_scope(

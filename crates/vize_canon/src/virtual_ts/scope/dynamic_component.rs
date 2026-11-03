@@ -12,6 +12,7 @@ use vize_carton::{String, append};
 use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+mod generic_index;
 mod homogeneous_index;
 
 /// A named value of the built-in `component`, not an authored registry tag.
@@ -66,6 +67,7 @@ pub(super) fn emit_dynamic_component_aliases(
     ts: &mut String,
     summary: &Croquis,
     template_ast: Option<&RootNode<'_>>,
+    generic: bool,
 ) {
     let Some(root) = template_ast else {
         return;
@@ -84,6 +86,9 @@ pub(super) fn emit_dynamic_component_aliases(
         let annotation = homogeneous_index::value(summary, root, usage)
             .map(|value| vize_carton::cstr!(": {value}"))
             .unwrap_or_default();
+        // Only a generic setup can defer an indexed entry type.
+        let boxed = generic.then(|| generic_index::value(root, usage)).flatten();
+        let expression = boxed.as_deref().unwrap_or(expression);
         if let Some(guard) = &usage.vif_guard {
             append!(
                 *ts,

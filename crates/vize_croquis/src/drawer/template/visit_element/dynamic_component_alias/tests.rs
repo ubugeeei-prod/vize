@@ -39,12 +39,33 @@ fn nested_script_owned_computed_target_keeps_its_component_event_owner() {
     ));
 }
 
+// #11449: guards and keys that read only script values keep the owner.
+#[test]
+fn script_owned_guards_and_member_keys_keep_their_component_event_owner() {
+    let script = "import Child from './Child.vue'; const map = { foo: Child }; const key = 'foo'; const shown = true; const qux = { key: 'foo' as const };";
+    for template in [
+        r#"<Panel><template #foo><component v-if="shown" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><div v-if="!shown"></div><component v-else-if="map" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><div v-if="!shown"></div><component v-else :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><template v-if="shown"><component :is="map[key]" @select="value => value.toFixed()"></component></template></template></Panel>"#,
+        r#"<Panel v-if="shown"><template #foo><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><component :is="map[qux.key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><Panel><template #foo><component v-if="shown" :is="map[qux.key]" @select="value => value.toFixed()"></component></template></Panel></template></Panel>"#,
+        r#"<Panel><template #foo><component v-for="n in 2" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<component v-for="n in 2" :is="map[key]" @select="value => value.toFixed()"></component>"#,
+    ] {
+        assert!(captured_target(script, template), "{template}");
+    }
+}
+
 #[test]
 fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
     let script = "import Child from './Child.vue'; const map = { foo: Child }; const key = 'foo';";
     for template in [
-        r#"<Panel><template #foo><component v-if="map" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
-        r#"<Panel><template #foo><div v-if="map"><component :is="map[key]" @select="value => value.toFixed()"></component></div></template></Panel>"#,
+        r#"<Panel><template #foo="{ open }"><component v-if="open" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo="{ open }"><div v-if="open"><component :is="map[key]" @select="value => value.toFixed()"></component></div></template></Panel>"#,
+        r#"<Panel><template #foo="{ slot }"><component :is="map[slot.key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<Panel><template #foo><component v-for="item in [{ key: 'foo' }]" :is="map[item.key]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo="{ key }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo="{ map }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo><component v-for="key in ['foo']" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,

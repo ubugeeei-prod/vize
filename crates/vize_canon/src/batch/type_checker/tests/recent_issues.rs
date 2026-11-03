@@ -22,6 +22,7 @@ mod define_model_template_unwrap;
 mod diagnostic_normalization;
 mod directive_anchors;
 mod directive_values;
+mod dynamic_component_index_targets;
 mod dynamic_component_union_listener;
 mod empty_required_props;
 mod exact_optional_props;
