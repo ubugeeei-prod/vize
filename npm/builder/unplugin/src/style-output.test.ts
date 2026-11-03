@@ -151,7 +151,7 @@ void test("hasDelegatedStyles is true when one of several blocks delegates", (t)
 void test("generateOutput (a): export default with hasScoped and no _sfc_main rewrites and appends scopeId", (t) => {
   const out = generateOutput(
     makeCompiled({ code: "export default { name: 'A' }", scopeId: "abc123", hasScoped: true }),
-    { isProduction: true, isDev: false },
+    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
   );
 
   // rewritten declaration
@@ -170,6 +170,8 @@ void test("generateOutput (a'): export default WITHOUT hasScoped does not append
   const out = generateOutput(makeCompiled({ code: "export default {}", hasScoped: false }), {
     isProduction: true,
     isDev: false,
+    cssPipeline: true,
+    filePath: "/proj/App.vue",
   });
 
   t.assert.match(out, /const _sfc_main = \{\}/);
@@ -177,43 +179,68 @@ void test("generateOutput (a'): export default WITHOUT hasScoped does not append
   t.assert.equal(out.includes("__scopeId"), false);
 });
 
-void test("generateOutput (b): plain css in non-production injects the __vize_css__ style IIFE", (t) => {
+void test("generateOutput (b): without a host CSS pipeline, plain css is injected at run time", (t) => {
   const out = generateOutput(
     makeCompiled({
       code: "export default {}",
       scopeId: "abc123",
       css: ".x{color:red}",
-      styles: [makeBlock()],
+      styles: [makeBlock({ content: ".x{color:red}" })],
     }),
-    { isProduction: false, isDev: false },
+    { isProduction: false, isDev: false, cssPipeline: false, filePath: "/proj/App.vue" },
   );
 
   t.assert.match(out, /export const __vize_css__ = ".x\{color:red\}";/);
   t.assert.match(out, /const __vize_css_id__ = "vize-style-abc123";/);
   t.assert.match(out, /document\.createElement\("style"\)/);
   t.assert.match(out, /document\.head\.appendChild\(style\)/);
+  t.assert.equal(out.includes("type=style"), false);
   // the original module body still follows the IIFE
   t.assert.match(out, /export default _sfc_main;/);
 });
 
-void test("generateOutput (b'): plain css is also injected in production when extractCss is falsy", (t) => {
-  const out = generateOutput(makeCompiled({ css: ".y{}", styles: [makeBlock()] }), {
-    isProduction: true,
-    isDev: false,
-    extractCss: false,
-  });
-  t.assert.match(out, /export const __vize_css__ = ".y\{\}";/);
-  t.assert.match(out, /document\.createElement/);
+void test("generateOutput (b'): with a host CSS pipeline, plain css is a style module in every build", (t) => {
+  for (const isProduction of [true, false]) {
+    const out = generateOutput(
+      makeCompiled({
+        scopeId: "abc123",
+        hasScoped: true,
+        css: ".y[data-v-abc123]{}",
+        styles: [makeBlock({ content: ".y{}", scoped: true }), makeBlock({ index: 1 })],
+      }),
+      { isProduction, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    );
+    t.assert.match(
+      out,
+      /^import "\/proj\/App\.vue\?vue&type=style&index=0&scoped=data-v-abc123&lang\.css";\nimport "\/proj\/App\.vue\?vue&type=style&index=1&lang\.css";/,
+    );
+    t.assert.equal(out.includes("__vize_css__"), false);
+    t.assert.equal(out.includes("document.createElement"), false);
+  }
 });
 
-void test("generateOutput (b''): plain css is NOT injected in production when extractCss is true", (t) => {
-  const out = generateOutput(makeCompiled({ css: ".z{}", styles: [makeBlock()] }), {
+void test("generateOutput (b''): injected css cannot resolve @import; a pipeline host can", (t) => {
+  const compiled = makeCompiled({
+    css: '@import "./base.css";',
+    styles: [makeBlock({ content: '@import "./base.css";' })],
+  });
+  t.assert.throws(
+    () =>
+      generateOutput(compiled, {
+        isProduction: true,
+        isDev: false,
+        cssPipeline: false,
+        filePath: "/proj/App.vue",
+      }),
+    /\/proj\/App\.vue: CSS @import in <style> needs a bundler CSS pipeline/,
+  );
+  const out = generateOutput(compiled, {
     isProduction: true,
     isDev: false,
-    extractCss: true,
+    cssPipeline: true,
+    filePath: "/proj/App.vue",
   });
-  t.assert.equal(out.includes("__vize_css__"), false);
-  t.assert.equal(out.includes("document.createElement"), false);
+  t.assert.match(out, /import "\/proj\/App\.vue\?vue&type=style&index=0&lang\.css";/);
 });
 
 void test("generateOutput (c): delegated scss (scoped) + css module emits style imports + __cssModules setup", (t) => {
@@ -227,7 +254,7 @@ void test("generateOutput (c): delegated scss (scoped) + css module emits style 
         makeBlock({ module: true, index: 1 }),
       ],
     }),
-    { isProduction: true, isDev: false, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
   );
 
   // scoped scss block -> side-effect import of the compiled, scoped CSS
@@ -259,7 +286,7 @@ void test("generateOutput (c'): named css module uses its name as binding and ur
       hasScoped: false,
       styles: [makeBlock({ module: "cls", index: 0 })],
     }),
-    { isProduction: true, isDev: false, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
   );
 
   t.assert.match(
@@ -269,19 +296,23 @@ void test("generateOutput (c'): named css module uses its name as binding and ur
   t.assert.match(out, /_sfc_main\.__cssModules\["cls"\] = cls;/);
 });
 
-void test("generateOutput (c''): delegated styles require filePath; without it falls back (no style imports)", (t) => {
+void test("generateOutput (c''): without a host CSS pipeline, preprocessor blocks still need one", (t) => {
   const out = generateOutput(
     makeCompiled({
       code: "export default {}",
       scopeId: "abc123",
-      styles: [makeBlock({ lang: "scss", scoped: true, index: 0 })],
+      css: ".p{}",
+      styles: [makeBlock({ lang: "scss", scoped: true, index: 0 }), makeBlock({ index: 1 })],
     }),
-    { isProduction: true, isDev: false },
+    { isProduction: true, isDev: false, cssPipeline: false, filePath: "/proj/App.vue" },
   );
 
-  // no filePath => no delegated style import is emitted
-  t.assert.equal(out.includes("?vue&type=style"), false);
-  t.assert.equal(out.includes("__cssModules"), false);
+  t.assert.match(
+    out,
+    /import "\/proj\/App\.vue\?vue&type=style&index=0&scoped=data-v-abc123&lang\.css";/,
+  );
+  t.assert.match(out, /import "\/proj\/App\.vue\?vue&type=style&index=1&lang\.css";/);
+  t.assert.equal(out.includes("__vize_css__"), false);
 });
 
 void test("generateOutput (d): named render export with no export default and no _sfc_main appends component shell", (t) => {
@@ -292,7 +323,7 @@ void test("generateOutput (d): named render export with no export default and no
       hasScoped: true,
       styles: [],
     }),
-    { isProduction: true, isDev: false },
+    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
   );
 
   // original named export preserved
@@ -312,7 +343,7 @@ void test("generateOutput (d'): named render export without scoping skips __scop
       hasScoped: false,
       styles: [],
     }),
-    { isProduction: true, isDev: false },
+    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
   );
 
   t.assert.match(out, /const _sfc_main = \{\};/);

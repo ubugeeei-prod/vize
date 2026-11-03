@@ -156,34 +156,20 @@ void test("css-module style is delegated via a default import binding", async (t
   t.assert.ok(loadedCss.includes(".root"), "css-module selector present in loaded css");
 });
 
-void test("plain non-module css is inlined, not delegated", async (t) => {
-  const plugin = createPlugin();
-  const ctx = { warn() {} };
-
-  const transformed = await plugin.transform?.call(
-    ctx as never,
+void test("plain css is delegated through the same style module", async (t) => {
+  const { transformCode, importId, resolvedId, loadInclude, loadedCss } = await runPipeline(
     `<template><div class="a">x</div></template>
-<style>.a{color:red}</style>`,
-    SYNTHETIC_ID,
-  );
-  t.assert.ok(transformed && typeof transformed === "object");
-
-  // Plain css is injected inline via the __vize_css__ runtime, not delegated.
-  t.assert.match(transformed.code, /export const __vize_css__ = "\.a\{color:red\}";/);
-  t.assert.match(transformed.code, /__vize_css_id__/);
-
-  // No delegated style import / css-module import is emitted.
-  t.assert.ok(
-    !/\?[^"]*type=style/.test(transformed.code),
-    "plain css emits no delegated style import",
-  );
-  t.assert.ok(
-    !/import \$style from/.test(transformed.code),
-    "plain css emits no css-module import",
+<style scoped>.a{color:red}</style>`,
+    /import "([^"]+)";/,
   );
 
-  // And resolveId on a would-be style request for this plain css is moot: the
-  // transform never produced one, confirming the inline path was taken.
+  t.assert.match(importId, /\?vue&type=style&index=0&scoped=data-v-[0-9a-f]+&lang\.css$/);
+  t.assert.equal(resolvedId, importId);
+  t.assert.equal(loadInclude, true);
+  // The host writes the CSS; nothing is injected at run time.
+  t.assert.doesNotMatch(transformCode, /__vize_css__|document\.createElement/);
+  const scopeId = importId.match(/scoped=(data-v-[0-9a-f]+)/)?.[1];
+  t.assert.ok(loadedCss.includes(`.a[${scopeId}]{color:red}`), loadedCss);
 });
 
 void test("#11456 scss and css-module src blocks delegate the file's content", async (t) => {

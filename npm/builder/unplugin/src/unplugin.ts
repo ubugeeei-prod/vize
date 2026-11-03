@@ -208,6 +208,41 @@ async function loadStyleBlock(
   return scopeCss(css, scoped);
 }
 
+/**
+ * Whether the host bundles the stylesheets a module imports. esbuild without
+ * `bundle` never follows an import, so its CSS can only be injected.
+ */
+function bundlesStylesheets(context: unknown, framework: string): boolean {
+  if (framework !== "esbuild") {
+    return true;
+  }
+  const native = (
+    context as { getNativeBuildContext?: () => unknown }
+  ).getNativeBuildContext?.() as { build?: { initialOptions?: { bundle?: boolean } } } | undefined;
+  return native?.build?.initialOptions?.bundle === true;
+}
+
+const CSS_PIPELINE_HINT =
+  "[vize] <style> blocks are stylesheet modules for the bundler's CSS pipeline, and this build did not bundle one. " +
+  "tsdown needs @tsdown/css; Rollup needs a CSS plugin such as rollup-plugin-postcss; " +
+  "Rolldown alone does not bundle CSS, so build through tsdown or Vite.";
+
+interface HostBuildError {
+  id?: unknown;
+  code?: unknown;
+  errors?: HostBuildError[];
+}
+
+/** A Rollup or Rolldown build error raised on a style module with no CSS pipeline. */
+function isStylePipelineError(error: HostBuildError): boolean {
+  return [error, ...(error.errors ?? [])].some(
+    (item) =>
+      (typeof item.id === "string" && isVueStyleRequest(item.id)) ||
+      // Rolldown names no module for a CSS module it cannot bundle.
+      item.code === "UNSUPPORTED_FEATURE",
+  );
+}
+
 type HostResolve = (request: string, importer: string) => Promise<string | null | undefined>;
 type RollupLikeResolve = (
   source: string,
@@ -272,6 +307,17 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
   const cache = new Map<string, CachedCompiledModule>();
   const webpackStyleFiles = meta.framework === "webpack";
   let virtualModules: ReturnType<typeof findVirtualModules>;
+  let loadedStyles = false;
+  const rollupHooks = {
+    buildStart() {
+      loadedStyles = false;
+    },
+    buildEnd(this: { warn(message: string): void }, error?: HostBuildError) {
+      if (error && loadedStyles && isStylePipelineError(error)) {
+        this.warn(CSS_PIPELINE_HINT);
+      }
+    },
+  };
 
   return {
     name: "unplugin-vize",
@@ -299,6 +345,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         return null;
       }
 
+      loadedStyles = true;
       return {
         code: await loadStyleBlock(this, id, options, cache),
         map: null,
@@ -370,6 +417,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       const generated = generateOutput(compiled, {
         isProduction: options.isProduction,
         isDev: false,
+        cssPipeline: bundlesStylesheets(this, meta.framework),
         filePath: id,
         styleRequest: webpackStyleFiles
           ? (block, scoped) => {
@@ -402,6 +450,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         cache.delete(id);
       }
     },
+
+    rollup: rollupHooks,
+    rolldown: rollupHooks,
 
     webpack(compiler) {
       if (!options.hostCompiler) {

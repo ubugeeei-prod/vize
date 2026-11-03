@@ -1,5 +1,6 @@
 import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
 import { styleRequestId } from "./request.ts";
+import { assertInjectableCss } from "./style-dependencies.ts";
 import { isPreprocessorLang } from "./style-scope.ts";
 import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
@@ -11,6 +12,7 @@ function isCssModule(block: StyleBlockInfo): boolean {
   return block.module !== false;
 }
 
+/** Blocks only a host CSS pipeline can serve. */
 export function hasDelegatedStyles(compiled: CompiledModule): boolean {
   return compiled.styles.some((style) => needsPreprocessor(style) || isCssModule(style));
 }
@@ -75,14 +77,19 @@ const CSS_MODULE_LOCALS_HELPER = `const ${CSS_MODULE_LOCALS} = (ns) =>
 export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
-  extractCss?: boolean;
-  filePath?: string;
+  /**
+   * The host bundles the stylesheets a module imports, so every block is a
+   * style module and the host writes the CSS. Otherwise plain CSS is injected
+   * at run time (Babel, esbuild without `bundle`).
+   */
+  cssPipeline: boolean;
+  filePath: string;
   /** Overrides the `?vue&type=style` import specifier (webpack style files). */
   styleRequest?: (block: StyleBlockInfo, scoped: string | null) => string;
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, extractCss, filePath, styleRequest } = options;
+  const { isProduction, isDev, cssPipeline, filePath, styleRequest } = options;
 
   let output = compiled.code;
   const exportDefaultRegex = /^export default /m;
@@ -110,9 +117,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     output += "\nexport default _sfc_main;";
   }
 
-  const useDelegatedStyles = hasDelegatedStyles(compiled) && filePath;
-
-  if (useDelegatedStyles) {
+  if (cssPipeline || hasDelegatedStyles(compiled)) {
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
 
@@ -161,7 +166,8 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         `${cssModuleSetup}\nexport default _sfc_main;`,
       );
     }
-  } else if (compiled.css && !(isProduction && extractCss)) {
+  } else if (compiled.css) {
+    assertInjectableCss(compiled.styles, filePath);
     output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
   }
 

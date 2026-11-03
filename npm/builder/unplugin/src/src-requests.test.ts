@@ -33,12 +33,17 @@ async function transform(context: object, file: string): Promise<string> {
   const meta = { framework: "rollup" } as Parameters<typeof vizeUnplugin.raw>[1];
   const plugin = vizeUnplugin.raw({ isProduction: true }, meta) as unknown as {
     transform: (this: unknown, code: string, id: string) => Promise<{ code: string } | null>;
+    load: (this: unknown, id: string) => Promise<{ code: string } | null>;
   };
   const watched: string[] = [];
   const ctx = { warn() {}, addWatchFile: (id: string) => watched.push(id), ...context };
   const result = await plugin.transform.call(ctx, SOURCE, file);
   assert.ok(result);
-  return `${result.code}\n/* watched: ${watched.join(",")} */`;
+  // The block is a style module; its content is what the host's CSS pipeline gets.
+  const styleId = /^import "([^"]+\?vue&type=style[^"]*)";/m.exec(result.code)?.[1];
+  assert.ok(styleId, result.code);
+  const style = await plugin.load.call(ctx, styleId);
+  return `${style?.code}\n/* watched: ${watched.join(",")} */`;
 }
 
 void test("#11482 style src package specifiers resolve with the host's resolver", async (t) => {
@@ -90,11 +95,12 @@ void test("#11482 esbuild resolves a style src package specifier", async (t) => 
     bundle: true,
     write: false,
     format: "esm",
+    outdir: path.join(root, "dist"),
     external: ["vue"],
     plugins: [vizeEsbuild({ isProduction: true })],
   });
-  const js = result.outputFiles.map((file) => file.text).join("\n");
-  assert.match(js, /line-height: 1\.15/);
+  const css = result.outputFiles.find((file) => file.path.endsWith(".css"))?.text ?? "";
+  assert.match(css, /line-height: 1\.15/);
 
   fs.writeFileSync(
     path.join(root, "src", "Foo.vue"),
