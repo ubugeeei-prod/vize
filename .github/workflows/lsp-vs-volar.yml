@@ -25,7 +25,7 @@ on:
       cycles:
         description: Edit/request cycles per session
         required: true
-        default: "10"
+        default: "5"
       cpus:
         description: Cores the benchmark may use
         required: true
@@ -49,7 +49,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   COMPARE_REF: ${{ inputs.compare_ref || '' }}
   ROUNDS: ${{ inputs.rounds || '3' }}
-  CYCLES: ${{ inputs.cycles || '10' }}
+  CYCLES: ${{ inputs.cycles || '5' }}
   CPUS: ${{ inputs.cpus || '8' }}
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
     name: lsp-vs-volar (${{ matrix.fixture }})
     needs: plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 150
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -135,7 +135,7 @@ jobs:
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
             --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
             --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
-            --out "lsp-vs-volar-$FIXTURE.md" --json "lsp-vs-volar-$FIXTURE.json"
+            --out "lsp-vs-volar-$FIXTURE.md" --json "lsp-vs-volar-$FIXTURE.json" --logs "lsp-vs-volar-logs-$FIXTURE"
           cat "lsp-vs-volar-$FIXTURE.md" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -145,6 +145,7 @@ jobs:
           path: |
             lsp-vs-volar-${{ matrix.fixture }}.md
             lsp-vs-volar-${{ matrix.fixture }}.json
+            lsp-vs-volar-logs-${{ matrix.fixture }}/
           # Sessions write their JSON as they finish; a failed run keeps what it measured.
           if-no-files-found: warn
           retention-days: 30

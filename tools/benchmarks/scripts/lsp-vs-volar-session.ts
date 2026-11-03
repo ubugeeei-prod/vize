@@ -28,8 +28,12 @@ import { OpenDocument } from "./lsp-vs-volar-text.ts";
 
 export interface SessionOptions {
   cycles: number;
+  /** Start and the cold open; a large project's first load can take minutes. */
+  coldTimeoutMs: number;
   diagnosticsTimeoutMs: number;
   requestTimeoutMs: number;
+  /** Warm phase wall budget: later cycles are skipped (and reported) once it is spent. */
+  warmBudgetMs: number;
   sampleIntervalMs: number;
   idleMs: number;
 }
@@ -184,12 +188,12 @@ export async function runSession(
   let stopped = false;
   try {
     const spawnedAt = now();
-    await within(editor.start(), options.diagnosticsTimeoutMs, `${editor.label} initialize`);
+    await within(editor.start(), options.coldTimeoutMs, `${editor.label} initialize`);
     const initializeMs = now() - spawnedAt;
     sampler.start();
     const openedAt = now();
     editor.open(doc);
-    const first = await editor.diagnostics(doc, scriptError, options.diagnosticsTimeoutMs);
+    const first = await editor.diagnostics(doc, scriptError, options.coldTimeoutMs);
     const openToDiagnosticsMs = now() - openedAt;
     const coldReading = sampler.mark("cold");
     if (!first.satisfied)
@@ -200,8 +204,12 @@ export async function runSession(
       if (exited) throw new Error(`${exited}\n${editor.stderr().slice(-4000)}`);
     };
 
+    // A probe whose diagnostics never converged is not edited again: every later wait
+    // would only time out, and the other probe and the requests still measure.
+    const diverged = new Set<EditSample["probe"]>();
     const edit = async (cycle: number, probe: EditSample["probe"], phase: EditSample["phase"]) => {
       alive();
+      if (diverged.has(probe)) return;
       const [from, to] =
         probe === "script"
           ? phase === "break"
@@ -223,8 +231,13 @@ export async function runSession(
       const ms = now() - started;
       const cpuSeconds = sampler.mark(`${probe}-${phase}-done`).cpuSeconds - before;
       edits.push({ cycle, probe, phase, ms, ok: result.satisfied, cpuSeconds });
-      if (!result.satisfied)
-        failures.push(`cycle ${cycle}: ${probe} ${phase} diagnostics never converged`);
+      if (!result.satisfied) {
+        diverged.add(probe);
+        const seen = result.diagnostics.map((item) => `TS${item.code}@${item.line + 1}`).join(", ");
+        failures.push(
+          `cycle ${cycle}: ${probe} ${phase} diagnostics never converged (last: [${seen}]); ${probe} edits stop`,
+        );
+      }
     };
 
     const ask = async (cycle: number) => {
@@ -283,6 +296,15 @@ export async function runSession(
     const warmStart = sampler.mark("warm");
     const warmStartedAt = now();
     for (let cycle = 1; cycle <= options.cycles; cycle += 1) {
+      if (now() - warmStartedAt > options.warmBudgetMs) {
+        failures.push(
+          `warm budget of ${options.warmBudgetMs / 1000}s spent after ${cycle - 1} cycles`,
+        );
+        break;
+      }
+      console.error(
+        `  ${editor.label} cycle ${cycle} at ${((now() - warmStartedAt) / 1000).toFixed(1)}s`,
+      );
       await edit(cycle, "script", "break");
       await edit(cycle, "script", "repair");
       await ask(cycle);

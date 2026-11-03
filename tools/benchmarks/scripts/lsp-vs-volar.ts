@@ -16,7 +16,15 @@
  *     --fixtures-dir /tmp/projects --rounds 3 --cycles 10 --out lsp.md --json lsp.json
  */
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -68,8 +76,10 @@ async function main() {
       cycles: { type: "string" },
       "idle-ms": { type: "string" },
       "sample-ms": { type: "string" },
+      "warm-budget-s": { type: "string" },
       meta: { type: "string", multiple: true },
       out: { type: "string" },
+      logs: { type: "string" },
       json: { type: "string" },
     },
   });
@@ -116,9 +126,11 @@ async function main() {
   if (factories.length < 2)
     throw new Error("compare at least two editors (--vize ... and/or --volar-root)");
   const options: SessionOptions = {
-    cycles: positiveInteger(values.cycles, 10, "--cycles"),
-    diagnosticsTimeoutMs: 180_000,
+    cycles: positiveInteger(values.cycles, 5, "--cycles"),
+    coldTimeoutMs: 600_000,
+    diagnosticsTimeoutMs: 60_000,
     requestTimeoutMs: 60_000,
+    warmBudgetMs: positiveInteger(values["warm-budget-s"], 1_200, "--warm-budget-s") * 1000,
     sampleIntervalMs: positiveInteger(values["sample-ms"], 100, "--sample-ms"),
     idleMs: positiveInteger(values["idle-ms"], 5_000, "--idle-ms"),
   };
@@ -187,6 +199,13 @@ async function main() {
           );
           return null;
         } finally {
+          // The server's own log (Vize writes it under XDG_CACHE_HOME) explains where time went.
+          const log = join(home, ".cache/vize/logs/lsp.log");
+          if (values.logs && round === 1 && existsSync(log)) {
+            mkdirSync(values.logs, { recursive: true });
+            const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}.log`;
+            copyFileSync(log, join(values.logs, name));
+          }
           rmSync(home, { recursive: true, force: true });
         }
       };
