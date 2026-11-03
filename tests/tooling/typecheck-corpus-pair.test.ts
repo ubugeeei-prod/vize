@@ -316,6 +316,11 @@ void test("the summary tables medians per lane and reports diagnostic identity",
     markdown,
     /\| CPU s \(user\+sys, process tree\) \| 11\.00 \| 9\.50 \| −13\.6% \| 20\.00 \| 4\.00 \| 4\.00 \| 0\.0% \| 5\.00 \|/u,
   );
+  // The fastest run shows when a median sits on a different mode than its pair.
+  assert.match(
+    markdown,
+    /\| CPU s, fastest run \| 10\.00 \| 9\.00 \| −10\.0% \| 20\.00 \| 4\.00 \| 4\.00 \| 0\.0% \| 5\.00 \|/u,
+  );
   assert.match(markdown, /\| Diagnostics \| 1 \| 1 \| IDENTICAL \| 2 \| 1 \| 2 \| \+1 −0 \| 1 \|/u);
   assert.match(markdown, /misskey \/ tsrs: \*\*CHANGED\*\*, base 1 → head 2 \(\+1 −0\)/u);
   assert.match(markdown, /\+ `src\/a\.vue\(3,1\): error TS2322: x`/u);

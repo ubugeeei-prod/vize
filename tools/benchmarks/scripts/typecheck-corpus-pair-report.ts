@@ -49,6 +49,7 @@ export type LaneSummary = {
   host: string;
   variant: LaneResult["variant"];
   cpuS: number;
+  cpuMinS: number;
   wallS: number;
   maxRssMb: number;
   instantiations: number;
@@ -81,6 +82,7 @@ export function summarizeLane(lane: LaneResult): LaneSummary {
     host: lane.host,
     variant: lane.variant,
     cpuS: of((run) => run.cpuMs) / 1000,
+    cpuMinS: Math.min(...lane.runs.map((run) => run.cpuMs)) / 1000,
     wallS: of((run) => run.wallMs) / 1000,
     maxRssMb: of((run) => run.time.maxRssKb) / 1024,
     instantiations: of((run) => statValue(run.stats, "Instantiations", "count")),
@@ -138,6 +140,7 @@ export function percentDelta(base: number, head: number): string {
 
 const METRICS: Array<[string, (lane: LaneSummary) => number, (value: number) => string]> = [
   ["CPU s (user+sys, process tree)", (lane) => lane.cpuS, fixed(2)],
+  ["CPU s, fastest run", (lane) => lane.cpuMinS, fixed(2)],
   ["Max RSS MB", (lane) => lane.maxRssMb, fixed(0)],
   ["Instantiations", (lane) => lane.instantiations, integer],
   ["Types", (lane) => lane.types, integer],
