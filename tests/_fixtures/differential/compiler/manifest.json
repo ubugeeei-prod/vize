@@ -2126,6 +2126,48 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-transition-children-11594",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ssr-transition-children-11594",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "131839c68541f391ad02c73b6ee08a348617df94190d279dd75c30e33011e291",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-transition-children-11594/module.expected.txt",
+        "sha256": "5ed86de29ce6eb70b8bf0765e6bee480c6cfc59c5cb8ac8b75922669763b1d0a",
+        "source": "crates/vize_atelier_ssr/tests/transition_children.rs:transition_children_follow_vue_ssr_rules_in_both_lanes; its `_push` strings equal @vue/compiler-ssr 3.5.44 ssrProcessTransition output for this input"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SSR has not been qualified for this input; this row guards the legacy <Transition> child rules only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-asset-markup-10761",
       "state": "active",
       "targets": ["ssr"],
