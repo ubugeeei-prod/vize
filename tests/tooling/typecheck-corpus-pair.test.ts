@@ -223,9 +223,19 @@ void test("the byte probe forwards the mapper's bytes unchanged and records each
       process.execPath,
       "server.mjs",
     ],
-    { cwd: dir, input, env: { ...process.env, VIZE_MAPPER_PROBE_RECORD: record } },
+    {
+      cwd: dir,
+      input,
+      env: {
+        ...process.env,
+        VIZE_MAPPER_PROBE_RECORD: record,
+        VIZE_MAPPER_PROBE_DUMP: join(dir, "dump"),
+        VIZE_MAPPER_PROBE_ROOT: "/p",
+      },
+    },
   );
   assert.equal(probe.status, 0, probe.stderr.toString());
+  assert.equal(readFileSync(join(dir, "dump", "B.vue.tsx"), "utf8"), `// ${mapperDir} é bb`);
   assert.deepEqual(probe.stdout, direct.stdout);
   const text = (content: string) => Buffer.byteLength(`// ${mapperDir} é ${content}`);
   const summary = summarizeProbe(readFileSync(record, "utf8"));

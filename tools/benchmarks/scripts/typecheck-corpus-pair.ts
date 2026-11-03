@@ -293,6 +293,13 @@ function main(): void {
       join(work, "time", `${key}.probe.time`),
       {
         VIZE_MAPPER_PROBE_RECORD: record,
+        // Vize's text per SFC, once per build: the tsrs host receives the same bytes.
+        ...(lane.host.id === "tsc" && lane.variant.mapper === "vize"
+          ? {
+              VIZE_MAPPER_PROBE_DUMP: join(out, "generated", key),
+              VIZE_MAPPER_PROBE_ROOT: cwd(lane),
+            }
+          : {}),
       },
     );
     const probe = summarizeProbe(readFileSync(record, "utf8"));
