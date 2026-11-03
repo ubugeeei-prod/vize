@@ -130,10 +130,10 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         let before = self.rewrites.len();
         self.visit_identifier_reference(&property.binding);
         if let Some((_, _, replacement)) = self.rewrites.get_mut(before) {
-            let mut expanded = String::from(property.binding.name.as_str());
-            expanded.push_str(": ");
-            expanded.push_str(replacement);
-            *replacement = expanded;
+            let name = property.binding.name.as_str();
+            replacement.reserve(name.len() + 2);
+            replacement.insert_str(0, ": ");
+            replacement.insert_str(0, name);
         }
         if let Some(init) = &property.init {
             self.visit_expression(init);

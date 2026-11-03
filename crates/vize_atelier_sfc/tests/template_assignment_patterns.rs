@@ -102,6 +102,5 @@ fn assignment_shorthand_has_a_pinned_ssr_module() {
         include_str!(
             "../../../tests/_fixtures/differential/compiler/template-assignment-shorthand-11707/module.expected.txt"
         )
-        .trim_end()
     );
 }

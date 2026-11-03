@@ -385,15 +385,13 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         self.visit_identifier_reference(ident);
         let prefix = self
             .rewrites
-            .iter()
-            .find(|(position, text)| *position == start && !text.is_empty())
-            .cloned();
-        if let Some((position, prefix)) = prefix {
-            self.rewrites.remove(&(position, prefix.clone()));
-            let mut expanded = String::from(name);
-            expanded.push_str(": ");
-            expanded.push_str(&prefix);
-            self.rewrites.insert((position, expanded));
+            .extract_if(|(position, text)| *position == start && !text.is_empty())
+            .next();
+        if let Some((position, mut prefix)) = prefix {
+            prefix.reserve(name.len() + 2);
+            prefix.insert_str(0, ": ");
+            prefix.insert_str(0, name);
+            self.rewrites.insert((position, prefix));
         } else if self.suffix_rewrites.len() != suffixes {
             let mut expanded = String::from(name);
             expanded.push_str(": ");

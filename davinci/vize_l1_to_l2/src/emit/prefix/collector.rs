@@ -269,10 +269,9 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             .iter_mut()
             .find(|(position, text)| *position == start && !text.is_empty())
         {
-            let mut expanded = String::from(name);
-            expanded.push_str(": ");
-            expanded.push_str(prefix);
-            *prefix = expanded;
+            prefix.reserve(name.len() + 2);
+            prefix.insert_str(0, ": ");
+            prefix.insert_str(0, name);
         } else if self.suffix_rewrites.len() != suffixes {
             let mut expanded = String::from(name);
             expanded.push_str(": ");
