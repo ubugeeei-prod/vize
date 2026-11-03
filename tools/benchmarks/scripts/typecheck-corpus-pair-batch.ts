@@ -28,8 +28,8 @@ export function runBatchCheck(
     process.execPath,
     [
       join(buildDir, "npm", "cli", "bin", "vize"),
+      // No positional pattern: `.` would add files the tsconfig excludes (tests, stories).
       "check",
-      ".",
       "--quiet",
       "--format",
       "json",
