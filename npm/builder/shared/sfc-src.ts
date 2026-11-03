@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { parseSfc } from "@vizejs/native";
 
 /** The bundler's answers for one SFC's `src` module requests: request -> file. */
 export type SfcSrcResolutions = ReadonlyMap<string, string>;
@@ -57,6 +56,13 @@ const ATTRIBUTE_RE = /\s+([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=
 
 type BlockLoc = { start: number; end: number; tagStart: number; tagEnd: number };
 type Block = { loc: BlockLoc } | null | undefined;
+
+/** `parseSfc` from `@vizejs/native`, which the plugins (not this directory) depend on. */
+export type ParseSfc = (
+  source: string,
+  options: { filename: string },
+) => { template: Block; script: Block; scriptSetup: Block; styles: NonNullable<Block>[] };
+
 type SrcBlock = { tag: string; src: string; openTag: string; tagStart: number; tagEnd: number };
 
 /** Split an opening tag into its `src` value and the tag without it. */
@@ -82,8 +88,13 @@ function splitSrcAttribute(tag: string, openTag: string): { src: string; openTag
 }
 
 /** The `src` blocks the native parser finds, so `src` text in scripts or comments is not one. */
-function collectSrcBlocks(filePath: string, bytes: Buffer, source: string): SrcBlock[] {
-  let parsed: ReturnType<typeof parseSfc>;
+function collectSrcBlocks(
+  parseSfc: ParseSfc,
+  filePath: string,
+  bytes: Buffer,
+  source: string,
+): SrcBlock[] {
+  let parsed: ReturnType<ParseSfc>;
   try {
     parsed = parseSfc(source, { filename: filePath });
   } catch {
@@ -107,9 +118,9 @@ function collectSrcBlocks(filePath: string, bytes: Buffer, source: string): SrcB
 }
 
 /** The `src` module requests (not relative paths) of an SFC's blocks, in source order. */
-export function listSfcSrcRequests(filePath: string, source: string): string[] {
+export function listSfcSrcRequests(parseSfc: ParseSfc, filePath: string, source: string): string[] {
   if (!SRC_BLOCK_HINT.test(source)) return [];
-  return collectSrcBlocks(filePath, Buffer.from(source), source)
+  return collectSrcBlocks(parseSfc, filePath, Buffer.from(source), source)
     .map((block) => block.src)
     .filter((src) => !isRelativeSfcSrc(src));
 }
@@ -136,6 +147,7 @@ function readSrcBlock(
  * the bundler's `resolutions` (see {@link sfcSrcFile}).
  */
 export function inlineSfcSrcBlocks(
+  parseSfc: ParseSfc,
   filePath: string,
   source: string,
   resolutions?: SfcSrcResolutions,
@@ -145,7 +157,7 @@ export function inlineSfcSrcBlocks(
   const edits: Array<{ start: number; end: number; text: string }> = [];
   const dependencies: string[] = [];
 
-  for (const block of collectSrcBlocks(filePath, bytes, source)) {
+  for (const block of collectSrcBlocks(parseSfc, filePath, bytes, source)) {
     const file = readSrcBlock(filePath, block.tag, block.src, resolutions);
     dependencies.push(file.path);
     edits.push({

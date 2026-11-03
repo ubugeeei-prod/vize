@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { build, type Rollup } from "vite";
+import { parseSfc } from "@vizejs/native";
 import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
 import { compileFile } from "./compiler.ts";
 import { vize } from "./index.ts";
@@ -103,7 +104,11 @@ void test("#11482 the synchronous compile reads module requests from prepared re
   const { root, file } = project(t);
   const css = path.join(root, "node_modules/fake-normalize/n.css");
   assert.deepEqual(
-    listSfcSrcRequests(file, `${SOURCE}<script src="./a.ts"></script><style src="./b.css" />`),
+    listSfcSrcRequests(
+      parseSfc,
+      file,
+      `${SOURCE}<script src="./a.ts"></script><style src="./b.css" />`,
+    ),
     ["fake-normalize/n.css"],
   );
 
@@ -136,9 +141,12 @@ void test("#11482 the synchronous compile reads module requests from prepared re
   assert.deepEqual(compiled.dependencies, [css]);
 
   // Relative paths need no resolution; unresolved requests still fail.
-  assert.match(inlineSfcSrcBlocks(file, '<style src="./near.css"></style>').source, /color: olive/);
+  assert.match(
+    inlineSfcSrcBlocks(parseSfc, file, '<style src="./near.css"></style>').source,
+    /color: olive/,
+  );
   assert.throws(
-    () => inlineSfcSrcBlocks(file, SOURCE),
+    () => inlineSfcSrcBlocks(parseSfc, file, SOURCE),
     /<style src="fake-normalize\/n\.css"> not found: the bundler resolved no file/,
   );
 });

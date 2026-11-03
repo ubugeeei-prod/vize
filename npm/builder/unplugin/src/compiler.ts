@@ -52,7 +52,12 @@ export function compileVueModule(
   srcResolutions?: SfcSrcResolutions,
 ): { compiled: CompiledModule; warnings: string[]; dependencies: string[] } {
   // Hash the inlined source so an edited `src` file invalidates the cache.
-  const { source: inlined, dependencies } = inlineSfcSrcBlocks(filePath, source, srcResolutions);
+  const { source: inlined, dependencies } = inlineSfcSrcBlocks(
+    native.parseSfc,
+    filePath,
+    source,
+    srcResolutions,
+  );
   const sourceHash = buildSourceHash(inlined);
   const signature = buildSignature(options);
   const cached = cache.get(filePath);

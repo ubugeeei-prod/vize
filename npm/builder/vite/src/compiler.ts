@@ -64,7 +64,12 @@ export function compileFile(
   diagnostics?: { logWarnings?: boolean },
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
-  const resolved = inlineSfcSrcBlocks(filePath, content, options.srcResolutions?.get(filePath));
+  const resolved = inlineSfcSrcBlocks(
+    native.parseSfc,
+    filePath,
+    content,
+    options.srcResolutions?.get(filePath),
+  );
   const scopeId = generateScopeId(filePath, options.root, options.isProd ?? false, content);
 
   const result = compileSfc(resolved.source, buildCompileFileOptions(filePath, options, scopeId));
@@ -184,6 +189,7 @@ export function compileBatch(
   const dependenciesByPath = new Map<string, string[]>();
   const resolvedFiles = files.map((file) => {
     const resolved = inlineSfcSrcBlocks(
+      native.parseSfc,
       file.path,
       file.source,
       options.srcResolutions?.get(file.path),

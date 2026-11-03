@@ -7,6 +7,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import { parseSfc } from "@vizejs/native";
 import { inlineSfcSrcBlocks } from "../../shared/sfc-src.ts";
 import { compileFile } from "./compiler.ts";
 
@@ -27,7 +28,7 @@ const plainSources = [
 ];
 
 for (const source of plainSources) {
-  const resolved = inlineSfcSrcBlocks(sfcPath, source);
+  const resolved = inlineSfcSrcBlocks(parseSfc, sfcPath, source);
   assert.equal(
     resolved.source,
     source,
@@ -45,7 +46,7 @@ const srcSpellings = [
 ];
 
 for (const source of srcSpellings) {
-  const resolved = inlineSfcSrcBlocks(sfcPath, source);
+  const resolved = inlineSfcSrcBlocks(parseSfc, sfcPath, source);
   assert.match(resolved.source, /FromSrc/, `must inline script src for: ${JSON.stringify(source)}`);
   assert.deepEqual(
     resolved.dependencies.map((dependency) => path.basename(dependency)),
@@ -60,7 +61,7 @@ const allBlocks = `<script lang="ts" src="./setup.ts"></script>
 <template src="./template.html"></template>
 <style scoped src="./styles.css"></style>`;
 
-const resolvedAll = inlineSfcSrcBlocks(sfcPath, allBlocks);
+const resolvedAll = inlineSfcSrcBlocks(parseSfc, sfcPath, allBlocks);
 assert.match(resolvedAll.source, /FromSrc/, "script src is inlined");
 assert.match(resolvedAll.source, /from src/, "template src is inlined");
 assert.match(resolvedAll.source, /seagreen/, "style src is inlined");
@@ -73,7 +74,7 @@ assert.deepEqual(
 // --- a lone `<style src>` block still inlines ----------------------------------
 
 const styleOnly = `<template><div /></template>\n<style src="./styles.css"></style>`;
-const resolvedStyleOnly = inlineSfcSrcBlocks(sfcPath, styleOnly);
+const resolvedStyleOnly = inlineSfcSrcBlocks(parseSfc, sfcPath, styleOnly);
 assert.match(resolvedStyleOnly.source, /seagreen/, "lone style src is inlined");
 assert.deepEqual(
   resolvedStyleOnly.dependencies.map((dependency) => path.basename(dependency)),
@@ -84,7 +85,7 @@ assert.deepEqual(
 // --- a template `src` attribute that is not a block still resolves correctly --
 
 const imageSrc = `<template><img src="./logo.png" /></template>`;
-const resolvedImage = inlineSfcSrcBlocks(sfcPath, imageSrc);
+const resolvedImage = inlineSfcSrcBlocks(parseSfc, sfcPath, imageSrc);
 assert.equal(resolvedImage.source, imageSrc, "asset src attributes are left untouched");
 assert.deepEqual(resolvedImage.dependencies, [], "asset src attributes add no dependencies");
 
