@@ -104,6 +104,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     include_str!("declarations/shared-emit-props.d.ts.txt"),
     include_str!("declarations/shared-emit-inference.d.ts.txt"),
     include_str!("declarations/component-checks.d.ts.txt"),
+    include_str!("declarations/listener-contracts.d.ts.txt"),
     include_str!("declarations/shared-macros.d.ts.txt"),
     include_str!("pattern_matching.d.ts")
 );

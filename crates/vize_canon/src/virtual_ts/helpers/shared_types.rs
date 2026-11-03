@@ -67,3 +67,27 @@ shared_type_refs! {
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),
 }
+
+/// Listener contract helpers. Standalone documents keep the inline aliases,
+/// so these exist only in the hoisted module.
+macro_rules! hoisted_type_refs {
+    ($($name:ident => $exported:literal),+ $(,)?) => {
+        $(pub(crate) const $name: &str = concat!("import(\"vize:virtual-ts\").", $exported);)+
+    };
+}
+
+hoisted_type_refs! {
+    LISTENER_LIBRARY => "$ListenerLibrary",
+    LISTENER_PROPS_BOX => "$ListenerPropsBox",
+    LISTENER_EMIT_PROPS_BOX => "$ListenerEmitPropsBox",
+    LISTENER_NATIVE_FALLTHROUGH_BOX => "$ListenerNativeFallthroughBox",
+    LISTENER_FALLTHROUGH_BOX => "$ListenerFallthroughBox",
+    LISTENER_PROP_ARGS => "$ListenerPropArgs",
+    LISTENER_PROP_ARGS_RAW => "$ListenerPropArgsRaw",
+    LISTENER_FALLTHROUGH_ARGS => "$ListenerFallthroughArgs",
+    LISTENER_FALLTHROUGH_ARGS_RAW => "$ListenerFallthroughArgsRaw",
+    LISTENER_STATIC_EMIT_ARGS => "$ListenerStaticEmitArgs",
+    LISTENER_NATIVE_RETURN => "$ListenerNativeReturn",
+    LISTENER_RETURN => "$ListenerReturn",
+    LISTENER_PROP_ARRAYS => "$ListenerPropArrays",
+}

@@ -1,5 +1,7 @@
 use vize_carton::{String, append, cstr};
 
+use crate::virtual_ts::helpers::shared_types::{LISTENER_NATIVE_RETURN, LISTENER_RETURN};
+
 pub(super) struct Context<'a> {
     pub(super) legacy_vue2: bool,
     pub(super) first_contract: bool,
@@ -13,6 +15,8 @@ pub(super) struct Context<'a> {
     pub(super) props_box: &'a str,
     pub(super) fallthrough_box: &'a str,
     pub(super) prop_key: &'a str,
+    /// The listener key as a type, when the module reads shared helpers.
+    pub(super) shared_key: Option<&'a str>,
 }
 
 pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
@@ -29,6 +33,7 @@ pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
         props_box,
         fallthrough_box,
         prop_key,
+        shared_key,
     } = ctx;
     if legacy_vue2 {
         return cstr!("(...args: {listener_args_type}) => unknown");
@@ -36,13 +41,20 @@ pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
     if first_contract {
         let unresolved_return = if native_fallthrough_only {
             let native_return = cstr!("{return_type}_native_fallthrough");
-            super::native_fallthrough::emit_return(
-                ts,
-                indent,
-                native_return.as_str(),
-                fallthrough_box,
-                prop_key,
-            );
+            if let Some(key) = shared_key {
+                append!(
+                    *ts,
+                    "{indent}type {native_return} = {LISTENER_NATIVE_RETURN}<{fallthrough_box}, {key}>;\n",
+                );
+            } else {
+                super::native_fallthrough::emit_return(
+                    ts,
+                    indent,
+                    native_return.as_str(),
+                    fallthrough_box,
+                    prop_key,
+                );
+            }
             native_return
         } else {
             String::from("any")
@@ -51,6 +63,11 @@ pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
             append!(
                 *ts,
                 "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
+            );
+        } else if let Some(key) = shared_key {
+            append!(
+                *ts,
+                "{indent}type {return_type} = {LISTENER_RETURN}<{prop_args}, {unresolved_return}, {props_box}, {key}>;\n",
             );
         } else {
             append!(

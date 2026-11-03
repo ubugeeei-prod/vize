@@ -7,6 +7,7 @@ mod handler_context;
 mod inference_helpers;
 mod listener_return;
 mod native_fallthrough;
+mod shared_contracts;
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
@@ -111,6 +112,11 @@ pub(super) fn generate_component_event_types(
     if fallthrough_listeners && !legacy_vue2 {
         push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());
     }
+    // A hoisted module reads listener contracts through shared helpers keyed
+    // by the listener prop's name; standalone documents inline the same text.
+    let shared_contracts = hoist_shared_preamble && !legacy_vue2;
+    let mut prop_key_type = String::default();
+    push_ts_string_literal(&mut prop_key_type, on_handler.as_str());
     let prop_key = if on_handler.contains(':') {
         cstr!("\"{}\"", on_handler.as_str())
     } else {
@@ -159,7 +165,7 @@ pub(super) fn generate_component_event_types(
     // Vue's published EmitsToProps retains authored hyphens (onFoo-bar),
     // while generated SFC contracts expose the camelized listener (onFooBar).
     // Only the spelling actually written by the user admits the raw alias.
-    let missing_prop_args = if data.event_name.contains('-') {
+    let raw_key = data.event_name.contains('-').then(|| {
         let mut raw_handler = String::from("on");
         let mut chars = data.event_name.chars();
         if let Some(first) = chars.next() {
@@ -168,9 +174,17 @@ pub(super) fn generate_component_event_types(
         raw_handler.push_str(chars.as_str());
         let mut raw_key = String::default();
         push_ts_string_literal(&mut raw_key, &raw_handler);
-        cstr!("__P extends {{ {raw_key}?: (...args: infer __A) => any }} ? __A : unknown[]")
-    } else {
-        String::from("unknown[]")
+        raw_key
+    });
+    let missing_prop_args = match &raw_key {
+        Some(raw_key) => {
+            cstr!("__P extends {{ {raw_key}?: (...args: infer __A) => any }} ? __A : unknown[]")
+        }
+        None => String::from("unknown[]"),
+    };
+    let shared_key = shared_contracts::ListenerKey {
+        key: prop_key_type.as_str(),
+        raw: raw_key.as_deref(),
     };
     let static_emit_args =
         cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_static_emit_args");
@@ -181,7 +195,21 @@ pub(super) fn generate_component_event_types(
     let return_type = cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
-    if first_component {
+    if first_component && shared_contracts {
+        shared_contracts::emit_component(
+            ts,
+            shared_contracts::ComponentBoxes {
+                indent,
+                component_ref: &component_ref,
+                library: &library,
+                props_box: &props_box,
+                emit_props_box: &emit_props_box,
+                fallthrough_box: &fallthrough_box,
+                native_fallthrough_only,
+                fallthrough_listeners,
+            },
+        );
+    } else if first_component {
         // A vue-tsc generic library export instantiates its generics with their
         // constraints here, so its payload comes from the bound-props call below.
         append!(
@@ -245,6 +273,9 @@ pub(super) fn generate_component_event_types(
                 *ts,
                 "{indent}type {prop_args} = {library} extends true ? unknown[] : {props} extends infer __P ? {prop_listener_args} : unknown[];\n",
             );
+        } else if shared_contracts {
+            let prop_args_type = shared_key.prop_args(&library, &props_box);
+            append!(*ts, "{indent}type {prop_args} = {prop_args_type};\n");
         } else {
             append!(
                 *ts,
@@ -262,13 +293,18 @@ pub(super) fn generate_component_event_types(
             // imposed: the root's own declaration may be looser than the child's
             // documented payload, and a zero-parameter contextual type would make
             // an authored `(event) => ...` callback implicitly `any` (TS7006).
-            native_fallthrough::emit_args(
-                ts,
-                indent,
-                fallthrough_args.as_str(),
-                fallthrough_box.as_str(),
-                prop_listener_args.as_str(),
-            );
+            if shared_contracts {
+                let args = shared_key.fallthrough_args(&fallthrough_box);
+                append!(*ts, "{indent}type {fallthrough_args} = {args};\n");
+            } else {
+                native_fallthrough::emit_args(
+                    ts,
+                    indent,
+                    fallthrough_args.as_str(),
+                    fallthrough_box.as_str(),
+                    prop_listener_args.as_str(),
+                );
+            }
         }
         fallthrough_args.as_str()
     } else if fallthrough_listeners {
@@ -278,6 +314,9 @@ pub(super) fn generate_component_event_types(
                     *ts,
                     "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\n",
                 );
+            } else if shared_contracts {
+                let args = shared_key.fallthrough_args(&fallthrough_box);
+                append!(*ts, "{indent}type {fallthrough_args} = {args};\n");
             } else {
                 append!(
                     *ts,
@@ -313,7 +352,10 @@ pub(super) fn generate_component_event_types(
         },
     );
 
-    if first_contract {
+    if first_contract && shared_contracts {
+        let static_emit = shared_key.static_emit_args(&emit_props_box);
+        append!(*ts, "{indent}type {static_emit_args} = {static_emit};\n");
+    } else if first_contract {
         append!(
             *ts,
             "{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\n",
@@ -378,6 +420,7 @@ pub(super) fn generate_component_event_types(
             props_box: props_box.as_str(),
             fallthrough_box: fallthrough_box.as_str(),
             prop_key: prop_key.as_str(),
+            shared_key: shared_contracts.then_some(prop_key_type.as_str()),
         },
     );
     let requires_unresolved_handler =
@@ -402,6 +445,9 @@ pub(super) fn generate_component_event_types(
                             *ts,
                             "{indent}type {arrays_type} = {props} extends infer __P ? {arrays} : never;\n",
                         );
+                    } else if shared_contracts {
+                        let arrays = shared_key.prop_arrays(&props_box);
+                        append!(*ts, "{indent}type {arrays_type} = {arrays};\n");
                     } else {
                         append!(
                             *ts,
