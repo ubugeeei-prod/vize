@@ -1,0 +1,11 @@
+<script setup lang="ts" generic="T extends object">
+const props = withDefaults(
+  defineProps<{ flag?: boolean | T; run?: (() => void) | T; field?: keyof T; label?: string | T }>(),
+  { run: () => {} },
+)
+const open = defineModel<boolean | T>('open')
+</script>
+
+<template>
+  <button :disabled="open === true" @click="props.run">{{ props.label }}</button>
+</template>
