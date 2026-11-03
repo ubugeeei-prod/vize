@@ -17,17 +17,17 @@ pub(super) fn emit_authored_event_map(
 ) {
     let events = summary.macros.emits();
     let models = summary.macros.models();
-    let authored_map = generic_decl.map_or_else(
-        || String::from("$AuthoredEventMap"),
-        |decl| cstr!("$AuthoredEventMap<{decl}>"),
-    );
+    let authored = crate::virtual_ts::generated_names::declared("$AuthoredEventMap");
+    let static_map = crate::virtual_ts::generated_names::declared("$StaticEventMap");
+    let authored_map =
+        generic_decl.map_or_else(|| authored.clone(), |decl| cstr!("{authored}<{decl}>"));
     let generic_suffix = generic_decl
         .map(|_| cstr!("<{generic_names}>"))
         .unwrap_or_default();
     // Preserve the original property symbols (and their JSDoc) alongside the
     // mapped navigation endpoints. Reconstructing a fresh object loses docs.
     ts! { &mut *ts =>
-        #("type ") #authored_map #(" = $StaticEventMap") #generic_suffix #(" & ")
+        #("type ") #authored_map #(" = ") #static_map #generic_suffix #(" & ")
         {
             #("\n")
             #{
@@ -47,7 +47,7 @@ pub(super) fn emit_authored_event_map(
         let generated_start = ts.len();
         ts.push_str(authored_name.as_str());
         let generated_end = ts.len();
-        append!(*ts, ": $StaticEventMap{generic_suffix}[");
+        append!(*ts, ": {static_map}{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(emit.name.as_str())
                 .unwrap_or_default()
@@ -96,7 +96,7 @@ pub(super) fn emit_authored_event_map(
                 .as_str(),
         );
         let generated_end = ts.len();
-        append!(*ts, ": $StaticEventMap{generic_suffix}[");
+        append!(*ts, ": {static_map}{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(event_name.as_str())
                 .unwrap_or_default()

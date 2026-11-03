@@ -60,7 +60,12 @@ fn emit_model_prop_members(
     let modifiers_name = model_modifier_prop_name(name);
     let modifier_type = model_modifier_type(summary, model);
     if emitted_names.insert(modifiers_name.clone()) {
-        let modifier_type = cstr!("Partial<Record<{modifier_type}, true>>");
+        let lib = crate::virtual_ts::generated_names::lib;
+        let modifier_type = cstr!(
+            "{}<{}<{modifier_type}, true>>",
+            lib("Partial"),
+            lib("Record")
+        );
         emit_type_member(ts, modifiers_name.as_str(), "?", modifier_type.as_str());
     }
 }

@@ -13,7 +13,7 @@ pub(super) struct GenericComponentContract<'a> {
     pub(super) names: &'a str,
     pub(super) slots_is_generic: bool,
     pub(super) public_type: &'static str,
-    pub(super) props_type: &'static str,
+    pub(super) props_type: &'a str,
     pub(super) ref_resolver_type: Option<&'static str>,
 }
 
@@ -112,8 +112,10 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: Authore
         "type $AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
     );
     if authored == AuthoredDefaultKind::Component {
-        ts.push_str(
-            "type $AuthoredInstance = $AuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
+        append!(
+            *ts,
+            "type {} = $AuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {{}};\n\n",
+            crate::virtual_ts::generated_names::declared("$AuthoredInstance")
         );
     }
 }
@@ -124,7 +126,7 @@ pub(super) fn emit_default_export_declaration(
     generic_component_params: Option<GenericComponentContract<'_>>,
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
-    static_slots_ref: Option<&str>,
+    static_slots: bool,
     (fallthrough_props_ref, native_fallthrough_root, checks, hoist_shared_preamble): (
         Option<&str>,
         bool,
@@ -133,6 +135,8 @@ pub(super) fn emit_default_export_declaration(
     ),
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
+    let static_slots_ref =
+        static_slots.then(|| crate::virtual_ts::generated_names::declared("$Slots"));
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
     let authored_component = if authored_default == AuthoredDefaultKind::Component {
@@ -170,7 +174,7 @@ pub(super) fn emit_default_export_declaration(
     // require a parent to provide every declared slot. Keep the private marker
     // partial so parent payload inference remains exact without turning an
     // omitted slot into a component-usage error.
-    if let Some(slots_ref) = static_slots_ref {
+    if let Some(slots_ref) = &static_slots_ref {
         append!(
             component_contract_fields,
             " readonly __vizeSlots?: Partial<{slots_ref}>;"
@@ -284,6 +288,7 @@ pub(super) fn emit_component_default_export_for_generation(
     generation: VirtualTsGenerationOptions<'_>,
     authored_script: Option<&str>,
 ) {
+    crate::virtual_ts::generated_names::emit_forwarded_helpers(ts);
     let component_name_is_setup_binding = generation
         .component_name
         .is_some_and(|name| crate::virtual_ts::script_facts::contains_binding(summary, name));

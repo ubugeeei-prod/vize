@@ -1,0 +1,7 @@
+<script setup lang="ts" generic="Props extends string | number">
+const props = defineProps<{ v: Props; list?: Props[] }>()
+const emit = defineEmits<{ pick: [value: Props] }>()
+defineSlots<{ default(p: { v: Props }): any }>()
+defineExpose({ get: (): Props => props.v })
+</script>
+<template><div @click="emit('pick', props.v)"><slot :v="props.v" /></div></template>

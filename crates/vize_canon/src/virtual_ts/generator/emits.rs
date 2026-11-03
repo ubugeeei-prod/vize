@@ -5,6 +5,7 @@ use vize_l0::ts_emit::TsString;
 
 use super::setup_scope::{define_emits_type_requires_setup_scope, macro_type_requires_setup_scope};
 use crate::virtual_ts::{
+    generated_names as names,
     generic_parameters::GenericParameters,
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
     macro_type_mappings::MacroTypeMappings,
@@ -46,12 +47,20 @@ impl EmitsInfo {
         }
     }
 
-    pub(super) fn static_event_map_field(&self) -> &'static str {
-        if self.has_emits_for_props && self.preserve_event_navigation {
-            "__vizeRawEmits?: $AuthoredEventMap; __vizeEventMap?: $StaticEventMap;"
-        } else {
-            ""
+    pub(super) fn static_event_map_field(&self) -> String {
+        if !self.has_emits_for_props || !self.preserve_event_navigation {
+            return String::default();
         }
+        let (authored, events) = (
+            names::declared("$AuthoredEventMap"),
+            names::declared("$StaticEventMap"),
+        );
+        if authored == "$AuthoredEventMap" && events == "$StaticEventMap" {
+            return String::const_new(
+                "__vizeRawEmits?: $AuthoredEventMap; __vizeEventMap?: $StaticEventMap;",
+            );
+        }
+        cstr!("__vizeRawEmits?: {authored}; __vizeEventMap?: {events};")
     }
 
     pub(super) fn emit(
@@ -79,19 +88,21 @@ impl EmitsInfo {
         hoist_shared_preamble: bool,
     ) -> String {
         let mut field = String::default();
+        let (partial, record) = (names::lib("Partial"), names::lib("Record"));
         if self.has_emits_for_props && self.has_generic_emits {
-            let emit_props =
-                crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
+            let emit_props = emit_props_ref(hoist_shared_preamble);
+            let emits = names::declared("Emits");
             ts! { &mut field =>
-                __vizeResolveEmitProps?: <#generic_decl>(props: Partial<#props_type<#generic_names>> & Record<string, unknown>) => #emit_props<Emits<#generic_names>>;
+                __vizeResolveEmitProps?: <#generic_decl>(props: #partial<#props_type<#generic_names>> & #record<string, unknown>) => #emit_props<#emits<#generic_names>>;
             }
         }
         if !self.generic_event_map_decl.is_empty() {
             if !field.is_empty() {
                 field.push(' ');
             }
+            let authored = names::declared("$AuthoredEventMap");
             ts! { &mut field =>
-                __vizeResolveEvents?: <#generic_decl>(props: Partial<#props_type<#generic_names>> & Record<string, unknown>) => $AuthoredEventMap<#generic_names>;
+                __vizeResolveEvents?: <#generic_decl>(props: #partial<#props_type<#generic_names>> & #record<string, unknown>) => #authored<#generic_names>;
             }
         }
         field
@@ -181,18 +192,23 @@ pub(super) fn emit_emits_type(
         .unwrap_or_default();
 
     if !emits_already_defined {
+        let head = names::export_type("Emits");
+        let emit_fn = names::helper("__EmitFn", &[""]);
         if let Some(type_args) = define_emits_type_args {
             let inner_type = if define_emits_type_requires_setup_scope(summary) {
                 let arguments = generic_param
                     .map(|generic| cstr!("<{}>", generic.names))
                     .unwrap_or_default();
-                cstr!("Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_typed_emits\"]")
+                cstr!(
+                    "{}[\"__vize_typed_emits\"]",
+                    names::setup_return(&arguments)
+                )
             } else {
                 String::from(inner_type_of(type_args))
             };
             if has_model_emits {
                 ts! { &mut *ts =>
-                    export type Emits #emits_generic_suffix = __EmitFn<#inner_type> & __EmitFn<{
+                    #head #emits_generic_suffix = #emit_fn<#inner_type> & #emit_fn<{
                         #(model in models =>
                             #("  ") #TsString(cstr!("update:{}", model.name).as_str()): [value: #(model_update_payload(generic_param, model))];
                         )*
@@ -200,12 +216,13 @@ pub(super) fn emit_emits_type(
                 }
             } else {
                 ts! { &mut *ts =>
-                    export type Emits #emits_generic_suffix = #inner_type;
+                    #head #emits_generic_suffix = #inner_type;
                 }
             }
         } else if has_runtime_emits {
+            let setup = names::setup_return("");
             ts! { &mut *ts =>
-                export type Emits #emits_generic_suffix = Awaited<ReturnType<typeof __setup>>["__vize_emits"]
+                #head #emits_generic_suffix = #setup["__vize_emits"]
                 #(model in models =>
                     & ((event: #TsString(cstr!("update:{}", model.name).as_str()), value: #(model_update_payload(generic_param, model))) => void)
                 )*
@@ -235,15 +252,16 @@ pub(super) fn emit_emits_type(
                 }
             }
             ts! { &mut *ts =>
-                export type Emits #emits_generic_suffix = {
+                #head #emits_generic_suffix = {
                     #(field in fields.iter() =>
                         #("  ") #TsString(field.0.as_str()): #(field.1.as_str());
                     )*
                 };
             }
         } else {
-            ts! { &mut *ts => export type Emits = {}; }
+            ts! { &mut *ts => #head = {}; }
         }
+        names::reexport(ts, "Emits");
     }
 
     // The `Emits` alias lives at module scope, so mapping it back onto the
@@ -296,10 +314,13 @@ fn emit_emit_props_helper(
     }
     let emit_props =
         crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
+    let static_event_map = names::declared("$StaticEventMap");
+    let emit_options = names::helper("__EmitOptions", &[""]);
+    let emits = names::declared("Emits");
     if info.has_runtime_emits && !info.has_model_emits {
         if info.preserve_event_navigation {
             ts! { &mut *ts =>
-                type $StaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
+                #("type ") #static_event_map = __EmitOptions<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
             }
         }
         ts! { &mut *ts =>
@@ -309,18 +330,28 @@ fn emit_emit_props_helper(
     } else {
         if info.preserve_event_navigation {
             if info.generic_event_map_decl.is_empty() {
-                ts! { &mut *ts => type $StaticEventMap = __EmitOptions<Emits>; }
+                ts! { &mut *ts => #("type ") #static_event_map = __EmitOptions<#emits>; }
             } else {
                 let declaration = info.generic_event_map_decl.as_str();
-                let names = info.generic_event_map_names.as_str();
+                let arguments = info.generic_event_map_names.as_str();
                 ts! { &mut *ts =>
-                    type $StaticEventMap<#declaration> = __EmitOptions<Emits<#names>>;
+                    #("type ") #static_event_map<#declaration> = #emit_options<#emits<#arguments>>;
                 }
             }
         }
         ts! { &mut *ts =>
-            type $StaticEmitProps = #emit_props<Emits>;
+            type $StaticEmitProps = #emit_props<#emits>;
             #("\n")
         }
+    }
+}
+
+/// `__EmitProps` inside a generic scope: an import type in batch projections,
+/// the module helper in standalone ones.
+pub(super) fn emit_props_ref(hoist_shared_preamble: bool) -> String {
+    if hoist_shared_preamble {
+        String::const_new(crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(true))
+    } else {
+        names::helper("__EmitProps", &[""])
     }
 }

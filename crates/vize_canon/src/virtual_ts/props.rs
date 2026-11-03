@@ -8,6 +8,7 @@ mod template_model;
 mod template_model_modifiers;
 mod template_names;
 mod with_defaults;
+use super::generated_names as names;
 use super::generic_parameters::GenericParameters;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
 pub(crate) use model_props::emitted_model_prop_names;
@@ -91,19 +92,21 @@ pub(crate) fn generate_props_type(
         .unwrap_or_default();
 
     ts.push_str("// ========== Exported Types ==========\n");
+    let resolved = names::declared("$ResolvedProps");
+    let props_head = names::export_type("Props");
+    let mut exports_props = false;
 
     if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
     } else if imported_props_would_collide {
         if let Some(inner_type) = define_props_inner_type {
-            ts.push_str("type $ResolvedProps = ");
-            ts.push_str(inner_type);
+            append!(*ts, "type {resolved} = {inner_type}");
             if has_models {
                 ts.push_str(" & ");
                 append_model_props_type_literal(ts, summary, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_props || has_models {
-            ts.push_str("type $ResolvedProps = ");
+            append!(*ts, "type {resolved} = ");
             append_macro_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
@@ -119,34 +122,41 @@ pub(crate) fn generate_props_type(
         if let Some(inner_type) =
             define_props_inner_type.filter(|_| hoisted_props_alias_replaced(summary))
         {
-            append!(*ts, "type $ResolvedProps{generic_decl} = {inner_type}");
+            append!(*ts, "type {resolved}{generic_decl} = {inner_type}");
             if has_models {
                 ts.push_str(" & ");
                 append_model_props_type_literal(ts, summary, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_models {
-            ts.push_str("type $ResolvedProps = Props & ");
+            append!(*ts, "type {resolved} = Props & ");
             append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         }
     } else if let Some(inner_type) = define_props_inner_type {
+        exports_props = true;
         ts.push_str(unused_generic_comment(generic_param, inner_type));
         if has_models {
-            append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
+            append!(*ts, "{props_head}{generic_decl} = {inner_type} & ");
             append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         } else {
-            append!(*ts, "export type Props{generic_decl} = {inner_type};\n");
+            append!(*ts, "{props_head}{generic_decl} = {inner_type};\n");
         }
     } else if has_props || has_models {
-        append!(*ts, "export type Props{generic_decl} = ");
+        exports_props = true;
+        append!(*ts, "{props_head}{generic_decl} = ");
         append_macro_props_type_literal(ts, summary, models, generic_param);
         ts.push_str(";\n");
     } else if let Some(options_api_props) = options_api_props {
+        exports_props = true;
         emit_options_api_props_type(ts, &generic_decl, options_api_props, "Props", true);
     } else {
-        append!(*ts, "export type Props{generic_decl} = {{}};\n");
+        exports_props = true;
+        append!(*ts, "{props_head}{generic_decl} = {{}};\n");
+    }
+    if exports_props {
+        names::reexport(ts, "Props");
     }
 
     ts.push('\n');

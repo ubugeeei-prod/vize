@@ -53,12 +53,8 @@ pub(super) fn props_type_ref(
     props_type_ref_override
         .map(String::from)
         .unwrap_or_else(|| {
-            generic_param
-                .map(|g| {
-                    let names = &g.names;
-                    cstr!("Props<{names}>")
-                })
-                .unwrap_or_else(|| "Props".into())
+            let props = super::names::declared("Props");
+            generic_param.map_or(props.clone(), |g| cstr!("{props}<{}>", g.names))
         })
 }
 

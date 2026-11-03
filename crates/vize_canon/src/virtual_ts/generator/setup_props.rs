@@ -118,9 +118,9 @@ pub(super) struct SetupPropsPlan {
     defer_options_api_props: bool,
     capture_options_api_default: bool,
     module_scope_declares_props: bool,
-    uses_resolved_props: bool,
     has_inferred_model_defaults: bool,
     generic_fallback: String,
+    props_type_ref: String,
 }
 
 impl SetupPropsPlan {
@@ -154,7 +154,20 @@ impl SetupPropsPlan {
                 .any(|te| te.hoisted && te.name.as_str() == "Props")
             || imported_props_would_collide;
         let defer = define_props_type_requires_setup_scope(summary);
+        let uses_resolved_props = module_scope_declares_props
+            && (defer
+                || has_models
+                || crate::virtual_ts::props::hoisted_props_alias_replaced(summary)
+                || (imported_props_would_collide
+                    && (define_props_is_authored || options_api_props_present)));
         Self {
+            // Resolve through the synthesized intersection when an authored
+            // module-level `Props` must absorb models or deferred setup props.
+            props_type_ref: crate::virtual_ts::generated_names::declared(if uses_resolved_props {
+                "$ResolvedProps"
+            } else {
+                "Props"
+            }),
             generic_fallback: generic_parameters
                 .map(|plan| plan.fallback.clone())
                 .unwrap_or_default(),
@@ -167,12 +180,6 @@ impl SetupPropsPlan {
             capture_options_api_default: options_api_props
                 .is_some_and(OptionsApiPropsSource::captures_default),
             module_scope_declares_props,
-            uses_resolved_props: module_scope_declares_props
-                && (defer
-                    || has_models
-                    || crate::virtual_ts::props::hoisted_props_alias_replaced(summary)
-                    || (imported_props_would_collide
-                        && (define_props_is_authored || options_api_props_present))),
         }
     }
 
@@ -229,14 +236,8 @@ impl SetupPropsPlan {
         )
     }
 
-    pub(super) fn component_props_type_ref(&self) -> &'static str {
-        // Resolve through the synthesized intersection when an authored
-        // module-level `Props` must absorb models or deferred setup props.
-        if self.uses_resolved_props {
-            "$ResolvedProps"
-        } else {
-            "Props"
-        }
+    pub(super) fn component_props_type_ref(&self) -> &str {
+        &self.props_type_ref
     }
 
     pub(super) fn generic_fallback_component_props_type_ref(&self) -> String {
@@ -281,15 +282,18 @@ impl SetupPropsPlan {
         } else {
             props_type_ref.clone()
         };
+        let declared = crate::virtual_ts::generated_names::declared;
         if jsx_slots {
-            public_props_type_ref = cstr!("{public_props_type_ref} & $JsxSlotProps<$Slots>");
+            let (jsx_slot_props, slots) = (declared("$JsxSlotProps"), declared("$Slots"));
+            public_props_type_ref = cstr!("{public_props_type_ref} & {jsx_slot_props}<{slots}>");
         }
         if has_emits_for_props {
             let emit_props =
                 crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
+            let emits = declared("Emits");
             append!(
                 ts,
-                "  $props: {public_props_type_ref} & {emit_props}<Emits>;\n"
+                "  $props: {public_props_type_ref} & {emit_props}<{emits}>;\n"
             );
         } else {
             append!(ts, "  $props: {public_props_type_ref};\n");

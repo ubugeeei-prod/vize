@@ -97,18 +97,23 @@ impl ForwardedRoots {
     /// The forwarded props of one instantiation, as the tail of its `Props`.
     /// They are optional to the parent unless it is asked for the root's
     /// required ones; what the root binds itself is never the parent's.
-    pub(in crate::virtual_ts::generator) fn push_props_tail(&self, ts: &mut String, setup: &str) {
+    pub(in crate::virtual_ts::generator) fn push_props_tail(
+        &self,
+        ts: &mut String,
+        setup: &(impl core::fmt::Display + ?Sized),
+    ) {
         if !self.any() {
             return;
         }
         let mut forwarded = String::default();
         append!(forwarded, "{setup}[\"{SETUP_FIELD}\"]");
         ts.push_str(" & ");
+        let lib = crate::virtual_ts::generated_names::lib;
         match self.required_except.as_deref() {
-            None => append!(*ts, "Partial<{forwarded}>"),
+            None => append!(*ts, "{}<{forwarded}>", lib("Partial")),
             Some([]) => ts.push_str(forwarded.as_str()),
             Some(keys) => {
-                append!(*ts, "Omit<{forwarded}, ");
+                append!(*ts, "{}<{forwarded}, ", lib("Omit"));
                 push_omitted_keys(ts, keys);
                 ts.push('>');
             }

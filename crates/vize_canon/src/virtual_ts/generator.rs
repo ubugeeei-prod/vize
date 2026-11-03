@@ -155,6 +155,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let generic_parameters = generation_options
         .generic_parameters
         .or(local_generic_parameters.as_ref());
+    let _generated_names = super::generated_names::bind(generic_parameters, summary);
     preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
     let mut named_value_exports = self::script_module::collect_normal_script_named_value_exports(
         script_content,
@@ -843,8 +844,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         setup_props_plan
             .component_value_props_type_ref(generic_component_params.as_ref(), legacy_vue2)
             .as_deref(),
-        ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
-            .then_some("$Slots"),
+        (summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic,
         (
             self::fallthrough::fallthrough_props_type_ref(
                 &fallthrough_scope,

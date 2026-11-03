@@ -12162,6 +12162,40 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-parameter-generated-names-11485",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-parameter-generated-names-11485/N_Props.vue.txt",
+          "sha256": "8e5099dbcd68355cb7a654e91ee3c8f9f8f90e080941de3ed9d466c45e0781dc",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-parameter-generated-names-11485/Use.vue.txt",
+          "sha256": "1997ee07275ba5c5e921a663a25ed63653a9af5db6f928fa87f58e248c1ad5b2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_props::generated_name_shadowing::generic_parameters_named_like_generated_types_keep_consumer_inference; reported #11485 generic parameter named Props (and Emits, Exposed, Slots, generated aliases, a shared helper and lib types in the test) whose consumer must infer it like T, with listener and prop-value negative controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/imported-mark-raw-callback",
       "state": "active",
       "targets": [

@@ -69,3 +69,21 @@ defineEmits<{
     assert_parseable(&declaration);
     insta::assert_snapshot!("benchmark_generic_prop_declaration", declaration.as_str());
 }
+
+#[test]
+fn generic_parameters_named_like_generated_types_stay_bound() {
+    // #11485: `Props<Props>` inside the instance would apply the parameter.
+    let declaration = generate_sfc(
+        r#"<script setup lang="ts" generic="Props extends string, Emits, Slots, __EmitFn">
+defineProps<{ v: Props }>();
+defineEmits<{ pick: [value: Props] }>();
+defineSlots<{ default(p: { v: Props }): any }>();
+</script>"#,
+    );
+
+    assert_parseable(&declaration);
+    insta::assert_snapshot!(
+        "generic_parameters_named_like_generated_types",
+        declaration.as_str()
+    );
+}
