@@ -1,4 +1,6 @@
-//! TS-28 bridge from Rust L2->L3 lowering into the Lean reference fixture set.
+//! TS-28 bridge from Rust L2->L3 lowering into the independent L3 reference
+//! (`davinci_test_support::l3_reference`). Rust producers write the committed
+//! graph, value and trace pages; the reference reads only those pages.
 
 use vize_l0::Allocator;
 use vize_l0::dump::{Dump, Mode as DumpMode};
@@ -8,10 +10,11 @@ use vize_l3::trace::{TraceBackend, backend_trace_text, reference_trace_text};
 use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
-mod lean_reference_fixture {
+mod l3_reference_fixture {
     mod loops;
     mod matrix;
     mod models;
+    mod reference;
     mod schedule;
     mod slots;
 }
@@ -52,7 +55,7 @@ fn rust_lowered_values_match_stateful_reference_input() {
 }
 
 #[test]
-fn rust_lowered_fixtures_match_impeto_reference_inputs() {
+fn rust_lowered_fixtures_match_reference_inputs() {
     let cases = [
         (
             STATIC_DYNAMIC_SOURCE,
@@ -124,13 +127,4 @@ fn assert_rust_lowered_fixture(
         backend_trace_text(TraceBackend::Vapor, &lowered.program).trim_end_matches('\n'),
         expected_vapor.trim_end_matches('\n')
     );
-}
-
-/// C-23: every committed L3 graph, Rust-lowered or hand-written, passes the
-/// independent checker, and its damage witnesses report the expected codes.
-#[test]
-fn committed_graphs_pass_the_independent_checker() {
-    use davinci_test_support::l3_reference::{checker_corpus::check_folios, fixtures};
-    let checked = check_folios(&fixtures()).unwrap();
-    assert!(checked >= 50, "{checked}");
 }

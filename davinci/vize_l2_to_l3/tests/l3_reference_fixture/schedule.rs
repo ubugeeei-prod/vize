@@ -45,7 +45,7 @@ fn source(stem: &str) -> String {
     if stem == "rust-lowered-static-dynamic" {
         return crate::STATIC_DYNAMIC_SOURCE.to_string();
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = davinci_test_support::l3_reference::fixtures();
     std::fs::read_to_string(fixtures.join(format!("{stem}.template.txt"))).unwrap()
 }
 

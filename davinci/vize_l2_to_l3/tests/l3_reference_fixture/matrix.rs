@@ -5,9 +5,9 @@
 //! conditional toggles, disabled/click buttons) and wrappers (open, or a
 //! `v-if` guard that recreates the list). Each case is lowered here; its
 //! authored template/scenario and exact graph/value Dumps are committed as
-//! JSON lines. The Lean reference computes the expected observations and both
-//! mounted runtimes must reproduce them. Regenerate with
-//! `VIZE_UPDATE_IVM_MATRIX=1`, then `lake exe impetoRef --write-ivm-matrix`.
+//! JSON lines. The independent reference computes the expected observations and
+//! both mounted runtimes must reproduce them. `VIZE_UPDATE_IVM_MATRIX=1`
+//! regenerates the cases, the lowered pages and the reference observations.
 
 #![allow(
     clippy::disallowed_macros,
@@ -182,8 +182,18 @@ fn lowered(source: &str) -> (String, String) {
 
 fn check_lines(path: &Path, lines: &[Value]) {
     let actual: String = lines.iter().map(|line| format!("{line}\n")).collect();
+    check_text(path, &actual);
+}
+
+/// The committed observations the independent reference computes for `stem`.
+fn check_behavior(fixtures: &Path, stem: &str) {
+    let actual = davinci_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
+    check_text(&fixtures.join(format!("{stem}.behavior.jsonl")), &actual);
+}
+
+fn check_text(path: &Path, actual: &str) {
     if std::env::var("VIZE_UPDATE_IVM_MATRIX").as_deref() == Ok("1") {
-        std::fs::write(path, &actual).unwrap();
+        std::fs::write(path, actual).unwrap();
     }
     assert_eq!(
         actual,
@@ -216,7 +226,8 @@ fn ivm_matrix_cases_are_rust_lowered() {
         }
     }
     assert_eq!(cases.len(), 32);
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = davinci_test_support::l3_reference::fixtures();
     check_lines(&fixtures.join("ivm-matrix.cases.jsonl"), &cases);
     check_lines(&fixtures.join("ivm-matrix.lowered.jsonl"), &graphs);
+    check_behavior(&fixtures, "ivm-matrix");
 }
