@@ -306,11 +306,11 @@ declare global {
   type $PublicSlots<T> = [keyof T] extends [never]
     ? import("vue").ComponentPublicInstance["$slots"]
     : T;
-  type $ComponentPublicBase = Omit<
+  type $ComponentPublicBase<
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-    import("vue").ComponentPublicInstance,
-    "$props" | "$emit" | "$slots"
-  >;
+    I = import("vue").ComponentPublicInstance,
+  > = Omit<I, "$props" | "$emit" | "$slots"> &
+    Pick<I, Exclude<$LiteralKeys<I>, "$props" | "$emit" | "$slots">>;
   // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
   type $NativeElements = import("vue").NativeElements;
   type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements

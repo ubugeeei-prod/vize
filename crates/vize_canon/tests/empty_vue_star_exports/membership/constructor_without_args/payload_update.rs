@@ -5,6 +5,7 @@ use std::fs;
 
 mod emit_overload_stall;
 mod emit_overloads;
+mod public_base_keys;
 mod public_instance;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
@@ -148,6 +149,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     public_instance::retain_provenance(manifest);
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);
+    public_base_keys::retain_provenance(manifest);
 }
 
 #[cfg(test)]

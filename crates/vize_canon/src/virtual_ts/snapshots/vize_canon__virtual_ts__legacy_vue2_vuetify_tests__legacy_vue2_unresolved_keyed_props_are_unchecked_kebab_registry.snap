@@ -1,6 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 218
+assertion_line: 223
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -79,7 +79,7 @@ type $ReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$Literal
 type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $ComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
+type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type $NativeElements = import('vue').NativeElements;
 type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements ? $NativeElements[Tag] : unknown;
@@ -135,7 +135,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 15573:15602 -> 0:76
+  // @vize-map: 15647:15676 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -169,9 +169,9 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17175:17180 -> 18:23
+  // @vize-map: 17249:17254 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17258:17269 -> 40:51
+  // @vize-map: 17332:17343 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;

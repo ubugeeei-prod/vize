@@ -88,6 +88,7 @@ fn previous_public(current: &str) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::public_base_keys::source_before(path, current);
     if path == PATH {
         previous(&current, 1664, ASSET_BEFORE_SHA, ASSET_AFTER_SHA)
     } else if path == PUBLIC_PATH {
@@ -98,6 +99,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::public_base_keys::preamble_before(current);
     previous(current, 44_025, PREAMBLE_BEFORE_SHA, PREAMBLE_AFTER_SHA)
 }
 
@@ -138,16 +140,15 @@ mod tests {
     fn current_asset_preamble_and_sdk_reconstruct_only_the_tail_accumulator_layer() {
         let asset = source_before(PATH, CURRENT_ASSET.to_owned());
         assert_eq!(asset.replacen(BEFORE, AFTER, 1), CURRENT_ASSET);
+        let newer = super::super::public_base_keys::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         let preamble = preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
-        assert_eq!(
-            preamble.replacen(BEFORE, AFTER, 1),
-            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
-        );
+        assert_eq!(preamble.replacen(BEFORE, AFTER, 1), newer);
+        let newer =
+            super::super::public_base_keys::source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
         let public = source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
-        assert_eq!(
-            public.replacen(PUBLIC_BEFORE, PUBLIC_AFTER, 1),
-            CURRENT_PUBLIC
-        );
+        assert_eq!(public.replacen(PUBLIC_BEFORE, PUBLIC_AFTER, 1), newer);
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(
             source_before(other, CURRENT_ASSET.to_owned()),

@@ -187,10 +187,10 @@ fn authenticate(bodies: &[String], update: &Value) {
         .chain(std::iter::once(&update["packageManifest"]))
     {
         let path = support::relative(record["path"].as_str().unwrap());
-        image(
-            &fs::read_to_string(support::repository().join(path)).unwrap(),
-            record,
-        );
+        let body = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current =
+            super::public_base_keys::source_before(record["path"].as_str().unwrap(), body);
+        image(&current, record);
     }
 }
 

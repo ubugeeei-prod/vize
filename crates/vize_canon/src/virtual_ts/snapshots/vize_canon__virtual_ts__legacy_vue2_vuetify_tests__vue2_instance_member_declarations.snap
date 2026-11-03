@@ -1,6 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 264
+assertion_line: 269
 expression: "format!(\"=== legacy ===\\n{legacy}\\n=== Vue2 dialect ===\\n{vue2}\\n=== standard ===\\n{standard}\")"
 ---
 === legacy ===
@@ -463,7 +463,7 @@ type $ReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$Literal
 type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $ComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
+type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type $NativeElements = import('vue').NativeElements;
 type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements ? $NativeElements[Tag] : unknown;
@@ -512,7 +512,7 @@ function __setup() {
 
   // User setup code
   
-  // @vize-map: 14960:14963 -> 0:0
+  // @vize-map: 15034:15037 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
