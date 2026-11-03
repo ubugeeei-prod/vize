@@ -10,15 +10,10 @@ use std::path::Path;
 use super::super::generate_vue_content_mapper_transform_with_options;
 use super::ContentMapperProjectConfiguration;
 
-const PAGE: &str = r#"<script setup lang="ts">
-import { ref } from "vue";
-import KitField from "./KitField.vue";
-const climate = ref<"warm" | "cold">("warm");
-</script>
-<template>
-  <KitField v-model="climate" label="Plant" />
-</template>
-"#;
+const PAGE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/strict-v-model-mapper-11643/Page.vue.txt"
+));
 
 /// The write-back statement `model_update` emits for the bound target.
 const WRITE_BACK: &str = "climate = __vize_model_value;";
@@ -61,15 +56,10 @@ fn default_options_leave_the_model_write_back_unchecked() {
     assert_eq!(text.matches(WRITE_BACK).count(), 0, "{text}");
 }
 
-const MISSING: &str = r#"<script setup lang="ts">
-import { reactive } from "vue";
-import KitField from "./KitField.vue";
-const state = reactive({ name: "" });
-</script>
-<template>
-  <KitField v-model="state.missing" />
-</template>
-"#;
+const MISSING: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/strict-v-model-mapper-11643/MissingTarget.vue.txt"
+));
 
 /// `protocol::DIRECTIVE_POLICY_IGNORE`.
 const IGNORE: usize = 0;
