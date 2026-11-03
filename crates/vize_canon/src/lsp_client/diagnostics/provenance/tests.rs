@@ -176,10 +176,10 @@ fn warm_provenance_read_retains_phase_from_one_current_snapshot_and_exact_rpc_or
             "updateSnapshot",
             "getDiagnosticsForFile",
             "getDiagnosticsForProject",
+            "getSourceFile",
             "getSyntacticDiagnostics",
             "getSemanticDiagnostics",
             "getSuggestionDiagnostics",
-            "getSourceFile",
             "release"
         ]
     );
@@ -234,6 +234,7 @@ fn an_unsupported_kind_cannot_publish_a_partial_warm_result_or_reprobe_the_api()
             "updateSnapshot",
             "getDiagnosticsForFile",
             "getDiagnosticsForProject",
+            "getSourceFile",
             "getSyntacticDiagnostics",
             "getSemanticDiagnostics",
             "release",

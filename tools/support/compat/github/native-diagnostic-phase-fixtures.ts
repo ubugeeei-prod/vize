@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const DIAGNOSTIC_PHASE_ID = "typechecker/protocol/native-diagnostic-phase-11626";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
-const registrationSha256 = "363df23300f20537677d9f869334f6315b6dc397bf5823b515de425b8506691a";
+const registrationSha256 = "e1aac5141f26dd1845353613d0d1ad0a742f5af06a8a3c9fb3dc36d741e0efb0";
 const sources = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
   "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
@@ -26,11 +26,11 @@ function canonical(value: unknown): string {
   );
 }
 function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: unknown) {
-  assert.equal(typeof path, "string");
-  assert.match(String(path), /^(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+$/);
-  assert.equal(typeof expected, "string");
-  assert.match(String(expected), /^[a-f0-9]{64}$/);
-  const bytes = read(side, String(path));
+  assert.ok(typeof path === "string");
+  assert.match(path, /^(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+$/);
+  assert.ok(typeof expected === "string");
+  assert.match(expected, /^[a-f0-9]{64}$/);
+  const bytes = read(side, path);
   assert.ok(bytes, `missing ${side} phase contract input: ${path}`);
   assert.equal(hash(bytes), expected, `changed ${side} phase contract input: ${path}`);
   return bytes;
@@ -47,8 +47,8 @@ function consumer(read: ReadFile, value: unknown) {
     assert.ok(source.includes(`test(${JSON.stringify(selector)},`));
   }
   if (test.input !== null) {
-    assert.equal(typeof test.input, "string");
-    assert.ok(source.includes(String(test.input)), "pinned input must have a real consumer");
+    assert.ok(typeof test.input === "string");
+    assert.ok(source.includes(test.input), "pinned input must have a real consumer");
   }
 }
 
@@ -122,12 +122,12 @@ export function newNativeDiagnosticPhaseCases(
       pinned(read, "base", pair.path, pair.before);
       pinned(read, "head", pair.path, pair.after);
     }
-    assert.ok(Array.isArray(row.inputs) && row.inputs.length === 3);
+    assert.ok(Array.isArray(row.inputs) && row.inputs.length === 5);
     for (const value of row.inputs) {
       const input = object(value);
       pinned(read, "head", input.path, input.sha256);
     }
-    assert.ok(Array.isArray(row.tests) && row.tests.length === 11);
+    assert.ok(Array.isArray(row.tests) && row.tests.length === 15);
     row.tests.forEach((value) => consumer(read, value));
     legacyLaws(read, row.legacyProtocol);
     result.ids.push(DIAGNOSTIC_PHASE_ID);

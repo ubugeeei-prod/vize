@@ -20,17 +20,27 @@ fn diagnostic_methods(rows: &[Value]) -> Vec<&str> {
 }
 #[test]
 fn captured_declaration_options_select_exact_ls_union_not_extra_scopes() {
+    let methods = |options: &Value| {
+        required_kinds(options)
+            .map(|kinds| {
+                kinds
+                    .into_iter()
+                    .map(|(method, _)| method)
+                    .collect::<Vec<_>>()
+            })
+            .ok()
+    };
     let three = KINDS.iter().take(3).copied().collect::<Vec<_>>();
     let mut four = three.clone();
     four.push("getDeclarationDiagnostics");
     for options in [json!({}), json!({"declaration":false,"composite":null})] {
-        assert_eq!(required_kinds(&options).ok(), Some(three.clone()));
+        assert_eq!(methods(&options), Some(three.clone()));
     }
     for options in [
         json!({"declaration":true}),
         json!({"composite":true,"declaration":false}),
     ] {
-        assert_eq!(required_kinds(&options).ok(), Some(four.clone()));
+        assert_eq!(methods(&options), Some(four.clone()));
     }
     for options in [
         Value::Null,
@@ -185,8 +195,17 @@ impl Peer {
 #[cfg(unix)]
 fn execute(
     options: Value,
-    replies: Vec<(&'static str, Value)>,
+    mut replies: Vec<(&'static str, Value)>,
 ) -> (Result<Option<Vec<Diagnostic>>, String>, Vec<Value>) {
+    // Every admitted compiler-kind read first proves this file's snapshot source.
+    let source = replies
+        .iter()
+        .position(|(method, _)| *method == "getSourceFile");
+    let source = source.map_or_else(
+        || ("getSourceFile", json!({"data":ENCODED_TEXT})),
+        |index| replies.remove(index),
+    );
+    replies.insert(0, source);
     let peer = Peer::start(options, replies, None);
     let snapshot = block_on(peer.client.update_snapshot(Default::default())).unwrap();
     let result = read(
@@ -203,6 +222,45 @@ fn execute(
 }
 #[cfg(unix)]
 #[test]
+fn an_absent_snapshot_source_never_enters_compiler_kind_queries() {
+    let (result, observed) = execute(json!({}), vec![("getSourceFile", Value::Null)]);
+    assert!(result.unwrap().is_none());
+    assert_eq!(diagnostic_methods(&observed), ["getSourceFile"]);
+}
+
+#[cfg(unix)]
+#[test]
+fn invalid_compiler_options_do_not_start_source_or_kind_requests() {
+    let peer = Peer::start(json!({"declaration":"true"}), Vec::new(), None);
+    let snapshot = block_on(peer.client.update_snapshot(Default::default())).unwrap();
+    let result = read(
+        &peer.client,
+        &snapshot,
+        snapshot.projects.first().unwrap(),
+        URI,
+    );
+    assert!(result.is_err());
+    block_on(snapshot.release()).unwrap();
+    assert!(diagnostic_methods(&peer.finish()).is_empty());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_failed_snapshot_source_is_not_an_unsupported_or_clean_result() {
+    let (result, observed) = execute(
+        json!({}),
+        vec![(
+            "getSourceFile",
+            json!({
+                "error":{"code":-32603,"message":"source file not found"}
+            }),
+        )],
+    );
+    assert!(result.is_err());
+    assert_eq!(diagnostic_methods(&observed), ["getSourceFile"]);
+}
+#[cfg(unix)]
+#[test]
 fn framed_null_empty_and_declaration_union_keep_one_snapshot_and_exact_order() {
     for declarations in [false, true] {
         let mut replies = vec![
@@ -213,9 +271,8 @@ fn framed_null_empty_and_declaration_union_keep_one_snapshot_and_exact_order() {
         if declarations {
             replies.push(("getDeclarationDiagnostics", json!([])));
         }
-        let expected = replies
-            .iter()
-            .map(|(method, _)| *method)
+        let expected = std::iter::once("getSourceFile")
+            .chain(replies.iter().map(|(method, _)| *method))
             .collect::<Vec<_>>();
         let (result, observed) = execute(json!({"declaration":declarations}), replies);
         assert_eq!(result.unwrap(), Some(vec![]));
@@ -250,9 +307,17 @@ fn framed_partial_kind_missing_failure_and_malformed_never_become_empty_success(
             let methods = diagnostic_methods(&observed);
             assert_eq!(
                 methods,
-                kinds.iter().take(index + 1).copied().collect::<Vec<_>>()
+                std::iter::once("getSourceFile")
+                    .chain(kinds.iter().take(index + 1).copied())
+                    .collect::<Vec<_>>()
             );
-            assert!(!observed.iter().any(|row| row["method"] == "getSourceFile"));
+            assert_eq!(
+                observed
+                    .iter()
+                    .filter(|row| row["method"] == "getSourceFile")
+                    .count(),
+                1
+            );
         }
     }
 }
@@ -305,7 +370,7 @@ fn framed_phase_comes_from_each_completed_compiler_kind_not_the_code() {
         .iter()
         .map(|method| (*method, json!([row.clone()])))
         .collect::<Vec<_>>();
-    replies.push(("getSourceFile", json!({"data":ENCODED_TEXT})));
+    replies.insert(0, ("getSourceFile", json!({"data":ENCODED_TEXT})));
     let peer = Peer::start(json!({"declaration":true}), replies, None);
     let snapshot = block_on(peer.client.update_snapshot(Default::default())).unwrap();
     let rows = read(
@@ -334,11 +399,11 @@ fn framed_phase_comes_from_each_completed_compiler_kind_not_the_code() {
     assert_eq!(
         diagnostic_methods(&observed),
         [
+            "getSourceFile",
             "getSyntacticDiagnostics",
             "getSemanticDiagnostics",
             "getSuggestionDiagnostics",
             "getDeclarationDiagnostics",
-            "getSourceFile",
         ]
     );
 }
@@ -349,11 +414,18 @@ fn cancelled_lower_rpc_drains_actual_arc_lease_without_starting_next_kind() {
     use futures::FutureExt;
     use std::{sync::Arc, time::Duration};
     let kinds = KINDS;
-    for (index, kind) in kinds.iter().enumerate() {
-        let prior = kinds.iter().take(index).map(|method| (*method,json!([{
-        "fileName":"/workspace/a #.ts","pos":0,"end":5,"code":2322,"category":1,"text":"partial must not publish"
-    }]))).collect();
-        let peer = Peer::start(json!({"declaration":true}), prior, Some(*kind));
+    let stages = std::iter::once("getSourceFile")
+        .chain(kinds)
+        .collect::<Vec<_>>();
+    for (index, stage) in stages.iter().enumerate() {
+        let mut prior = Vec::new();
+        if index > 0 {
+            prior.push(("getSourceFile", json!({"data":ENCODED_TEXT})));
+            prior.extend(kinds.iter().take(index - 1).map(|method| (*method,json!([{
+                "fileName":"/workspace/a #.ts","pos":0,"end":5,"code":2322,"category":1,"text":"partial must not publish"
+            }]))));
+        }
+        let peer = Peer::start(json!({"declaration":true}), prior, Some(*stage));
         let snapshot = Arc::new(block_on(peer.client.update_snapshot(Default::default())).unwrap());
         let weak = Arc::downgrade(&snapshot);
         let worker = BoundedWorker::new("lower diagnostic lease", ());
@@ -383,9 +455,15 @@ fn cancelled_lower_rpc_drains_actual_arc_lease_without_starting_next_kind() {
         let methods = diagnostic_methods(&observed);
         assert_eq!(
             methods,
-            kinds.iter().take(index + 1).copied().collect::<Vec<_>>()
+            stages.iter().take(index + 1).copied().collect::<Vec<_>>()
         );
-        assert!(!observed.iter().any(|row| row["method"] == "getSourceFile"));
+        assert_eq!(
+            observed
+                .iter()
+                .filter(|row| row["method"] == "getSourceFile")
+                .count(),
+            1
+        );
         let releases = observed
             .iter()
             .filter(|row| row["method"] == "release")

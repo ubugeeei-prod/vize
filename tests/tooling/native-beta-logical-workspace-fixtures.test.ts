@@ -41,6 +41,17 @@ function read(side: "base" | "head", file: string): Buffer | null {
         cwd: root,
         stdio: ["ignore", "pipe", "ignore"],
       });
+    // Production bytes belong to the sealed registration actor. Current
+    // observer/tooling bytes remain independently authenticated below.
+    if (
+      !process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT &&
+      authority.production.files.some((entry: { path: string }) => entry.path === file)
+    ) {
+      return execFileSync("git", ["show", `${authority.production.afterRevision}:${file}`], {
+        cwd: root,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+    }
     return fs.readFileSync(path.join(file.startsWith(fixtureRoot) ? root : sourceRoot, file));
   } catch {
     return null;

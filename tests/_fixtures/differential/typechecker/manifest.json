@@ -16730,7 +16730,7 @@
         {
           "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
           "before": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20",
-          "after": "9fc5d6f0415203ab49dc1b04d988cffb0950dc784eaf2c0201eda7f974735764"
+          "after": "603e0c54b1d49f71e0216f8b7e02fd4f641897ff6f6d27cf1e903d0fde7262e4"
         },
         {
           "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
@@ -16740,7 +16740,7 @@
         {
           "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
           "before": "741f997d5bf8327d5894f500daf91e618fc5ce11318b34df35672e073cf3752d",
-          "after": "5581eb8c8f2e2086087996b663d40cf17dc93ea087232afbd41f5466912071b0"
+          "after": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff"
         }
       ],
       "inputs": [
@@ -16755,6 +16755,14 @@
         {
           "path": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt",
           "sha256": "591a69672055d55d6bb0c20e8a4d39074accedd81d65bf797cdd051a01f9f67b"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/plain.js.txt",
+          "sha256": "68b4e65262ec232ff810cac451a519ecf62b913a2b8495e18ba821820378cf8e"
+        },
+        {
+          "path": "tests/_fixtures/differential/lsp/plain-script-diagnostics/tsconfig.json",
+          "sha256": "951d9fae696015ef1d295ce248e6134947178477a0ac829d18098d98338f1fce"
         }
       ],
       "tests": [
@@ -16767,7 +16775,7 @@
         {
           "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
           "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::framed_phase_comes_from_each_completed_compiler_kind_not_the_code",
-          "sha256": "5581eb8c8f2e2086087996b663d40cf17dc93ea087232afbd41f5466912071b0",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
           "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
         },
         {
@@ -16779,19 +16787,19 @@
         {
           "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
           "selector": "lsp_client::diagnostics::provenance::tests::warm_provenance_read_retains_phase_from_one_current_snapshot_and_exact_rpc_order",
-          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
           "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
         },
         {
           "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
           "selector": "lsp_client::diagnostics::provenance::tests::an_unsupported_kind_cannot_publish_a_partial_warm_result_or_reprobe_the_api",
-          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
           "input": null
         },
         {
           "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
           "selector": "lsp_client::diagnostics::provenance::tests::a_rejected_current_api_owner_never_probes_compiler_kinds",
-          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
           "input": null
         },
         {
@@ -16809,7 +16817,7 @@
         {
           "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
           "selector": "an unrelated edit retains a semantic TS1xxx diagnostic in the prompt",
-          "sha256": "21710c019e30a3a9ca87d4131046746a6584f9f4fd5513950592fc61589a74ec",
+          "sha256": "2f0fc3eba0dfc83021aeb4cbd21924ff2eb8723757c7d9836cc79b6c1382611a",
           "input": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt"
         },
         {
@@ -16822,6 +16830,30 @@
           "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
           "selector": "lsp_client::diagnostic_phase::tests::uri_remapping_preserves_phase_and_the_legacy_wire_shape",
           "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::an_absent_snapshot_source_never_enters_compiler_kind_queries",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::a_failed_snapshot_source_is_not_an_unsupported_or_clean_result",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": null
+        },
+        {
+          "source": "crates/vize/tests/lsp_plain_script_diagnostics_cli.rs",
+          "selector": "lsp_plain_script_diagnostics_cli::javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id",
+          "sha256": "7ec05e0309fc02c221ea95023dcf5c3d74de5904acd49a4aafb4a7e783ec732e",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/plain.js.txt"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::invalid_compiler_options_do_not_start_source_or_kind_requests",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
           "input": null
         }
       ],

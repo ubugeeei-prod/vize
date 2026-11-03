@@ -215,7 +215,7 @@ test("an unrelated edit retains a semantic TS1xxx diagnostic in the prompt", asy
     );
     const prompt = publications.find((params) => params.version === 2)!;
     assert.deepEqual(
-      semantic(prompt).map((row) => row.range?.start.line),
+      semantic(prompt).map((row) => row.range?.start?.line),
       [2],
       summary(publications),
     );

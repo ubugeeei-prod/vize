@@ -1,6 +1,6 @@
 //! Read provenance while borrowing the current client world.
 
-use super::*;
+use super::{CorsaProjectClient, DiagnosticFetch, String, cstr};
 
 impl CorsaProjectClient {
     pub(crate) fn request_diagnostics_full_with_provenance(

@@ -45,7 +45,7 @@ test("the bounded current phase registration retains every historical ABI law", 
     row.sources.map((pair: { path: string }) => pair.path),
   );
   assert.equal(row.legacyProtocol.tests.length, 5);
-  assert.equal(row.tests.length, 11);
+  assert.equal(row.tests.length, 15);
   assert.equal(row.qualification.includes("does not claim runtime"), true);
 });
 
