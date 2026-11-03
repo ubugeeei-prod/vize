@@ -153,6 +153,5 @@ fn default_export_statement_boundary_has_a_pinned_ssr_module() {
         include_str!(
             "../../../../tests/_fixtures/differential/compiler/default-export-statement-boundary-11617/module.expected.txt"
         )
-        .trim_end()
     );
 }

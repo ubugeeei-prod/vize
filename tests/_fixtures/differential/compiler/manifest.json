@@ -639,7 +639,7 @@
       },
       "reference": {
         "path": "default-export-statement-boundary-11617/module.expected.txt",
-        "sha256": "5bb3ea8c79734c7457a6c31684dae66a19a8b5cedef4b53bcc2c48324b39ac06",
+        "sha256": "a4ffa7656e264d55a7d9bacda98a38569cb8dc2afd69c679acfdb6d2afae8773",
         "source": "crates/vize_atelier_sfc/src/rewrite_default/tests.rs:default_export_statement_boundary_has_a_pinned_ssr_module"
       },
       "adapters": {
