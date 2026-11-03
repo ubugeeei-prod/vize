@@ -17,6 +17,9 @@ export const PLANT_KINDS = [
   "emit-template",
   "v-model",
   "global",
+  "listener-arrow",
+  "listener-prop",
+  "listener-statement",
 ] as const;
 export type PlantKind = (typeof PLANT_KINDS)[number];
 export type Source = { lines: string[]; plants: { kind: PlantKind; line: number }[] };
@@ -29,7 +32,15 @@ export type Ctx = {
 };
 
 /** Kit components: generic tables, selects, lists and tabs, plus v-model fields and cards. */
-export const KIT = ["KitTable", "KitSelect", "KitList", "KitField", "KitCard", "KitTabs"] as const;
+export const KIT = [
+  "KitTable",
+  "KitSelect",
+  "KitList",
+  "KitField",
+  "KitCard",
+  "KitTabs",
+  "KitAction",
+] as const;
 /** Components registered through the `GlobalComponents` augmentation. */
 export const GLOBALS = ["GBadge", "GIcon", "GTooltip", "GButton", "GAvatar", "GSpinner"] as const;
 /** Generic layers per feature; each imports the next, the last renders KitTable. */
@@ -249,6 +260,19 @@ export function kitComponent(name: (typeof KIT)[number], to: Spec): Source {
             '<slot name="panel" :tab="modelValue" />',
           ],
           "K extends string",
+        ),
+      );
+    case "KitAction":
+      // camelCase props and emits, used kebab-case (the #11657 listener shape).
+      return source(
+        sfc(
+          [
+            "const props = defineProps<{ actionLabel: string }>();",
+            "const emit = defineEmits<{ saveItem: [value: string] }>();",
+          ],
+          [
+            '<button type="button" @click="emit(\'saveItem\', props.actionLabel)">{{ actionLabel }}</button>',
+          ],
         ),
       );
   }

@@ -38,7 +38,7 @@ export const rowCount = (k: number, seed: number): number => 6 + ((k + seed) % 5
 export function page(k: number, features: number, planted: boolean, ctx: Ctx): Source {
   const dir = featureDir(k);
   const used = [
-    ...["KitCard", "KitField", "KitList", "KitSelect", "KitTabs"].map((name) => [
+    ...["KitAction", "KitCard", "KitField", "KitList", "KitSelect", "KitTabs"].map((name) => [
       `kit/${name}.vue`,
       name,
     ]),
@@ -77,6 +77,9 @@ export function page(k: number, features: number, planted: boolean, ctx: Ctx): S
           "function onPlantCommit(value: number): void {",
           "  count.value = value;",
           "}",
+          "function takesLabel(value: string): string {",
+          "  return value;",
+          "}",
         ]
       : []),
     "</script>",
@@ -104,6 +107,7 @@ export function page(k: number, features: number, planted: boolean, ctx: Ctx): S
     '      <template #hint="{ length, touched }"><GTooltip :text="`${length}`"><GSpinner v-if="!touched" /></GTooltip></template>',
     "    </KitField>",
     `    <${widget1} :rows="rows" v-model:filter="query" @apply-filter="(value) => (query = value)" />`,
+    '    <KitAction action-label="Save" @save-item="(value) => (note = value)" />',
   );
   if (planted) {
     out.plant("generic", `    <KitSelect :options="rows" :label-of="(row) => row.score${k}" />`);
@@ -117,6 +121,19 @@ export function page(k: number, features: number, planted: boolean, ctx: Ctx): S
     );
     out.plant("v-model", '    <KitField v-model="climate" label="Plant" />');
     out.plant("global", "    <GBadge :count=\"'many'\" />");
+    // #11657: an annotated inline handler and a statement handler on a kebab-cased camelCase emit.
+    out.plant(
+      "listener-arrow",
+      '    <KitAction action-label="Plant" @save-item="(value: number) => undefined" />',
+    );
+    out.plant(
+      "listener-prop",
+      '    <KitAction :action-label="1" @save-item="(value: number) => undefined" />',
+    );
+    out.plant(
+      "listener-statement",
+      '    <KitAction action-label="Plant" @save-item="takesLabel(count)" />',
+    );
   }
   out.add(
     "    <template #actions=\"{ close, tone }\"><GButton :variant=\"tone === 'danger' ? 'primary' : 'ghost'\" @press=\"close()\" /></template>",

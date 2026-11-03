@@ -20,20 +20,45 @@ export const PLANT_CODES: Record<PlantKind, readonly string[]> = {
   "emit-template": ["TS2322", "TS2345"],
   "v-model": ["TS2322"],
   global: ["TS2322"],
+  "listener-arrow": ["TS2322"],
+  "listener-prop": ["TS2322"],
+  "listener-statement": ["TS2345"],
 };
 
-/** Errors per plant where a lane differs from one, keyed by lane id. */
+/** Errors per plant where every lane reports more than one: the prop and the handler. */
+const DEFAULT_COUNTS: Partial<Record<PlantKind, number>> = { "listener-prop": 2 };
+
+// vue-tsc and Vue's mapper do not check an inline handler's annotated parameters.
+const VUE_LANGUAGE_TOOLS: Partial<Record<PlantKind, number>> = {
+  "listener-arrow": 0,
+  "listener-prop": 1,
+};
+
+// #11643: the Vize mapper does not check the update:modelValue payload against the bound ref.
+// #11657 (fixed by #11667): the Vize mapper drops an inline handler's parameter mismatch.
+const VIZE_MAPPER: Partial<Record<PlantKind, number>> = {
+  "v-model": 0,
+  "listener-arrow": 0,
+  "listener-prop": 1,
+};
+/** Errors per plant where a lane differs from the default, keyed by lane id. */
 export const PLANT_MULTIPLICITY: Record<string, Partial<Record<PlantKind, number>>> = {
-  // #11643: the Vize mapper does not check the update:modelValue payload against the bound ref.
-  "tsc-vize-mapper": { "v-model": 0 },
-  "tsrs-fast-vize-mapper": { "v-model": 0 },
+  "tsc-vize-mapper": VIZE_MAPPER,
+  "tsrs-fast-vize-mapper": VIZE_MAPPER,
+  "vue-tsc": VUE_LANGUAGE_TOOLS,
+  "tsc-vue-mapper": VUE_LANGUAGE_TOOLS,
 };
 export const PLANT_MULTIPLICITY_NOTES: readonly string[] = [
   "The Vize mapper lanes expect no error on the `v-model` plant: the mapper does not check the `update:modelValue` payload against the bound ref (#11643).",
+  "The Vize mapper lanes expect no error from an inline handler's annotated parameter on a kebab-cased camelCase emit (#11657, fixed by #11667).",
+  "vue-tsc and Vue's mapper do not check an inline handler's annotated parameters, so they expect no handler error on the listener plants.",
 ];
 
 /** The errors `lane` must report: every plant with its count for that lane. */
 export function expectedPlants(plants: readonly Plant[], lane: string): PlantExpectation[] {
   const counts = PLANT_MULTIPLICITY[lane] ?? {};
-  return plants.map((plant) => ({ ...plant, count: counts[plant.kind] ?? 1 }));
+  return plants.map((plant) => ({
+    ...plant,
+    count: counts[plant.kind] ?? DEFAULT_COUNTS[plant.kind] ?? 1,
+  }));
 }

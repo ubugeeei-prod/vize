@@ -40,6 +40,10 @@ const PLANT_TEXT: Record<string, RegExp> = {
   "emit-template": /@blur-commit="onPlantCommit"/u,
   "v-model": /<KitField v-model="climate"/u,
   global: /<GBadge :count="'many'" \/>/u,
+  "listener-arrow":
+    /<KitAction action-label="Plant" @save-item="\(value: number\) => undefined" \/>/u,
+  "listener-prop": /<KitAction :action-label="1" @save-item="\(value: number\) => undefined" \/>/u,
+  "listener-statement": /@save-item="takesLabel\(count\)"/u,
 };
 const vueFiles = (files: Map<string, string>) =>
   [...files.keys()].filter((path) => path.endsWith(".vue")).length;
@@ -78,11 +82,11 @@ void test("the seed moves the plants and the rows, and nothing else", () => {
 });
 
 void test("plants scale with the project and always reach the last feature", () => {
-  assert.deepEqual(projectShape(1000), { features: 49, extraWidgets: 7 });
+  assert.deepEqual(projectShape(1000), { features: 49, extraWidgets: 6 });
   const project = generateScaleProject({ sfcs: 1000, kind: "vue" });
   assert.equal(project.plants.length, 6 * PLANT_KINDS.length);
   assert.ok(project.plants.some((plant) => plant.file.startsWith("src/features/f0048/")));
-  assert.ok(project.files.has("src/features/f0048/Widget16.vue"));
+  assert.ok(project.files.has("src/features/f0048/Widget15.vue"));
   assert.match(
     project.files.get("src/features/f0000/Page.vue") ?? "",
     /import Page2 from "\.\.\/f0002\/Page\.vue";/u,
@@ -100,6 +104,9 @@ void test("lanes that miss a plant by a pinned issue expect zero there", () => {
   assert.equal(vModel("vue-tsc"), 1);
   assert.equal(vModel("tsc-vize-mapper"), 0);
   assert.equal(vModel("tsrs-fast-vize-mapper"), 0);
+  const listener = (lane: string) =>
+    expectedPlants(plants, lane).find((plant) => plant.kind === "listener-prop")?.count;
+  assert.deepEqual(["vize-check", "tsc-vize-mapper", "vue-tsc"].map(listener), [2, 1, 1]);
 });
 
 void test("a Nuxt project is a Nuxt 4 app tree with auto-imported, path-prefixed components", () => {
