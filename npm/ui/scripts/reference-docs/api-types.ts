@@ -20,7 +20,7 @@ export interface ComponentApi {
   readonly expose: readonly ApiMember[];
 }
 
-/** One exported function or constant of a TypeScript module. */
+/** One exported runtime declaration of a TypeScript module. */
 export interface ModuleExport {
   readonly name: string;
   readonly signature: string;
