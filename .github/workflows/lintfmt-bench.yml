@@ -33,10 +33,10 @@ env:
   # Config setups for the history sweep (vite, json, none).
   LINTFMT_BENCH_SETUPS: "json,none"
   # Source refs the profile job builds; empty means the merge base and HEAD.
-  LINTFMT_BENCH_PROFILE_REFS: "v0.428.1 HEAD"
+  LINTFMT_BENCH_PROFILE_REFS: ""
   # Extra lint arguments and the tasks the profile job records.
   LINTFMT_BENCH_PROFILE_LINT_ARGS: "--no-config --preset ecosystem"
-  LINTFMT_BENCH_PROFILE_TASKS: "lint"
+  LINTFMT_BENCH_PROFILE_TASKS: "fmt"
   LINTFMT_BENCH_BASE: ""
   LINTFMT_BENCH_VERIFY: "-p vize_patina -p vize_glyph"
 
