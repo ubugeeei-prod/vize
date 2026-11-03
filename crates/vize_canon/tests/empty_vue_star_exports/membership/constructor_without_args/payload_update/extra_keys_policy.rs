@@ -111,6 +111,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::checker_augmentations::source_before(path, current);
     let current = super::runtime_prop_call::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
@@ -174,10 +175,13 @@ mod tests {
     #[test]
     fn current_assets_preamble_and_sdk_reconstruct_only_the_extra_keys_layer() {
         for file in &FILES {
-            let body =
-                super::super::runtime_prop_call::source_before(file.path, current(file.path));
+            let current_text = current(file.path);
+            let body = super::super::runtime_prop_call::source_before(
+                file.path,
+                super::super::checker_augmentations::source_before(file.path, current_text.clone()),
+            );
             assert_eq!(
-                redo(source_before(file.path, current(file.path)), file.edits),
+                redo(source_before(file.path, current_text), file.edits),
                 body
             );
         }
