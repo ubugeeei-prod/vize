@@ -1,34 +1,46 @@
 //! JavaScript mixin methods must not open the entire legacy receiver (#11780).
 
 use super::super::{
-    create_project_case, relative_path, resolve_test_tsgo_binary, BatchTypeChecker,
+    BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
 use crate::batch::TypeChecker;
 
 const FILES: &[(&str, &str)] = &[
     (
         "src/Invalid.vue",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Invalid.vue.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Invalid.vue.txt"
+        ),
     ),
     (
         "src/Unicode.vue",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Unicode.vue.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Unicode.vue.txt"
+        ),
     ),
     (
         "src/Valid.vue",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Valid.vue.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/Valid.vue.txt"
+        ),
     ),
     (
         "src/mixin.js",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/mixin.js.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/src/mixin.js.txt"
+        ),
     ),
     (
         "tsconfig.json",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/tsconfig.json.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/tsconfig.json.txt"
+        ),
     ),
     (
         "vite.config.mjs",
-        include_str!("../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/vite.config.mjs.txt"),
+        include_str!(
+            "../../../../../../../tests/_fixtures/differential/typechecker/legacy-js-mixin-receiver-11780/vite.config.mjs.txt"
+        ),
     ),
 ];
 
@@ -48,6 +60,26 @@ fn javascript_mixin_methods_keep_legacy_receivers_closed_in_both_strict_modes() 
         checker.enable_legacy_vue2();
         checker.scan_project().expect("project scan");
         let result = checker.check_project().expect("native project check");
+        let mut projected_vue_files: Vec<_> = checker
+            .virtual_files()
+            .into_iter()
+            .filter(|file| {
+                file.original_path
+                    .extension()
+                    .is_some_and(|ext| ext == "vue")
+            })
+            .map(|file| relative_path(&root, &file.original_path))
+            .collect();
+        projected_vue_files.sort();
+        assert_eq!(
+            projected_vue_files,
+            vec!["src/Invalid.vue", "src/Unicode.vue", "src/Valid.vue"]
+        );
+        assert_eq!(
+            result.exit_code, 1,
+            "invalid authored inputs must fail the check"
+        );
+        assert!(!result.success);
         let mut whole: Vec<_> = result
             .diagnostics
             .iter()
@@ -72,6 +104,9 @@ fn javascript_mixin_methods_keep_legacy_receivers_closed_in_both_strict_modes() 
             let packet = serde_json::json!({
                 "provider": provider,
                 "strict": strict,
+                "exitCode": result.exit_code,
+                "success": result.success,
+                "projectedVueFiles": projected_vue_files,
                 "inputs": FILES,
                 "tsconfig": config,
                 "mappedDiagnostics": whole,
