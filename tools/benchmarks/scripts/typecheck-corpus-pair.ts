@@ -34,6 +34,12 @@ import {
 } from "./typecheck-corpus-pair-report.ts";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
 import {
+  checkMsByFile,
+  probeBytesByFile,
+  projectionReport,
+  renderProjection,
+} from "./typecheck-corpus-pair-projection.ts";
+import {
   CONTENT_MAPPERS,
   MAPPER_HOSTS,
   type MapperHosts,
@@ -181,6 +187,7 @@ function hostRun(
   tsconfig: string,
   timeFile: string,
   env: Record<string, string> = {},
+  extraArgs: string[] = [],
 ): HostRun {
   const args = [
     "--noEmit",
@@ -189,6 +196,7 @@ function hostRun(
     "--extendedDiagnostics",
     "--pretty",
     "false",
+    ...extraArgs,
     "-p",
     join(cwd, tsconfig),
   ];
@@ -303,6 +311,8 @@ function main(): void {
             }
           : {}),
       },
+      // Per-SFC check time for the projection report; tsrs writes no trace.
+      lane.host.id === "tsc" ? ["--generateTrace", join(work, "traces", key)] : [],
     );
     const probe = summarizeProbe(readFileSync(record, "utf8"));
     if (probe.errors.length > 0)
@@ -317,6 +327,27 @@ function main(): void {
       `${key}: probe ${probe.files} SFCs, ${probe.bytes} bytes, ${run.diagnostics.length} diagnostics`,
     );
   }
+
+  const projections = CORPORA.map((corpus) => {
+    const side = (variant: Variant) => {
+      const lane = { corpus, host: MAPPER_HOSTS.find((host) => host.id === "tsc")!, variant };
+      const key = laneKey(lane);
+      return {
+        bytes: probeBytesByFile(
+          readFileSync(join(work, "time", `${key}.probe.jsonl`), "utf8"),
+          cwd(lane),
+        ),
+        check: checkMsByFile(join(work, "traces", key), cwd(lane)),
+      };
+    };
+    const [base, head, vue] = VARIANTS.map(side);
+    return projectionReport(corpus.id, { base: base!, head: head!, vue: vue! });
+  });
+  writeFileSync(join(out, "projection.json"), `${JSON.stringify(projections, null, 1)}\n`);
+  writeFileSync(
+    join(out, "projection.md"),
+    projections.map((report) => renderProjection(report)).join("\n"),
+  );
 
   const timed = new Map<string, HostRun[]>();
   for (let run = 0; run < runs; run++) {

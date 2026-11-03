@@ -25,6 +25,12 @@ import {
   renderPairSummary,
   summarizePair,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-report.ts";
+import {
+  checkMsByFile,
+  probeBytesByFile,
+  projectionReport,
+  renderProjection,
+} from "../../tools/benchmarks/scripts/typecheck-corpus-pair-projection.ts";
 import { PAIR_HOST_ARGS } from "../../tools/benchmarks/scripts/typecheck-corpus-pair.ts";
 import { MAPPER_HOSTS } from "../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
 import { root } from "./support/github-workflows.ts";
@@ -359,4 +365,69 @@ void test("the pair runs tsc at its default and tsrs at --fast, each a published
       host.id,
     );
   }
+});
+
+void test("the projection report ranks SFCs by bytes and traced check time against Vue's mapper", (t) => {
+  const dir = scratch(t);
+  const root = join(dir, "project");
+  const record = (file: string, bytes: number) =>
+    JSON.stringify({ pid: 1, fileName: join(root, file), bytes });
+  const bytes = (entries: [string, number][]) =>
+    probeBytesByFile(entries.map(([file, size]) => record(file, size)).join("\n"), root);
+  const traces = join(dir, "traces");
+  mkdirSync(traces);
+  writeFileSync(
+    join(traces, "trace.json"),
+    JSON.stringify([
+      { ph: "X", name: "checkSourceFile", ts: 0, dur: 4000, args: { path: join(root, "A.vue") } },
+      {
+        ph: "B",
+        name: "checkSourceFile",
+        ts: 10,
+        pid: 1,
+        tid: 2,
+        args: { path: join(root, "B.vue") },
+      },
+      { ph: "B", name: "checkExpression", ts: 20, pid: 1, tid: 2 },
+      { ph: "E", name: "checkSourceFile", ts: 2010, pid: 1, tid: 2 },
+      { ph: "X", name: "checkSourceFile", ts: 0, dur: 9000, args: { path: "/elsewhere/lib.d.ts" } },
+    ]),
+  );
+  const check = checkMsByFile(traces, root);
+  assert.deepEqual(
+    [...check],
+    [
+      ["A.vue", 4],
+      ["B.vue", 2],
+    ],
+  );
+  const report = projectionReport("demo", {
+    base: {
+      bytes: bytes([
+        ["A.vue", 300],
+        ["B.vue", 100],
+      ]),
+      check,
+    },
+    head: {
+      bytes: bytes([
+        ["A.vue", 200],
+        ["B.vue", 100],
+      ]),
+      check,
+    },
+    vue: {
+      bytes: bytes([
+        ["A.vue", 150],
+        ["B.vue", 120],
+      ]),
+      check: new Map(),
+    },
+  });
+  assert.deepEqual(report.totals.head, { bytes: 300, checkMs: 6 });
+  assert.deepEqual(report.totals.vue, { bytes: 270, checkMs: null });
+  assert.equal(report.headAtMostVue, 1);
+  const markdown = renderProjection(report);
+  assert.match(markdown, /1 of 2 SFCs are at most Vue's size/u);
+  assert.ok(markdown.indexOf("`A.vue` | 0.2 | 0.1 | 1.33×") > 0, markdown);
 });

@@ -103,7 +103,9 @@ jobs:
       - name: Write job summary
         if: always()
         run: |
-          if [[ -f "$RUNNER_TEMP/pair-out/summary.md" ]]; then cat "$RUNNER_TEMP/pair-out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          for report in summary projection; do
+            if [[ -f "$RUNNER_TEMP/pair-out/$report.md" ]]; then cat "$RUNNER_TEMP/pair-out/$report.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
