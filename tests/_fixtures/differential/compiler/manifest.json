@@ -624,6 +624,48 @@
       }
     },
     {
+      "id": "compiler/sfc/default-export-statement-boundary-11617",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "default-export-statement-boundary-11617",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "664a4965374bc6190d2c573d404a87a549fc49c92a151ad442bc65e4d991d99f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "default-export-statement-boundary-11617/module.expected.txt",
+        "sha256": "5bb3ea8c79734c7457a6c31684dae66a19a8b5cedef4b53bcc2c48324b39ac06",
+        "source": "crates/vize_atelier_sfc/src/rewrite_default/tests.rs:default_export_statement_boundary_has_a_pinned_ssr_module"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/element-v-once-10875",
       "state": "active",
       "targets": ["ssr"],
