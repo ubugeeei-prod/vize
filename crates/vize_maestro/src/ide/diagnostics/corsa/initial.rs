@@ -14,7 +14,10 @@ use vize_canon::{
 
 use super::super::{
     DiagnosticService,
-    native::{has_blocking_parser_error, merge_complete_native, native_script_syntax},
+    native::{
+        CombinedDiagnostics, NativeFamily, combine, has_blocking_parser_error,
+        native_script_syntax, with_unavailable_hint,
+    },
 };
 use super::{
     collect::{CorsaDiagnostics, classify},
@@ -56,7 +59,7 @@ impl PreparedInitialApiDiagnostics {
     pub(crate) fn complete(
         &self,
         diagnostics: Vec<vize_canon::corsa_bridge::LspDiagnostic>,
-    ) -> Vec<Diagnostic> {
+    ) -> CombinedDiagnostics {
         let document = CorsaDocument {
             code: String::from(self.opened.code.as_str()),
             mapping: self.opened.mapping.clone(),
@@ -66,13 +69,13 @@ impl PreparedInitialApiDiagnostics {
             .into_iter()
             .filter_map(|diagnostic| finished_from_lsp(&document.code, diagnostic, 0))
             .collect();
-        let native = assemble_corsa_diagnostics(&self.content, &[document], finished);
-        merge_complete_native(
-            self.sync.clone(),
-            native,
-            self.native_script_syntax,
-            self.configuration.clone(),
-        )
+        let mut native = assemble_corsa_diagnostics(&self.content, &[document], finished);
+        native.extend(self.configuration.iter().cloned());
+        let native = NativeFamily {
+            diagnostics: native,
+            owns_script_syntax: true,
+        };
+        combine(self.sync.clone(), self.native_script_syntax, Some(native))
     }
 }
 
@@ -166,7 +169,7 @@ impl DiagnosticService {
         sync: Vec<Diagnostic>,
         bridge: Arc<CorsaBridge>,
         error: CorsaBridgeError,
-    ) -> Vec<Diagnostic> {
+    ) -> CombinedDiagnostics {
         let native_script_syntax = native_script_syntax(state, uri, &sync);
         // A timed-out read still owns its process and lease. Disclose missing
         // diagnostics without spawning a competing process while it drains.
@@ -179,27 +182,21 @@ impl DiagnosticService {
             drop(bridge);
             Self::collect_corsa_diagnostics_with_first_failure(state, uri, Some(failure)).await
         };
-        let mut diagnostics = match result {
-            CorsaDiagnostics::Complete(native) => merge_complete_native(
-                sync,
-                native,
-                native_script_syntax,
-                super::collect::configuration_disclosures(state),
-            ),
-            CorsaDiagnostics::Unavailable(hints) => {
-                let mut diagnostics = sync;
-                diagnostics.extend(hints);
-                diagnostics
+        let native = match result {
+            CorsaDiagnostics::Complete(mut native) => {
+                native.extend(super::collect::configuration_disclosures(state));
+                NativeFamily {
+                    diagnostics: native,
+                    owns_script_syntax: true,
+                }
             }
+            CorsaDiagnostics::Unavailable(hints) => NativeFamily {
+                diagnostics: hints,
+                owns_script_syntax: false,
+            },
         };
-        // Match collect_async_from_sync's existing unavailable diagnosis.
-        if !state.has_corsa_bridge()
-            && !diagnostics.iter().any(|diagnostic| {
-                diagnostic.source.as_deref() == Some(super::super::sources::TYPE_CHECKER)
-            })
-        {
-            diagnostics.push(super::super::service::typecheck_unavailable_hint());
-        }
-        diagnostics
+        let mut combined = combine(sync, native_script_syntax, Some(native));
+        with_unavailable_hint(state, &mut combined.diagnostics);
+        combined
     }
 }

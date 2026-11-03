@@ -115,6 +115,7 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/lsp-template-completion.test.ts",
   "tests/tooling/lsp-template-scope-hover-navigation.test.ts",
   "tests/tooling/lsp-type-definition-capability.test.ts",
+  "tests/tooling/lsp-type-diagnostic-retention.test.ts",
   "tests/tooling/lsp-typecheck-jsx-component.test.ts",
   "tests/tooling/lsp-typecheck-template.test.ts",
   "tests/tooling/lsp-untitled-lifecycle.test.ts",
