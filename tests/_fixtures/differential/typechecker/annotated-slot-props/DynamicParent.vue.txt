@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const name = 'other' as const
+</script>
+<template>
+  <Child>
+    <template #[name]="SLOT_EXPRESSION">{{ 1 }}</template>
+  </Child>
+</template>

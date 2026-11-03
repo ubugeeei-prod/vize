@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineSlots<{ default: (props: { n: number }) => any }>();
+</script>
+<template><div><slot :n="1" /></div></template>
