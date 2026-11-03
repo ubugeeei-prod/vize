@@ -30,6 +30,9 @@ in the archived phase-6 plans. Production compiler and editor work takes priorit
 
 ## Where to start
 
+Whether Davinci is complete is decided by the [completion gates](./completion-gates.md);
+run `node tools/commands/davinci/completion-gates.ts --issues` for the current state.
+
 The current numbered layers are L0–L4; see [layer names and compatibility](./layer-names.md) for package migration and retained wire identities.
 
 1. Read the [architecture](./architecture.md) for the L0–L4 stage model and the
@@ -124,6 +127,7 @@ Recorded 2026-08-13 after design review. Revisit requires a written entry in
 | [DevTool](./devtool.md)                 | The observability surface: stage ladder, pass timeline, provenance, fact browser, decision remarks, flame views                                                                                                                                                                               |
 | [Assurance](./assurance.md)             | The quality doctrine: impossibility by construction, input-space enumeration, the test tier ladder, strict oracles, mutation-tested tests                                                                                                                                                     |
 | [Roadmap](./roadmap.md)                 | Phases, exit gates, and risks                                                                                                                                                                                                                                                                 |
+| [Completion](./completion-gates.md)     | The checkable definition of "Davinci complete" and its dependency order                                                                                                                                                                                                                       |
 | [Prior Art](./prior-art.md)             | Practices imported from rustc/MIR/Polonius/salsa, LLVM/MLIR, React Compiler, MoonBit, Unison, Effekt; [the second half](./prior-art-toolchains.md) covers Swift (SwiftSyntax/SIL/macros), GHC (Core Lint/interface files), OCaml Flambda2, Lean 4, and recent PL research — with anti-lessons |
 | [Implementation Plan](./plan/README.md) | PR-granular task decomposition: phases 0–2 and 4–6 (4–6 re-cut early) in full detail with Steps, phase 3 provisional, the [test-suite registry](./plan/test-suites.md) (TS-1..53), and continuous workstreams                                                                                 |
 | [Open Questions](./open-questions.md)   | Active design discussions not yet decided                                                                                                                                                                                                                                                     |

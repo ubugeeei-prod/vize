@@ -1,0 +1,104 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+import {
+  evaluate,
+  gates,
+  type Repo,
+  scanCodenames,
+  workspaceMembers,
+} from "../../tools/commands/davinci/completion-gates.ts";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const doc = fs.readFileSync(path.join(root, "docs/davinci/completion-gates.md"), "utf8");
+
+const memory = (files: Record<string, string>): Repo => ({
+  paths: Object.keys(files),
+  read: (file) => files[file] ?? null,
+});
+
+void test("the document and the tool define the same gates in the same order", () => {
+  const rows = [...doc.matchAll(/^\| `([a-z]+\.[a-z0-9-]+)` +\|.*\| (measured|issue) +\|/gm)];
+  assert.deepEqual(
+    rows.map((row) => row[1]),
+    gates.map((gate) => gate.id),
+  );
+  for (const [, id, kind] of rows) {
+    const gate = gates.find((entry) => entry.id === id);
+    assert.equal(kind === "measured", gate?.measure !== undefined, id);
+  }
+});
+
+void test("every gate names an issue and the tier order never goes back", () => {
+  let tier = 0;
+  for (const gate of gates) {
+    assert.ok(gate.issues.length > 0, gate.id);
+    assert.ok(gate.tier >= tier, gate.id);
+    tier = gate.tier;
+  }
+});
+
+void test("codename scan counts paths, lines and serialized ids but not aliases or evidence", () => {
+  const report = scanCodenames(
+    memory({
+      "davinci/vize_l3/src/lib.rs":
+        "//! L3 - reactivity IR (codename: Impeto)\npub struct Folio;\n",
+      "crates/vize_curator/tests/spolvero_payload.rs": "fn main() {}\n",
+      "crates/vize/src/profile.rs": 'record("davinci.expr.parses"); bench("davinci.rs");\n',
+      "docs/davinci/plan/folio-format.md": "Folio and Impeto\n",
+      "CHANGELOG.md": "impeto\n",
+      "tests/_fixtures/run/cargo.jsonl": '{"impeto": 1}\n',
+      "tests/_fixtures/differential/compiler/case/observed-base.json": '"davinci.s3_vapor.x"\n',
+    }),
+  );
+  assert.equal(report.paths, 1);
+  assert.equal(report.lines, 1);
+  assert.equal(report.serialized, 1);
+  assert.deepEqual(report.byName, { spolvero: 1, folio: 1 });
+});
+
+void test("measured gates fail on a legacy edge and pass once it is gone", () => {
+  const cargo = (members: string[]) =>
+    `[workspace]\nmembers = [\n${members.map((m) => `  "${m}",`).join("\n")}\n]\n`;
+  const levels = gates
+    .find((gate) => gate.id === "levels.crates")
+    ?.measure?.(memory({ "Cargo.toml": cargo(["davinci/vize_l0", "davinci/vize_davinci"]) }));
+  assert.equal(levels?.pass, false);
+  assert.match(levels?.detail ?? "", /extra \[vize_davinci\]/);
+
+  const products = (entries: unknown[]) =>
+    gates
+      .find((gate) => gate.id === "products.dependencies")
+      ?.measure?.(
+        memory({
+          "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json": JSON.stringify({
+            entries,
+          }),
+        }),
+      );
+  assert.equal(products([{ from: "vize_glyph", to: "vize_atelier_sfc" }])?.pass, false);
+  assert.equal(products([])?.pass, true);
+});
+
+void test("issue gates are unknown offline and fail while an issue is open", () => {
+  const states = new Map<number, "OPEN" | "CLOSED">(
+    gates.flatMap((gate) => gate.issues).map((n) => [n, "CLOSED"]),
+  );
+  states.set(6858, "OPEN");
+  const issueGates = gates.filter((gate) => gate.measure === undefined);
+  const tsrx = (results: ReturnType<typeof evaluate>) =>
+    results.find((result) => result.id === "frameworks.tsrx");
+  assert.equal(tsrx(evaluate(memory({}), null, issueGates))?.status, "unknown");
+  const online = evaluate(memory({}), states, issueGates);
+  assert.equal(online.filter((result) => result.status === "pass").length, issueGates.length - 1);
+  assert.equal(tsrx(online)?.status, "fail");
+  assert.deepEqual(tsrx(online)?.openIssues, [6858]);
+});
+
+void test("workspace members are read from the real Cargo.toml", () => {
+  const members = workspaceMembers(fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"));
+  assert.ok(members.includes("davinci/vize_l0"));
+});
