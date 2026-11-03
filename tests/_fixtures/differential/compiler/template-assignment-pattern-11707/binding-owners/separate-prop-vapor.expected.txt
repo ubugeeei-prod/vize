@@ -1,0 +1,10 @@
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _component_Control = _resolveComponent("Control")
+  const n0 = _createComponentWithFallback(_component_Control, { onClick: () => ($event => (({ Child: $props.Child } = _ctx.value))) }, null, true)
+  return n0
+}
+const _sfc_main = { props: ['Child'], data: () => ({ value: {} }) }
+_sfc_main.__vapor = true
+_sfc_main.render = render
+export default _sfc_main

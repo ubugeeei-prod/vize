@@ -1,0 +1,12 @@
+const _sfc_main = { props: ['Child'], data: () => ({ value: {} }) }
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Control = _resolveComponent("Control")
+  
+  return (_openBlock(), _createBlock(_component_Control, {
+    onClick: $event => (({ Child: $props.Child } = $data.value))
+  }, null, 8 /* PROPS */, ["onClick"]))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main
