@@ -60,7 +60,7 @@ pub(crate) use generic_props_call::generate_slot_host_binding;
 pub(crate) use incomplete::isolate_incomplete_expression;
 pub(crate) use model_modifiers::ModelModifierBindings;
 pub(crate) use prop_sources::{
-    append_prop_value, generated_prop_span, generated_prop_value, prop_name_source_range,
+    PropSpan, append_prop_value, generated_prop_span, generated_prop_value, prop_name_source_range,
     prop_value_source_range,
 };
 pub(crate) use reserved_props::{
@@ -70,6 +70,7 @@ pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
 pub(crate) use ts_suppression_comments::{
-    callback_parameters_on_ignored_line, callback_parameters_on_ignored_line_with_ranges,
+    CallbackParameterRewrite, callback_parameters_on_ignored_line,
+    callback_parameters_on_ignored_line_with_ranges,
 };
 pub(crate) use value_checks::{TemplateValueCheckTables, TemplateValueChecks};

@@ -76,6 +76,10 @@ pub(super) fn generate_component_handler_scope(
                     event_inference_usages: ctx.event_inference_usages,
                     event_contracts: ctx.event_contracts,
                     indent,
+                    gated_inference: super::super::component_events::gates_inference(
+                        ctx.generic_component,
+                        ctx.legacy_vue2,
+                    ),
                 },
             )
         };

@@ -2,11 +2,13 @@
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
+mod emit_props_gate;
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
 mod listener_return;
 mod native_fallthrough;
+pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
@@ -57,6 +59,8 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) event_contracts: &'a std::cell::RefCell<FxHashMap<EventContractKey, u32>>,
     pub(super) indent: &'a str,
+    /// A props-independent emit-props call checks its literal against `any`.
+    pub(super) gated_inference: bool,
 }
 
 pub(super) fn generate_component_event_types(
@@ -83,6 +87,7 @@ pub(super) fn generate_component_event_types(
         event_inference_usages,
         event_contracts,
         indent,
+        gated_inference,
     } = ctx;
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
@@ -310,6 +315,7 @@ pub(super) fn generate_component_event_types(
             event_inference_usages,
             indent,
             hoist_shared_preamble,
+            gated_inference: gated_inference && explicit_generic.is_none(),
         },
     );
 
