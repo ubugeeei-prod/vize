@@ -6,28 +6,13 @@ title: "ecosystem/vue-router-extra-param"
 
 A rota não declara tab; o Vue Router o descarta.
 
-Severidade padrão: error  
-Aplicável a: Declarações alcançáveis do projeto e componentes importados  
-Opções: crossFile; severidade da regra (off/warn/error)  
-Correção automática: Nenhuma
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| error | Nenhuma | crossFile; severidade da regra (off/warn/error) |
+
+Aplicável a: Declarações alcançáveis do projeto e componentes importados
 
 O roteador completo instalado deve ser alcançável a partir de createApp(...).use(router) da aplicação. Tabelas de rotas desconhecidas ou dinâmicas não comprovam diagnósticos de nomes desconhecidos. Parâmetros ausentes geram avisos porque a navegação pode herdar um valor da rota atual.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-extra-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Arquivos compartilhados do projeto
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-extra-param": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Páginas relacionadas
 
 [Índice de verificações entre arquivos](../cross-file.md)

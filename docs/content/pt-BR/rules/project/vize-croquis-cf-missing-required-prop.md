@@ -6,10 +6,11 @@ title: "vize:croquis/cf/missing-required-prop"
 
 Uma prop obrigatória não é passada.
 
-Severidade padrão: error  
-Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo  
-Correção automática: Nenhuma; revise os arquivos relacionados e aplique a correção  
-Opções: Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| error | Nenhuma; revise os arquivos relacionados e aplique a correção | Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade |
+
+Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 O CrossFileAnalyzer experimental em Rust tem um produtor para este código. A etapa da CLI não emite este código individualmente; configurar seu ID não ativa essa etapa Rust. Estes cenários descrevem o grafo e os fatos suportados pelo analisador, e não uma promessa do Vite+.
 
@@ -76,7 +77,11 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+A CLI não emite este código atualmente, portanto não há uma configuração de regra da CLI para habilitá-lo aqui.
+
+## Páginas relacionadas
 
 [Explicação pública](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

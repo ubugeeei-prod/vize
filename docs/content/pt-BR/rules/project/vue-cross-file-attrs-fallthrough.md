@@ -6,26 +6,11 @@ title: "vue/cross-file-attrs-fallthrough"
 
 Um pai passa atributos para um filho resolvido cuja raiz não pode herdá-los e que não usa $attrs explicitamente.
 
-Severidade padrão: warning  
-Aplicável a: Declarações alcançáveis do projeto e componentes importados  
-Opções: crossFile; severidade da regra (off/warn/error)  
-Correção automática: Nenhuma
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| warning | Nenhuma | crossFile; severidade da regra (off/warn/error) |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Aplicável a: Declarações alcançáveis do projeto e componentes importados
 
 ## Arquivos compartilhados do projeto
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Páginas relacionadas
 
 [Índice de verificações entre arquivos](../cross-file.md)

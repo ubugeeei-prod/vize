@@ -6,26 +6,11 @@ title: "html/cross-component-nesting"
 
 Vérifier l’imbrication HTML réelle après la composition des composants importés.
 
-Gravité par défaut: warning  
-Champ d’application: Déclarations du projet accessibles et composants importés  
-Options: crossFile ; gravité de la règle (off/warn/error)  
-Correction automatique: Aucune
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| warning | Aucune | crossFile ; gravité de la règle (off/warn/error) |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "html/cross-component-nesting": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Champ d’application: Déclarations du projet accessibles et composants importés
 
 ## Fichiers communs du projet
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "html/cross-component-nesting": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Voir aussi
 
 [Index des règles inter-fichiers](../cross-file.md)

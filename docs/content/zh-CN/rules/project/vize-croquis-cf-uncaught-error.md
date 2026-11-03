@@ -6,26 +6,11 @@ title: "vize:croquis/cf/uncaught-error"
 
 组件可能抛错，却没有错误边界捕获。
 
-默认严重程度: info  
-适用范围: 已分析的组件图，以及下方说明的受支持事实  
-自动修复: 无；请检查相关文件并应用修复  
-选项: 无针对单个诊断代码的选项；受支持的 CLI 诊断可覆盖严重程度
+| 默认严重程度 | 自动修复 | 选项 |
+| --- | --- | --- |
+| info | 无；请检查相关文件并应用修复 | 无针对单个诊断代码的选项；受支持的 CLI 诊断可覆盖严重程度 |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/uncaught-error": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+适用范围: 已分析的组件图，以及下方说明的受支持事实
 
 当前诊断实现扫描 JSON.parse(input) 等模板表达式，不会报告仅存在于 script 块中的 throw 语句。
 
@@ -94,7 +79,25 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-正确示例的文件展示上述修改；完整项目仍可能适用其他诊断。
+## 配置（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/uncaught-error": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 相关页面
 
 [公开说明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

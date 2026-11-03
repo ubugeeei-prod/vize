@@ -6,26 +6,11 @@ title: "vize:croquis/cf/non-unique-id"
 
 Um id de elemento dentro de um laço não é único por item.
 
-Severidade padrão: error  
-Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo  
-Correção automática: Nenhuma; revise os arquivos relacionados e aplique a correção  
-Opções: Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| error | Nenhuma; revise os arquivos relacionados e aplique a correção | Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-unique-id": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 ## Arquivos compartilhados do projeto
 
@@ -80,7 +65,25 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 </template>
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/non-unique-id": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Páginas relacionadas
 
 [Explicação pública](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

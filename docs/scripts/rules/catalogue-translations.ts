@@ -63,6 +63,9 @@ export function localizeCatalogueReference(
         return line;
       if (line === "## Bad") return `## ${labels.bad}`;
       if (line === "## Good") return `## ${labels.good}`;
+      if (/^\|(?: --- \|)+$/.test(line)) return line;
+      if (line.startsWith("| ") && line.endsWith(" |"))
+        return `| ${line.slice(2, -2).split(" | ").map(value).join(" | ")} |`;
       const localized = prose.get(line) ?? common.get(line);
       if (localized) return localized;
       if (line.startsWith("## ")) return `## ${value(line.slice(3))}`;

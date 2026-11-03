@@ -6,26 +6,11 @@ title: "vue/cross-file-attrs-fallthrough"
 
 Un parent transmet des attributs à un enfant résolu dont la racine ne peut pas en hériter et qui n’utilise pas explicitement $attrs.
 
-Gravité par défaut: warning  
-Champ d’application: Déclarations du projet accessibles et composants importés  
-Options: crossFile ; gravité de la règle (off/warn/error)  
-Correction automatique: Aucune
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| warning | Aucune | crossFile ; gravité de la règle (off/warn/error) |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Champ d’application: Déclarations du projet accessibles et composants importés
 
 ## Fichiers communs du projet
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Voir aussi
 
 [Index des règles inter-fichiers](../cross-file.md)

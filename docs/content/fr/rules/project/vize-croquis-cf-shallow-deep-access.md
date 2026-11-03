@@ -6,10 +6,11 @@ title: "vize:croquis/cf/shallow-deep-access"
 
 Une propriété profonde d’une valeur `shallowReactive` ou `shallowRef` est lue comme si elle était suivie.
 
-Gravité par défaut: Non émis  
-Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous  
-Correction automatique: Aucune ; examinez les fichiers concernés et appliquez la correction  
-Options: Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| Non émis | Aucune ; examinez les fichiers concernés et appliquez la correction | Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité |
+
+Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
 
 Il s’agit d’un contrat de diagnostic publié sans producteur actuel. Le scénario Mauvais/Bon ci-dessous explique le risque et la correction ; aucune option ne permet actuellement de déclencher ce code.
 
@@ -73,7 +74,11 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+Le CLI n’émet pas ce code actuellement ; aucune configuration de règle du CLI ne permet donc de l’activer ici.
+
+## Voir aussi
 
 [Explication publique](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

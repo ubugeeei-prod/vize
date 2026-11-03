@@ -44,6 +44,13 @@ const common = {
     "Consultez les [options typées et leurs valeurs par défaut](../options.md).",
   ],
   "Configuration (Vite+)": ["配置（Vite+）", "Configuração (Vite+)", "Configuration (Vite+)"],
+  Related: ["相关页面", "Páginas relacionadas", "Voir aussi"],
+  "This code is not currently emitted by the CLI, so there is no CLI rule configuration to enable here.":
+    [
+      "CLI 当前不会输出这个诊断代码，因此这里没有可启用它的 CLI 规则配置。",
+      "A CLI não emite este código atualmente, portanto não há uma configuração de regra da CLI para habilitá-lo aqui.",
+      "Le CLI n’émet pas ce code actuellement ; aucune configuration de règle du CLI ne permet donc de l’activer ici.",
+    ],
   "Configured ID (currently no SFC finding)": [
     "可配置的 ID（当前没有 SFC 诊断）",
     "ID configurado (sem diagnóstico de SFC atualmente)",

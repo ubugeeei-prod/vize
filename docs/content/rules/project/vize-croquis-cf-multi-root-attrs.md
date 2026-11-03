@@ -6,10 +6,11 @@ title: "vize:croquis/cf/multi-root-attrs"
 
 A multi-root component receives attributes and has nowhere to put them.
 
-Default severity: warning  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| warning | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
+
+Applies to: Analyzed component graph and the supported facts described below
 
 The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
 
@@ -70,7 +71,11 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+This code is not currently emitted by the CLI, so there is no CLI rule configuration to enable here.
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

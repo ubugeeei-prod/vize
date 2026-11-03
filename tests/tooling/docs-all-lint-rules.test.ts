@@ -61,6 +61,21 @@ const facts: Record<(typeof locales)[number], string> = {
   "pt-BR": "| Severidade padrão | Predefinições | Correção automática | Opções |",
   fr: "| Gravité par défaut | Préréglages | Correction automatique | Options |",
 };
+const projectLayout: Record<(typeof locales)[number], readonly [string, string, string]> = {
+  en: ["| Default severity | Automatic fix | Options |", "Configuration (Vite+)", "Related"],
+  ja: ["| 既定の重大度 | 自動修正 | オプション |", "設定（Vite+）", "関連ページ"],
+  "zh-CN": ["| 默认严重程度 | 自动修复 | 选项 |", "配置（Vite+）", "相关页面"],
+  "pt-BR": [
+    "| Severidade padrão | Correção automática | Opções |",
+    "Configuração (Vite+)",
+    "Páginas relacionadas",
+  ],
+  fr: [
+    "| Gravité par défaut | Correction automatique | Options |",
+    "Configuration (Vite+)",
+    "Voir aussi",
+  ],
+};
 
 await test("every implemented rule has one readable page per locale with the executed examples inline", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
@@ -227,6 +242,19 @@ await test("project references retain every code and distinguish actual CLI prod
     for (const [, id, file] of rows) {
       const page = read(`docs/content/${prefix(locale)}rules/project/${file}.md`);
       assert.ok(page.includes(`# \`${id}\``), id);
+      const [metadata, configuration, related] = projectLayout[locale];
+      let previous = -1;
+      for (const section of [
+        metadata,
+        `## ${ruleHeadings[locale].bad}`,
+        `## ${ruleHeadings[locale].good}`,
+        `## ${configuration}`,
+        `## ${related}`,
+      ]) {
+        const position = page.indexOf(section);
+        assert.ok(position > previous, `${locale} ${id}: readable section order at ${section}`);
+        previous = position;
+      }
       for (const heading of [ruleHeadings[locale].bad, ruleHeadings[locale].good])
         assert.match(
           page.split(`## ${heading}\n`)[1],

@@ -6,28 +6,13 @@ title: "ecosystem/vue-router-missing-param"
 
 Required postId is missing; relying on the current route is fragile.
 
-Default severity: warning  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| warning | None | crossFile; rule severity (off/warn/error) |
+
+Applies to: Reachable project declarations and imported components
 
 The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-missing-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Shared project files
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-missing-param": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Cross-file index](../cross-file.md)

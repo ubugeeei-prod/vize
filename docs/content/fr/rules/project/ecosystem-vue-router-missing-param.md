@@ -6,28 +6,13 @@ title: "ecosystem/vue-router-missing-param"
 
 Le paramètre obligatoire postId manque ; dépendre de la route actuelle est fragile.
 
-Gravité par défaut: warning  
-Champ d’application: Déclarations du projet accessibles et composants importés  
-Options: crossFile ; gravité de la règle (off/warn/error)  
-Correction automatique: Aucune
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| warning | Aucune | crossFile ; gravité de la règle (off/warn/error) |
+
+Champ d’application: Déclarations du projet accessibles et composants importés
 
 Le routeur installé complet doit être accessible depuis createApp(...).use(router) dans l’application. Des tables de routes inconnues ou dynamiques ne prouvent pas les diagnostics de noms inconnus. Les paramètres manquants sont des avertissements, car la navigation peut hériter d’une valeur de la route actuelle.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-missing-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Fichiers communs du projet
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-missing-param": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Voir aussi
 
 [Index des règles inter-fichiers](../cross-file.md)
