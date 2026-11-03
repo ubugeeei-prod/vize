@@ -46,7 +46,7 @@ fn reserved_props_in_substitutions_keep_original_acceptance_and_authored_errors(
                     "{}",
                     output_text(&output)
                 );
-                assert_eq!(output.stderr, [], "{}", output_text(&output));
+                assert_eq!(output.stderr.as_slice(), b"", "{}", output_text(&output));
                 assert_eq!(
                     std::str::from_utf8(&output.stdout)
                         .unwrap()
