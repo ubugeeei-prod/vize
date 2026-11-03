@@ -1,0 +1,359 @@
+name: Lint Format Benchmark
+
+# Lint and format CLI measurements on the README runner class: the README
+# commands, 1T and max apart, with wall, CPU-seconds of the process tree,
+# perf task clock, peak RSS and valgrind instruction counts.
+# history: published release binaries ([history]).
+# compare: the pushed commit against its merge base with main (or
+# LINTFMT_BENCH_BASE), both built from source in the release profile; fails
+# when lint diagnostics or formatted bytes differ.
+# profile: frame-pointer perf profiles of source builds ([profile]).
+# verify: tests and clippy of LINTFMT_BENCH_VERIFY crates.
+
+on:
+  push:
+    branches: ["bench/lintfmt/**"]
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: Published vize versions (space-separated)
+        required: false
+        default: ""
+
+concurrency:
+  group: lintfmt-bench-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  LINTFMT_BENCH_FILES: "3000"
+  LINTFMT_BENCH_VERSIONS: ${{ inputs.versions || '0.424.10 0.425.1 0.426.3 0.427.0 0.428.1 0.429.2 0.430.1 0.431.0 0.432.0 0.433.0 0.434.0 0.435.0 0.439.0 0.440.0 0.441.0 0.442.0 0.443.0 0.457.0 0.458.0 0.463.0 0.467.0 0.471.0 0.474.0 0.667.0' }}
+  # Versions whose 1T instructions are counted.
+  LINTFMT_BENCH_INSTRUCTION_VERSIONS: "0.424.10 0.441.0 0.474.0 0.667.0"
+  # Config setups for the history sweep (vite, json, none).
+  LINTFMT_BENCH_SETUPS: "json,none"
+  # Source refs the profile job builds; empty means the merge base and HEAD.
+  LINTFMT_BENCH_PROFILE_REFS: "v0.428.1 HEAD"
+  # Extra lint arguments and the tasks the profile job records.
+  LINTFMT_BENCH_PROFILE_LINT_ARGS: "--no-config --preset ecosystem"
+  LINTFMT_BENCH_PROFILE_TASKS: "lint"
+  LINTFMT_BENCH_BASE: ""
+  LINTFMT_BENCH_VERIFY: "-p vize_croquis"
+
+jobs:
+  history:
+    name: history
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[history]') }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install perf and valgrind
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic valgrind time
+          sudo sysctl -w kernel.perf_event_paranoid=-1
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then echo "PERF_BIN=$candidate" >> "$GITHUB_ENV"; break; fi
+          done
+
+      - name: Generate benchmark corpus
+        run: node tools/benchmarks/scripts/generate.mjs "$LINTFMT_BENCH_FILES"
+
+      - name: Fetch published CLIs
+        run: |
+          set -euo pipefail
+          for v in $LINTFMT_BENCH_VERSIONS; do
+            dir="$RUNNER_TEMP/cli/$v"
+            mkdir -p "$dir"
+            curl -fsSL "https://github.com/${{ github.repository }}/releases/download/v$v/vize-x86_64-unknown-linux-gnu.tar.gz" | tar -xz -C "$dir"
+            "$dir/vize" --version
+          done
+
+      - name: Measure
+        run: |
+          set -euo pipefail
+          args=()
+          for v in $LINTFMT_BENCH_VERSIONS; do args+=(--bin "$v=$RUNNER_TEMP/cli/$v/vize"); done
+          node tools/benchmarks/scripts/lintfmt-history.ts \
+            --corpus tools/benchmarks/scripts/__in__ --work target/lintfmt-bench \
+            "${args[@]}" --setups "$LINTFMT_BENCH_SETUPS" --perf "$PERF_BIN" --runs 3 --warmups 1 --rounds 2 \
+            --out lintfmt-history.md --json lintfmt-history.json
+          cat lintfmt-history.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Count instructions
+        run: |
+          set -euo pipefail
+          args=()
+          for v in $LINTFMT_BENCH_INSTRUCTION_VERSIONS; do args+=(--bin "$v=$RUNNER_TEMP/cli/$v/vize"); done
+          node tools/benchmarks/scripts/lintfmt-history.ts \
+            --corpus tools/benchmarks/scripts/__in__ --work target/lintfmt-bench \
+            "${args[@]}" --setups none --valgrind --threads 1t --runs 1 --warmups 0 --rounds 1 \
+            --out lintfmt-instructions.md --json lintfmt-instructions.json
+          cat lintfmt-instructions.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: lintfmt-bench-history
+          path: |
+            lintfmt-history.md
+            lintfmt-history.json
+            lintfmt-instructions.md
+            lintfmt-instructions.json
+          retention-days: 30
+
+  compare:
+    name: compare
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip compare]') }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 50
+
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install perf and valgrind
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic valgrind time
+          sudo sysctl -w kernel.perf_event_paranoid=-1
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then echo "PERF_BIN=$candidate" >> "$GITHUB_ENV"; break; fi
+          done
+
+      - name: Check out the base
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=50 origin main
+          base=$(git merge-base HEAD FETCH_HEAD)
+          if [[ -n "${LINTFMT_BENCH_BASE:-}" ]]; then
+            git fetch --no-tags --depth=1 origin "$LINTFMT_BENCH_BASE"
+            base=$(git rev-parse FETCH_HEAD)
+          fi
+          echo "BASE_SHA=$base" >> "$GITHUB_ENV"
+          git worktree add --detach "$RUNNER_TEMP/base" "$base"
+
+      # Separate target dirs: two checkouts sharing one overwrite each other.
+      - name: Build base and head CLIs
+        run: |
+          set -euo pipefail
+          for side in base head; do
+            dir=$PWD
+            if [[ $side == base ]]; then dir=$RUNNER_TEMP/base; fi
+            (cd "$dir" && CARGO_TARGET_DIR="$RUNNER_TEMP/target-$side" cargo build --release -p vize)
+            cp "$RUNNER_TEMP/target-$side/release/vize" "$RUNNER_TEMP/$side-vize"
+            rm -rf "$RUNNER_TEMP/target-$side"
+          done
+
+      - name: Generate benchmark corpus
+        run: node tools/benchmarks/scripts/generate.mjs "$LINTFMT_BENCH_FILES"
+
+      - name: Measure base against head
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/lintfmt-history.ts \
+            --corpus tools/benchmarks/scripts/__in__ --work target/lintfmt-bench --setups vite,none \
+            --bin "base-${BASE_SHA::10}=$RUNNER_TEMP/base-vize" --bin "head-${GITHUB_SHA::10}=$RUNNER_TEMP/head-vize" \
+            --perf "$PERF_BIN" --valgrind --runs 5 --warmups 1 --rounds 4 \
+            --out lintfmt-compare.md --json lintfmt-compare.json
+          cat lintfmt-compare.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Require identical output
+        run: |
+          node -e '
+            const { rows } = JSON.parse(require("fs").readFileSync("lintfmt-compare.json", "utf8"));
+            let ok = true;
+            for (const key of new Set(rows.map((row) => `${row.task} ${row.setup}`))) {
+              const hashes = new Set(rows.filter((row) => `${row.task} ${row.setup}` === key).map((row) => row.identity.outputSha256));
+              if (hashes.size !== 1) { ok = false; console.error(`${key}: output differs between base and head`); }
+            }
+            if (!ok) process.exit(1);
+          '
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: lintfmt-bench-compare
+          path: |
+            lintfmt-compare.md
+            lintfmt-compare.json
+          retention-days: 30
+
+  profile:
+    name: profile
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[profile]') }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 50
+
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install perf
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic time
+          sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then echo "PERF_BIN=$candidate" >> "$GITHUB_ENV"; break; fi
+          done
+
+      # Shipped release profile plus line tables, symbols and frame pointers.
+      - name: Build symbolized CLIs
+        run: |
+          set -euo pipefail
+          refs="${LINTFMT_BENCH_PROFILE_REFS:-}"
+          if [[ -z "$refs" ]]; then
+            git fetch --no-tags --depth=50 origin main
+            refs="$(git merge-base HEAD FETCH_HEAD) HEAD"
+          fi
+          export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
+          export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+          mkdir -p "$RUNNER_TEMP/bins"
+          labels=()
+          for ref in $refs; do
+            git fetch --no-tags --depth=1 origin "$ref" 2>/dev/null || true
+            sha=$(git rev-parse --verify "$ref^{commit}" 2>/dev/null || git rev-parse FETCH_HEAD)
+            label="${ref//\//-}-${sha::10}"
+            git worktree add --detach "$RUNNER_TEMP/src-$label" "$sha"
+            (cd "$RUNNER_TEMP/src-$label" && CARGO_TARGET_DIR="$RUNNER_TEMP/target-$label" \
+              cargo build --release -p vize --config 'profile.release.package.vize.strip="none"')
+            cp "$RUNNER_TEMP/target-$label/release/vize" "$RUNNER_TEMP/bins/$label"
+            rm -rf "$RUNNER_TEMP/target-$label"
+            labels+=("$label")
+          done
+          echo "PROFILE_LABELS=${labels[*]}" >> "$GITHUB_ENV"
+
+      - name: Generate benchmark corpus
+        run: node tools/benchmarks/scripts/generate.mjs "$LINTFMT_BENCH_FILES"
+
+      - name: Profile
+        run: |
+          set -euo pipefail
+          mkdir -p profiles
+          corpus="$PWD/tools/benchmarks/scripts/__in__"
+          data="$RUNNER_TEMP/perf.data"
+          for label in $PROFILE_LABELS; do
+            bin="$RUNNER_TEMP/bins/$label"
+            # shellcheck disable=SC2086
+            (cd "$corpus" && "$bin" lint . --quiet --profile $LINTFMT_BENCH_PROFILE_LINT_ARGS) > "profiles/$label.lint-phases.txt" 2>&1 || true
+            for task in $LINTFMT_BENCH_PROFILE_TASKS; do
+              for threads in 1t max; do
+                out="$PWD/profiles/$label.$task.$threads"
+                if [[ $task == lint ]]; then
+                  # shellcheck disable=SC2206
+                  cwd="$corpus"; cmd=("$bin" lint . --quiet $LINTFMT_BENCH_PROFILE_LINT_ARGS)
+                else
+                  cwd="$RUNNER_TEMP/fmt-$label-$threads"; rm -rf "$cwd"; mkdir -p "$cwd"
+                  cp "$corpus"/*.vue "$corpus/vite.config.mjs" "$cwd/"
+                  cmd=("$bin" fmt --write '*.vue')
+                fi
+                threads_env=$([[ $threads == 1t ]] && echo 1 || echo "")
+                (cd "$cwd" && RAYON_NUM_THREADS="$threads_env" "$PERF_BIN" record -F 4999 --call-graph fp -o "$data" -- "${cmd[@]}" > /dev/null 2>&1) || true
+                "$PERF_BIN" report -i "$data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 2> /dev/null | head -250 > "$out.self.txt"
+                "$PERF_BIN" report -i "$data" --children --sort symbol --stdio -g none --percent-limit 0.5 2> /dev/null | head -300 > "$out.children.txt"
+                "$PERF_BIN" script -i "$data" 2> /dev/null | gzip > "$out.perf-script.txt.gz"
+                rm -f "$data"
+                for f in self children; do echo "::group::$label $task $threads $f"; head -80 "$out.$f.txt"; echo "::endgroup::"; done
+              done
+            done
+          done
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: lintfmt-bench-profile
+          path: profiles/
+          retention-days: 30
+
+  verify:
+    name: verify
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip verify]') }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lintfmt-bench-verify
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install Pkl
+        run: npm install --global @pkl-community/pkl@0.27.2
+
+      - name: Clippy
+        run: cargo clippy $LINTFMT_BENCH_VERIFY -- -D warnings -D clippy::wildcard_imports
+
+      - name: Test
+        run: cargo test --no-fail-fast $LINTFMT_BENCH_VERIFY
