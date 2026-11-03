@@ -13270,6 +13270,40 @@
       }
     },
     {
+      "id": "typechecker/regression/unmapped-ignores-entry-points-11472",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "unmapped-ignores-entry-points-11472/App.vue.txt",
+          "sha256": "670f1f3d9551b97d61ecdb10591a5850e1d3a11922e70e1abc4ac901571a9c18",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "unmapped-ignores-entry-points-11472/Unclosed.vue.txt",
+          "sha256": "5654bbda3f4659a2e8b7293e69f2e477dba5a507e994041303aae355b06068e7",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::directive_tests::disjoint::every_entry_point_ignores_unmapped_scaffolding; #11472 napi generateVueLanguageCode and the CLI mapper return the same directive table, unmapped ignores included, for a mapped SFC and the invalid-SFC fallback. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/vendored-vue-declaration-11496",
       "state": "active",
       "targets": [

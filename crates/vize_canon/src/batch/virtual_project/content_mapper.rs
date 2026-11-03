@@ -74,6 +74,7 @@ fn transform_with_router_context(
     typed_router: Option<super::typed_router::Config<'_>>,
     type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
 ) -> CorsaResult<ContentMapperTransform> {
+    // Every public entry point lands here, so each gets the complete table.
     vize_l0::profile!(
         "canon.content_mapper.transform",
         transform_with_shared_sources(
@@ -84,9 +85,12 @@ fn transform_with_router_context(
             Some(Default::default()),
             type_sources,
         )
+        .map(ContentMapperTransform::with_unmapped_ignores)
     )
 }
 
+/// The explicit directive table, before unmapped ignores, so tests can
+/// compare ownership echoes and expectations alone.
 #[cfg(test)]
 fn transform_with_diagnostic_ownership(
     path: &Path,

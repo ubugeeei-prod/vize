@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
-import { publicInstanceReference } from "./public-instance-reference.js";
+import { currentVolarReference } from "./public-instance-reference.js";
 import {
   directory,
   workspace,
@@ -359,17 +359,11 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     const errors = query("feature-boundary-diagnostics", { file }, () =>
       e.languageService.getSemanticDiagnostics(file),
     );
-    assert.equal(
-      errors.filter((diagnostic) => diagnostic.code === 2322).length,
-      2,
-      "both the wrong prop and wrong event parameter survive; native prop echo stays suppressed",
-    );
-    assert(
-      errors.some((diagnostic) =>
-        ts
-          .flattenDiagnosticMessageText(diagnostic.messageText, "\n")
-          .includes("Types of parameters 'value'"),
-      ),
+    // As vue-tsc and the CLI mapper: one error, at the wrong prop. The listener
+    // check starts in unmapped scaffolding, which Canon ignores (#11472).
+    assert.deepEqual(
+      errors.map((diagnostic) => [diagnostic.code, diagnostic.start, diagnostic.length]),
+      [[2322, eventParent.indexOf("foo-bar"), "foo-bar".length]],
     );
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
@@ -514,5 +508,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(packets, publicInstanceReference(expected));
+  assert.deepEqual(packets, currentVolarReference(expected));
 });

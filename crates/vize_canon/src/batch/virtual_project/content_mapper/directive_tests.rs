@@ -8,7 +8,20 @@ mod directive_exact;
 mod disjoint;
 mod inference_copies;
 
+/// Explicit directives only; `disjoint.rs` covers the unmapped ignores.
 fn transform(source: &str) -> super::ContentMapperTransform {
+    super::transform_with_diagnostic_ownership(
+        Path::new("/project/App.vue"),
+        source,
+        super::ContentMapperTransformOptions::default(),
+        None,
+        Some(Default::default()),
+    )
+    .unwrap()
+}
+
+/// The complete table every public entry point returns.
+fn published(source: &str) -> super::ContentMapperTransform {
     generate_vue_content_mapper_transform(Path::new("/project/App.vue"), source).unwrap()
 }
 

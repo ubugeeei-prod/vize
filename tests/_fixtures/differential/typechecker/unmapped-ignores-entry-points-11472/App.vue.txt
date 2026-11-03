@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const n: number = 1
+</script>
+<template>
+  <p>{{ n }}</p>
+</template>
