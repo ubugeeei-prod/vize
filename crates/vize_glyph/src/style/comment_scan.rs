@@ -1,58 +1,3 @@
-pub(super) fn has_nested_comment(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    let mut depth: u32 = 0;
-    let mut in_string: Option<u8> = None;
-    let mut i = 0usize;
-
-    while let Some(&c) = bytes.get(i) {
-        if let Some(quote) = in_string {
-            if let Some(next) = consume_css_escape(bytes, i) {
-                i = next;
-                continue;
-            }
-            if c == quote {
-                in_string = None;
-            }
-            i += 1;
-            continue;
-        }
-
-        if let Some(next) = consume_css_escape(bytes, i) {
-            i = next;
-            continue;
-        }
-
-        if let Some(next) = consume_unquoted_url(bytes, i) {
-            i = next;
-            continue;
-        }
-
-        match c {
-            b'"' | b'\'' => {
-                in_string = Some(c);
-                i += 1;
-            }
-            b'{' => {
-                depth = depth.saturating_add(1);
-                i += 1;
-            }
-            b'}' => {
-                depth = depth.saturating_sub(1);
-                i += 1;
-            }
-            b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                if depth > 0 {
-                    return true;
-                }
-                i = find_comment_end(bytes, i + 2);
-            }
-            _ => i += 1,
-        }
-    }
-
-    false
-}
-
 #[derive(Clone, Copy)]
 pub(super) enum SegmentKind {
     Code,
@@ -64,13 +9,17 @@ pub(super) struct CssSegment<'a> {
     pub(super) content: &'a str,
 }
 
-/// Split CSS source into alternating code and top-level comment segments.
-pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
+/// Detach comments only between complete rules. An embedded comment keeps the
+/// stylesheet authored, since the CSS printer would otherwise discard it.
+pub(super) fn split_standalone_comments(source: &str) -> Option<Vec<CssSegment<'_>>> {
     let bytes = source.as_bytes();
-    let mut segments: Vec<CssSegment<'_>> = Vec::new();
+    let mut segments = Vec::new();
+    let mut last_split = 0;
     let mut depth: u32 = 0;
+    let mut parens = 0u32;
+    let mut brackets = 0u32;
+    let mut rule_started = false;
     let mut in_string: Option<u8> = None;
-    let mut last_split = 0usize;
     let mut i = 0usize;
 
     while let Some(&c) = bytes.get(i) {
@@ -87,17 +36,20 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
         }
 
         if let Some(next) = consume_css_escape(bytes, i) {
+            rule_started = true;
             i = next;
             continue;
         }
 
         if let Some(next) = consume_unquoted_url(bytes, i) {
+            rule_started = true;
             i = next;
             continue;
         }
 
         match c {
             b'"' | b'\'' => {
+                rule_started = true;
                 in_string = Some(c);
                 i += 1;
             }
@@ -107,26 +59,55 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
             }
             b'}' => {
                 depth = depth.saturating_sub(1);
+                if depth == 0 && parens == 0 && brackets == 0 {
+                    rule_started = false;
+                }
+                i += 1;
+            }
+            b'(' => {
+                parens += 1;
+                rule_started = true;
+                i += 1;
+            }
+            b')' => {
+                parens = parens.saturating_sub(1);
+                i += 1;
+            }
+            b'[' => {
+                brackets += 1;
+                rule_started = true;
+                i += 1;
+            }
+            b']' => {
+                brackets = brackets.saturating_sub(1);
+                i += 1;
+            }
+            b';' if depth == 0 && parens == 0 && brackets == 0 => {
+                rule_started = false;
                 i += 1;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                let comment_end = find_comment_end(bytes, i + 2);
-                if depth == 0 {
-                    if i > last_split {
-                        segments.push(CssSegment {
-                            kind: SegmentKind::Code,
-                            content: source.get(last_split..i).unwrap_or_default(),
-                        });
-                    }
-                    segments.push(CssSegment {
-                        kind: SegmentKind::Comment,
-                        content: source.get(i..comment_end).unwrap_or_default(),
-                    });
-                    last_split = comment_end;
+                if depth > 0 || rule_started {
+                    return None;
                 }
+                let comment_end = find_comment_end(bytes, i + 2);
+                if i > last_split {
+                    segments.push(CssSegment {
+                        kind: SegmentKind::Code,
+                        content: source.get(last_split..i).unwrap_or_default(),
+                    });
+                }
+                segments.push(CssSegment {
+                    kind: SegmentKind::Comment,
+                    content: source.get(i..comment_end).unwrap_or_default(),
+                });
+                last_split = comment_end;
                 i = comment_end;
             }
-            _ => i += 1,
+            _ => {
+                rule_started |= !is_css_whitespace(c);
+                i += 1;
+            }
         }
     }
 
@@ -136,8 +117,7 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
             content: source.get(last_split..).unwrap_or_default(),
         });
     }
-
-    segments
+    Some(segments)
 }
 
 pub(super) fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
@@ -239,25 +219,50 @@ pub(super) fn find_comment_end(bytes: &[u8], from: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{SegmentKind, has_nested_comment, split_top_level_comments};
+    use super::{SegmentKind, split_standalone_comments};
+
+    #[test]
+    fn comments_split_only_at_complete_rule_boundaries() {
+        for source in [
+            ".a/* selector */.b {}",
+            "@media /* query */ (width > 1px) {}",
+            "@import /* import */ url(theme.css);",
+            "@custom fn(a; /* value */ b);",
+            "@custom [a; /* value */ b];",
+            ".a { /* declaration */ color: red; }",
+        ] {
+            assert!(split_standalone_comments(source).is_none(), "{source}");
+        }
+        for source in [
+            "/* before */ .a {}",
+            ".a {} /* between */ .b {}",
+            "@import url(theme.css); /* after */",
+            "@custom fn(a; b); /* after */",
+            "@custom [a; b]; /* after */",
+        ] {
+            assert_eq!(top_level_comment_count(source), 1, "{source}");
+        }
+    }
 
     #[test]
     fn css_escapes_do_not_affect_comment_depth() {
         let escaped_simple = ".escaped\\{name { color: red; }\n/* top-level */";
         let escaped_hex = ".escaped\\00007b name { color: red; }\n/* top-level */";
         let escaped_hex_newline = ".escaped\\00007b\nname { color: red; }\n/* top-level */";
-        let escaped_close = ".rule { color: \\}; /* nested */ }\n/* top-level */";
+        let escaped_close = ".rule { color: \\}; }\n/* top-level */";
+        let nested_escaped_close = ".rule { color: \\}; /* nested */ }\n/* top-level */";
         let declaration_url = ".asset { background: url(https://example.test/a/*/icon.svg); }";
         let import_url = "@import url(https://example.test/a/*/reset.css);\n/* top-level */";
         let unescaped = ".unescaped { color: red; /* nested */ }";
 
-        assert!(!has_nested_comment(escaped_simple));
-        assert!(!has_nested_comment(escaped_hex));
-        assert!(!has_nested_comment(escaped_hex_newline));
-        assert!(has_nested_comment(escaped_close));
-        assert!(!has_nested_comment(declaration_url));
-        assert!(!has_nested_comment(import_url));
-        assert!(has_nested_comment(unescaped));
+        assert!(split_standalone_comments(escaped_simple).is_some());
+        assert!(split_standalone_comments(escaped_hex).is_some());
+        assert!(split_standalone_comments(escaped_hex_newline).is_some());
+        assert!(split_standalone_comments(escaped_close).is_some());
+        assert!(split_standalone_comments(nested_escaped_close).is_none());
+        assert!(split_standalone_comments(declaration_url).is_some());
+        assert!(split_standalone_comments(import_url).is_some());
+        assert!(split_standalone_comments(unescaped).is_none());
 
         assert_eq!(top_level_comment_count(escaped_hex), 1);
         assert_eq!(top_level_comment_count(escaped_hex_newline), 1);
@@ -266,7 +271,8 @@ mod tests {
     }
 
     fn top_level_comment_count(source: &str) -> usize {
-        split_top_level_comments(source)
+        split_standalone_comments(source)
+            .expect("only standalone comments")
             .iter()
             .filter(|segment| matches!(segment.kind, SegmentKind::Comment))
             .count()
