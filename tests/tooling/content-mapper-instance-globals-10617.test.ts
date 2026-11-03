@@ -65,7 +65,14 @@ test("10617 retains the original reported files, exact beta host and closed fram
       golden.packets[0].result,
       golden.packets.find((row) => row.label === "lf/loop-shadow")!.result,
     );
-    const directivePacket = golden.packets.find((row) => "diagnosticDirectives" in row.result)!;
+    const directivePacket = golden.packets.find(
+      (row) =>
+        (
+          row.result.diagnosticDirectives as
+            | { unusedExpectDirectiveDiagnostics: unknown[] }
+            | undefined
+        )?.unusedExpectDirectiveDiagnostics.length,
+    )!;
     fullPacketMutations(directivePacket.result, golden.packets[0].result);
     const response = { id: 3, jsonrpc: "2.0", result: golden.packets[0].result };
     assertTransformEnvelope(response, 3);

@@ -416,3 +416,76 @@ test("the observed comment-offset population preserves whole results and failed 
   assert.deepEqual(observed, changed);
   assert.equal(provenance.wholeComparison.unchangedWholePackets, 78);
 });
+
+test("the unmapped-ignore population changes only directive tables", () => {
+  const { authority, files, cases } = readGlobalsFixture();
+  const golden = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-03836b7ea580.json" },
+    files,
+    cases,
+  )!;
+  const previous = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-d0f4e1da7022.json" },
+    files,
+    cases,
+  )!;
+  const provenance = JSON.parse(files.get(golden.provenance as string)!);
+  assert.equal(provenance.source.sourceRevision, "03836b7ea580fedea8c01952992967326fc6d01b");
+  assert.equal(provenance.sourceLaunch.receipt.sourceRevision, provenance.source.sourceRevision);
+  assert.equal(provenance.sourceLaunch.receipt.binarySha256, provenance.source.binarySha256);
+  assert.equal(provenance.actualQualification.status, "unqualified");
+  assert.equal(provenance.actualQualification.fullPacketQualification, false);
+  assert.deepEqual(provenance.actualQualification.outcomes, provenance.actualOutcomes);
+  const outcomes = provenance.actualOutcomes as Array<{ id: string; outcome: string }>;
+  assert.equal(outcomes.length, 398);
+  assert.deepEqual(
+    outcomes.filter((row) => row.outcome !== "pass").map((row) => row.id),
+    golden.packets.map((packet) => `whole-packet/${packet.label}`),
+  );
+  assert.equal(provenance.wholeComparison.unchangedWholePackets, 0);
+  type Row = [number, number, number, number, number, number];
+  for (const [index, packet] of golden.packets.entries()) {
+    const old = previous.packets[index]!.result;
+    const { diagnosticDirectives: current, ...rest } = packet.result as {
+      diagnosticDirectives: { directives: Row[] };
+    } & Record<string, unknown>;
+    const { diagnosticDirectives: before, ...oldRest } = old as {
+      diagnosticDirectives?: { directives: Row[] };
+    } & Record<string, unknown>;
+    assert.equal(JSON.stringify(rest), JSON.stringify(oldRest), packet.label);
+    const explicit = before?.directives ?? [];
+    const added = current.directives.filter(
+      (row) => !explicit.some((old) => JSON.stringify(old) === JSON.stringify(row)),
+    );
+    assert.equal(current.directives.length, explicit.length + added.length, packet.label);
+    // Expected ignores: unmapped gaps of the virtual text minus explicit intervals.
+    const mapped = (packet.result.mappings as number[][])
+      .filter((mapping) => mapping[1]! > 0)
+      .map((mapping) => [mapping[0]!, mapping[0]! + mapping[1]!] as const)
+      .sort((left, right) => left[0] - right[0]);
+    const gaps: Array<[number, number]> = [];
+    let cursor = 0;
+    for (const [start, end] of mapped) {
+      if (cursor < start) gaps.push([cursor, start]);
+      cursor = Math.max(cursor, end);
+    }
+    const length = Buffer.byteLength(packet.result.text as string);
+    if (cursor < length) gaps.push([cursor, length]);
+    const covered = explicit
+      .filter((row) => row[2] < row[3])
+      .map((row) => [row[2], row[3]] as const)
+      .sort((left, right) => left[0] - right[0]);
+    const expected: Row[] = [];
+    for (const [gapStart, gapEnd] of gaps) {
+      let start = gapStart;
+      for (const [coverStart, coverEnd] of covered) {
+        if (coverEnd <= start || coverStart >= gapEnd) continue;
+        if (start < coverStart) expected.push([0, 0, start, coverStart, 0, 0]);
+        start = Math.max(start, coverEnd);
+      }
+      if (start < gapEnd) expected.push([0, 0, start, gapEnd, 0, 0]);
+    }
+    assert.deepEqual(added, expected, packet.label);
+    assert.deepEqual(provenance.wholeComparison.changedResults[index].currentDirectives, current);
+  }
+});

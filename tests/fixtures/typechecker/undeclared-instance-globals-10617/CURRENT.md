@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-03836b7ea580.json`: all 80 whole transform results from [source Actions 41553510751](https://github.com/ubugeeei-prod/vize/actions/runs/41553510751/job/125647594443), actual merge producer `03836b7ea580fedea8c01952992967326fc6d01b` (PR head `b5cdac72d8f8105f7fae14c2635c6f00851e7152`). Its launch receipt binds the physical CLI it built.
+
+The original strict capture remains **unqualified**: 318 of 398 outcomes passed. Exactly the 80 whole packets differ from the previous population, and only in `diagnosticDirectives`: like Vue's content mapper, the transform reply now ignores every virtual range no span maps, minus every explicit directive interval. All 80 generated texts, mappings, diagnostics, semantic links and explicit directive rows are unchanged; each added row is `[0, 0, start, end, ignore, 0]` over an unmapped gap. Previous and current directive tables are retained per packet in `source-packets-current-03836b7ea580-provenance.json`; whole-packet gap details are retained by digest.
+
+`complete: true` means the complete observed expected population. It gives no strict native, host-matrix or installed-public acceptance. The existing comparator still checks complete result objects, ordered mappings and opaque fields; every semantic, ownership, geometry and mutation outcome remains required. Historical packets, original inputs and qualification flags are preserved. No packet normalizer or diagnostic filter is added.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-d0f4e1da7022.json`: all 80 whole transform results from [source Actions 41351216510](https://github.com/ubugeeei-prod/vize/actions/runs/41351216510/job/124981942670), actual merge producer `d0f4e1da7022399172ba9a414ce90bdd7fc00145` (PR head `1e511d9026382a457916eca4632e4e803347553b`). Its launch receipt binds physical CLI SHA-256 `05fab55435f48df7a93a2a30ca929186b9187bcf8a6639f5a468db25875a5001`.
 
 The original strict capture remains **unqualified**: 396 of 398 outcomes passed. Exactly LF and CRLF/Unicode `string-comment-role` whole packets differ from the previous population. All 80 generated texts and every nonmapping field remain identical; the other 78 whole results are unchanged. The source correction reuses the existing comment-removal offset owner: `.known ` and ` + "$ghost"` now map affinely to those same authored bytes across the removed `/* $ghost */`. The synthetic receiver prefix and declared-name mappings stay exact. Full old/new mapping arrays and original source bytes are retained in `source-packets-current-d0f4e1da7022-provenance.json`.

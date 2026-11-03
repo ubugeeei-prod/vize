@@ -252,12 +252,16 @@ export function fullPacketMutations(golden: Transform, foreign: Transform) {
     changes.push((copy) => {
       delete copy.diagnosticDirectives;
     });
-    changes.push((copy) => {
-      const payload = copy.diagnosticDirectives as {
-        unusedExpectDirectiveDiagnostics: Array<{ code: number }>;
-      };
-      payload.unusedExpectDirectiveDiagnostics[0].code = 9999;
-    });
+    // Unmapped-range ignores give every packet a table; only expects have this row.
+    const expects = (golden.diagnosticDirectives as { unusedExpectDirectiveDiagnostics: unknown[] })
+      .unusedExpectDirectiveDiagnostics;
+    if (expects.length > 0)
+      changes.push((copy) => {
+        const payload = copy.diagnosticDirectives as {
+          unusedExpectDirectiveDiagnostics: Array<{ code: number }>;
+        };
+        payload.unusedExpectDirectiveDiagnostics[0].code = 9999;
+      });
     for (const index of [0, 1, 2, 3, 4, 5])
       for (const delta of [-1, 1])
         changes.push((copy) => {
