@@ -109,6 +109,7 @@ jobs:
     name: lsp-vs-volar (${{ matrix.job.name }})
     needs: plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    permissions: { contents: read, statuses: write }
     # A size curve runs every size in one job; 20k SFCs alone take hours across three editors.
     timeout-minutes: 720
     strategy:
@@ -189,7 +190,19 @@ jobs:
         env:
           JOB: ${{ matrix.job.name }}
           FIXTURE_IDS: ${{ matrix.job.ids }}
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
         run: |
+          # Diagnosis only: a heartbeat in commit statuses outlives a lost runner.
+          progress="$RUNNER_TEMP/progress.log"; : > "$progress"
+          beat() {
+            m=$(awk '/^MemAvailable/{a=$2} /^SwapTotal/{t=$2} /^SwapFree/{f=$2} /^Shmem:/{s=$2} END{printf "a%.0fG sw%.1fG sh%.1fG", a/1048576, (t-f)/1048576, s/1048576}' /proc/meminfo)
+            top=$(ps -eo rss=,comm= --sort=-rss | head -2 | awk '{printf "%s:%.0fG ", $2, $1/1048576}')
+            last=$(grep -v " cycle [0-9]* at " "$progress" | tail -1 | cut -c1-45)
+            d="$m l$(cut -d' ' -f1 /proc/loadavg) p$(ls /proc | grep -c '^[0-9]') $top| $last"
+            gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=pending -f context="lsp-heartbeat/$JOB" -f description="${d:0:139}" > /dev/null 2>&1 || true
+          }
+          ( while true; do beat; sleep 30; done ) &
           tools="$RUNNER_TEMP/tools/node_modules"
           args=(--vize "head=$RUNNER_TEMP/vize-head")
           for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
@@ -217,7 +230,8 @@ jobs:
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
             --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
             --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
-            --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
+            --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB" \
+            2> >(tee -a "$progress" >&2)
           cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
