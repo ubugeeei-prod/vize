@@ -150,7 +150,7 @@ type __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string 
 type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;
 type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
 declare module "vize:virtual-ts" {
-  export type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $HandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
+  export type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 }
 declare module "vize:virtual-ts" {
   type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];

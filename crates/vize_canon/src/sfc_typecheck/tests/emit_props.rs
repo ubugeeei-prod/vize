@@ -25,7 +25,7 @@ defineEmits<{
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("as $HandlerKey<K> | `on${Capitalize<K>}`]"),
-        "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it:\n{virtual_ts}"
+        virtual_ts.contains("as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]"),
+        "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it, and a declared camel twin owns its key (#11453):\n{virtual_ts}"
     );
 }
