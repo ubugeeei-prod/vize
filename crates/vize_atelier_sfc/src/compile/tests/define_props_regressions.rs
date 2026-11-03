@@ -230,13 +230,13 @@ const props = withDefaults(defineProps<Props>(), { as: "button" })
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains("asChild: {\n      type: Boolean"),
+        result.code.contains("asChild: { type: Boolean"),
         "inherited Boolean prop must reach runtime props:\n{}",
         result.code
     );
     assert!(
         result.code.contains(
-            "as: {\n      type: String,\n      required: false,\n      default: \"button\""
+            "as: { type: String, required: false, default: \"button\""
         ),
         "withDefaults must retain the inherited prop default:\n{}",
         result.code
@@ -244,7 +244,7 @@ const props = withDefaults(defineProps<Props>(), { as: "button" })
     assert!(
         result
             .code
-            .contains("variant: {\n      type: String,\n      required: false"),
+            .contains("variant: { type: String, required: false"),
         "local props must remain present:\n{}",
         result.code
     );
@@ -484,16 +484,13 @@ const { ripple = undefined } = defineProps<{ ripple?: Ripple }>()
     let result = compile_sfc(&descriptor, options).expect("compile SFC");
     let runtime_prop = result
         .code
-        .split_once("ripple: {")
-        .expect("runtime ripple prop")
-        .1
-        .split_once("\n  } },")
-        .expect("runtime ripple prop terminator")
-        .0;
+        .lines()
+        .find(|line| line.trim_start().starts_with("ripple: {"))
+        .expect("runtime ripple prop");
 
     assert_eq!(
         runtime_prop,
-        "\n    type: [Boolean, Object],\n    required: false,\n    default: undefined"
+        "    ripple: { type: [Boolean, Object], required: false, default: undefined }"
     );
     let _ = fs::remove_dir_all(project);
 }

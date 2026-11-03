@@ -51,6 +51,18 @@ fn rewrite_props_aliases(code: String, bindings: &BindingMetadata) -> String {
     rewritten
 }
 
+/// The setup-scope expression of each `v-bind()` in the styles.
+pub(super) fn css_var_values(
+    ctx: &ScriptCompileContext,
+    css_vars: &[Cow<'_, str>],
+    source_is_ts: bool,
+) -> Vec<String> {
+    css_vars
+        .iter()
+        .map(|var_expr| transform_css_var_expression(ctx, var_expr, source_is_ts))
+        .collect()
+}
+
 fn transform_css_var_expression(
     ctx: &ScriptCompileContext,
     var_expr: &str,
@@ -73,10 +85,11 @@ pub(super) fn emit_setup_body(
     model_infos: &[ModelInfo],
     setup_body_lines: &[String],
     source_is_ts: bool,
-    _is_ts: bool,
+    is_ts: bool,
     is_vapor: bool,
     is_async: bool,
     css_vars: &[Cow<'_, str>],
+    css_var_values: &[String],
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
@@ -129,7 +142,7 @@ pub(super) fn emit_setup_body(
             output.extend_from_slice(b" = _useModel");
             // Thread an explicit `<T>` type argument through to `useModel` so the
             // model ref's type matches @vue/compiler-sfc in TypeScript output.
-            if source_is_ts
+            if is_ts
                 && let Some(type_arg) = type_arg.as_deref().map(str::trim)
                 && !type_arg.is_empty()
             {
@@ -171,7 +184,7 @@ pub(super) fn emit_setup_body(
             } else {
                 crate::css::scoped_v_bind_name(scope_id, var_expr)
             };
-            let var_value = transform_css_var_expression(ctx, var_expr, source_is_ts);
+            let var_value = css_var_values.get(i).map_or("", String::as_str);
             let mut quoted_name = String::default();
             crate::vite_plugin::js_string::push_js_string_literal(&mut quoted_name, &var_name);
             output.extend_from_slice(b"  ");

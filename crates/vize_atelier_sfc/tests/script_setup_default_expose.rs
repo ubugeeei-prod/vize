@@ -1,6 +1,7 @@
 //! Full module contracts for closed-by-default setup exposure (#10891).
 //!
-//! Goldens retain public 0.595 output except the explicit default exposure edit.
+//! Goldens retain public 0.595 output except the explicit default exposure edit
+//! and, for TypeScript sources, per-piece erasure: the module is not reprinted.
 //! They cover authored call ordering, async ordering, JavaScript/TypeScript,
 //! client/SSR and production/development. Explicit and inline controls are unchanged.
 

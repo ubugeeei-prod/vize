@@ -326,7 +326,7 @@ const fetchOlder = () => {}
 "#;
     let descriptor = parse_sfc(source, Default::default()).unwrap();
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
-    let normalized = result.code.replace('\n', " ");
+    let normalized = result.code.split_whitespace().collect::<Vec<_>>().join(" ");
 
     assert!(
         result
@@ -366,7 +366,7 @@ const touches = ref(0)
 "#;
     let descriptor = parse_sfc(source, Default::default()).unwrap();
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
-    let normalized = result.code.replace('\n', " ");
+    let normalized = result.code.split_whitespace().collect::<Vec<_>>().join(" ");
 
     assert!(
         result
@@ -382,7 +382,7 @@ const touches = ref(0)
     );
     assert!(
         result.code.contains(r#""onUpdate:modelValue":"#)
-            && result.code.contains("local.value = $event"),
+            && result.code.contains("(local).value = $event"),
         "unexpected code:\n{}",
         result.code
     );

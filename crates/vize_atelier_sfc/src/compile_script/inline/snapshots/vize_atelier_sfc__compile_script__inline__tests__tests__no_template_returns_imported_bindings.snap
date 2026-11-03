@@ -2,14 +2,19 @@
 source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
 expression: output.as_str()
 ---
-import { onMounted } from "vue";
+import { onMounted } from 'vue'
+
+
 export default {
-  __name: "TestComponent",
+  __name: 'TestComponent',
   setup(__props, { expose: __expose }) {
-    __expose();
-    onMounted(() => {
-      console.log("mounted");
-    });
-    return { onMounted };
-  }
-};
+  __expose();
+
+onMounted(() => {
+  console.log("mounted");
+});
+
+return { onMounted }
+}
+
+}

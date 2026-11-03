@@ -1,0 +1,24 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<p${_ssrRenderAttrs(_mergeProps({ class: $setup.Status.className }, _attrs))}>${_ssrInterpolate($setup.current)}</p>`)
+}
+import { Status } from './status'
+
+const current = "open";
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = { Status, current }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

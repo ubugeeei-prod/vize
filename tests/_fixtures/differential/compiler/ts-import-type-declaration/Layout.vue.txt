@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import type { Label } from './label'
+import { ref } from 'vue'
+
+const label = ref<Label>('one')
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>
