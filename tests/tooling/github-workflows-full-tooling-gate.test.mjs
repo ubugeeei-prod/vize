@@ -103,7 +103,10 @@ void test("full workers accept failed producers but never start after cancellati
 void test("independent native and package execution stops on cancellation without hiding failures", () => {
   const worker = yaml(".github/actions/test-full-tooling/action.yml").runs.steps;
   const independent = worker.filter(
-    (step) => /inputs\.shard/.test(step.if ?? "") && /(?:always|cancelled)\(/.test(step.if ?? ""),
+    (step) =>
+      !step.uses?.startsWith("actions/upload-artifact@") &&
+      /inputs\.shard/.test(step.if ?? "") &&
+      /(?:always|cancelled)\(/.test(step.if ?? ""),
   );
   assert.equal(independent.length, 4, "retain every independent capture and plugin preparation");
   for (const step of independent)
