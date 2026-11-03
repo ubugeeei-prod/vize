@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import NG from "./NG.vue"
+declare function takesNumber(n: number): void
+declare function takesString(s: string): void
+const s = "x"
+</script>
+<template>
+  <!-- @vue-expect-error -->
+  <NG :items="[1]" @select="(n) => takesString(n)" />
+  <NG :items="[1]" @select="(n) => takesNumber(n)" />
+  <NG :items="['x']" @select="(n) => takesNumber(n)" />
+  <!-- @vue-expect-error -->
+  <NG :items="[1]" @select="(n) => takesNumber(n)" />
+  <!-- @vue-expect-error -->
+  <div :title="s.nope" @click="takesNumber(1)" />
+  <div :title="s.nope" />
+</template>

@@ -12070,6 +12070,40 @@
       }
     },
     {
+      "id": "typechecker/regression/expect-element-coverage-11486",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "expect-element-coverage-11486/NG.vue.txt",
+          "sha256": "647fc4cf00e588bd5031fac74c556f0c215df51d235b60757f8d8a16f07cf958",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "expect-element-coverage-11486/Siblings.vue.txt",
+          "sha256": "3d6838b84c5a0554328a58378ef70ff1d316f9d7c7b4ba14cf69ce3b911c503b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::expect_element_coverage_11486::expect_covers_its_element_and_no_sibling; reported #11486 @vue-expect-error above a component whose sibling repeats the listener, plus a sibling prop error and a sibling native binding error that must stay visible and an expectation without an error that is unused. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-alias-dependent-scope-11450",
       "state": "active",
       "targets": [

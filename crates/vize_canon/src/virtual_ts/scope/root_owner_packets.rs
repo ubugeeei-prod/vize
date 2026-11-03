@@ -169,9 +169,7 @@ impl RootOwnerPackets {
                     || usage.props.iter().any(|prop| prop.name_is_dynamic)
                     || !usage.spread_props.is_empty()
                     || usage.events.is_empty()
-                    || usage.events.iter().any(|event| event.name_is_dynamic
-                        || event.handler.as_ref().is_none_or(|handler|
-                            bindings.binding_type(handler.as_str().trim()) != Some(BindingType::SetupConst)))
+                    || usage.events.iter().any(|event| event.name_is_dynamic || event.handler.is_none())
                     || element.props.iter().any(|prop| match prop {
                         PropNode::Attribute(_) => false,
                         PropNode::Directive(directive) => !matches!(directive.name, "on" | "bind")
@@ -188,9 +186,10 @@ impl RootOwnerPackets {
                     .iter()
                     .any(|prop| prop.is_dynamic && !safety.allows(usage.scope_id.as_u32(), prop))
                     || usage.events.iter().any(|event| {
-                        event.handler.as_ref().is_none_or(|handler| {
-                            !safety.initialized_const(handler.as_str().trim())
-                        })
+                        event
+                            .handler
+                            .as_ref()
+                            .is_none_or(|handler| !safety.deferred_handler(handler.as_str()))
                     })
                 {
                     continue;

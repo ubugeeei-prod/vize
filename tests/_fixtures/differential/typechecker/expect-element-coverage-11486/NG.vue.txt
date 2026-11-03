@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ items: number[] }>()
+defineEmits<{ select: [item: number] }>()
+</script>
+<template><div /></template>

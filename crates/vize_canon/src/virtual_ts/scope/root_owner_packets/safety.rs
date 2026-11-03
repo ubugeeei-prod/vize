@@ -11,6 +11,7 @@ use oxc_ast_visit::{Visit, walk::walk_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String, profile};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 use vize_croquis::{BindingType, croquis::PassedProp};
 
 use crate::virtual_ts::script_facts::ScriptBindings;
@@ -125,6 +126,25 @@ impl<'a> RelocationSafety<'a> {
             .initialized
             .get_or_init(|| initialized_consts(self.script))
             .contains(name)
+    }
+
+    /// A listener is read during render only as a reference. A callback or an
+    /// inline statement is created there, and its body runs later, so moving
+    /// its creation cannot change what the body sees.
+    pub(super) fn deferred_handler(&self, handler: &str) -> bool {
+        match classify_event_handler(handler) {
+            EventHandlerExpression::Reference => {
+                self.bindings.binding_type(handler.trim()) == Some(BindingType::SetupConst)
+                    && self.initialized_const(handler.trim())
+            }
+            EventHandlerExpression::Callback { .. } => true,
+            // Unparsable input also classifies as inline; it stays in place.
+            EventHandlerExpression::Inline => {
+                let allocator = Allocator::new();
+                let parsed = Parser::new(&allocator, handler, SourceType::ts()).parse();
+                !parsed.panicked && parsed.diagnostics.is_empty()
+            }
+        }
     }
 
     pub(super) fn allows(&mut self, scope: u32, prop: &PassedProp) -> bool {
@@ -376,6 +396,36 @@ mod tests {
                     "another lexical scope {value}"
                 );
                 assert_eq!(safety.values.len(), cached + 1);
+            }
+        });
+    }
+}
+
+#[cfg(test)]
+mod handler_tests {
+    use super::RelocationSafety;
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    #[test]
+    fn only_render_time_handler_reads_need_an_initialized_const() {
+        let script = "const onPick = () => {}; let later = () => {}; const box = { onPick };";
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+        crate::virtual_ts::script_facts::with_bindings(&summary, |bindings| {
+            let safety = RelocationSafety::new(Some(script), bindings);
+            for (handler, deferred) in [
+                ("onPick", true),
+                ("(n) => takes(n)", true),
+                ("function (n) { takes(n) }", true),
+                ("takes($event)", true),
+                ("count++; other()", true),
+                ("later", false),
+                ("box.onPick", false),
+                ("missing", false),
+                ("takes(", false),
+            ] {
+                assert_eq!(safety.deferred_handler(handler), deferred, "{handler}");
             }
         });
     }

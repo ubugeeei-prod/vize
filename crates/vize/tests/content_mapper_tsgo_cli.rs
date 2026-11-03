@@ -16,6 +16,7 @@ mod contextual_prop_anchors;
 mod directive_tables;
 mod dynamic_component_event_names;
 mod dynamic_template_refs;
+mod expect_element_coverage_11486;
 mod generic_constructor_slots;
 mod global_component_listener_11373;
 mod global_components;
