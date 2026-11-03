@@ -2,6 +2,7 @@
 //! (#11448) and inside slots under script-owned guards or member keys (#11449).
 
 use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use vize_carton::{String, cstr};
 
 const EMPTY: &str = "<template>\n  <div />\n</template>\n";
 
@@ -141,10 +142,10 @@ fn dynamic_component_index_targets_keep_props_slots_and_payloads() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let generic_clean = vize_carton::cstr!("{GENERIC_SETUP}{GENERIC_CLEAN}");
-    let generic_errors = vize_carton::cstr!("{GENERIC_SETUP}{GENERIC_ERRORS}");
-    let slot_clean = vize_carton::cstr!("{SLOT_SETUP}{SLOT_CLEAN}");
-    let slot_errors = vize_carton::cstr!("{SLOT_SETUP}{SLOT_ERRORS}");
+    let generic_clean = cstr!("{GENERIC_SETUP}{GENERIC_CLEAN}");
+    let generic_errors = cstr!("{GENERIC_SETUP}{GENERIC_ERRORS}");
+    let slot_clean = cstr!("{SLOT_SETUP}{SLOT_CLEAN}");
+    let slot_errors = cstr!("{SLOT_SETUP}{SLOT_ERRORS}");
     let project_root = super::real_vue::create_project_case(
         "dynamic-component-index-targets",
         &[
@@ -182,7 +183,7 @@ fn dynamic_component_index_targets_keep_props_slots_and_payloads() {
             .into_iter()
             .map(|(file, code, message)| {
                 let message = message.split(" parameter of type").next().unwrap_or("");
-                (file, code, vize_carton::String::from(message))
+                (file, code, String::from(message))
             })
             .collect::<Vec<_>>()
     });
@@ -215,10 +216,106 @@ fn dynamic_component_index_targets_keep_props_slots_and_payloads() {
     ]
     .map(|(file, code, message)| {
         (
-            vize_carton::String::from(file),
+            String::from(file),
             Some(code),
-            vize_carton::String::from(message),
+            String::from(message),
         )
     });
     assert_eq!(snapshot, Some(expected.to_vec()));
+}
+
+const REPORTS: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/"
+);
+
+fn check_report(name: &str, dir: &str, probe: &str) -> Option<Vec<(String, Option<u32>, String)>> {
+    let read =
+        |file: &str| std::fs::read_to_string(cstr!("{REPORTS}{dir}/{file}.txt").as_str()).unwrap();
+    let (bar, baz) = (read("Bar.vue"), read("Baz.vue"));
+    let project_root = super::real_vue::create_project_case(
+        name,
+        &[
+            ("src/Bar.vue", bar.as_str()),
+            ("src/Baz.vue", baz.as_str()),
+            ("src/Probe.vue", probe),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext"
+  },
+  "include": ["src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    snapshot
+}
+
+#[test]
+fn reported_inputs_keep_their_component_targets() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let read = |dir: &str| {
+        std::fs::read_to_string(cstr!("{REPORTS}{dir}/Probe.vue.txt").as_str()).unwrap()
+    };
+    let generic = read("dynamic-generic-key-11448");
+    let slot = read("dynamic-slot-guard-11449");
+    let replace = |source: &str, from: &str, to: &str| {
+        assert_eq!(source.matches(from).count(), 1, "{from}");
+        source.replacen(from, to, 1)
+    };
+    let missing_key = replace(&generic, "{ a: Bar, b: Baz }", "{ a: Bar }");
+    let wrong_payload = replace(&slot, "value.toFixed()", "value.nope()");
+
+    let first = |snapshot: Option<Vec<(String, Option<u32>, String)>>| {
+        snapshot.map(|diagnostics| {
+            diagnostics
+                .into_iter()
+                .map(|(file, code, message)| {
+                    let message = message.split(" cannot be used").next().unwrap_or("");
+                    (file, code, String::from(message))
+                })
+                .collect::<Vec<_>>()
+        })
+    };
+    let probe = |message: &str, code: u32| {
+        Some(vec![(
+            String::from("src/Probe.vue"),
+            Some(code),
+            String::from(message),
+        )])
+    };
+    let dir = "dynamic-generic-key-11448";
+    assert_eq!(
+        check_report("reported-11448", dir, &generic),
+        Some(Vec::new())
+    );
+    assert_eq!(
+        first(check_report(
+            "reported-11448-missing-key",
+            dir,
+            &missing_key
+        )),
+        probe("10:19:error Type 'TFoo'", 2536)
+    );
+    let dir = "dynamic-slot-guard-11449";
+    assert_eq!(check_report("reported-11449", dir, &slot), Some(Vec::new()));
+    assert_eq!(
+        check_report("reported-11449-wrong-payload", dir, &wrong_payload),
+        probe(
+            "13:74:error Property 'nope' does not exist on type 'number'.",
+            2339
+        )
+    );
 }

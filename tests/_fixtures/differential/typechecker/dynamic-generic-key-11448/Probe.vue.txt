@@ -1,0 +1,11 @@
+<script setup lang="ts" generic="TFoo extends 'a' | 'b'">
+import Bar from "./Bar.vue";
+import Baz from "./Baz.vue";
+
+const { foo } = defineProps<{ foo: TFoo }>();
+const map = { a: Bar, b: Baz };
+</script>
+
+<template>
+  <component :is="map[foo]" />
+</template>
