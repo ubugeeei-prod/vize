@@ -49,6 +49,30 @@ pub(crate) fn slice_template_parts(
     (imports, hoisted, preamble, render_body, "render")
 }
 
+/// [`extract_template_parts_full`] over emission-recorded sections: only the
+/// preamble is line-scanned, and the render function is its recorded section
+/// instead of a brace-counted line range.
+pub(crate) fn slice_template_parts_full(
+    template_code: &str,
+    sections: &TemplateCodeSections,
+) -> (String, String, String, &'static str) {
+    let (start, end) = sections.function;
+    let (imports, hoisted, _, _) =
+        extract_template_parts_full(template_code.get(..start).unwrap_or_default());
+    let function = template_code.get(start..end).unwrap_or_default();
+    let mut render_fn = String::with_capacity(function.len() + 1);
+    for line in function.lines() {
+        render_fn.push_str(line);
+        render_fn.push('\n');
+    }
+    let render_fn_name = function
+        .lines()
+        .next()
+        .and_then(|line| detect_render_export_name(line.trim()))
+        .unwrap_or("");
+    (imports, hoisted, render_fn, render_fn_name)
+}
+
 fn is_vapor_template_declaration(line: &str) -> bool {
     line.starts_with("const t") && line.contains("_template(")
 }
