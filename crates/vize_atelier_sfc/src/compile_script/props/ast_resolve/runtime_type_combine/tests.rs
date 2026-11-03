@@ -1,7 +1,7 @@
 //! Runtime prop types for unions with an unresolvable member, such as a
 //! component generic. Vue keeps `Boolean`/`Function` (casting, function
 //! defaults) and skips the runtime check; anything else is `null`.
-use super::super::compile_sfc;
+use crate::compile_sfc;
 use crate::types::SfcCompileOptions;
 use crate::{SfcParseOptions, parse_sfc};
 

@@ -3,7 +3,7 @@
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
 
-use super::ast_resolve::combine_runtime_js_types;
+use super::ast_resolve::{combine_runtime_js_types, split_skip_check};
 pub(crate) fn runtime_prop_key(name: &str) -> String {
     if is_valid_identifier(name) {
         return name.to_compact_string();
@@ -308,6 +308,15 @@ pub(super) fn contains_top_level_colon(s: &str) -> bool {
 /// For a prop type like `ButtonVariant`, resolves it using the type_aliases and interfaces
 /// to determine the correct JS type constructor.
 pub fn resolve_prop_js_type(
+    ts_type: &str,
+    interfaces: &FxHashMap<String, String>,
+    type_aliases: &FxHashMap<String, String>,
+) -> Option<String> {
+    resolve_reference_js_type(ts_type, interfaces, type_aliases)
+        .map(|js_type| split_skip_check(&js_type).0)
+}
+
+fn resolve_reference_js_type(
     ts_type: &str,
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,

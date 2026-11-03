@@ -3,7 +3,7 @@
 use oxc_ast::ast::TSType;
 use vize_carton::{FxHashMap, String, ToCompactString};
 
-use super::simple_type_name;
+use super::{collect_props_from_ts_type, simple_type_name};
 
 /// Keys of a type this file declares are strings. Keys of a generic parameter
 /// or an unresolved import may be numbers or symbols, so like Vue the runtime
@@ -54,4 +54,20 @@ fn is_builtin_operand(name: &str) -> bool {
             | "Capitalize"
             | "Uncapitalize"
     )
+}
+
+/// Literal keys of a `keyof` operand, for mapped and indexed types.
+pub(super) fn literal_values(
+    ts_type: &TSType<'_>,
+    source: &str,
+    interfaces: Option<&FxHashMap<String, String>>,
+    type_aliases: Option<&FxHashMap<String, String>>,
+    seen: &mut Vec<String>,
+) -> Option<Vec<String>> {
+    let mut props = Vec::new();
+    if collect_props_from_ts_type(ts_type, source, interfaces, type_aliases, seen, &mut props) {
+        Some(props.into_iter().map(|(name, _)| name).collect())
+    } else {
+        None
+    }
 }

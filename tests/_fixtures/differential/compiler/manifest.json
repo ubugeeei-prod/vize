@@ -774,7 +774,7 @@
       "reference": {
         "path": "generic-union-skip-check-11466/module.expected.txt",
         "sha256": "c9dba899226535ff24606885a36b4007493649091d58b2e6228fa17643abb339",
-        "source": "crates/vize_atelier_sfc/src/compile/tests/generic_union_props.rs:unknown_union_members_keep_boolean_and_function_with_skip_check"
+        "source": "crates/vize_atelier_sfc/src/compile_script/props/ast_resolve/runtime_type_combine/tests.rs:unknown_union_members_keep_boolean_and_function_with_skip_check"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

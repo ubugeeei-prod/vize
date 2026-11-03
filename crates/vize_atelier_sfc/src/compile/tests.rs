@@ -1,6 +1,5 @@
 mod custom_elements;
 mod define_props_regressions;
-mod generic_union_props;
 mod inline_handlers;
 mod options_api_events;
 mod page_meta;

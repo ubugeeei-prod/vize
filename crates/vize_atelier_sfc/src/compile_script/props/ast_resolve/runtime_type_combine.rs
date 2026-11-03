@@ -1,5 +1,8 @@
 use vize_carton::{String, ToCompactString};
 
+#[cfg(test)]
+mod tests;
+
 /// Placeholder member for an unresolvable union member kept beside `Boolean`
 /// or `Function`. [`split_skip_check`] lowers it to Vue's `skipCheck: true`.
 pub(crate) const UNKNOWN_MEMBER: &str = "?";
