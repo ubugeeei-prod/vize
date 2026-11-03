@@ -18,9 +18,9 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 | ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
 | ---------------------------------------- | ------------------------ | -------- | -------------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1              |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1              |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 以下のローカル環境での Linter・Formatter・実装プロファイルは過去の計測で、このスナップショットの結果ではありません。記録された環境は MacBook Pro M2 Max (12 コア、96 GB RAM)、macOS 15.3.2、Node v24.14.0、Vite v8.0.0、Vue v3.6.0-beta.10 です。
 
@@ -30,9 +30,9 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 |               | @vue/compiler-sfc | Vize    | 速度比    |
 | ------------- | ----------------- | ------- | --------- |
-| 1T            | 15.98s            | 3.63s   | **4.4x**  |
-| workers / max | 5.92s             | 283.7ms | **20.9x** |
-| 1T / max      | 15.98s            | 283.7ms | **56.3x** |
+| 1T            | 16.50s            | 3.74s   | **4.4x**  |
+| workers / max | 6.00s             | 297.9ms | **20.1x** |
+| 1T / max      | 16.50s            | 297.9ms | **55.4x** |
 
 [詳しい計測方法と検証結果](./performance-blacksmith.md)
 
@@ -41,7 +41,7 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 | ツール                   | バージョン                                                                                    | バイナリ SHA-256                                                              |
 | ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>aa9f4058cae9f773d10a55b59111419398edeaff0f33e07c0fce556d6827e38f</code> |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>a3d8a0125ea04664754c8accb2c05b3e6e2e2d739147b7a722590688bf8dd6dd</code> |
 | tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
 | vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
 | verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
@@ -221,14 +221,14 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 | ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
 | ---------------------------------------- | ------------------------ | -------- | -------------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1              |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1              |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 | 対象            | ファイル数 | 比較ツール | 比較ツールの中央値 | Vize 1T | Vize max | 速度比    |
 | --------------- | ---------- | ---------- | ------------------ | ------- | -------- | --------- |
-| 型検査          | 500        | vue-tsc    | 6.46s              | 439.4ms | 365.1ms  | **17.7x** |
-| 巨大 SFC 型検査 | 1          | vue-tsc    | 2.44s              | 153.0ms | 151.6ms  | **16.1x** |
+| 型検査          | 500        | vue-tsc    | 6.50s              | 1.42s   | 573.5ms  | **11.3x** |
+| 巨大 SFC 型検査 | 1          | vue-tsc    | 2.43s              | 2.00s   | 2.00s    | **1.2x**  |
 
 型検査の速度比は、Vue プロジェクトが実際に使っている型チェッカー vue-tsc との比較です。vue-tsc は JavaScript 版 TypeScript コンパイラを、Vize はネイティブ tsgo を動かすため、この倍率にはツールチェーン全体の差が含まれ、Vue レイヤ単体の差ではありません。Vue レイヤだけを見たい場合は、詳細スナップショットのエンジンクラス別の表で同一エンジン同士の順位を比較してください。各計測で診断処理の検証を通過していますが、ツール間で診断の対応範囲は異なります。精度の同等性や、過去の Vize からの性能改善を示す倍率ではありません。検証を通過しなかった比較ツールには、時間や順位を掲載しません。
 
@@ -274,15 +274,15 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 | ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
 | ---------------------------------------- | ------------------------ | -------- | -------------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1              |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1              |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 ファイル数: **1,000**.
 
 |             | @vitejs/plugin-vue | @vizejs/vite-plugin | 速度比   |
 | ----------- | ------------------ | ------------------- | -------- |
-| Vite ビルド | 1.47s              | 494.4ms             | **3.0x** |
+| Vite ビルド | 1.48s              | 448.9ms             | **3.3x** |
 
 [詳しい計測方法と検証結果](./performance-blacksmith.md)
 

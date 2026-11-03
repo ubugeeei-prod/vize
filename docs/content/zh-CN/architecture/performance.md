@@ -18,9 +18,9 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 下方本地 Linter、Formatter 和实现分析属于历史测量，并非此快照的结果。记录的环境为 MacBook Pro M2 Max（12 核、96 GB RAM）、macOS 15.3.2、Node v24.14.0、Vite v8.0.0 和 Vue v3.6.0-beta.10。
 
@@ -30,9 +30,9 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 |               | @vue/compiler-sfc | Vize    | 速度比    |
 | ------------- | ----------------- | ------- | --------- |
-| 1T            | 15.98s            | 3.63s   | **4.4x**  |
-| workers / max | 5.92s             | 283.7ms | **20.9x** |
-| 1T / max      | 15.98s            | 283.7ms | **56.3x** |
+| 1T            | 16.50s            | 3.74s   | **4.4x**  |
+| workers / max | 6.00s             | 297.9ms | **20.1x** |
+| 1T / max      | 16.50s            | 297.9ms | **55.4x** |
 
 [完整方法与验证结果](./performance-blacksmith.md)
 
@@ -41,7 +41,7 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 工具                     | 版本                                                                                          | 二进制 SHA-256                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>aa9f4058cae9f773d10a55b59111419398edeaff0f33e07c0fce556d6827e38f</code> |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>a3d8a0125ea04664754c8accb2c05b3e6e2e2d739147b7a722590688bf8dd6dd</code> |
 | tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
 | vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
 | verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
@@ -217,14 +217,14 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 | 项目              | 文件数 | 比较工具 | 比较工具中位数 | Vize 1T | Vize max | 速度比    |
 | ----------------- | ------ | -------- | -------------- | ------- | -------- | --------- |
-| 类型检查          | 500    | vue-tsc  | 6.46s          | 439.4ms | 365.1ms  | **17.7x** |
-| 大型 SFC 类型检查 | 1      | vue-tsc  | 2.44s          | 153.0ms | 151.6ms  | **16.1x** |
+| 类型检查          | 500    | vue-tsc  | 6.50s          | 1.42s   | 573.5ms  | **11.3x** |
+| 大型 SFC 类型检查 | 1      | vue-tsc  | 2.43s          | 2.00s   | 2.00s    | **1.2x**  |
 
 类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
 
@@ -271,15 +271,15 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 文件数: **1,000**.
 
 |           | @vitejs/plugin-vue | @vizejs/vite-plugin | 速度比   |
 | --------- | ------------------ | ------------------- | -------- |
-| Vite 构建 | 1.47s              | 494.4ms             | **3.0x** |
+| Vite 构建 | 1.48s              | 448.9ms             | **3.3x** |
 
 [完整方法与验证结果](./performance-blacksmith.md)
 

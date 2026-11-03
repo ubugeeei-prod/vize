@@ -157,30 +157,30 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 | Runner                                   | Measured                 | Runs | Warmups |
 | ---------------------------------------- | ------------------------ | ---- | ------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T12:52:38.314Z | 5    | 1       |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5    | 1       |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41637953567) · [ce1d88d5a462](https://github.com/ubugeeei-prod/vize/commit/ce1d88d5a462a6fe09bcd2b7676b3d5fb81b2081) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 | Surface     | Files  | Existing tool      | Existing | Vize    | Speedup    |
 | ----------- | ------ | ------------------ | -------- | ------- | ---------- |
-| SFC compile | 15,000 | @vue/compiler-sfc  | 15.98s   | 283.7ms | **56.3×**  |
-| Lint        | 15,000 | eslint-plugin-vue  | 96.97s   | 507.5ms | **191.1×** |
-| Format      | 15,000 | Prettier           | 139.20s  | 1.39s   | **100.5×** |
-| Type check  | 500    | vue-tsc            | 6.46s    | 365.1ms | **17.7×**  |
-| Vite build  | 1,000  | @vitejs/plugin-vue | 1.47s    | 494.4ms | **3.0×**   |
-| Nuxt build  | 500    | Nuxt compiler      | 3.60s    | 3.30s   | **1.1×**   |
+| SFC compile | 15,000 | @vue/compiler-sfc  | 16.50s   | 297.9ms | **55.4×**  |
+| Lint        | 15,000 | eslint-plugin-vue  | 99.32s   | 499.8ms | **198.7×** |
+| Format      | 15,000 | Prettier           | 141.76s  | 844.7ms | **167.8×** |
+| Type check  | 500    | vue-tsc            | 6.50s    | 573.5ms | **11.3×**  |
+| Vite build  | 1,000  | @vitejs/plugin-vue | 1.48s    | 448.9ms | **3.3×**   |
+| Nuxt build  | 500    | Nuxt compiler      | 3.66s    | 3.32s   | **1.1×**   |
 
 Type-check rows on the 500-SFC corpus: each tool at its fastest measured setting (the full checker-count matrix is in the snapshot). Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, CPU is user+sys time of the whole process tree (mapper processes included), and Peak RSS is the largest single process.
 
 | Checker            | Setting       | Engine                          | Cold    | Warm    | CPU     | Peak RSS | vs vue-tsc |
 | ------------------ | ------------- | ------------------------------- | ------- | ------- | ------- | -------- | ---------- |
-| vue-tsc            | default       | JS TypeScript engine (tsc)      | 6.42s   | 6.46s   | 10.07s  | 1,256 MB | 1.0×       |
-| verter-tsc         | default       | native TypeScript engine (tsgo) | 2.11s   | 2.09s   | 1.41s   | 255 MB   | 3.1×       |
-| vize check         | --checkers 32 | native TypeScript engine (tsgo) | 343.8ms | 347.2ms | 2.91s   | 408 MB   | 18.6×      |
-| tsc + Vize mapper  | --checkers 16 | native TypeScript engine (tsgo) | 255.0ms | 252.6ms | 2.10s   | 281 MB   | 25.6×      |
-| tsc + Vue mapper   | --checkers 16 | native TypeScript engine (tsgo) | 2.75s   | 2.74s   | 7.94s   | 532 MB   | 2.4×       |
-| tsrs + Vize mapper | --fast        | native TypeScript port (tsrs)   | 216.1ms | 216.4ms | 780.0ms | 199 MB   | 29.9×      |
-| tsrs + Vue mapper  | --fast        | native TypeScript port (tsrs)   | 2.62s   | 2.63s   | 4.72s   | 532 MB   | 2.5×       |
+| vue-tsc            | default       | JS TypeScript engine (tsc)      | 6.49s   | 6.50s   | 10.21s  | 1,254 MB | 1.0×       |
+| verter-tsc         | default       | native TypeScript engine (tsgo) | 2.15s   | 2.13s   | 1.47s   | 254 MB   | 3.1×       |
+| vize check         | --checkers 4  | native TypeScript engine (tsgo) | 514.8ms | 516.8ms | 7.50s   | 412 MB   | 12.6×      |
+| tsc + Vize mapper  | --checkers 16 | native TypeScript engine (tsgo) | 262.6ms | 258.5ms | 2.12s   | 279 MB   | 25.2×      |
+| tsc + Vue mapper   | --checkers 16 | native TypeScript engine (tsgo) | 2.80s   | 2.79s   | 7.78s   | 547 MB   | 2.3×       |
+| tsrs + Vize mapper | --fast        | native TypeScript port (tsrs)   | 217.0ms | 217.6ms | 790.0ms | 196 MB   | 29.9×      |
+| tsrs + Vue mapper  | --fast        | native TypeScript port (tsrs)   | 2.65s   | 2.70s   | 4.88s   | 532 MB   | 2.4×       |
 
 Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
@@ -193,7 +193,7 @@ See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performa
 
 | Tool                     | Version                                                                                       | Binary SHA-256                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>aa9f4058cae9f773d10a55b59111419398edeaff0f33e07c0fce556d6827e38f</code> |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>a3d8a0125ea04664754c8accb2c05b3e6e2e2d739147b7a722590688bf8dd6dd</code> |
 | tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
 | vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
 | verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
