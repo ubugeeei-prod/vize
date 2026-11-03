@@ -10,6 +10,7 @@ use super::{
     ScopeKind, ScriptSetupScopeData, UniversalScopeData, VForScopeData, VSlotScopeData,
     VueGlobalScopeData, smallvec,
 };
+use crate::scope::globals::StandardGlobals;
 
 impl ScopeChain {
     /// Enter a new scope
@@ -308,6 +309,18 @@ impl ScopeChain {
 
         scope.set_data(ScopeData::JsGlobal(data));
         self.scopes.push(scope);
+        self.current = id;
+        id
+    }
+
+    /// Enter a standard global scope, sharing its constant table.
+    pub(crate) fn enter_standard_global_scope(
+        &mut self,
+        globals: &'static StandardGlobals,
+    ) -> ScopeId {
+        let id = self.scopes.next_idx();
+        self.scopes
+            .push(Scope::standard(id, Some(self.current), globals));
         self.current = id;
         id
     }
