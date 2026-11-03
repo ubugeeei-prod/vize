@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -106,4 +107,36 @@ test("every complete generated TypeScript reference fence parses without rewriti
   }
   assert(checked > 500, `whole generated reference corpus: ${checked} TypeScript fences`);
   assert.deepEqual(failures, []);
+});
+
+test("the actual generated reference corpus passes the existing documentation example parser", (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vize-generated-reference-parser-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  for (const [file, page] of renderReferenceDocs()) {
+    const output = path.join(directory, "docs/content", file);
+    mkdirSync(path.dirname(output), { recursive: true });
+    writeFileSync(output, page);
+  }
+  const parser = path.join(directory, "tests/tooling/docs-structure.test.ts");
+  mkdirSync(path.dirname(parser), { recursive: true });
+  copyFileSync(path.join(root, "tests/tooling/docs-structure.test.ts"), parser);
+  writeFileSync(path.join(directory, "package.json"), '{"type":"module"}\n');
+  const modules = path.join(directory, "tests/node_modules");
+  mkdirSync(modules);
+  const dependency = createRequire(new URL("../package.json", import.meta.url)).resolve(
+    "typescript/package.json",
+  );
+  symlinkSync(path.dirname(dependency), path.join(modules, "typescript"), "junction");
+  const env = { ...process.env };
+  delete env.NODE_TEST_CONTEXT;
+  const result = spawnSync(
+    process.execPath,
+    ["--test", "--test-name-pattern=JSON, JavaScript and TypeScript examples parse", parser],
+    { encoding: "utf8", env },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.signal, null);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.match(result.stdout, /\bpass 1\b/);
+  t.diagnostic(result.stdout.trim());
 });
