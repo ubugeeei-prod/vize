@@ -5,6 +5,8 @@ import {
   transformVizeVirtualModule,
 } from "./vite-transform.ts";
 import type { VizePluginState } from "./state.ts";
+import { loadHook, transformHook } from "./load.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 
 {
   let used = "";
@@ -66,18 +68,18 @@ import type { VizePluginState } from "./state.ts";
   );
 }
 
-// Vize's Rust emitter guarantees plain JavaScript for every module it produces
-// (`ensure_javascript_output` at the napi boundary), so the virtual-module
-// transform must not re-print emitter output through Vite's TypeScript strip.
-// Anything the emitter did not produce still must go through it.
+// Vize loads virtual SFC modules as JavaScript (emitter output is checked at
+// the napi boundary; boundary placeholders are authored JS), so the transform
+// hands them back without Vite's TypeScript strip, whatever the caches hold.
+// Raw `?macro=true` script code still goes through it.
 //
 // The probe is behavioural rather than a call spy: the input carries a type
 // annotation that only survives when the strip is skipped.
 {
   const annotated = "const count: number = 1;\nexport default { count };";
   const state = {
-    cache: new Map([["/src/Emitted.vue", {}]]),
-    ssrCache: new Map([["/src/SsrEmitted.vue", {}]]),
+    cache: new Map(),
+    ssrCache: new Map(),
     clientViteDefine: {},
     serverViteDefine: {},
     isProduction: false,
@@ -85,34 +87,18 @@ import type { VizePluginState } from "./state.ts";
     logger: { error() {} },
   } as unknown as VizePluginState;
 
-  assert.equal(
-    await transformVizeVirtualModule(state, annotated, "/src/Emitted.vue", false),
-    null,
-    "emitter output must be handed back untouched instead of re-printed through oxc",
-  );
-  assert.equal(
-    await transformVizeVirtualModule(state, annotated, "/src/SsrEmitted.vue", true),
-    null,
-    "SSR emitter output must be handed back untouched too",
-  );
-
-  const notEmitted = await transformVizeVirtualModule(
-    state,
-    annotated,
-    "/src/NotEmitted.vue",
-    false,
-  );
-  assert.ok(notEmitted && typeof notEmitted === "object", "non-emitter modules must transform");
-  assert.doesNotMatch(
-    notEmitted.code,
-    /:\s*number/,
-    "modules Vize did not emit must still go through Vite's TypeScript strip",
-  );
+  for (const ssr of [false, true]) {
+    assert.equal(
+      await transformVizeVirtualModule(state, annotated, "/src/Loaded.vue", ssr),
+      null,
+      "Vize's virtual SFC modules must be handed back untouched instead of re-printed",
+    );
+  }
 
   const macroArtifact = await transformVizeVirtualModule(
     state,
     annotated,
-    "/src/Emitted.vue",
+    "/src/Loaded.vue",
     false,
     true,
   );
@@ -121,5 +107,42 @@ import type { VizePluginState } from "./state.ts";
     macroArtifact.code,
     /:\s*number/,
     "?macro=true raw artifacts never passed through the emitter, so they still need the strip",
+  );
+}
+
+// #11210: a client build stubs `.server.vue` with Vize's own JavaScript. Its
+// transform must not wait on Vite's TypeScript strip (tsconfig lookup included).
+{
+  const state = {
+    cache: new Map(),
+    ssrCache: new Map(),
+    clientViteBase: "/",
+    serverViteBase: "/",
+    clientViteDefine: {},
+    serverViteDefine: {},
+    isProduction: true,
+    mergedOptions: {},
+    filter: () => true,
+    root: "/src",
+    logger: { log() {}, error() {} },
+  } as unknown as VizePluginState;
+
+  for (const id of [
+    toVirtualId("/src/NoScript.server.vue"),
+    toPluginVisibleVirtualId("/src/NoScript.server.vue"),
+  ]) {
+    const placeholder = loadHook(state, id, { ssr: false });
+    assert.ok(placeholder && typeof placeholder === "object", "Client builds stub .server.vue");
+    assert.equal(
+      await transformHook(state, placeholder.code, id, { ssr: false }),
+      null,
+      "the boundary placeholder must be handed back untouched",
+    );
+  }
+
+  assert.equal(
+    await transformHook(state, "export default {", toVirtualId("/src/Broken.vue"), { ssr: false }),
+    null,
+    "malformed virtual SFC code must reach Vite's parser unchanged, never as an empty component",
   );
 }
