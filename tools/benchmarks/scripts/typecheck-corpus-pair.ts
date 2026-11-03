@@ -19,23 +19,14 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import {
-  GNU_TIME_FORMAT,
-  type Diagnostic,
-  type GnuTime,
-  type StatEntry,
-  parseGnuTime,
-  parseHostRun,
-  runOrder,
-  summarizeProbe,
-} from "./typecheck-corpus-pair-parse.ts";
+import { runOrder, summarizeProbe } from "./typecheck-corpus-pair-parse.ts";
 import {
   type PairResults,
   type ReferenceResult,
   renderPairSummary,
   summarizePair,
 } from "./typecheck-corpus-pair-report.ts";
-import { runTypecheckCommand } from "./typecheck-command.mjs";
+import { GNU_TIME, type HostRun, hostArgs, hostRun } from "./typecheck-corpus-pair-host.ts";
 import {
   diffBatchMapper,
   hostCorsaPath,
@@ -63,12 +54,9 @@ const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptsDir, "..", "..", "..");
 const CORPUS_PACKAGES_DIR = resolve(scriptsDir, "..", "typecheck-corpora");
 const PROBE_SCRIPT = join(scriptsDir, "content-mapper-byte-probe.ts");
-const GNU_TIME = "/usr/bin/time";
 const VUE_TSC_DIR = join(scriptsDir, "node_modules", "vue-tsc");
 
 type Host = (typeof MAPPER_HOSTS)[number];
-/** Each host at the setting the pair compares: tsc's default, tsrs's `--fast`. */
-export const PAIR_HOST_ARGS: Record<Host["id"], string[]> = { tsc: [], tsrs: ["--fast"] };
 type Mapper = (typeof CONTENT_MAPPERS)[number];
 
 const shared = {
@@ -179,68 +167,6 @@ function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
   });
   prepareMapperPackages(dir, hosts);
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
-}
-
-type HostRun = {
-  wallMs: number;
-  cpuMs: number;
-  time: GnuTime;
-  status: number | null;
-  stats: StatEntry[];
-  diagnostics: Diagnostic[];
-  fingerprint: string;
-};
-
-export const hostArgs = (
-  host: Host,
-  cwd: string,
-  tsconfig: string,
-  extraArgs: string[] = [],
-): string[] => [
-  "--noEmit",
-  ...PAIR_HOST_ARGS[host.id],
-  "--runExternalCode",
-  "--extendedDiagnostics",
-  "--pretty",
-  "false",
-  ...extraArgs,
-  "-p",
-  join(cwd, tsconfig),
-];
-
-function hostRun(
-  command: string[],
-  cwd: string,
-  tsconfig: string,
-  timeFile: string,
-  env: Record<string, string> = {},
-): HostRun {
-  const result = runTypecheckCommand(
-    GNU_TIME,
-    ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, ...command],
-    { cwd, env },
-  ) as { ms: number; cpuMs: number | null; status: number | null; stdout: string; stderr: string };
-  if (result.cpuMs == null) throw new Error("process-tree CPU needs Linux /proc/self/stat");
-  const time = parseGnuTime(readFileSync(timeFile, "utf8"));
-  if (time.status !== result.status) {
-    throw new Error(`GNU time saw status ${time.status}, the runner saw ${result.status}`);
-  }
-  try {
-    return {
-      wallMs: result.ms,
-      cpuMs: result.cpuMs,
-      time,
-      status: result.status,
-      ...parseHostRun(result, cwd),
-    };
-  } catch (error) {
-    throw new Error(
-      `${tsconfig} in ${cwd}: ${(error as Error).message}\nstderr:\n${result.stderr.slice(-4000)}`,
-      {
-        cause: error,
-      },
-    );
-  }
 }
 
 function packageVersion(dir: string, name: string): string {
