@@ -14,7 +14,15 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { availableParallelism, totalmem } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -23,13 +31,12 @@ import { parseArgs } from "node:util";
 
 import { reapedChildCpuMs } from "./typecheck-command.mjs";
 import {
-  type Corpus,
-  generateMonorepo,
-  generateProject,
+  type ScaleProject,
+  generateScaleProject,
   monorepoMapperConfigs,
   monorepoOutDir,
-  writeCorpus,
-} from "./typecheck-scaling-corpus.ts";
+  writeProject,
+} from "./scale-project-generator.ts";
 import {
   STAT_KEYS,
   type ProcessOutput,
@@ -46,11 +53,14 @@ import {
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
 import {
+  NUXT_BUILD,
+  NUXT_ENV,
   type ScalingEnv,
   type ScalingTool,
   TOOLS,
   collectProvenance,
   invocation,
+  nuxtCli,
   prepareProjectPackages,
   resolveScalingEnv,
 } from "./typecheck-scaling-tools.ts";
@@ -98,6 +108,7 @@ function measure(
   timeFile: string,
   timeoutMs: number,
   timed: boolean,
+  extraEnv: Record<string, string> = {},
 ): Measured {
   const [command, argv] = timed
     ? [GNU_TIME, ["-q", "-f", GNU_TIME_FORMAT, "-o", timeFile, bin, ...args]]
@@ -112,6 +123,7 @@ function measure(
       FORCE_COLOR: "0",
       XDG_CACHE_HOME: cacheDir,
       NODE_OPTIONS,
+      ...extraEnv,
     },
     encoding: "utf8",
     maxBuffer: 1024 * 1024 * 1024,
@@ -143,7 +155,7 @@ type Lane = { cell: Cell; tool: ScalingTool; firstFingerprint: string | null };
 
 function runOnce(
   lane: Lane,
-  corpus: Corpus,
+  corpus: ScaleProject,
   dir: string,
   env: ScalingEnv,
   options: { work: string; out: string; timeoutMs: number; timed: boolean },
@@ -152,6 +164,13 @@ function runOnce(
   for (const name of corpus.packages) {
     for (const entry of readdirSync(join(dir, name))) {
       if (entry.startsWith(monorepoOutDir(""))) rmSync(join(dir, name, entry), { recursive: true });
+    }
+  }
+  const format = lane.tool.format;
+  const build = format === "build";
+  if (build) {
+    for (const path of [".output", "node_modules/.cache", "node_modules/.vite"]) {
+      rmSync(join(dir, path), { recursive: true, force: true });
     }
   }
   const { bin, args, stats } = invocation(lane.tool, env, dir, corpus.kind);
@@ -166,10 +185,37 @@ function runOnce(
       join(options.work, `${tag}.time`),
       options.timeoutMs,
       options.timed,
+      corpus.kind === "nuxt" ? NUXT_ENV : {},
     );
+    if (format === "build") {
+      const assets = join(dir, ".output", "public", "_nuxt");
+      const scripts = existsSync(assets)
+        ? readdirSync(assets).filter((file) => file.endsWith(".js"))
+        : [];
+      if (
+        run.output.status !== 0 ||
+        !existsSync(join(dir, ".output", "public", "index.html")) ||
+        scripts.length === 0
+      ) {
+        throw new Error(
+          `nuxt build exited ${run.output.status} with ${scripts.length} client scripts\n${run.output.stderr.slice(-3000)}`,
+        );
+      }
+      return {
+        wallMs: run.wallMs,
+        cpuMs: run.cpuMs,
+        maxRssKb: run.maxRssKb,
+        errors: 0,
+        warnings: 0,
+        fingerprint: `${scripts.length} scripts`,
+        types: null,
+        instantiations: null,
+        checkTimeS: null,
+      };
+    }
     let parsed: ReturnType<typeof parseRun>;
     try {
-      parsed = parseRun(run.output, dir, lane.tool.format);
+      parsed = parseRun(run.output, dir, format);
     } catch (error) {
       throw new Error(
         `${(error as Error).message.slice(0, 4000)}\nstderr:\n${run.output.stderr.slice(-2000)}`,
@@ -212,6 +258,7 @@ function main(): void {
       runs: { type: "string", default: "3" },
       "monorepo-sfcs": { type: "string", default: "5000" },
       "monorepo-packages": { type: "string", default: "6" },
+      "nuxt-sizes": { type: "string", default: "" },
       tools: { type: "string", default: TOOLS.map((tool) => tool.id).join(",") },
       "timeout-min": { type: "string", default: "45" },
       runner: { type: "string", default: process.env.VIZE_SCALING_RUNNER_LABEL ?? "local" },
@@ -226,10 +273,13 @@ function main(): void {
   }
   const runs = Number(values.runs);
   if (!Number.isInteger(runs) || runs < 1) throw new Error("--runs must be a positive integer");
-  const sizes = values.sizes
-    .split(",")
-    .filter((size) => size.trim())
-    .map(Number);
+  const list = (value: string) =>
+    value
+      .split(",")
+      .filter((size) => size.trim())
+      .map(Number);
+  const sizes = list(values.sizes);
+  const nuxtSizes = list(values["nuxt-sizes"]);
   const monorepoSfcs = Number(values["monorepo-sfcs"]);
   const tools = values.tools.split(",").map((id) => {
     const tool = TOOLS.find((candidate) => candidate.id === id);
@@ -264,42 +314,72 @@ function main(): void {
     writeFileSync(join(out, "summary.md"), renderSummary(results));
     writeFileSync(join(out, "scaling.svg"), renderScalingSvg(results));
   };
-  const corpora: (() => Corpus)[] = [
-    ...sizes.map((sfcs) => () => generateProject(sfcs)),
+  const corpora: (() => ScaleProject)[] = [
+    ...sizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "vue" })),
     ...(monorepoSfcs > 0
-      ? [() => generateMonorepo(monorepoSfcs, Number(values["monorepo-packages"]))]
+      ? [
+          () =>
+            generateScaleProject({
+              sfcs: monorepoSfcs,
+              kind: "monorepo",
+              featurePackages: Number(values["monorepo-packages"]),
+            }),
+        ]
       : []),
+    ...nuxtSizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "nuxt" })),
   ];
   for (const make of corpora) {
     const corpus = make();
     const dir = join(work, `${corpus.kind}-${corpus.sfcs}`);
-    writeCorpus(dir, corpus.files);
-    prepareProjectPackages(dir, env);
+    writeProject(dir, corpus.files);
+    prepareProjectPackages(dir, env, corpus.kind);
     if (corpus.kind === "monorepo") {
       for (const mapper of CONTENT_MAPPERS) {
-        writeCorpus(dir, monorepoMapperConfigs(corpus, mapper, mapperTsconfigName(mapper)), false);
+        writeProject(dir, monorepoMapperConfigs(corpus, mapper, mapperTsconfigName(mapper)), false);
       }
     }
+    // Nuxt writes .nuxt/ (tsconfigs, components.d.ts, imports.d.ts); untimed, every lane needs it.
+    const prepared =
+      corpus.kind === "nuxt"
+        ? spawnSync(env.node, [nuxtCli(env), "prepare", dir], {
+            cwd: dir,
+            encoding: "utf8",
+            env: { ...process.env, ...NUXT_ENV },
+          })
+        : null;
+    const prepareError =
+      prepared && prepared.status !== 0
+        ? `nuxt prepare exited ${prepared.status}\n${`${prepared.stdout}${prepared.stderr}`.slice(-3000)}`
+        : null;
     writeFileSync(
       join(out, "plants", `${corpus.kind}-${corpus.sfcs}.json`),
       `${JSON.stringify(corpus.plants, null, 1)}\n`,
     );
-    const lanes: Lane[] = tools.map((tool) => {
-      const cell: Cell = {
-        tool: tool.id,
-        label: tool.label,
-        vize: tool.vize,
-        kind: corpus.kind,
-        sfcs: corpus.sfcs,
-        plants: corpus.plants.length,
-        mode: corpus.kind === "project" ? "-p" : tool.id === "vize-check" ? "solution root" : "-b",
-        cold: null,
-        runs: [],
-        refused: null,
-      };
-      results.cells.push(cell);
-      return { cell, tool, firstFingerprint: null };
-    });
+    const lanes: Lane[] = [...tools, ...(corpus.kind === "nuxt" ? [NUXT_BUILD] : [])].map(
+      (tool) => {
+        const cell: Cell = {
+          tool: tool.id,
+          label: tool.label,
+          vize: tool.vize,
+          kind: corpus.kind,
+          sfcs: corpus.sfcs,
+          plants: corpus.plants.length,
+          mode:
+            tool.id === "nuxt-build"
+              ? "build"
+              : corpus.kind === "monorepo"
+                ? tool.id === "vize-check"
+                  ? "solution root"
+                  : "-b"
+                : "-p",
+          cold: null,
+          runs: [],
+          refused: prepareError,
+        };
+        results.cells.push(cell);
+        return { cell, tool, firstFingerprint: null };
+      },
+    );
     const label = `${corpus.kind} ${corpus.sfcs} SFCs (${corpus.features} features, ${corpus.plants.length} plants)`;
     console.log(`== ${label}`);
     for (const [index, phase] of [

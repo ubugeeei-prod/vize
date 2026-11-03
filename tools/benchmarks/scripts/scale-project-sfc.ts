@@ -1,11 +1,12 @@
 /**
- * Source text for the type-check scaling corpus (typecheck-scaling-corpus.ts).
+ * Source text of the generated scale projects (scale-project-generator.ts).
  *
  * Every builder returns the file's lines and the 1-based lines of the type
  * errors it plants, so the gate knows where each tool must report one. A
  * planted line holds exactly one planted construct and nothing else that can
- * fail. `to` maps a logical corpus path ("kit/KitTable.vue") to the import
- * specifier from the file being built.
+ * fail. Builders name files by logical path ("kit/KitTable.vue"); `Ctx` maps
+ * a logical path to the import specifier from the file being built, and a
+ * logical component to its tag and import (none when Nuxt auto-imports it).
  */
 
 export const PLANT_KINDS = [
@@ -20,6 +21,12 @@ export const PLANT_KINDS = [
 export type PlantKind = (typeof PLANT_KINDS)[number];
 export type Source = { lines: string[]; plants: { kind: PlantKind; line: number }[] };
 export type Spec = (logical: string) => string;
+export type Ctx = {
+  to: Spec;
+  component: (logical: string, local: string) => { tag: string; imports: string[] };
+  nuxt: boolean;
+  seed: number;
+};
 
 /** Kit components: generic tables, selects, lists and tabs, plus v-model fields and cards. */
 export const KIT = ["KitTable", "KitSelect", "KitList", "KitField", "KitCard", "KitTabs"] as const;
@@ -34,6 +41,7 @@ const source = (lines: string[]): Source => ({ lines, plants: [] });
 const pad = (value: number) => String(value).padStart(2, "0");
 export const layerName = (index: number) => `Layer${pad(index)}`;
 export const widgetName = (index: number) => `Widget${pad(index)}`;
+export const featureDir = (k: number): string => `features/f${String(k).padStart(4, "0")}`;
 
 export function sharedTypes(): Source {
   return source([
@@ -339,16 +347,17 @@ const layerContract: string[] = [
 ];
 
 /** Layer `index` of feature `k`: generic over the feature row, slot and emits forwarded. */
-export function layer(k: number, index: number, planted: boolean, to: Spec): Source {
+export function layer(k: number, index: number, planted: boolean, ctx: Ctx): Source {
   const generic = `T extends Row${k}`;
-  const model = `import type { Row${k} } from "./model";`;
+  const model = `import type { Row${k} } from "${ctx.to(`${featureDir(k)}/model.ts`)}";`;
   if (index < LAYER_DEPTH - 1) {
-    const next = layerName(index + 1);
+    const local = layerName(index + 1);
+    const { tag: next, imports } = ctx.component(`${featureDir(k)}/${local}.vue`, local);
     return source(
       sfc(
         [
           'import { computed } from "vue";',
-          `import ${next} from "./${next}.vue";`,
+          ...imports,
           model,
           "",
           ...layerContract,
@@ -374,10 +383,11 @@ export function layer(k: number, index: number, planted: boolean, to: Spec): Sou
       ),
     );
   }
+  const table = ctx.component("kit/KitTable.vue", "KitTable");
   const script = [
     'import { ref } from "vue";',
-    `import type { Column } from "${to("shared/types.ts")}";`,
-    `import KitTable from "${to("kit/KitTable.vue")}";`,
+    `import type { Column } from "${ctx.to("shared/types.ts")}";`,
+    ...table.imports,
     model,
     "",
     ...layerContract,
@@ -391,7 +401,7 @@ export function layer(k: number, index: number, planted: boolean, to: Spec): Sou
   const lines = sfc(
     planted ? [...script, `const planted${k}: number = "deep-${k}";`] : script,
     [
-      `<KitTable :rows="rows" :columns="columns" :selected="null" @update:selected="(row) => (lastId = row ? row.id : null)" @row-click="(row, index) => emit('row-click', row, index)">`,
+      `<${table.tag} :rows="rows" :columns="columns" :selected="null" @update:selected="(row) => (lastId = row ? row.id : null)" @row-click="(row, index) => emit('row-click', row, index)">`,
       '  <template #cell="{ row, column, index }">',
       '    <slot name="row" :row="row" :index="index" :level="0" />',
       `    <GBadge :count="row.score${k}" :tone="row.status.kind === 'failed' ? 'danger' : 'info'" />`,
@@ -400,7 +410,7 @@ export function layer(k: number, index: number, planted: boolean, to: Spec): Sou
       "  <template #empty>",
       '    <GSpinner size="sm" />',
       "  </template>",
-      "</KitTable>",
+      `</${table.tag}>`,
     ],
     generic,
   );

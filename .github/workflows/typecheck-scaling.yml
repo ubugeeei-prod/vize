@@ -1,5 +1,5 @@
 name: Type-check scaling
-run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; monorepo ${{ inputs.monorepo_sfcs }})"
+run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
 on:
   workflow_dispatch:
     inputs:
@@ -19,6 +19,10 @@ on:
         description: SFCs of the project-references monorepo (0 skips it)
         type: string
         default: "5000"
+      nuxt_sizes:
+        description: Comma-separated SFC counts of generated Nuxt apps (empty skips them)
+        type: string
+        default: ""
   # Registers the dispatch-only workflow from its PR; the job runs only on dispatch.
   pull_request:
     paths: [.github/workflows/typecheck-scaling.yml]
@@ -40,6 +44,7 @@ jobs:
       SIZES: ${{ inputs.sizes }}
       RUNS: ${{ inputs.runs }}
       MONOREPO_SFCS: ${{ inputs.monorepo_sfcs }}
+      NUXT_SIZES: ${{ inputs.nuxt_sizes }}
     steps:
       - name: Validate inputs
         run: |
@@ -48,6 +53,7 @@ jobs:
           [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
           [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
           [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
+          [[ "$NUXT_SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -65,17 +71,18 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$SHA"
           git worktree add --detach "$RUNNER_TEMP/scaling-target" "$SHA"
-      - name: Install the locked hosts and GNU time
+      - name: Install the locked hosts, the Nuxt app and GNU time
         run: |
           set -euo pipefail
           npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+          if [[ -n "$NUXT_SIZES" ]]; then npm ci --prefix tools/benchmarks/nuxt-app --ignore-scripts --no-audit --no-fund; fi
           if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
             sudo apt-get update -qq
             sudo apt-get install -y --no-install-recommends time
           fi
           /usr/bin/time --version
       - name: Test the generator, gate and report
-        run: node --test tests/tooling/typecheck-scaling.test.ts
+        run: node --test tests/tooling/scale-project-generator.test.ts tests/tooling/typecheck-scaling.test.ts
       - name: Build the native binding and the vize package
         working-directory: ${{ runner.temp }}/scaling-target
         run: |
@@ -93,7 +100,7 @@ jobs:
         run: |
           node tools/benchmarks/scripts/typecheck-scaling.ts \
             --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
-            --sizes "$SIZES" --runs "$RUNS" --monorepo-sfcs "$MONOREPO_SFCS" \
+            --sizes "$SIZES" --runs "$RUNS" --monorepo-sfcs "$MONOREPO_SFCS" --nuxt-sizes "$NUXT_SIZES" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --work "$RUNNER_TEMP/scaling-work" --out "$RUNNER_TEMP/scaling-out"
       - name: Write job summary

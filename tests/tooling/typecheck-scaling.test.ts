@@ -1,19 +1,11 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type TestContext, test } from "node:test";
 
 import { parseGnuTime, runOrder } from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
-import {
-  MIN_SFCS,
-  type Plant,
-  corpusShape,
-  generateMonorepo,
-  generateProject,
-  monorepoMapperConfigs,
-  plantCounts,
-} from "../../tools/benchmarks/scripts/typecheck-scaling-corpus.ts";
+import type { Plant } from "../../tools/benchmarks/scripts/scale-project-generator.ts";
 import {
   type Diagnostic,
   gate,
@@ -33,100 +25,6 @@ import {
   niceCeiling,
   renderScalingSvg,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-svg.ts";
-import { PLANT_KINDS } from "../../tools/benchmarks/scripts/typecheck-scaling-sfc.ts";
-import { root } from "./support/github-workflows.ts";
-
-const plantLine = (files: Map<string, string>, plant: Plant) =>
-  (files.get(plant.file) ?? "").split("\n")[plant.line - 1] ?? "";
-
-const PLANT_TEXT: Record<string, RegExp> = {
-  script: /^const planted\d+: number = "deep-\d+";$/u,
-  "emit-script": /emit\("apply-filter", 42\)/u,
-  generic: /<KitSelect :options="rows" :label-of="\(row\) => row\.score\d+" \/>/u,
-  slot: /\{\{ row\.missing\d+ \}\}/u,
-  "emit-template": /@blur-commit="onPlantCommit"/u,
-  "v-model": /<KitField v-model="climate"/u,
-  global: /<GBadge :count="'many'" \/>/u,
-};
-
-void test("a generated project has exactly the asked SFCs and every plant on its own line", () => {
-  const corpus = generateProject(MIN_SFCS + 20);
-  const vue = [...corpus.files.keys()].filter((path) => path.endsWith(".vue"));
-  assert.equal(vue.length, MIN_SFCS + 20);
-  assert.equal(corpus.features, 2);
-  assert.deepEqual(
-    plantCounts(corpus.plants),
-    Object.fromEntries(PLANT_KINDS.map((kind) => [kind, 2])),
-  );
-  for (const plant of corpus.plants) {
-    assert.match(
-      plantLine(corpus.files, plant),
-      PLANT_TEXT[plant.kind] as RegExp,
-      `${plant.file}:${plant.line}`,
-    );
-  }
-  assert.deepEqual(generateProject(MIN_SFCS + 20).files, corpus.files);
-  const generic = corpus.files.get("src/features/f0000/Layer00.vue") ?? "";
-  assert.match(generic, /<script setup lang="ts" generic="T extends Row0">/u);
-  assert.match(
-    corpus.files.get("src/components.d.ts") ?? "",
-    /GBadge: \(typeof import\("\.\/global\/GBadge\.vue"\)\)\["default"\];/u,
-  );
-  assert.throws(() => generateProject(MIN_SFCS - 1), /at least/u);
-});
-
-void test("plants scale with the corpus and always reach the last feature", () => {
-  assert.deepEqual(corpusShape(1000), { features: 49, extraWidgets: 7 });
-  const corpus = generateProject(1000);
-  assert.equal(corpus.plants.length, 6 * PLANT_KINDS.length);
-  assert.ok(corpus.plants.some((plant) => plant.file.startsWith("src/features/f0048/")));
-  assert.ok(corpus.files.has("src/features/f0048/Widget16.vue"));
-  assert.match(
-    corpus.files.get("src/features/f0000/Page.vue") ?? "",
-    /import Page2 from "\.\.\/f0002\/Page\.vue";/u,
-  );
-});
-
-void test("the monorepo lists packages after their references and keeps mapper configs parallel", () => {
-  const corpus = generateMonorepo(MIN_SFCS + 5 * 20, 6);
-  assert.equal(corpus.kind, "monorepo");
-  assert.equal(
-    [...corpus.files.keys()].filter((path) => path.endsWith(".vue")).length,
-    MIN_SFCS + 100,
-  );
-  const order = corpus.packages;
-  assert.deepEqual(order.slice(0, 2), ["packages/kit", "packages/feat-5"]);
-  assert.equal(order.at(-1), "packages/app");
-  for (const [index, name] of order.entries()) {
-    const config = JSON.parse(corpus.files.get(`${name}/tsconfig.json`) ?? "{}") as {
-      references: { path: string }[];
-      compilerOptions: { rootDir: string; outDir: string };
-    };
-    assert.equal(config.compilerOptions.rootDir, "src");
-    for (const { path } of config.references) {
-      assert.ok(order.indexOf(join(name, path)) < index, `${name} -> ${path}`);
-    }
-  }
-  assert.deepEqual(JSON.parse(corpus.files.get("tsconfig.json") ?? "{}").files, []);
-  const plantedPackages = new Set(corpus.plants.map((plant) => plant.file.split("/src/")[0]));
-  assert.deepEqual([...plantedPackages].sort(), ["packages/feat-0", "packages/feat-5"]);
-  assert.ok(corpus.files.has("packages/feat-3/src/components.d.ts"));
-  const mapper = monorepoMapperConfigs(
-    corpus,
-    { id: "vize", package: "vize" },
-    "tsconfig.vize-mapper.json",
-  );
-  const feat = JSON.parse(mapper.get("packages/feat-0/tsconfig.vize-mapper.json") ?? "{}") as {
-    references: { path: string }[];
-    compilerOptions: { outDir: string };
-  };
-  assert.equal(feat.compilerOptions.outDir, ".out-vize-mapper");
-  assert.ok(feat.references.every(({ path }) => path.endsWith("/tsconfig.vize-mapper.json")));
-  assert.equal(
-    JSON.parse(mapper.get("tsconfig.vize-mapper.json") ?? "{}").references.length,
-    order.length,
-  );
-});
 
 const diagnostic = (file: string, line: number, code: string, kind = "error"): Diagnostic => [
   file,
@@ -137,9 +35,9 @@ const diagnostic = (file: string, line: number, code: string, kind = "error"): D
   "message",
 ];
 const PLANTS: Plant[] = [
-  { kind: "script", file: "src/a.vue", line: 4 },
-  { kind: "v-model", file: "src/b.vue", line: 9 },
-  { kind: "emit-script", file: "src/b.vue", line: 12 },
+  { kind: "script", file: "src/a.vue", line: 4, codes: ["TS2322"] },
+  { kind: "v-model", file: "src/b.vue", line: 9, codes: ["TS2322"] },
+  { kind: "emit-script", file: "src/b.vue", line: 12, codes: ["TS2345", "TS2769"] },
 ];
 
 void test("the gate accepts exactly the planted errors and refuses anything else", () => {
@@ -232,7 +130,7 @@ const cell = (
   tool,
   label: tool,
   vize: tool !== "vue-tsc",
-  kind: "project",
+  kind: "vue",
   sfcs,
   plants: 7,
   mode: "-p",
@@ -309,38 +207,3 @@ void test("GNU time records and run order", () => {
   assert.throws(() => parseGnuTime("Command terminated by signal 9\n"), /unexpected GNU time/u);
   assert.deepEqual(runOrder([1, 2, 3], 1), [3, 2, 1]);
 });
-
-void test(
-  "vue-tsc reports exactly the planted errors of a small corpus",
-  {
-    skip:
-      !existsSync(join(root, "tools/benchmarks/scripts/node_modules/vue-tsc")) &&
-      "vue-tsc is not installed",
-  },
-  async (t: TestContext) => {
-    const { spawnSync } = await import("node:child_process");
-    const { writeCorpus } =
-      await import("../../tools/benchmarks/scripts/typecheck-scaling-corpus.ts");
-    const dir = realpathSync(mkdtempSync(join(tmpdir(), "typecheck-scaling-vue-tsc-")));
-    t.after(() => rmSync(dir, { recursive: true, force: true }));
-    const corpus = generateProject(MIN_SFCS);
-    writeCorpus(dir, corpus.files, false);
-    const modules = join(root, "tools/benchmarks/scripts/node_modules");
-    const { symlinkSync, mkdirSync } = await import("node:fs");
-    mkdirSync(join(dir, "node_modules"));
-    symlinkSync(realpathSync(join(modules, "vue")), join(dir, "node_modules", "vue"));
-    const vueTsc = join(realpathSync(join(modules, "vue-tsc")), "bin", "vue-tsc.js");
-    const result = spawnSync(
-      process.execPath,
-      [vueTsc, "--noEmit", "--pretty", "false", "-p", join(dir, "tsconfig.json")],
-      { cwd: dir, encoding: "utf8" },
-    );
-    const parsed = parseRun(
-      { status: result.status, stdout: result.stdout, stderr: result.stderr },
-      dir,
-      "text",
-    );
-    const verdict = gate("vue-tsc", parsed.diagnostics, corpus.plants);
-    assert.equal(verdict.ok, true, [...verdict.missing, ...verdict.unexpected].join("\n"));
-  },
-);

@@ -11,6 +11,11 @@
  * - The TypeScript 7.1 hosts load the built Vize mapper or Vue's mapper.
  * - vue-tsc is the version pinned for the README benchmark, on its own
  *   TypeScript.
+ *
+ * A Nuxt project takes its packages from the npm-locked tools/benchmarks/nuxt-app,
+ * gets `nuxt prepare` before any check, and adds a `nuxt build` lane. Its
+ * single-project checkers take `.nuxt/tsconfig.app.json`; vize check takes the
+ * solution root as a user runs it.
  */
 
 import { execFileSync } from "node:child_process";
@@ -21,11 +26,15 @@ import {
   readdirSync,
   realpathSync,
   symlinkSync,
+  writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { fileSha256 } from "./benchmark-binary.mjs";
 import { linkPackage } from "./install-package-files.ts";
+import { NUXT_APP_DIR } from "./nuxt-bench-app.ts";
+import type { ScaleKind } from "./scale-project-generator.ts";
+import { NUXT_APP_TSCONFIG } from "./scale-project-nuxt.ts";
 import {
   CONTENT_MAPPERS,
   type MapperHosts,
@@ -40,13 +49,14 @@ export type ToolId =
   | "tsc-vize-mapper"
   | "tsrs-fast-vize-mapper"
   | "vue-tsc"
-  | "tsc-vue-mapper";
+  | "tsc-vue-mapper"
+  | "nuxt-build";
 export type ScalingTool = {
   id: ToolId;
   label: string;
   /** A Vize curve: superlinear growth is filed as a p0 issue. */
   vize: boolean;
-  format: "json" | "text";
+  format: "json" | "text" | "build";
 };
 export const TOOLS: readonly ScalingTool[] = [
   { id: "vize-check", label: "vize check", vize: true, format: "json" },
@@ -55,6 +65,13 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "vue-tsc", label: "vue-tsc", vize: false, format: "text" },
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
+/** Timed on Nuxt projects only; gated on a built client entry instead of diagnostics. */
+export const NUXT_BUILD: ScalingTool = {
+  id: "nuxt-build",
+  label: "nuxt build",
+  vize: false,
+  format: "build",
+};
 
 export type ScalingEnv = {
   target: string;
@@ -64,6 +81,8 @@ export type ScalingEnv = {
   vueTsc: string;
   vueDir: string;
   hosts: MapperHosts;
+  /** tools/benchmarks/nuxt-app/node_modules when installed. */
+  nuxtModules: string | null;
 };
 export type Invocation = { bin: string; args: string[]; stats: boolean };
 
@@ -98,33 +117,64 @@ export function resolveScalingEnv(target: string, hostsDir = TYPECHECK_HOSTS_DIR
     vueTsc: must(join(vueTscDir, "bin", "vue-tsc.js"), "vue-tsc's bin"),
     vueDir: realpathSync(must(join(benchModules, "vue"), "vue")),
     hosts: resolveMapperHosts(hostsDir, cliDir),
+    nuxtModules: existsSync(join(NUXT_APP_DIR, "node_modules", "nuxt"))
+      ? join(NUXT_APP_DIR, "node_modules")
+      : null,
   };
 }
 
-/** `vue` with the packages pnpm placed beside it, then both mappers and the 7.1 `typescript`. */
-export function prepareProjectPackages(dir: string, env: ScalingEnv): void {
-  const modules = join(dir, "node_modules");
-  const siblings = dirname(env.vueDir);
-  for (const entry of readdirSync(siblings)) {
-    if (entry === "typescript" || entry.startsWith(".")) continue;
+export const nuxtCli = (env: ScalingEnv): string =>
+  must(
+    join(env.nuxtModules ?? join(NUXT_APP_DIR, "node_modules"), "nuxt", "bin", "nuxt.mjs"),
+    "nuxt (npm ci --prefix tools/benchmarks/nuxt-app)",
+  );
+
+/** Link every package of `source` into `modules`, scopes as real directories. */
+function linkAll(source: string, modules: string, skip: (entry: string) => boolean): void {
+  mkdirSync(modules, { recursive: true });
+  for (const entry of readdirSync(source)) {
+    if (entry.startsWith(".") || skip(entry)) continue;
     if (entry.startsWith("@")) {
-      for (const scoped of readdirSync(join(siblings, entry))) {
-        linkPackage(realpathSync(join(siblings, entry, scoped)), join(modules, entry, scoped));
+      for (const scoped of readdirSync(join(source, entry))) {
+        linkPackage(realpathSync(join(source, entry, scoped)), join(modules, entry, scoped));
       }
-    } else {
-      mkdirSync(modules, { recursive: true });
-      const target = join(modules, entry);
-      if (!existsSync(target)) symlinkSync(realpathSync(join(siblings, entry)), target, "dir");
+    } else if (!existsSync(join(modules, entry))) {
+      symlinkSync(realpathSync(join(source, entry)), join(modules, entry), "dir");
     }
   }
+}
+
+/**
+ * `vue` with the packages pnpm placed beside it (a Nuxt project: the whole
+ * Nuxt install, linked package by package so build caches stay in the
+ * project), then both mappers and the 7.1 `typescript`.
+ */
+export function prepareProjectPackages(dir: string, env: ScalingEnv, kind: ScaleKind): void {
+  const modules = join(dir, "node_modules");
+  if (kind === "nuxt") {
+    linkAll(
+      must(env.nuxtModules ?? "", "tools/benchmarks/nuxt-app/node_modules"),
+      modules,
+      (entry) => entry === "typescript",
+    );
+  } else {
+    linkAll(dirname(env.vueDir), modules, (entry) => entry === "typescript");
+  }
   prepareMapperPackages(dir, env.hosts);
+  if (kind !== "nuxt") return;
+  for (const mapper of CONTENT_MAPPERS) {
+    writeFileSync(
+      join(dir, mapperTsconfigName(mapper)),
+      `${JSON.stringify({ extends: `./${NUXT_APP_TSCONFIG}`, contentMappers: [{ package: mapper.package, extensions: [".vue"] }] }, null, 2)}\n`,
+    );
+  }
 }
 
 export function invocation(
   tool: ScalingTool,
   env: ScalingEnv,
   cwd: string,
-  kind: "project" | "monorepo",
+  kind: ScaleKind,
 ): Invocation {
   const build = kind === "monorepo";
   const host = (bin: string, config: string, extra: string[] = []): Invocation => ({
@@ -179,12 +229,18 @@ export function invocation(
               "--pretty",
               "false",
               "-p",
-              join(cwd, "tsconfig.json"),
+              join(cwd, kind === "nuxt" ? NUXT_APP_TSCONFIG : "tsconfig.json"),
             ],
         stats: !build,
       };
+    case "nuxt-build":
+      if (kind !== "nuxt") throw new Error("nuxt build runs on Nuxt projects only");
+      return { bin: env.node, args: [nuxtCli(env), "build", cwd], stats: false };
   }
 }
+
+/** Environment of every Nuxt command: no telemetry, a client build. */
+export const NUXT_ENV = { CI: "1", NUXT_TELEMETRY_DISABLED: "1", NITRO_PRESET: "node-server" };
 
 function version(bin: string, viaNode: string | null = null): string | null {
   try {
@@ -258,6 +314,12 @@ export function collectProvenance(env: ScalingEnv, hostsDir = TYPECHECK_HOSTS_DI
       typescriptDir ? join(typescriptDir, "lib", "typescript.js") : null,
     ),
     vue: entry(manifestVersion(env.vueDir), null),
+    ...(env.nuxtModules
+      ? {
+          nuxt: entry(manifestVersion(join(env.nuxtModules, "nuxt")), null),
+          "vue (nuxt-app)": entry(manifestVersion(join(env.nuxtModules, "vue")), null),
+        }
+      : {}),
     node: entry(process.version, process.execPath),
   };
 }
