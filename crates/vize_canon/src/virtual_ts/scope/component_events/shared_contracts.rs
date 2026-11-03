@@ -6,8 +6,9 @@ use vize_carton::{String, append, cstr};
 
 use crate::virtual_ts::helpers::shared_types::{
     LISTENER_EMIT_PROPS_BOX, LISTENER_FALLTHROUGH_ARGS, LISTENER_FALLTHROUGH_ARGS_RAW,
-    LISTENER_FALLTHROUGH_BOX, LISTENER_LIBRARY, LISTENER_NATIVE_FALLTHROUGH_BOX, LISTENER_PROP_ARGS,
-    LISTENER_PROP_ARGS_RAW, LISTENER_PROP_ARRAYS, LISTENER_PROPS_BOX, LISTENER_STATIC_EMIT_ARGS,
+    LISTENER_FALLTHROUGH_BOX, LISTENER_LIBRARY, LISTENER_NATIVE_FALLTHROUGH_BOX,
+    LISTENER_PROP_ARGS, LISTENER_PROP_ARGS_RAW, LISTENER_PROP_ARRAYS, LISTENER_PROPS_BOX,
+    LISTENER_STATIC_EMIT_ARGS,
 };
 
 pub(super) struct ComponentBoxes<'a> {
@@ -43,7 +44,10 @@ pub(super) fn emit_component(ts: &mut String, boxes: ComponentBoxes<'_>) {
     } else {
         return;
     };
-    append!(*ts, "{indent}type {fallthrough_box} = {fallthrough}<typeof {component_ref}>;\n");
+    append!(
+        *ts,
+        "{indent}type {fallthrough_box} = {fallthrough}<typeof {component_ref}>;\n"
+    );
 }
 
 /// The listener key and, for a kebab event, the raw `onFoo-bar` key.
@@ -67,7 +71,11 @@ impl ListenerKey<'_> {
     }
 
     pub(super) fn fallthrough_args(&self, fallthrough_box: &str) -> String {
-        self.keyed(LISTENER_FALLTHROUGH_ARGS, LISTENER_FALLTHROUGH_ARGS_RAW, fallthrough_box)
+        self.keyed(
+            LISTENER_FALLTHROUGH_ARGS,
+            LISTENER_FALLTHROUGH_ARGS_RAW,
+            fallthrough_box,
+        )
     }
 
     pub(super) fn static_emit_args(&self, emit_props_box: &str) -> String {

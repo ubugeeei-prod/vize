@@ -12,6 +12,7 @@ mod component_spread_prop_order;
 mod context_undefined;
 mod define_props_scope;
 mod generic_module_type_exports;
+mod hoisted_listener_contracts;
 mod inherited_calls;
 mod inherited_options;
 mod keyed_template_diagnostics;

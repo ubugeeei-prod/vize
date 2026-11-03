@@ -143,6 +143,7 @@ fn installed_virtual_module_points_helpers_at_the_package() {
             "generated/content-mapper-types.d.ts",
         ),
         ("virtual-ts-globals.d.ts", "virtual-ts-globals.d.ts"),
+        ("virtual-ts-listeners.d.ts", "virtual-ts-listeners.d.ts"),
         ("virtual-ts-patterns.d.ts", "virtual-ts-patterns.d.ts"),
         ("virtual-ts-slots.d.ts", "virtual-ts-slots.d.ts"),
         ("virtual-ts.d.ts", "virtual-ts.d.ts"),
