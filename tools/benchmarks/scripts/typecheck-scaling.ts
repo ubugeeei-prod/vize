@@ -365,6 +365,33 @@ function main(): void {
         const artifacts = join(dir, "node_modules", ".vize", "check-profile");
         if (existsSync(artifacts))
           cpSync(artifacts, join(profileDir, "check-profile"), { recursive: true });
+        // Checker-width identity: the same check pinned to one Corsa checker.
+        const pinned = spawnSync(base.bin, base.args, {
+          cwd: dir,
+          env: {
+            ...process.env,
+            NO_COLOR: "1",
+            FORCE_COLOR: "0",
+            XDG_CACHE_HOME: mkdtempSync(join(work, "cache-")),
+            NODE_OPTIONS,
+            VIZE_CHECKERS: "1",
+          },
+          encoding: "utf8",
+          maxBuffer: 1024 * 1024 * 1024,
+        });
+        const lane = results.cells.find(
+          (cell) =>
+            cell.tool === "vize-check" && cell.kind === corpus.kind && cell.sfcs === corpus.sfcs,
+        );
+        const one = parseRun(
+          { status: pinned.status, stdout: pinned.stdout, stderr: pinned.stderr },
+          dir,
+          vize.format,
+        );
+        writeFileSync(
+          join(profileDir, "checker-width.txt"),
+          `default fingerprint ${lane?.cold?.fingerprint ?? "n/a"}\npinned-1 fingerprint ${one.fingerprint}\n${lane?.cold?.fingerprint === one.fingerprint ? "IDENTICAL" : "DIFFERENT"}\n`,
+        );
       }
     }
     if (!values.keep) rmSync(dir, { recursive: true, force: true });
