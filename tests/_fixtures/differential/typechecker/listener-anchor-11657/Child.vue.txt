@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ fooBar: string }>()
+defineEmits<{ saveItem: [value: string] }>()
+</script>
+<template><div /></template>

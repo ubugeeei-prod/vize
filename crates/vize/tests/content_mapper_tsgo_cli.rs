@@ -24,6 +24,7 @@ mod incomplete_tags;
 mod inference_copy_bodies_11451_11452;
 mod javascript_check_js;
 mod let_anchor_assignment;
+mod listener_anchor_11657;
 mod long_prop_kebab_case;
 mod module_default_export;
 mod nested_callback_11361;

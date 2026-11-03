@@ -12552,6 +12552,40 @@
       }
     },
     {
+      "id": "typechecker/regression/listener-anchor-11657",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "listener-anchor-11657/Child.vue.txt",
+          "sha256": "7a526776accb615b86e0d2143f043a9a365e9d0547432bbf428116c82736336a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "listener-anchor-11657/HandlerAndProp.vue.txt",
+          "sha256": "28e24e0098feae7282204476158b4db8f37f6a99ed2d8289d2326a0c714116a4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::listener_anchor_11657::checks_anchored_at_wrapping_parentheses_stay_reported and content_mapper::directive_tests::disjoint::parentheses_opening_an_authored_span_stay_reportable; #11657 a wrong listener payload anchored at its wrapping `(` is reported through the content mapper, as by vize check. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-component-v-for-source",
       "state": "active",
       "targets": [
