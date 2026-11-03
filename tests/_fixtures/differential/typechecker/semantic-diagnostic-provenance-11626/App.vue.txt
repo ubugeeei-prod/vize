@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const make = () => 1;
+const result = make() as const;
+void result;
+</script>
+<template><div /></template>

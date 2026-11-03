@@ -161,8 +161,13 @@ test("an unrelated edit retains a semantic TS1xxx diagnostic in the prompt", asy
   const directory = workspace("lsp-semantic-retention-");
   const filePath = path.join(directory, "src/App.vue");
   const uri = pathToFileURL(filePath).href;
-  const source =
-    '<script setup lang="ts">\nconst make = () => 1;\nconst result = make() as const;\nvoid result;\n</script>\n<template><div /></template>\n';
+  const source = fs.readFileSync(
+    path.join(
+      root,
+      "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt",
+    ),
+    "utf8",
+  );
   const publications: PublishDiagnosticsParams[] = [];
   const session = new LspSession();
   let stopped = false;

@@ -13758,6 +13758,35 @@
       }
     },
     {
+      "id": "typechecker/regression/semantic-diagnostic-provenance-11626",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": [
+        {
+          "path": "semantic-diagnostic-provenance-11626/App.vue.txt",
+          "sha256": "591a69672055d55d6bb0c20e8a4d39074accedd81d65bf797cdd051a01f9f67b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "tests/tooling/lsp-script-syntax-prompt.test.ts::an unrelated edit retains a semantic TS1xxx diagnostic in the prompt; actual native7.0.2 TS1355 retention and repair through Canon diagnostic provenance. Input-only registration, no batch diagnostic pack or backend parity qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/tsconfig-reference-defaults-3984",
       "state": "active",
       "targets": [
