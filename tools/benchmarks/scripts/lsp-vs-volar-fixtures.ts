@@ -1,6 +1,7 @@
 /**
- * Real projects for `lsp-vs-volar.ts` at the registry's pinned revisions, and
- * the authored spots the scripted session edits and queries in each.
+ * Projects for `lsp-vs-volar.ts`: real ones at the registry's pinned
+ * revisions and generated ones (lsp-vs-volar-scale.ts), and the authored spots
+ * the scripted session edits and queries in each.
  *
  * Every anchor is unique text in the pinned file; a missing or repeated anchor
  * throws instead of measuring a guessed position. Expectations are what a
@@ -9,6 +10,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   cpSync,
   existsSync,
@@ -18,9 +20,10 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 
-import type { Anchor } from "./lsp-vs-volar-text.ts";
+import { SCALE_FIXTURES } from "./lsp-vs-volar-scale.ts";
+import { type Anchor, anchorIn } from "./lsp-vs-volar-text.ts";
 
 export type RequestSpec =
   | { kind: "hover"; name: string; anchor: Anchor; expect: string[] }
@@ -45,10 +48,17 @@ export interface FixtureSpec {
   id: string;
   /** SFC edited and queried, relative to the project root (the opened workspace). */
   file: string;
-  /** The tsconfig that owns `file`; the content-mapper editor declares the mapper there. */
-  tsconfig: string;
-  /** Commands run once after install, before any session. */
-  prepare?: string[];
+  /** Projects whose programs hold `.vue`; the content-mapper editor declares the mapper in each. */
+  tsconfigs: string[];
+  /**
+   * A registry clone with commands run once after install, or files generated
+   * from the workspace catalog's Vue version and installed with npm.
+   */
+  source:
+    | { kind: "registry"; prepare?: string[] }
+    | { kind: "generated"; files: (vue: string) => Map<string, string> };
+  /** Fixtures on one curve differ only in unrelated project size, `sfcs` SFCs each. */
+  curve?: { name: string; sfcs: number };
   /** The script probe goes right after this text, the template probe after the other. */
   scriptProbeAfter: string;
   templateProbeAfter: string;
@@ -66,13 +76,12 @@ export const TEMPLATE_BROKEN = "benchProbe.toFixed('bench')";
 export const SCRIPT_CODE = "2322";
 export const TEMPLATE_CODE = "2345";
 
-const after = (text: string, at: string) => ({ find: text, at: text.indexOf(at) });
-
 export const FIXTURES: FixtureSpec[] = [
   {
     id: "misskey",
     file: "packages/frontend/src/components/MkNote.vue",
-    tsconfig: "packages/frontend/tsconfig.json",
+    tsconfigs: ["packages/frontend/tsconfig.json"],
+    source: { kind: "registry" },
     scriptProbeAfter: '<script lang="ts" setup>\n',
     templateProbeAfter:
       '\t<MkNoteSub v-if="appearNote.replyId && !renoteCollapsed" :note="appearNote?.reply ?? null" :class="$style.replyTo"/>\n',
@@ -81,61 +90,61 @@ export const FIXTURES: FixtureSpec[] = [
       {
         kind: "hover",
         name: "script binding",
-        anchor: after("const appearNote = getAppearNote(note) ?? note;", "appearNote"),
+        anchor: anchorIn("const appearNote = getAppearNote(note) ?? note;", "appearNote"),
         expect: ["appearNote:"],
       },
       {
         kind: "hover",
         name: "template expression",
-        anchor: after("{{ appearNote.channel.name }}", "appearNote"),
+        anchor: anchorIn("{{ appearNote.channel.name }}", "appearNote"),
         expect: ["appearNote:"],
       },
       {
         kind: "hover",
         name: "component tag",
-        anchor: after('<MkNoteHeader :note="appearNote" :mini="true"/>', "MkNoteHeader"),
+        anchor: anchorIn('<MkNoteHeader :note="appearNote" :mini="true"/>', "MkNoteHeader"),
         expect: ["MkNoteHeader"],
       },
       {
         kind: "hover",
         name: "component prop",
-        anchor: after('<MkNoteHeader :note="appearNote" :mini="true"/>', "note="),
+        anchor: anchorIn('<MkNoteHeader :note="appearNote" :mini="true"/>', "note="),
         expect: ["note"],
       },
       {
         kind: "completion",
         name: "script member",
-        anchor: after("computed(() => prefer.s.showSoftWordMutedWord)", "showSoftWordMutedWord"),
+        anchor: anchorIn("computed(() => prefer.s.showSoftWordMutedWord)", "showSoftWordMutedWord"),
         expect: ["showSoftWordMutedWord"],
       },
       {
         kind: "completion",
         name: "template member",
-        anchor: after("{{ appearNote.channel.name }}", "channel"),
+        anchor: anchorIn("{{ appearNote.channel.name }}", "channel"),
         expect: ["channel", "user"],
       },
       {
         kind: "definition",
         name: "component tag",
-        anchor: after('<MkNoteHeader :note="appearNote" :mini="true"/>', "MkNoteHeader"),
+        anchor: anchorIn('<MkNoteHeader :note="appearNote" :mini="true"/>', "MkNoteHeader"),
         expectPath: "src/components/MkNoteHeader.vue",
       },
       {
         kind: "definition",
         name: "imported function",
-        anchor: after("const appearNote = getAppearNote(note) ?? note;", "getAppearNote"),
+        anchor: anchorIn("const appearNote = getAppearNote(note) ?? note;", "getAppearNote"),
         expectPath: "src/utility/get-appear-note.ts",
       },
       {
         kind: "references",
         name: "local binding",
-        anchor: after("const renoteCollapsed = ref(", "renoteCollapsed"),
+        anchor: anchorIn("const renoteCollapsed = ref(", "renoteCollapsed"),
         min: 12,
       },
       {
         kind: "references",
         name: "imported function",
-        anchor: after(
+        anchor: anchorIn(
           "import { getAppearNote } from '@/utility/get-appear-note.js';",
           "getAppearNote",
         ),
@@ -144,7 +153,7 @@ export const FIXTURES: FixtureSpec[] = [
       {
         kind: "rename",
         name: "local binding",
-        anchor: after("const renoteCollapsed = ref(", "renoteCollapsed"),
+        anchor: anchorIn("const renoteCollapsed = ref(", "renoteCollapsed"),
         newName: "renoteFolded",
         min: 12,
       },
@@ -154,9 +163,12 @@ export const FIXTURES: FixtureSpec[] = [
   {
     id: "n8n",
     file: "packages/frontend/editor-ui/src/features/ndv/parameters/components/ResourceLocator/ResourceLocator.vue",
-    tsconfig: "packages/frontend/editor-ui/tsconfig.json",
-    // n8n's own recipe for its editor's workspace dependencies without full type builds.
-    prepare: ["exec", "turbo", "run", "build:unchecked", "--filter=n8n-editor-ui^..."],
+    tsconfigs: ["packages/frontend/editor-ui/tsconfig.json"],
+    source: {
+      kind: "registry",
+      // n8n's own recipe for its editor's workspace dependencies without full type builds.
+      prepare: ["exec", "turbo", "run", "build:unchecked", "--filter=n8n-editor-ui^..."],
+    },
     scriptProbeAfter: '<script setup lang="ts">\n',
     templateProbeAfter: '\t\t:data-test-id="`resource-locator-${parameter.name}`"\n\t>\n',
     templateIndent: "\t\t",
@@ -164,61 +176,61 @@ export const FIXTURES: FixtureSpec[] = [
       {
         kind: "hover",
         name: "script binding",
-        anchor: after("const currentQueryResults = computed<", "currentQueryResults"),
+        anchor: anchorIn("const currentQueryResults = computed<", "currentQueryResults"),
         expect: ["currentQueryResults:"],
       },
       {
         kind: "hover",
         name: "template expression",
-        anchor: after(':resources="currentQueryResults"', "currentQueryResults"),
+        anchor: anchorIn(':resources="currentQueryResults"', "currentQueryResults"),
         expect: ["currentQueryResults:"],
       },
       {
         kind: "hover",
         name: "component tag",
-        anchor: after("<ResourceLocatorDropdown\n", "ResourceLocatorDropdown"),
+        anchor: anchorIn("<ResourceLocatorDropdown\n", "ResourceLocatorDropdown"),
         expect: ["ResourceLocatorDropdown"],
       },
       {
         kind: "hover",
         name: "component prop",
-        anchor: after(':resources="currentQueryResults"', "resources"),
+        anchor: anchorIn(':resources="currentQueryResults"', "resources"),
         expect: ["resources"],
       },
       {
         kind: "completion",
         name: "script member",
-        anchor: after("if (currentMode.value.placeholder) {", "placeholder"),
+        anchor: anchorIn("if (currentMode.value.placeholder) {", "placeholder"),
         expect: ["placeholder"],
       },
       {
         kind: "completion",
         name: "template member",
-        anchor: after("{{ currentResponse.errorDetails.httpCode }}", "errorDetails"),
+        anchor: anchorIn("{{ currentResponse.errorDetails.httpCode }}", "errorDetails"),
         expect: ["errorDetails"],
       },
       {
         kind: "definition",
         name: "component tag",
-        anchor: after("<ResourceLocatorDropdown\n", "ResourceLocatorDropdown"),
+        anchor: anchorIn("<ResourceLocatorDropdown\n", "ResourceLocatorDropdown"),
         expectPath: "ResourceLocator/ResourceLocatorDropdown.vue",
       },
       {
         kind: "definition",
         name: "imported function",
-        anchor: after("const i18n = useI18n();", "useI18n"),
+        anchor: anchorIn("const i18n = useI18n();", "useI18n"),
         expectPath: "@n8n/i18n/src/index.ts",
       },
       {
         kind: "references",
         name: "local binding",
-        anchor: after("const isListMode = computed(", "isListMode"),
+        anchor: anchorIn("const isListMode = computed(", "isListMode"),
         min: 12,
       },
       {
         kind: "references",
         name: "imported function",
-        anchor: after(
+        anchor: anchorIn(
           "import { ndvEventBus } from '@/features/ndv/shared/ndv.eventBus';",
           "ndvEventBus",
         ),
@@ -227,13 +239,14 @@ export const FIXTURES: FixtureSpec[] = [
       {
         kind: "rename",
         name: "local binding",
-        anchor: after("const isListMode = computed(", "isListMode"),
+        anchor: anchorIn("const isListMode = computed(", "isListMode"),
         newName: "isListModeActive",
         min: 12,
       },
       { kind: "semanticTokens", name: "document", min: 1 },
     ],
   },
+  ...SCALE_FIXTURES,
 ];
 
 /** The SFC as the session opens it: probes planted, the script one broken. */
@@ -272,18 +285,93 @@ function run(command: string, args: string[], cwd: string) {
 }
 
 /**
- * Clone (shallow, pinned), install with the project's own pinned package
- * manager and run its preparation once; `.lspbench-ready` makes reruns free.
+ * The fixture's project root, prepared once (`.lspbench-ready` makes reruns
+ * free), and the edited SFC as its source has it: never the disk, which a
+ * killed run may have left planted.
  */
-export function prepareFixture(repoRoot: string, spec: FixtureSpec, fixturesDir: string): string {
+export function prepareFixture(
+  repoRoot: string,
+  spec: FixtureSpec,
+  fixturesDir: string,
+): { root: string; original: string } {
+  const root = resolve(fixturesDir, spec.id);
+  if (spec.source.kind === "generated") {
+    const files = prepareGenerated(repoRoot, root, spec.source.files);
+    const original = files.get(spec.file);
+    if (original == null) throw new Error(`${spec.id} generates no ${spec.file}`);
+    return { root, original };
+  }
+  prepareRegistry(repoRoot, root, spec.id, spec.source.prepare);
+  const show = spawnSync("git", ["show", `HEAD:${spec.file}`], {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  if (show.status !== 0) throw new Error(`${spec.id}: git show ${spec.file}: ${show.stderr}`);
+  return { root, original: show.stdout };
+}
+
+/** `name`'s pin in the workspace catalog `catalog` of pnpm-workspace.yaml. */
+export function catalogVersion(workspaceYaml: string, catalog: string, name: string): string {
+  const lines = workspaceYaml.split("\n");
+  const start = lines.indexOf(`  ${catalog}:`);
+  if (start < 0) throw new Error(`pnpm-workspace.yaml has no catalog ${catalog}`);
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() && !line.startsWith("    ")) break;
+    const match = /^ {4}"?([^":]+)"?: "([^"]+)"$/.exec(line);
+    if (match?.[1] === name) return match[2];
+  }
+  throw new Error(`catalog ${catalog} pins no ${name}`);
+}
+
+/** Order-independent digest of a generated project. */
+export function projectDigest(files: Map<string, string>): string {
+  const hash = createHash("sha256");
+  for (const path of [...files.keys()].sort()) hash.update(`${path}\0${files.get(path)}\0`);
+  return hash.digest("hex");
+}
+
+/** Write the generated files and install them with npm, Vue pinned by the workspace catalog. */
+function prepareGenerated(
+  repoRoot: string,
+  root: string,
+  generate: (vue: string) => Map<string, string>,
+): Map<string, string> {
+  const workspaceYaml = readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8");
+  const files = generate(catalogVersion(workspaceYaml, "vue-production", "vue"));
+  const digest = projectDigest(files);
+  const stamp = join(root, ".lspbench-ready");
+  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === digest) return files;
+  rmSync(root, { recursive: true, force: true });
+  const made = new Set<string>();
+  for (const [path, text] of files) {
+    const target = join(root, path);
+    if (!made.has(dirname(target))) mkdirSync(dirname(target), { recursive: true });
+    made.add(dirname(target));
+    writeFileSync(target, text);
+  }
+  run("npm", ["install", "--no-audit", "--no-fund", "--ignore-scripts", "--prefer-offline"], root);
+  writeFileSync(stamp, `${digest}\n`);
+  return files;
+}
+
+/**
+ * Clone (shallow, pinned), install with the project's own pinned package
+ * manager and run its preparation once.
+ */
+function prepareRegistry(
+  repoRoot: string,
+  root: string,
+  id: string,
+  prepareCommand: string[] | undefined,
+): void {
   const registry = JSON.parse(
     readFileSync(join(repoRoot, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
   ) as { projects: RegistryEntry[] };
-  const entry = registry.projects.find((project) => project.id === spec.id);
-  if (!entry) throw new Error(`${spec.id} is not in the fixture registry`);
-  const root = resolve(fixturesDir, spec.id);
+  const entry = registry.projects.find((project) => project.id === id);
+  if (!entry) throw new Error(`${id} is not in the fixture registry`);
   const stamp = join(root, ".lspbench-ready");
-  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === entry.revision) return root;
+  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === entry.revision) return;
   if (!existsSync(root) || !readdirSync(root).some((name) => name !== ".git")) {
     mkdirSync(root, { recursive: true });
     run("git", ["init", "-q"], root);
@@ -296,9 +384,7 @@ export function prepareFixture(repoRoot: string, spec: FixtureSpec, fixturesDir:
   };
   const pinned = /^(pnpm|yarn|npm)@([^+]+)/.exec(manifest.packageManager ?? "");
   if (!pinned || pinned[1] !== "pnpm") {
-    throw new Error(
-      `${spec.id}: expected a pinned pnpm packageManager, got ${manifest.packageManager}`,
-    );
+    throw new Error(`${id}: expected a pinned pnpm packageManager, got ${manifest.packageManager}`);
   }
   const pnpm = ["--yes", `pnpm@${pinned[2]}`];
   run(
@@ -306,31 +392,45 @@ export function prepareFixture(repoRoot: string, spec: FixtureSpec, fixturesDir:
     [...pnpm, "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     root,
   );
-  const prepare = spec.prepare ?? entry.typecheckPerformance?.baseline?.prepare?.slice(1);
+  const prepare = prepareCommand ?? entry.typecheckPerformance?.baseline?.prepare?.slice(1);
   if (prepare) run("npx", [...pnpm, ...prepare], root);
   writeFileSync(stamp, `${entry.revision}\n`);
-  return root;
+}
+
+/** The deepest directory holding every one of `paths`. */
+export function commonDirectory(paths: string[]): string {
+  const parts = paths.map((path) => path.split(sep));
+  let length = 0;
+  while (length < parts[0].length && parts.every((other) => other[length] === parts[0][length]))
+    length += 1;
+  return parts[0].slice(0, length).join(sep);
 }
 
 /**
- * Declare the Vize content mapper in the fixture's tsconfig and install the
- * mapper package beside it, for one content-mapper session only: other editors
- * must see the project exactly as authored. Returns the restore step.
+ * Declare the Vize content mapper in each of the fixture's tsconfigs and
+ * install the mapper package once where all of them resolve it, for one
+ * content-mapper session only: other editors must see the project exactly as
+ * authored. Returns the restore step.
  */
 export function installContentMapper(
   workspace: string,
   spec: FixtureSpec,
   mapperModules: string,
 ): () => void {
-  const tsconfig = join(workspace, spec.tsconfig);
-  const original = readFileSync(tsconfig, "utf8");
-  if (original.includes('"contentMappers"'))
-    throw new Error(`${spec.tsconfig} already declares contentMappers`);
-  const open = original.indexOf("{");
-  if (open < 0) throw new Error(`${spec.tsconfig} is not a JSON object`);
   const entry = '"contentMappers": [{ "package": "vize", "extensions": [".vue"] }],';
-  writeFileSync(tsconfig, `${original.slice(0, open + 1)}\n  ${entry}${original.slice(open + 1)}`);
-  const modules = join(dirname(tsconfig), "node_modules");
+  const originals = new Map<string, string>();
+  for (const relative of spec.tsconfigs) {
+    const original = readFileSync(join(workspace, relative), "utf8");
+    if (original.includes('"contentMappers"'))
+      throw new Error(`${relative} already declares contentMappers`);
+    if (original.indexOf("{") < 0) throw new Error(`${relative} is not a JSON object`);
+    originals.set(join(workspace, relative), original);
+  }
+  for (const [tsconfig, original] of originals) {
+    const open = original.indexOf("{") + 1;
+    writeFileSync(tsconfig, `${original.slice(0, open)}\n  ${entry}${original.slice(open)}`);
+  }
+  const modules = join(commonDirectory([...originals.keys()].map(dirname)), "node_modules");
   mkdirSync(modules, { recursive: true });
   const added: string[] = [];
   for (const name of readdirSync(mapperModules)) {
@@ -349,6 +449,6 @@ export function installContentMapper(
   }
   return () => {
     for (const target of added) rmSync(target, { recursive: true, force: true });
-    writeFileSync(tsconfig, original);
+    for (const [tsconfig, original] of originals) writeFileSync(tsconfig, original);
   };
 }
