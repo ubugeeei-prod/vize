@@ -223,6 +223,7 @@ jobs:
 
   compare:
     name: compare
+    if: ${{ !contains(github.event.head_commit.message, '[skip compare]') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     permissions:
@@ -307,7 +308,7 @@ jobs:
               spec=$(printf '{"label":"%s","kind":"native","path":"%s","mode":"%s"}' "$side" "$RUNNER_TEMP/$side.node" "$mode")
               "$perf_bin" stat -x, -e instructions,cycles,task-clock -o "stat-$side-$mode.csv" \
                 node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-              node -e 'const [f, side, mode] = process.argv.slice(1); const rows = Object.fromEntries(require("fs").readFileSync(f, "utf8").split("\n").filter((l) => /^[0-9]/.test(l)).map((l) => { const c = l.split(","); return [c[2], Number(c[0])]; })); console.log(`| ${side} | ${mode} | ${(rows.instructions / 1e9).toFixed(3)}G | ${(rows.cycles / 1e9).toFixed(3)}G | ${rows["task-clock"].toFixed(1)} ms |`)' "stat-$side-$mode.csv" "$side" "$mode" >> compile-compare.md
+              node -e 'const [f, side, mode] = process.argv.slice(1); const rows = Object.fromEntries(require("fs").readFileSync(f, "utf8").split("\n").filter((l) => /^[0-9]/.test(l)).map((l) => { const c = l.split(","); return [c[2], Number(c[0])]; })); console.log(`| ${side} | ${mode} | ${(rows.instructions / 1e9).toFixed(3)}G | ${(rows.cycles / 1e9).toFixed(3)}G | ${(rows["task-clock"] / 1e6).toFixed(1)} ms |`)' "stat-$side-$mode.csv" "$side" "$mode" >> compile-compare.md
             done
           done
           cat compile-compare.md
