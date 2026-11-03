@@ -12,8 +12,8 @@ use crate::virtual_ts::helpers::{
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{FxHashSet, String, append};
-use vize_croquis::croquis::PassedProp;
+use vize_carton::{FxHashSet, String, append, cstr};
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use super::NAMED_PROP_DIAGNOSTIC_MARKER;
 
@@ -31,7 +31,7 @@ pub(super) fn append_prop_entry<'p>(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
-    component_name: &str,
+    usage: &ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -129,14 +129,19 @@ pub(super) fn append_prop_entry<'p>(
         if has_per_prop_value_check(prop)
             && !inline_callback
             && !source_context.is_inference_only()
-            && let Some(idx) = source_context.aria_value_contract_index
+            && let Some((idx, hoist_shared_preamble)) = source_context.aria_value_contract_index
         {
-            let component = to_safe_identifier_fragment(component_name);
+            let component = to_safe_identifier_fragment(usage.name.as_str());
             let name = to_safe_identifier_fragment(prop.name.as_str());
-            append!(
-                *ts,
-                ", (undefined as unknown as __{component}_{idx}_prop_{name})",
-            );
+            let prop_type = crate::virtual_ts::scope::per_prop_value_type(
+                usage,
+                &component,
+                idx,
+                &name,
+                hoist_shared_preamble,
+            )
+            .unwrap_or_else(|| cstr!("__{component}_{idx}_prop_{name}"));
+            append!(*ts, ", (undefined as unknown as {prop_type})");
         }
         ts.push(')');
     }

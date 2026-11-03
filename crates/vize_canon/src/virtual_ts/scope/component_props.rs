@@ -28,8 +28,7 @@ use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
-    append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
-    usage_needs_per_prop_aliases,
+    append_prop_check_helpers, append_prop_checker_alias, usage_needs_per_prop_aliases,
 };
 use super::component_prop_navigation;
 use super::component_slots::{
@@ -429,13 +428,6 @@ fn generate_usage_declarations(
         ),
     );
 
-    append_per_prop_aliases(
-        ts,
-        usage,
-        component_type_name.as_str(),
-        idx,
-        ctx.hoist_shared_preamble,
-    );
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
 }
 

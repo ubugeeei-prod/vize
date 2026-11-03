@@ -108,15 +108,12 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert!(
-        output.code.contains("type __HelloWorld_0_prop_msg = $PropValue<__HelloWorld_ValueProps_0, 'msg', __HelloWorld_FallthroughValue_0<'msg'>>;"),
-        "static prop must declare its child prop type alias:\n{}",
-        output.code
-    );
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains(": __HelloWorld_0_prop_msg = \"You did it!\";"),
+            .matches(": $PropValue<__HelloWorld_ValueProps_0, 'msg', __HelloWorld_FallthroughValue_0<'msg'>> = \"You did it!\";")
+            .count(),
+        1,
         "static prop value must be asserted against the child prop type:\n{}",
         output.code
     );
@@ -164,10 +161,12 @@ fn static_attribute_values_escape_into_exact_string_literals() {
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains(": __Child_0_prop_label = \"say \\\"hi\\\" \\\\ done\";"),
+            .matches(": $PropValue<__Child_ValueProps_0, 'label', __Child_FallthroughValue_0<'label'>> = \"say \\\"hi\\\" \\\\ done\";")
+            .count(),
+        1,
         "static value must escape quotes and backslashes:\n{}",
         output.code
     );
@@ -187,15 +186,16 @@ fn valueless_static_attributes_stay_out_of_per_prop_checks() {
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-    assert!(
-        !output.code.contains("__Child_0_prop_disabled ="),
+    assert_eq!(
+        output.code.matches("__vize_prop_check_0_disabled").count(),
+        0,
         "valueless attributes keep their boolean-shorthand semantics:\n{}",
         output.code
     );
 }
 
 #[test]
-fn repeated_prop_names_keep_unique_checks_and_one_type_alias() {
+fn repeated_prop_names_keep_unique_checks_against_one_prop_type() {
     let script = r#"import Child from "./Child.vue"
 const isLoading = false
 "#;
@@ -210,26 +210,34 @@ const isLoading = false
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
+    // Both checks read the type of the usage's first valued `class`.
+    let class_type =
+        "$PropValue<__Child_ValueProps_0, 'class', __Child_FallthroughValue_0<'class'>>";
     assert_eq!(
         output
             .code
-            .matches("type __Child_0_prop_class = $PropValue<__Child_ValueProps_0, 'class', __Child_FallthroughValue_0<'class'>>;")
+            .matches(
+                vize_carton::cstr!(
+                    "const __vize_prop_check_0_class: {class_type} = \"static-card\";"
+                )
+                .as_str()
+            )
             .count(),
         1,
-        "the child prop type alias must be declared exactly once:\n{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("const __vize_prop_check_0_class: __Child_0_prop_class = \"static-card\";"),
         "the static class value keeps the base check name:\n{}",
         output.code
     );
-    assert!(
-        output.code.contains(
-            "const __vize_prop_check_0_class_2: __Child_0_prop_class = { loading: isLoading };"
-        ),
+    assert_eq!(
+        output
+            .code
+            .matches(
+                vize_carton::cstr!(
+                    "const __vize_prop_check_0_class_2: {class_type} = {{ loading: isLoading }};"
+                )
+                .as_str()
+            )
+            .count(),
+        1,
         "the bound class value gets a unique check name:\n{}",
         output.code
     );

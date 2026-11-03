@@ -45,7 +45,8 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) model_modifiers: Option<&'a super::model_modifiers::ModelModifierBindings>,
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
-    pub(crate) aria_value_contract_index: Option<usize>,
+    /// The usage index and helper mode of the per-prop contract an ARIA entry reuses.
+    pub(crate) aria_value_contract_index: Option<(usize, bool)>,
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
@@ -314,6 +315,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                         ctx.hoist_shared_preamble,
                     ),
                     (
+                        usage,
                         component_type_name.as_str(),
                         idx,
                         safe_prop_name.as_str(),

@@ -45,7 +45,7 @@ mod vif_guard_chain;
 pub(crate) use closures::generate_scope_closures;
 pub(crate) use component_events::emit_event_inference_helpers;
 pub(crate) use component_prop_checker::{
-    contains_inline_function_prop_value, is_inline_callback_prop,
+    contains_inline_function_prop_value, is_inline_callback_prop, per_prop_value_type,
 };
 pub(crate) use component_ref_props::is_inline_ref_callback_prop;
 pub(crate) use context::{

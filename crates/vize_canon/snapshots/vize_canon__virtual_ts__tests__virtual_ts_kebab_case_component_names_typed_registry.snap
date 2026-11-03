@@ -222,7 +222,6 @@ function __setup() {
   type __my_widget_ValueProps_0 = $IsLibraryGenericExport<__my_widget_Component_0> extends true ? Record<string, any> : __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & $PublicComponentAttrs;
   type __my_widget_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__my_widget_Component_0, K>;
   type __my_widget_Check_0 = $PropChecker<__my_widget_Component_0, __my_widget_CheckProps_0, __my_widget_CheckTail_0>;
-  type __my_widget_0_prop_label = $PropValue<__my_widget_ValueProps_0, 'label', __my_widget_FallthroughValue_0<'label'>>;
 
   // Component template navigation references
   void my_widget;
@@ -232,7 +231,7 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 11:25
-  const __vize_prop_check_0_label: __my_widget_0_prop_label = value;
+  const __vize_prop_check_0_label: $PropValue<__my_widget_ValueProps_0, 'label', __my_widget_FallthroughValue_0<'label'>> = value;
   void __vize_prop_check_0_label;
   (undefined as unknown as __my_widget_Check_0)({
     ...{} as { "onUpdate:modelValue": never },

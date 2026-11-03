@@ -1,4 +1,4 @@
-use vize_carton::{FxHashSet, String, append, cstr};
+use vize_carton::{String, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use super::component_ref_props::is_inline_ref_callback_prop;
@@ -13,9 +13,9 @@ pub(super) use check_helpers::append_prop_check_helpers;
 /// Whether this prop's authored value is an inline function, which is the only
 /// shape that needs the `$CallableProp` fallback.
 ///
-/// The name filters mirror [`append_per_prop_aliases`] exactly, because the two
-/// must agree: emitting the helper for a prop the alias loop then skips leaves
-/// it unreferenced, which is `TS6196` on a clean SFC.
+/// The name filters mirror [`per_prop_value_type`] exactly, because the two
+/// must agree: emitting the helper for a prop no check then reads leaves it
+/// unreferenced, which is `TS6196` on a clean SFC.
 pub(crate) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
     if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
         return false;
@@ -296,45 +296,29 @@ pub(super) fn prop_alias_type(
     }
 }
 
-/// One `__X_N_prop_<name>` alias per distinct prop name the usage binds.
-///
-/// A repeated attribute — a static `class` next to a bound `:class` — reuses the
-/// same child prop type, and emitting the alias twice would be a `TS2300` in the
-/// generated module, so the name set is deduplicated.
-pub(super) fn append_per_prop_aliases(
-    ts: &mut String,
+/// The type a per-prop check reads for `safe_prop_name`, inlined at each
+/// reader. A repeated attribute (a static `class` next to a bound `:class`)
+/// shares one child prop, so the first valued prop with that name decides.
+pub(crate) fn per_prop_value_type(
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
+    safe_prop_name: &str,
     hoist_shared_preamble: bool,
-) {
-    let mut declared_aliases = FxHashSet::default();
-    for prop in &usage.props {
-        if prop.name_is_dynamic
+) -> Option<String> {
+    let prop = usage.props.iter().find(|prop| {
+        !(prop.name_is_dynamic
             || prop.name.as_str() == "key"
-            || (prop.name.as_str() == "ref" && !is_inline_ref_callback_prop(prop))
-        {
-            continue;
-        }
-        if prop.value.is_none() {
-            continue;
-        }
-        let camel_prop_name = to_camel_case(prop.name.as_str());
-        let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
-        if !declared_aliases.insert(safe_prop_name.clone()) {
-            continue;
-        }
-        append!(
-            *ts,
-            "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
-            prop_alias_type(
-                prop,
-                component_type_name,
-                idx,
-                &camel_prop_name,
-                prop.name.as_str(),
-                hoist_shared_preamble,
-            ),
-        );
-    }
+            || (prop.name.as_str() == "ref" && !is_inline_ref_callback_prop(prop)))
+            && prop.value.is_some()
+            && to_safe_identifier_fragment(prop.name.as_str()) == safe_prop_name
+    })?;
+    Some(prop_alias_type(
+        prop,
+        component_type_name,
+        idx,
+        &to_camel_case(prop.name.as_str()),
+        prop.name.as_str(),
+        hoist_shared_preamble,
+    ))
 }

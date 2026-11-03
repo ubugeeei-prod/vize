@@ -20,9 +20,16 @@ type $NotUndefined<T> = never;
         )
         .expect("installed shared-helper transform");
         let text = result.text.as_str();
+        let prop_value = if shared_virtual_module {
+            "import(\"vize/virtual-ts\").$PropValue"
+        } else {
+            "$PropValue"
+        };
+        let owned_call = format!(
+            "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\", (undefined as unknown as {prop_value}<__Child_Props_0, 'aria-label', {prop_value}<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>))"
+        );
         assert_eq!(
-            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\", (undefined as unknown as __Child_0_prop_aria_label))")
-                .count(),
+            text.matches(owned_call.as_str()).count(),
             1,
             "the literal must call the emitted helper: {text}"
         );

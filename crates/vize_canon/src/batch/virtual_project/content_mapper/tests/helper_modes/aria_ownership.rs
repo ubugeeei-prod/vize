@@ -38,8 +38,16 @@ const label = 'ok';
             3,
             "raw and owned overloads precede their hidden implementation: {text}"
         );
+        let prop_value = if shared {
+            "import(\"vize/virtual-ts\").$PropValue"
+        } else {
+            "$PropValue"
+        };
+        let owned_call = format!(
+            "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as {prop_value}<__Child_Props_0, 'aria-label', {prop_value}<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>))"
+        );
         assert_eq!(
-            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_aria_label))").count(),
+            text.matches(owned_call.as_str()).count(),
             1,
             "only the mapped diagnostic literal may reuse its checked contract: {text}"
         );
@@ -76,8 +84,7 @@ const label = 'ok';
             "a bare attribute has no per-prop value owner and must remain checked: {text}"
         );
         assert_eq!(
-            text.matches("true, (undefined as unknown as __Child_1_prop_aria_label)")
-                .count(),
+            text.matches("true, (undefined as unknown as").count(),
             0,
             "an unowned attribute cannot borrow a phantom contract: {text}"
         );

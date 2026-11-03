@@ -190,7 +190,6 @@ function __setup() {
   type __VDatePicker_ValueProps_0 = $IsLibraryGenericExport<__VDatePicker_Component_0> extends true ? Record<string, any> : __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $PublicComponentAttrs;
   type __VDatePicker_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__VDatePicker_Component_0, K>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
-  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>>;
 
   // Component template navigation references
   void VDatePicker;
@@ -200,7 +199,7 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 13:27
-  const __vize_prop_check_0_width: __VDatePicker_0_prop_width = width;
+  const __vize_prop_check_0_width: $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>> = width;
   void __vize_prop_check_0_width;
   (undefined as unknown as __VDatePicker_Check_0)({
     "width": width,
@@ -406,7 +405,6 @@ function __setup() {
   type __VDatePicker_ValueProps_0 = $IsLibraryGenericExport<__VDatePicker_Component_0> extends true ? Record<string, any> : __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $PublicComponentAttrs;
   type __VDatePicker_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__VDatePicker_Component_0, K>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
-  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>>;
 
   // Component template navigation references
   void VDatePicker;
@@ -416,7 +414,7 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 13:27
-  const __vize_prop_check_0_width: __VDatePicker_0_prop_width = width;
+  const __vize_prop_check_0_width: $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>> = width;
   void __vize_prop_check_0_width;
   (undefined as unknown as __VDatePicker_Check_0)({
     "width": width,

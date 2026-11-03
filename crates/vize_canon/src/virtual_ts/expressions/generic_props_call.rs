@@ -72,7 +72,7 @@ pub(super) fn generate_generic_props_call(
     // anchor for a per-property failure; this one only catches what TypeScript
     // reports about the literal as a whole.
     let mut diagnostic_source = source_context;
-    diagnostic_source.aria_value_contract_index = Some(idx);
+    diagnostic_source.aria_value_contract_index = Some((idx, hoist_shared_preamble));
     let literal_range = append_props_literal(
         ts,
         mappings,

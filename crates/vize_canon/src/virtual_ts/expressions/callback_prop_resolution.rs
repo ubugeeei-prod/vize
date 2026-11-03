@@ -8,7 +8,7 @@ use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use super::ts_suppression_comments::inference_callback_parameters_on_ignored_lines;
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
-use crate::virtual_ts::scope::is_inline_callback_prop;
+use crate::virtual_ts::scope::{is_inline_callback_prop, per_prop_value_type};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{String, append, cstr};
 use vize_croquis::croquis::ComponentUsage;
@@ -21,13 +21,24 @@ pub(super) struct CallbackPropsResolution {
 pub(super) fn append_prop_check_type(
     ts: &mut String,
     (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
-    (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
+    (usage, component_type_name, idx, safe_prop_name, prop_name): (
+        &ComponentUsage,
+        &str,
+        usize,
+        &str,
+        &str,
+    ),
 ) {
+    let prop_type = per_prop_value_type(
+        usage,
+        component_type_name,
+        idx,
+        safe_prop_name,
+        hoist_shared_preamble,
+    )
+    .unwrap_or_else(|| cstr!("__{component_type_name}_{idx}_prop_{safe_prop_name}"));
     let Some(resolution) = resolution else {
-        append!(
-            *ts,
-            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
-        );
+        append!(*ts, ": {prop_type} = ");
         return;
     };
     let camel_prop_name = super::super::helpers::to_camel_case(prop_name);
@@ -37,12 +48,12 @@ pub(super) fn append_prop_check_type(
         let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
         append!(
             *ts,
-            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', {prop_type}> = ",
         );
     } else {
         append!(
             *ts,
-            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', {prop_type}> = ",
         );
     }
 }

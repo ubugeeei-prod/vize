@@ -244,7 +244,6 @@ function __setup() {
   type __TrendChart_ValueProps_0 = $IsLibraryGenericExport<__TrendChart_Component_0> extends true ? Record<string, any> : __TrendChart_Props_0 & $EmitListeners<__TrendChart_Component_0> & $PublicComponentAttrs;
   type __TrendChart_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__TrendChart_Component_0, K>;
   type __TrendChart_Check_0 = $PropChecker<__TrendChart_Component_0, __TrendChart_CheckProps_0, __TrendChart_CheckTail_0>;
-  type __TrendChart_0_prop_class = $PropValue<__TrendChart_ValueProps_0, 'class', __TrendChart_FallthroughValue_0<'class'>>;
 
   // Component template navigation references
   void TrendChart;
@@ -257,7 +256,7 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 12:26
-  const __vize_prop_check_0_class: __TrendChart_0_prop_class = props["class"];
+  const __vize_prop_check_0_class: $PropValue<__TrendChart_ValueProps_0, 'class', __TrendChart_FallthroughValue_0<'class'>> = props["class"];
   void __vize_prop_check_0_class;
   (undefined as unknown as __TrendChart_Check_0)({
     "class": props["class"],

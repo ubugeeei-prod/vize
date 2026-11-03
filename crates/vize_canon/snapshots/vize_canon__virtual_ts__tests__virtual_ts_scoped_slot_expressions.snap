@@ -233,7 +233,6 @@ function __setup() {
   type __MyList_ValueProps_0 = $IsLibraryGenericExport<__MyList_Component_0> extends true ? Record<string, any> : __MyList_Props_0 & $EmitListeners<__MyList_Component_0> & $PublicComponentAttrs;
   type __MyList_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__MyList_Component_0, K>;
   type __MyList_Check_0 = $PropChecker<__MyList_Component_0, __MyList_CheckProps_0, __MyList_CheckTail_0>;
-  type __MyList_0_prop_items = $PropValue<__MyList_ValueProps_0, 'items', __MyList_FallthroughValue_0<'items'>>;
 
   // Component template navigation references
   void MyList;
@@ -246,7 +245,7 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 8:22
-  const __vize_prop_check_0_items: __MyList_0_prop_items = items;
+  const __vize_prop_check_0_items: $PropValue<__MyList_ValueProps_0, 'items', __MyList_FallthroughValue_0<'items'>> = items;
   void __vize_prop_check_0_items;
   (undefined as unknown as __MyList_Check_0)({
     "items": items,

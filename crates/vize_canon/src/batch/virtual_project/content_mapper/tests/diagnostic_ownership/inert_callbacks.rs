@@ -114,7 +114,7 @@ pub(super) fn inline_callback_copies_stay_ignored_and_never_hide_the_canonical_c
                     [
                         "ignored",
                         "ignored",
-                        "const __vize_prop_check_0_pick: $ResolvedProp<typeof __vize_resolved_Comp_props_0, typeof __vize_selected_Comp_props_0, 'pick', __Comp_0_prop_pick> = ",
+                        "const __vize_prop_check_0_pick: $ResolvedProp<typeof __vize_resolved_Comp_props_0, typeof __vize_selected_Comp_props_0, 'pick', $CallableProp<$PropValue<__Comp_ValueProps_0, 'pick', __Comp_FallthroughValue_0<'pick'>>>> = ",
                         "ignored",
                     ],
                     "{text}"

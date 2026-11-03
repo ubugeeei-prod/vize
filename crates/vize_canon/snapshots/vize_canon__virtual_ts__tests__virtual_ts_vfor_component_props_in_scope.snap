@@ -206,7 +206,6 @@ function __setup() {
   type __TodoItem_ValueProps_0 = $IsLibraryGenericExport<__TodoItem_Component_0> extends true ? Record<string, any> : __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & $PublicComponentAttrs;
   type __TodoItem_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__TodoItem_Component_0, K>;
   type __TodoItem_Check_0 = $PropChecker<__TodoItem_Component_0, __TodoItem_CheckProps_0, __TodoItem_CheckTail_0>;
-  type __TodoItem_0_prop_item = $PropValue<__TodoItem_ValueProps_0, 'item', __TodoItem_FallthroughValue_0<'item'>>;
 
   // Component template navigation references
   void TodoItem;
@@ -222,7 +221,7 @@ function __setup() {
   for (const [todo] of __vize_v_for_source_8) {
     void todo;
     // @vize-map: prop -> 55:67
-    const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
+    const __vize_prop_check_0_item: $PropValue<__TodoItem_ValueProps_0, 'item', __TodoItem_FallthroughValue_0<'item'>> = todo;
     void __vize_prop_check_0_item;
     (undefined as unknown as __TodoItem_Check_0)({
       "item": todo,
