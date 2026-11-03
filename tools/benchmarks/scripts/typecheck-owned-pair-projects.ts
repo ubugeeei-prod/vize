@@ -1,7 +1,15 @@
 /** Prepare one physical workload per cohort; every source role checks those same bytes. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, lstatSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CORPORA } from "./typecheck-corpus-pair.ts";
