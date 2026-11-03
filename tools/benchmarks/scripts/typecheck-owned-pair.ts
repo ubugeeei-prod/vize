@@ -29,6 +29,7 @@ import {
   ownedProbeRows,
   prepareOwnedProbe,
 } from "./typecheck-owned-pair-projection.ts";
+import { ownedProbeAuthority, runtimeProviderView } from "./typecheck-owned-pair-runtime.ts";
 import { requireMeasurementRunner, runOwnedInvocation } from "./typecheck-owned-pair-run.ts";
 import { hostArgs } from "./typecheck-corpus-pair-host.ts";
 import { checkerBusyMs, checkMsByFile } from "./typecheck-corpus-pair-projection.ts";
@@ -153,6 +154,7 @@ async function main() {
   for (const specification of OWNED_WORKLOADS) {
     const workload = prepareOwnedWorkload(specification.id, work, out, hosts.base);
     for (const mapper of ["vize", "vue"] as const) prepareOwnedProbe(workload.directory, mapper);
+    const probeAuthority = ownedProbeAuthority(workload.directory);
     const inputs = snapshotInputs(workload.directory);
     const expectedSfcFiles = inputs
       .filter((row) => row.file.endsWith(".vue"))
@@ -209,6 +211,14 @@ async function main() {
               ...hostArgs(host, workload.directory, config, traceArgs),
             ];
       const directory = join(out, workload.id, `${vue ? "vue" : role}-${id}`, phase);
+      mkdirSync(directory, { recursive: true });
+      const runtimeBefore = runtimeProviderView(
+        workload.directory,
+        hosts[role].vizeCliDir,
+        providerBefore,
+        probeAuthority,
+      );
+      writeJson(join(directory, "runtime-providers-before.json"), runtimeBefore);
       const run = await runOwnedInvocation({
         command,
         cwd: workload.directory,
@@ -226,6 +236,18 @@ async function main() {
             }
           : {}),
       });
+      const runtimeAfter = runtimeProviderView(
+        workload.directory,
+        hosts[role].vizeCliDir,
+        providerBefore,
+        probeAuthority,
+      );
+      writeJson(join(directory, "runtime-providers-after.json"), runtimeAfter);
+      assert.deepEqual(
+        runtimeAfter,
+        runtimeBefore,
+        "actual runtime package/probe resolution drift",
+      );
       writeJson(join(directory, "project-cache.json"), { removedCaches });
       if (memory) {
         assert.deepEqual(run.receipt.executableErrors, []);
@@ -292,6 +314,7 @@ async function main() {
             readFileSync(join(directory, "projection.jsonl"), "utf8"),
             workload.directory,
             workload.sfcs,
+            expectedSfcFiles,
           ),
         );
       assertSameInputs(inputs, snapshotInputs(workload.directory));

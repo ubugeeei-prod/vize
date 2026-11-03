@@ -197,20 +197,21 @@ test("projection proof rejects missing, errored and unstable transforms and reta
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts");
   const line = (bytes: number, file = "A.vue") =>
     JSON.stringify({ pid: 1, fileName: `/input/${file}`, bytes }) + "\n";
-  const base = ownedProbeRows(line(12), "/input", 1),
-    vue = ownedProbeRows(line(10), "/input", 1);
+  const base = ownedProbeRows(line(12), "/input", 1, ["A.vue"]),
+    vue = ownedProbeRows(line(10), "/input", 1, ["A.vue"]);
   assert.equal(compareOwnedProjections(base, base, vue).violations.length, 1);
-  assert.throws(() => ownedProbeRows(line(12), "/input", 2));
-  assert.throws(() => ownedProbeRows(line(12) + line(13), "/input", 1));
+  assert.throws(() => ownedProbeRows(line(12), "/input", 2, ["A.vue", "B.vue"]));
+  assert.throws(() => ownedProbeRows(line(12) + line(13), "/input", 1, ["A.vue"]));
   assert.throws(() =>
     ownedProbeRows(
       JSON.stringify({ pid: 1, fileName: "/input/A.vue", error: "failed" }),
       "/input",
       1,
+      ["A.vue"],
     ),
   );
   assert.throws(() =>
-    compareOwnedProjections(base, ownedProbeRows(line(12, "B.vue"), "/input", 1), vue),
+    compareOwnedProjections(base, ownedProbeRows(line(12, "B.vue"), "/input", 1, ["B.vue"]), vue),
   );
 });
 
@@ -304,4 +305,106 @@ test("project cache ownership refuses a linked node_modules ancestor before dele
       assert.equal(readFileSync(join(provider, ".cache/keep"), "utf8"), "provider-owned");
     }),
   );
+});
+
+test("same-count unknown projection cannot replace an expected authored SFC", async () => {
+  const { ownedProbeRows } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts");
+  const text = JSON.stringify({ pid: 1, fileName: "/input/Unexpected.vue", bytes: 10 });
+  assert.throws(() => ownedProbeRows(text, "/input", 1, ["Expected.vue"]));
+});
+
+test("executed package bytes must match every source-published file", async () => {
+  const { mkdirSync } = await import("node:fs");
+  const { publishedPackageCopy } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-runtime.ts");
+  temp((directory) => {
+    const source = join(directory, "source"),
+      actual = join(directory, "actual");
+    for (const root of [source, actual]) {
+      mkdirSync(root);
+      writeFileSync(
+        join(root, "package.json"),
+        JSON.stringify({ name: "vize", files: ["mapper.js"] }),
+      );
+      writeFileSync(join(root, "mapper.js"), "export const projection = 'original';");
+    }
+    const before = publishedPackageCopy(source, actual);
+    assert.equal(before.length, 2);
+    writeFileSync(join(actual, "mapper.js"), "export const projection = 'different';");
+    assert.throws(() => publishedPackageCopy(source, actual), /actual runtime package/u);
+    assert.equal(
+      readFileSync(join(source, "mapper.js"), "utf8"),
+      "export const projection = 'original';",
+    );
+  });
+});
+
+test("runtime custody rejects copy drift, probe drift and resolution retargeting independently", async () => {
+  const { mkdirSync, symlinkSync } = await import("node:fs");
+  const { ownedProbeAuthority, runtimeProviderView } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-runtime.ts");
+  const { providerClosure } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-authority.ts");
+  temp((directory) => {
+    const source = join(directory, "source"),
+      project = join(directory, "project");
+    const actual = join(project, "node_modules/vize");
+    for (const root of [source, actual]) {
+      mkdirSync(root, { recursive: true });
+      writeFileSync(
+        join(root, "package.json"),
+        JSON.stringify({ name: "vize", files: ["mapper.js"] }),
+      );
+      writeFileSync(join(root, "mapper.js"), "original");
+    }
+    for (const mapper of ["vize", "vue"]) {
+      const target = join(project, "node_modules", `${mapper}-owned-pair-probe`);
+      mkdirSync(target);
+      writeFileSync(join(target, "package.json"), JSON.stringify({ exec: "original" }));
+    }
+    const depA = join(directory, "dep-a"),
+      depB = join(directory, "dep-b");
+    for (const target of [depA, depB]) {
+      mkdirSync(target);
+      writeFileSync(join(target, "entry.js"), "same bytes");
+    }
+    const proofs = providerClosure([depA, depB]),
+      probes = ownedProbeAuthority(project);
+    const dependency = join(project, "node_modules/dependency");
+    symlinkSync(depA, dependency, "dir");
+    const before = runtimeProviderView(project, source, proofs, probes);
+    rmSync(dependency);
+    symlinkSync(depB, dependency, "dir");
+    assert.notDeepEqual(runtimeProviderView(project, source, proofs, probes), before);
+    writeFileSync(join(actual, "mapper.js"), "mutated");
+    assert.throws(
+      () => runtimeProviderView(project, source, proofs, probes),
+      /actual runtime package/u,
+    );
+    writeFileSync(join(actual, "mapper.js"), "original");
+    writeFileSync(join(project, "node_modules/vize-owned-pair-probe/package.json"), "{}");
+    assert.throws(
+      () => runtimeProviderView(project, source, proofs, probes),
+      /actual probe package/u,
+    );
+  });
+});
+
+test("published copy cannot hide extra nested dependencies outside its manifest", async () => {
+  const { mkdirSync } = await import("node:fs");
+  const { publishedPackageCopy } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-runtime.ts");
+  temp((directory) => {
+    const source = join(directory, "source"),
+      actual = join(directory, "actual");
+    for (const root of [source, actual]) {
+      mkdirSync(root);
+      writeFileSync(join(root, "package.json"), JSON.stringify({ files: [] }));
+    }
+    publishedPackageCopy(source, actual);
+    mkdirSync(join(actual, "node_modules"));
+    writeFileSync(join(actual, "node_modules/hidden.js"), "different provider");
+    assert.throws(() => publishedPackageCopy(source, actual));
+  });
 });

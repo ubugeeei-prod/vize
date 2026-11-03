@@ -107,13 +107,16 @@ export async function freshCache<T>(
 }
 
 /** Exclude only installed providers; caches and generated project inputs stay visible. */
-export function snapshotInputs(directory: string): Array<{ file: string; sha256: string }> {
+export function snapshotInputs(
+  directory: string,
+  excludeModules = true,
+): Array<{ file: string; sha256: string }> {
   const rows: Array<{ file: string; sha256: string }> = [];
   const walk = (prefix: string) => {
     for (const entry of readdirSync(join(directory, prefix), { withFileTypes: true }).sort((a, b) =>
       a.name.localeCompare(b.name),
     )) {
-      if (!prefix && entry.name === "node_modules") continue;
+      if (excludeModules && !prefix && entry.name === "node_modules") continue;
       const file = prefix ? `${prefix}/${entry.name}` : entry.name;
       assert.ok(!entry.isSymbolicLink(), `project input cannot hide behind a symlink: ${file}`);
       if (entry.isDirectory()) walk(file);

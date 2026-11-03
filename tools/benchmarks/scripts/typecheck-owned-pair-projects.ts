@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { CORPORA } from "./typecheck-corpus-pair.ts";
 import { generateScaleProject, type ScaleProject } from "./scale-project-generator.ts";
 import { prepareMapperPackages, type MapperHosts } from "./typecheck-mapper-hosts.ts";
+import { linkPackage } from "./install-package-files.ts";
 import { snapshotInputs, writeJson } from "./typecheck-owned-pair-evidence.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -75,7 +76,15 @@ export function prepareOwnedWorkload(
     kind === "nuxt" && !real ? "nuxt-app" : "typecheck-corpora",
     "node_modules",
   );
-  cpSync(packages, join(directory, "node_modules"), { recursive: true, verbatimSymlinks: true });
+  const modules = join(directory, "node_modules");
+  mkdirSync(modules);
+  for (const name of readdirSync(packages).sort()) {
+    if (name.startsWith(".")) continue;
+    if (name.startsWith("@")) {
+      for (const child of readdirSync(join(packages, name)).sort())
+        linkPackage(realpathSync(join(packages, name, child)), join(modules, name, child));
+    } else linkPackage(realpathSync(join(packages, name)), join(modules, name));
+  }
   if (kind === "nuxt" && generated) {
     const command = [join(packages, "nuxt/bin/nuxt.mjs"), "prepare", directory];
     const prepared = spawnSync(process.execPath, command, {

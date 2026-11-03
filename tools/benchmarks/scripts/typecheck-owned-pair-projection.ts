@@ -34,7 +34,12 @@ export function prepareOwnedProbe(project: string, mapper: "vize" | "vue") {
   });
   return `tsconfig.${name}.json`;
 }
-export function ownedProbeRows(text: string, project: string, expected: number) {
+export function ownedProbeRows(
+  text: string,
+  project: string,
+  expected: number,
+  expectedFiles: string[],
+) {
   const byFile = new Map<string, number>();
   for (const line of text.split("\n").filter(Boolean)) {
     const record = JSON.parse(line) as ProbeRecord;
@@ -50,6 +55,12 @@ export function ownedProbeRows(text: string, project: string, expected: number) 
     byFile.set(file, record.bytes);
   }
   assert.equal(byFile.size, expected, "not every expected SFC reached the mapper");
+  assert.equal(expectedFiles.length, expected);
+  assert.deepEqual(
+    [...byFile.keys()].sort(),
+    [...expectedFiles].sort(),
+    "actual transformed SFC set differs from authored input",
+  );
   return [...byFile]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([file, bytes]) => ({ file, bytes }));
