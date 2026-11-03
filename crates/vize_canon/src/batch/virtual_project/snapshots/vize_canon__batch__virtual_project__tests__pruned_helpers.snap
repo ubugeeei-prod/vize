@@ -154,7 +154,7 @@ declare module "vize:virtual-ts" {
 }
 declare module "vize:virtual-ts" {
   type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-  type $EmitRequiredFields<T> = T extends unknown ? Pick<T, $EmitRequiredKeys<T>> : never;
+  type $EmitRequiredFields<T> = T extends unknown ? {} extends T ? Pick<T, never> : Pick<T, $EmitRequiredKeys<T>> : never;
   type $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
   type $EmitFallthrough<F> = $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
   export type $EmitOwnedKeys<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
