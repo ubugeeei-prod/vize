@@ -58,37 +58,6 @@
   },
   "cases": [
     {
-      "id": "linter/dynamic-event-owner-11728",
-      "state": "active",
-      "targets": ["lint"],
-      "inputs": {
-        "root": "dynamic-event-owner-11728",
-        "files": [
-          {
-            "path": "PlatformTargets.vue.txt",
-            "role": "ci-regression-reproduction",
-            "sha256": "9c1cd969bf872a3e7b4cc031488c81ac70d7d2ba073c80b659b816cf4d8d30cc"
-          },
-          {
-            "path": "AuthorOwned.vue.txt",
-            "role": "negative-control",
-            "sha256": "a2bffa134c17f6f1b9bd0dd1c48f01e4779d7b6c9c40a8152bf71e2d771cda6d"
-          }
-        ]
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "linter manifest pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
       "id": "linter/a11y-dynamic-role-10926",
       "state": "active",
       "targets": ["lint"],
@@ -2127,6 +2096,37 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/dynamic-event-owner-11728",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "dynamic-event-owner-11728",
+        "files": [
+          {
+            "path": "PlatformTargets.vue.txt",
+            "role": "ci-regression-reproduction",
+            "sha256": "9c1cd969bf872a3e7b4cc031488c81ac70d7d2ba073c80b659b816cf4d8d30cc"
+          },
+          {
+            "path": "AuthorOwned.vue.txt",
+            "role": "negative-control",
+            "sha256": "a2bffa134c17f6f1b9bd0dd1c48f01e4779d7b6c9c40a8152bf71e2d771cda6d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
