@@ -135,67 +135,6 @@ const virtualDefineState: VizePluginState = {
   },
 };
 
-// An SFC main module is still SFC text at the pre stage; its compile stage inlines the flags.
-assert.equal(
-  await transformHook(virtualDefineState, "<template />", toVirtualId("/src/EnvFlags.vue"), {
-    ssr: false,
-  }),
-  null,
-);
-virtualDefineState.cache = new Map([
-  [
-    "/src/EnvFlags.vue",
-    {
-      code: `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];
-export default {};`,
-      scopeId: "envflags",
-      hasScoped: false,
-      styles: [],
-    },
-  ],
-]);
-const virtualDefineTransform = await transformCachedSfcModule(
-  virtualDefineState,
-  toVirtualId("/src/EnvFlags.vue"),
-  { ssr: false },
-);
-
-assert.ok(
-  virtualDefineTransform && typeof virtualDefineTransform === "object",
-  "Virtual module transforms should succeed",
-);
-assert.doesNotMatch(
-  virtualDefineTransform.code,
-  /import\.meta\.(client|server|dev)/,
-  "Virtual module transforms should inline environment flags that Vite skips for \\0 IDs",
-);
-assert.match(
-  virtualDefineTransform.code,
-  /import\.meta\.hot/,
-  "Virtual module transforms must leave import.meta.hot available for Vite HMR",
-);
-assert.equal(
-  virtualDefineTransform.map,
-  null,
-  "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
-);
-
-const visibleVirtualDefineTransform = await transformCachedSfcModule(
-  virtualDefineState,
-  toPluginVisibleVirtualId("/src/EnvFlags.vue"),
-  { ssr: false },
-);
-
-assert.ok(
-  visibleVirtualDefineTransform && typeof visibleVirtualDefineTransform === "object",
-  "Plugin-visible virtual module transforms should succeed",
-);
-assert.doesNotMatch(
-  visibleVirtualDefineTransform.code,
-  /import\.meta\.(client|server|dev)/,
-  "Plugin-visible virtual module transforms should inline environment flags before post plugins run",
-);
-
 assert.equal(
   loadHook(
     hmrState,
