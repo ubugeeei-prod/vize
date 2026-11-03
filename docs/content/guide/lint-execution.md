@@ -25,6 +25,16 @@ export default defineConfig({
 });
 ```
 
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `preset` | `happy-path` | Select the group of enabled rules. |
+| `crossFile` | `false` | Check relationships between the selected Vue files. |
+| `crossFileTree` | `false` | Print the provide/inject tree and enable cross-file analysis. |
+| `crossFileComplexity` | `false` | Print complexity scores and hotspots and enable cross-file analysis. |
+| `strictReactivity` | `false` | Enable `type/no-reactivity-loss`, unless an explicit rule setting overrides it. |
+| `maxWarnings` | Unset | Fail when the warning count exceeds this limit; `0` permits none. |
+| `reportUnusedDisableDirectives` | `false` | Report template disable comments that suppress no Vize finding. |
+
 For settings shared with CLI and editor, put these keys in `vue.linter`. `crossFileTree` and
 `crossFileComplexity` also enable cross-file analysis. Cross-file checks operate
 on the files selected for a native CLI run. The strict-reactivity switch enables
