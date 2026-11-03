@@ -10,9 +10,9 @@ pub(super) struct Context<'a> {
     pub(super) args_type: &'a str,
     pub(super) return_type: &'a str,
     pub(super) prop_args: &'a str,
-    pub(super) component_ref: &'a str,
+    pub(super) props_box: &'a str,
+    pub(super) fallthrough_box: &'a str,
     pub(super) prop_key: &'a str,
-    pub(super) is_any: &'a str,
 }
 
 pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
@@ -26,27 +26,28 @@ pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
         args_type,
         return_type,
         prop_args,
-        component_ref,
+        props_box,
+        fallthrough_box,
         prop_key,
-        is_any,
     } = ctx;
     if legacy_vue2 {
         return cstr!("(...args: {listener_args_type}) => unknown");
     }
     if first_contract {
-        if native_fallthrough_only {
+        let unresolved_return = if native_fallthrough_only {
             let native_return = cstr!("{return_type}_native_fallthrough");
             super::native_fallthrough::emit_return(
                 ts,
                 indent,
                 native_return.as_str(),
-                return_type,
-                component_ref,
-                prop_args,
+                fallthrough_box,
                 prop_key,
-                is_any,
             );
-        } else if let Some(props) = contextual_props {
+            native_return
+        } else {
+            String::from("any")
+        };
+        if let Some(props) = contextual_props {
             append!(
                 *ts,
                 "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
@@ -54,21 +55,8 @@ pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
         } else {
             append!(
                 *ts,
-                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
+                "{indent}type {return_type} = unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never;\n",
             );
-            append!(
-                *ts,
-                "{indent}  ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-            );
-            append!(
-                *ts,
-                "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
-            );
-            append!(
-                *ts,
-                "{indent}    ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-            );
-            append!(*ts, "{indent}    : any;\n");
         }
     }
     cstr!(

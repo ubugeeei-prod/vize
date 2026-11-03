@@ -17,46 +17,72 @@ use super::dynamic_component::DynamicComponentAliases;
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
 
+/// Where one component's listener aliases may be declared once and reused.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub(crate) struct EventContractKey {
+pub(crate) struct ComponentContractKey {
     pub(super) component_type_name: String,
     pub(super) component_ref: String,
-    pub(super) event_name: String,
     pub(super) legacy_vue2: bool,
     pub(super) fallthrough_listeners: bool,
     pub(super) native_fallthrough_only: bool,
-    pub(super) needs_typed_handler_assignment: bool,
     pub(super) enclosing_vif_guard: Option<String>,
     pub(super) parent_scope: Option<u32>,
     pub(super) chained_guard_block: Option<u64>,
+}
+
+/// A component's own derivations (`event: None`) or one of its events.
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct EventContractKey {
+    pub(super) component: ComponentContractKey,
+    pub(super) event: Option<EventContract>,
+}
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct EventContract {
+    pub(super) name: String,
+    pub(super) typed_handler: bool,
 }
 
 #[cfg(test)]
 mod event_contract_key_tests {
     use super::*;
 
-    fn key(native_fallthrough_only: bool) -> EventContractKey {
+    fn key(native_fallthrough_only: bool, event: Option<&str>) -> EventContractKey {
         EventContractKey {
-            component_type_name: String::from("Child"),
-            component_ref: String::from("Child"),
-            event_name: String::from("click"),
-            legacy_vue2: false,
-            fallthrough_listeners: true,
-            native_fallthrough_only,
-            needs_typed_handler_assignment: true,
-            enclosing_vif_guard: None,
-            parent_scope: None,
-            chained_guard_block: None,
+            component: ComponentContractKey {
+                component_type_name: String::from("Child"),
+                component_ref: String::from("Child"),
+                legacy_vue2: false,
+                fallthrough_listeners: true,
+                native_fallthrough_only,
+                enclosing_vif_guard: None,
+                parent_scope: None,
+                chained_guard_block: None,
+            },
+            event: event.map(|name| EventContract {
+                name: String::from(name),
+                typed_handler: true,
+            }),
         }
     }
 
     #[test]
     fn native_fallthrough_mode_partitions_contract_deduplication() {
         let mut contracts = FxHashMap::default();
-        assert_eq!(contracts.insert(key(false), 1), None);
-        assert_eq!(contracts.insert(key(false), 2), Some(1));
-        assert_eq!(contracts.insert(key(true), 3), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 2), Some(1));
+        assert_eq!(contracts.insert(key(true, Some("click")), 3), None);
         assert_eq!(contracts.len(), 2);
+    }
+
+    #[test]
+    fn a_component_contract_is_shared_by_its_events() {
+        let mut contracts = FxHashMap::default();
+        assert_eq!(contracts.insert(key(false, None), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("close")), 1), None);
+        assert_eq!(contracts.insert(key(false, None), 2), Some(1));
+        assert_eq!(contracts.insert(key(true, None), 3), None);
     }
 }
 
