@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+declare const rows: any;
+</script>
+<template>
+  <Child v-for="row in rows.filter(x => x.ok)" :key="row.id" :n="row.n" />
+  <Child v-for="row in [1, 2]" :key="row" :n="row" />
+  <Child v-for="row in ['a']" :key="row" :n="row" />
+</template>

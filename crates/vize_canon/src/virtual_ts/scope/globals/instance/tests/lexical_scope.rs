@@ -88,7 +88,8 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
     let mut expected = REAL_INSTANCE_READS.to_vec();
     // Bare binding navigation, the canonical initializer and the mapped
     // props literal are separate emissions of each parent-scope prop read.
-    // The loop body also has its own generated position. Relative-cache
+    // The component-props replay of a loop source stays unmapped, so it
+    // never reports the template loop's diagnostics twice. Relative-cache
     // reuse never shares those positions or invents navigation on an
     // unmapped inference copy.
     expected.extend([
@@ -96,7 +97,6 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
         ("$before", 1293..1300),
         ("$after", 1384..1390),
         ("$after", 1384..1390),
-        ("$self", 1500..1505),
     ]);
     expected.sort_by_key(|(_, range)| range.start);
     assert_eq!(instance_reads(&loose, "__ctx."), expected, "{}", loose.code);

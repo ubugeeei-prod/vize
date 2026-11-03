@@ -54,7 +54,9 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 ts,
                 mappings,
                 ctx.source_context.offset,
-                ctx.summary.scopes.v_for_source_offset(scope.id),
+                // The template body already maps this source; a second mapped
+                // copy would report each of its diagnostics twice.
+                None,
                 &loop_indent,
                 scope,
                 ctx.template_binding_access,
