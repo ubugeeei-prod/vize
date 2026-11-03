@@ -12,7 +12,15 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -159,6 +167,12 @@ function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
     verbatimSymlinks: true,
   });
   prepareMapperPackages(dir, hosts);
+  // Vue's mapper loads `typescript/ast` from the project, as in an installed project.
+  symlinkSync(
+    realpathSync(join(TYPECHECK_HOSTS_DIR, "node_modules", "typescript")),
+    join(dir, "node_modules", "typescript"),
+    "dir",
+  );
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
 }
 
@@ -200,13 +214,22 @@ function hostRun(
   if (time.status !== result.status) {
     throw new Error(`GNU time saw status ${time.status}, the runner saw ${result.status}`);
   }
-  return {
-    wallMs: result.ms,
-    cpuMs: result.cpuMs,
-    time,
-    status: result.status,
-    ...parseHostRun(result, cwd),
-  };
+  try {
+    return {
+      wallMs: result.ms,
+      cpuMs: result.cpuMs,
+      time,
+      status: result.status,
+      ...parseHostRun(result, cwd),
+    };
+  } catch (error) {
+    throw new Error(
+      `${tsconfig} in ${cwd}: ${(error as Error).message}\nstderr:\n${result.stderr.slice(-4000)}`,
+      {
+        cause: error,
+      },
+    );
+  }
 }
 
 function packageVersion(dir: string, name: string): string {
