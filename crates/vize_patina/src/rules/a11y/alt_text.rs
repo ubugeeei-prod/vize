@@ -25,10 +25,14 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 use super::helpers::get_static_attribute_value;
+use super::markup_helpers::get_static_markup_attribute_value;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/alt-text",
@@ -58,9 +62,67 @@ fn has_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
     })
 }
 
+/// A static attribute, or a bind with a static or dynamic argument.
+fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= matches!(
+            binding.kind(),
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+        ) && binding.is_unqualified_arg_exact(name);
+    });
+    found
+}
+
+fn has_markup_label(element: &MarkupElement<'_>) -> bool {
+    has_markup_attribute_or_binding(element, "aria-label")
+        || has_markup_attribute_or_binding(element, "aria-labelledby")
+}
+
+impl MarkupRule for AltText {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.kind() == MarkupElementKind::Component {
+            return;
+        }
+        let keys = if element.is_unqualified_tag_exact("img") {
+            (!has_markup_attribute_or_binding(element, "alt"))
+                .then_some(("a11y/alt-text.message_img", "a11y/alt-text.help_img"))
+        } else if element.is_unqualified_tag_exact("area") {
+            (!has_markup_attribute_or_binding(element, "alt") && !has_markup_label(element))
+                .then_some(("a11y/alt-text.message_area", "a11y/alt-text.help_area"))
+        } else if element.is_unqualified_tag_exact("input") {
+            (get_static_markup_attribute_value(element, "type") == Some("image")
+                && !has_markup_attribute_or_binding(element, "alt")
+                && !has_markup_label(element))
+            .then_some((
+                "a11y/alt-text.message_input_image",
+                "a11y/alt-text.help_input_image",
+            ))
+        } else if element.is_unqualified_tag_exact("object") {
+            (!has_markup_attribute_or_binding(element, "title") && !has_markup_label(element))
+                .then_some(("a11y/alt-text.message_object", "a11y/alt-text.help_object"))
+        } else {
+            None
+        };
+        if let Some((message, help)) = keys {
+            let message = ctx.lint().t(message);
+            let help = ctx.lint().t(help);
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
+
 impl Rule for AltText {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

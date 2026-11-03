@@ -32,7 +32,7 @@ fn compare_template(source: &str) {
     let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template>";
     let sfc = format!("{prefix}{source}</template>");
     let linter = linter();
-    let mut expected = linter.lint_template(source, "test.vue");
+    let mut expected = linter.lint_template_relief(source, "test.vue");
     // A raw template is the baseline: only its file offset is adjusted.
     offset_result(&mut expected, prefix.len() as u32);
     let actual = linter.lint_sfc(&sfc, "test.vue");
@@ -94,6 +94,7 @@ const view = <button style="color:red">go</button>;
 }
 
 mod battery;
+mod binding_order;
 mod content_model;
 mod stylesheet;
 mod text_order;

@@ -2,9 +2,10 @@
 
 use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupConditional, MarkupContext, MarkupDirective, MarkupDocument, MarkupElement, MarkupList,
-    MarkupRule, MarkupText,
+    MarkupBinding, MarkupConditional, MarkupContext, MarkupDirective, MarkupDocument,
+    MarkupElement, MarkupList, MarkupRule, MarkupText,
 };
+use vize_l0::SmallVec;
 
 pub(super) struct Rules<'a>(pub &'a [(usize, &'static str, &'a dyn MarkupRule)]);
 
@@ -24,16 +25,17 @@ impl MarkupRule for Rules<'_> {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        // One binding walk per element, not per rule. Each rule still reports
+        // its attributes beside its element, before the next rule runs.
+        let mut bindings: SmallVec<[MarkupBinding<'a>; 8]> = SmallVec::new();
+        element.walk_bindings(&mut |binding| bindings.push(binding));
         for (_, name, rule) in self.0 {
             ctx.lint().current_rule = name;
             rule.enter_element(ctx, element);
-            // The admitted binding checks originate in legacy element hooks.
-            // Keep each rule's attribute reports beside its element reports,
-            // before the next rule can report direct child text.
-            element.walk_bindings(&mut |binding| {
+            for binding in &bindings {
                 ctx.lint().current_rule = name;
-                rule.enter_binding(ctx, element, &binding);
-            });
+                rule.enter_binding(ctx, element, binding);
+            }
         }
     }
 

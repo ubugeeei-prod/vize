@@ -9,6 +9,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::{is_slot_element, string_literal_value};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
@@ -97,9 +100,87 @@ impl AnchorHasContent {
     }
 }
 
+impl AnchorHasContent {
+    fn has_markup_content(element: &MarkupElement<'_>) -> bool {
+        let mut labelled = false;
+        element.walk_bindings(&mut |binding| {
+            labelled |= match binding.kind() {
+                MarkupBindingKind::Attribute | MarkupBindingKind::Bind => {
+                    binding.is_unqualified_arg_exact("aria-label")
+                        || binding.is_unqualified_arg_exact("aria-labelledby")
+                }
+                _ => false,
+            };
+        });
+        if labelled {
+            return true;
+        }
+        let mut found = false;
+        element.walk_children(&mut |child| {
+            if found {
+                return;
+            }
+            found = match child {
+                MarkupNode::Text(text) => text.is_significant(),
+                MarkupNode::Interpolation(_) => true,
+                MarkupNode::Element(child) => {
+                    child.kind() == MarkupElementKind::Slot
+                        || child.is_unqualified_tag_exact("slot")
+                        || (child.is_unqualified_tag_exact("img") && Self::has_markup_alt(&child))
+                        || Self::has_markup_content(&child)
+                }
+                _ => false,
+            };
+        });
+        found
+    }
+
+    fn has_markup_alt(image: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        image.walk_bindings(&mut |binding| {
+            found |= match binding.kind() {
+                MarkupBindingKind::Attribute => {
+                    binding.is_unqualified_arg_exact("alt")
+                        && binding
+                            .static_value()
+                            .is_some_and(|value| !value.is_empty())
+                }
+                // A blank or non-literal bound alt counts, as on the template path.
+                MarkupBindingKind::Bind => {
+                    binding.is_static_unqualified_arg_exact("alt")
+                        && binding
+                            .literal_string_value()
+                            .is_none_or(|value| !value.is_empty())
+                }
+                _ => false,
+            };
+        });
+        found
+    }
+}
+
+impl MarkupRule for AnchorHasContent {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !element.is_unqualified_tag_exact("a") || Self::has_markup_content(element) {
+            return;
+        }
+        let message = ctx.lint().t("a11y/anchor-has-content.message");
+        let help = ctx.lint().t("a11y/anchor-has-content.help");
+        ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
 impl Rule for AnchorHasContent {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

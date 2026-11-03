@@ -44,6 +44,7 @@ mod output_policy;
 mod plugin_suppressions;
 mod prop_style_policy;
 mod recovered_parse_analysis;
+mod relief_parity;
 mod script;
 mod script_jsx_parity;
 #[cfg(not(target_arch = "wasm32"))]

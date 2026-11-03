@@ -23,6 +23,8 @@ mod sfc;
 mod tag_scan;
 mod template;
 mod template_extract;
+#[cfg(test)]
+mod test_lanes;
 mod unused_directives;
 
 pub(crate) use template_extract::extract_template_fast;
@@ -61,6 +63,14 @@ pub(crate) struct SfcTemplateLintInput<'a> {
 }
 
 impl<'a> TemplateRuleEnv<'a> {
+    /// A bare template: the SFC facade rules run on the facade here too.
+    const fn bare(dialect: VueDialect) -> Self {
+        Self {
+            facade_rules: sfc::facade::RULES,
+            ..Self::relief(dialect)
+        }
+    }
+
     const fn relief(dialect: VueDialect) -> Self {
         Self {
             sfc_descriptor: None,
@@ -388,24 +398,9 @@ impl Linter {
             filename,
             true,
             true,
-            TemplateRuleEnv::relief(VueDialect::Vue),
+            TemplateRuleEnv::bare(VueDialect::Vue),
         );
         self.apply_diagnostic_policy(result)
-    }
-
-    #[cfg(test)]
-    pub(crate) fn lint_template_rules_only(&self, source: &str, filename: &str) -> LintResult {
-        let capacity = (source.len() * 4).max(self.initial_capacity);
-        let allocator = Allocator::with_capacity(capacity);
-
-        self.lint_template_with_allocator_config(
-            &allocator,
-            source,
-            filename,
-            false,
-            true,
-            TemplateRuleEnv::relief(VueDialect::Vue),
-        )
     }
 
     fn lint_template_with_allocator_config(

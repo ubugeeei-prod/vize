@@ -9,10 +9,15 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{is_aria_hidden_true, is_component_like_element, is_presentation_role};
+use super::markup_helpers::{
+    has_static_markup_event, is_aria_hidden_true_markup, is_component_like_markup_element,
+    is_presentation_markup_role,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/click-events-have-key-events",
@@ -42,6 +47,40 @@ impl ClickEventsHaveKeyEvents {
         )
     }
 
+    fn is_interactive_role(role: &str) -> bool {
+        matches!(
+            role,
+            "button"
+                | "link"
+                | "checkbox"
+                | "menuitem"
+                | "menuitemcheckbox"
+                | "menuitemradio"
+                | "option"
+                | "radio"
+                | "searchbox"
+                | "switch"
+                | "textbox"
+                | "tab"
+                | "treeitem"
+                | "gridcell"
+        )
+    }
+
+    /// The first valued static `role` decides, as on the template path.
+    fn has_interactive_markup_role(element: &MarkupElement<'_>) -> bool {
+        let mut role = None;
+        element.walk_bindings(&mut |binding| {
+            if role.is_none()
+                && binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact("role")
+            {
+                role = binding.static_value();
+            }
+        });
+        role.is_some_and(Self::is_interactive_role)
+    }
+
     /// Check if element has a role that makes it interactive
     fn has_interactive_role(element: &ElementNode) -> bool {
         for prop in &element.props {
@@ -49,23 +88,7 @@ impl ClickEventsHaveKeyEvents {
                 && attr.name == "role"
                 && let Some(value) = &attr.value
             {
-                return matches!(
-                    value.content,
-                    "button"
-                        | "link"
-                        | "checkbox"
-                        | "menuitem"
-                        | "menuitemcheckbox"
-                        | "menuitemradio"
-                        | "option"
-                        | "radio"
-                        | "searchbox"
-                        | "switch"
-                        | "textbox"
-                        | "tab"
-                        | "treeitem"
-                        | "gridcell"
-                );
+                return Self::is_interactive_role(value.content);
             }
         }
         false
@@ -102,9 +125,37 @@ impl ClickEventsHaveKeyEvents {
     }
 }
 
+impl MarkupRule for ClickEventsHaveKeyEvents {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        // Cheap tag checks, then the click handler, before any other binding walk.
+        if is_component_like_markup_element(element)
+            || Self::is_interactive_element(element.tag())
+            || !has_static_markup_event(element, &["click"])
+            || is_aria_hidden_true_markup(element)
+            || is_presentation_markup_role(element)
+            || Self::has_interactive_markup_role(element)
+        {
+            return;
+        }
+        if !has_static_markup_event(element, &["keydown", "keyup", "keypress"]) {
+            let message = ctx.lint().t("a11y/click-events-have-key-events.message");
+            let help = ctx.lint().t("a11y/click-events-have-key-events.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
+
 impl Rule for ClickEventsHaveKeyEvents {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

@@ -22,10 +22,17 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 use super::helpers::{get_required_aria_props, get_static_or_bound_literal_attribute_value};
+use super::markup_helpers::{
+    get_static_markup_attribute_value, get_static_or_bound_literal_markup_value,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/role-has-required-aria-props",
@@ -75,9 +82,91 @@ fn is_focusable_separator(element: &ElementNode) -> bool {
     false
 }
 
+/// A static attribute, or a bind with a static or dynamic argument.
+fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= matches!(
+            binding.kind(),
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+        ) && binding.is_unqualified_arg_exact(name);
+    });
+    found
+}
+
+fn is_focusable_markup_separator(element: &MarkupElement<'_>) -> bool {
+    if has_markup_attribute_or_binding(element, "tabindex")
+        || ["button", "input", "select", "textarea", "summary"]
+            .iter()
+            .any(|tag| element.is_unqualified_tag_exact(tag))
+        || ((element.is_unqualified_tag_exact("a") || element.is_unqualified_tag_exact("area"))
+            && has_markup_attribute_or_binding(element, "href"))
+    {
+        return true;
+    }
+    has_markup_attribute_or_binding(element, "contenteditable")
+        && get_static_markup_attribute_value(element, "contenteditable") != Some("false")
+}
+
+impl MarkupRule for RoleHasRequiredAriaProps {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.kind() == MarkupElementKind::Component {
+            return;
+        }
+        let Some(role) = get_static_or_bound_literal_markup_value(element, "role") else {
+            return;
+        };
+        if role == "separator" && !is_focusable_markup_separator(element) {
+            return;
+        }
+        let native_checked = element.is_unqualified_tag_exact("input")
+            && matches!(
+                get_static_or_bound_literal_markup_value(element, "type"),
+                Some("checkbox" | "radio")
+            );
+        report_missing(ctx.lint(), role, element.range(), native_checked, |prop| {
+            has_markup_attribute_or_binding(element, prop)
+        });
+    }
+}
+
+/// ARIA in HTML forbids aria-checked on native checkbox/radio inputs:
+/// their checked state already supplies the required role state.
+fn report_missing(
+    ctx: &mut LintContext<'_>,
+    role: &str,
+    range: ByteRange,
+    native_checked: bool,
+    has_prop: impl Fn(&str) -> bool,
+) {
+    let required_props = get_required_aria_props(role);
+    for &required_prop in required_props {
+        if (required_prop == "aria-checked" && native_checked) || has_prop(required_prop) {
+            continue;
+        }
+        let message = ctx.t_fmt(
+            "a11y/role-has-required-aria-props.message",
+            &[("role", role), ("prop", required_prop)],
+        );
+        let help = ctx.t_fmt(
+            "a11y/role-has-required-aria-props.help",
+            &[("role", role), ("props", &required_props.join(", "))],
+        );
+        ctx.warn_at_with_help(message, range, help);
+    }
+}
+
 impl Rule for RoleHasRequiredAriaProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

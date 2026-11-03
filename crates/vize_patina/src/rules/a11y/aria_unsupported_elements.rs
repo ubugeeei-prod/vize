@@ -10,6 +10,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
 
@@ -27,9 +31,43 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct AriaUnsupportedElements;
 
+impl MarkupRule for AriaUnsupportedElements {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.kind() == MarkupElementKind::Component
+            || !helpers::ARIA_UNSUPPORTED_ELEMENTS
+                .iter()
+                .any(|tag| element.is_unqualified_tag_exact(tag))
+        {
+            return;
+        }
+        element.walk_bindings(&mut |binding| {
+            let attr = match binding.kind() {
+                MarkupBindingKind::Attribute => binding.arg_name(),
+                MarkupBindingKind::Bind => binding
+                    .arg_name()
+                    .filter(|arg| binding.is_static_unqualified_arg_exact(arg)),
+                _ => None,
+            };
+            if let Some(attr) = attr
+                && Self::is_aria_or_role(attr)
+            {
+                Self::report_at(ctx.lint(), element.tag(), attr, binding.range());
+            }
+        });
+    }
+}
+
 impl Rule for AriaUnsupportedElements {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -72,14 +110,21 @@ impl AriaUnsupportedElements {
         attr: &str,
         loc: &SourceLocation,
     ) {
-        ctx.error_with_help(
-            ctx.t_fmt(
-                "a11y/aria-unsupported-elements.message",
-                &[("tag", element.tag), ("attr", attr)],
-            ),
-            loc,
-            ctx.t("a11y/aria-unsupported-elements.help"),
+        Self::report_at(
+            ctx,
+            element.tag,
+            attr,
+            ByteRange::new(loc.span.start, loc.span.end),
         );
+    }
+
+    fn report_at(ctx: &mut LintContext<'_>, tag: &str, attr: &str, range: ByteRange) {
+        let message = ctx.t_fmt(
+            "a11y/aria-unsupported-elements.message",
+            &[("tag", tag), ("attr", attr)],
+        );
+        let help = ctx.t("a11y/aria-unsupported-elements.help");
+        ctx.error_at_with_help(message, range, help);
     }
 }
 

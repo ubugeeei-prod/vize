@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "static-composite-widgets",
+    history: "bfb7c96b81041903f4feb3164433fde717fc45b9",
+    source: "<div role=\"dialog\" @click=\"close\">Close</div><div role=\"alertdialog\" @keydown=\"trap\">Alert</div><div role=\"toolbar\" @click=\"focusTool\">Tools</div><dialog @click=\"close\">Close</dialog><div role=\"button\" @click=\"handle\">Click</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-static-element-interactions",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,107 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "role-non-native-checked",
+    history: "bfb7c96b81041903f4feb3164433fde717fc45b9",
+    source: "<div role=\"switch\"></div><input type=\"text\" role=\"switch\" /><input :type=\"kind\" role=\"switch\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/role-has-required-aria-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 3,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                start: 0,
+                end: 19,
+                help: Some(
+                    "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                start: 25,
+                end: 60,
+                help: Some(
+                    "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                start: 60,
+                end: 96,
+                help: Some(
+                    "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 3,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                    start: 0,
+                    end: 19,
+                    help: Some(
+                        "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                    start: 25,
+                    end: 60,
+                    help: Some(
+                        "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                    start: 60,
+                    end: 96,
+                    help: Some(
+                        "**Role `switch` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"switch\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 3,
+        },
+    ),
+}

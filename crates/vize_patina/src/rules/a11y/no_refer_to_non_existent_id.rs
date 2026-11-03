@@ -27,6 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::croquis::ElementIdKind;
 use vize_l0::FxHashSet;
@@ -56,66 +57,90 @@ struct IdRefCheck {
 #[derive(Default)]
 pub struct NoReferToNonExistentId;
 
+impl MarkupRule for NoReferToNonExistentId {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {
+        report(ctx.lint());
+    }
+}
+
 impl Rule for NoReferToNonExistentId {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    /// The JSX fallback never attached analysis, so the rule stays silent there.
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
-        // Phase 1: collect data from analysis (immutable borrow of ctx)
-        let (defined_ids, ref_checks) = {
-            let Some(analysis) = ctx.analysis() else {
-                return;
-            };
+        report(ctx);
+    }
+}
 
-            // Collect all statically defined IDs
-            let defined_ids: FxHashSet<String> = analysis
-                .element_ids
-                .iter()
-                .filter(|info| info.kind == ElementIdKind::Id && info.is_static)
-                .map(|info| info.value.to_compact_string())
-                .collect();
-
-            // Collect all references to check
-            let ref_checks: Vec<IdRefCheck> = analysis
-                .element_ids
-                .iter()
-                .filter(|info| !info.kind.is_definition() && info.is_static)
-                .map(|info| {
-                    let is_multi_id = matches!(info.kind, ElementIdKind::AriaReference);
-                    let ids = if is_multi_id {
-                        info.value
-                            .split_whitespace()
-                            .map(|s| s.to_compact_string())
-                            .collect()
-                    } else {
-                        vec![info.value.to_compact_string()]
-                    };
-                    IdRefCheck {
-                        ids,
-                        kind_str: info.kind.as_str(),
-                        start: info.start,
-                        end: info.end,
-                    }
-                })
-                .collect();
-
-            (defined_ids, ref_checks)
+/// Every static reference whose target ID the template never defines.
+fn report(ctx: &mut LintContext<'_>) {
+    // Phase 1: collect data from analysis (immutable borrow of ctx)
+    let (defined_ids, ref_checks) = {
+        let Some(analysis) = ctx.analysis() else {
+            return;
         };
 
-        // Phase 2: report diagnostics (mutable borrow of ctx)
-        for check in &ref_checks {
-            for id in &check.ids {
-                if !defined_ids.contains(id.as_str()) {
-                    let message = ctx.t_fmt(
-                        "a11y/no-refer-to-non-existent-id.message",
-                        &[("id", id.as_str()), ("kind", check.kind_str)],
-                    );
-                    let help = ctx.t("a11y/no-refer-to-non-existent-id.help");
-                    let diag = LintDiagnostic::warn(META.name, message, check.start, check.end)
-                        .with_help(help.into_owned());
-                    ctx.report(diag);
+        // Collect all statically defined IDs
+        let defined_ids: FxHashSet<String> = analysis
+            .element_ids
+            .iter()
+            .filter(|info| info.kind == ElementIdKind::Id && info.is_static)
+            .map(|info| info.value.to_compact_string())
+            .collect();
+
+        // Collect all references to check
+        let ref_checks: Vec<IdRefCheck> = analysis
+            .element_ids
+            .iter()
+            .filter(|info| !info.kind.is_definition() && info.is_static)
+            .map(|info| {
+                let is_multi_id = matches!(info.kind, ElementIdKind::AriaReference);
+                let ids = if is_multi_id {
+                    info.value
+                        .split_whitespace()
+                        .map(|s| s.to_compact_string())
+                        .collect()
+                } else {
+                    vec![info.value.to_compact_string()]
+                };
+                IdRefCheck {
+                    ids,
+                    kind_str: info.kind.as_str(),
+                    start: info.start,
+                    end: info.end,
                 }
+            })
+            .collect();
+
+        (defined_ids, ref_checks)
+    };
+
+    // Phase 2: report diagnostics (mutable borrow of ctx)
+    for check in &ref_checks {
+        for id in &check.ids {
+            if !defined_ids.contains(id.as_str()) {
+                let message = ctx.t_fmt(
+                    "a11y/no-refer-to-non-existent-id.message",
+                    &[("id", id.as_str()), ("kind", check.kind_str)],
+                );
+                let help = ctx.t("a11y/no-refer-to-non-existent-id.help");
+                let diag = LintDiagnostic::warn(META.name, message, check.start, check.end)
+                    .with_help(help.into_owned());
+                ctx.report(diag);
             }
         }
     }

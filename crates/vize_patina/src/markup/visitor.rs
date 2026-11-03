@@ -167,7 +167,12 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         }
     }
 
+    /// Element nesting is authored depth; grow the stack as the Relief visitor does.
     pub(super) fn visit_element(&mut self, element: MarkupElement<'a>) {
+        vize_l0::ensure_sufficient_stack(|| self.visit_element_inner(element));
+    }
+
+    fn visit_element_inner(&mut self, element: MarkupElement<'a>) {
         self.ctx.push_element(element);
 
         self.set_rule();

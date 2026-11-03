@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "d9a4842eddd84350ce05c3c2cbb973f5a852a67f85d5b255acbb699ebcc2de16"
+        "sha256": "17920a8e3275218a0f906b8c7d1b1e40e8f95355acf5713f5f341a7e94dc06b2"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "4ca3b59baec2b4377da10d68fb3de000f3d18b753289c616e7f21a7184405bf1"
+    "sha256": "e9161090b4f479b19fa44ae64dc6289d8a81938c9de50812a9b4eb616d64017e"
   },
   "cases": [
     {
@@ -661,6 +661,38 @@
       }
     },
     {
+      "id": "linter/current-api/anchor-bound-image-alt",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/anchor-empty-image-alt",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/attribute-hyphenation-aria-data-camel-props",
       "state": "active",
       "targets": ["lint"],
@@ -712,6 +744,22 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/click-presentation-opt-out",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1051,6 +1099,22 @@
       }
     },
     {
+      "id": "linter/current-api/id-reference-component-anchor",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
       "targets": ["lint"],
@@ -1096,6 +1160,22 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/label-spread-8961",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1555,6 +1635,54 @@
       }
     },
     {
+      "id": "linter/current-api/role-native-checked-inputs",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/role-non-native-checked",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/separator-focus-7066",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/shared-rule-options-9876",
       "state": "active",
       "targets": ["lint"],
@@ -1758,6 +1886,38 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/static-composite-widgets",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/static-presentation-opt-out",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
             "selector": "current-api pinned authored sources"
           }
         ]
