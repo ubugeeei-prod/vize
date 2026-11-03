@@ -86,6 +86,39 @@ export function patchNuxtHostVuePluginForCompilerExcludes(
   return true;
 }
 
+function isHostVueCompiler(entry: unknown): boolean {
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) return false;
+  const plugin = entry as NuxtHostVueVitePlugin;
+  return plugin.name === "vite:vue" && hasHostVueCompilerHooks(plugin);
+}
+
+function withoutPlugin(entry: unknown, plugin: object): unknown {
+  if (entry === plugin) return [];
+  if (!Array.isArray(entry)) return entry;
+  return entry.filter((item) => item !== plugin).map((item) => withoutPlugin(item, plugin));
+}
+
+function holdsPlugin(entry: unknown, plugin: object): boolean {
+  return (
+    entry === plugin || (Array.isArray(entry) && entry.some((item) => holdsPlugin(item, plugin)))
+  );
+}
+
+/**
+ * Nuxt lists its host `vite:vue` before its own plugins, and Vize registers with
+ * the modules' plugins after them. Move Vize's compile stage to the host
+ * compiler's place in this config, so Nuxt's transforms keep their order around
+ * the compiler. The registered plugin array, shared by every config, is left as
+ * it is.
+ */
+export function placeVizeCompileStage(plugins: unknown[], stage: object): void {
+  const host = plugins.findIndex(isHostVueCompiler);
+  const holder = plugins.findIndex((entry) => holdsPlugin(entry, stage));
+  if (host === -1 || holder === -1) return;
+  plugins[holder] = withoutPlugin(plugins[holder], stage);
+  plugins.splice(host, 0, stage);
+}
+
 function hasHostVueCompilerHooks(plugin: NuxtHostVueVitePlugin): boolean {
   return (
     hasHookHandler(plugin.resolveId) ||

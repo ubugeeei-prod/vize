@@ -100,4 +100,25 @@ import {
   assert.deepEqual(plugins, [vizeShim, pages], "only the compiling plugin-vue is removed");
 }
 
+{
+  // #11641: Vize compiles where the host compiler did, after the host's
+  // transforms of the SFC text and before those of the compiled module.
+  const hostVue = { name: "vite:vue", transform() {} };
+  const sourceTransform = { name: "host:sfc-source", transform() {} };
+  const compiledTransform = { name: "host:compiled", transform() {} };
+  const stage = { name: "vite-plugin-vize:sfc", transform() {} };
+  const replaced = [sourceTransform, hostVue, compiledTransform, stage];
+  assert.equal(removeHostVueSfcCompilers(replaced, {}, stage), 1);
+  assert.deepEqual(replaced, [sourceTransform, stage, compiledTransform]);
+
+  const kept = [stage, sourceTransform, hostVue, compiledTransform];
+  assert.equal(removeHostVueSfcCompilers(kept, { exclude: /legacy/ }, stage), 0);
+  assert.deepEqual(kept, [sourceTransform, stage, hostVue, compiledTransform]);
+
+  // Without a host compiler the stage keeps the place the config gave it.
+  const alone = [sourceTransform, stage, compiledTransform];
+  assert.equal(removeHostVueSfcCompilers(alone, {}, stage), 0);
+  assert.deepEqual(alone, [sourceTransform, stage, compiledTransform]);
+}
+
 console.log("✅ vite-plugin-vize index tests passed!");

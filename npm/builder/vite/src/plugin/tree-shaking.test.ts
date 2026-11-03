@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { getCompileOptionsForRequest, type VizePluginState } from "./state.ts";
-import { loadHook } from "./load.ts";
+import { loadSfcModule, transformCachedSfcModule } from "../test/sfc-module.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { toPluginVisibleVirtualId } from "../virtual.ts";
 import { compileFile } from "../compiler.ts";
@@ -73,8 +73,9 @@ void test("production template-only SFC is removable from a barrel", async () =>
       await resolveIdHook(resolveContext, state, source, undefined, { scan: true }),
       source,
     );
-    const loaded = loadHook(state, toPluginVisibleVirtualId(source), { ssr: false });
-    assert.ok(loaded && typeof loaded === "object");
+    const loaded = await transformCachedSfcModule(state, toPluginVisibleVirtualId(source), {
+      ssr: false,
+    });
     assert.equal(loaded.moduleSideEffects, false);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -99,8 +100,8 @@ void test("real template-only output is marked only without styles", async () =>
       fs.writeFileSync(file, source);
       compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
       const resolved = await resolveIdHook({ resolve: async () => null }, state, file);
-      const loaded = loadHook(state, toPluginVisibleVirtualId(file), { ssr: false });
-      assert.ok(loaded && typeof loaded === "object");
+      const loaded = await loadSfcModule(state, toPluginVisibleVirtualId(file), { ssr: false });
+      assert.ok(loaded);
       const byResolve = typeof resolved === "object" && resolved?.moduleSideEffects === false;
       assert.equal(
         byResolve,

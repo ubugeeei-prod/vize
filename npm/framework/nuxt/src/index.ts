@@ -8,7 +8,10 @@ import {
   restoreNuxtClientManifestSourceIds,
   type NuxtClientManifestEntry,
 } from "./client-manifest";
-import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
+import {
+  patchNuxtHostVuePluginForCompilerExcludes,
+  placeVizeCompileStage,
+} from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import { patchNuxtVueTypeGatedTransform } from "./vue-transform-bridge";
 import "./schema";
@@ -280,9 +283,10 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   await setupLintInspector(options.lint, nuxt, compilerOptions, lintGeneration, nuxt.options.dev);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
 
-  if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
-    await setupNuxtViteCompiler(compilerOptions, nuxt.options, options.compiler);
-  }
+  const vizeCompileStage =
+    compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true
+      ? await setupNuxtViteCompiler(compilerOptions, nuxt.options, options.compiler)
+      : undefined;
 
   let isNuxtBuild = false;
   let isViteBuild = false;
@@ -342,6 +346,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
       "vite:configResolved",
       (config: { command?: string; plugins: VitePluginWithTransform[] }) => {
         isViteBuild = config.command === "build" || isNuxtBuild || nuxt.options.dev === false;
+        if (vizeCompileStage) placeVizeCompileStage(config.plugins, vizeCompileStage);
         for (let i = config.plugins.length - 1; i >= 0; i--) {
           const p = config.plugins[i];
           const name = p && typeof p === "object" && "name" in p ? p.name : "";

@@ -186,8 +186,9 @@ export async function compileAll(
       // The hash is taken from the bytes just read, so a cache hit means the
       // stored output was produced from exactly this source text.
       const sourceHash = cacheEnabled ? hashPrecompileSource(source) : undefined;
-      const restored = sourceHash === undefined ? undefined : cache.get(file, sourceHash);
-      if (restored) {
+      const stored = sourceHash === undefined ? undefined : cache.get(file, sourceHash);
+      if (stored) {
+        const restored = { ...stored, source };
         state.cache.set(file, restored);
         const metadata = currentMetadata.get(file);
         if (metadata) {

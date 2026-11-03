@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge.ts";
+import {
+  patchNuxtHostVuePluginForCompilerExcludes,
+  placeVizeCompileStage,
+} from "./host-vue-bridge.ts";
 import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE } from "./utils.ts";
 
 void test("Nuxt host Vue bridge delegates only compiler-excluded SFCs", () => {
@@ -129,4 +132,36 @@ void test("Nuxt host Vue bridge leaves Vize's compatibility shim removable", () 
     ),
     false,
   );
+});
+
+void test("#11641 Vize compiles at the host compiler's place in every Nuxt config", () => {
+  // Nuxt 4.6.4 lists `vite:vue` first and `nuxt:ssr-styles` (which parses each
+  // module as JavaScript) before the modules' plugins, where Vize registers.
+  const stage = { name: "vite-plugin-vize:sfc", transform() {} };
+  const vizePlugins = [{ name: "vite:vue" }, { name: "vite-plugin-vize" }, stage];
+  const before = [...vizePlugins];
+  const hostVue = { name: "vite:vue", transform() {} };
+  const ssrStyles = { name: "nuxt:ssr-styles", transform() {} };
+  const prehydrate = { name: "nuxt:prehydrate-transform", transform() {} };
+  for (const config of [
+    [hostVue, ssrStyles, vizePlugins, prehydrate],
+    [hostVue, ssrStyles, vizePlugins, prehydrate],
+  ]) {
+    placeVizeCompileStage(config, stage);
+    assert.deepEqual(config, [stage, hostVue, ssrStyles, before.slice(0, 2), prehydrate]);
+  }
+  // The registered array is shared by the client and server configs.
+  assert.deepEqual(vizePlugins, before);
+
+  // Without a host compiler, or without Vize in the config, nothing moves.
+  const alone = [ssrStyles, vizePlugins];
+  placeVizeCompileStage(alone, stage);
+  assert.deepEqual(alone, [ssrStyles, vizePlugins]);
+  const foreign = [hostVue, ssrStyles];
+  placeVizeCompileStage(foreign, stage);
+  assert.deepEqual(foreign, [hostVue, ssrStyles]);
+  // Vize's own hookless `vite:vue` shim is not a host compiler.
+  const shimOnly = [{ name: "vite:vue" }, vizePlugins];
+  placeVizeCompileStage(shimOnly, stage);
+  assert.deepEqual(shimOnly, [{ name: "vite:vue" }, vizePlugins]);
 });

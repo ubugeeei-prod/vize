@@ -96,6 +96,7 @@ export function compileFile(
   }
 
   const compiled: CompiledModule = {
+    source: content,
     code: result.code,
     // Set only when present: the persistent cache round-trips through JSON, so
     // an explicit `map: undefined` would not survive and a restored entry would
@@ -267,6 +268,7 @@ export function compileBatch(
   for (const fileResult of result.results) {
     if (fileResult.errors.length === 0) {
       cache.set(fileResult.path, {
+        source: filesByPath.get(fileResult.path)?.source,
         code: fileResult.code,
         ...(fileResult.map ? { map: fileResult.map } : {}),
         css: fileResult.css,

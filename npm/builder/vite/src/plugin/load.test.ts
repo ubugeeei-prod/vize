@@ -10,6 +10,7 @@ import { normalizeVueServerRendererImport } from "./load.ts";
 import { transformHook } from "./load.ts";
 import { rewriteImportMetaGlobBase } from "../transform.ts";
 import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
+import { loadSfcModule, transformCachedSfcModule } from "../test/sfc-module.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -134,9 +135,27 @@ const virtualDefineState: VizePluginState = {
   },
 };
 
-const virtualDefineTransform = await transformHook(
+// An SFC main module is still SFC text at the pre stage; its compile stage inlines the flags.
+assert.equal(
+  await transformHook(virtualDefineState, "<template />", toVirtualId("/src/EnvFlags.vue"), {
+    ssr: false,
+  }),
+  null,
+);
+virtualDefineState.cache = new Map([
+  [
+    "/src/EnvFlags.vue",
+    {
+      code: `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];
+export default {};`,
+      scopeId: "envflags",
+      hasScoped: false,
+      styles: [],
+    },
+  ],
+]);
+const virtualDefineTransform = await transformCachedSfcModule(
   virtualDefineState,
-  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
   toVirtualId("/src/EnvFlags.vue"),
   { ssr: false },
 );
@@ -161,9 +180,8 @@ assert.equal(
   "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
 );
 
-const visibleVirtualDefineTransform = await transformHook(
+const visibleVirtualDefineTransform = await transformCachedSfcModule(
   virtualDefineState,
-  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
   toPluginVisibleVirtualId("/src/EnvFlags.vue"),
   { ssr: false },
 );
@@ -349,7 +367,7 @@ assert.match(
   "non-Vue macro proxies should preserve the macro query for Vite",
 );
 
-const firstLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
+const firstLoad = await transformCachedSfcModule(hmrState, toVirtualId(realPath), { ssr: false });
 assert.ok(firstLoad && typeof firstLoad === "object", "Virtual module should load as code object");
 assert.match(
   firstLoad.code,
@@ -362,7 +380,7 @@ assert.equal(
   "The latest HMR update type should remain available to every client representation",
 );
 
-const secondLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
+const secondLoad = await transformCachedSfcModule(hmrState, toVirtualId(realPath), { ssr: false });
 assert.ok(
   secondLoad && typeof secondLoad === "object",
   "Subsequent virtual module loads should still succeed",
@@ -395,7 +413,7 @@ export default _sfc_main`,
   pendingHmrUpdateTypes: new Map(),
 };
 const watchedFiles: string[] = [];
-const watchedLoad = loadHook(watchedState, toVirtualId(watchedPath), {
+const watchedLoad = await transformCachedSfcModule(watchedState, toVirtualId(watchedPath), {
   ssr: false,
   addWatchFile: (id) => watchedFiles.push(id),
 });
@@ -429,7 +447,7 @@ const inlineState: VizePluginState = {
   pendingHmrUpdateTypes: new Map([[inlinePath, "template-only"]]),
 };
 
-const inlineLoad = loadHook(inlineState, toVirtualId(inlinePath), {
+const inlineLoad = await transformCachedSfcModule(inlineState, toVirtualId(inlinePath), {
   ssr: false,
 });
 assert.ok(
@@ -465,7 +483,7 @@ export default _sfc_main`,
   root: globRoot,
 };
 
-const globLoad = loadHook(globState, toVirtualId(globPath), {
+const globLoad = await transformCachedSfcModule(globState, toVirtualId(globPath), {
   ssr: false,
 });
 assert.ok(
@@ -516,9 +534,13 @@ const environmentState: VizePluginState = {
   pendingHmrUpdateTypes: new Map(),
 };
 
-const clientEnvironmentLoad = loadHook(environmentState, toVirtualId(envPath), {
-  ssr: false,
-});
+const clientEnvironmentLoad = await transformCachedSfcModule(
+  environmentState,
+  toVirtualId(envPath),
+  {
+    ssr: false,
+  },
+);
 assert.ok(
   clientEnvironmentLoad && typeof clientEnvironmentLoad === "object",
   "Client environment loads should succeed",
@@ -529,9 +551,13 @@ assert.match(
   "Client loads should read from the client compilation cache",
 );
 
-const visibleClientEnvironmentLoad = loadHook(environmentState, toPluginVisibleVirtualId(envPath), {
-  ssr: false,
-});
+const visibleClientEnvironmentLoad = await transformCachedSfcModule(
+  environmentState,
+  toPluginVisibleVirtualId(envPath),
+  {
+    ssr: false,
+  },
+);
 assert.ok(
   visibleClientEnvironmentLoad && typeof visibleClientEnvironmentLoad === "object",
   "Plugin-visible client environment loads should succeed",
@@ -542,7 +568,9 @@ assert.match(
   "Plugin-visible client loads should read from the client compilation cache",
 );
 
-const rawClientEnvironmentLoad = loadHook(environmentState, envPath, { ssr: false });
+const rawClientEnvironmentLoad = await transformCachedSfcModule(environmentState, envPath, {
+  ssr: false,
+});
 assert.ok(
   rawClientEnvironmentLoad && typeof rawClientEnvironmentLoad === "object",
   "Raw Vue SFC loads should be claimed when a bundler bypasses resolveId output",
@@ -553,7 +581,11 @@ assert.match(
   "Raw Vue SFC loads should read from the client compilation cache",
 );
 
-const ssrEnvironmentLoad = loadHook(environmentState, toVirtualId(envPath, true), { ssr: true });
+const ssrEnvironmentLoad = await transformCachedSfcModule(
+  environmentState,
+  toVirtualId(envPath, true),
+  { ssr: true },
+);
 assert.ok(
   ssrEnvironmentLoad && typeof ssrEnvironmentLoad === "object",
   "SSR environment loads should succeed",
@@ -593,7 +625,9 @@ const cssState: VizePluginState = {
   ]),
 };
 
-const clientCssLoad = loadHook(cssState, toVirtualId(cssPath), { ssr: false });
+const clientCssLoad = await transformCachedSfcModule(cssState, toVirtualId(cssPath), {
+  ssr: false,
+});
 assert.ok(clientCssLoad && typeof clientCssLoad === "object", "Client CSS load should succeed");
 assert.match(
   clientCssLoad.code,
@@ -601,7 +635,7 @@ assert.match(
   "Client loads should keep inline CSS injection in development",
 );
 
-const ssrCssLoad = loadHook(cssState, toVirtualId(cssPath, true), {
+const ssrCssLoad = await transformCachedSfcModule(cssState, toVirtualId(cssPath, true), {
   ssr: true,
 });
 assert.ok(ssrCssLoad && typeof ssrCssLoad === "object", "SSR CSS load should succeed");
@@ -642,7 +676,7 @@ export default _sfc_main`,
   ssrCache: new Map(),
 };
 
-const cssModuleLoad = loadHook(cssModuleState, toVirtualId(cssModulePath), {
+const cssModuleLoad = await transformCachedSfcModule(cssModuleState, toVirtualId(cssModulePath), {
   ssr: false,
 });
 assert.ok(
@@ -703,7 +737,7 @@ export default _sfc_main`,
   ssrCache: new Map(),
 };
 
-const applyCssLoad = loadHook(applyCssState, toVirtualId(applyCssPath), {
+const applyCssLoad = await transformCachedSfcModule(applyCssState, toVirtualId(applyCssPath), {
   ssr: false,
 });
 assert.ok(
@@ -778,9 +812,13 @@ export default _sfc_main`,
   ssrCache: new Map(),
 };
 
-const nestedCssComponentLoad = loadHook(nestedCssState, toVirtualId(nestedCssPath), {
-  ssr: false,
-});
+const nestedCssComponentLoad = await transformCachedSfcModule(
+  nestedCssState,
+  toVirtualId(nestedCssPath),
+  {
+    ssr: false,
+  },
+);
 assert.ok(
   nestedCssComponentLoad && typeof nestedCssComponentLoad === "object",
   "Nested CSS component should load",
@@ -872,7 +910,7 @@ const onDemandProdState: VizePluginState = {
   extractCss: true,
 };
 
-const onDemandProdLoad = loadHook(onDemandProdState, toVirtualId(onDemandProdPath), {
+const onDemandProdLoad = await loadSfcModule(onDemandProdState, toVirtualId(onDemandProdPath), {
   ssr: false,
 });
 assert.ok(
@@ -931,7 +969,9 @@ const collisionState: VizePluginState = {
   ssrCache: new Map(),
   collectedCss: new Map(),
 };
-const collisionLoad = loadHook(collisionState, toVirtualId(projectCollisionPath), { ssr: false });
+const collisionLoad = await loadSfcModule(collisionState, toVirtualId(projectCollisionPath), {
+  ssr: false,
+});
 assert.ok(collisionLoad && typeof collisionLoad === "object");
 const collisionImport = collisionLoad.code.match(/import "([^"\n]+)";/)?.[1];
 assert.ok(collisionImport, "Production collision fixtures should emit a style import");

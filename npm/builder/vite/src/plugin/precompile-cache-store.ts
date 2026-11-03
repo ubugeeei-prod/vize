@@ -122,7 +122,8 @@ function decompressBody(codec: unknown, body: Buffer): Buffer | null {
 
 /** `<meta JSON>\n<code><css>\n` -- the trailing LF marks the record boundary. */
 function encodeRecord(module: CompiledModule): Buffer {
-  const { code, css, ...rest } = module;
+  // The entry's hash already names `source`; restore reattaches the text it read.
+  const { code, css, source: _source, ...rest } = module;
   const codeBytes = Buffer.from(code, "utf8");
   const cssBytes = css === undefined ? null : Buffer.from(css, "utf8");
   const meta = Buffer.from(

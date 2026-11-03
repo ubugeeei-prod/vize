@@ -5,7 +5,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
-import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { toPluginVisibleVirtualId } from "../virtual.ts";
 
 const testRoot = fs.mkdtempSync(
@@ -169,9 +169,9 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   const state = createState(projectRoot);
   const context = { resolve: async () => null };
   const legacyId = source + "?vue&vize-ssr&t=123";
-  const directLegacy = loadHook(createState(projectRoot), legacyId);
+  const directLegacy = await loadSfcModule(createState(projectRoot), legacyId);
   const resolvedLegacy = expectResolvedId(await resolveIdHook(context, state, legacyId));
-  const resolvedLegacyLoad = loadHook(createState(projectRoot), resolvedLegacy);
+  const resolvedLegacyLoad = await loadSfcModule(createState(projectRoot), resolvedLegacy);
   assert.ok(directLegacy && resolvedLegacyLoad);
   const legacyCode = typeof directLegacy === "string" ? directLegacy : directLegacy.code;
   const resolvedLegacyCode =
@@ -186,7 +186,10 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     legacyCode,
     "Resolve then load must retain the complete native SSR output when only the legacy query selects SSR",
   );
-  const directClient = loadHook(createState(projectRoot), toPluginVisibleVirtualId(source));
+  const directClient = await loadSfcModule(
+    createState(projectRoot),
+    toPluginVisibleVirtualId(source),
+  );
   assert.ok(directClient);
   const clientCode = typeof directClient === "string" ? directClient : directClient.code;
   assert.notEqual(

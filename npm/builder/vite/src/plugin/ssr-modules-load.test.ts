@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { VizePluginState } from "./state.ts";
-import { loadHook } from "./load.ts";
+import { transformCachedSfcModule } from "../test/sfc-module.ts";
 import { toVirtualId } from "../virtual.ts";
 
 const ROOT = "/project";
@@ -44,19 +44,18 @@ function stateFor(environment: "client" | "ssr"): VizePluginState {
   } as unknown as VizePluginState;
 }
 
-function loadedCode(environment: "client" | "ssr"): string {
-  const result = loadHook(stateFor(environment), toVirtualId(PAGE), {
+async function loadedCode(environment: "client" | "ssr"): Promise<string> {
+  const result = await transformCachedSfcModule(stateFor(environment), toVirtualId(PAGE), {
     ssr: environment === "ssr",
   });
-  assert.ok(result, `${environment} load returned nothing`);
-  return typeof result === "string" ? result : result.code;
+  return result.code;
 }
 
-void test("an SSR-loaded SFC registers itself in ssrContext.modules", () => {
+void test("an SSR-loaded SFC registers itself in ssrContext.modules", async () => {
   // Without this, `vue-bundle-renderer` finds no module to intersect with the
   // client manifest, emits no stylesheet link, and the page renders unstyled
   // until the route chunk loads on the client (#3868).
-  const code = loadedCode("ssr");
+  const code = await loadedCode("ssr");
 
   assert.match(code, /useSSRContext as __vize_useSSRContext/);
   assert.match(code, /\(ssrContext\.modules \|\| \(ssrContext\.modules = new Set\(\)\)\)\.add\(/);
@@ -67,8 +66,8 @@ void test("an SSR-loaded SFC registers itself in ssrContext.modules", () => {
   );
 });
 
-void test("a client-loaded SFC is left alone", () => {
-  const code = loadedCode("client");
+void test("a client-loaded SFC is left alone", async () => {
+  const code = await loadedCode("client");
 
   assert.ok(!code.includes("__vize_useSSRContext"), `client output must not register:\n${code}`);
   assert.ok(!code.includes("ssrContext"), `client output must not reference ssrContext:\n${code}`);

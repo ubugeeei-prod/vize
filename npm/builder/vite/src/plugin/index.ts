@@ -18,13 +18,13 @@ import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
+import { getSfcModuleRequest, transformSfcModule } from "./sfc-module.ts";
 import {
   handleGenerateBundleHook,
   handleHotUpdateHook,
   resolveComponentsCssFileName,
 } from "./hmr.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
-import { prepareLoadSrcRequests } from "./src-requests.ts";
 import { createManifestPlugin } from "./manifest.ts";
 import {
   createPostTransformPlugin,
@@ -93,6 +93,24 @@ export function vize(
     clientViteDefine: {},
     serverViteDefine: {},
     logger: createLogger(options.debug ?? false),
+  };
+
+  // Compiles at @vitejs/plugin-vue's position: after host transforms of the SFC text.
+  const sfcPlugin: Plugin = {
+    name: "vite-plugin-vize:sfc",
+    transform: {
+      // Every SFC main module id names its `.vue` file; the host skips the rest.
+      filter: { id: /\.vue/ },
+      async handler(code, id, transformOptions) {
+        const sfc = getSfcModuleRequest(state, id);
+        if (!sfc) return null;
+        return transformSfcModule(state, code, sfc, {
+          ssr: resolveHookSsr(this, transformOptions),
+          addWatchFile: this.addWatchFile.bind(this),
+          resolve: (request, importer) => this.resolve(request, importer, { skipSelf: true }),
+        });
+      },
+    },
   };
 
   const mainPlugin: Plugin = {
@@ -183,6 +201,7 @@ export function vize(
       const replaced = removeHostVueSfcCompilers(
         resolvedConfig.plugins as Plugin[],
         state.mergedOptions,
+        sfcPlugin,
       );
       if (replaced > 0) {
         state.logger.log(`Replaced ${replaced} @vitejs/plugin-vue instance(s) with Vize.`);
@@ -287,18 +306,8 @@ export function vize(
       });
     },
 
-    async load(id, loadOptions) {
-      const sfcSource = await prepareLoadSrcRequests(
-        state,
-        (request, importer) => this.resolve(request, importer, { skipSelf: true }),
-        id,
-      );
-      return loadHook(state, id, {
-        ...loadOptions,
-        ssr: resolveHookSsr(this, loadOptions),
-        addWatchFile: this.addWatchFile.bind(this),
-        sfcSource,
-      });
+    load(id, loadOptions) {
+      return loadHook(state, id, { ssr: resolveHookSsr(this, loadOptions) });
     },
 
     async transform(code, id, transformOptions) {
@@ -345,6 +354,7 @@ export function vize(
   return [
     createVueCompatPlugin(state, options),
     mainPlugin,
+    sfcPlugin,
     createStylePostTransformPlugin(),
     createPostTransformPlugin(state),
     // Nuxt restores source identities in its own client manifest.
