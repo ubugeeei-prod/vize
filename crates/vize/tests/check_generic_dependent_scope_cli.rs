@@ -9,33 +9,15 @@ use std::{
 };
 use vize_l0::String;
 
-const CONFIG: &str = r#"{
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "noUnusedLocals": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext"
-  },
-  "include": ["src/**/*.vue"]
-}
-"#;
+const CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/generic-alias-dependent-scope-11450/tsconfig.json.txt"
+));
 
-const PROBE: &str = r#"<script setup lang="ts" generic="TBaz">
-type Foo = { value: TBaz };
-
-interface Bar {
-  items: Foo[];
-}
-defineProps<Bar>();
-</script>
-
-<template>
-  <div />
-</template>
-"#;
+const PROBE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/generic-alias-dependent-scope-11450/Probe.vue.txt"
+));
 
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -158,9 +140,7 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
                 "defineProps<Bar>();",
                 "defineProps<Bar>();\nconst bad: number = \"x\";\nvoid bad;",
             ),
-            vec![
-                "error:8:7 [TS2322] Type 'string' is not assignable to type 'number'.",
-            ],
+            vec!["error:8:7 [TS2322] Type 'string' is not assignable to type 'number'."],
         ),
     ];
     for (id, config, source, expected) in cases {
