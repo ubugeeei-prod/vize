@@ -14,7 +14,7 @@ import type { Item } from "./types";
 const props = defineProps<{ item: T; key: K }>();
 const local: T = props.item;
 </script>
-<template><p>T {{ (props.item as T).id }} {{ local[props.key] }}</p></template>
+<template><p>T {{ (props.item as T).id }} {{ local }}</p></template>
 `;
 
 type Range = {
@@ -60,7 +60,7 @@ const T = {
   template: at(source, "as T", 3, 1),
 };
 const typeParameter = Object.values(T);
-const local = [at(source, "local:", 0, 5), at(source, "local[", 0, 5)];
+const local = [at(source, "local:", 0, 5), at(source, "{{ local }}", 3, 5)];
 
 async function withDocument(
   typecheck: boolean,

@@ -131,7 +131,7 @@ fn generic_attribute_value_is_script_setup_code() {
     let source = r#"<script setup lang="ts" data-generic="U" generic="T extends Item">
 const x = 1
 </script>"#;
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let descriptor = vize_incremental::parse_descriptor("", source).unwrap();
     let value = source.find("\"T extends").unwrap() + 1;
     let end = value + "T extends Item".len();
     for offset in [value, value + "T extends ".len(), end - 1] {
