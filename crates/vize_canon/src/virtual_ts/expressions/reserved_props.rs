@@ -296,13 +296,15 @@ fn skip_comment(bytes: &[u8], start: usize) -> Option<usize> {
     }
     match bytes.get(start + 1)? {
         b'/' => Some(
-            bytes[start + 2..]
+            bytes
+                .get(start + 2..)?
                 .iter()
                 .position(|byte| matches!(byte, b'\r' | b'\n'))
                 .map_or(bytes.len(), |offset| start + 2 + offset),
         ),
         b'*' => Some(
-            bytes[start + 2..]
+            bytes
+                .get(start + 2..)?
                 .windows(2)
                 .position(|pair| pair == b"*/")
                 .map_or(bytes.len(), |offset| start + 4 + offset),
