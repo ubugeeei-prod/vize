@@ -24,7 +24,6 @@
 
 use std::path::{Path, PathBuf};
 
-use oxc_span::SourceType;
 use rayon::prelude::*;
 #[cfg(test)]
 use vize_carton::cstr;
@@ -40,6 +39,7 @@ mod declaration_sources;
 use declaration_sources::source_backed;
 mod package_roots;
 mod references;
+pub(super) use references::path_references;
 mod resolution;
 use package_roots::PackageRoots;
 #[cfg(test)]
@@ -209,9 +209,9 @@ impl VirtualProject {
 
         while let Some(importer) = queue.pop() {
             vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
-            let Some((virtual_content, virtual_path, generated_sfc)) =
+            let Some((virtual_content, virtual_path, references)) =
                 self.find_by_original(&importer).map(|file| {
-                    let content = self.module_source(file).unwrap_or(&file.content);
+                    let content = self.walked_source(file);
                     vize_carton::micro_count!("canon.dependency_scan.content.clone.calls", 1);
                     vize_carton::micro_count!(
                         "canon.dependency_scan.content.clone.source_bytes",
@@ -231,24 +231,13 @@ impl VirtualProject {
                             content.clone()
                         ),
                         file.virtual_path.clone(),
-                        file.source_map.sfc_map.is_some(),
+                        self.walked_references(file, content),
                     )
                 })
             else {
                 continue;
             };
             let mut dependency_targets = FxHashSet::default();
-            // Generated SFC projections carry synthetic triple-slash paths for
-            // the type checker. Only references in the authored SFC source are
-            // dependency edges; scanning the projection materializes the entire
-            // project for each editor open.
-            let references = if generated_sfc {
-                self.original_contents
-                    .get(&virtual_path)
-                    .map_or_else(Vec::new, |source| references::path_references(source))
-            } else {
-                references::path_references(&virtual_content)
-            };
             if references.is_empty()
                 && !may_resolve_a_dependency(
                     &virtual_content,
@@ -270,14 +259,7 @@ impl VirtualProject {
             let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
                 continue;
             };
-            let source_type = if virtual_path
-                .extension()
-                .is_some_and(|extension| extension == "tsx")
-            {
-                SourceType::tsx()
-            } else {
-                SourceType::ts()
-            };
+            let source_type = super::editor_source_facts::walked_source_type(&virtual_path);
             let occurrences = match facts.as_deref_mut() {
                 Some(facts) => {
                     vize_carton::micro_count!("canon.dependency_scan.occurrences.cached.calls", 1);

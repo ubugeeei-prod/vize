@@ -10,6 +10,8 @@ mod bridge;
 pub(crate) mod constructor_vue_proof;
 mod diagnosing_configuration;
 mod editor_session;
+#[cfg(test)]
+mod host_edit_import_tests;
 mod native_vue;
 mod original_program;
 #[cfg(test)]

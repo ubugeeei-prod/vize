@@ -49,6 +49,8 @@ mod declaration_emit;
 pub(crate) mod dependency_scan;
 mod document;
 mod editor_projection;
+mod editor_source_facts;
+pub(crate) use editor_source_facts::EditorSourceFacts;
 mod incremental_graph;
 mod module_projection;
 mod star_exports;

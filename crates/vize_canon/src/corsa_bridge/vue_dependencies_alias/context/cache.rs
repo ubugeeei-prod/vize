@@ -132,20 +132,22 @@ impl SessionCache {
         // boundary and pays no lstat/read cost on unchanged warm requests.
         // One validation reads each input once across the slot and members.
         let key = RevisionKey::new(source_path.to_path_buf(), fingerprint);
+        let cached = self.slots.get(&key)?;
+        // Another revision of this host stays for the caller to carry forward.
+        if cached.fingerprint != *fingerprint {
+            return None;
+        }
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
-        let valid = self.slots.get(&key).is_some_and(|cached| {
-            cached.fingerprint == *fingerprint
-                && (self.trust_watched_disk_inputs
-                    || (cached.fingerprint.stamps_still_valid(&mut observed)
-                        && cached.context.mirror.as_ref().is_none_or(|mirror| {
-                            !self.project_members.contains_key(mirror.virtual_root())
-                                || self.project_revision_is_current_with_cache(
-                                    mirror.virtual_root(),
-                                    fingerprint.overlay_identity(),
-                                    &mut observed,
-                                )
-                        })))
-        });
+        let valid = self.trust_watched_disk_inputs
+            || (cached.fingerprint.stamps_still_valid(&mut observed)
+                && cached.context.mirror.as_ref().is_none_or(|mirror| {
+                    !self.project_members.contains_key(mirror.virtual_root())
+                        || self.project_revision_is_current_with_cache(
+                            mirror.virtual_root(),
+                            fingerprint.overlay_identity(),
+                            &mut observed,
+                        )
+                }));
         if !valid {
             self.slots.remove(&key);
             return None;
@@ -154,6 +156,27 @@ impl SessionCache {
         let cached = self.slots.get_mut(&key)?;
         cached.last_used = self.clock;
         Some(Arc::clone(&cached.context))
+    }
+
+    /// Take the host's revision whose graph still holds when only the host's
+    /// text moved. Its disk inputs are validated exactly as a hit's are.
+    pub(super) fn take_revisable(
+        &mut self,
+        source_path: &Path,
+        fingerprint: &ContextFingerprint,
+    ) -> Option<(ContextFingerprint, Arc<AliasContext>)> {
+        let key = RevisionKey::new(source_path.to_path_buf(), fingerprint);
+        let cached = self.slots.get(&key)?;
+        let mut observed = crate::package_route::stamp::InputStampValidation::default();
+        let revisable = fingerprint.revises(&cached.fingerprint)
+            && (self.trust_watched_disk_inputs
+                || cached.fingerprint.stamps_still_valid(&mut observed));
+        if !revisable {
+            return None;
+        }
+        self.slots
+            .remove(&key)
+            .map(|cached| (cached.fingerprint, cached.context))
     }
 
     pub(super) fn insert(
@@ -330,6 +353,9 @@ mod scaling_tests;
 
 #[cfg(test)]
 mod revision_tests;
+
+#[cfg(test)]
+mod edit_tests;
 
 #[cfg(test)]
 mod catalog_tests;

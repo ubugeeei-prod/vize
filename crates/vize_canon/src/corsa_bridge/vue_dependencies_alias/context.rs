@@ -15,6 +15,7 @@ use cache::{ContextFingerprint, ProjectMember, RevisionKey};
 mod namespace;
 mod prebuild;
 mod prepare;
+mod revise;
 mod routes;
 
 // Project snapshots are shared by independent semantic requests in the
@@ -51,6 +52,8 @@ pub(in crate::corsa_bridge) struct AliasContext {
     route_inputs: Vec<PathBuf>,
     /// Live overlay members this revision registered again while building.
     refreshed_sources: Vec<PathBuf>,
+    /// What the host contributes to the graph; equal facts keep the graph.
+    host_facts: crate::batch::virtual_project::EditorSourceFacts,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
     configured_global_template_ref: bool,
