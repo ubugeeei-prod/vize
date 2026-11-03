@@ -54,9 +54,27 @@ pub(in crate::virtual_ts::generator) fn instance_suffix(
     has_exposed_type: bool,
     (has_root_el, has_refs): (bool, bool),
 ) {
+    ts.push_str("} & ");
+    instance_base(
+        ts,
+        legacy_vue2,
+        dialect,
+        has_exposed_type,
+        (has_root_el, has_refs),
+    );
+    ts.push_str(";\n");
+}
+
+pub(in crate::virtual_ts::generator) fn instance_base(
+    ts: &mut String,
+    legacy_vue2: bool,
+    dialect: VueVersion,
+    has_exposed_type: bool,
+    (has_root_el, has_refs): (bool, bool),
+) {
     if (has_root_el || has_refs) && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         let setup = "Awaited<ReturnType<typeof __setup>>";
-        ts.push_str("} & $MappedOmit<$ComponentPublicBase, ");
+        ts.push_str("$MappedOmit<$ComponentPublicBase, ");
         match (has_root_el, has_refs) {
             (true, false) => append!(*ts, "'$el'> & {{ $el: {setup}['__vize_root_el'] }}"),
             (false, _) => append!(*ts, "'$refs'> & {{ $refs: {setup}['__vize_refs'] }}"),
@@ -66,12 +84,11 @@ pub(in crate::virtual_ts::generator) fn instance_suffix(
             ),
         }
     } else if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        ts.push_str("} & $Vue2ComponentInstance");
+        ts.push_str("$Vue2ComponentInstance");
     } else {
-        ts.push_str("} & $ComponentPublicBase");
+        ts.push_str("$ComponentPublicBase");
     }
     if has_exposed_type {
         append!(*ts, " & $ShallowUnwrapRef<{}>", names::declared("Exposed"));
     }
-    ts.push_str(";\n");
 }
