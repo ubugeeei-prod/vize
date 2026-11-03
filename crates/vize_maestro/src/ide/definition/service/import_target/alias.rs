@@ -115,11 +115,17 @@ mod tests {
         let linked = directory.path().join("linked");
         std::fs::create_dir_all(&physical).unwrap();
         std::os::unix::fs::symlink(&physical, &linked).unwrap();
-        let source = "<script setup lang=\"ts\">\nimport { format } from './format'\n</script>\n<template>{{ format('hello') }}</template>";
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/lsp/native-document-identity-11586/Parent.art.vue.txt"
+        ));
         std::fs::write(physical.join("Parent.art.vue"), source).unwrap();
         std::fs::write(
             physical.join("format.ts"),
-            "export function format(value: string) { return value }\n",
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/lsp/native-document-identity-11586/format.ts.txt"
+            )),
         )
         .unwrap();
         let uri = Url::from_file_path(linked.join("Parent.art.vue")).unwrap();

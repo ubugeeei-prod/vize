@@ -2529,6 +2529,51 @@
       }
     },
     {
+      "id": "lsp/regression/native-document-identity-11586",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "native-document-identity-11586",
+        "files": [
+          {
+            "path": "Parent.art.vue.txt",
+            "sha256": "f1ec7492d6e356ce67e4c62f0553bac08a4fa04af986d27ad34d432171965178"
+          },
+          {
+            "path": "format.ts.txt",
+            "sha256": "c511b4a3f054b81eeb744ea67f5efc33ecbafd3d5e568ea6dc3e28395fd77db4"
+          }
+        ]
+      },
+      "case": {
+        "path": "native-document-identity-11586/case.json",
+        "sha256": "746ba00b4078f36e8d3a9290694504812e245726d6aa58c3cd14942394b1aaad"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/native-html-tag-range-10449",
       "state": "active",
       "targets": ["stdio"],

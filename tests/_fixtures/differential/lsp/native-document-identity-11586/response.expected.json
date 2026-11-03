@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 3,
+    "character": 14
+  },
+  "result": {
+    "uri": "${workspace}/src/format.ts",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 16
+      },
+      "end": {
+        "line": 0,
+        "character": 22
+      }
+    }
+  }
+}
