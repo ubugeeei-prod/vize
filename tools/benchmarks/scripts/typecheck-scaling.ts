@@ -15,6 +15,7 @@
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { availableParallelism, totalmem } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
@@ -60,7 +61,7 @@ const GNU_TIME_FORMAT = "vize-time wall=%e user=%U sys=%S maxrss_kb=%M status=%x
 const GNU_TIME_LINE =
   /^vize-time wall=(\d+\.\d+) user=(\d+\.\d+) sys=(\d+\.\d+) maxrss_kb=(\d+) status=(\d+)$/gmu;
 /** vue-tsc on the largest corpora needs more than V8's default old space. */
-export const NODE_OPTIONS = "--max-old-space-size=32768";
+export const NODE_OPTIONS = "--max-old-space-size=98304";
 
 export function parseGnuTime(text: string): { maxRssKb: number; status: number } {
   const matches = [...text.matchAll(GNU_TIME_LINE)];
@@ -248,6 +249,7 @@ function main(): void {
     schemaVersion: 1,
     sha: values.sha,
     runner: values.runner,
+    machine: `${availableParallelism()} vCPUs, ${(totalmem() / 2 ** 30).toFixed(0)} GiB`,
     measured: timed,
     runs,
     generatedAt: new Date().toISOString(),

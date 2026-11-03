@@ -8,6 +8,7 @@
  * marginal cost between the two smallest (a step in the curve).
  */
 
+import { PLANT_MULTIPLICITY_NOTES } from "./typecheck-scaling-gate.ts";
 import type { Provenance, ToolId } from "./typecheck-scaling-tools.ts";
 
 export const GROWTH_LIMIT = 1.5;
@@ -39,6 +40,7 @@ export type ScalingResults = {
   schemaVersion: 1;
   sha: string;
   runner: string;
+  machine: string;
   measured: boolean;
   runs: number;
   generatedAt: string;
@@ -170,11 +172,13 @@ export function renderSummary(results: ScalingResults): string {
   const lines = [
     "# Type-check scaling",
     "",
-    `Commit \`${results.sha}\` on \`${results.runner}\`, ${results.generatedAt}. Median of ${results.runs} warm run(s); the first (cold) run is listed separately and never enters a median.${results.runUrl ? ` [Run](${results.runUrl}).` : ""}`,
+    `Commit \`${results.sha}\` on \`${results.runner}\` (${results.machine}), ${results.generatedAt}. Median of ${results.runs} warm run(s); the first (cold) run is listed separately and never enters a median.${results.runUrl ? ` [Run](${results.runUrl}).` : ""}`,
     "",
     "CPU is user+sys of the whole process tree (reaped children's cutime+cstime from /proc/self/stat around each spawn). Peak RSS is GNU time `%M`, the largest single process of the tree. Every timed run reported exactly the planted errors; each run starts with an empty cache directory (`XDG_CACHE_HOME`), so no checker replays an earlier run's results, and build-mode runs start from deleted outputs with `--force`.",
     "",
   ];
+  for (const note of PLANT_MULTIPLICITY_NOTES) lines.push(`- ${note}`);
+  if (PLANT_MULTIPLICITY_NOTES.length > 0) lines.push("");
   if (!results.measured) lines.push("**Smoke run: not on Linux, so nothing was timed.**", "");
   if (refused.length > 0) {
     lines.push(

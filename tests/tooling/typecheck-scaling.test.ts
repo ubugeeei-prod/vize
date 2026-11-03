@@ -163,6 +163,9 @@ void test("the gate accepts exactly the planted errors and refuses anything else
     [wrongCode.ok, wrongCode.missing.length, wrongCode.unexpected.length],
     [false, 1, 1],
   );
+  const mapperPlants: Plant[] = [PLANTS[0] as Plant, PLANTS[1] as Plant];
+  assert.equal(gate("tsc-vize-mapper", [exact[0] as Diagnostic], mapperPlants).ok, true);
+  assert.equal(gate("tsc-vize-mapper", exact.slice(0, 2), mapperPlants).ok, false);
   const doubled = gate("tool", [...exact, diagnostic("src/b.vue", 9, "TS2322")], PLANTS);
   assert.deepEqual([doubled.ok, doubled.unexpected.length], [false, 1]);
 });
@@ -241,6 +244,7 @@ const results = (cells: Cell[]): ScalingResults => ({
   schemaVersion: 1,
   sha: "0".repeat(40),
   runner: "test",
+  machine: "32 vCPUs, 128 GiB",
   measured: true,
   runs: 3,
   generatedAt: "2026-11-03T00:00:00.000Z",
