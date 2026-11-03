@@ -68,7 +68,14 @@ const capturePattern =
   /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
 
 // The gate's definition must spell the names it bans.
-const gateFiles = new Set(["tools/commands/davinci/completion-gates.ts"]);
+const toolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const gateFiles = new Set([
+  path
+    .relative(toolRoot, fileURLToPath(import.meta.url))
+    .split(path.sep)
+    .join("/"),
+  "tools/support/levels/rename-program-codename.ts",
+]);
 
 const exemptPath = (file: string) =>
   file.startsWith("docs/davinci/") ||
@@ -106,9 +113,12 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
     const text = repo.read(file);
     if (text === null) continue;
     for (const line of text.split("\n")) {
-      // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form.
-      if (/codename/i.test(line)) continue;
-      const found = matches(file, line);
+      // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form for level
+      // codenames; the program name has none.
+      const alias = /codename/i.test(line);
+      const found = matches(file, line).filter(
+        (name) => !alias || name.toLowerCase() === "davinci",
+      );
       if (found.length) {
         lines++;
         found.forEach(hit);
@@ -140,8 +150,11 @@ const allowlistEntries = (repo: Repo, file: string): number => {
 };
 
 const measureLevelCrates = (repo: Repo): Measured => {
-  const found = members(repo)
-    .filter((member) => member.startsWith("davinci/"))
+  const all = members(repo);
+  const home = all.find((member) => path.basename(member) === "vize_l0");
+  if (!home) throw new Error("no vize_l0 workspace member");
+  const found = all
+    .filter((member) => path.dirname(member) === path.dirname(home))
     .map((member) => path.basename(member))
     .sort();
   const expected = [...levelCrates].sort();
@@ -249,13 +262,26 @@ export const gates: readonly Gate[] = [
   { id: "products.project", tier: 4, issues: [6874] },
   { id: "products.fixes", tier: 4, issues: [6876] },
   { id: "products.dependencies", tier: 4, issues: [6851], measure: measureProductDependencies },
+  { id: "inputs.pug", tier: 4, issues: [8908] },
+  { id: "inputs.sass", tier: 4, issues: [11550] },
+  { id: "inputs.scss", tier: 4, issues: [11551] },
+  { id: "inputs.less", tier: 4, issues: [11552] },
+  { id: "inputs.stylus", tier: 4, issues: [11553] },
+  { id: "inputs.jsx", tier: 4, issues: [11554] },
+  { id: "inputs.tsx", tier: 4, issues: [11555] },
+  { id: "inputs.vapor", tier: 4, issues: [11556] },
   { id: "legacy.zero-fallback", tier: 5, issues: [6854] },
   { id: "legacy.acceptance", tier: 5, issues: [6853] },
   { id: "legacy.stability", tier: 5, issues: [6828], measure: measureStabilityPolicy },
   { id: "legacy.deleted", tier: 5, issues: [6828], measure: measureLegacyDeleted },
-  { id: "frameworks.tsrx", tier: 6, issues: [6858] },
-  { id: "frameworks.solid-poc", tier: 6, issues: [6859] },
-  { id: "frameworks.svelte-poc", tier: 6, issues: [11540] },
+  { id: "inputs.tsrx", tier: 6, issues: [6858] },
+  { id: "poc.svelte", tier: 6, issues: [11540] },
+  { id: "poc.astro", tier: 6, issues: [11557] },
+  { id: "poc.angular", tier: 6, issues: [11558] },
+  { id: "poc.solid", tier: 6, issues: [6859] },
+  { id: "poc.moonbit", tier: 6, issues: [11559] },
+  { id: "poc.coffeescript", tier: 6, issues: [11560] },
+  { id: "poc.python", tier: 6, issues: [11561] },
 ];
 
 const issueList = (issues: readonly number[]) => issues.map((issue) => "#" + issue).join(" ");

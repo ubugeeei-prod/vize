@@ -4,7 +4,7 @@ Davinci is complete when every gate below passes on `main`. The gates restate th
 roadmaps [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (levels),
 [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) (products),
 [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) (legacy deletion),
-[#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (frameworks) and
+[#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (inputs and frameworks) and
 [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI) as checks.
 
 ```sh
@@ -77,39 +77,54 @@ are not committed here; the tool prints them.
 | `products.project`      | The CLI and the LSP share one project model.                                                                                                                                   | issue    | #6874        |
 | `products.fixes`        | Diagnostic fixes, code actions and lint autofixes are one mechanism that edits L1 spans.                                                                                       | issue    | #6876        |
 | `products.dependencies` | Glyph, Patina, Canon and Maestro have no normal dependency, direct or inherited, on a legacy crate: every file in `docs/davinci/plan/product-dependency-allowlists/` is empty. | measured | #6851        |
+| `inputs.pug`            | Pug templates: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.                     | issue    | #8908        |
+| `inputs.sass`           | Sass (indented) style blocks: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.      | issue    | #11550       |
+| `inputs.scss`           | SCSS style blocks: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.                 | issue    | #11551       |
+| `inputs.less`           | Less style blocks: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.                 | issue    | #11552       |
+| `inputs.stylus`         | Stylus style blocks: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.               | issue    | #11553       |
+| `inputs.jsx`            | JSX: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.                               | issue    | #11554       |
+| `inputs.tsx`            | TSX: every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.                               | issue    | #11555       |
+| `inputs.vapor`          | Vapor targets (DOM and SSR): every product that reads it runs natively on the levels, its differential corpus rows show zero fallback, and it is in a published release.       | issue    | #11556       |
 
 ## T5: legacy deletion
 
-| Gate                   | Passes when                                                                                                                                                                                                      | Kind     | Issues |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
-| `legacy.zero-fallback` | Every product's native-only verifier reports zero legacy fallbacks over the differential corpus, every dialect listed in `docs/davinci/plan/deletion-readiness-policy.json` and the real-project corpus.         | issue    | #6854  |
-| `legacy.acceptance`    | Native-only acceptance rates are published per product.                                                                                                                                                          | issue    | #6853  |
-| `legacy.stability`     | `deletion-readiness-policy.json` sets `minimumStableDays` (30) and `maximumGapDays`, and `legacy.zero-fallback` has held for that period. The tool measures the policy; the #6854 verifier owns the held period. | measured | #6828  |
-| `legacy.deleted`       | No legacy crate remains in the workspace: `vize_armature`, `vize_relief`, `vize_croquis`, `vize_croquis_cf` and every `vize_atelier_*`.                                                                          | measured | #6828  |
+| Gate                   | Passes when                                                                                                                                                                                                          | Kind     | Issues |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| `legacy.zero-fallback` | Every product's native-only verifier reports zero legacy fallbacks over the differential corpus, every dialect listed in `docs/davinci/plan/deletion-readiness-policy.json` and the real-project corpus.             | issue    | #6854  |
+| `legacy.acceptance`    | Native-only acceptance rates are published per product.                                                                                                                                                              | issue    | #6853  |
+| `legacy.stability`     | `deletion-readiness-policy.json` sets `minimumStableDays` (30) and `maximumGapDays` (7), and `legacy.zero-fallback` has held for that period. The tool measures the policy; the #6854 verifier owns the held period. | measured | #6828  |
+| `legacy.deleted`       | No legacy crate remains in the workspace: `vize_armature`, `vize_relief`, `vize_croquis`, `vize_croquis_cf` and every `vize_atelier_*`.                                                                              | measured | #6828  |
 
-## T6: frameworks
+## T6: TSRX and proofs of concept
 
-| Gate                    | Passes when                                                                                                                             | Kind  | Issues |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
-| `frameworks.tsrx`       | TSRX runs on the levels, compiler included, with parity against the reference compiler. TSRX is a supported product surface.            | issue | #6858  |
-| `frameworks.solid-poc`  | A working Solid example under `examples/` runs on the levels and is tested in CI. A proof of concept, not a supported product surface.  | issue | #6859  |
-| `frameworks.svelte-poc` | A working Svelte example under `examples/` runs on the levels and is tested in CI. A proof of concept, not a supported product surface. | issue | #11540 |
+| Gate               | Passes when                                                                                                                                                 | Kind  | Issues |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| `inputs.tsrx`      | TSRX runs on the levels, compiler included, with parity against the reference compiler, and is in a published release. TSRX is a supported product surface. | issue | #6858  |
+| `poc.svelte`       | A working Svelte example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                                         | issue | #11540 |
+| `poc.astro`        | A working Astro example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                                          | issue | #11557 |
+| `poc.angular`      | A working Angular example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                                        | issue | #11558 |
+| `poc.solid`        | A working Solid example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                                          | issue | #6859  |
+| `poc.moonbit`      | A working MoonBit (example input language) example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.               | issue | #11559 |
+| `poc.coffeescript` | A working CoffeeScript example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                                   | issue | #11560 |
+| `poc.python`       | A working Python (example input language) example under `examples/` runs on the levels and is tested in CI. Not a supported product surface.                | issue | #11561 |
 
 ## Roadmap closure
 
 - #6826 closes when every `levels.*` gate and `formal.rust-only` pass.
 - #6827 closes when every `products.*` gate passes.
 - #6828 closes when `history.fixtures`, `harness.differential` and every `legacy.*` gate pass.
-- #6829 closes when every `frameworks.*` gate passes.
+- #6829 closes when every `inputs.*` and `poc.*` gate passes.
 - #6830 is the `ci.tiers` gate.
 
 ## Maintainer decisions (2026-11-03)
 
 1. **Stability period** (`legacy.stability`): 30 days (`minimumStableDays: 30`).
-   `maximumGapDays` is still unset, and the readiness evaluator requires it.
-2. **Framework scope** (`frameworks.*`): TSRX is required and is a supported product surface.
-   Solid and Svelte are proofs of concept: working examples under `examples/`, not a supported
-   surface, not meant for user adoption. Angular and Analog are out of scope.
+   `maximumGapDays: 7`, matching the weekly Real Project Matrix schedule.
+2. **Scope** (`inputs.*`, `poc.*`; supersedes the earlier framework answer). Must be complete
+   (first-class, gated, released): Pug, Sass, SCSS, Less, Stylus, JSX, TSX, Vapor and TSRX. Proofs
+   of concept only, as examples under `examples/` and not a supported surface: Svelte, Astro, Angular,
+   Solid, MoonBit, CoffeeScript and Python. MoonBit and Python are example input languages only;
+   repository tooling stays TypeScript/Rust.
 3. **The `davinci` name** (`levels.codenames`): Davinci is a codename. It is removed everywhere
    except `docs/davinci/` by one scripted, replayable rename, landed in a merge window the
    maintainer schedules.
