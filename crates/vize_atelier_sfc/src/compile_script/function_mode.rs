@@ -13,6 +13,7 @@ pub(crate) mod helpers;
 pub(crate) mod imports;
 mod model;
 mod module_scope;
+mod prop_types;
 
 #[cfg(test)]
 mod tests;

@@ -18,16 +18,16 @@ use super::super::artifacts::erase_artifact_macro_statements;
 use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
-    PropTypeInfo, add_null_to_runtime_type, extract_emit_names_from_type,
-    extract_prop_types_from_type_with_context,
-    normalize_destructure_default_value_with_factory as normalize_default, resolve_prop_js_type,
-    runtime_prop_key, validate_macro_scope_and_props,
+    add_null_to_runtime_type, extract_emit_names_from_type,
+    normalize_destructure_default_value_with_factory as normalize_default, runtime_prop_key,
+    validate_macro_scope_and_props,
 };
 use super::super::typescript::transform_typescript_to_js;
 use super::expose::emit_expose;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
 use super::model::emit_model_bindings;
+use super::prop_types::{prop_types_from_context, resolve_prop_type};
 
 /// Compile script setup content following Vue.js core format
 pub fn compile_script_setup(
@@ -451,6 +451,9 @@ fn emit_props_definition(
                     if prop_type.optional {
                         output.extend_from_slice(b", required: false");
                     }
+                    if prop_type.skip_check {
+                        output.extend_from_slice(b", skipCheck: true");
+                    }
                     output.extend_from_slice(b" },\n");
                 }
                 output.extend_from_slice(b"  },\n");
@@ -460,30 +463,6 @@ fn emit_props_definition(
             output.extend_from_slice(props_macro.args.as_bytes());
             output.extend_from_slice(b",\n");
         }
-    }
-}
-
-fn prop_types_from_context(
-    ctx: &ScriptCompileContext,
-    type_args: &str,
-) -> Vec<(String, PropTypeInfo)> {
-    let resolved_type_args = resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
-    extract_prop_types_from_type_with_context(
-        &resolved_type_args,
-        Some(&ctx.interfaces),
-        Some(&ctx.type_aliases),
-    )
-}
-
-fn resolve_prop_type(prop_type: &PropTypeInfo, ctx: &ScriptCompileContext) -> String {
-    if prop_type.js_type == "null" {
-        prop_type
-            .ts_type
-            .as_ref()
-            .and_then(|ts_type| resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases))
-            .unwrap_or_else(|| prop_type.js_type.clone())
-    } else {
-        prop_type.js_type.clone()
     }
 }
 

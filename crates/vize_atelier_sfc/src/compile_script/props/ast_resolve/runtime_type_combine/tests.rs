@@ -4,6 +4,7 @@
 use crate::compile_sfc;
 use crate::types::SfcCompileOptions;
 use crate::{SfcParseOptions, parse_sfc};
+use vize_carton::{String, ToCompactString};
 
 /// The whole `props: …` option of the compiled component, one entry per prop.
 fn props_option(source: &str, is_prod: bool) -> Vec<String> {
@@ -27,7 +28,7 @@ fn props_option(source: &str, is_prod: bool) -> Vec<String> {
                 entry.push(' ');
                 entry.push_str(line);
             }
-            _ => entries.push(line.to_owned()),
+            _ => entries.push(line.to_compact_string()),
         }
         depth += line.matches('{').count();
         depth -= line.matches('}').count();
@@ -47,6 +48,8 @@ withDefaults(defineProps<{
   either: (() => void) | T | string
   plain?: T | number
   key?: keyof T
+  wrapped: boolean | keyof (T)
+  qualified?: keyof Ext.Inner
   local?: keyof Local
   both: T & boolean
 }>(), { fn: () => {} })
@@ -70,6 +73,8 @@ fn unknown_union_members_keep_boolean_and_function_with_skip_check() {
             "plain: { type: null, required: false },",
             // Keys of a generic may be numbers or symbols.
             "key: { type: null, required: false },",
+            "wrapped: { type: Boolean, required: true, skipCheck: true },",
+            "qualified: { type: null, required: false },",
             "local: { type: String, required: false },",
             "both: { type: Boolean, required: true }",
         ]
@@ -90,6 +95,8 @@ fn production_keeps_casting_types_without_skip_check() {
             "either: { type: [Function, String] },",
             "plain: {},",
             "key: {},",
+            "wrapped: { type: Boolean },",
+            "qualified: {},",
             "local: {},",
             "both: { type: Boolean }",
         ]
@@ -125,6 +132,30 @@ fn define_model_keeps_boolean_casting_for_generic_unions() {
             r#""runModifiers": {},"#,
             r#""modelValue": { type: null },"#,
             r#""modelModifiers": {}"#,
+        ]
+    );
+}
+
+#[test]
+fn function_mode_emits_skip_check_for_generic_unions() {
+    let content = "const props = defineProps<{ flag: boolean | T; fn?: (() => void) | T }>()\n";
+    let code = crate::compile_script::compile_script_setup_function_mode(
+        content, "Comp", false, true, None,
+    )
+    .expect("compile")
+    .code;
+    let props = code
+        .lines()
+        .map(str::trim)
+        .skip_while(|line| *line != "props: {")
+        .skip(1)
+        .take_while(|line| *line != "},")
+        .collect::<Vec<_>>();
+    assert_eq!(
+        props,
+        [
+            "flag: { type: Boolean as PropType<boolean | T>, skipCheck: true },",
+            "fn: { type: Function as PropType<(() => void) | T>, required: false, skipCheck: true },",
         ]
     );
 }
