@@ -25,6 +25,7 @@ import { stripTypeScript } from "./strip-types.ts";
 import type {
   CachedCompiledModule,
   CompiledModule,
+  HostCss,
   NormalizedVizeUnpluginOptions,
   VizeTemplateSyntax,
   VizeVueVersion,
@@ -195,31 +196,29 @@ async function loadStyleBlock(
     options.isProduction ? request.filename : undefined,
   );
 
-  // Vue order: preprocess, then scope. Webpack never loads these ids; its
-  // style files go through the host's loaders instead (webpack-styles.ts).
-  const scoped = request.query.scoped;
-  if (!scoped) {
-    return source;
-  }
+  // Vue order: preprocess, then scope. The id names what this module holds
+  // (see styleRequestId). Webpack never loads these ids; its style files go
+  // through the host's loaders instead (webpack-styles.ts).
   const css =
-    block.lang && isPreprocessorLang(block.lang)
+    block.lang && isPreprocessorLang(block.lang) && request.query.lang === "css"
       ? await preprocessStyle(source, block.lang, request.filename, options.root)
       : source;
-  return scopeCss(css, scoped);
+  const scoped = request.query.scoped;
+  return scoped ? scopeCss(css, scoped) : css;
 }
 
 /**
- * Whether the host bundles the stylesheets a module imports. esbuild without
- * `bundle` never follows an import, so its CSS can only be injected.
+ * What the host does with an imported stylesheet. esbuild without `bundle`
+ * never follows an import, and its CSS loaders compile no preprocessor.
  */
-function bundlesStylesheets(context: unknown, framework: string): boolean {
+function hostCss(context: unknown, framework: string): HostCss {
   if (framework !== "esbuild") {
-    return true;
+    return "preprocessors";
   }
   const native = (
     context as { getNativeBuildContext?: () => unknown }
   ).getNativeBuildContext?.() as { build?: { initialOptions?: { bundle?: boolean } } } | undefined;
-  return native?.build?.initialOptions?.bundle === true;
+  return native?.build?.initialOptions?.bundle === true ? "css" : "none";
 }
 
 const CSS_PIPELINE_HINT =
@@ -417,7 +416,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       const generated = generateOutput(compiled, {
         isProduction: options.isProduction,
         isDev: false,
-        cssPipeline: bundlesStylesheets(this, meta.framework),
+        hostCss: hostCss(this, meta.framework),
         filePath: id,
         styleRequest: webpackStyleFiles
           ? (block, scoped) => {

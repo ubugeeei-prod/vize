@@ -46,7 +46,7 @@ export default function vizeBabelPlugin(
       const generated = generateOutput(compiled, {
         isProduction: options.isProduction,
         isDev: false,
-        cssPipeline: false,
+        hostCss: "none",
         filePath: filename,
       });
 

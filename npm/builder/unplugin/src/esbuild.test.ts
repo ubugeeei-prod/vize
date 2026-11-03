@@ -1,9 +1,11 @@
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { build } from "esbuild";
 import "./test/setup.ts";
 import vize from "./esbuild.ts";
 import { createFakePreprocessorRoot } from "./test/fake-preprocessors.ts";
-import { normalizeSnapshot, resolveFixturePath } from "./test/helpers.ts";
+import { normalizeSnapshot, prepareOutputDir, resolveFixturePath } from "./test/helpers.ts";
 
 void test("esbuild bundles a basic SFC", async (t) => {
   const result = await build({
@@ -74,5 +76,46 @@ void test("esbuild loads delegated style blocks: preprocessed, then scoped", asy
       `.root[${scope}] .inner {`,
       `.plain[${scope}] {`,
     ],
+  );
+});
+
+// #11513: esbuild has no preprocessor pipeline that can see a plugin-namespace
+// module, so an unscoped preprocessor block must reach it already compiled.
+void test("esbuild compiles an unscoped preprocessor block before its CSS loader", async (t) => {
+  const root = createFakePreprocessorRoot("esbuild-unscoped-scss");
+  const app = path.join(root, "App.vue");
+  fs.writeFileSync(
+    app,
+    '<template><p class="a">x</p></template>\n<style lang="scss">\n$c: red;\n.a {\n  color: $c;\n}\n</style>\n',
+  );
+  const options = {
+    entryPoints: [app],
+    bundle: true,
+    write: false,
+    format: "esm" as const,
+    outdir: "out",
+    external: ["vue"],
+    logLevel: "silent" as const,
+  };
+  const result = await build({ ...options, plugins: [vize({ isProduction: true, root })] });
+  t.assert.deepEqual(
+    result.warnings.map((warning) => warning.text),
+    [],
+  );
+  const css = result.outputFiles.find((file) => file.path.endsWith(".css"))?.text ?? "";
+  t.assert.match(css, /\.a \{\n  color: red;\n\}/);
+  t.assert.doesNotMatch(css, /\$c/);
+
+  // Negative control: with no preprocessor installed, the build still fails.
+  const bare = prepareOutputDir("esbuild-unscoped-scss-bare");
+  fs.writeFileSync(path.join(bare, "package.json"), "{}\n");
+  fs.copyFileSync(app, path.join(bare, "App.vue"));
+  await t.assert.rejects(
+    build({
+      ...options,
+      entryPoints: [path.join(bare, "App.vue")],
+      plugins: [vize({ isProduction: true, root: bare })],
+    }),
+    /<style lang="scss"> needs sass or sass-embedded installed/,
   );
 });

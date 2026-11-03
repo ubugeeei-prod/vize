@@ -79,11 +79,11 @@ function assertHostShape(t: TestContext, id: string, ext: string) {
 }
 
 void test("styleRequestId names a plain block by its language", (t) => {
-  const id = styleRequestId("/a/App.vue", block({ lang: "less", index: 2 }), null);
+  const id = styleRequestId("/a/App.vue", block({ lang: "less", index: 2 }), null, "preprocessors");
   t.assert.equal(id, "/a/App.vue?vue&type=style&index=2&lang.less");
   assertHostShape(t, id, "less");
   t.assert.equal(
-    styleRequestId("/a/App.vue", block({}), null),
+    styleRequestId("/a/App.vue", block({}), null, "preprocessors"),
     "/a/App.vue?vue&type=style&index=0&lang.css",
   );
 });
@@ -94,6 +94,7 @@ void test("styleRequestId names a scoped preprocessor block as CSS", (t) => {
     "/a/App.vue",
     block({ lang: "scss", scoped: true, index: 1 }),
     "data-v-z",
+    "preprocessors",
   );
   t.assert.equal(id, "/a/App.vue?vue&type=style&index=1&scoped=data-v-z&lang.css");
   assertHostShape(t, id, "css");
@@ -101,12 +102,22 @@ void test("styleRequestId names a scoped preprocessor block as CSS", (t) => {
 });
 
 void test("styleRequestId marks CSS modules in the query and the extension", (t) => {
-  const unnamed = styleRequestId("/a/App.vue", block({ module: true, lang: "scss" }), null);
+  const unnamed = styleRequestId(
+    "/a/App.vue",
+    block({ module: true, lang: "scss" }),
+    null,
+    "preprocessors",
+  );
   t.assert.equal(unnamed, "/a/App.vue?vue&type=style&index=0&module&lang.module.scss");
   assertHostShape(t, unnamed, "module.scss");
   t.assert.equal(parseVueRequest(unnamed).query.module, true);
 
-  const named = styleRequestId("/a/App.vue", block({ module: "my mod", index: 3 }), "data-v-r");
+  const named = styleRequestId(
+    "/a/App.vue",
+    block({ module: "my mod", index: 3 }),
+    "data-v-r",
+    "preprocessors",
+  );
   t.assert.equal(
     named,
     "/a/App.vue?vue&type=style&index=3&scoped=data-v-r&module=my%20mod&lang.module.css",
@@ -118,4 +129,23 @@ void test("styleRequestId marks CSS modules in the query and the extension", (t)
   t.assert.equal(back.query.type, "style");
   t.assert.equal(back.query.index, 3);
   t.assert.equal(back.query.module, "my mod");
+  t.assert.equal(back.query.lang, "css");
+});
+
+void test("styleRequestId names a preprocessor block as CSS for a host that compiles none", (t) => {
+  // #11513: esbuild's CSS loaders compile no Sass, so load() compiles it.
+  const scss = block({ lang: "scss" });
+  t.assert.equal(
+    styleRequestId("/a/App.vue", scss, null, "css"),
+    "/a/App.vue?vue&type=style&index=0&lang.css",
+  );
+  t.assert.equal(
+    styleRequestId("/a/App.vue", { ...scss, module: true }, null, "css"),
+    "/a/App.vue?vue&type=style&index=0&module&lang.module.css",
+  );
+  // Negative control: a host whose plugins compile Sass gets the source.
+  const raw = styleRequestId("/a/App.vue", scss, null, "preprocessors");
+  t.assert.equal(raw, "/a/App.vue?vue&type=style&index=0&lang.scss");
+  t.assert.equal(parseVueRequest(raw).query.lang, "scss");
+  t.assert.equal(parseVueRequest("/a/App.vue?vue&type=style").query.lang, null);
 });
