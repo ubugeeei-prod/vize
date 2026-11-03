@@ -5,7 +5,7 @@
 //! L3 (P3-3), so they are an artifact of their own rather than a column of
 //! the graph-only [`vize_l3::dump::Page`]. Before this page the only
 //! printer was a test-local helper in the TS-17 snapshot suite; the page is
-//! now the one spelling every consumer (snapshots, the Spolvero feed) shares.
+//! now the one spelling every consumer (snapshots, the stage feed) shares.
 
 use alloc::vec::Vec;
 use core::fmt;

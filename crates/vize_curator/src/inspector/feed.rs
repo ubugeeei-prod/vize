@@ -1,12 +1,12 @@
-//! The Spolvero feed v1 (P2-18): the observer's folio output as one
+//! The stage feed v1 (P2-18): the observer's folio output as one
 //! consumable, schema-versioned JSON document.
 //!
 //! A [`StageFeed`] is the payload a folio directory (or an inspector
-//! payload) hands to Spolvero consumers: a `schema_version` to negotiate on
+//! payload) hands to stage-view consumers: a `schema_version` to negotiate on
 //! (`devtool.md`'s data-layer requirement - a consumer refuses a mismatch
 //! loudly instead of misrendering), the producing surface's `command`, and
 //! the folio pages in emission order. The committed schema is
-//! `docs/davinci/plan/spolvero-feed.schema.json`, validated in tests through
+//! `docs/davinci/plan/stage-ladder-feed.schema.json`, validated in tests through
 //! the strict TS-15 subset validator - one producer here, one validator in
 //! the tree.
 //!
@@ -38,7 +38,7 @@ use vize_l0::pass::observer::RecordedRemark;
 
 /// The feed format version. Incompatible shape changes bump this **and**
 /// the committed schema's `const` together.
-pub const SPOLVERO_FEED_SCHEMA_VERSION: u32 = 1;
+pub const STAGE_FEED_SCHEMA_VERSION: u32 = 1;
 
 /// A consumer-side schema negotiation failure.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -78,9 +78,9 @@ pub struct StageRemark {
     pub remark: RecordedRemark,
 }
 
-/// The Spolvero feed v1 payload.
+/// The stage feed v1 payload.
 ///
-/// `schema_version` is not a field: it is [`SPOLVERO_FEED_SCHEMA_VERSION`],
+/// `schema_version` is not a field: it is [`STAGE_FEED_SCHEMA_VERSION`],
 /// emitted by [`to_json`](Self::to_json), so a feed value cannot carry a
 /// version its shape does not have.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,7 +90,7 @@ pub struct StageFeed {
     /// The pages, in emission order.
     pub pages: Vec<StagePage>,
     /// The optimization remarks (P3-13), per file in canonical order - the
-    /// decision explanations Spolvero renders beside the pages. Additive
+    /// decision explanations the stage view renders beside the pages. Additive
     /// to v1: every producer emits the member (possibly empty), and the
     /// schema keeps it optional so earlier v1 documents stay valid.
     pub remarks: Vec<StageRemark>,
@@ -99,11 +99,11 @@ pub struct StageFeed {
 impl StageFeed {
     /// Negotiate the feed schema before reading any shape-dependent field.
     pub fn negotiate_schema_version(schema_version: u32) -> Result<(), StageFeedSchemaMismatch> {
-        if schema_version == SPOLVERO_FEED_SCHEMA_VERSION {
+        if schema_version == STAGE_FEED_SCHEMA_VERSION {
             Ok(())
         } else {
             Err(StageFeedSchemaMismatch {
-                expected: SPOLVERO_FEED_SCHEMA_VERSION,
+                expected: STAGE_FEED_SCHEMA_VERSION,
                 found: schema_version,
             })
         }
@@ -152,7 +152,7 @@ impl StageFeed {
     pub fn to_json(&self) -> String {
         let mut out = String::default();
         out.push_str("{\"schema_version\":");
-        let _ = write!(out, "{SPOLVERO_FEED_SCHEMA_VERSION}");
+        let _ = write!(out, "{STAGE_FEED_SCHEMA_VERSION}");
         out.push_str(",\"command\":");
         push_json_string(&mut out, self.command.as_str());
         out.push_str(",\"pages\":[");

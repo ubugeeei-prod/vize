@@ -3,7 +3,7 @@ import type { StageFeed } from "../../wasm/types/stages";
 import { buildLadder } from "./ladder";
 
 // The feed `analyzeSfc` returns for `<div>{{ msg }}</div>`, byte-for-byte as
-// the Rust `wasm::tests_spolvero` pin states it.
+// the Rust `wasm::tests_stage_feed` pin states it.
 const L2 = `[l2-dump-v2]
 ops=2
 

@@ -1,9 +1,9 @@
 // The Davinci tab's data path against the real wasm compiler: the preset's
-// Spolvero feed negotiates, climbs every rung, and every span the stage pages
+// stage feed negotiates, climbs every rung, and every span the stage pages
 // print lands on the authored source the editor highlights.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
-import { negotiateSpolveroFeed } from "../src/wasm/types/stages";
+import { negotiateStageFeed } from "../src/wasm/types/stages";
 import {
   LADDER_STEP_KEY,
   ladderStepTimings,
@@ -28,9 +28,9 @@ let exported: ProfileExport;
 beforeAll(async () => {
   wasm = await loadWasm();
   const analysis = wasm.analyzeSfc(DAVINCI_PRESET, { filename: FILENAME });
-  const negotiated = negotiateSpolveroFeed(analysis.spolvero);
+  const negotiated = negotiateStageFeed(analysis.stageFeed);
   if (!negotiated.ok) throw new Error(negotiated.error);
-  const profile = negotiateProfileExport(analysis.spolveroProfile);
+  const profile = negotiateProfileExport(analysis.stageProfile);
   if (!profile.ok) throw new Error(profile.error);
   exported = profile.profile;
   ladder = buildLadder(

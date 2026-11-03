@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { graphLineKinds, partitionKinds } from "./partition";
 
 // Byte-for-byte the compiler's pages for `<div>{{ msg }}</div>` (the Rust
-// `wasm::tests_spolvero` pins).
+// `wasm::tests_stage_feed` pins).
 const GRAPH = `[l3-dump-v2]
 phase=built
 

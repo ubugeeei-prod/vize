@@ -1,6 +1,6 @@
-// Spolvero feed (Davinci P2-18, C-2/C-5): the compiler's stage pages as one
+// Stage feed (Davinci P2-18, C-2/C-5): the compiler's stage pages as one
 // schema-versioned document. The committed schema is
-// `docs/davinci/plan/spolvero-feed.schema.json`; this module is the
+// `docs/davinci/plan/stage-ladder-feed.schema.json`; this module is the
 // playground's consumer side of it and negotiates the version before reading
 // any shape-dependent field (devtool.md: refuse a mismatch loudly instead of
 // misrendering).
@@ -12,7 +12,7 @@ export function layerId(stage: string): string {
 }
 
 /** The feed format version this playground renders. */
-export const SPOLVERO_FEED_SCHEMA_VERSION = 1;
+export const STAGE_FEED_SCHEMA_VERSION = 1;
 
 export interface StagePage {
   /** Source file the page was produced for, or null for a pipeline run. */
@@ -86,35 +86,35 @@ function isRemark(value: unknown): value is StageFeedRemark {
 }
 
 /**
- * Accept a raw `spolvero` member only when its `schema_version` is the one
+ * Accept a raw `stageFeed` member only when its `schema_version` is the one
  * this view understands and every page has the committed shape.
  */
-export function negotiateSpolveroFeed(raw: unknown): StageNegotiation {
+export function negotiateStageFeed(raw: unknown): StageNegotiation {
   if (!isRecord(raw)) {
-    return { ok: false, error: "The compiler result carries no Spolvero feed." };
+    return { ok: false, error: "The compiler result carries no stage feed." };
   }
   const version = raw.schema_version;
   if (typeof version !== "number") {
-    return { ok: false, error: "The Spolvero feed has no numeric schema_version." };
+    return { ok: false, error: "The stage feed has no numeric schema_version." };
   }
-  if (version !== SPOLVERO_FEED_SCHEMA_VERSION) {
+  if (version !== STAGE_FEED_SCHEMA_VERSION) {
     return {
       ok: false,
-      error: `Spolvero feed schema_version ${version} is not supported; this view renders version ${SPOLVERO_FEED_SCHEMA_VERSION}.`,
+      error: `Stage feed schema_version ${version} is not supported; this view renders version ${STAGE_FEED_SCHEMA_VERSION}.`,
     };
   }
   if (typeof raw.command !== "string" || !Array.isArray(raw.pages)) {
-    return { ok: false, error: "The Spolvero feed is missing its command or pages." };
+    return { ok: false, error: "The stage feed is missing its command or pages." };
   }
   const invalid = raw.pages.findIndex((page) => !isPage(page));
   if (invalid !== -1) {
-    return { ok: false, error: `Spolvero feed page ${invalid} does not match the schema.` };
+    return { ok: false, error: `Stage feed page ${invalid} does not match the schema.` };
   }
   const remarks = raw.remarks;
   if (remarks !== undefined) {
     const bad = Array.isArray(remarks) ? remarks.findIndex((remark) => !isRemark(remark)) : 0;
     if (bad !== -1) {
-      return { ok: false, error: `Spolvero feed remark ${bad} does not match the schema.` };
+      return { ok: false, error: `Stage feed remark ${bad} does not match the schema.` };
     }
   }
   const feed: StageFeed = {

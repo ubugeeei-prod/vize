@@ -22,7 +22,7 @@
 //! - **Per artifact:** every field is owned and `'static` (asserted
 //!   below, the P1-11 contract), so the records outlive the compile arena
 //!   exactly as diagnostics do. On a broken SFC the kept L2 fragments plus
-//!   these records are what the LSP and Spolvero stay live on.
+//!   these records are what the LSP and the stage view stay live on.
 //!
 //! # Materialization policy
 //!

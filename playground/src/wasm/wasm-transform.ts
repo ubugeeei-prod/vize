@@ -181,9 +181,9 @@ export function createTransformAnalyzeSfc(
       diagnostics: rawResult.diagnostics || [],
       // VIR (Vize Intermediate Representation) text from WASM
       vir: rawResult.vir || "",
-      // Spolvero stage-ladder feed, passed through un-interpreted.
-      spolvero: rawResult.spolvero,
-      spolveroProfile: rawResult.spolveroProfile,
+      // Stage-ladder feed, passed through un-interpreted.
+      stageFeed: rawResult.stageFeed,
+      stageProfile: rawResult.stageProfile,
     };
 
     return result;

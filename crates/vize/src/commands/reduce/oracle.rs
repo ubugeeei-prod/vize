@@ -6,7 +6,7 @@
 //! The L2-based checks share one run per candidate: the SFC's inline HTML
 //! template is parsed (L1), lowered, and taken through the L2 transform
 //! pipeline under `Pair(BudgetObserver, RemarkCollector)` — the same channel
-//! the TS-32 corpus and the Spolvero feed read, so "the remark the feed
+//! the TS-32 corpus and the stage feed read, so "the remark the feed
 //! shows" and "the remark the reducer preserves" cannot disagree.
 
 use std::process::{Command, Stdio};

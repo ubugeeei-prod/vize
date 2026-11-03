@@ -1,6 +1,6 @@
 //! The ladder's timings as a P0-11 profile export (C-3).
 //!
-//! Spolvero's timing artifact is the profiler export
+//! The stage view's timing artifact is the profiler export
 //! (`docs/davinci/plan/profile-export.schema.json`), not a private shape: the
 //! steps and walks a [`LadderRun`](super::LadderRun) timed are recorded into
 //! the sole local duration aggregate with `{stage, pass, block}` attribution
@@ -27,7 +27,7 @@ use vize_l0::profiler::{Metrics, SpanAttribution};
 use super::ladder::LadderStep;
 
 /// The dotted key every ladder step records under.
-pub const LADDER_STEP_KEY: &str = "davinci.spolvero.step";
+pub const LADDER_STEP_KEY: &str = "stages.step";
 
 /// The dotted key every walk records under: the timing observer's.
 pub const LADDER_WALK_KEY: &str = TimingObserver::WALK_KEY;

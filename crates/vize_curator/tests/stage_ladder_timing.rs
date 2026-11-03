@@ -1,4 +1,4 @@
-//! C-3: the Spolvero ladder's step and walk timings. A deterministic host
+//! C-3: the stage ladder's step and walk timings. A deterministic host
 //! clock proves each step reads the clock exactly once at each end of its
 //! compiler work, in run order, that each walk is the timing observer's
 //! group window, and that the timings export as a P0-11 profile document

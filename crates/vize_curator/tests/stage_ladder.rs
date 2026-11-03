@@ -1,4 +1,4 @@
-//! TS-52 for the Spolvero stage ladder (C-2/C-3/C-5): `ladder_pages` feeds
+//! TS-52 for the stage ladder (C-2/C-3/C-5): `ladder_pages` feeds
 //! every rung the Davinci pipeline has today - L1, the L2 lowering, the
 //! transform plan's walks, one page per executed transform pass, and the L3
 //! graph / partition / value pages - from the real stages. The feed validates against the committed schema, every
@@ -15,7 +15,7 @@ use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
 use vize_curator::inspector::{
-    StagePage, ladder_pages, ladder_run, spolvero_value, template_remarks,
+    StagePage, ladder_pages, ladder_run, stage_feed_value, template_remarks,
 };
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
@@ -163,7 +163,7 @@ fn load_schema() -> serde_json::Value {
         .join("..")
         .join("docs/davinci")
         .join("plan")
-        .join("spolvero-feed.schema.json");
+        .join("stage-ladder-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
@@ -178,7 +178,7 @@ fn rungs(pages: &[StagePage]) -> Vec<(&str, &str)> {
 #[test]
 fn the_ladder_validates_and_pins_every_rung_exactly() {
     let pages = ladder_pages("src/App.vue", TEMPLATE);
-    let feed = spolvero_value("analyze-sfc", pages.clone());
+    let feed = stage_feed_value("analyze-sfc", pages.clone());
     assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
 
     // The artifact-selected L2 plan: slot carriers and a model binding keep

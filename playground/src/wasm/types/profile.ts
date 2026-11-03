@@ -1,6 +1,6 @@
 // P0-11 profile export (`docs/davinci/plan/profile-export.schema.json`): the
-// timing artifact Spolvero reads. `analyzeSfc` returns the ladder run's step
-// timings in this shape under `spolveroProfile`; like the feed, it is
+// timing artifact the stage view reads. `analyzeSfc` returns the ladder run's step
+// timings in this shape under `stageProfile`; like the feed, it is
 // negotiated on `schema_version` before any span is read.
 
 import { layerId } from "./stages";
@@ -8,7 +8,7 @@ import { layerId } from "./stages";
 export const PROFILE_EXPORT_SCHEMA_VERSION = 1;
 
 /** The dotted key the compiler records each ladder step under. */
-export const LADDER_STEP_KEY = "davinci.spolvero.step";
+export const LADDER_STEP_KEY = "stages.step";
 
 /**
  * The dotted key every pass-manager walk records under (the timing

@@ -1,8 +1,8 @@
-//! Spolvero feed construction for the inspector (Davinci P2-18).
+//! Stage feed construction for the inspector (Davinci P2-18).
 //!
 //! The inspector's stage pages, in the feed shape this inspector owns
 //! (`folio::feed::StageFeed`, committed schema
-//! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
+//! `docs/davinci/plan/stage-ladder-feed.schema.json`). There is exactly one
 //! serializer of that shape - `StageFeed::to_json` - so this module
 //! builds pages and parses the feed's own output into the
 //! `serde_json::Value` the payload embeds; it never re-encodes the shape.
@@ -27,7 +27,7 @@
 //! - **Remarks** (P3-13): every inline HTML template's optimization remarks
 //!   from the L2 transform pipeline ([`template_remarks`]), spans in the
 //!   template's byte frame (the pages' frame) - the decision explanations
-//!   Spolvero renders (C-5).
+//!   the stage view renders (C-5).
 //! - **Step and walk timings** ([`ladder_run`], [`ladder_profile`]): the
 //!   same run timed by a host-supplied clock and exported as a P0-11 profile
 //!   document (C-3), since the feed schema carries no timing.
@@ -94,17 +94,17 @@ pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
 /// Never in practice: `StageFeed::to_json` emits valid JSON by the
 /// feed's escaping law (pinned by the TS-52 tests).
 #[must_use]
-pub fn spolvero_value(command: &str, pages: Vec<StagePage>) -> serde_json::Value {
-    spolvero_value_with_remarks(command, pages, Vec::new())
+pub fn stage_feed_value(command: &str, pages: Vec<StagePage>) -> serde_json::Value {
+    stage_feed_value_with_remarks(command, pages, Vec::new())
 }
 
-/// [`spolvero_value`] carrying optimization remarks beside the pages.
+/// [`stage_feed_value`] carrying optimization remarks beside the pages.
 ///
 /// # Panics
 ///
-/// As [`spolvero_value`].
+/// As [`stage_feed_value`].
 #[must_use]
-pub fn spolvero_value_with_remarks(
+pub fn stage_feed_value_with_remarks(
     command: &str,
     pages: Vec<StagePage>,
     remarks: Vec<StageRemark>,
@@ -123,7 +123,7 @@ pub fn spolvero_value_with_remarks(
 /// with a template, in payload file order (see the module docs for why the
 /// payload stays L1-only), plus each inline HTML template's optimization
 /// remarks (P3-13).
-pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
+pub(super) fn payload_stage_feed(files: &[InspectorSourceFile]) -> serde_json::Value {
     let mut pages = Vec::new();
     let mut remarks = Vec::new();
     for file in files {
@@ -144,5 +144,5 @@ pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Val
             }
         }
     }
-    spolvero_value_with_remarks("inspector", pages, remarks)
+    stage_feed_value_with_remarks("inspector", pages, remarks)
 }
