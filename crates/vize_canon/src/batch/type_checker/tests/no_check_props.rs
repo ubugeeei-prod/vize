@@ -72,7 +72,7 @@ const props = defineProps({
         .unwrap_or_else(|| virtual_files[0].content.as_str());
     assert!(
         helper_source.contains(
-            "type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V"
+            "type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;"
         ),
         "runtime prop helper should use TypeScript construct/function syntax:\n{helper_source}"
     );

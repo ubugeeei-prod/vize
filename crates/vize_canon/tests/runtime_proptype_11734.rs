@@ -1,10 +1,10 @@
 //! A real Vue runtime PropType must preserve authored errors and callback types.
-#![expect(clippy::expect_used, clippy::unwrap_used, reason = "test assertions")]
+#![expect(clippy::unwrap_used, reason = "fixture setup fails by panicking")]
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
-use vize_l0::String;
+use vize_l0::{String, cstr};
 
 #[test]
 fn runtime_proptype_keeps_typed_callbacks_and_wrong_assignment() {
@@ -23,7 +23,7 @@ fn runtime_proptype_keeps_typed_callbacks_and_wrong_assignment() {
     assert_eq!(
         Sha256::digest(contract)
             .iter()
-            .map(|byte| format!("{byte:02x}"))
+            .map(|byte| cstr!("{byte:02x}"))
             .collect::<String>(),
         provenance["contractSha256"].as_str().unwrap()
     );
