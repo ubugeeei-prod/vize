@@ -1,0 +1,21 @@
+{
+  "schema": "vize.classificationLiveFixture.v1",
+  "issue": 11664,
+  "cases": [
+    {
+      "id": "lf-vue",
+      "extension": ".vue",
+      "newline": "\n",
+      "before": "// 😀 日本語\nclass Marker { count = 1; }\nconst 𐐀変数 = new Marker();\n𐐀変数.count;\n",
+      "after": "// 😀 日本語\nclass RenamedMarker { count = 12; }\nconst 𐐀変数 = new RenamedMarker();\n𐐀変数.count;\n"
+    },
+    {
+      "id": "crlf-art",
+      "extension": ".art",
+      "newline": "\r\n",
+      "before": "// 😀 日本語\r\nclass Marker { count = 1; }\r\nconst 𐐀変数 = new Marker();\r\n𐐀変数.count;\r\n",
+      "after": "// 😀 日本語\r\nclass RenamedMarker { count = 12; }\r\nconst 𐐀変数 = new RenamedMarker();\r\n𐐀変数.count;\r\n"
+    }
+  ],
+  "ordinary": "export {};\nconst ordinaryMarker = 1;\nordinaryMarker;\n"
+}

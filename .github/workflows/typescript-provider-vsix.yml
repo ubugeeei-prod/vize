@@ -11,6 +11,9 @@ on:
       - editors/vscode/test/run-typescript-provider-host.mjs
       - editors/vscode/test/suite/typescript-provider-host.cjs
       - tests/typescript-plugin/provider-packaging.test.ts
+      - tests/typescript-plugin/classification-*
+      - tests/_fixtures/tooling/typescript-classification-runtime-11664/**
+      - editors/vscode/test/suite/classification-provider.cjs
   workflow_dispatch:
   merge_group:
     types: [checks_requested]

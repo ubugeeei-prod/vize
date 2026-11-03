@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
+const { checkInstalledClassifications } = require("./classification-provider.cjs");
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function eventually(callback) {
   let last;
@@ -18,6 +19,15 @@ async function eventually(callback) {
 }
 async function run() {
   const workspace = vscode.workspace.workspaceFolders[0].uri.fsPath;
+  const classificationFixture = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        path.dirname(process.env.VIZE_TYPESCRIPT_PROVIDER_RESULT),
+        "classification-inputs.json",
+      ),
+      "utf8",
+    ),
+  );
   const uri = vscode.Uri.file(path.join(workspace, "src/main.ts"));
   const document = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(document);
@@ -84,6 +94,7 @@ async function run() {
     );
     return values;
   });
+  const classifications = await checkInstalledClassifications(vscode, classificationFixture);
   const inheritedConfiguration = await checkInheritedConfiguration(workspace);
   fs.writeFileSync(
     process.env.VIZE_TYPESCRIPT_PROVIDER_RESULT,
@@ -95,6 +106,7 @@ async function run() {
         completion,
         definition,
         inheritedConfiguration,
+        classifications,
       },
       null,
       2,

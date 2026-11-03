@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 
+import { historicalClassificationConsumers } from "./language-project-classification-runtime.ts";
+
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const CLASSIFICATION_PRODUCER = "npm/typescript-plugin/language-service.cjs";
 export const CLASSIFICATION_SUCCESSOR_ID = "typechecker/language-project/classifications-11664";
@@ -44,10 +46,11 @@ function pinned(read: ReadFile, value: unknown, path: string): Buffer {
 
 /** Preserve the historical10740 producer and authenticate its one exact current successor. */
 export function historicalClassificationProducer(
-  read: ReadFile,
+  rawRead: ReadFile,
   expectedHash: unknown,
   historicalRow: unknown,
 ): Buffer {
+  const read = historicalClassificationConsumers(rawRead);
   requireCustody(expectedHash === beforeHash, "historical producer registration changed");
   const current = read("head", CLASSIFICATION_PRODUCER);
   requireCustody(current, "current producer missing");

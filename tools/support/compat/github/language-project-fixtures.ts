@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { historicalClassificationConsumers } from "./language-project-classification-runtime.ts";
 import { validateLanguageProjectProducerPort } from "./language-project-producer-port.ts";
 import {
   CLASSIFICATION_PRODUCER,
@@ -166,13 +167,14 @@ export function newLanguageProjectCases(
     original.source, "original authored input changed");
   require(Array.isArray(row.tests) &&
     row.tests.length === LANGUAGE_PROJECT_PRODUCERS.length, "all actual producers required");
-  validateLanguageProjectProducerPort(readFile, row.tests);
+  const historicalRead = historicalClassificationConsumers(readFile);
+  validateLanguageProjectProducerPort(historicalRead, row.tests);
   for (const [index, value] of row.tests.entries()) {
     const test = object(value, ["selector", "source", "sha256"]);
     const [selector, source] = LANGUAGE_PROJECT_PRODUCERS[index]!;
     require(test.selector === selector && test.source === source, "unregistered producer");
     if (source === CLASSIFICATION_PRODUCER) historicalClassificationProducer(readFile, test.sha256, row);
-    else pinned(readFile, source, test.sha256);
+    else pinned(historicalRead, source, test.sha256);
   }
   const beforeInputs = files.get("before-inputs.json")!;
   require(digest(beforeInputs) ===

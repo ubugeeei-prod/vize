@@ -1,0 +1,155 @@
+{
+  "schema": "vize.classificationRuntimeSuccessor.v1",
+  "id": "typechecker/language-project/classification-runtime-11664",
+  "predecessor": {
+    "path": "tests/_fixtures/tooling/typescript-classification-successor-11664/custody.json",
+    "sha256": "04628e3b129e38c7ee0cc721848a428fa34518993a4646ea7bef806827c68005",
+    "bytes": 2112
+  },
+  "transitions": [
+    {
+      "before": {
+        "path": "tests/typescript-plugin/packed-consumer.ts",
+        "sha256": "7a1d073b558da95a4b3491b5b9599618209b13861f22e73d323c9e70663ef8d5",
+        "bytes": 17539
+      },
+      "after": {
+        "path": "tests/typescript-plugin/packed-consumer.ts",
+        "sha256": "4c5ed366e3e658772e5bd954d60a15274317c96f5fd791cb2144e1602ddd485e",
+        "bytes": 17880
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/packed-consumer.before.ts.gz",
+        "sha256": "3dd20c7287ade0a324bc45ca6cf0994d33ada2bc57f6273277cfa4b9eb44e2ac",
+        "bytes": 4868
+      }
+    },
+    {
+      "before": {
+        "path": "editors/vscode/test/suite/typescript-provider-host.cjs",
+        "sha256": "f3b0e86688733e8867f1ed67ef8e33dfe467ad4d3cc695c091da2768bf9de3ec",
+        "bytes": 9391
+      },
+      "after": {
+        "path": "editors/vscode/test/suite/typescript-provider-host.cjs",
+        "sha256": "a9e96ab4424f3dd7c3e20c3bf273d6690522e31eb248c179dc8025f7691eb660",
+        "bytes": 9816
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-provider-host.before.cjs.gz",
+        "sha256": "3184e0c430e34e13a1826ad64344b914f35b6ab0bbc349f295c09b590d50d9fd",
+        "bytes": 2586
+      }
+    },
+    {
+      "before": {
+        "path": "editors/vscode/test/run-typescript-provider-host.mjs",
+        "sha256": "df51b3db29ba4452a6585fe0e6ddf71db69d8f9b53611bbd93a79d4b049f3229",
+        "bytes": 6559
+      },
+      "after": {
+        "path": "editors/vscode/test/run-typescript-provider-host.mjs",
+        "sha256": "f482766399c13a9e11008d2fdc4a62c26694c7f80ff61c849a5cbb011fa386a9",
+        "bytes": 6988
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/run-typescript-provider-host.before.mjs.gz",
+        "sha256": "6a428158cabef49884b04629c0f3ec4b47309d44abf31dbbd72168725f4f0dbb",
+        "bytes": 2406
+      }
+    },
+    {
+      "before": {
+        "path": ".github/workflows/language-project-fixtures.yml",
+        "sha256": "f36d936ba5b9b4bfaa48f148150710fb0c35e692ebfc6efb05f5fc1abb46efc6",
+        "bytes": 1712
+      },
+      "after": {
+        "path": ".github/workflows/language-project-fixtures.yml",
+        "sha256": "07d5c7e38d470536047322ac69012a47f38efcb8fcb90830d168dc8b4d782cf5",
+        "bytes": 1899
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/language-project-fixtures.before.yml.gz",
+        "sha256": "99bc91746a641c6eeb104e8754303db92f4b814ee0406c5121c8508810bb4956",
+        "bytes": 770
+      }
+    },
+    {
+      "before": {
+        "path": ".github/workflows/typescript-plugin.yml",
+        "sha256": "3c9ed480a8ff672eaca469a3de1304d44c76425a7c55c76279abfb0e3d34303b",
+        "bytes": 4443
+      },
+      "after": {
+        "path": ".github/workflows/typescript-plugin.yml",
+        "sha256": "9fada591f5cfa5b27bff33bdf2cf83a4795df657d63b97cb4577577a7aa62466",
+        "bytes": 4518
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-plugin.before.yml.gz",
+        "sha256": "9ecb7a075b541d8be875bcc692092285df7e07c98d6d45906403ddb512ba4550",
+        "bytes": 1433
+      }
+    },
+    {
+      "before": {
+        "path": ".github/workflows/typescript-provider-vsix.yml",
+        "sha256": "77c6d8a9aaed31dc5af2069b6d3ccc7b85ffefcd1d55faaeae7621981f59c744",
+        "bytes": 10390
+      },
+      "after": {
+        "path": ".github/workflows/typescript-provider-vsix.yml",
+        "sha256": "5f6b68695723127774813abc5ed1aca2b5245dd6c76e80b834fafd68b1259a13",
+        "bytes": 10576
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-provider-vsix.before.yml.gz",
+        "sha256": "70f653fff93a727b22561fe44ebd8be8fdd7389e44cba1dac3f83b24b5dbdd6e",
+        "bytes": 2926
+      }
+    }
+  ],
+  "input": {
+    "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/input.json",
+    "sha256": "acbdd0bbc5a8de5e20ddf10e3e719b8105c2b5fb34167fee01c2aabed8087c02",
+    "bytes": 861
+  },
+  "consumers": [
+    {
+      "path": "tests/typescript-plugin/classification-probe.cjs",
+      "sha256": "fae853fbbef1bb05c62636d3e0feb0c2630270a3ec281deb4b82ccc7d1c85e2b",
+      "bytes": 9109
+    },
+    {
+      "path": "tests/typescript-plugin/classification-consumer.ts",
+      "sha256": "01cb55095cab244800ab148daadf1f09ea89e4629fc1d4620fd4975455606614",
+      "bytes": 1402
+    },
+    {
+      "path": "editors/vscode/test/suite/classification-provider.cjs",
+      "sha256": "1ae453fd1922033f83a0fec3bda5688e54e9d37867f04710b59289b3bba04909",
+      "bytes": 7849
+    },
+    {
+      "path": "tests/tooling/language-project-classification-runtime.test.ts",
+      "sha256": "8413eafab995befbecb0d75238b0d4a22c75a1049f5c670ffc2d76188e7a10f5",
+      "bytes": 12935
+    },
+    {
+      "path": "tools/support/compat/github/language-project-classification-successor.ts",
+      "sha256": "fcfd6e6dec9fb66ff8dd99b7e49a95d9a4e6afb7972b6821370a53738296c1b2",
+      "bytes": 4930
+    },
+    {
+      "path": "tools/support/compat/github/language-project-fixtures.ts",
+      "sha256": "5f1847a85d92200b99c6e1e18bc91e5780200c2621a5f33adb737d5369a214c4",
+      "bytes": 10802
+    },
+    {
+      "path": "npm/typescript-plugin/language-service.cjs",
+      "sha256": "b2ae3cd04fb0d71ab6f1f1ec05490f058f3e620c9f5e647f95654bfa407966af",
+      "bytes": 16960
+    }
+  ]
+}

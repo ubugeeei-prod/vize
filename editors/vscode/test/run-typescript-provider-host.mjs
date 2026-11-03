@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runVSCodeCommand } from "@vscode/test-electron";
 import { runPackagedExtensionHost } from "./packaged-host-contract.mjs";
+import classificationProvider from "./suite/classification-provider.cjs";
 
 const extensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const vsixPath = path.resolve(process.env.VIZE_TYPESCRIPT_PROVIDER_VSIX);
@@ -87,6 +88,7 @@ fs.writeFileSync(
   '<script setup lang="ts">\ndefineProps<{ title: string }>();\n</script>\n<template />\n',
 );
 const resultPath = path.join(evidence, "host-result.json");
+classificationProvider.createClassificationFixtures(workspace, evidence);
 const manifest = JSON.parse(fs.readFileSync(path.join(extensionPath, "package.json"), "utf8"));
 try {
   const installed = await runPackagedExtensionHost(runVSCodeCommand, {
@@ -127,6 +129,15 @@ try {
   walk(path.join(userData, "logs"));
   assert(logs.length > 0, "Retain the actual built-in TypeScript server packets");
   const text = logs.map((file) => fs.readFileSync(file, "utf8")).join("\n");
+  const classificationPackets = classificationProvider.verifyClassificationLogs(
+    logs,
+    result.classifications,
+    producer.provider,
+  );
+  fs.writeFileSync(
+    path.join(evidence, "classification-protocol.json"),
+    JSON.stringify(classificationPackets, null, 2),
+  );
   assert(
     text.includes('[vize] TypeScript native provider {"origin":"bundled"'),
     "tsserver must report its loaded bundled provider",
