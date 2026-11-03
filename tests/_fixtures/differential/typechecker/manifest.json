@@ -12661,6 +12661,96 @@
       }
     },
     {
+      "id": "typechecker/reported-external-11445",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "2aaed6c6017fb688db63b3169f412b11379faab4",
+      "inputs": [
+        {
+          "path": "reported-component-contracts-11445/inputs.json",
+          "sha256": "fd6d3a74200285fd0dfc9ed9edf650c17ede9db577b89a67addd548efc7d51ac",
+          "role": "physically-consumed-latest-original-and-source-owned-error-repair-controls-11445"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_component_contracts::originals_and_authored_error_repair_restore_keep_component_contracts; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-external-11446",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "2aaed6c6017fb688db63b3169f412b11379faab4",
+      "inputs": [
+        {
+          "path": "reported-component-contracts-11445/inputs.json",
+          "sha256": "fd6d3a74200285fd0dfc9ed9edf650c17ede9db577b89a67addd548efc7d51ac",
+          "role": "physically-consumed-latest-original-and-source-owned-error-repair-controls-11446"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_component_contracts::originals_and_authored_error_repair_restore_keep_component_contracts; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-external-11453",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "2aaed6c6017fb688db63b3169f412b11379faab4",
+      "inputs": [
+        {
+          "path": "reported-component-contracts-11445/inputs.json",
+          "sha256": "fd6d3a74200285fd0dfc9ed9edf650c17ede9db577b89a67addd548efc7d51ac",
+          "role": "physically-consumed-latest-original-and-source-owned-error-repair-controls-11453"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_component_contracts::originals_and_authored_error_repair_restore_keep_component_contracts; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/reported-model-events-11390",
       "state": "active",
       "targets": [
