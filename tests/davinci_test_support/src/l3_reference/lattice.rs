@@ -55,6 +55,9 @@ const ESCAPES: [(&str, Class); 4] = [
 
 const VERDICTS: [&str; 3] = ["proven", "refuted", "unknown"];
 
+/// A classifier under test.
+pub type Classifier = fn(&Input) -> Class;
+
 /// One binding summary: origin, effect and escape positions in the tables.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Input {
@@ -274,7 +277,7 @@ fn coverage() -> Result<(), String> {
 }
 
 /// Check the page against `classifier`; returns the row count.
-pub fn check(classifier: fn(&Input) -> Class, text: &str) -> Result<usize, String> {
+pub fn check(classifier: Classifier, text: &str) -> Result<usize, String> {
     coverage()?;
     let rows = parse(text)?;
     let matrix = matrix();
@@ -353,7 +356,7 @@ pub fn negative_tests(text: &str) -> Result<(), String> {
             return Err(format!("lattice differential accepted {label}"));
         }
     }
-    let mutants: [(&str, fn(&Input) -> Class); 5] = [
+    let mutants: [(&str, Classifier); 5] = [
         ("ignoring escapes", |i| {
             join(floor(&ORIGINS, i.origin), effects_floor(&i.effects))
         }),

@@ -136,7 +136,7 @@ fn tokenize(text: &str) -> Result<Vec<Token>, String> {
             let Some(p) = PUNCTS.iter().find(|p| text.starts_with(**p)) else {
                 return Err(format!("unsupported character `{c}`"));
             };
-            tokens.push(Token::Punct(*p));
+            tokens.push(Token::Punct(p));
             index += p.len();
         }
     }
