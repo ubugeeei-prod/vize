@@ -57,7 +57,7 @@ pub(super) fn branch_tests(program: &Program, rows: &[Operand]) -> Result<(), St
     expect_value(
         "no selected branch",
         None,
-        selected_branch(&[first.clone()], &ready, 1),
+        selected_branch(std::slice::from_ref(&first), &ready, 1),
     )?;
     for conditions in [
         [fallback.clone(), second.clone(), first.clone()],
@@ -158,7 +158,7 @@ pub(super) fn activation_tests(program: &Program, rows: &[Operand]) -> Result<()
     expect_value(
         "visible branch delivery",
         &Json::Array(vec!["save".into()]),
-        get(snapshot, "events").map_err(String::from),
+        get(snapshot, "events"),
     )?;
     let two_buttons = at(&rows, 5, "tag", |r| r.text = "button".into());
     expect_error(

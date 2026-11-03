@@ -87,7 +87,7 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
     title.name = Some("title".into());
     for (label, damaged) in [
         ("missing condition", keep(rows, |r| r.role != "condition")),
-        ("duplicate condition", plus(rows, &[condition.clone()])),
+        ("duplicate condition", plus(rows, std::slice::from_ref(&condition))),
         (
             "foreign branch region",
             at(rows, 1, "condition", |r| r.region = Some(4)),
@@ -112,7 +112,7 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
             }),
         ),
         ("missing slot name", keep(rows, |r| r.op != 4)),
-        ("duplicate slot name", plus(rows, &[slot.clone()])),
+        ("duplicate slot name", plus(rows, std::slice::from_ref(&slot))),
         (
             "dynamic slot",
             at(rows, 4, "name", |r| r.kind = "js".into()),
@@ -126,7 +126,7 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
             "missing text value",
             keep(rows, |r| r.op != 6 || r.role != "value"),
         ),
-        ("duplicate text value", plus(rows, &[value.clone()])),
+        ("duplicate text value", plus(rows, std::slice::from_ref(&value))),
         (
             "wrong text target",
             at(rows, 6, "value", |r| r.target = Some(2)),
@@ -256,7 +256,7 @@ fn inactive_value_tests(program: &Program, rows: &[Operand]) -> Result<(), Strin
         text: "hidden".into(),
         ..tag.clone()
     };
-    run(program, &plus(rows, &[attr.clone()]), &script)?;
+    run(program, &plus(rows, std::slice::from_ref(&attr)), &script)?;
     let variant = |f: &dyn Fn(&mut Operand)| {
         let mut row = attr.clone();
         f(&mut row);
