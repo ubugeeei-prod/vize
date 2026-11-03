@@ -69,7 +69,7 @@ async function withDocument(
     uri: string;
     typesUri: string;
     request: (method: string, range: Range, extra?: object) => Promise<unknown>;
-    change: (text: string) => Promise<Array<{ message: string; range: Range }>>;
+    change: (text: string) => Promise<Array<{ message?: string; range: Range }>>;
   }) => Promise<void>,
 ) {
   fs.mkdirSync(testOutputRoot, { recursive: true });
@@ -230,7 +230,7 @@ test("generic attribute type parameters navigate like script setup code", async 
     );
     const broken = await change(usagesOnly);
     assert.ok(
-      broken.some((diagnostic) => diagnostic.message.includes("Cannot find name 'Row'")),
+      broken.some((diagnostic) => diagnostic.message?.includes("Cannot find name 'Row'")),
       JSON.stringify(broken),
     );
   });
