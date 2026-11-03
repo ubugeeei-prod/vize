@@ -29,6 +29,7 @@ test("casing source adapter uses the complete current declarations and preserves
     assert.deepEqual(
       custody.declarations.map(({ file }) => file),
       [
+        "virtual-ts-emit-overloads.d.ts",
         "virtual-ts-globals.d.ts",
         "virtual-ts-patterns.d.ts",
         "virtual-ts-slots.d.ts",

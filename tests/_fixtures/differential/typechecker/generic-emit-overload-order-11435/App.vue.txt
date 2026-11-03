@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+function onFirst(value: number) {}
+function onGen(value: unknown) {}
+function onLast(value: string) {}
+</script>
+
+<template>
+  <Child @first="onFirst" @gen="onGen" @last="onLast" />
+</template>

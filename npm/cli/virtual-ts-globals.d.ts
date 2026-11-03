@@ -411,61 +411,6 @@ declare global {
       ? [never]
       : [];
 
-  // Emit-overload helpers (consumed by the per-file __EmitProps alias)
-
-  type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
-  // One inference per step; repeating one means a generic overload is stuck.
-  type $OverloadUnionRecursive<
-    TOverload,
-    TPartialOverload = unknown,
-    TDepth extends unknown[] = [],
-    TAccumulated = never,
-    TLast = never,
-  > = TDepth["length"] extends 900
-    ? TAccumulated
-    : TOverload extends (...args: infer TArgs) => infer TReturn
-      ? TPartialOverload extends TOverload
-        ? TAccumulated
-        : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast
-              ? 1
-              : 2
-          ? TAccumulated
-          : $OverloadUnionRecursive<
-              TPartialOverload &
-                ((...args: TArgs) => TReturn) &
-                $OverloadProps<TOverload> &
-                TOverload,
-              TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
-              [...TDepth, unknown],
-              TAccumulated | ((...args: TArgs) => TReturn),
-              (...args: TArgs) => TReturn
-            >
-      : TAccumulated;
-  type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<
-    $OverloadUnionRecursive<(() => never) & TOverload>,
-    TOverload extends () => never ? never : () => never
-  >;
-  type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
-  type $IsStringLiteral<T> = T extends string ? (string extends T ? false : true) : false;
-  type $ParametersToFns<T extends any[]> = string extends T[0]
-    ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any }
-    : {
-        [K in T[0]]: $IsStringLiteral<K> extends true
-          ? (
-              ...args: T extends [e: infer E, ...args: infer P] ? (K extends E ? P : never) : never
-            ) => any
-          : never;
-      };
-  type __EmitOptions<T, S = __EmitShape<T>> = {
-    [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any;
-  } & (__EmitShape<T> extends (...args: any[]) => any
-    ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>>
-    : {});
-  type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}`
-    ? `${Head}${Capitalize<$Camelize<Tail>>}`
-    : S;
-  type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
-
   // Compiler-macro signatures (aliased inside each module's __setup() scope)
   function __vize_defineProps<_T = unknown>(): __DefineProps<
     __LooseRequired<_T>,

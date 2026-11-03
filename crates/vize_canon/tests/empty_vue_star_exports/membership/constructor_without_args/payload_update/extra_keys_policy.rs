@@ -157,7 +157,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 
 #[cfg(test)]
 mod tests {
-    use super::{FILES, PREAMBLE_EDITS, preamble_before, retain_provenance, source_before};
+    use super::{FILES, PREAMBLE_EDITS, invert, preamble_before, retain_provenance, source_before};
     use serde_json::json;
 
     fn current(path: &str) -> String {
@@ -196,7 +196,8 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            let body =
+                super::super::runtime_prop_call::source_before(file.path, current(file.path));
             let (before, after) = file.edits[0];
             for mutated in [
                 body.replacen(after, "", 1),
@@ -205,7 +206,14 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| invert(
+                        &mutated,
+                        file.edits,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha,
+                    ))
+                    .is_err()
                 );
             }
         }

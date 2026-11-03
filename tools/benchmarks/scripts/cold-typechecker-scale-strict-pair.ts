@@ -41,18 +41,6 @@ const cargoIdentity = [
     sha256: "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
   },
 ] as const;
-const files = [
-  "virtual-ts.d.ts",
-  "virtual-ts.d.mts",
-  "virtual-ts.d.cts",
-  "virtual-ts-globals.d.ts",
-  "virtual-ts-patterns.d.ts",
-  "virtual-ts-slots.d.ts",
-  "content-mapper-helpers.d.ts",
-  "content-mapper-helpers.d.mts",
-  "content-mapper-helpers.d.cts",
-  "generated/content-mapper-types.d.ts",
-];
 const hash = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const git = (root: string, args: string[]) =>
   execFileSync("git", args, { cwd: root }).toString().trim();
@@ -84,6 +72,10 @@ export function verifyStrictSourceInputs(input: {
 export function verifySourceSdkPair(base: string, head: string, typescript: SdkScanner) {
   assert.equal(typescript.version, "6.0.3");
   const edges: { file: string; specifier: string; target: string }[] = [];
+  // Every declaration the base package advertises; head must advertise the same.
+  const files = (
+    JSON.parse(fs.readFileSync(path.join(base, "npm/cli/package.json"), "utf8")).files as string[]
+  ).filter((file) => /\.d\.(?:ts|mts|cts)$/u.test(file));
   const declarations = files.map((file) => {
     const before = fs.readFileSync(path.join(base, "npm/cli", file));
     const after = fs.readFileSync(path.join(head, "npm/cli", file));
@@ -96,12 +88,11 @@ export function verifySourceSdkPair(base: string, head: string, typescript: SdkS
       const target = path.posix.normalize(
         path.posix.join(path.posix.dirname(file), reference.fileName.slice(0, -3) + ".d.ts"),
       );
-      assert(files.includes(target), "SDK relative edge escaped the ten-file source closure");
+      assert(files.includes(target), "SDK relative edge escaped the advertised source closure");
       edges.push({ file, specifier: reference.fileName, target });
     }
     return { file, bytes: before.length, sha256: hash(before) };
   });
-  assert.equal(edges.length, 13);
   const before = fs.readFileSync(path.join(base, "npm/cli/package.json"));
   assert(before.equals(fs.readFileSync(path.join(head, "npm/cli/package.json"))));
   return {

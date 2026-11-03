@@ -52,6 +52,16 @@ const outputs = new Map([
   ["npm/cli/generated/content-mapper-types.d.ts", generated],
   [`${helperRoot}/declarations/content-mapper-type-imports.d.ts.txt`, imports],
 ]);
+// The published emit-overload helpers are the canonical asset, declared globally.
+const emitOverloads = await format(
+  "virtual-ts-emit-overloads.d.ts",
+  "// Generated from the canonical emit-overload helpers. Do not edit.\ndeclare global {\n" +
+    readFileSync(path.join(root, helperRoot, "declarations/emit-overloads.d.ts.txt"), "utf8") +
+    "}\n\nexport {};\n",
+  { printWidth: 100 },
+);
+assert.deepEqual(emitOverloads.errors, [], "canonical emit-overload helpers must parse");
+outputs.set("npm/cli/virtual-ts-emit-overloads.d.ts", emitOverloads.code);
 
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
 // Synchronize this alias without replacing unrelated public declarations.

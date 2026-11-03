@@ -47,7 +47,7 @@ import {
 const controllerRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 const git = (root: string, ...args: string[]) =>
   execFileSync("git", args, { cwd: root }).toString("utf8").trim();
-const graphFiles = [...sdkFiles, "virtual-ts-slots.d.ts"].sort();
+const graphFiles = [...sdkFiles, "virtual-ts-emit-overloads.d.ts", "virtual-ts-slots.d.ts"].sort();
 export function assertCurrentGraph(
   graph: ReturnType<typeof captureDeclarationGraph>,
   root: string,
@@ -55,7 +55,7 @@ export function assertCurrentGraph(
   const files = graph.files.map((file) => relative(root, file.path).replaceAll("\\", "/"));
   assert.equal(new Set(files).size, files.length);
   assert.deepEqual([...files].sort(), graphFiles);
-  assert.equal(graph.edges.length, 13);
+  assert.equal(graph.edges.length, 16);
   for (const edge of graph.edges) {
     assert.ok(inside(root, edge.from) && inside(root, edge.target));
     assert.ok(graph.files.some((file) => file.path === edge.from));

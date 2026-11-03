@@ -236,13 +236,13 @@ export function verifyPublicSlotInstance(root: string) {
           writeFileSync(path.join(pkg, file), body);
           return { file, bytes: Buffer.byteLength(body), sha256: hash(body) };
         });
-        if (role === "head") {
-          const file = "virtual-ts-slots.d.ts",
-            body = readFileSync(path.join(root, "npm/cli", file));
-          writeFileSync(path.join(pkg, file), body);
-          sdk.push({ file, bytes: body.length, sha256: hash(body) });
-        }
-        assert.equal(sdk.length, role === "before" ? 9 : 10);
+        if (role === "head")
+          for (const file of ["virtual-ts-emit-overloads.d.ts", "virtual-ts-slots.d.ts"]) {
+            const body = readFileSync(path.join(root, "npm/cli", file));
+            writeFileSync(path.join(pkg, file), body);
+            sdk.push({ file, bytes: body.length, sha256: hash(body) });
+          }
+        assert.equal(sdk.length, role === "before" ? 9 : 11);
         const file = `proof.${extension}`,
           target = path.join(cwd, file);
         const source =

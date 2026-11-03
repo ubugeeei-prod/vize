@@ -69,6 +69,7 @@ fn inverse(current: &str, before: &str, after: &str, bytes: usize, old: &str, ne
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::emit_overload_window::source_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
@@ -83,6 +84,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::emit_overload_window::preamble_before(current);
     let file = &FILES[0];
     inverse(
         current,
@@ -115,8 +117,9 @@ mod tests {
             let body = std::fs::read_to_string(support::repository().join(file.path)).unwrap();
             assert_eq!(
                 source_before(file.path, body.clone()).replacen(file.before, file.after, 1),
-                body
+                super::super::emit_overload_window::source_before(file.path, body.clone())
             );
+            let body = super::super::emit_overload_window::source_before(file.path, body);
             for mutated in [
                 body.replacen(file.after, "", 1),
                 format!("{body}{}", file.after),
@@ -124,14 +127,22 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| inverse(
+                        &mutated,
+                        file.before,
+                        file.after,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha,
+                    ))
+                    .is_err()
                 );
             }
         }
         let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
             preamble_before(body).replacen(FILES[0].before, FILES[0].after, 1),
-            body
+            super::super::emit_overload_window::preamble_before(body)
         );
     }
 }
