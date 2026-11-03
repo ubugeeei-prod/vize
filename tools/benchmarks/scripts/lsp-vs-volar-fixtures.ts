@@ -9,8 +9,16 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 import type { Anchor } from "./lsp-vs-volar-text.ts";
 
@@ -37,6 +45,8 @@ export interface FixtureSpec {
   id: string;
   /** SFC edited and queried, relative to the project root (the opened workspace). */
   file: string;
+  /** The tsconfig that owns `file`; the content-mapper editor declares the mapper there. */
+  tsconfig: string;
   /** Commands run once after install, before any session. */
   prepare?: string[];
   /** The script probe goes right after this text, the template probe after the other. */
@@ -62,6 +72,7 @@ export const FIXTURES: FixtureSpec[] = [
   {
     id: "misskey",
     file: "packages/frontend/src/components/MkNote.vue",
+    tsconfig: "packages/frontend/tsconfig.json",
     scriptProbeAfter: '<script lang="ts" setup>\n',
     templateProbeAfter:
       '\t<MkNoteSub v-if="appearNote.replyId && !renoteCollapsed" :note="appearNote?.reply ?? null" :class="$style.replyTo"/>\n',
@@ -143,6 +154,7 @@ export const FIXTURES: FixtureSpec[] = [
   {
     id: "n8n",
     file: "packages/frontend/editor-ui/src/features/ndv/parameters/components/ResourceLocator/ResourceLocator.vue",
+    tsconfig: "packages/frontend/editor-ui/tsconfig.json",
     // n8n's own recipe for its editor's workspace dependencies without full type builds.
     prepare: ["exec", "turbo", "run", "build:unchecked", "--filter=n8n-editor-ui^..."],
     scriptProbeAfter: '<script setup lang="ts">\n',
@@ -298,4 +310,45 @@ export function prepareFixture(repoRoot: string, spec: FixtureSpec, fixturesDir:
   if (prepare) run("npx", [...pnpm, ...prepare], root);
   writeFileSync(stamp, `${entry.revision}\n`);
   return root;
+}
+
+/**
+ * Declare the Vize content mapper in the fixture's tsconfig and install the
+ * mapper package beside it, for one content-mapper session only: other editors
+ * must see the project exactly as authored. Returns the restore step.
+ */
+export function installContentMapper(
+  workspace: string,
+  spec: FixtureSpec,
+  mapperModules: string,
+): () => void {
+  const tsconfig = join(workspace, spec.tsconfig);
+  const original = readFileSync(tsconfig, "utf8");
+  if (original.includes('"contentMappers"'))
+    throw new Error(`${spec.tsconfig} already declares contentMappers`);
+  const open = original.indexOf("{");
+  if (open < 0) throw new Error(`${spec.tsconfig} is not a JSON object`);
+  const entry = '"contentMappers": [{ "package": "vize", "extensions": [".vue"] }],';
+  writeFileSync(tsconfig, `${original.slice(0, open + 1)}\n  ${entry}${original.slice(open + 1)}`);
+  const modules = join(dirname(tsconfig), "node_modules");
+  mkdirSync(modules, { recursive: true });
+  const added: string[] = [];
+  for (const name of readdirSync(mapperModules)) {
+    if (name.startsWith(".")) continue;
+    // Scoped directories merge entry by entry; existing project packages win.
+    const entries = name.startsWith("@")
+      ? readdirSync(join(mapperModules, name)).map((inner) => join(name, inner))
+      : [name];
+    for (const entryName of entries) {
+      const target = join(modules, entryName);
+      if (existsSync(target)) continue;
+      mkdirSync(dirname(target), { recursive: true });
+      cpSync(join(mapperModules, entryName), target, { recursive: true, dereference: true });
+      added.push(target);
+    }
+  }
+  return () => {
+    for (const target of added) rmSync(target, { recursive: true, force: true });
+    writeFileSync(tsconfig, original);
+  };
 }
