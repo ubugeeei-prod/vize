@@ -13,6 +13,7 @@ import { existsSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { ENGINE_CLASSES } from "./check-gate-report.ts";
 import { installPackageFiles, linkPackage } from "./install-package-files.ts";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,12 @@ export const mapperLaneId = (host: MapperHost, mapper: ContentMapper, setting: S
 export const vizeCheckerLaneId = (setting: Setting): string => `vize-check-${setting.id}`;
 export const mapperTsconfigName = (mapper: ContentMapper): string =>
   `tsconfig.${mapper.id}-mapper.json`;
+
+/** The check gate's engine classes plus the tsrs host it does not run. */
+export const ENGINE_CLASS_LABELS: Record<string, string> = {
+  ...ENGINE_CLASSES,
+  "tsrs-native": "native TypeScript port (tsrs)",
+};
 
 /** Every mapper and `vize check --checkers` lane id with its engine class. */
 export const SETTING_LANE_ENGINE_CLASSES: Record<string, MapperHost["engineClass"]> = {

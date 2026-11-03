@@ -234,6 +234,7 @@ fn has_path_segment(path: &str, segment: &str) -> bool {
 fn is_excluded_path(path: &str) -> bool {
     path.ends_with("Cargo.lock")
         || path.ends_with("pnpm-lock.yaml")
+        || path.ends_with("package-lock.json")
         || path.ends_with(".lock")
         || path.starts_with("tools/benchmarks/results/")
         || path.starts_with("tools/commands/")

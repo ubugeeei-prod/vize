@@ -3,7 +3,7 @@ import { formatSpeedup, getVariant, renderEngineClassSections } from "./compare-
 import { SNAPSHOT_LOCALES, SURFACE_ORDER, surfaceLabel } from "./published-snapshot-locales.mjs";
 import { diagnosticText } from "./published-snapshot-diagnostics.mjs";
 import { renderProvenanceLines } from "./benchmark-provenance.mjs";
-import { ENGINE_CLASSES } from "./check-gate-report.ts";
+import { ENGINE_CLASS_LABELS } from "./typecheck-mapper-hosts.ts";
 
 export const RESULT_PATH = "tools/benchmarks/results/tool-benchmark-latest.json";
 const REPOSITORY = "https://github.com/ubugeeei-prod/vize";
@@ -73,7 +73,7 @@ export function typecheckTable(surface) {
   const rows = [...best].map(([tool, variant]) => [
     tool,
     variant.setting ?? "n/a",
-    ENGINE_CLASSES[surface.engineClasses?.[variant.id]] ?? "n/a",
+    ENGINE_CLASS_LABELS[surface.engineClasses?.[variant.id]] ?? "n/a",
     formatMs(variant.coldMs),
     formatMs(variant.medianMs),
     formatMs(variant.cpuMedianMs),

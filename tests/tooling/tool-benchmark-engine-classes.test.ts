@@ -8,8 +8,20 @@ import {
 import {
   CHECK_ENGINE_CLASSES,
   CHECK_VARIANTS,
+  SETTING_VARIANTS,
   checkSurfaceInput,
 } from "./support/benchmark/check-surface.ts";
+
+const settingRows = (engineClass: string, fastest: number) =>
+  SETTING_VARIANTS.filter(({ id }) => CHECK_ENGINE_CLASSES[id] === engineClass).map(
+    ({ id, label, medianMs }) => ({
+      id,
+      label,
+      medianMs,
+      relativeToFastest: Number((medianMs / fastest).toFixed(3)),
+    }),
+  );
+const tsrsFastest = SETTING_VARIANTS.find(({ id }) => CHECK_ENGINE_CLASSES[id] === "tsrs-native")!;
 
 test("a cross-engine surface publishes the ratio against its declared incumbent", () => {
   const surface = createSurface(checkSurfaceInput());
@@ -69,7 +81,13 @@ test("a cross-engine surface publishes the ratio against its declared incumbent"
             medianMs: 2500,
             relativeToFastest: 5,
           },
+          ...settingRows("tsgo-native", 500),
         ],
+      },
+      {
+        engineClass: "tsrs-native",
+        label: "native TypeScript port (tsrs)",
+        rows: settingRows("tsrs-native", tsrsFastest.medianMs),
       },
     ],
   });
