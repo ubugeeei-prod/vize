@@ -6,26 +6,11 @@ title: "vue/cross-file-attrs-fallthrough"
 
 父组件传入属性，但已解析子组件的根无法继承它们，也没有显式使用 $attrs。
 
-默认严重程度: warning  
-适用范围: 可达的项目声明及导入组件  
-选项: crossFile；规则严重程度（off/warn/error）  
-自动修复: 无
+| 默认严重程度 | 自动修复 | 选项 |
+| --- | --- | --- |
+| warning | 无 | crossFile；规则严重程度（off/warn/error） |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+适用范围: 可达的项目声明及导入组件
 
 ## 共享项目文件
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-正确示例的文件展示上述修改；完整项目仍可能适用其他诊断。
+## 配置（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 相关页面
 
 [跨文件规则索引](../cross-file.md)

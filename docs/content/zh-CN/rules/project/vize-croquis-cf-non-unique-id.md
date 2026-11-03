@@ -6,26 +6,11 @@ title: "vize:croquis/cf/non-unique-id"
 
 循环内的元素 id 对每个列表项并不唯一。
 
-默认严重程度: error  
-适用范围: 已分析的组件图，以及下方说明的受支持事实  
-自动修复: 无；请检查相关文件并应用修复  
-选项: 无针对单个诊断代码的选项；受支持的 CLI 诊断可覆盖严重程度
+| 默认严重程度 | 自动修复 | 选项 |
+| --- | --- | --- |
+| error | 无；请检查相关文件并应用修复 | 无针对单个诊断代码的选项；受支持的 CLI 诊断可覆盖严重程度 |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-unique-id": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+适用范围: 已分析的组件图，以及下方说明的受支持事实
 
 ## 共享项目文件
 
@@ -80,7 +65,25 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 </template>
 ```
 
-正确示例的文件展示上述修改；完整项目仍可能适用其他诊断。
+## 配置（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/non-unique-id": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 相关页面
 
 [公开说明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

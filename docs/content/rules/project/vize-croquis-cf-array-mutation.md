@@ -6,10 +6,11 @@ title: "vize:croquis/cf/array-mutation"
 
 This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| Not emitted | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
+
+Applies to: Analyzed component graph and the supported facts described below
 
 This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
 
@@ -78,7 +79,11 @@ export function replaceFirst(items: string[], next: string): void {
 
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+This code is not currently emitted by the CLI, so there is no CLI rule configuration to enable here.
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

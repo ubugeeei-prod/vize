@@ -6,26 +6,11 @@ title: "vize:croquis/cf/watcheffect-async"
 
 `watchEffect` lance une tâche asynchrone et ne peut pas nettoyer l’exécution précédente.
 
-Gravité par défaut: error  
-Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous  
-Correction automatique: Aucune ; examinez les fichiers concernés et appliquez la correction  
-Options: Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| error | Aucune ; examinez les fichiers concernés et appliquez la correction | Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/watcheffect-async": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
 
 ## Fichiers communs du projet
 
@@ -138,7 +123,25 @@ watch(
 </script>
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/watcheffect-async": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Voir aussi
 
 [Explication publique](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

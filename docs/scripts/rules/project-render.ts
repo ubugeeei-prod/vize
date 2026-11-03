@@ -72,6 +72,20 @@ function config(id: string, _ja: boolean) {
     "```",
   ];
 }
+function projectFacts(
+  ja: boolean,
+  values: { severity: string; fix: string; options: string; scope: string },
+) {
+  const label = (en: string, jp: string) => (ja ? jp : en);
+  return [
+    `| ${label("Default severity", "既定の重大度")} | ${label("Automatic fix", "自動修正")} | ${label("Options", "オプション")} |`,
+    "| --- | --- | --- |",
+    `| ${values.severity} | ${values.fix} | ${values.options} |`,
+    "",
+    `${label("Applies to", "適用範囲")}: ${values.scope}`,
+    "",
+  ];
+}
 function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   const { code, name, status, severity, producer } = rule;
   const label = (en: string, jp: string) => (ja ? jp : en);
@@ -91,14 +105,23 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     "",
     info.purpose,
     "",
-    `${label("Default severity", "既定の重大度")}: ${status === "contract" ? label("Not emitted", "現在は生成されません") : severity}  `,
-    `${label("Applies to", "適用範囲")}: ${label("Analyzed component graph and the supported facts described below", "解析対象のコンポーネント構成と、下記に示す対応済みの情報")}  `,
-    `${label("Automatic fix", "自動修正")}: ${label("None; review related files and apply the repair", "なし。関連ファイルを確認して修正してください")}  `,
-    `${label("Options", "オプション")}: ${label("No per-code options; supported CLI findings accept severity overrides", "コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます")}`,
-    "",
+    ...projectFacts(ja, {
+      severity: status === "contract" ? label("Not emitted", "現在は生成されません") : severity,
+      fix: label(
+        "None; review related files and apply the repair",
+        "なし。関連ファイルを確認して修正してください",
+      ),
+      options: label(
+        "No per-code options; supported CLI findings accept severity overrides",
+        "コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます",
+      ),
+      scope: label(
+        "Analyzed component graph and the supported facts described below",
+        "解析対象のコンポーネント構成と、下記に示す対応済みの情報",
+      ),
+    }),
   ];
-  if (status === "cli") lines.push(...config(code.slice(5), ja), "");
-  else
+  if (status !== "cli")
     lines.push(
       label(
         status === "contract"
@@ -158,6 +181,19 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   if (example) lines.push(...fixture({ ...example, ...projectExplanations.get(name) }, ja));
   else throw new Error(`Missing complete project scenario: ${code}`);
   lines.push(
+    `## ${label("Configuration (Vite+)", "設定（Vite+）")}`,
+    "",
+    ...(status === "cli"
+      ? config(code.slice(5), ja)
+      : [
+          label(
+            "This code is not currently emitted by the CLI, so there is no CLI rule configuration to enable here.",
+            "この診断コードは現在 CLI では出力されないため、有効化する CLI のルール設定はありません。",
+          ),
+        ]),
+    "",
+    `## ${label("Related", "関連ページ")}`,
+    "",
     `[${label("Public explanation", "公開の説明")}](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/${ja ? "ja" : "en"}.txt)`,
     "",
   );
@@ -193,11 +229,18 @@ function projectDetail(id: string, example: ProjectRuleExample, ja: boolean, sev
     "",
     description,
     "",
-    `${label("Default severity", "既定の重大度")}: ${severity}  `,
-    `${label("Applies to", "適用範囲")}: ${label("Reachable project declarations and imported components", "到達可能なプロジェクトの宣言と import したコンポーネント")}  `,
-    `${label("Options", "オプション")}: ${label("crossFile; rule severity (off/warn/error)", "crossFile と重大度（off/warn/error）")}  `,
-    `${label("Automatic fix", "自動修正")}: ${label("None", "なし")}`,
-    "",
+    ...projectFacts(ja, {
+      severity,
+      fix: label("None", "なし"),
+      options: label(
+        "crossFile; rule severity (off/warn/error)",
+        "crossFile と重大度（off/warn/error）",
+      ),
+      scope: label(
+        "Reachable project declarations and imported components",
+        "到達可能なプロジェクトの宣言と import したコンポーネント",
+      ),
+    }),
     ...(id.startsWith("ecosystem/")
       ? [
           label(
@@ -207,9 +250,13 @@ function projectDetail(id: string, example: ProjectRuleExample, ja: boolean, sev
           "",
         ]
       : []),
+    ...fixture({ ...example, ...projectExplanations.get(id) }, ja),
+    `## ${label("Configuration (Vite+)", "設定（Vite+）")}`,
+    "",
     ...config(id, ja),
     "",
-    ...fixture({ ...example, ...projectExplanations.get(id) }, ja),
+    `## ${label("Related", "関連ページ")}`,
+    "",
     `[${label("Cross-file index", "ファイル間ルール一覧")}](../cross-file.md)`,
     "",
   ].join("\n");
@@ -249,13 +296,6 @@ function fixture(example: ProjectExample, ja: boolean) {
     const graph = example[`${key}Graph`];
     if (graph) lines.push("```text", graph, "```", "");
   }
-  lines.push(
-    label(
-      "The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.",
-      "良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。",
-    ),
-    "",
-  );
   return lines;
 }
 function output(path: string, text: string, checking: boolean) {

@@ -6,10 +6,11 @@ title: "vize:croquis/cf/suspense-no-fallback"
 
 `<Suspense>` não tem conteúdo alternativo.
 
-Severidade padrão: Não emitido  
-Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo  
-Correção automática: Nenhuma; revise os arquivos relacionados e aplique a correção  
-Opções: Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| Não emitido | Nenhuma; revise os arquivos relacionados e aplique a correção | Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade |
+
+Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 Este é um contrato de diagnóstico publicado sem produtor atual. O cenário incorreto e correto abaixo explica o risco e a correção; nenhuma opção atualmente faz este código ser emitido.
 
@@ -86,7 +87,11 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+A CLI não emite este código atualmente, portanto não há uma configuração de regra da CLI para habilitá-lo aqui.
+
+## Páginas relacionadas
 
 [Explicação pública](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

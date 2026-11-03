@@ -6,26 +6,11 @@ title: "vize:croquis/cf/unmatched-inject"
 
 `inject` nomeia uma chave que nenhum ancestral fornece.
 
-Severidade padrão: error / warning (com valor padrão)  
-Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo  
-Correção automática: Nenhuma; revise os arquivos relacionados e aplique a correção  
-Opções: Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade
+| Severidade padrão | Correção automática | Opções |
+| --- | --- | --- |
+| error / warning (com valor padrão) | Nenhuma; revise os arquivos relacionados e aplique a correção | Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/unmatched-inject": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 ## Arquivos compartilhados do projeto
 
@@ -129,7 +114,25 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-Os arquivos do exemplo correto demonstram a alteração descrita acima; outros diagnósticos ainda podem se aplicar ao projeto completo.
+## Configuração (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/unmatched-inject": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Páginas relacionadas
 
 [Explicação pública](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

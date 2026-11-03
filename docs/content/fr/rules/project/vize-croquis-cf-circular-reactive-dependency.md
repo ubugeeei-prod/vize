@@ -6,26 +6,11 @@ title: "vize:croquis/cf/circular-reactive-dependency"
 
 Des calculs réactifs dépendent les uns des autres en formant un cycle.
 
-Gravité par défaut: Selon le contexte  
-Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous  
-Correction automatique: Aucune ; examinez les fichiers concernés et appliquez la correction  
-Options: Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité
+| Gravité par défaut | Correction automatique | Options |
+| --- | --- | --- |
+| Selon le contexte | Aucune ; examinez les fichiers concernés et appliquez la correction | Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/circular-reactive-dependency": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
 
 Qualification de l’exemple: `illustrative-source-pair`
 
@@ -116,7 +101,25 @@ Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
 
-Les fichiers de l’exemple Bon montrent la modification décrite ci-dessus ; d’autres diagnostics peuvent encore s’appliquer au projet complet.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/circular-reactive-dependency": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Voir aussi
 
 [Explication publique](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

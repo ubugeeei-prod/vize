@@ -6,28 +6,13 @@ title: "ecosystem/vue-router-unknown-route"
 
 名称不在完整且已安装的路由器中。
 
-默认严重程度: error  
-适用范围: 可达的项目声明及导入组件  
-选项: crossFile；规则严重程度（off/warn/error）  
-自动修复: 无
+| 默认严重程度 | 自动修复 | 选项 |
+| --- | --- | --- |
+| error | 无 | crossFile；规则严重程度（off/warn/error） |
+
+适用范围: 可达的项目声明及导入组件
 
 完整且已安装的路由器必须从应用的 createApp(...).use(router) 可达。未知或动态路由表不能证明未知名称诊断。缺失参数属于警告，因为导航可能从当前路由继承值。
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-unknown-route": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## 共享项目文件
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-正确示例的文件展示上述修改；完整项目仍可能适用其他诊断。
+## 配置（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-unknown-route": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 相关页面
 
 [跨文件规则索引](../cross-file.md)

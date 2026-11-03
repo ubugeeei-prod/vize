@@ -6,26 +6,11 @@ title: "vue/cross-file-attrs-fallthrough"
 
 属性を渡す親と、属性を自動継承できず $attrs も使っていない子コンポーネントの関係を検査します。
 
-既定の重大度: warning  
-適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント  
-オプション: crossFile と重大度（off/warn/error）  
-自動修正: なし
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし | crossFile と重大度（off/warn/error） |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント
 
 ## 共通のプロジェクト ファイル
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "vue/cross-file-attrs-fallthrough": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [ファイル間ルール一覧](../cross-file.md)

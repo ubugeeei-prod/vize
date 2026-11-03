@@ -6,10 +6,11 @@ title: "vize:croquis/cf/pinia-getter"
 
 This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
-Default severity: Not emitted  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| Not emitted | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
+
+Applies to: Analyzed component graph and the supported facts described below
 
 This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
 
@@ -88,7 +89,11 @@ const { doubled } = storeToRefs(store);
 
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+This code is not currently emitted by the CLI, so there is no CLI rule configuration to enable here.
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
