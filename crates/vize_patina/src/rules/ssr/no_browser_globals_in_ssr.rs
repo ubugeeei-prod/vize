@@ -186,6 +186,15 @@ impl NoBrowserGlobalsInSsr {
         }
     }
 
+    /// Whether `text` can read a global `is_global` accepts. A read is an
+    /// identifier token or an escaped one; text with neither reads none.
+    fn may_read(text: &str, mut is_global: impl FnMut(&str) -> bool) -> bool {
+        text.contains('\\')
+            || text
+                .split(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
+                .any(|token| !token.is_empty() && is_global(token))
+    }
+
     /// A script or template binding shadows a browser global of the same name.
     ///
     /// Scope lookup finds ambient browser globals (`open`, `close`) before the
@@ -229,6 +238,9 @@ impl Rule for NoBrowserGlobalsInSsr {
             ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return, // Skip compound expressions for now
         };
+        if !Self::may_read(content, |name| Self::is_browser_global_binding(ctx, name)) {
+            return;
+        }
         let identifiers = Self::runtime_identifiers(content, None);
 
         for ident in identifiers.iter().map(|name| name.as_str()) {
@@ -263,6 +275,9 @@ impl Rule for NoBrowserGlobalsInSsr {
                 ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(_) => return, // Skip compound expressions
             };
+            if !Self::may_read(content, |name| Self::is_browser_global_binding(ctx, name)) {
+                return;
+            }
             let identifiers = Self::runtime_identifiers(content, Some(directive.name));
 
             for ident in identifiers.iter().map(|name| name.as_str()) {

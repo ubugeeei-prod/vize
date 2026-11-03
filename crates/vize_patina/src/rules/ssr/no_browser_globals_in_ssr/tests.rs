@@ -297,3 +297,34 @@ fn slot_and_for_aliases_are_scoped_but_their_sources_are_read() {
     let result = lint_with_ssr(r#"<Comp v-slot="{ size = innerWidth }">{{ size }}</Comp>"#);
     assert_eq!(result.len(), 1, "{result:?}");
 }
+
+#[test]
+fn only_identifier_tokens_or_escapes_can_read_a_browser_global() {
+    for source in [
+        r#"<div>{{ \u0077indow.innerWidth }}</div>"#,
+        r#"<div :title="(open) => close(open)"></div>"#,
+        r#"<div :class="[isOpen, document]"></div>"#,
+    ] {
+        assert_eq!(lint_with_ssr(source).len(), 1, "{source}");
+    }
+    for source in [
+        r#"<div>{{ windowWidth + $document + _open + top2 }}</div>"#,
+        r#"<div :class="{ isOpen, closeModal: parentNode }"></div>"#,
+        r#"<div>{{ 'window' }}</div>"#,
+    ] {
+        let result = lint_with_ssr(source);
+        assert!(result.is_empty(), "{source}: {result:?}");
+    }
+}
+
+#[test]
+fn script_reads_only_whole_or_escaped_browser_global_names() {
+    let result = lint_sfc_with_only_this_rule(
+        "<script setup>\nconst width = \\u0077indow.innerWidth\n</script>\n",
+    );
+    assert_eq!(result.len(), 1, "{result:?}");
+    let result = lint_sfc_with_only_this_rule(
+        "<script setup>\nconst isOpen = 1\nconst closeModal = isOpen\nconst topBar = closeModal\n</script>\n",
+    );
+    assert!(result.is_empty(), "{result:?}");
+}
