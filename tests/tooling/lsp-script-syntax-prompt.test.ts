@@ -25,9 +25,14 @@ const SOURCE = fs.readFileSync(
 const SYNTAX_LINE = 2;
 const BROKEN_LINE = 3;
 
+const diagnosticCode = (code: unknown) => {
+  if (typeof code === "number") return code;
+  if (typeof code !== "string" || !/^(?:TS)?[0-9]+$/.test(code)) return undefined;
+  return Number(code.replace(/^TS/, ""));
+};
 const typeErrors = (params: PublishDiagnosticsParams) =>
   params.diagnostics.filter(
-    (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2322,
+    (diagnostic) => diagnostic.source === "vize/types" && diagnosticCode(diagnostic.code) === 2322,
   );
 // This pinned case must have no stale native TS1xxx output beside the parser.
 // Semantic TS1xxx findings have a separate retention control below.
@@ -35,7 +40,8 @@ const scriptSyntax = (params: PublishDiagnosticsParams) =>
   params.diagnostics.filter(
     (diagnostic) =>
       diagnostic.source === "vize/script" ||
-      (diagnostic.source === "vize/types" && Math.floor(Number(diagnostic.code) / 1000) === 1),
+      (diagnostic.source === "vize/types" &&
+        Math.floor((diagnosticCode(diagnostic.code) ?? 0) / 1000) === 1),
   );
 const at = (start: number, end: number, text: string) => ({
   range: { start: { line: start, character: 0 }, end: { line: end, character: 0 } },
@@ -49,6 +55,33 @@ const summary = (publications: PublishDiagnosticsParams[]) =>
         `v${version ?? "-"} [${diagnostics.map((d) => `${d.source}:${String(d.code)}@${d.range?.start?.line}`).join(", ")}]`,
     )
     .join("\n");
+
+test("prompt filters retain the same stale diagnostic for every checker code spelling", () => {
+  const diagnostic = {
+    source: "vize/types",
+    message: "Expression expected.",
+    range: { start: { line: 2, character: 0 }, end: { line: 2, character: 5 } },
+  };
+  const parser = { ...diagnostic, source: "vize/script", code: "script-syntax" };
+  for (const code of [1109, "1109", "TS1109"]) {
+    const stale = { ...diagnostic, code };
+    const publication = { uri: "file:///App.vue", version: 2, diagnostics: [parser, stale] };
+    // A stale native copy must make the original parser-only expectation fail.
+    assert.deepEqual(scriptSyntax(publication), [parser, stale]);
+    assert.notDeepEqual(scriptSyntax(publication), [parser]);
+  }
+  for (const code of [2322, "2322", "TS2322"]) {
+    const retained = { ...diagnostic, code };
+    const unrelated = { ...diagnostic, code: "TS23220" };
+    const malformed = { ...diagnostic, code: "TS2322suffix" };
+    const publication = {
+      uri: "file:///App.vue",
+      version: 2,
+      diagnostics: [retained, unrelated, malformed],
+    };
+    assert.deepEqual(typeErrors(publication), [retained]);
+  }
+});
 
 test("a new script syntax error reaches the prompt publication", async (t) => {
   const runtime = requireTypecheckDependency(
@@ -173,7 +206,8 @@ test("an unrelated edit retains a semantic TS1xxx diagnostic in the prompt", asy
   let stopped = false;
   const semantic = (params: PublishDiagnosticsParams) =>
     params.diagnostics.filter(
-      (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 1355,
+      (diagnostic) =>
+        diagnostic.source === "vize/types" && diagnosticCode(diagnostic.code) === 1355,
     );
   try {
     fs.mkdirSync(path.join(directory, "src"));

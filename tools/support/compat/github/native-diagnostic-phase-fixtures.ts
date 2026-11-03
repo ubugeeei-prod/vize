@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const DIAGNOSTIC_PHASE_ID = "typechecker/protocol/native-diagnostic-phase-11626";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
-const registrationSha256 = "e1aac5141f26dd1845353613d0d1ad0a742f5af06a8a3c9fb3dc36d741e0efb0";
+const registrationSha256 = "aa0b7795b737e1d01e5262cbbf9e8c9297d75b7d656af04e263a71a8d78f4fc5";
 const sources = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
   "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
@@ -127,7 +127,7 @@ export function newNativeDiagnosticPhaseCases(
       const input = object(value);
       pinned(read, "head", input.path, input.sha256);
     }
-    assert.ok(Array.isArray(row.tests) && row.tests.length === 15);
+    assert.ok(Array.isArray(row.tests) && row.tests.length === 16);
     row.tests.forEach((value) => consumer(read, value));
     legacyLaws(read, row.legacyProtocol);
     result.ids.push(DIAGNOSTIC_PHASE_ID);
