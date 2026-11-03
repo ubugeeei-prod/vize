@@ -95,9 +95,9 @@ void test("every ranked lane proves minimal and timed-corpus work before measuri
     assert.equal(lane.correctness.diagnosticCount, 1);
     assert.match(lane.correctness.diagnosticFingerprint, /^[a-f0-9]{64}$/u);
     const callsBeforeMeasurement = calls.length;
-    assert.equal(lane.measure(), 12.5);
+    assert.deepEqual(lane.measure(), { ms: 12.5, cpuMs: null });
     assert.equal(calls.length, callsBeforeMeasurement + 1);
-    assert.equal(lane.measure(), 12.5);
+    assert.deepEqual(lane.measure(), { ms: 12.5, cpuMs: null });
     assert.equal(calls.length, callsBeforeMeasurement + 2);
   }
 });
@@ -309,5 +309,5 @@ void test("native JSON lanes and path-hashed virtual diagnostics survive the cor
     gated.correctness.diagnosticFingerprint,
     gated.correctness.corpusBaselineFingerprint,
   );
-  assert.equal(gated.measure(), 12.5);
+  assert.deepEqual(gated.measure(), { ms: 12.5, cpuMs: null });
 });

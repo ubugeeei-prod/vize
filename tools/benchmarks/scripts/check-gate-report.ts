@@ -13,6 +13,7 @@ import { createHash } from "node:crypto";
 export const ENGINE_CLASSES = {
   "typescript-js": "JS TypeScript engine (tsc)",
   "tsgo-native": "native TypeScript engine (tsgo)",
+  "tsrs-native": "native TypeScript port (tsrs)",
 };
 
 export type EngineClass = keyof typeof ENGINE_CLASSES;

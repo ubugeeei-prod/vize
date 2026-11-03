@@ -66,7 +66,11 @@ export function checkedMeasurement(variant, cwd, baseline) {
     if (!Number.isFinite(result.ms) || result.ms <= 0) {
       throw new Error(`${variant.id}: invalid measured duration`);
     }
-    return result.ms;
+    const cpuMs = result.cpuMs ?? null;
+    if (cpuMs != null && !(Number.isFinite(cpuMs) && cpuMs >= 0)) {
+      throw new Error(`${variant.id}: invalid measured CPU time`);
+    }
+    return { ms: result.ms, cpuMs };
   };
 }
 

@@ -29,17 +29,14 @@ import { buildMetadata } from "./compare-tools-metadata.mjs";
 import { DEFAULT_MUSEA_FILE_COUNT, measureMuseaSurface } from "./compare-tools-musea.mjs";
 import {
   createSurface,
-  ENGINE_CLASSES_BY_SURFACE,
   renderEngineClassSections,
   renderSurfaceTable,
 } from "./compare-tools-report.mjs";
 import {
-  createTypecheckToolVariants,
+  measureTypecheckSurface,
   prepareTypecheckDir,
-  prepareTypecheckPackages,
   typecheckToolBins,
 } from "./compare-tools-typecheck.mjs";
-import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
 import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
 import { linkColdNodeModules } from "./nuxt-build-cache.ts";
@@ -825,49 +822,15 @@ async function measureFormat(inputDir, files, options) {
   });
 }
 
-async function measureCheck(inputDir, files, options) {
-  const checkDir = prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles });
-  const vizeBin = resolve(options.vizeBin);
-  if (!existsSync(vizeBin)) {
-    throw new Error(`Vize CLI not found: ${vizeBin}`);
-  }
-  // Fail closed: without a resolvable native TypeScript engine `vize check`
-  // is not measuring type checking, and a timing published from it would be
-  // the heuristic-fallback result the upstream vue-benchmarks report hit.
-  if (!options.backend.ready) {
-    throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
-  }
-  const rejectedVariants = [];
-  const onRejected = (variant, error, phase) =>
-    recordTypecheckRejection(rejectedVariants, variant, error, phase);
-  const variants = gateTypecheckVariants(
-    createTypecheckToolVariants({
-      fileCount: files.length,
-      vizeBin,
-      corsaPath: options.backend.corsaPath,
-      resolveWorkspaceBin,
-    }),
-    checkDir,
-    prepareTypecheckPackages,
-    onRejected,
-  );
-
-  return createSurface({
-    id: "check",
-    label: "Type check",
-    files: files.length,
+function measureCheck(inputDir, files, options) {
+  return measureTypecheckSurface({
+    files,
     bytes: totalFileBytes(inputDir, files),
-    variants: (await measureVariants(variants, options, onRejected)).map((measured) => ({
-      ...measured,
-      correctness: variants.find((variant) => variant.id === measured.id).correctness,
-    })),
-    rejectedVariants,
-    baselineId: "vue-tsc",
-    vizeSingleId: "vize-check-1t",
-    vizeMaxId: "vize-check-max",
-    // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
-    // native tsgo. Declaring the classes suppresses the cross-engine ratio.
-    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
+    options,
+    prepareDir: (prepareProject) =>
+      prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles, prepareProject }),
+    resolveWorkspaceBin,
+    measureVariants,
   });
 }
 
@@ -1038,11 +1001,18 @@ export function renderMarkdown(data) {
   for (const surface of data.surfaces) {
     lines.push(`### ${surface.label}`);
     lines.push("");
-    lines.push("| Variant | Median | Throughput | Raw measured runs |");
-    lines.push("| --- | ---: | ---: | --- |");
+    // Process lanes also record CPU (user+sys of the process tree) and a cold first run.
+    const processLanes = surface.variants.some((variant) => variant.cpuRuns);
+    lines.push(
+      `| Variant | Median | ${processLanes ? "CPU median | Cold | " : ""}Throughput | Raw measured runs |`,
+    );
+    lines.push(`| --- | ---: | ${processLanes ? "---: | ---: | " : ""}---: | --- |`);
     for (const variant of surface.variants) {
+      const process = processLanes
+        ? `${formatMs(variant.cpuMedianMs)} | ${formatMs(variant.coldMs)} | `
+        : "";
       lines.push(
-        `| ${variant.label} | ${formatMs(variant.medianMs)} | ${variant.throughput} | ${formatRunList(variant.runs)} |`,
+        `| ${variant.label} | ${formatMs(variant.medianMs)} | ${process}${variant.throughput} | ${formatRunList(variant.runs)} |`,
       );
     }
     lines.push("");

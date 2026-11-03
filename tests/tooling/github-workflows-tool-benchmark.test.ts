@@ -40,6 +40,8 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
     "tool benchmark must install rust-script before build:vite-plugin",
   );
   assert.match(benchmarkJob, /vp run --workspace-root build:native/);
+  // Mapper lanes need the locked hosts and Vue mapper, and the built vize package.
+  assert.match(benchmarkJob, /npm ci --prefix tools\/benchmarks\/typecheck-hosts --ignore-scripts/);
   assert.match(benchmarkJob, /vp run --workspace-root build:vite-plugin/);
   assert.match(benchmarkJob, /vp run --workspace-root build:nuxt-stack/);
   assert.match(

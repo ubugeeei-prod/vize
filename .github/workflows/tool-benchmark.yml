@@ -156,6 +156,9 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
 
+      - name: Install the pinned content-mapper hosts and Vue mapper
+        run: npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+
       - name: Build Vize CLI
         run: cargo build --release -p vize
 

@@ -21,6 +21,7 @@
  */
 
 import { ENGINE_CLASSES } from "./check-gate-report.ts";
+import { MAPPER_LANE_ENGINE_CLASSES } from "./typecheck-mapper-hosts.ts";
 import { OPTIONAL_TYPECHECK_VARIANTS } from "./typecheck-readiness.mjs";
 
 /**
@@ -38,6 +39,7 @@ export const ENGINE_CLASSES_BY_SURFACE = {
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
+    ...MAPPER_LANE_ENGINE_CLASSES,
   },
   "large-check": {
     "golar-default": "tsgo-native",
@@ -46,6 +48,7 @@ export const ENGINE_CLASSES_BY_SURFACE = {
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
+    ...MAPPER_LANE_ENGINE_CLASSES,
   },
 };
 

@@ -1,9 +1,17 @@
 import { existsSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, sep } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { resolveVuePackageDir } from "./check-gate-env.mjs";
+import { createSurface, ENGINE_CLASSES_BY_SURFACE } from "./compare-tools-report.mjs";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
+import {
+  createMapperLanes,
+  mapperHostBins,
+  prepareMapperPackages,
+  resolveMapperHosts,
+} from "./typecheck-mapper-hosts.ts";
+import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +37,13 @@ export function prepareTypecheckPackages(dir) {
   writeFileSync(join(dir, "golar.config.ts"), GOLAR_CONFIG);
 }
 
-export function prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles }) {
+export function prepareTypecheckDir({
+  inputDir,
+  files,
+  workRoot,
+  copySelectedFiles,
+  prepareProject = prepareTypecheckPackages,
+}) {
   const outputDir = join(workRoot, `check-${files.length}`);
   copySelectedFiles(inputDir, outputDir, files, ["vite.config.mjs"]);
   writeFileSync(
@@ -44,15 +58,26 @@ export function prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFil
       2,
     )}\n`,
   );
-  prepareTypecheckPackages(outputDir);
+  prepareProject(outputDir);
   return outputDir;
 }
 
+/**
+ * @param {{
+ *   fileCount: number,
+ *   vizeBin: string,
+ *   corsaPath: string,
+ *   resolveWorkspaceBin: (name: string) => string,
+ *   mapperHosts?: import("./typecheck-mapper-hosts.ts").MapperHosts | null,
+ *   runCommand?: Function,
+ * }} options
+ */
 export function createTypecheckToolVariants({
   fileCount,
   vizeBin,
   corsaPath,
   resolveWorkspaceBin,
+  mapperHosts = null,
   runCommand = runTypecheckCommand,
 }) {
   const vueTscBin = resolveWorkspaceBin("vue-tsc");
@@ -119,6 +144,7 @@ export function createTypecheckToolVariants({
           { cwd, env: lane === "1t" ? { RAYON_NUM_THREADS: "1" } : {} },
         ),
     })),
+    ...(mapperHosts ? createMapperLanes({ fileCount, hosts: mapperHosts, runCommand }) : []),
   ];
 }
 
@@ -127,5 +153,69 @@ export function typecheckToolBins(optionalWorkspaceBin) {
     vueTscBin: optionalWorkspaceBin("vue-tsc"),
     verterTscBin: optionalWorkspaceBin("verter-tsc"),
     golarBin: optionalWorkspaceBin("golar"),
+    ...mapperHostBins(),
   };
+}
+
+/**
+ * Gate every lane on the planted diagnostics, then measure the survivors.
+ * `prepareDir` copies the corpus and installs each project's packages.
+ */
+export async function measureTypecheckSurface({
+  files,
+  bytes,
+  options,
+  prepareDir,
+  resolveWorkspaceBin,
+  measureVariants,
+}) {
+  const vizeBin = resolve(options.vizeBin);
+  if (!existsSync(vizeBin)) {
+    throw new Error(`Vize CLI not found: ${vizeBin}`);
+  }
+  // Fail closed: without a resolvable native TypeScript engine `vize check`
+  // is not measuring type checking, and a timing published from it would be
+  // the heuristic-fallback result the upstream vue-benchmarks report hit.
+  if (!options.backend.ready) {
+    throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
+  }
+  const mapperHosts = resolveMapperHosts();
+  const prepareProject = (dir) => {
+    prepareTypecheckPackages(dir);
+    prepareMapperPackages(dir, mapperHosts);
+  };
+  const checkDir = prepareDir(prepareProject);
+  const rejectedVariants = [];
+  const onRejected = (variant, error, phase) =>
+    recordTypecheckRejection(rejectedVariants, variant, error, phase);
+  const variants = gateTypecheckVariants(
+    createTypecheckToolVariants({
+      fileCount: files.length,
+      vizeBin,
+      corsaPath: options.backend.corsaPath,
+      resolveWorkspaceBin,
+      mapperHosts,
+    }),
+    checkDir,
+    prepareProject,
+    onRejected,
+  );
+
+  return createSurface({
+    id: "check",
+    label: "Type check",
+    files: files.length,
+    bytes,
+    variants: (await measureVariants(variants, options, onRejected)).map((measured) => ({
+      ...measured,
+      correctness: variants.find((variant) => variant.id === measured.id).correctness,
+    })),
+    rejectedVariants,
+    baselineId: "vue-tsc",
+    vizeSingleId: "vize-check-1t",
+    vizeMaxId: "vize-check-max",
+    // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
+    // native tsgo. Declaring the classes suppresses the cross-engine ratio.
+    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
+  });
 }

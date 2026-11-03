@@ -3,6 +3,7 @@ import { formatSpeedup, getVariant, renderEngineClassSections } from "./compare-
 import { SNAPSHOT_LOCALES, SURFACE_ORDER, surfaceLabel } from "./published-snapshot-locales.mjs";
 import { diagnosticText } from "./published-snapshot-diagnostics.mjs";
 import { renderProvenanceLines } from "./benchmark-provenance.mjs";
+import { ENGINE_CLASSES } from "./check-gate-report.ts";
 
 export const RESULT_PATH = "tools/benchmarks/results/tool-benchmark-latest.json";
 const REPOSITORY = "https://github.com/ubugeeei-prod/vize";
@@ -58,6 +59,23 @@ export function summaryTable(data, locale, ids = SURFACE_ORDER) {
   );
 }
 
+/** Every gated type-check row: cold, warm and CPU beside the ratio against vue-tsc. */
+export function typecheckTable(surface) {
+  const baseline = getVariant(surface, surface.baselineId);
+  const rows = surface.variants.map((variant) => [
+    variant.label,
+    ENGINE_CLASSES[surface.engineClasses?.[variant.id]] ?? "n/a",
+    formatMs(variant.coldMs),
+    formatMs(variant.medianMs),
+    formatMs(variant.cpuMedianMs),
+    baseline ? formatSpeedup(baseline.medianMs / variant.medianMs).replace("x", "×") : "n/a",
+  ]);
+  return [
+    `Type-check rows on the ${surface.files.toLocaleString("en-US")}-SFC corpus. Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, and CPU is user+sys time of the whole process tree, mapper processes included.`,
+    table(["Checker", "Engine", "Cold", "Warm", "CPU", "vs vue-tsc"], rows),
+  ].join("\n\n");
+}
+
 export function readmeSection(data) {
   const nuxt = data.surfaces.find((surface) => surface.id === "nuxt");
   const tools = {
@@ -83,6 +101,7 @@ export function readmeSection(data) {
     "## Benchmarks",
     provenance(data, "en"),
     table(["Surface", "Files", "Existing tool", "Existing", "Vize", "Speedup"], rows),
+    typecheckTable(data.surfaces.find((surface) => surface.id === "check")),
     SNAPSHOT_LOCALES.en.note,
     `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${formatSpeedup(nuxt.primarySpeedup)}; a ratio below 1 means Vize was slower in this run.`,
     "See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.",
