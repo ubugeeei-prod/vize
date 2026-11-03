@@ -68,14 +68,14 @@ pub(super) fn emit_scope_closures(
             check_options.accepts_vue3_intrinsic_attrs(),
         );
     }
-    super::dynamic_component::emit_dynamic_component_aliases(
-        ts,
+    let dynamic_aliases = super::dynamic_component::DynamicComponentAliases::collect(
         summary,
         options.template_ast,
         options
             .generic_parameters
             .is_some_and(|generics| !generics.parameters.is_empty()),
     );
+    dynamic_aliases.emit_root(ts);
     let template_source = options.template_ast.map(|root| root.source);
     let explicit_generics = ExplicitGenerics::collect(summary, template_source);
     explicit_generics.emit(
@@ -83,7 +83,7 @@ pub(super) fn emit_scope_closures(
         mappings,
         summary,
         template_source,
-        template_offset,
+        (template_offset, &dynamic_aliases),
         |name| {
             component_binding_reference(
                 summary,
@@ -233,6 +233,7 @@ pub(super) fn emit_scope_closures(
         experimental_strict_slot_children: options.experimental_strict_slot_children,
         relaxed_required_usage_starts: &relaxed_required_usage_starts,
         explicit_generics: &explicit_generics,
+        dynamic_aliases: &dynamic_aliases,
     };
     let owned_usages = check_options
         .check_props
@@ -313,6 +314,7 @@ pub(super) fn emit_scope_closures(
             legacy_vue2: options.legacy_vue2,
             hoist_shared_preamble: options.hoist_shared_preamble,
             explicit_generics: &explicit_generics,
+            dynamic_aliases: &dynamic_aliases,
             event_inference_usages: &event_inference_usages,
             event_contracts: &event_contracts,
         };

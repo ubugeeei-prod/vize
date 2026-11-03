@@ -12070,6 +12070,55 @@
       }
     },
     {
+      "id": "typechecker/regression/dynamic-component-scoped-aliases-11491",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "dynamic-component-scoped-aliases-11491/Clean.vue.txt",
+          "sha256": "1377b5271988e1fefec664ac2bcc7d05235526ce13d9da8e17bb489b7be632c5",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-component-scoped-aliases-11491/Errors.vue.txt",
+          "sha256": "49907967279d9bae89d48c0e97c05d25fe7422fd3c947bb8ac1c547ba646b42c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-component-scoped-aliases-11491/Loose.vue.txt",
+          "sha256": "f25c217823190aa3373c328b9f281ab307dd1e23b1b18cf2391c11628b3bcc27",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-component-scoped-aliases-11491/Panel.vue.txt",
+          "sha256": "5693e2cb157c516c3f976a8592ef9a7e853571a093e71d7ec9e5076d754e1d81",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-component-scoped-aliases-11491/Picker.vue.txt",
+          "sha256": "638f88d4262e7907dc480f5591637280153ee3516c2d106e206f407a6cbcba08",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::dynamic_component_scoped_aliases::dynamic_component_targets_follow_the_scope_that_binds_their_names; #11491 <component :is> keys, guards and targets bound by slot props, v-for aliases and nested slots or loops, physically consumed with six negative controls (wrong argument, payload member, listener parameter and prop types). Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/expect-element-coverage-11486",
       "state": "active",
       "targets": [

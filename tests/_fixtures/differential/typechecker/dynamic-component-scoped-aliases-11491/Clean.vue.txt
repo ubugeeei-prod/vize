@@ -1,0 +1,54 @@
+<script setup lang="ts">
+import Picker from "./Picker.vue";
+import Panel from "./Panel.vue";
+import Loose from "./Loose.vue";
+
+const map = { a: Picker, b: Picker };
+const foo = "a" as const;
+const items = [{ kind: "a" as const, open: true, keys: ["b" as const], comp: Picker }];
+const rows = [[{ kind: "b" as const }]];
+const take = (value: string) => value;
+const count = (value: number) => value;
+void count;
+</script>
+
+<template>
+  <Panel v-slot:qux="{ kind, open }">
+    <component :is="map[kind]" @pick="(v) => take(v)" @select="(v) => take(v)" />
+    <component v-if="open" :is="map[foo]" @pick="(v) => take(v)" @select="(v) => take(v)" />
+  </Panel>
+  <component v-for="item in items" :key="item.kind" :is="map[item.kind]" @pick="(v) => take(v)" @select="(v) => take(v)" />
+  <Panel>
+    <template #qux="{ kind: k, open }">
+      <div v-if="open">
+        <component :is="map[k]" :x="1" @pick="(v) => take(v)" />
+      </div>
+      <component v-for="n in 2" :key="n" :is="map[k]" @pick="(v) => take(v)" />
+    </template>
+  </Panel>
+  <template v-for="(item, index) in items" :key="index">
+    <component v-if="item.open" :is="map[item.keys[index]]" @pick="(v) => take(v)" />
+    <Panel>
+      <template #qux="{ open }">
+        <component v-if="open" :is="map[item.kind]" @pick="(v) => take(v)" />
+      </template>
+    </Panel>
+  </template>
+  <div v-for="(row, r) in rows" :key="r">
+    <component v-for="{ kind } in row" :key="kind" :is="map[kind]" @pick="(v) => take(v)" />
+  </div>
+  <Panel #qux="{ kind }">
+    <Panel #qux="{ open }">
+      <component v-if="open" :is="map[kind]" @pick="(v) => take(v)" />
+    </Panel>
+  </Panel>
+  <Panel #qux="{ comp }">
+    <component :is="comp" @pick="(v) => take(v)" />
+  </Panel>
+  <component v-for="item in items" :key="item.kind" :is="item.comp" @pick="(v) => take(v)" />
+  <Loose v-slot="{ comp, node, tag }">
+    <component :is="comp" foo="1" />
+    <component :is="node" class="page" @click="() => {}" />
+    <component :is="tag" href="/x" />
+  </Loose>
+</template>

@@ -28,10 +28,6 @@ pub(super) fn value(
         object.name.as_str(),
         usage.scope_id,
     )?;
-    // The alias cannot shadow the object named by its own type annotation.
-    if object.name == usage.name.as_str() {
-        return None;
-    }
     let mut annotation = vize_carton::cstr!("(typeof {})[", object.name);
     crate::virtual_ts::helpers::push_ts_string_literal(&mut annotation, property);
     annotation.push(']');
@@ -44,11 +40,13 @@ mod tests {
     use vize_carton::{Allocator, cstr};
     use vize_croquis::{Drawer, DrawerOptions};
 
+    // An object spelled like the alias is never admitted, so the annotation
+    // cannot name the alias it declares.
     #[test]
     fn exact_import_annotation_refuses_self_capture() {
         let allocator = Allocator::new();
         for (object, expected) in [
-            ("map", Some("(typeof map)[\"a\"]")),
+            ("map", Some(Some("(typeof map)[\"a\"]"))),
             ("__vize_dynamic_is_0", None),
         ] {
             let template = cstr!("<component :is=\"{object}[foo]\"></component>");
@@ -61,10 +59,12 @@ mod tests {
             drawer.draw_script_setup_with_generic(script.as_str(), Some("K extends 'a' | 'b'"));
             drawer.draw_template(&root);
             let summary = drawer.finish();
-            assert_eq!(summary.component_usages.len(), 1);
             assert_eq!(
-                super::value(&summary, &root, &summary.component_usages[0]).as_deref(),
-                expected
+                summary
+                    .component_usages
+                    .first()
+                    .map(|usage| super::value(&summary, &root, usage)),
+                expected.map(|value| value.map(vize_carton::String::from))
             );
         }
     }

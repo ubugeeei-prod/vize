@@ -222,6 +222,7 @@ pub(super) fn generate_v_slot_scope(
                     append!(*ts, "{inner_indent}void {prop_name};\n");
                 }
             }
+            super::node::emit_scope_usage_bindings(ts, mappings, ctx, scope_id, inner_indent);
 
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings

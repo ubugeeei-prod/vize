@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import Picker from "./Picker.vue";
+import Panel from "./Panel.vue";
+import Loose from "./Loose.vue";
+
+const map = { a: Picker, b: Picker };
+const foo = "a" as const;
+const items = [{ kind: "a" as const, open: true, keys: ["b" as const], comp: Picker }];
+const rows = [[{ kind: "b" as const }]];
+const take = (value: string) => value;
+const count = (value: number) => value;
+void count;
+</script>
+
+<template>
+  <Panel v-slot:qux="{ kind, open }">
+    <component :is="map[kind]" @pick="(v) => count(v)" />
+    <component v-if="open" :is="map[foo]" @pick="(v) => v.toFixed()" />
+  </Panel>
+  <component v-for="item in items" :key="item.kind" :is="map[item.kind]" @pick="(v: number) => v" />
+  <Panel #qux="{ kind }">
+    <component :is="map[kind]" :x="'one'" />
+  </Panel>
+  <Panel #qux="{ comp }">
+    <component :is="comp" @pick="(v) => count(v)" />
+  </Panel>
+  <component v-for="item in items" :key="item.kind" :is="item.comp" @pick="(v) => v.toFixed()" />
+</template>
