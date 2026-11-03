@@ -800,6 +800,128 @@
       ]
     },
     {
+      "id": "formatter/sfc/css-rule-prelude-comments-11774",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-css-rule-prelude-comments-11774",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "316ff9f232e551c24a9214735849e5a776e567b61a8365019be93e8aa8af663d",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "dd8521354b82f41c19706b9332f118af3a4b095b",
+            "role": "fix-and-public-api-regression",
+            "paths": [
+              "crates/vize_glyph/src/style.rs",
+              "crates/vize_glyph/src/style/comment_scan.rs",
+              "crates/vize_glyph/tests/css_comment_boundaries.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "dd8521354b82f41c19706b9332f118af3a4b095b",
+            "path": "crates/vize_glyph/tests/css_comment_boundaries.rs",
+            "symbol": "sfc_style_comments_keep_selector_adjacency"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/css_comment_boundaries.rs",
+          "symbol": "sfc_style_comments_keep_selector_adjacency",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence"
+          ],
+          "limitations": [
+            "SFC output is an unchanged preservation control; comments_inside_rule_preludes_keep_the_authored_css separately reproduces and verifies the direct format_style error repair. Source-built CLI capture remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "css-scoped"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI adapter registers the same commented selector used by the Rust regression.",
+          "native": "No verified native formatter adapter registered for this case; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-css-rule-prelude-comments-11774/reference.expected.txt",
+              "sha256": "316ff9f232e551c24a9214735849e5a776e567b61a8365019be93e8aa8af663d",
+              "role": "existing-test-reference",
+              "provenance": {
+                "revision": "dd8521354b82f41c19706b9332f118af3a4b095b",
+                "path": "crates/vize_glyph/tests/css_comment_boundaries.rs",
+                "symbol": "sfc_style_comments_keep_selector_adjacency",
+                "assertion": "assert_eq!(formatted.as_str(), source);"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; CLI raw logs retained separately"
+          ]
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/directive-expression-indent-width",
       "state": "active",
       "targets": [
