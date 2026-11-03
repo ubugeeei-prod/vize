@@ -49,7 +49,7 @@ const { count, doubled, lastCalculated } = useDouble();
 
 ```
 
-## 悪い
+## 悪い例
 
 `doubled` の評価が `lastCalculated` を書き換え、computed の値を読む操作が別の状態を変更しています。副作用が遅延評価の getter を読むタイミングに依存します。
 
@@ -70,7 +70,7 @@ export function useDouble() {
 
 ```
 
-## 良い
+## 良い例
 
 getter は導出した数値だけを返します。`count` の変更時に `lastCalculated` を書く処理は、初期値も含めて別の watcher に任せます。
 

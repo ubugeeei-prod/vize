@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `props` オブジェクトを通常の分割代入で展開すると、現在の `item` の値を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。
 
@@ -74,7 +74,7 @@ const { item } = props;
 </script>
 ```
 
-## 良い
+## 良い例
 
 `toRef(props, "item")` を使い、`props` のプロパティとのつながりを保ちます。
 

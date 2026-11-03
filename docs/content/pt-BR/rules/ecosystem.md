@@ -1,26 +1,32 @@
 ---
-title: "Regras do Ecossistema"
+title: "Regras do ecossistema e Nuxt"
+description: "Verificações para projetos com Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils e Void Vue."
 ---
 
-# Regras do Ecossistema
+# Regras do ecossistema e Nuxt
 
-Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
+Verificações para projetos com Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils e Void Vue.
 
+Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 
-| Regra | Exemplos | Finalidade |
-| --- | --- | --- |
-| [`ecosystem/nuxt-prefer-nuxt-link`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link-good) | Preferir NuxtLink para links internos da aplicação |
-| [`ecosystem/pinia-prefer-store-to-refs`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs-good) | Preferir storeToRefs() ao desestruturar stores do Pinia |
-| [`ecosystem/router-link-require-to`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-router-link-require-to) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-router-link-require-to-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-router-link-require-to-good) | Exigir um destino `to` nos componentes RouterLink e NuxtLink |
-| [`ecosystem/void-link-require-href`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-require-href) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-require-href-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-require-href-good) | Exigir `href` nos componentes Link do Void Vue |
-| [`ecosystem/void-link-valid-method`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-valid-method) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-valid-method-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-void-link-valid-method-good) | Validar props method estáticas do Link do Void Vue |
-| [`ecosystem/vue-i18n-no-missing-key`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key-good) | Relatar chaves estáticas do vue-i18n ausentes nas mensagens locais do SFC |
-| [`ecosystem/vue-router-prefer-named-link`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-good) | Preferir objetos de rotas nomeadas a strings de caminho estáticas no RouterLink |
-| [`ecosystem/vue-router-prefer-named-push`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-good) | Preferir objetos de rotas nomeadas para navegação programática com Vue Router |
-| [`ecosystem/vue-test-utils-no-html-snapshot`](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-good) | Evitar snapshots de wrapper.html() nos testes com Vue Test Utils |
-| [`nuxt/no-nuxt-config-test-key`](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-nuxt-config-test-key) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-good) | Proibir a definição da chave `test` na configuração do Nuxt |
-| [`nuxt/no-page-meta-runtime-values`](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-page-meta-runtime-values) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-good) | Proibir valores do contexto de execução no nível de avaliação imediata de `definePageMeta`, que é extraído para um fragmento separado durante a compilação e executado antes do setup do componente |
-| [`nuxt/nuxt-config-keys-order`](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-nuxt-config-keys-order) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-nuxt-config-keys-order-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-nuxt-config-keys-order-good) | Preferir a ordem recomendada das propriedades de configuração do Nuxt |
-| [`nuxt/prefer-import-meta`](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-prefer-import-meta) | [Incorreto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-prefer-import-meta-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ecosystem.html#nuxt-prefer-import-meta-good) | Preferir `import.meta.*` a `process.*` |
+## Predefinições mais rígidas (13)
 
-[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)
+Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra quais.
+
+| Regra | O que verifica | Predefinições | Correção automática |
+| --- | --- | --- | --- |
+| <span id="ecosystem-nuxt-prefer-nuxt-link"></span>[`ecosystem/nuxt-prefer-nuxt-link`](./reference/ecosystem-nuxt-prefer-nuxt-link.md) | Preferir NuxtLink para links internos da aplicação. | `nuxt` |  |
+| <span id="ecosystem-pinia-prefer-store-to-refs"></span>[`ecosystem/pinia-prefer-store-to-refs`](./reference/ecosystem-pinia-prefer-store-to-refs.md) | Preferir storeToRefs() ao desestruturar stores do Pinia. | `ecosystem` |  |
+| <span id="ecosystem-router-link-require-to"></span>[`ecosystem/router-link-require-to`](./reference/ecosystem-router-link-require-to.md) | Exigir um destino `to` nos componentes RouterLink e NuxtLink. | `ecosystem` |  |
+| <span id="ecosystem-void-link-require-href"></span>[`ecosystem/void-link-require-href`](./reference/ecosystem-void-link-require-href.md) | Exigir `href` nos componentes Link do Void Vue. | `ecosystem` |  |
+| <span id="ecosystem-void-link-valid-method"></span>[`ecosystem/void-link-valid-method`](./reference/ecosystem-void-link-valid-method.md) | Validar props method estáticas do Link do Void Vue. | `ecosystem` |  |
+| <span id="ecosystem-vue-i18n-no-missing-key"></span>[`ecosystem/vue-i18n-no-missing-key`](./reference/ecosystem-vue-i18n-no-missing-key.md) | Relatar chaves estáticas do vue-i18n ausentes nas mensagens locais do SFC. | `ecosystem` |  |
+| <span id="ecosystem-vue-router-prefer-named-link"></span>[`ecosystem/vue-router-prefer-named-link`](./reference/ecosystem-vue-router-prefer-named-link.md) | Preferir objetos de rotas nomeadas a strings de caminho estáticas no RouterLink. | `ecosystem` |  |
+| <span id="ecosystem-vue-router-prefer-named-push"></span>[`ecosystem/vue-router-prefer-named-push`](./reference/ecosystem-vue-router-prefer-named-push.md) | Preferir objetos de rotas nomeadas para navegação programática com Vue Router. | `ecosystem` |  |
+| <span id="ecosystem-vue-test-utils-no-html-snapshot"></span>[`ecosystem/vue-test-utils-no-html-snapshot`](./reference/ecosystem-vue-test-utils-no-html-snapshot.md) | Evitar snapshots de wrapper.html() nos testes com Vue Test Utils. | `ecosystem` |  |
+| <span id="nuxt-no-nuxt-config-test-key"></span>[`nuxt/no-nuxt-config-test-key`](./reference/nuxt-no-nuxt-config-test-key.md) | Proibir a definição da chave `test` na configuração do Nuxt. | `nuxt` |  |
+| <span id="nuxt-no-page-meta-runtime-values"></span>[`nuxt/no-page-meta-runtime-values`](./reference/nuxt-no-page-meta-runtime-values.md) | Proibir valores do contexto de execução no nível de avaliação imediata de `definePageMeta`, que é extraído para um fragmento separado durante a compilação e executado antes do setup do componente. | `nuxt` |  |
+| <span id="nuxt-nuxt-config-keys-order"></span>[`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | Preferir a ordem recomendada das propriedades de configuração do Nuxt. | `nuxt` | ✓ |
+| <span id="nuxt-prefer-import-meta"></span>[`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | Preferir `import.meta.*` a `process.*`. | `nuxt` | ✓ |
+
+[Visão geral das regras](../rules/index.md) · [Opções das regras](/rules/options.md) · [Migração do ESLint](/rules/migration.md)

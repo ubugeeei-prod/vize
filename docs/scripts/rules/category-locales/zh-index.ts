@@ -15,4 +15,3 @@ export const chinesePackets: Record<string, readonly [string, string, string]> =
 };
 
 export { chineseShared } from "./zh-shared.ts";
-export { chineseCategoryTitles, chineseCategoryIntro, chineseCrossFileIntro } from "./zh-labels.ts";

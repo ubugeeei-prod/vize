@@ -7,6 +7,17 @@ import { verifyVisualTheme } from "./visual-theme-render-assertions.ts";
 const annotationSource =
   'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
 
+/** Resolve once every animation reaches its end. Runs in the page, so it stays self-contained. */
+export async function waitForAnimations(animations: Animation[]) {
+  // Chromium never settles `finished` for animations in skipped content, such as a
+  // closed <details>, though their timing still ends. Poll the timing instead.
+  while (!animations.every((animation) => animation.playState === "finished")) {
+    if (animations.some((animation) => animation.playState === "idle"))
+      throw new Error("An animation was cancelled before it finished");
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
 export async function verifySidebarMotion(page: Page, device: string) {
   const sidebar = page.locator(".sidebar");
   if (!(await sidebar.count()) || (await page.locator("body.entry-page").count())) return;
@@ -80,16 +91,21 @@ export async function verifySidebarMotion(page: Page, device: string) {
     const summary = page.locator("[data-render-motion-control]");
     await summary.focus();
     // Measure intermediate rendered geometry, rather than merely checking CSS text.
-    const frames = await summary.evaluate(async (element) => {
+    const opening = await summary.evaluateHandle(async (element) => {
       const section = element.parentElement as HTMLDetailsElement;
-      const list = section.querySelector("ul")!;
       element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       );
-      const intermediate = section.getBoundingClientRect().height;
-      const animations = section.getAnimations({ subtree: true });
-      await Promise.all(animations.map((animation) => animation.finished));
+      return {
+        intermediate: section.getBoundingClientRect().height,
+        animations: section.getAnimations({ subtree: true }),
+      };
+    });
+    await (await opening.getProperty("animations")).evaluate(waitForAnimations);
+    const frames = await summary.evaluate((element, { intermediate, animations }) => {
+      const section = element.parentElement as HTMLDetailsElement;
+      const list = section.querySelector("ul")!;
       return {
         intermediate,
         expanded: section.getBoundingClientRect().height,
@@ -99,7 +115,8 @@ export async function verifySidebarMotion(page: Page, device: string) {
         supported: CSS.supports("interpolate-size", "allow-keywords"),
         open: section.open,
       };
-    });
+    }, opening);
+    await opening.dispose();
     assert.equal(frames.open, true);
     if (frames.supported) {
       assert(frames.animations > 0, "Native disclosure must animate");
@@ -206,14 +223,13 @@ export async function verifyThemeReadability(page: Page) {
     { html: annotation.html, source: annotationSource, paletteHtml: palette.html },
   );
   await verifyVisualTheme(page);
-  await page.evaluate(async () => {
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
-        .map((animation) => animation.finished),
-    );
-  });
+  const animations = await page.evaluateHandle(() =>
+    document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity),
+  );
+  await animations.evaluate(waitForAnimations);
+  await animations.dispose();
   const contrast = await page.evaluate(() => {
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;

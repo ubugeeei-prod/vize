@@ -1,18 +1,45 @@
 ---
 title: "vue/no-use-v-if-with-v-for"
+description: "Disallow using `v-if` on the same element as `v-for`."
 ---
 
 # `vue/no-use-v-if-with-v-for`
 
-Disallow using `v-if` on the same element as `v-for`
+Disallow using `v-if` on the same element as `v-for`.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The same list element combines v-if and v-for and tests visibility through the loop binding.
+
+```vue annotate="remove:2"
+<template>
+  <li v-for="item in items" v-if="item.visible" :key="item.id">
+    {{ item.name }}
+  </li>
+</template>
+```
+
+## Good
+
+A computed collection filters the visible items before the template iterates over them.
+
+```vue annotate="add:1,2,3,4,6"
+<script setup lang="ts">
+const visibleItems = computed(() => items.filter((item) => item.visible));
+</script>
+
+<template>
+  <li v-for="item in visibleItems" :key="item.id">
+    {{ item.name }}
+  </li>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The same list element combines v-if and v-for and tests visibility through the loop binding.
-
-```vue
-<template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-## Good
-
-A computed collection filters the visible items before the template iterates over them.
-
-```vue
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
-<template>
-  <li v-for="item in visibleItems" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35)

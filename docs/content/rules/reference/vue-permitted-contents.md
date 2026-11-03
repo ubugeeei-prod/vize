@@ -1,18 +1,42 @@
 ---
 title: "vue/permitted-contents"
+description: "Enforce HTML content model rules."
 ---
 
 # `vue/permitted-contents`
 
-Enforce HTML content model rules
+Enforce HTML content model rules.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.
+
+```vue annotate="remove:2,3,4,5"
+<template>
+  <p><div>block in a paragraph</div></p>
+  <table><tr><td>row without tbody</td></tr></table>
+  <a href="#"><button type="button">nested control</button></a>
+  <ul><div>not a list item</div></ul>
+</template>
+```
+
+## Good
+
+The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.
+
+```vue annotate="add:2,3,4"
+<template>
+  <p><span>inline in a paragraph</span></p>
+  <table><tbody><tr><td>cell</td></tr></tbody></table>
+  <ul><li>list item</li><MyItem /></ul>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,35 +55,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.
-
-```vue
-<template>
-  <p><div>block in a paragraph</div></p>
-  <table><tr><td>row without tbody</td></tr></table>
-  <a href="#"><button type="button">nested control</button></a>
-  <ul><div>not a list item</div></ul>
-</template>
-```
-
-## Good
-
-The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.
-
-```vue
-<template>
-  <p><span>inline in a paragraph</span></p>
-  <table><tbody><tr><td>cell</td></tr></tbody></table>
-  <ul><li>list item</li><MyItem /></ul>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56)

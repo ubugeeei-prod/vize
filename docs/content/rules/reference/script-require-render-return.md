@@ -1,18 +1,47 @@
 ---
 title: "script/require-render-return"
+description: "Require the component render function to return a value."
 ---
 
 # `script/require-render-return`
 
-Require the component render function to return a value
+Require the component render function to return a value.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The `render` function reads `this.count` inside a branch and never returns a value.
+
+```vue annotate="remove:4,5,6"
+<script lang="ts">
+export default {
+  render() {
+    if (this.ready) {
+      this.count
+    }
+  }
+}
+</script>
+```
+
+## Good
+
+The `render` function returns `this.count`.
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.count
+  }
+}
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,40 +60,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `render` function reads `this.count` inside a branch and never returns a value.
-
-```vue
-<script lang="ts">
-export default {
-  render() {
-    if (this.ready) {
-      this.count
-    }
-  }
-}
-</script>
-```
-
-## Good
-
-The `render` function returns `this.count`.
-
-```vue
-<script lang="ts">
-export default {
-  render() {
-    return this.count
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35)

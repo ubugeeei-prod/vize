@@ -1,18 +1,37 @@
 ---
 title: "vue/require-component-is"
+description: "動的 component 要素に :is を指定します。"
 ---
 
 # `vue/require-component-is`
 
 動的 component 要素に :is を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+動的な `<component>` に `is` がなく、描画するコンポーネントを選べません。
+
+```vue annotate="remove:2"
+<template>
+  <component />
+</template>
+```
+
+## 良い例
+
+`:is="currentComponent"` で描画対象を指定します。対象は実行時に変更できます。
+
+```vue annotate="add:2"
+<template>
+  <component :is="currentComponent" />
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-動的な `<component>` に `is` がなく、描画するコンポーネントを選べません。
-
-```vue
-<template>
-  <component />
-</template>
-```
-
-## 良い
-
-`:is="currentComponent"` で描画対象を指定します。対象は実行時に変更できます。
-
-```vue
-<template>
-  <component :is="currentComponent" />
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27)

@@ -1,16 +1,22 @@
 ---
 title: "petite-vue ルール"
+description: "petite-vue を使う HTML ページのディレクティブとスコープを検査します。"
 ---
 
 # petite-vue ルール
 
-このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
+petite-vue を使う HTML ページのディレクティブとスコープを検査します。
 
+各ルールのページに、診断が出る例・出ない例と、そのルールを有効にする設定があります。
 
-| ルール | 例 | 目的 |
+## 個別に有効化 (3)
+
+どのプリセットにも含まれません。`vue.linter.rules` でルール名を指定して有効にします。
+
+| ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
-| [`petite-vue/no-unsupported-directive`](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-no-unsupported-directive) | [悪い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-no-unsupported-directive-bad) · [良い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-no-unsupported-directive-good) | petite-vue が対応しないディレクティブを検出します。 |
-| [`petite-vue/valid-v-effect`](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-effect) | [悪い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-effect-bad) · [良い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-effect-good) | v-effect に空でない式を指定します。 |
-| [`petite-vue/valid-v-scope`](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-scope) | [悪い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-scope-bad) · [良い](https://vizejs.dev/ja/rules/petite-vue.html#petite-vue-valid-v-scope-good) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 |
+| <span id="petite-vue-no-unsupported-directive"></span>[`petite-vue/no-unsupported-directive`](./reference/petite-vue-no-unsupported-directive.md) | petite-vue が対応しないディレクティブを検出します。 |  |
+| <span id="petite-vue-valid-v-effect"></span>[`petite-vue/valid-v-effect`](./reference/petite-vue-valid-v-effect.md) | v-effect に空でない式を指定します。 |  |
+| <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 |  |
 
-[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[ルールの概要](../rules/index.md) · [ルールのオプション](./options.md) · [ESLint からの移行](./migration.md)

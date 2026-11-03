@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `Child.vue` が `save` を emit しますが、直接の親である `Wrapper.vue` はそのイベントを購読していません。コンポーネントのイベントは、ラッパーを越えて自動的に親へ伝播しません。
 
@@ -64,7 +64,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 `Wrapper.vue` が直接の子に `save` のリスナーを付けます。空のコールバックは、このルールでイベントを受け取る例を示すためのもので、保存処理の実装全体ではありません。
 

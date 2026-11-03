@@ -1,18 +1,42 @@
 ---
 title: "vue/v-on-handler-style"
+description: "イベントハンドラーの書き方を参照または関数の形式に揃えます。"
 ---
 
 # `vue/v-on-handler-style`
 
 イベントハンドラーの書き方を参照または関数の形式に揃えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+イベント属性の中に変更処理や複数の文を直接記述しています。
+
+```vue annotate="remove:2,3,4"
+<template>
+<button @click="count++"></button>
+<button @click="doThis(); doThat()"></button>
+<button @click="foo = bar"></button>
+</template>
+```
+
+## 良い例
+
+handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。
+
+```vue annotate="add:2,3,4,5"
+<template>
+<button @click="handler"></button>
+<button @click="foo.bar"></button>
+<button @click="() => count++"></button>
+<button @click="function () { count++ }"></button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,35 +55,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-イベント属性の中に変更処理や複数の文を直接記述しています。
-
-```vue
-<template>
-<button @click="count++"></button>
-<button @click="doThis(); doThat()"></button>
-<button @click="foo = bar"></button>
-</template>
-```
-
-## 良い
-
-handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。
-
-```vue
-<template>
-<button @click="handler"></button>
-<button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)

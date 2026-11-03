@@ -44,7 +44,7 @@ export function readLabel(node: HTMLElement | null): string {
 
 ```
 
-## 悪い
+## 悪い例
 
 クリック処理が `count` を増やしてすぐ段落の DOM を読み、Vue による更新の反映を待っていません。`sampled` に前の count が入る可能性があります。
 
@@ -69,7 +69,7 @@ function increment() {
 
 ```
 
-## 良い
+## 良い例
 
 状態を更新した後に `nextTick()` を待ち、Vue が段落を更新してから `readLabel` でテキストを読みます。
 

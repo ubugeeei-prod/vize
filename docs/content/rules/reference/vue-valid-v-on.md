@@ -1,18 +1,17 @@
 ---
 title: "vue/valid-v-on"
+description: "Enforce valid `v-on` directives."
 ---
 
 # `vue/valid-v-on`
 
-Enforce valid `v-on` directives
+Enforce valid `v-on` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 ## Modifier validation
 
@@ -36,6 +35,35 @@ export default defineConfig({}).withVue({
 This allows `@click.custom="handler"`. Names are exact and case-sensitive; options supplement the built-in names and do not enable a disabled rule. Scoped config entries can replace inherited names with a new list or reset them with `[]`.
 
 The keyboard table is adapted from the MIT-licensed [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json). Its source and license are preserved alongside the implementation.
+
+## Bad
+
+The listener forms omit an event argument or their required handler/object expression.
+
+```vue annotate="remove:2,3,4,5,6,7"
+<template>
+  <div v-on></div>
+  <div @></div>
+  <div @click></div>
+  <div @click.sync="handleClick"></div>
+  <div @click.nativeish="handleClick"></div>
+  <div @click.once></div>
+</template>
+```
+
+## Good
+
+Use an event with its handler, or pass a listener object to argument-free `v-on`.
+
+```vue annotate="add:2,3,4,5,6"
+<template>
+  <div @click="handleClick"></div>
+  <form @submit.prevent></form>
+  <input @keyup.page-down="handlePageDown" />
+  <input @keyup.あ="handleKey" />
+  <div v-on="{ click: handleClick }"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -61,39 +89,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The listener forms omit an event argument or their required handler/object expression.
-
-```vue
-<template>
-  <div v-on></div>
-  <div @></div>
-  <div @click></div>
-  <div @click.sync="handleClick"></div>
-  <div @click.nativeish="handleClick"></div>
-  <div @click.once></div>
-</template>
-```
-
-## Good
-
-Use an event with its handler, or pass a listener object to argument-free `v-on`.
-
-```vue
-<template>
-  <div @click="handleClick"></div>
-  <form @submit.prevent></form>
-  <input @keyup.page-down="handlePageDown" />
-  <input @keyup.あ="handleKey" />
-  <div v-on="{ click: handleClick }"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30)

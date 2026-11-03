@@ -1,18 +1,42 @@
 ---
 title: "vue/valid-v-slot"
+description: "Enforce valid `v-slot` directives."
 ---
 
 # `vue/valid-v-slot`
 
-Enforce valid `v-slot` directives
+Enforce valid `v-slot` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The slot directive is on a native `<div>` or conflicts with other default/named slot declarations.
+
+```vue annotate="remove:2,3,4"
+<template>
+  <div v-slot:header></div>
+  <MyComponent v-slot v-slot:header />
+  <template v-slot:header v-slot:footer />
+</template>
+```
+
+## Good
+
+Declare a component's default slot on that component, or its named slot on a child `<template #header>`.
+
+```vue annotate="add:2,3,4,5"
+<template>
+  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
+  <MyComponent>
+    <template #header>Header</template>
+  </MyComponent>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,35 +55,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The slot directive is on a native `<div>` or conflicts with other default/named slot declarations.
-
-```vue
-<template>
-  <div v-slot:header></div>
-  <MyComponent v-slot v-slot:header />
-  <template v-slot:header v-slot:footer />
-</template>
-```
-
-## Good
-
-Declare a component's default slot on that component, or its named slot on a child `<template #header>`.
-
-```vue
-<template>
-  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
-  <MyComponent>
-    <template #header>Header</template>
-  </MyComponent>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29)

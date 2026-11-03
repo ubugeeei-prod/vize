@@ -73,7 +73,7 @@ provide(countKey, count);
 </template>
 ```
 
-## 悪い
+## 悪い例
 
 App が count（A）を保持して provide します。CycleView は nextCount（B）を computed で求め、watch でその値を同じ inject 済みの count に書き戻します。immediate の実行後も計算の入力が更新され続けるため、A → B → A の更新の循環になります。下の参照グラフはこの二つの参照を表し、同名の無関係な変数をつなぐものではありません。
 
@@ -95,7 +95,7 @@ Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B; B -> A
 ```
 
-## 良い
+## 良い例
 
 B の値を A に書き戻す watch を取り除きます。count は App が保持し、明示的な Increment 操作でだけ変更します。CycleView は nextCount を読み取るだけで計算結果を書き戻しません。同じ二つの参照には A → B の依存だけが残ります。
 

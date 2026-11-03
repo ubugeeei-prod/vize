@@ -1,22 +1,43 @@
 ---
 title: "type/strict-boolean-expressions"
+description: "script とテンプレートの条件式で安全な真偽判定を使います。"
 ---
 
 # `type/strict-boolean-expressions`
 
 script とテンプレートの条件式で安全な真偽判定を使います。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。
 
 typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
+このルールは TypeScript プロジェクト（`tsconfig.json`）の型情報を使うため、設定で `typeAware: true` を指定しています。`typeAware` だけでは、個別に有効化するルールは有効になりません。
+
+## 悪い例
+
+`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。
+
+```vue annotate="remove:3"
+<script setup lang="ts">
+const count: number | undefined = undefined;
+if (count) console.log(count);
+</script>
+```
+
+## 良い例
+
+`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。
+
+```vue annotate="add:3"
+<script setup lang="ts">
+const count: number | undefined = undefined;
+if (count !== undefined && count > 0) console.log(count);
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -36,32 +57,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。
-
-```vue
-<script setup lang="ts">
-const count: number | undefined = undefined;
-if (count) console.log(count);
-</script>
-```
-
-## 良い
-
-`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。
-
-```vue
-<script setup lang="ts">
-const count: number | undefined = undefined;
-if (count !== undefined && count > 0) console.log(count);
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7)

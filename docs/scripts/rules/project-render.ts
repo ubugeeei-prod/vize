@@ -238,8 +238,8 @@ function fixture(example: ProjectExample, ja: boolean) {
   };
   files(example.shared ?? {});
   for (const [key, title] of [
-    ["bad", label("Bad", "悪い")],
-    ["good", label("Good", "良い")],
+    ["bad", label("Bad", "悪い例")],
+    ["good", label("Good", "良い例")],
   ] as const) {
     lines.push(`## ${title}`, "");
     const rationale = example[`${key}Explanation`]?.[ja ? "ja" : "en"];

@@ -1,45 +1,23 @@
 ---
 title: "script/require-prop-types"
+description: "Require every prop to declare a type."
 ---
 
 # `script/require-prop-types`
 
-Require every prop to declare a type
+Require every prop to declare a type.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-## Configuration (Vite+)
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-prop-types": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
 ## Bad
 
 The array entry declares only the name `status`; the `null` value and empty descriptor declare no runtime prop type either.
 
-```vue
+```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
 export default {
   props: ['status']            // array form: no types
@@ -58,7 +36,7 @@ export default {
 
 `status: String` supplies a shorthand constructor, and `other` supplies `type: Number` inside its descriptor. Both props now carry type declarations.
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
   props: {
@@ -69,6 +47,27 @@ export default {
 </script>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+## Configuration (Vite+)
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [All rules](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-prop-types": "error"
+      }
+    },
+  },
+});
+```
+
+Then run `vp run lint`.
+
+## Related
+
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58)

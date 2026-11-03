@@ -1,18 +1,43 @@
 ---
 title: "css/no-display-none"
+description: "表示切り替えに display: none を使う箇所で v-show を検討します。"
 ---
 
 # `css/no-display-none`
 
 表示切り替えに display: none を使う箇所で v-show を検討します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+
+## 悪い例
+
+このコンポーネントの p 要素を `.message` の CSS で非表示にし、テンプレートには表示条件を指定していません。
+
+```vue annotate="remove:2,4,5,6,7,8,9"
+<template>
+  <p class="message">Saved</p>
+</template>
+
+<style scoped>
+.message {
+  display: none;
+}
+</style>
+```
+
+## 良い例
+
+同じ p に `v-show="isSaved"` で表示条件を指定し、display: none を取り除きます。
+
+```vue annotate="add:2"
+<template>
+  <p v-show="isSaved" class="message">Saved</p>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,36 +56,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-このコンポーネントの p 要素を `.message` の CSS で非表示にし、テンプレートには表示条件を指定していません。
-
-```vue
-<template>
-  <p class="message">Saved</p>
-</template>
-
-<style scoped>
-.message {
-  display: none;
-}
-</style>
-```
-
-## 良い
-
-同じ p に `v-show="isSaved"` で表示条件を指定し、display: none を取り除きます。
-
-```vue
-<template>
-  <p v-show="isSaved" class="message">Saved</p>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [全ルール](../all.md)
+- [Musea と CSS のルール](../musea-and-css.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27)

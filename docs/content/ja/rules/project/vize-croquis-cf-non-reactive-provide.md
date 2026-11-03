@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `ThemeProvider.vue` が通常のオブジェクトを provide しています。そのフィールドを変更しても、inject 側が追跡できる Vue のリアクティブな依存関係にはなりません。
 
@@ -84,7 +84,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-## 良い
+## 良い例
 
 提供する theme を `ref` で包み、inject する同じ参照で後の変更を追跡します。
 

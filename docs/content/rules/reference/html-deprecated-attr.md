@@ -1,18 +1,36 @@
 ---
 title: "html/deprecated-attr"
+description: "Disallow deprecated HTML attributes."
 ---
 
 # `html/deprecated-attr`
 
-Disallow deprecated HTML attributes
+Disallow deprecated HTML attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The paragraph uses the deprecated presentational `align` attribute.
+
+```vue annotate="remove:1,2,3"
+<template>
+<p align="center">Notice</p>
+</template>
+```
+
+## Good
+
+The class and `text-align: center` declaration express the alignment through CSS.
+
+```vue annotate="add:1,2"
+<template><p class="notice">Notice</p></template>
+<style scoped>.notice { text-align: center; }</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,29 +49,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The paragraph uses the deprecated presentational `align` attribute.
-
-```vue
-<template>
-<p align="center">Notice</p>
-</template>
-```
-
-## Good
-
-The class and `text-align: center` declaration express the alignment through CSS.
-
-```vue
-<template><p class="notice">Notice</p></template>
-<style scoped>.notice { text-align: center; }</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [All rules](../all.md)
+- [HTML rules](../html.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32)

@@ -63,7 +63,7 @@ const archivedName = latestName();
 
 ```
 
-## 悪い
+## 悪い例
 
 archive は `publish` に渡した同じオブジェクトを保持します。その後で所有側が名前を変更し、過去の記録まで Grace に変わります。TypeScript の Readonly 引数はオブジェクトをコピーしません。
 
@@ -80,7 +80,7 @@ export function publishProfile(): void {
 
 ```
 
-## 良い
+## 良い例
 
 通常のコピーを公開し、保存した Ada の記録と後のリアクティブな profile の変更を分離します。archive のスナップショット方針を保てるようになります。
 

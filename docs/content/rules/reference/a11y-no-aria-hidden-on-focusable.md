@@ -1,18 +1,37 @@
 ---
 title: "a11y/no-aria-hidden-on-focusable"
+description: "Disallow aria-hidden=\"true\" on focusable elements."
 ---
 
 # `a11y/no-aria-hidden-on-focusable`
 
-Disallow aria-hidden="true" on focusable elements
+Disallow aria-hidden="true" on focusable elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.
+
+```vue annotate="remove:2"
+<template>
+  <button aria-hidden="true" @click="close">Close</button>
+</template>
+```
+
+## Good
+
+The button remains exposed and receives a `Close` label instead of being hidden.
+
+```vue annotate="add:2"
+<template>
+  <button aria-label="Close" @click="close">Close</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.
-
-```vue
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
-
-## Good
-
-The button remains exposed and receives a `Close` label instead of being hidden.
-
-```vue
-<template>
-  <button aria-label="Close" @click="close">Close</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19)

@@ -1,18 +1,37 @@
 ---
 title: "html/no-duplicate-class"
+description: "Disallow duplicate class names in a static class attribute."
 ---
 
 # `html/no-duplicate-class`
 
-Disallow duplicate class names in a static class attribute
+Disallow duplicate class names in a static class attribute.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The static class list repeats the `btn` token.
+
+```vue annotate="remove:2"
+<template>
+  <div class="btn btn primary">click</div>
+</template>
+```
+
+## Good
+
+The class list keeps one `btn` token and the distinct `primary` token.
+
+```vue annotate="add:2"
+<template>
+  <div class="btn primary">click</div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The static class list repeats the `btn` token.
-
-```vue
-<template>
-  <div class="btn btn primary">click</div>
-</template>
-```
-
-## Good
-
-The class list keeps one `btn` token and the distinct `primary` token.
-
-```vue
-<template>
-  <div class="btn primary">click</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [All rules](../all.md)
+- [HTML rules](../html.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32)

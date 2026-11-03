@@ -1,18 +1,37 @@
 ---
 title: "a11y/anchor-has-content"
+description: "Require anchor elements to have accessible content."
 ---
 
 # `a11y/anchor-has-content`
 
-Require anchor elements to have accessible content
+Require anchor elements to have accessible content.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The `/settings` link has no text or other naming content, so its destination has no accessible description.
+
+```vue annotate="remove:2"
+<template>
+  <a href="/settings"></a>
+</template>
+```
+
+## Good
+
+The visible `Settings` text supplies content for the same destination link.
+
+```vue annotate="add:2"
+<template>
+  <a href="/settings">Settings</a>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `/settings` link has no text or other naming content, so its destination has no accessible description.
-
-```vue
-<template>
-  <a href="/settings"></a>
-</template>
-```
-
-## Good
-
-The visible `Settings` text supplies content for the same destination link.
-
-```vue
-<template>
-  <a href="/settings">Settings</a>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16)

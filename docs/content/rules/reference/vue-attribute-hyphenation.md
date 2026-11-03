@@ -1,18 +1,37 @@
 ---
 title: "vue/attribute-hyphenation"
+description: "Enforce attribute naming style on custom components."
 ---
 
 # `vue/attribute-hyphenation`
 
-Enforce attribute naming style on custom components
+Enforce attribute naming style on custom components.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The component attribute uses the camelCase spelling firstName.
+
+```vue annotate="remove:2"
+<template>
+<UserCard firstName="Ada" />
+</template>
+```
+
+## Good
+
+The first-name spelling follows the configured hyphenated component-attribute convention.
+
+```vue annotate="add:2"
+<template>
+<UserCard first-name="Ada" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The component attribute uses the camelCase spelling firstName.
-
-```vue
-<template>
-<UserCard firstName="Ada" />
-</template>
-```
-
-## Good
-
-The first-name spelling follows the configured hyphenated component-attribute convention.
-
-```vue
-<template>
-<UserCard first-name="Ada" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L32) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L32)

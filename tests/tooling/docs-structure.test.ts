@@ -21,9 +21,7 @@ const walk = (directory: string): string[] =>
   });
 
 /** English and Japanese authored pages; other locales and generated catalogues are excluded. */
-const authored = walk(content).filter(
-  (path) => !/\/content\/(?:generated|i18n|fr|zh-CN|pt-BR)\//.test(path),
-);
+const authored = walk(content).filter((path) => !/\/content\/(?:i18n|fr|zh-CN|pt-BR)\//.test(path));
 const english = authored.filter((path) => !path.startsWith(join(content, "ja/")));
 const withoutFences = (source: string) => source.replace(/^```[\s\S]*?^```/gm, "");
 
@@ -100,6 +98,12 @@ test("relative links point at existing pages and assets", () => {
       if (/^(?:[a-z]+:|#|\/\/)/.test(href)) continue;
       const target = href.split(/[#?]/)[0];
       if (!target) continue;
+      // A page renders as `<name>/index.html`, so a sibling `index.md` link from any
+      // page but an index renders as a link to the page itself.
+      assert.ok(
+        !/^(?:\.\/)?index\.md$/.test(target) || path.endsWith("/index.md"),
+        `${path.slice(root.length + 1)} links to ${href}, which renders as a link to itself`,
+      );
       const file = target.startsWith("/") ? join(content, target) : resolve(dirname(path), target);
       checked += 1;
       if (generatedTarget(file)) continue;

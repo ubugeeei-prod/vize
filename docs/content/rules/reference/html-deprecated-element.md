@@ -1,18 +1,37 @@
 ---
 title: "html/deprecated-element"
+description: "Disallow deprecated HTML elements."
 ---
 
 # `html/deprecated-element`
 
-Disallow deprecated HTML elements
+Disallow deprecated HTML elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The `center` element uses a deprecated HTML presentation element.
+
+```vue annotate="remove:2"
+<template>
+  <center>Profile</center>
+</template>
+```
+
+## Good
+
+A section and a styling class replace the deprecated element while preserving the content.
+
+```vue annotate="add:2"
+<template>
+  <section class="profile">Profile</section>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `center` element uses a deprecated HTML presentation element.
-
-```vue
-<template>
-  <center>Profile</center>
-</template>
-```
-
-## Good
-
-A section and a styling class replace the deprecated element while preserving the content.
-
-```vue
-<template>
-  <section class="profile">Profile</section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [All rules](../all.md)
+- [HTML rules](../html.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33)

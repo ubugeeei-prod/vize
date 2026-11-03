@@ -1,18 +1,38 @@
 ---
 title: "vue/no-unsandboxed-iframe"
+description: "Require a sandbox attribute on iframe elements."
 ---
 
 # `vue/no-unsandboxed-iframe`
 
-Require a sandbox attribute on iframe elements
+Require a sandbox attribute on iframe elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The embedded frame has no sandbox attribute limiting its capabilities.
+
+```vue annotate="remove:2"
+<template>
+<iframe src="/embed"></iframe>
+</template>
+```
+
+## Good
+
+sandbox applies restrictions; allow-scripts explicitly opts into that one capability when needed.
+
+```vue annotate="add:2,3"
+<template>
+<iframe src="/embed" sandbox></iframe>
+<iframe src="/embed" sandbox="allow-scripts"></iframe>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The embedded frame has no sandbox attribute limiting its capabilities.
-
-```vue
-<template>
-<iframe src="/embed"></iframe>
-</template>
-```
-
-## Good
-
-sandbox applies restrictions; allow-scripts explicitly opts into that one capability when needed.
-
-```vue
-<template>
-<iframe src="/embed" sandbox></iframe>
-<iframe src="/embed" sandbox="allow-scripts"></iframe>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32)

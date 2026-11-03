@@ -1,18 +1,37 @@
 ---
 title: "vue/no-textarea-mustache"
+description: "Disallow mustache interpolation in `<textarea>`."
 ---
 
 # `vue/no-textarea-mustache`
 
-Disallow mustache interpolation in `<textarea>`
+Disallow mustache interpolation in `<textarea>`.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The textarea places message in child interpolation instead of binding its value.
+
+```vue annotate="remove:2"
+<template>
+  <textarea>{{ message }}</textarea>
+</template>
+```
+
+## Good
+
+v-model binds the editable textarea value to message.
+
+```vue annotate="add:2"
+<template>
+  <textarea v-model="message"></textarea>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The textarea places message in child interpolation instead of binding its value.
-
-```vue
-<template>
-  <textarea>{{ message }}</textarea>
-</template>
-```
-
-## Good
-
-v-model binds the editable textarea value to message.
-
-```vue
-<template>
-  <textarea v-model="message"></textarea>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26)

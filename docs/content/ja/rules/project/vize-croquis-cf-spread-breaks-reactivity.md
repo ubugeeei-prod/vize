@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `UserSummary.vue` が `props.user` を新しいオブジェクトに展開し、渡されたリアクティブな値をその時点でコピーします。
 
@@ -74,7 +74,7 @@ const copiedUser = { ...props.user };
 </script>
 ```
 
-## 良い
+## 良い例
 
 `toRef(props, "user")` でプロパティの値をコピーせず、受け取る prop の参照を維持します。
 

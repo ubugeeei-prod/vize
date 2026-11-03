@@ -1,16 +1,21 @@
 ---
 title: "SSR 规则"
+description: "找出在服务端渲染和水合时会出错或行为不同的代码。"
 ---
 
 # SSR 规则
 
-本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+找出在服务端渲染和水合时会出错或行为不同的代码。
 
-<span id="ssr规则"></span>
+每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-| 规则 | 示例 | 用途 |
+## 默认 (2)
+
+由默认预设 `happy-path` 添加。
+
+| 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [错误示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | 禁止 SSR 上下文中的浏览器专用全局变量 |
-| [`ssr/no-hydration-mismatch`](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch) | [错误示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch-good) | 禁止导致水合不匹配的不确定值 |
+| <span id="ssr-no-browser-globals-in-ssr"></span>[`ssr/no-browser-globals-in-ssr`](./reference/ssr-no-browser-globals-in-ssr.md) | 禁止 SSR 上下文中的浏览器专用全局变量。 |  |
+| <span id="ssr-no-hydration-mismatch"></span>[`ssr/no-hydration-mismatch`](./reference/ssr-no-hydration-mismatch.md) | 禁止导致水合不匹配的不确定值。 |  |
 
-[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

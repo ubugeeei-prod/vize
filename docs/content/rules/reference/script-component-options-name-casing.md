@@ -1,18 +1,41 @@
 ---
 title: "script/component-options-name-casing"
+description: "Enforce PascalCase for the component `name` option."
 ---
 
 # `script/component-options-name-casing`
 
-Enforce PascalCase for the component `name` option
+Enforce PascalCase for the component `name` option.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `error`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The component option `name: 'my-component'` is kebab-case, whereas this rule requires a literal component name in PascalCase.
+
+```vue annotate="remove:3"
+<script lang="ts">
+export default {
+  name: 'my-component' // kebab-case
+}
+</script>
+```
+
+## Good
+
+`MyComponent` begins with an uppercase letter and contains only alphanumeric characters, satisfying the name check.
+
+```vue annotate="add:3"
+<script lang="ts">
+export default {
+  name: 'MyComponent'
+}
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The component option `name: 'my-component'` is kebab-case, whereas this rule requires a literal component name in PascalCase.
-
-```vue
-<script lang="ts">
-export default {
-  name: 'my-component' // kebab-case
-}
-</script>
-```
-
-## Good
-
-`MyComponent` begins with an uppercase letter and contains only alphanumeric characters, satisfying the name check.
-
-```vue
-<script lang="ts">
-export default {
-  name: 'MyComponent'
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44)

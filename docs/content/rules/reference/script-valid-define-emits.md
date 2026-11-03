@@ -1,18 +1,37 @@
 ---
 title: "script/valid-define-emits"
+description: "Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)."
 ---
 
 # `script/valid-define-emits`
 
-Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)
+Enforce valid defineEmits() usage (no type+runtime args, no local references, single call).
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The same `defineEmits` call supplies both a type argument and the runtime array `["save"]`, mixing two mutually exclusive declarations.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineEmits<{ save: [] }>(["save"]);
+</script>
+```
+
+## Good
+
+Removing the runtime argument leaves a single type-based event declaration for `save`.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineEmits<{ save: [] }>();
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The same `defineEmits` call supplies both a type argument and the runtime array `["save"]`, mixing two mutually exclusive declarations.
-
-```vue
-<script setup lang="ts">
-defineEmits<{ save: [] }>(["save"]);
-</script>
-```
-
-## Good
-
-Removing the runtime argument leaves a single type-based event declaration for `save`.
-
-```vue
-<script setup lang="ts">
-defineEmits<{ save: [] }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45)

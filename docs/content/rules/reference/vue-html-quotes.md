@@ -1,18 +1,40 @@
 ---
 title: "vue/html-quotes"
+description: "Enforce quotes style of HTML attributes."
 ---
 
 # `vue/html-quotes`
 
-Enforce quotes style of HTML attributes
+Enforce quotes style of HTML attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The attributes use single quotes or no quotes instead of the double-quote convention.
+
+```vue annotate="remove:2,3,4"
+<template>
+  <div class='foo'></div>
+  <div class=foo></div>
+  <div v-if='ready'></div>
+</template>
+```
+
+## Good
+
+Both ordinary attributes and directive expressions use double quotes.
+
+```vue annotate="add:2,3"
+<template>
+  <div class="foo"></div>
+  <div v-if="ready"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The attributes use single quotes or no quotes instead of the double-quote convention.
-
-```vue
-<template>
-  <div class='foo'></div>
-  <div class=foo></div>
-  <div v-if='ready'></div>
-</template>
-```
-
-## Good
-
-Both ordinary attributes and directive expressions use double quotes.
-
-```vue
-<template>
-  <div class="foo"></div>
-  <div v-if="ready"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53)

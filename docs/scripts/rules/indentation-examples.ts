@@ -6,7 +6,6 @@ export const ruleIndentationExamples = [
   {
     name: "vue/no-deprecated-slot-attribute",
     sourcePath: "crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs",
-    sourceSha256: "54b32b695c7536accd8f18b8d21a7fec1ed5ae007bc11d9e0dd896ff057ed061",
     expected: {
       bad: {
         language: "vue",
@@ -24,7 +23,6 @@ export const ruleIndentationExamples = [
   {
     name: "script/component-options-name-casing",
     sourcePath: "crates/vize_patina/src/rules/script/component_options_name_casing.rs",
-    sourceSha256: "220539a25f70207ae4d2c0d9fd380f4fea386c5c01133befaa54c440a956a0db",
     expected: {
       bad: {
         language: "vue",
@@ -41,7 +39,6 @@ export const ruleIndentationExamples = [
   {
     name: "petite-vue/valid-v-scope",
     sourcePath: "crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs",
-    sourceSha256: "9687bc1bdc6b39233b198f6025135601eb48e507d8ea3138ff58cfa0b59f71b8",
     expected: {
       bad: {
         language: "html",
@@ -59,7 +56,6 @@ export const ruleIndentationExamples = [
   {
     name: "css/no-important",
     sourcePath: "docs/scripts/rules/manual-3.ts",
-    sourceSha256: "6eef7b96919f94f3abdf96df95947a9663d1d850435f44d92197eb45a0d6b747",
     expected: {
       bad: {
         language: "vue",
@@ -75,7 +71,6 @@ export const ruleIndentationExamples = [
 ] as const satisfies readonly {
   name: string;
   sourcePath: string;
-  sourceSha256: string;
   expected: RuleExample;
 }[];
 

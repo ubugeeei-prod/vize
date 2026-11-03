@@ -1,18 +1,37 @@
 ---
 title: "a11y/no-distracting-elements"
+description: "Disallow distracting elements like <marquee> and <blink>."
 ---
 
 # `a11y/no-distracting-elements`
 
-Disallow distracting elements like &lt;marquee&gt; and &lt;blink&gt;
+Disallow distracting elements like &lt;marquee&gt; and &lt;blink&gt;.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The `marquee` element introduces automatically moving text.
+
+```vue annotate="remove:2"
+<template>
+  <marquee>Limited offer</marquee>
+</template>
+```
+
+## Good
+
+A paragraph displays the same offer without the distracting marquee element.
+
+```vue annotate="add:2"
+<template>
+  <p>Limited offer</p>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `marquee` element introduces automatically moving text.
-
-```vue
-<template>
-  <marquee>Limited offer</marquee>
-</template>
-```
-
-## Good
-
-A paragraph displays the same offer without the distracting marquee element.
-
-```vue
-<template>
-  <p>Limited offer</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16)

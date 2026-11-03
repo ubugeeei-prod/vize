@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親は `save` のリスナーを登録していますが、解決済みの子コンポーネントが宣言するイベントは `cancel` だけです。
 
@@ -54,7 +54,7 @@ const emit = defineEmits<{ cancel: [] }>();
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 子が `save` を宣言して emit し、親が登録するリスナーのイベント名と合わせます。
 

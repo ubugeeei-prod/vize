@@ -1,122 +1,148 @@
 ---
-title: Vue 规则
+title: "Vue 规则"
+description: "针对 SFC 模板、指令、组件和代码块的正确性、写法约定以及 Vue 3 迁移检查。"
 ---
 
 # Vue 规则
 
-本页列出每条 Vue 规则的用途、配置、错误示例和正确示例。高亮行表示修改；复制代码时会保留完整源代码。
+针对 SFC 模板、指令、组件和代码块的正确性、写法约定以及 Vue 3 迁移检查。
 
-<span id="句法与风格规则"></span>
+每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-| 规则 | 示例 | 用途 |
+## 基础 (51)
+
+`essential` 预设中的正确性规则。
+
+| 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| [`vue/a11y-img-alt`](https://vizejs.dev/zh-CN/rules/vue.html#vue-a11y-img-alt) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-a11y-img-alt-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-a11y-img-alt-good) | 要求图片提供 alt 属性，以支持无障碍访问 |
-| [`vue/attribute-hyphenation`](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-hyphenation) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-hyphenation-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-hyphenation-good) | 规范自定义组件的属性命名风格 |
-| [`vue/attribute-order`](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-order) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-order-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-attribute-order-good) | 要求属性保持一致的排列顺序 |
-| [`vue/component-definition-name-casing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-definition-name-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-definition-name-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-definition-name-casing-good) | 要求组件定义名称使用 PascalCase 或 kebab-case |
-| [`vue/component-name-in-template-casing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-name-in-template-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-name-in-template-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-component-name-in-template-casing-good) | 要求模板中的组件名称使用指定的大小写风格 |
-| [`vue/html-button-has-type`](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-button-has-type) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-button-has-type-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-button-has-type-good) | 要求 button 元素显式指定有效的 type |
-| [`vue/html-quotes`](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-quotes) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-quotes-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-quotes-good) | 规范 HTML 属性的引号风格 |
-| [`vue/html-self-closing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-self-closing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-self-closing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-html-self-closing-good) | 规范自闭合标签风格 |
-| [`vue/max-template-complexity`](https://vizejs.dev/zh-CN/rules/vue.html#vue-max-template-complexity) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-max-template-complexity-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-max-template-complexity-good) | 限制组件自身模板的复杂度（圈复杂度和认知复杂度） |
-| [`vue/multi-word-component-names`](https://vizejs.dev/zh-CN/rules/vue.html#vue-multi-word-component-names) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-multi-word-component-names-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-multi-word-component-names-good) | 要求组件名称由多个单词组成 |
-| [`vue/mustache-interpolation-spacing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-mustache-interpolation-spacing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-mustache-interpolation-spacing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-mustache-interpolation-spacing-good) | 要求双花括号插值内部的空格保持一致 |
-| [`vue/no-array-index-key`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-array-index-key) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-array-index-key-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-array-index-key-good) | 禁止直接将 v-for 的索引变量用作 :key |
-| [`vue/no-bare-strings-in-template`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-bare-strings-in-template) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-bare-strings-in-template-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-bare-strings-in-template-good) | 禁止在模板中直接写入应当国际化的用户可读文本 |
-| [`vue/no-boolean-attr-value`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-boolean-attr-value) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-boolean-attr-value-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-boolean-attr-value-good) | 禁止为 HTML 布尔属性显式指定值 |
-| [`vue/no-child-content`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-child-content) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-child-content-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-child-content-good) | 禁止在使用 v-html 或 v-text 时提供子内容 |
-| [`vue/no-deprecated-filter`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-filter) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-filter-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-filter-good) | 禁止使用已弃用的 Vue 2 管道运算符过滤器语法 |
-| [`vue/no-deprecated-functional-template`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-functional-template) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-functional-template-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-functional-template-good) | 禁止在 SFC 的 `<template>` 上使用 `functional` 属性 |
-| [`vue/no-deprecated-html-element-is`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-html-element-is) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-html-element-is-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-html-element-is-good) | 禁止在原生 HTML 元素上使用已弃用的 `is` 属性 |
-| [`vue/no-deprecated-inline-template`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-inline-template) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-inline-template-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-inline-template-good) | 禁止使用已弃用的 `inline-template` 属性 |
-| [`vue/no-deprecated-router-link-tag-prop`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-router-link-tag-prop) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-router-link-tag-prop-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-router-link-tag-prop-good) | 禁止在 &lt;router-link&gt; 上使用 `tag` prop |
-| [`vue/no-deprecated-scope-attribute`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-scope-attribute) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-scope-attribute-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-scope-attribute-good) | 禁止在 &lt;template&gt; 上使用已弃用的 `scope` 属性 |
-| [`vue/no-deprecated-slot-attribute`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-attribute) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-attribute-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-attribute-good) | 禁止使用已弃用的 `slot` 属性 |
-| [`vue/no-deprecated-slot-scope-attribute`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-scope-attribute) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-scope-attribute-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-slot-scope-attribute-good) | 禁止使用已弃用的 `slot-scope` 属性 |
-| [`vue/no-deprecated-v-bind-sync`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-bind-sync) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-bind-sync-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-bind-sync-good) | 禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符 |
-| [`vue/no-deprecated-v-is`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-is) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-is-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-is-good) | 禁止使用已废弃的 `v-is` 指令 |
-| [`vue/no-deprecated-v-on-native-modifier`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-native-modifier) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-native-modifier-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-native-modifier-good) | 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符 |
-| [`vue/no-deprecated-v-on-number-modifiers`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-number-modifiers) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-good) | 禁止在 `v-on` 上使用已弃用的数字 `keyCode` 修饰符 |
-| [`vue/no-dupe-v-else-if`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-dupe-v-else-if) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-dupe-v-else-if-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-dupe-v-else-if-good) | 禁止在 `v-if` / `v-else-if` 链中使用重复条件 |
-| [`vue/no-duplicate-attributes`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-duplicate-attributes) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-duplicate-attributes-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-duplicate-attributes-good) | 禁止在同一元素上重复声明属性 |
-| [`vue/no-empty-component-block`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-empty-component-block) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-empty-component-block-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-empty-component-block-good) | 禁止空的 SFC 块 |
-| [`vue/no-inline-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-inline-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-inline-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-inline-style-good) | 不建议使用内联 style 属性 |
-| [`vue/no-invalid-html-attribute`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-invalid-html-attribute) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-invalid-html-attribute-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-invalid-html-attribute-good) | 禁止 HTML 属性使用无效的静态值 |
-| [`vue/no-lone-template`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-lone-template) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-lone-template-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-lone-template-good) | 禁止不必要的 `<template>` 元素 |
-| [`vue/no-multi-spaces`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multi-spaces) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multi-spaces-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multi-spaces-good) | 禁止连续多个空格 |
-| [`vue/no-multiple-objects-in-class`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-objects-in-class) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-objects-in-class-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-objects-in-class-good) | 禁止在 :class 数组绑定中使用多个对象字面量 |
-| [`vue/no-multiple-template-root`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-template-root) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-template-root-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-multiple-template-root-good) | 禁止模板包含多个根节点 |
-| [`vue/no-mutating-props`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-mutating-props) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-mutating-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-mutating-props-good) | 禁止修改组件 props |
-| [`vue/no-negated-v-if-condition`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-negated-v-if-condition) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-negated-v-if-condition-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-negated-v-if-condition-good) | 禁止在含有 v-else 的条件链中使用否定的 v-if 条件 |
-| [`vue/no-non-component-keep-alive-child`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-non-component-keep-alive-child) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-non-component-keep-alive-child-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-non-component-keep-alive-child-good) | 禁止在 `<KeepAlive>` 的直属子层使用普通元素包装 |
-| [`vue/no-preprocessor-lang`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-preprocessor-lang) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-preprocessor-lang-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-preprocessor-lang-good) | 不建议使用 CSS 预处理器，优先使用现代 CSS |
-| [`vue/no-reserved-component-names`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-reserved-component-names) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-reserved-component-names-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-reserved-component-names-good) | 禁止使用保留名称作为组件名称 |
-| [`vue/no-root-v-if`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-root-v-if) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-root-v-if-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-root-v-if-good) | 禁止在模板的唯一根元素上使用 v-if |
-| [`vue/no-script-non-standard-lang`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-script-non-standard-lang) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-script-non-standard-lang-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-script-non-standard-lang-good) | 不建议使用非标准的 script lang 值 |
-| [`vue/no-src-attribute`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-src-attribute) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-src-attribute-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-src-attribute-good) | 不建议在 SFC 块上使用 src 属性 |
-| [`vue/no-static-inline-styles`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-static-inline-styles) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-static-inline-styles-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-static-inline-styles-good) | 禁止静态内联 style 属性 |
-| [`vue/no-template-key`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-key) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-key-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-key-good) | 禁止在 `<template>` 上使用 `key` 属性 |
-| [`vue/no-template-lang`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-lang) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-lang-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-lang-good) | 不建议在 template 块上使用 lang 属性 |
-| [`vue/no-template-shadow`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-shadow) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-shadow-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-shadow-good) | 禁止使用遮蔽外层作用域变量的变量名称 |
-| [`vue/no-template-target-blank`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-target-blank) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-target-blank-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-template-target-blank-good) | 禁止使用 target="_blank" 而不设置 rel="noopener noreferrer" |
-| [`vue/no-textarea-mustache`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-textarea-mustache) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-textarea-mustache-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-textarea-mustache-good) | 禁止在 `<textarea>` 内使用双花括号插值 |
-| [`vue/no-undefined-refs`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-undefined-refs) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-undefined-refs-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-undefined-refs-good) | 禁止在模板中引用未定义的变量 |
-| [`vue/no-unsafe-url`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsafe-url) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsafe-url-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsafe-url-good) | 警告可能不安全的 URL 绑定 |
-| [`vue/no-unsandboxed-iframe`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsandboxed-iframe) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsandboxed-iframe-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unsandboxed-iframe-good) | 要求 iframe 元素具有 sandbox 属性 |
-| [`vue/no-unused-components`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-components) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-components-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-components-good) | 禁止注册未在模板中使用的组件 |
-| [`vue/no-unused-properties`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-properties) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-properties-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-properties-good) | 禁止 defineProps 中定义的未使用属性 |
-| [`vue/no-unused-refs`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-refs) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-refs-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-refs-good) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"） |
-| [`vue/no-unused-setup-bindings`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-setup-bindings) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-setup-bindings-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-setup-bindings-good) | 禁止从未读取的 script setup 绑定 |
-| [`vue/no-unused-vars`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-vars) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-vars-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-unused-vars-good) | 禁止 v-for 和 v-slot 指令中未使用的变量定义 |
-| [`vue/no-use-v-else-with-v-for`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-else-with-v-for) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-else-with-v-for-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-else-with-v-for-good) | 禁止在同一元素上使用 `v-else-if` 或 `v-else` 与 `v-for` |
-| [`vue/no-use-v-if-with-v-for`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-if-with-v-for) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-if-with-v-for-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-use-v-if-with-v-for-good) | 禁止在同一元素上使用 `v-if` 与 `v-for` |
-| [`vue/no-useless-mustaches`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-mustaches) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-mustaches-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-mustaches-good) | 禁止表达式为常量字符串字面量的双花括号插值 |
-| [`vue/no-useless-template-attributes`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-template-attributes) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-template-attributes-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-template-attributes-good) | 禁止在 `<template>` 元素上使用不起作用的属性 |
-| [`vue/no-useless-v-bind`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-v-bind) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-v-bind-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-useless-v-bind-good) | 禁止值为普通字符串字面量的 v-bind |
-| [`vue/no-v-for-template-key-on-child`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-for-template-key-on-child) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-for-template-key-on-child-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-for-template-key-on-child-good) | 禁止在 `<template v-for>` 的子节点上使用 `key` |
-| [`vue/no-v-html`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-html) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-html-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-html-good) | 警告使用 v-html，以避免 XSS 漏洞 |
-| [`vue/no-v-text`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text-good) | 禁止 v-text 指令，优先使用双花括号插值 |
-| [`vue/no-v-text-v-html-on-component`](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text-v-html-on-component) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text-v-html-on-component-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-no-v-text-v-html-on-component-good) | 禁止在组件元素上使用 v-text / v-html |
-| [`vue/permitted-contents`](https://vizejs.dev/zh-CN/rules/vue.html#vue-permitted-contents) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-permitted-contents-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-permitted-contents-good) | 要求符合 HTML 内容模型规则 |
-| [`vue/prefer-props-shorthand`](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-props-shorthand) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-props-shorthand-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-props-shorthand-good) | 建议使用 props 简写语法（Vue 3.4+） |
-| [`vue/prefer-true-attribute-shorthand`](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-true-attribute-shorthand) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-true-attribute-shorthand-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prefer-true-attribute-shorthand-good) | 优先使用绑定到 `true` 的布尔属性简写 |
-| [`vue/prop-name-casing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-prop-name-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prop-name-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-prop-name-casing-good) | 规范所声明 prop 名称的大小写风格 |
-| [`vue/require-component-is`](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-is) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-is-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-is-good) | 要求 `<component>` 元素具有 `v-bind:is` |
-| [`vue/require-component-registration`](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-registration) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-registration-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-component-registration-good) | 要求显式导入或注册组件 |
-| [`vue/require-scoped-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-scoped-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-scoped-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-scoped-style-good) | 要求 style 标签具有 scoped 属性 |
-| [`vue/require-toggle-inside-transition`](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-toggle-inside-transition) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-toggle-inside-transition-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-toggle-inside-transition-good) | 要求 `<transition>` 包裹的元素具有切换条件 |
-| [`vue/require-v-for-key`](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-v-for-key) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-v-for-key-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-require-v-for-key-good) | 要求 `v-for` 指令搭配 `v-bind:key` |
-| [`vue/scoped-event-names`](https://vizejs.dev/zh-CN/rules/vue.html#vue-scoped-event-names) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-scoped-event-names-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-scoped-event-names-good) | 建议使用 context:event 格式的作用域事件名称 |
-| [`vue/sfc-element-order`](https://vizejs.dev/zh-CN/rules/vue.html#vue-sfc-element-order) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-sfc-element-order-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-sfc-element-order-good) | 要求 SFC 顶层元素保持一致的顺序 |
-| [`vue/single-style-block`](https://vizejs.dev/zh-CN/rules/vue.html#vue-single-style-block) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-single-style-block-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-single-style-block-good) | 建议只使用一个 style 块 |
-| [`vue/slot-name-casing`](https://vizejs.dev/zh-CN/rules/vue.html#vue-slot-name-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-slot-name-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-slot-name-casing-good) | 要求通过 v-slot 使用的具名插槽采用 kebab-case |
-| [`vue/this-in-template`](https://vizejs.dev/zh-CN/rules/vue.html#vue-this-in-template) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-this-in-template-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-this-in-template-good) | 禁止在模板表达式中使用 `this.` |
-| [`vue/use-unique-element-ids`](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-unique-element-ids) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-unique-element-ids-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-unique-element-ids-good) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量 |
-| [`vue/use-v-on-exact`](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-v-on-exact) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-v-on-exact-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-use-v-on-exact-good) | 存在带按键修饰符的处理器时，要求在 `v-on` 上使用 `.exact` |
-| [`vue/v-bind-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-bind-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-bind-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-bind-style-good) | 规范 `v-bind` 指令风格 |
-| [`vue/v-on-event-hyphenation`](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-event-hyphenation) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-event-hyphenation-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-event-hyphenation-good) | 要求组件上 v-on 中的自定义事件名称使用连字符 |
-| [`vue/v-on-handler-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-handler-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-handler-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-handler-style-good) | 要求 v-on 处理器写为方法引用或内联函数 |
-| [`vue/v-on-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-on-style-good) | 规范 `v-on` 指令风格 |
-| [`vue/v-slot-style`](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-slot-style) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-slot-style-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-v-slot-style-good) | 规范 `v-slot` 指令风格 |
-| [`vue/valid-attribute-name`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-attribute-name) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-attribute-name-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-attribute-name-good) | 要求属性名称有效 |
-| [`vue/valid-template-root`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-template-root) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-template-root-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-template-root-good) | 要求 `<template>` 根节点符合 Vue 3 片段语义 |
-| [`vue/valid-v-bind`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-bind) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-bind-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-bind-good) | 要求 `v-bind` 指令有效 |
-| [`vue/valid-v-cloak`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-cloak) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-cloak-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-cloak-good) | 要求 `v-cloak` 指令有效 |
-| [`vue/valid-v-else`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else-good) | 要求 `v-else` 指令有效 |
-| [`vue/valid-v-else-if`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else-if) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else-if-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-else-if-good) | 要求 `v-else-if` 指令有效 |
-| [`vue/valid-v-for`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-for) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-for-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-for-good) | 要求 `v-for` 指令有效 |
-| [`vue/valid-v-html`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-html) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-html-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-html-good) | 要求 `v-html` 指令有效 |
-| [`vue/valid-v-if`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-if) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-if-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-if-good) | 要求 `v-if` 指令有效 |
-| [`vue/valid-v-is`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-is) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-is-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-is-good) | 要求 `v-is` 指令有效 |
-| [`vue/valid-v-memo`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-memo) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-memo-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-memo-good) | 要求 `v-memo` 指令有效 |
-| [`vue/valid-v-model`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-model) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-model-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-model-good) | 要求 `v-model` 指令有效 |
-| [`vue/valid-v-on`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-on) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-on-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-on-good) | 要求 `v-on` 指令有效 |
-| [`vue/valid-v-once`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-once) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-once-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-once-good) | 要求 `v-once` 指令有效 |
-| [`vue/valid-v-pre`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-pre) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-pre-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-pre-good) | 要求 `v-pre` 指令有效 |
-| [`vue/valid-v-show`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-show) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-show-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-show-good) | 要求 `v-show` 指令有效 |
-| [`vue/valid-v-slot`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-slot) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-slot-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-slot-good) | 要求 `v-slot` 指令有效 |
-| [`vue/valid-v-text`](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-text) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-text-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-valid-v-text-good) | 要求 `v-text` 指令有效 |
-| [`vue/warn-custom-block`](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-block) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-block-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-block-good) | 警告 SFC 文件中的自定义块 |
-| [`vue/warn-custom-directive`](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-directive) | [错误示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-directive-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/vue.html#vue-warn-custom-directive-good) | 警告需要注册的自定义指令 |
+| <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 要求组件名称由多个单词组成。 |  |
+| <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | 禁止在使用 v-html 或 v-text 时提供子内容。 |  |
+| <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | 禁止使用已弃用的 Vue 2 管道运算符过滤器语法。 |  |
+| <span id="vue-no-deprecated-functional-template"></span>[`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | 禁止在 SFC 的 `<template>` 上使用 `functional` 属性。 |  |
+| <span id="vue-no-deprecated-html-element-is"></span>[`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | 禁止在原生 HTML 元素上使用已弃用的 `is` 属性。 |  |
+| <span id="vue-no-deprecated-inline-template"></span>[`vue/no-deprecated-inline-template`](./reference/vue-no-deprecated-inline-template.md) | 禁止使用已弃用的 `inline-template` 属性。 |  |
+| <span id="vue-no-deprecated-router-link-tag-prop"></span>[`vue/no-deprecated-router-link-tag-prop`](./reference/vue-no-deprecated-router-link-tag-prop.md) | 禁止在 &lt;router-link&gt; 上使用 `tag` prop。 |  |
+| <span id="vue-no-deprecated-scope-attribute"></span>[`vue/no-deprecated-scope-attribute`](./reference/vue-no-deprecated-scope-attribute.md) | 禁止在 &lt;template&gt; 上使用已弃用的 `scope` 属性。 |  |
+| <span id="vue-no-deprecated-slot-attribute"></span>[`vue/no-deprecated-slot-attribute`](./reference/vue-no-deprecated-slot-attribute.md) | 禁止使用已弃用的 `slot` 属性。 |  |
+| <span id="vue-no-deprecated-slot-scope-attribute"></span>[`vue/no-deprecated-slot-scope-attribute`](./reference/vue-no-deprecated-slot-scope-attribute.md) | 禁止使用已弃用的 `slot-scope` 属性。 |  |
+| <span id="vue-no-deprecated-v-bind-sync"></span>[`vue/no-deprecated-v-bind-sync`](./reference/vue-no-deprecated-v-bind-sync.md) | 禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符。 |  |
+| <span id="vue-no-deprecated-v-is"></span>[`vue/no-deprecated-v-is`](./reference/vue-no-deprecated-v-is.md) | 禁止使用已废弃的 `v-is` 指令。 |  |
+| <span id="vue-no-deprecated-v-on-native-modifier"></span>[`vue/no-deprecated-v-on-native-modifier`](./reference/vue-no-deprecated-v-on-native-modifier.md) | 禁止在 `v-on` 上使用已弃用的 `.native` 修饰符。 |  |
+| <span id="vue-no-deprecated-v-on-number-modifiers"></span>[`vue/no-deprecated-v-on-number-modifiers`](./reference/vue-no-deprecated-v-on-number-modifiers.md) | 禁止在 `v-on` 上使用已弃用的数字 `keyCode` 修饰符。 | ✓ |
+| <span id="vue-no-dupe-v-else-if"></span>[`vue/no-dupe-v-else-if`](./reference/vue-no-dupe-v-else-if.md) | 禁止在 `v-if` / `v-else-if` 链中使用重复条件。 |  |
+| <span id="vue-no-duplicate-attributes"></span>[`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | 禁止在同一元素上重复声明属性。 |  |
+| <span id="vue-no-mutating-props"></span>[`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | 禁止修改组件 props。 |  |
+| <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | 禁止在 `<KeepAlive>` 的直属子层使用普通元素包装。 |  |
+| <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 禁止使用保留名称作为组件名称。 |  |
+| <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | 禁止在 `<template>` 上使用 `key` 属性。 |  |
+| <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | 禁止在 `<textarea>` 内使用双花括号插值。 |  |
+| <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 警告可能不安全的 URL 绑定。 |  |
+| <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 禁止注册未在模板中使用的组件。 |  |
+| <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | 禁止 v-for 和 v-slot 指令中未使用的变量定义。 |  |
+| <span id="vue-no-use-v-if-with-v-for"></span>[`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | 禁止在同一元素上使用 `v-if` 与 `v-for`。 |  |
+| <span id="vue-no-useless-template-attributes"></span>[`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | 禁止在 `<template>` 元素上使用不起作用的属性。 |  |
+| <span id="vue-no-v-for-template-key-on-child"></span>[`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | 禁止在 `<template v-for>` 的子节点上使用 `key`。 |  |
+| <span id="vue-no-v-html"></span>[`vue/no-v-html`](./reference/vue-no-v-html.md) | 警告使用 v-html，以避免 XSS 漏洞。 |  |
+| <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | 禁止在组件元素上使用 v-text / v-html。 |  |
+| <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | 要求 `<component>` 元素具有 `v-bind:is`。 |  |
+| <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | 要求 `<transition>` 包裹的元素具有切换条件。 |  |
+| <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | 要求 `v-for` 指令搭配 `v-bind:key`。 |  |
+| <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | 存在带按键修饰符的处理器时，要求在 `v-on` 上使用 `.exact`。 |  |
+| <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 要求属性名称有效。 |  |
+| <span id="vue-valid-template-root"></span>[`vue/valid-template-root`](./reference/vue-valid-template-root.md) | 要求 `<template>` 根节点符合 Vue 3 片段语义。 |  |
+| <span id="vue-valid-v-bind"></span>[`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | 要求 `v-bind` 指令有效。 |  |
+| <span id="vue-valid-v-cloak"></span>[`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | 要求 `v-cloak` 指令有效。 |  |
+| <span id="vue-valid-v-else"></span>[`vue/valid-v-else`](./reference/vue-valid-v-else.md) | 要求 `v-else` 指令有效。 | ✓ |
+| <span id="vue-valid-v-else-if"></span>[`vue/valid-v-else-if`](./reference/vue-valid-v-else-if.md) | 要求 `v-else-if` 指令有效。 |  |
+| <span id="vue-valid-v-for"></span>[`vue/valid-v-for`](./reference/vue-valid-v-for.md) | 要求 `v-for` 指令有效。 |  |
+| <span id="vue-valid-v-html"></span>[`vue/valid-v-html`](./reference/vue-valid-v-html.md) | 要求 `v-html` 指令有效。 |  |
+| <span id="vue-valid-v-if"></span>[`vue/valid-v-if`](./reference/vue-valid-v-if.md) | 要求 `v-if` 指令有效。 |  |
+| <span id="vue-valid-v-is"></span>[`vue/valid-v-is`](./reference/vue-valid-v-is.md) | 要求 `v-is` 指令有效。 |  |
+| <span id="vue-valid-v-memo"></span>[`vue/valid-v-memo`](./reference/vue-valid-v-memo.md) | 要求 `v-memo` 指令有效。 |  |
+| <span id="vue-valid-v-model"></span>[`vue/valid-v-model`](./reference/vue-valid-v-model.md) | 要求 `v-model` 指令有效。 |  |
+| <span id="vue-valid-v-on"></span>[`vue/valid-v-on`](./reference/vue-valid-v-on.md) | 要求 `v-on` 指令有效。 |  |
+| <span id="vue-valid-v-once"></span>[`vue/valid-v-once`](./reference/vue-valid-v-once.md) | 要求 `v-once` 指令有效。 |  |
+| <span id="vue-valid-v-pre"></span>[`vue/valid-v-pre`](./reference/vue-valid-v-pre.md) | 要求 `v-pre` 指令有效。 |  |
+| <span id="vue-valid-v-show"></span>[`vue/valid-v-show`](./reference/vue-valid-v-show.md) | 要求 `v-show` 指令有效。 |  |
+| <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | 要求 `v-slot` 指令有效。 |  |
+| <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | 要求 `v-text` 指令有效。 |  |
 
-[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
+## 默认 (23)
+
+由默认预设 `happy-path` 添加。
+
+| 规则 | 检查内容 | 自动修复 |
+| --- | --- | --- |
+| <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | ✓ |
+| <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 |  |
+| <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 |  |
+| <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | 规范 HTML 属性的引号风格。 | ✓ |
+| <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 要求双花括号插值内部的空格保持一致。 | ✓ |
+| <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | 禁止 HTML 属性使用无效的静态值。 |  |
+| <span id="vue-no-lone-template"></span>[`vue/no-lone-template`](./reference/vue-no-lone-template.md) | 禁止不必要的 `<template>` 元素。 |  |
+| <span id="vue-no-multi-spaces"></span>[`vue/no-multi-spaces`](./reference/vue-no-multi-spaces.md) | 禁止连续多个空格。 | ✓ |
+| <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | 禁止使用遮蔽外层作用域变量的变量名称。 |  |
+| <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | 禁止使用 target="_blank" 而不设置 rel="noopener noreferrer"。 |  |
+| <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | 要求 iframe 元素具有 sandbox 属性。 |  |
+| <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | 禁止 defineProps 中定义的未使用属性。 |  |
+| <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 禁止在同一元素上使用 `v-else-if` 或 `v-else` 与 `v-for`。 |  |
+| <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | 要求符合 HTML 内容模型规则。 |  |
+| <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 规范所声明 prop 名称的大小写风格。 |  |
+| <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | 要求 style 标签具有 scoped 属性。 |  |
+| <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | 要求 SFC 顶层元素保持一致的顺序。 |  |
+| <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | 建议只使用一个 style 块。 |  |
+| <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | 禁止在模板表达式中使用 `this.`。 |  |
+| <span id="vue-v-bind-style"></span>[`vue/v-bind-style`](./reference/vue-v-bind-style.md) | 规范 `v-bind` 指令风格。 | ✓ |
+| <span id="vue-v-on-event-hyphenation"></span>[`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | 要求组件上 v-on 中的自定义事件名称使用连字符。 | ✓ |
+| <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | 规范 `v-on` 指令风格。 | ✓ |
+| <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 规范 `v-slot` 指令风格。 | ✓ |
+
+## 更严格的预设 (27)
+
+只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。
+
+| 规则 | 检查内容 | 预设 | 自动修复 |
+| --- | --- | --- | --- |
+| <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | 要求模板中的组件名称使用指定的大小写风格。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-html-button-has-type"></span>[`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | 要求 button 元素显式指定有效的 type。 | `nuxt`, `opinionated` |  |
+| <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 规范自闭合标签风格。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-no-array-index-key"></span>[`vue/no-array-index-key`](./reference/vue-no-array-index-key.md) | 禁止直接将 v-for 的索引变量用作 :key。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-boolean-attr-value"></span>[`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | 禁止为 HTML 布尔属性显式指定值。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-no-empty-component-block"></span>[`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 禁止空的 SFC 块。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-inline-style"></span>[`vue/no-inline-style`](./reference/vue-no-inline-style.md) | 不建议使用内联 style 属性。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-multiple-objects-in-class"></span>[`vue/no-multiple-objects-in-class`](./reference/vue-no-multiple-objects-in-class.md) | 禁止在 :class 数组绑定中使用多个对象字面量。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | 禁止在含有 v-else 的条件链中使用否定的 v-if 条件。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | 不建议使用 CSS 预处理器，优先使用现代 CSS。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 禁止在模板的唯一根元素上使用 v-if。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | 不建议使用非标准的 script lang 值。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | 不建议在 SFC 块上使用 src 属性。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | 不建议在 template 块上使用 lang 属性。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 禁止表达式为常量字符串字面量的双花括号插值。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 禁止值为普通字符串字面量的 v-bind。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | 禁止 v-text 指令，优先使用双花括号插值。 | `nuxt`, `opinionated` |  |
+| <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | 建议使用 props 简写语法（Vue 3.4+）。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 优先使用绑定到 `true` 的布尔属性简写。 | `nuxt`, `opinionated` |  |
+| <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 要求显式导入或注册组件。 | `opinionated` |  |
+| <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | 建议使用 context:event 格式的作用域事件名称。 | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 要求通过 v-slot 使用的具名插槽采用 kebab-case。 | `nuxt`, `opinionated` |  |
+| <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量。 | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | 要求 v-on 处理器写为方法引用或内联函数。 | `nuxt`, `opinionated` |  |
+| <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
+| <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
+
+## 按需启用 (7)
+
+不属于任何预设。在 `vue.linter.rules` 中按名称启用。
+
+| 规则 | 检查内容 | 自动修复 |
+| --- | --- | --- |
+| <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 |  |
+| <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | 限制组件自身模板的复杂度（圈复杂度和认知复杂度）。 |  |
+| <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | 禁止在模板中直接写入应当国际化的用户可读文本。 |  |
+| <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | 禁止模板包含多个根节点。 |  |
+| <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 禁止静态内联 style 属性。 |  |
+| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | 禁止在模板中引用未定义的变量。 |  |
+| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 |  |
+
+[规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

@@ -1,18 +1,50 @@
 ---
 title: "script/require-prop-type-constructor"
+description: "Require prop `type` values to be constructors rather than string literals."
 ---
 
 # `script/require-prop-type-constructor`
 
-Require prop `type` values to be constructors rather than string literals
+Require prop `type` values to be constructors rather than string literals.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The prop declarations use strings `"String"` and `"Number"` as runtime types, including inside the constructor array. Those strings are not constructor functions.
+
+```vue annotate="remove:4,5,6,7"
+<script lang="ts">
+export default {
+  props: {
+    // The type should be the `String` constructor, not the string "String".
+    name: "String",
+    age: { type: "Number" },
+    id: { type: ["String", "Number"] }
+  }
+}
+</script>
+```
+
+## Good
+
+The declarations use the actual `String` and `Number` identifiers, including the union array `[String, Number]`.
+
+```vue annotate="add:4,5,6"
+<script lang="ts">
+export default {
+  props: {
+    name: String,
+    age: { type: Number },
+    id: { type: [String, Number] }
+  }
+}
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,43 +63,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The prop declarations use strings `"String"` and `"Number"` as runtime types, including inside the constructor array. Those strings are not constructor functions.
-
-```vue
-<script lang="ts">
-export default {
-  props: {
-    // The type should be the `String` constructor, not the string "String".
-    name: "String",
-    age: { type: "Number" },
-    id: { type: ["String", "Number"] }
-  }
-}
-</script>
-```
-
-## Good
-
-The declarations use the actual `String` and `Number` identifiers, including the union array `[String, Number]`.
-
-```vue
-<script lang="ts">
-export default {
-  props: {
-    name: String,
-    age: { type: Number },
-    id: { type: [String, Number] }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65)

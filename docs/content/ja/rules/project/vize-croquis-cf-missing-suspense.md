@@ -48,7 +48,7 @@ const message = await Promise.resolve('Ready');
 
 ```
 
-## 悪い
+## 悪い例
 
 `AsyncCard` のトップレベルの `await` が setup を非同期にしますが、App は非同期処理の完了を待つ `Suspense` の境界なしで描画しています。
 
@@ -65,7 +65,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-## 良い
+## 良い例
 
 App が非同期の子を `Suspense` で包み、子の setup が完了するまで読み込み中の代替表示を出します。
 

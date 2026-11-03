@@ -1,20 +1,40 @@
 ---
 title: "vue/no-multiple-template-root"
+description: "Disallow multiple root nodes in a template."
 ---
 
 # `vue/no-multiple-template-root`
 
-Disallow multiple root nodes in a template
+Disallow multiple root nodes in a template.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 Enable only for a single-root contract. Vue 3 normally supports fragments.
+
+## Bad
+
+The opt-in single-root convention sees two sibling paragraphs at the template root.
+
+```vue annotate="remove:2,3"
+<template>
+<p>First</p>
+<p>Second</p>
+</template>
+```
+
+## Good
+
+A section wraps the paragraphs into one root; enable this convention only when a single-root contract is intended.
+
+```vue annotate="add:2"
+<template>
+<section><p>First</p><p>Second</p></section>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -33,31 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The opt-in single-root convention sees two sibling paragraphs at the template root.
-
-```vue
-<template>
-<p>First</p>
-<p>Second</p>
-</template>
-```
-
-## Good
-
-A section wraps the paragraphs into one root; enable this convention only when a single-root contract is intended.
-
-```vue
-<template>
-<section><p>First</p><p>Second</p></section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L23) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L23)

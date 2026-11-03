@@ -1,20 +1,53 @@
 ---
 title: "musea/prefer-design-tokens"
+description: "Prefer design token CSS variables over hardcoded primitive values."
 ---
 
 # `musea/prefer-design-tokens`
 
-Prefer design token CSS variables over hardcoded primitive values
+Prefer design token CSS variables over hardcoded primitive values.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: See [typed options and defaults](../options.md).
+Applies to: Musea .art.vue art, variant, and style blocks.
 
 Requires an .art.vue file and the token inventory shown below. It does not infer a token from an arbitrary color.
+
+## Bad
+
+The art example uses the literal blue color instead of the configured primary design token.
+
+`Button.art.vue`
+
+```vue annotate="remove:6"
+<art title="Button" component="Button">
+<variant name="Primary"><Button /></variant>
+</art>
+<style scoped>
+.button {
+  color: #3b82f6;
+}
+</style>
+```
+
+## Good
+
+The style refers to --color-primary, the token configured for this example.
+
+`Button.art.vue`
+
+```vue annotate="add:6"
+<art title="Button" component="Button">
+<variant name="Primary"><Button /></variant>
+</art>
+<style scoped>
+.button {
+  color: var(--color-primary);
+}
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -44,44 +77,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The art example uses the literal blue color instead of the configured primary design token.
-
-`Button.art.vue`
-
-```vue
-<art title="Button" component="Button">
-<variant name="Primary"><Button /></variant>
-</art>
-<style scoped>
-.button {
-  color: #3b82f6;
-}
-</style>
-```
-
-## Good
-
-The style refers to --color-primary, the token configured for this example.
-
-`Button.art.vue`
-
-```vue
-<art title="Button" component="Button">
-<variant name="Primary"><Button /></variant>
-</art>
-<style scoped>
-.button {
-  color: var(--color-primary);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32)

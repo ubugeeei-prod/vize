@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 通常の script ブロックのモジュールスコープで `ref(0)` を作っており、この解析器の例で想定する、インスタンスごとの setup コンテキストには含まれません。
 
@@ -47,7 +47,7 @@ export default {};
 <template><p>Count</p></template>
 ```
 
-## 良い
+## 良い例
 
 script setup に移し、各インスタンスが count を持ち、テンプレートから読み取れる形にします。
 

@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子のカスタムイベント `save` に `.stop` を付け、ネイティブイベントの伝播を止めるメソッドがあることを前提にしています。しかし、このイベントで渡される値が DOM Event とは限りません。
 
@@ -55,7 +55,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 カスタムイベントのリスナーから `.stop` を取り除きます。ネイティブイベントの伝播を止める必要がある場合は、実際の DOM 要素に付けたリスナーで制御します。
 

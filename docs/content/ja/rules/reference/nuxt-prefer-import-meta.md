@@ -1,18 +1,37 @@
 ---
 title: "nuxt/prefer-import-meta"
+description: "Nuxt の環境フラグを process.* から import.meta.* に置き換えます。"
 ---
 
 # `nuxt/prefer-import-meta`
 
 Nuxt の環境フラグを process.* から import.meta.* に置き換えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `nuxt` | あり | なし |
 
-既定の重大度: `error`  
-プリセット: `nuxt`  
-自動修正: 対応している診断で利用できます  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`process.client` は旧形式の Nuxt 環境フラグであり、このルールは `import.meta` への移行を求めます。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+if (process.client) console.log("browser");
+</script>
+```
+
+## 良い例
+
+`import.meta.client` に置き換え、ブラウザー側だけで実行する分岐を新しい環境フラグで表します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+if (import.meta.client) console.log("browser");
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`process.client` は旧形式の Nuxt 環境フラグであり、このルールは `import.meta` への移行を求めます。
-
-```vue
-<script setup lang="ts">
-if (process.client) console.log("browser");
-</script>
-```
-
-## 良い
-
-`import.meta.client` に置き換え、ブラウザー側だけで実行する分岐を新しい環境フラグで表します。
-
-```vue
-<script setup lang="ts">
-if (import.meta.client) console.log("browser");
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18)

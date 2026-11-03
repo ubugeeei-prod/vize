@@ -1,22 +1,42 @@
 ---
 title: "Regras HTML"
+description: "Validade do HTML e marcação semântica nos templates."
 ---
 
 # Regras HTML
 
-Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
+Validade do HTML e marcação semântica nos templates.
 
+Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 
-| Regra | Exemplos | Finalidade |
+## Essenciais (1)
+
+Regras de correção da predefinição `essential`.
+
+| Regra | O que verifica | Correção automática |
 | --- | --- | --- |
-| [`html/deprecated-attr`](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-attr) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-attr-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-attr-good) | Proibir atributos HTML obsoletos |
-| [`html/deprecated-element`](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-element) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-element-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-deprecated-element-good) | Proibir elementos HTML obsoletos |
-| [`html/id-duplication`](https://vizejs.dev/pt-BR/rules/html.html#html-id-duplication) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-id-duplication-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-id-duplication-good) | Proibir IDs de elementos duplicados |
-| [`html/no-consecutive-br`](https://vizejs.dev/pt-BR/rules/html.html#html-no-consecutive-br) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-no-consecutive-br-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-no-consecutive-br-good) | Proibir elementos &lt;br&gt; consecutivos |
-| [`html/no-dupe-style-properties`](https://vizejs.dev/pt-BR/rules/html.html#html-no-dupe-style-properties) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-no-dupe-style-properties-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-no-dupe-style-properties-good) | Proibir propriedades duplicadas em atributos de estilo em linha |
-| [`html/no-duplicate-class`](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-class) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-class-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-class-good) | Proibir nomes de classe duplicados em um atributo class estático |
-| [`html/no-duplicate-dt`](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-dt) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-dt-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-no-duplicate-dt-good) | Proibir nomes &lt;dt&gt; duplicados em &lt;dl&gt; |
-| [`html/no-empty-palpable-content`](https://vizejs.dev/pt-BR/rules/html.html#html-no-empty-palpable-content) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-no-empty-palpable-content-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-no-empty-palpable-content-good) | Proibir elementos vazios que esperam conteúdo visível |
-| [`html/require-datetime`](https://vizejs.dev/pt-BR/rules/html.html#html-require-datetime) | [Incorreto](https://vizejs.dev/pt-BR/rules/html.html#html-require-datetime-bad) · [Correto](https://vizejs.dev/pt-BR/rules/html.html#html-require-datetime-good) | Exigir o atributo datetime no elemento &lt;time&gt; |
+| <span id="html-id-duplication"></span>[`html/id-duplication`](./reference/html-id-duplication.md) | Proibir IDs de elementos duplicados. |  |
 
-[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)
+## Padrão (7)
+
+Adicionadas por `happy-path`, a predefinição padrão.
+
+| Regra | O que verifica | Correção automática |
+| --- | --- | --- |
+| <span id="html-deprecated-attr"></span>[`html/deprecated-attr`](./reference/html-deprecated-attr.md) | Proibir atributos HTML obsoletos. |  |
+| <span id="html-deprecated-element"></span>[`html/deprecated-element`](./reference/html-deprecated-element.md) | Proibir elementos HTML obsoletos. |  |
+| <span id="html-no-consecutive-br"></span>[`html/no-consecutive-br`](./reference/html-no-consecutive-br.md) | Proibir elementos &lt;br&gt; consecutivos. |  |
+| <span id="html-no-duplicate-class"></span>[`html/no-duplicate-class`](./reference/html-no-duplicate-class.md) | Proibir nomes de classe duplicados em um atributo class estático. |  |
+| <span id="html-no-duplicate-dt"></span>[`html/no-duplicate-dt`](./reference/html-no-duplicate-dt.md) | Proibir nomes &lt;dt&gt; duplicados em &lt;dl&gt;. |  |
+| <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | Proibir elementos vazios que esperam conteúdo visível. |  |
+| <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | Exigir o atributo datetime no elemento &lt;time&gt;. |  |
+
+## Predefinições mais rígidas (1)
+
+Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra quais.
+
+| Regra | O que verifica | Predefinições | Correção automática |
+| --- | --- | --- | --- |
+| <span id="html-no-dupe-style-properties"></span>[`html/no-dupe-style-properties`](./reference/html-no-dupe-style-properties.md) | Proibir propriedades duplicadas em atributos de estilo em linha. | `nuxt`, `opinionated` |  |
+
+[Visão geral das regras](../rules/index.md) · [Opções das regras](/rules/options.md) · [Migração do ESLint](/rules/migration.md)

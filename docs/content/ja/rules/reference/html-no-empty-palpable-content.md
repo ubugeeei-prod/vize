@@ -1,18 +1,41 @@
 ---
 title: "html/no-empty-palpable-content"
+description: "可視コンテンツを期待する要素が空の場合に検出します。"
 ---
 
 # `html/no-empty-palpable-content`
 
 可視コンテンツを期待する要素が空の場合に検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+p、li、td がいずれも空で、意味のある内容がありません。
+
+```vue annotate="remove:2,3,4"
+<template>
+  <p></p>
+  <li></li>
+  <td></td>
+</template>
+```
+
+## 良い例
+
+p は文字、li は補間で内容を入れ、空の td には aria-label で名前を指定します。
+
+```vue annotate="add:2,3,4"
+<template>
+  <p>Overview</p>
+  <li>{{ item.label }}</li>
+  <td aria-label="No value"></td>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-p、li、td がいずれも空で、意味のある内容がありません。
-
-```vue
-<template>
-  <p></p>
-  <li></li>
-  <td></td>
-</template>
-```
-
-## 良い
-
-p は文字、li は補間で内容を入れ、空の td には aria-label で名前を指定します。
-
-```vue
-<template>
-  <p>Overview</p>
-  <li>{{ item.label }}</li>
-  <td aria-label="No value"></td>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [全ルール](../all.md)
+- [HTML ルール](../html.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32)

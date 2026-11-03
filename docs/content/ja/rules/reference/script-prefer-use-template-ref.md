@@ -1,18 +1,49 @@
 ---
 title: "script/prefer-use-template-ref"
+description: "テンプレート参照に Vue 3.5 の useTemplateRef() を使います。"
 ---
 
 # `script/prefer-use-template-ref`
 
 テンプレート参照に Vue 3.5 の useTemplateRef() を使います。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、null を許容する通常のデータではなく、要素参照であることが分かります。
+
+```vue annotate="remove:2,3"
+<script setup lang="ts">
+import { ref } from 'vue'
+const input = ref<HTMLInputElement | null>(null)
+</script>
+<template>
+  <input ref="input" />
+</template>
+```
+
+## 良い例
+
+Vue 3.5 以降の `useTemplateRef<HTMLInputElement>('input')` でテンプレート参照を明示します。対応する要素参照のない `error = ref(null)` は通常のデータであり、このルールの対象外です。
+
+```vue annotate="add:2,3,4,5,6,10"
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
+// Paired with the template ref below.
+const input = useTemplateRef<HTMLInputElement>('input')
+// A nullable data ref the template never binds as a ref.
+const error = ref(null)
+</script>
+<template>
+  <input ref="input" />
+  <p>{{ error }}</p>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,42 +62,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、null を許容する通常のデータではなく、要素参照であることが分かります。
-
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-const input = ref<HTMLInputElement | null>(null)
-</script>
-<template>
-  <input ref="input" />
-</template>
-```
-
-## 良い
-
-Vue 3.5 以降の `useTemplateRef<HTMLInputElement>('input')` でテンプレート参照を明示します。対応する要素参照のない `error = ref(null)` は通常のデータであり、このルールの対象外です。
-
-```vue
-<script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
-// Paired with the template ref below.
-const input = useTemplateRef<HTMLInputElement>('input')
-// A nullable data ref the template never binds as a ref.
-const error = ref(null)
-</script>
-<template>
-  <input ref="input" />
-  <p>{{ error }}</p>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75)

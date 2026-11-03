@@ -64,7 +64,7 @@ const { count, doubled } = useCounter();
 
 ```
 
-## 悪い
+## 悪い例
 
 二つのリアクティブ API がモジュールの読み込み時に実行されます。独立したカウンターを意図していても、二つの Counter が一つの ref と computed を共有します。
 
@@ -78,7 +78,7 @@ export function useCounter() { return { count, doubled }; }
 
 ```
 
-## 良い
+## 良い例
 
 各コンポーネントの setup から同期的に `useCounter` を呼び、その中で ref と computed を作ります。これにより、各カウンターがそれぞれの状態と、依存を追跡する計算結果を持ちます。
 

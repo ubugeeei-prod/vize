@@ -1,0 +1,104 @@
+---
+title: "ecosystem/vue-router-unknown-route"
+---
+
+# `ecosystem/vue-router-unknown-route`
+
+名称不在完整且已安装的路由器中。
+
+默认严重程度: error  
+适用范围: 可达的项目声明及导入组件  
+选项: crossFile；规则严重程度（off/warn/error）  
+自动修复: 无
+
+完整且已安装的路由器必须从应用的 createApp(...).use(router) 可达。未知或动态路由表不能证明未知名称诊断。缺失参数属于警告，因为导航可能从当前路由继承值。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-unknown-route": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 共享项目文件
+
+错误和正确示例都使用这些不变的文件。在项目中安装导入的包：Vue，以及示例中出现的 vue-router 或 Pinia。遵循版本特定的支持说明。入口根文件显式展示组件关系。
+
+`index.html`
+
+```html
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+```
+
+`src/main.ts`
+
+```ts
+import { createApp } from "vue";
+import App from "./App.vue";
+import { router } from "./router";
+createApp(App).use(router).mount("#app");
+```
+
+`src/App.vue`
+
+```vue
+<script setup lang="ts">
+import { RouterView } from "vue-router";
+</script>
+<template><RouterView /></template>
+```
+
+`src/router.ts`
+
+```ts
+import { createRouter, createWebHistory } from "vue-router";
+import UserPost from "./UserPost.vue";
+export const router = createRouter({
+  history: createWebHistory(),
+  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],
+});
+```
+
+## 错误示例
+
+可达且已安装的路由器声明了 `user-post`，但导航使用拼写错误的 `user-posts`。
+
+`src/UserPost.vue`
+
+```vue
+<script setup lang="ts">
+import { useRouter } from "vue-router";
+const router = useRouter();
+router.push({ name: "user-posts", params: { userId: "1", postId: "2" } });
+</script>
+<template><p>Post</p></template>
+```
+
+## 正确示例
+
+使用已注册的 `user-post` 名称，并保留两个已声明的路径参数。
+
+`src/UserPost.vue`
+
+```vue
+<script setup lang="ts">
+import { useRouter } from "vue-router";
+const router = useRouter();
+router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
+</script>
+<template><p>Post</p></template>
+```
+
+正确示例的文件展示上述修改；完整项目仍可能适用其他诊断。
+
+[跨文件规则索引](../cross-file.md)

@@ -54,7 +54,7 @@ export interface Theme { color: string; }
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-## 悪い
+## 悪い例
 
 使用側は型の付いていない文字列キー `"theme"` を inject しており、提供側と共有するシンボルの同一性を利用していません。
 
@@ -84,7 +84,7 @@ const theme = inject("theme");
 </script>
 ```
 
-## 良い
+## 良い例
 
 使用側と提供側で同じ `ThemeKey` を import し、文字列名の重複に頼らない接続にします。
 

@@ -1,18 +1,44 @@
 ---
 title: "petite-vue/no-unsupported-directive"
+description: "Disallow directives that petite-vue does not support."
 ---
 
 # `petite-vue/no-unsupported-directive`
 
-Disallow directives that petite-vue does not support
+Disallow directives that petite-vue does not support.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.
+
+## Bad
+
+`v-memo`, `v-slot:header`, and the custom `v-my-directive` are absent from petite-vue’s supported directive list. The petite-vue script marks this HTML as the relevant dialect.
+
+```html annotate="remove:3,4,5"
+<!doctype html>
+<html><body>
+<div v-memo="[a, b]"></div>
+<template v-slot:header></template>
+<div v-my-directive></div>
+<script src="https://unpkg.com/petite-vue" init></script>
+</body></html>
+```
+
+## Good
+
+The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-on` syntax instead of relying on unsupported directives.
+
+```html annotate="add:3,4"
+<!doctype html>
+<html><body>
+<div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
+<div v-if="ok" v-bind:title="title" @click="count++"></div>
+<script src="https://unpkg.com/petite-vue" init></script>
+</body></html>
+```
 
 ## Configuration (Vite+)
 
@@ -31,37 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`v-memo`, `v-slot:header`, and the custom `v-my-directive` are absent from petite-vue’s supported directive list. The petite-vue script marks this HTML as the relevant dialect.
-
-```html
-<!doctype html>
-<html><body>
-<div v-memo="[a, b]"></div>
-<template v-slot:header></template>
-<div v-my-directive></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-## Good
-
-The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-on` syntax instead of relying on unsupported directives.
-
-```html
-<!doctype html>
-<html><body>
-<div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
-<div v-if="ok" v-bind:title="title" @click="count++"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [All rules](../all.md)
+- [petite-vue rules](../petite-vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43)

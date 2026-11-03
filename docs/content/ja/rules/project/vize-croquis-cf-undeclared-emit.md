@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子が `emit("save")` を呼びますが、`defineEmits` の宣言は `cancel` だけです。
 
@@ -55,7 +55,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 引数なしの `save` を宣言し、emit するイベントをコンポーネントの契約に合わせます。
 

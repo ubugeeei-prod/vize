@@ -1,18 +1,42 @@
 ---
 title: "vue/valid-v-slot"
+description: "v-slot の適用先・宣言・修飾子を検査します。"
 ---
 
 # `vue/valid-v-slot`
 
 v-slot の適用先・宣言・修飾子を検査します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+ネイティブの `<div>` にスロットのディレクティブを付けるか、他のデフォルトスロットや名前付きスロットの宣言と競合させています。
+
+```vue annotate="remove:2,3,4"
+<template>
+  <div v-slot:header></div>
+  <MyComponent v-slot v-slot:header />
+  <template v-slot:header v-slot:footer />
+</template>
+```
+
+## 良い例
+
+デフォルトスロットはコンポーネント上、名前付きスロットは子の `<template #header>` に宣言します。
+
+```vue annotate="add:2,3,4,5"
+<template>
+  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
+  <MyComponent>
+    <template #header>Header</template>
+  </MyComponent>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,35 +55,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-ネイティブの `<div>` にスロットのディレクティブを付けるか、他のデフォルトスロットや名前付きスロットの宣言と競合させています。
-
-```vue
-<template>
-  <div v-slot:header></div>
-  <MyComponent v-slot v-slot:header />
-  <template v-slot:header v-slot:footer />
-</template>
-```
-
-## 良い
-
-デフォルトスロットはコンポーネント上、名前付きスロットは子の `<template #header>` に宣言します。
-
-```vue
-<template>
-  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
-  <MyComponent>
-    <template #header>Header</template>
-  </MyComponent>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29)

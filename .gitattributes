@@ -45,8 +45,6 @@ crates/vize/tests/check_jsx_slot_parameter_types_cli/attribute_expressions.rs te
 *.snap linguist-generated=true
 # Retain the compiler's authored whole-output whitespace in project config oracles.
 crates/vize/tests/snapshots/project_config_cli__project_settings_build_*.snap whitespace=-blank-at-eol
-docs/content/generated/rules/en/all.md linguist-generated=true -text whitespace=-blank-at-eol
-docs/content/generated/rules/ja/all.md linguist-generated=true -text whitespace=-blank-at-eol
 docs/content/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
 docs/content/ja/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
 **/__snapshots__/** linguist-generated=true

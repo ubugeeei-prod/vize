@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親が `<Child />` を描画し、子の必須 `title: string` prop を渡していません。
 
@@ -54,7 +54,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 `title="Hello"` で、解決した子が宣言する必須 prop を渡します。
 

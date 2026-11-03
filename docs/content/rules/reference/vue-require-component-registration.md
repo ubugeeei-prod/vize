@@ -1,20 +1,39 @@
 ---
 title: "vue/require-component-registration"
+description: "Require explicit import or registration for components."
 ---
 
 # `vue/require-component-registration`
 
-Require explicit import or registration for components
+Require explicit import or registration for components.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated` | No | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
+
+## Bad
+
+`MissingWidget` is neither registered nor included in the configured global-component allowlist.
+
+```vue annotate="remove:2"
+<template>
+<MissingWidget />
+</template>
+```
+
+## Good
+
+`MyButton` is listed in the example's `globals` option. That option exempts a known global component; it does not register or import it.
+
+```vue annotate="add:2"
+<template>
+<MyButton />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -41,30 +60,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`MissingWidget` is neither registered nor included in the configured global-component allowlist.
-
-```vue
-<template>
-<MissingWidget />
-</template>
-```
-
-## Good
-
-`MyButton` is listed in the example's `globals` option. That option exempts a known global component; it does not register or import it.
-
-```vue
-<template>
-<MyButton />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57)

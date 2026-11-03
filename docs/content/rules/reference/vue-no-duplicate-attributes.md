@@ -1,18 +1,37 @@
 ---
 title: "vue/no-duplicate-attributes"
+description: "Disallow duplicate attributes on the same element."
 ---
 
 # `vue/no-duplicate-attributes`
 
-Disallow duplicate attributes on the same element
+Disallow duplicate attributes on the same element.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The same button declares class twice instead of one combined class value.
+
+```vue annotate="remove:2"
+<template>
+  <button class="primary" class="large">Save</button>
+</template>
+```
+
+## Good
+
+Both class tokens appear in a single class attribute.
+
+```vue annotate="add:2"
+<template>
+  <button class="primary large">Save</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The same button declares class twice instead of one combined class value.
-
-```vue
-<template>
-  <button class="primary" class="large">Save</button>
-</template>
-```
-
-## Good
-
-Both class tokens appear in a single class attribute.
-
-```vue
-<template>
-  <button class="primary large">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31)

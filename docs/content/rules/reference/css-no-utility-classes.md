@@ -1,18 +1,39 @@
 ---
 title: "css/no-utility-classes"
+description: "Warn against implementing utility classes in component styles."
 ---
 
 # `css/no-utility-classes`
 
-Warn against implementing utility classes in component styles
+Warn against implementing utility classes in component styles.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.text-center`.
+
+```vue annotate="remove:2,3,4"
+<style scoped>
+.flex { display: flex; }
+.mt-4 { margin-top: 1rem; }
+.text-center { text-align: center; }
+</style>
+```
+
+## Good
+
+A component-specific `.my-component` selector groups the component styling under one semantic name.
+
+```vue annotate="add:2"
+<style scoped>
+.my-component { display: flex; margin-top: 1rem; }
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.text-center`.
-
-```vue
-<style scoped>
-.flex { display: flex; }
-.mt-4 { margin-top: 1rem; }
-.text-center { text-align: center; }
-</style>
-```
-
-## Good
-
-A component-specific `.my-component` selector groups the component styling under one semantic name.
-
-```vue
-<style scoped>
-.my-component { display: flex; margin-top: 1rem; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37)

@@ -51,7 +51,7 @@ const { count, doubled } = useDouble();
 
 ```
 
-## 悪い
+## 悪い例
 
 watcher は外部への副作用を行わず、二つ目の書き込み可能な ref を `count` の二倍へ同期するだけです。この例に派生値への独立した書き込みはありません。
 
@@ -68,7 +68,7 @@ export function useDouble() {
 
 ```
 
-## 良い
+## 良い例
 
 computed の getter で同じ導出を直接表し、手作業の同期と追加の書き込み可能な状態を取り除きます。
 

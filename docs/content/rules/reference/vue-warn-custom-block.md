@@ -1,18 +1,45 @@
 ---
 title: "vue/warn-custom-block"
+description: "Warn about custom blocks in SFC files."
 ---
 
 # `vue/warn-custom-block`
 
-Warn about custom blocks in SFC files
+Warn about custom blocks in SFC files.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The SFC contains an `<i18n>` custom block, which needs an external integration beyond ordinary template/script/style processing.
+
+```vue annotate="remove:1,2,3,4"
+<i18n>
+{ "en": { "hello": "Hello" } }
+</i18n>
+
+<template>
+  <p>{{ hello }}</p>
+</template>
+```
+
+## Good
+
+The example uses standard template and script-setup blocks. This optional portability warning does not mean every custom block is invalid Vue.
+
+```vue annotate="add:4,5,6,7"
+<template>
+  <p>{{ hello }}</p>
+</template>
+
+<script setup lang="ts">
+const hello = "Hello";
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The SFC contains an `<i18n>` custom block, which needs an external integration beyond ordinary template/script/style processing.
-
-```vue
-<i18n>
-{ "en": { "hello": "Hello" } }
-</i18n>
-
-<template>
-  <p>{{ hello }}</p>
-</template>
-```
-
-## Good
-
-The example uses standard template and script-setup blocks. This optional portability warning does not mean every custom block is invalid Vue.
-
-```vue
-<template>
-  <p>{{ hello }}</p>
-</template>
-
-<script setup lang="ts">
-const hello = "Hello";
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50)

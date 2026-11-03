@@ -1,18 +1,47 @@
 ---
 title: "script/order-in-components"
+description: "コンポーネントオプションのプロパティ順を既定の並びに揃えます。"
 ---
 
 # `script/order-in-components`
 
 コンポーネントオプションのプロパティ順を既定の並びに揃えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`data` が `props` より前に書かれており、後ろのグループが前のグループより上にあります。
+
+```vue annotate="remove:5,6"
+<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  props: ['label']
+}
+</script>
+```
+
+## 良い例
+
+`props` が `data` より前にあり、既定のグループ順と一致します。
+
+```vue annotate="add:3,6"
+<script lang="ts">
+export default {
+  props: ['label'],
+  data() {
+    return { count: 0 }
+  }
+}
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,40 +60,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`data` が `props` より前に書かれており、後ろのグループが前のグループより上にあります。
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 }
-  },
-  props: ['label']
-}
-</script>
-```
-
-## 良い
-
-`props` が `data` より前にあり、既定のグループ順と一致します。
-
-```vue
-<script lang="ts">
-export default {
-  props: ['label'],
-  data() {
-    return { count: 0 }
-  }
-}
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L35) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L35)

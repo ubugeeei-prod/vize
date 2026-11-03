@@ -32,7 +32,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 子が `inheritAttrs: false` にして、親の `class="notice"` をどこにも渡していません。
 
@@ -54,7 +54,7 @@ defineOptions({ inheritAttrs: false });
 <template><main>Content</main></template>
 ```
 
-## 良い
+## 良い例
 
 明示的な継承制御を保ち、適用先の `<main>` に `$attrs` をバインドします。
 

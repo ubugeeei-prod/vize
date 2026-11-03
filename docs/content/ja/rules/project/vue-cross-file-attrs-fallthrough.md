@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親が `class="notice"` を複数のルートを持つ子コンポーネントに渡しますが、属性の自動適用先がなく、子も `$attrs` を使いません。
 
@@ -65,7 +65,7 @@ import Child from "./Child.vue";
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
-## 良い
+## 良い例
 
 子が `<main>` に `$attrs` をバインドして属性の適用先を明示します。隣の `<aside>` には適用しません。
 

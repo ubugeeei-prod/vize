@@ -1,47 +1,73 @@
 ---
 title: Regras
+description: Ative as regras de lint do Vize com uma predefinição e ajuste regra por regra.
 ---
 
 <!-- Generated translation; source: rules/index.md -->
 
 # Regras
 
-Diagnósticos do Vize são documentados como regras, não como uma grande matriz única. Cada página de regra mantém o comportamento de detecção de
-próximo dos exemplos de Bad & Good, para que a referência possa ser lida como um manual de regras
-ESLint.
+O linter do Vize verifica componentes Vue de arquivo único: templates, scripts, estilos e as ligações entre arquivos. Escolha uma predefinição e depois aumente, reduza ou desative regras individuais.
 
-## Páginas
+## Ativar o lint
 
-- [All Patina rules](./all.md): tabela de metadados de uma página para cada implementação da regra Patina,
-  incluindo links de código-fonte do GitHub.
-- [Vue rules](./vue.md): estrutura de modelo SFC, diretivas Vue, convenções de componentes e
-  verificações de correção do Vue em fila indiana.
-- [Type and script rules](./type-and-script.md): Diagnósticos com verificador TypeScript e Vapor
-  restrições de roteiro.
-- [HTML rules](./html.md): verificações de validade HTML e marcação semântica.
-- [Accessibility rules](./accessibility.md): ARIA, interação com teclado, gravadores, pontos de referência e
-  checagens de mídia acessíveis.
-- [SSR rules](./ssr.md): renderização do servidor e riscos de hidratação.
-- [Vapor rules](./vapor.md): Restrições de template apenas para vapor.
-- [Ecosystem rules](./ecosystem.md): verificações com presets para Nuxt, Vue Router, Pinia, vue-i18n,
-  Vue Test Utils e Void Vue.
-- [Musea and CSS rules](./musea-and-css.md): Verificações de blocos de arte Musea e diagnósticos de estilo.
-- [Cross-file rules](./cross-file.md): diagnósticos de grafos de projeto emitidos por
-  `vize lint --cross-file`.
+Com o Vite+, importe `defineConfig` de `@vizejs/vite-plugin/vite-plus`, configure `vue.linter` e execute `vp run lint`. Esse comando executa as regras do Vize e o Oxlint juntos.
 
-## Presets
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-`essential` contém regras de correção que quase sempre devem ser ativadas. `happy-path` adiciona
-verificações práticas de higiene para o desenvolvimento diário do Vue. `ecosystem` parte do amplo pacote padrão de
-e adiciona Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt e verificações Void Vue. `nuxt`
-inclui expectativas de SSR orientadas para Nuxt e expectativas para Vapor. `opinionated` é o preset
-mais amplo embutido.
+export default defineConfig({
+  vue: {
+    linter: {
+      preset: "happy-path",
+      rules: {
+        "vue/no-v-html": "off",
+        "a11y/alt-text": "error",
+      },
+    },
+  },
+});
+```
 
-`incremental` começa vazio. Use-o quando um host quiser optar por regras específicas sem herdar um preset
-maior.
+Cada regra aceita `off`, `warn` ou `error`. Regras com configurações as leem de `vue.linter.ruleOptions`; veja [Opções das regras](/rules/options.md).
 
-## Configuração Consciente de Tipos
+Se o projeto já tiver um script chamado `lint`, use `vp run vize:lint`. O comando embutido `vp lint` é o verificador do próprio Vite+ e não executa as regras do Vize.
 
-Regras que precisam de informação semântica leem o projeto TypeScript através de `tsconfig.json`. Prefiro
-colocar nomes de ambientes compartilhados em `compilerOptions.types` ou referências de projetos em vez de manter
-uma lista de `globals` separada na configuração do Vize.
+## Predefinições
+
+Uma predefinição é um conjunto inicial de regras. `happy-path` é a padrão.
+
+| Predefinição | Regras | O que ativa |
+| --- | ---: | --- |
+| `essential` | 85 | Validade de templates e diretivas, remoções do Vue 3 (`vue/no-deprecated-*`, `script/no-deprecated-*`), correção de macros de script, `nextTick` e Options API, hooks de ciclo de vida, watchers e `expose` registrados depois de `await`, imports de `vue` em vez de `@vue/*`, componentes não usados, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
+| `happy-path` (padrão) | 147 | `essential`, mais convenções de formatação de template (incluindo a forma curta de `v-bind` e eventos de componente com hífen), acessibilidade, conformidade HTML, riscos de SSR, propriedades não usadas, emits declarados e props e emits tipados |
+| `ecosystem` | 155 | `happy-path`, mais as verificações das bibliotecas do ecossistema |
+| `nuxt` | 213 | `opinionated`, ajustada para os auto-imports do Nuxt |
+| `opinionated` | 213 | `happy-path`, mais convenções mais rígidas, props tipadas, `defineProps`/`defineEmits` baseados em tipos, ordem das macros de `<script setup>`, nomes de eventos em camelCase, `useTemplateRef`, `defineSlots`, padrões de props e emits, `defineOptions` e as regras de estilo `css/*` |
+| `incremental` | 0 | Nada. Comece aqui para ativar só as regras que você nomear. |
+
+As contagens não incluem as regras entre arquivos. Quando `compiler.compatibility.vueVersion` é `2` ou `2.7`, as verificações de remoções do Vue 3 ficam desativadas.
+
+## Encontrar uma regra
+
+| Página | O que cobre |
+| --- | --- |
+| [Todas as regras](./all.md) | Todas as regras em um índice por categoria, com a menor predefinição que ativa cada uma |
+| [Vue](./vue.md) | Templates, diretivas, componentes e blocos de SFC, e migração para o Vue 3 |
+| [Tipo e script](./type-and-script.md) | `<script setup>`, macros do compilador, reatividade e verificações com tipos |
+| [HTML](./html.md) | Validade do HTML e marcação semântica |
+| [Acessibilidade](./accessibility.md) | ARIA, interação por teclado, rótulos, landmarks e alternativas de mídia |
+| [SSR](./ssr.md) | Riscos de renderização no servidor e hidratação |
+| [Vapor](./vapor.md) | Restrições para componentes compilados no modo Vapor |
+| [Ecossistema e Nuxt](./ecosystem.md) | Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils e Void Vue |
+| [Musea e CSS](./musea-and-css.md) | Histórias `.art.vue` do Musea e CSS puro |
+| [petite-vue](./petite-vue.md) | Páginas HTML que usam petite-vue |
+| [Entre arquivos](./cross-file.md) | Verificações entre componentes, providers e roteadores, ativadas com `crossFile: true` |
+| [Opções das regras](/rules/options.md) | `ruleOptions` tipadas e seus valores padrão |
+| [Migração do ESLint](/rules/migration.md) | Nomes de regras do `eslint-plugin-vue` mapeados para o Vize, com as diferenças |
+
+Cada página de regra começa pelo que a regra verifica, sua severidade padrão e as predefinições. Depois mostra um exemplo incorreto, que a regra reporta, e um correto, que ela aceita, cada um com uma frase de motivo, e a configuração que ativa a regra. Os exemplos são os mesmos que a suíte de testes do linter executa.
+
+## Regras com informações de tipo
+
+As regras em `type/` leem informações de tipo do projeto TypeScript em `tsconfig.json`. Além de uma predefinição ou de uma entrada em `rules` que as ative, elas precisam de `typeAware: true` em `vue.linter`. Declare nomes de ambiente compartilhados em `compilerOptions.types` ou com project references, e não em uma lista `globals` separada na configuração do Vize.

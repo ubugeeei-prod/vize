@@ -19,7 +19,12 @@ type LocaleStrings = {
 type Sitemap = {
   blogNavigationPaths: string[];
   hiddenPathPatterns: RegExp[];
-  navGroups: Array<{ key: string; paths: string[]; pathsByLocale?: Record<string, string[]> }>;
+  navGroups: Array<{
+    key: string;
+    paths: string[];
+    pathsByLocale?: Record<string, string[]>;
+    sections?: Array<{ page: string; paths?: string[] }>;
+  }>;
   supportedLocales: Array<{ code: string; name: string }>;
 };
 
@@ -210,7 +215,6 @@ void test("the sidebar groups the pages the site actually publishes", () => {
       "components",
       "tools",
       "rules",
-      "ruleGuides",
       "architecture",
       "blog",
     ],
@@ -327,6 +331,7 @@ void test("every locale labels every sidebar entry", () => {
   const navPaths = sitemap.navGroups.flatMap((group) => [
     ...group.paths,
     ...Object.values(group.pathsByLocale ?? {}).flat(),
+    ...(group.sections ?? []).flatMap((section) => [section.page, ...(section.paths ?? [])]),
   ]);
   assert.deepEqual(
     navPaths.filter((navPath) => !(navPath in locales.en.labels)),

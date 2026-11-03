@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 setup 中に `window.innerWidth` を読み、ブラウザの `window` がない SSR 環境でも実行されます。
 
@@ -59,7 +59,7 @@ const width = window.innerWidth;
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 サーバーでも安全に使える初期値で ref を作り、クライアントでのマウント後に実行される `onMounted` 内で `window` を読みます。
 

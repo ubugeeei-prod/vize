@@ -222,30 +222,6 @@
       "note": "Placement is handled in #8364."
     },
     {
-      "route": "/rules/accessibility-core",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "English and authored Japanese introductions explain when to use the eight core rules and link to complete existing label examples and the accessibility guide. Original reference packets, code and bookmarks are retained; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/accessibility-integrity",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "English and authored Japanese introductions explain when to review the seven integrity rules and link to complete existing ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/accessibility-interactions",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "English and authored Japanese introductions explain when to review the eight interaction rules and link to complete existing focus/ARIA examples and the accessibility guide. Original reference packets, code, defaults and bookmarks are retained; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/accessibility-structure",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "English and authored Japanese introductions explain when to review the eight structure rules and link to complete existing heading examples and the accessibility guide. Original reference packets, code, defaults, explicit img-alt selection and bookmarks are retained; native and deployed reader acceptance remain pending."
-    },
-    {
       "route": "/rules/migration",
       "locales": ["en", "ja"],
       "entry": "revised",
@@ -280,48 +256,6 @@
       "locales": ["en", "ja"],
       "entry": "revised",
       "note": "Complete authored Japanese explains each Vue rule option and preserves all twenty full examples, API tokens, the reference link and eight original bookmarks. Both languages describe never as forbidding self-closing syntax without requiring invalid paired HTML void tags; original defaults and source policies remain unchanged. Regeneration, native reading and deployed acceptance remain required."
-    },
-    {
-      "route": "/rules/vue-components",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains when to review components and props and links complete prop-update examples and the Vue guide. All ten original references, filename and global-registration boundaries, forty code blocks, defaults and bookmarks remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-directive-validity",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains directive syntax and placement, then links complete v-for and slot examples and the Vue guide. All nine original references, thirty-six code blocks, defaults, presets, option boundaries and source links remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-directives",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains directive and event conventions, when to adopt them, and the complete modifier-key examples and next lint action. All six original references, twenty-four code blocks, defaults, presets and optional custom-directive boundaries remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-formatting",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains attribute naming/order, quotes, whitespace and empty-element conventions, then links complete attribute-order and Vue 3.4 shorthand examples and typed options. All eleven original references, forty-four code blocks, defaults, presets and bookmarks remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-sfc",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains SFC block structure and the interchangeable script/template default, then links complete block-order examples and the Vue guide. All eight original references, thirty-two code blocks, defaults, presets and three no-SFC-finding qualifications remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-template-safety",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains template safety and HTML structure, then links complete text-rendering and unique-ID examples and the Vue guide. All seven original references, twenty-eight code blocks, defaults, presets, options and source links remain intact; native and deployed reader acceptance remain pending."
-    },
-    {
-      "route": "/rules/vue-template-structure",
-      "locales": ["en", "ja"],
-      "entry": "revised",
-      "note": "Authored Japanese explains repetition, conditional branches and template structure, then links complete key and v-if/v-for examples and the Vue guide. All nine references, thirty-six code blocks, defaults, presets, options, current nested-v-for shadowing boundaries and source links remain intact; native and deployed reader acceptance remain pending."
     },
     {
       "route": "/stability",

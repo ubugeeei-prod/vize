@@ -1,22 +1,42 @@
 ---
 title: "HTML rules"
+description: "HTML validity and semantic markup in templates."
 ---
 
 # HTML rules
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
+HTML validity and semantic markup in templates.
 
+Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-| Rule | Examples | Purpose |
+## Essential (1)
+
+Correctness rules in the `essential` preset.
+
+| Rule | What it checks | Auto-fix |
 | --- | --- | --- |
-| [`html/deprecated-attr`](https://vizejs.dev/rules/html.html#html-deprecated-attr) | [Bad](https://vizejs.dev/rules/html.html#html-deprecated-attr-bad) · [Good](https://vizejs.dev/rules/html.html#html-deprecated-attr-good) | Disallow deprecated HTML attributes |
-| [`html/deprecated-element`](https://vizejs.dev/rules/html.html#html-deprecated-element) | [Bad](https://vizejs.dev/rules/html.html#html-deprecated-element-bad) · [Good](https://vizejs.dev/rules/html.html#html-deprecated-element-good) | Disallow deprecated HTML elements |
-| [`html/id-duplication`](https://vizejs.dev/rules/html.html#html-id-duplication) | [Bad](https://vizejs.dev/rules/html.html#html-id-duplication-bad) · [Good](https://vizejs.dev/rules/html.html#html-id-duplication-good) | Disallow duplicate element IDs |
-| [`html/no-consecutive-br`](https://vizejs.dev/rules/html.html#html-no-consecutive-br) | [Bad](https://vizejs.dev/rules/html.html#html-no-consecutive-br-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-consecutive-br-good) | Disallow consecutive &lt;br&gt; elements |
-| [`html/no-dupe-style-properties`](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties) | [Bad](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties-good) | Disallow duplicate properties in inline style attributes |
-| [`html/no-duplicate-class`](https://vizejs.dev/rules/html.html#html-no-duplicate-class) | [Bad](https://vizejs.dev/rules/html.html#html-no-duplicate-class-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-duplicate-class-good) | Disallow duplicate class names in a static class attribute |
-| [`html/no-duplicate-dt`](https://vizejs.dev/rules/html.html#html-no-duplicate-dt) | [Bad](https://vizejs.dev/rules/html.html#html-no-duplicate-dt-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-duplicate-dt-good) | Disallow duplicate &lt;dt&gt; names in &lt;dl&gt; |
-| [`html/no-empty-palpable-content`](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content) | [Bad](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content-good) | Disallow empty elements that expect visible content |
-| [`html/require-datetime`](https://vizejs.dev/rules/html.html#html-require-datetime) | [Bad](https://vizejs.dev/rules/html.html#html-require-datetime-bad) · [Good](https://vizejs.dev/rules/html.html#html-require-datetime-good) | Require datetime attribute on &lt;time&gt; element |
+| <span id="html-id-duplication"></span>[`html/id-duplication`](./reference/html-id-duplication.md) | Disallow duplicate element IDs. |  |
 
-[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md) · [Attributes across components](./project/vue-cross-file-attrs-fallthrough.md)
+## Default (7)
+
+Added by `happy-path`, the default preset.
+
+| Rule | What it checks | Auto-fix |
+| --- | --- | --- |
+| <span id="html-deprecated-attr"></span>[`html/deprecated-attr`](./reference/html-deprecated-attr.md) | Disallow deprecated HTML attributes. |  |
+| <span id="html-deprecated-element"></span>[`html/deprecated-element`](./reference/html-deprecated-element.md) | Disallow deprecated HTML elements. |  |
+| <span id="html-no-consecutive-br"></span>[`html/no-consecutive-br`](./reference/html-no-consecutive-br.md) | Disallow consecutive &lt;br&gt; elements. |  |
+| <span id="html-no-duplicate-class"></span>[`html/no-duplicate-class`](./reference/html-no-duplicate-class.md) | Disallow duplicate class names in a static class attribute. |  |
+| <span id="html-no-duplicate-dt"></span>[`html/no-duplicate-dt`](./reference/html-no-duplicate-dt.md) | Disallow duplicate &lt;dt&gt; names in &lt;dl&gt;. |  |
+| <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | Disallow empty elements that expect visible content. |  |
+| <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | Require datetime attribute on &lt;time&gt; element. |  |
+
+## Stricter presets (1)
+
+Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
+
+| Rule | What it checks | Presets | Auto-fix |
+| --- | --- | --- | --- |
+| <span id="html-no-dupe-style-properties"></span>[`html/no-dupe-style-properties`](./reference/html-no-dupe-style-properties.md) | Disallow duplicate properties in inline style attributes. | `nuxt`, `opinionated` |  |
+
+[Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

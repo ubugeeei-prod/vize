@@ -1,18 +1,36 @@
 ---
 title: "vue/no-static-inline-styles"
+description: "静的なインライン style 属性を検出します。"
 ---
 
 # `vue/no-static-inline-styles`
 
 静的なインライン style 属性を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+p の style 属性に、変化しない色を直接指定しています。
+
+```vue annotate="remove:1,2,3"
+<template>
+<p style="color: red">Notice</p>
+</template>
+```
+
+## 良い例
+
+notice のクラスと scoped の CSS に、変化しない色を移します。
+
+```vue annotate="add:1,2"
+<template><p class="notice">Notice</p></template>
+<style scoped>.notice { color: red; }</style>
+```
 
 ## 設定（Vite+）
 
@@ -31,29 +49,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-p の style 属性に、変化しない色を直接指定しています。
-
-```vue
-<template>
-<p style="color: red">Notice</p>
-</template>
-```
-
-## 良い
-
-notice のクラスと scoped の CSS に、変化しない色を移します。
-
-```vue
-<template><p class="notice">Notice</p></template>
-<style scoped>.notice { color: red; }</style>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15)

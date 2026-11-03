@@ -66,7 +66,7 @@ const store = inject(StoreKey)!;
 <template><p>{{ store.count }}</p></template>
 ```
 
-## 悪い
+## 悪い例
 
 `CountLoader.vue` が非同期処理の結果を、`CountSummary.vue` と共有する inject 済みのストアへ直接書き込みます。そのため、古い処理の結果が両方の使用側に影響する可能性があります。
 
@@ -118,7 +118,7 @@ watch(query, async (value) => {
 </script>
 ```
 
-## 良い
+## 良い例
 
 `CountLoader.vue` は無効化された処理を中止し、まだ有効な処理の結果だけを emit します。ストアの変更は、提供側の `applyLoadedCount` が担当します。
 

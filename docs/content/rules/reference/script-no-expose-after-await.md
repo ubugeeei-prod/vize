@@ -1,18 +1,39 @@
 ---
 title: "script/no-expose-after-await"
+description: "Disallow expose() and defineExpose() after an await."
 ---
 
 # `script/no-expose-after-await`
 
-Disallow expose() and defineExpose() after an await
+Disallow expose() and defineExpose() after an await.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+`defineExpose()` runs after a top-level `await`, when there is no current component instance, so nothing is exposed.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+await loadData()
+defineExpose({ reload })
+</script>
+```
+
+## Good
+
+`defineExpose()` runs before the first `await`, while the component instance is still current.
+
+```vue annotate="add:3"
+<script setup lang="ts">
+defineExpose({ reload })
+await loadData()
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`defineExpose()` runs after a top-level `await`, when there is no current component instance, so nothing is exposed.
-
-```vue
-<script setup lang="ts">
-await loadData()
-defineExpose({ reload })
-</script>
-```
-
-## Good
-
-`defineExpose()` runs before the first `await`, while the component instance is still current.
-
-```vue
-<script setup lang="ts">
-defineExpose({ reload })
-await loadData()
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34)

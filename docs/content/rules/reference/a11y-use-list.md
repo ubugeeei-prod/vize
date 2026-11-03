@@ -1,18 +1,41 @@
 ---
 title: "a11y/use-list"
+description: "Suggest using list elements for bullet-like text."
 ---
 
 # `a11y/use-list`
 
-Suggest using list elements for bullet-like text
+Suggest using list elements for bullet-like text.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The task items are separate paragraphs with typed dash markers rather than list elements.
+
+```vue annotate="remove:2,3"
+<template>
+  <p>- First task</p>
+  <p>- Second task</p>
+</template>
+```
+
+## Good
+
+An unordered list and list items express the same tasks with list semantics.
+
+```vue annotate="add:2,3,4,5"
+<template>
+  <ul>
+    <li>First task</li>
+    <li>Second task</li>
+  </ul>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The task items are separate paragraphs with typed dash markers rather than list elements.
-
-```vue
-<template>
-  <p>- First task</p>
-  <p>- Second task</p>
-</template>
-```
-
-## Good
-
-An unordered list and list items express the same tasks with list semantics.
-
-```vue
-<template>
-  <ul>
-    <li>First task</li>
-    <li>Second task</li>
-  </ul>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36)

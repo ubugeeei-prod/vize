@@ -1,31 +1,42 @@
 ---
 title: "Musea 与 CSS 规则"
+description: "检查 Musea 的 `.art.vue` 故事以及 `<style>` 块中的普通 CSS。"
 ---
 
 # Musea 与 CSS 规则
 
-本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+检查 Musea 的 `.art.vue` 故事以及 `<style>` 块中的普通 CSS。
 
-<span id="博物馆与css规则"></span>
-<span id="额外的css规则"></span>
+每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-| 规则 | 示例 | 用途 |
+## 更严格的预设 (10)
+
+只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。
+
+| 规则 | 检查内容 | 预设 | 自动修复 |
+| --- | --- | --- | --- |
+| <span id="css-no-display-none"></span>[`css/no-display-none`](./reference/css-no-display-none.md) | 建议使用 v-show 代替 display: none。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-hardcoded-values"></span>[`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | 建议使用 CSS 变量代替硬编码值。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-id-selectors"></span>[`css/no-id-selectors`](./reference/css-no-id-selectors.md) | 不建议在 CSS 中使用 ID 选择器。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-important"></span>[`css/no-important`](./reference/css-no-important.md) | 不建议在 CSS 中使用 !important。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-utility-classes"></span>[`css/no-utility-classes`](./reference/css-no-utility-classes.md) | 警告在组件样式中实现工具类。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-v-bind-performance"></span>[`css/no-v-bind-performance`](./reference/css-no-v-bind-performance.md) | 警告 CSS v-bind() 的性能开销。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-logical-properties"></span>[`css/prefer-logical-properties`](./reference/css-prefer-logical-properties.md) | 建议使用 CSS 逻辑属性，以更好地支持国际化。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | 建议为后代选择器使用 CSS 嵌套。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | 建议使用 ::v-slotted() 为插槽内容设置样式。 | `opinionated`, `nuxt` |  |
+| <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | 要求 @font-face 规则具有 font-display。 | `opinionated`, `nuxt` |  |
+
+## 按需启用 (6)
+
+不属于任何预设。在 `vue.linter.rules` 中按名称启用。
+
+| 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| [`css/no-display-none`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-display-none) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-display-none-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-display-none-good) | 建议使用 v-show 代替 display: none |
-| [`css/no-hardcoded-values`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-hardcoded-values) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-hardcoded-values-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-hardcoded-values-good) | 建议使用 CSS 变量代替硬编码值 |
-| [`css/no-id-selectors`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-id-selectors) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-id-selectors-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-id-selectors-good) | 不建议在 CSS 中使用 ID 选择器 |
-| [`css/no-important`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-important) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-important-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-important-good) | 不建议在 CSS 中使用 !important |
-| [`css/no-utility-classes`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-utility-classes) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-utility-classes-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-utility-classes-good) | 警告在组件样式中实现工具类 |
-| [`css/no-v-bind-performance`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-v-bind-performance) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-v-bind-performance-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-no-v-bind-performance-good) | 警告 CSS v-bind() 的性能开销 |
-| [`css/prefer-logical-properties`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-logical-properties) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-logical-properties-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-logical-properties-good) | 建议使用 CSS 逻辑属性，以更好地支持国际化 |
-| [`css/prefer-nested-selectors`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-nested-selectors) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-nested-selectors-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-nested-selectors-good) | 建议为后代选择器使用 CSS 嵌套 |
-| [`css/prefer-slotted`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-slotted) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-slotted-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-prefer-slotted-good) | 建议使用 ::v-slotted() 为插槽内容设置样式 |
-| [`css/require-font-display`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-require-font-display) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-require-font-display-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#css-require-font-display-good) | 要求 @font-face 规则具有 font-display |
-| [`musea/no-empty-variant`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-no-empty-variant) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-no-empty-variant-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-no-empty-variant-good) | 禁止空的 &lt;variant&gt; 块 |
-| [`musea/prefer-design-tokens`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-prefer-design-tokens) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-prefer-design-tokens-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-prefer-design-tokens-good) | 优先使用设计令牌 CSS 变量，而不是硬编码的原始值 |
-| [`musea/require-component`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-component) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-component-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-component-good) | 要求 &lt;art&gt; 块具有 component 属性 |
-| [`musea/require-title`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-title) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-title-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-require-title-good) | 要求 &lt;art&gt; 块具有 title 属性 |
-| [`musea/unique-variant-names`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-unique-variant-names) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-unique-variant-names-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-unique-variant-names-good) | 要求 variant 名称唯一 |
-| [`musea/valid-variant`](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-valid-variant) | [错误示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-valid-variant-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/musea-and-css.html#musea-valid-variant-good) | 要求 &lt;variant&gt; 块具有 name 属性 |
+| <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | 禁止空的 &lt;variant&gt; 块。 |  |
+| <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | 优先使用设计令牌 CSS 变量，而不是硬编码的原始值。 |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | 要求 &lt;art&gt; 块具有 component 属性。 |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | 要求 &lt;art&gt; 块具有 title 属性。 |  |
+| <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | 要求 variant 名称唯一。 |  |
+| <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | 要求 &lt;variant&gt; 块具有 name 属性。 |  |
 
-[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

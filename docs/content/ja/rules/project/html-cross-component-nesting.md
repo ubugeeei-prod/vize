@@ -46,7 +46,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親の `<p>` の内側に、ルートが `<div>` の子コンポーネントを合成しています。その結果、段落の中にブロック要素が入り、HTML の入れ子が不正になります。
 
@@ -65,7 +65,7 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-## 良い
+## 良い例
 
 子のブロック要素を含められる `<section>` を親のコンテナーに使います。子コンポーネントは変更しません。
 

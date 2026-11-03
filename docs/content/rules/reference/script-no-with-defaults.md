@@ -1,18 +1,37 @@
 ---
 title: "script/no-with-defaults"
+description: "Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)."
 ---
 
 # `script/no-with-defaults`
 
-Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
+Discourage withDefaults in favor of destructuring defaults (Vue 3.5+).
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+`withDefaults` wraps the typed props declaration solely to supply `count` and `name` defaults, instead of the Vue 3.5+ destructuring-default style preferred here.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
+</script>
+```
+
+## Good
+
+The destructuring pattern puts `count = 0` and `name = "Ada"` beside their bindings and removes the `withDefaults` wrapper.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`withDefaults` wraps the typed props declaration solely to supply `count` and `name` defaults, instead of the Vue 3.5+ destructuring-default style preferred here.
-
-```vue
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
-</script>
-```
-
-## Good
-
-The destructuring pattern puts `count = 0` and `name = "Ada"` beside their bindings and removes the `withDefaults` wrapper.
-
-```vue
-<script setup lang="ts">
-const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41)

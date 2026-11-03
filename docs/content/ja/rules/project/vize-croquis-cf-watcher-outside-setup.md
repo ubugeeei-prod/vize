@@ -64,7 +64,7 @@ const { count, observed } = useObserver();
 
 ```
 
-## 悪い
+## 悪い例
 
 ウォッチャーを各 `Observer` の setup 内ではなく、モジュールの読み込み時に作っています。そのため、両インスタンスが ref を共有し、個々の `Observer` をアンマウントしてもウォッチャーは自動停止しません。
 
@@ -79,7 +79,7 @@ export function useObserver() { return { count, observed }; }
 
 ```
 
-## 良い
+## 良い例
 
 setup からの同期的な呼び出しごとに、`useObserver` 内で個別の ref とウォッチャーを作ります。Vue がウォッチャーの有効期間を呼び出し元のコンポーネントの生存期間に結び付けます。
 
