@@ -198,11 +198,15 @@ fn imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_contro
                 "main-cli" => {
                     let argv = request["argv"].as_array().unwrap();
                     assert_eq!(argv.len(), 9);
+                    // An unsharded program defaults to 8 checkers, capped by the machine.
+                    let width = std::thread::available_parallelism()
+                        .map_or(1, std::num::NonZero::get)
+                        .min(8);
                     assert_eq!(
                         &argv[..4],
                         &[
                             json!("--checkers"),
-                            json!("1"),
+                            json!(width.to_string()),
                             json!("--incremental"),
                             json!("--tsBuildInfoFile")
                         ]

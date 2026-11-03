@@ -35,11 +35,13 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
     corsa_path: &Path,
     project: &VirtualProject,
     servers: usize,
-    checkers: usize,
+    (checkers, unsharded_checkers): (usize, usize),
 ) -> CliCheckResult {
     let plan = partition_virtual_files(project, servers);
     if plan.shards.len() <= 1 {
-        return check_with_cli_classified(corsa_path, project, checkers);
+        // An interconnected project collapses into one program; give it the
+        // width the shards would have shared.
+        return check_with_cli_classified(corsa_path, project, unsharded_checkers);
     }
 
     let mut config_paths = Vec::with_capacity(plan.shards.len());

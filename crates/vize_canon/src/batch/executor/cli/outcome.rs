@@ -187,7 +187,8 @@ mod tests {
                 "#!/bin/sh\ncase \"$*\" in *tsconfig.shard1.json*) printf 'native unavailable'; exit 41;; esac\n",
             ),
         ).unwrap();
-        let failure = super::super::check_with_cli_sharded(&runtime, &project, 2, 1).unwrap_err();
+        let failure =
+            super::super::check_with_cli_sharded(&runtime, &project, 2, (1, 1)).unwrap_err();
         let CliCheckFailure::Runtime(CorsaError::CorsaExecution { exit_code, message }) = failure
         else {
             panic!("a runtime failure must take precedence over a parser handoff: {failure:?}");
@@ -253,5 +254,25 @@ mod tests {
             (clean.success, clean.exit_code, clean.diagnostics.len()),
             (true, 0, 0)
         );
+    }
+
+    /// An interconnected project collapses into one shard; that program must get
+    /// the unsharded width, not the per-shard checker pin (#11673).
+    #[test]
+    fn a_collapsed_shard_plan_runs_one_program_at_the_unsharded_width() {
+        let (temp, project, runtime) = fixture("export const value = 1;\n", "", 0);
+        let recorded = temp.path().join("argv.txt");
+        fs::write(
+            &runtime,
+            cstr!(
+                "#!/bin/sh\nprintf '%s\\n' \"$*\" >> '{}'\nexit 0\n",
+                recorded.display()
+            ),
+        )
+        .unwrap();
+        super::super::check_with_cli_sharded(&runtime, &project, 8, (1, 4)).unwrap();
+        let argv = fs::read_to_string(&recorded).unwrap();
+        assert_eq!(argv.lines().count(), 1, "one program, not shards: {argv}");
+        assert_eq!(argv.matches("--checkers 4").count(), 1, "{argv}");
     }
 }
