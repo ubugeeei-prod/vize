@@ -56,6 +56,42 @@ function files(cwd: string, prefix = ""): string[] {
     .sort();
 }
 
+function assertExpectedOutputs(output: string, expected: Record<string, string>) {
+  const pairs = output
+    .trimEnd()
+    .split("\n")
+    .map((line) => {
+      const pair = /^([a-z][a-z-]*)=(true|false)$/.exec(line);
+      assert.ok(pair, `invalid planner output pair: ${line}`);
+      return [pair[1], pair[2]] as const;
+    });
+  const keys = pairs.map(([key]) => key);
+  assert.equal(new Set(keys).size, keys.length, "duplicate planner output key");
+  assert.deepEqual(Object.fromEntries(pairs), expected);
+}
+
+test("expected output pairs retain strict keys without imposing key order", () => {
+  const expected = {
+    full: "false",
+    rust: "false",
+    dependencies: "false",
+    engines: "false",
+    apps: "true",
+  };
+  const packet = Object.entries(expected)
+    .map(([key, value]) => `${key}=${value}\n`)
+    .join("");
+  const reordered = packet.trimEnd().split("\n").reverse().join("\n") + "\n";
+  assertExpectedOutputs(reordered, expected);
+  for (const invalid of [
+    packet.replace("apps=true\n", ""),
+    packet + "unexpected=true\n",
+    packet + "apps=true\n",
+    packet.replace("apps=true", "apps=1"),
+  ])
+    assert.throws(() => assertExpectedOutputs(invalid, expected));
+});
+
 function fixture(scratch: string) {
   const origin = join(scratch, "origin");
   mkdirSync(origin);
@@ -179,10 +215,13 @@ await test("the actual iteration-plan checkout preserves complete planning from 
       assert.equal(readFileSync(actual.summary, "utf8"), readFileSync(reference.summary, "utf8"));
       const fullQualification = ["schedule", "workflow_dispatch"].includes(event);
       const dependencies = fullQualification || event !== "pull_request";
-      assert.equal(
-        output,
-        `full=${fullQualification}\nrust=${fullQualification}\ndependencies=${dependencies}\nengines=${dependencies}\napps=true\n`,
-      );
+      assertExpectedOutputs(output, {
+        full: String(fullQualification),
+        rust: String(fullQualification),
+        dependencies: String(dependencies),
+        engines: String(dependencies),
+        apps: "true",
+      });
       if (!fullQualification) {
         const base = event === "pull_request" ? source.mergeBase : source.eventBase;
         const paths = git(selected, "diff", "--name-only", "--no-renames", base, "HEAD").split(
