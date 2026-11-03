@@ -179,3 +179,46 @@ function createState(root: string): VizePluginState {
     external: true,
   });
 }
+
+{
+  // #11527: a build resolves the project's Vue runtime once per environment,
+  // request and importer directory; the importing SFC does not change it.
+  const projectRoot = fs.mkdtempSync(path.join(testRoot, "vue-runtime-per-directory-"));
+  const vueEntry = (base: string, version: string) => {
+    const pkg = path.join(base, "node_modules", ".pnpm", `vue@${version}`, "node_modules", "vue");
+    writeFixtureFile(path.join(pkg, "package.json"), '{"name":"vue"}');
+    const entry = path.join(pkg, "dist", "vue.runtime.esm-bundler.js");
+    writeFixtureFile(entry, "export {};");
+    return entry;
+  };
+  const rootVue = vueEntry(projectRoot, "3.6.0");
+  const nestedVue = vueEntry(path.join(projectRoot, "nested"), "3.5.0");
+  const importers = ["src/A.vue", "src/B.vue", "nested/C.vue"].map((file) => {
+    writeFixtureFile(path.join(projectRoot, file), "<template><div /></template>");
+    return path.join(projectRoot, file);
+  });
+
+  for (const server of [null, {} as never]) {
+    const state = { ...createState(projectRoot), server };
+    const resolved: string[] = [];
+    const ctx = {
+      resolve: async (id: string, importer?: string) => {
+        if (id !== "vue") return null;
+        resolved.push(path.relative(projectRoot, importer ?? ""));
+        return { id: importer?.includes("/nested/") ? nestedVue : rootVue };
+      },
+    };
+    const results = [];
+    for (const importer of importers)
+      results.push(await resolveIdHook(ctx, state, "vue", importer));
+
+    assert.deepEqual(results, [rootVue, rootVue, nestedVue], "each directory keeps its own Vue");
+    assert.deepEqual(
+      resolved,
+      server === null ? ["src/A.vue", "nested/C.vue"] : ["src/A.vue", "src/B.vue", "nested/C.vue"],
+      server === null
+        ? "a build resolves Vue once per importer directory"
+        : "the dev server, where installs can change it, resolves per import",
+    );
+  }
+}
