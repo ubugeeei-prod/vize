@@ -14,7 +14,16 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { availableParallelism, totalmem } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -324,6 +333,39 @@ function main(): void {
         save();
       }
       if (!timed) break;
+    }
+    if (process.env.VIZE_SCALING_PROFILE === "1" && corpus.kind === "project") {
+      // One untimed profiled vize check, in a fresh cache, with the phases and artifacts kept.
+      const profileDir = join(out, "profile", `${corpus.sfcs}`);
+      mkdirSync(profileDir, { recursive: true });
+      const vize = tools.find((tool) => tool.id === "vize-check");
+      if (vize) {
+        const base = invocation(vize, env, dir, corpus.kind);
+        const args = [
+          ...base.args.filter((arg) => arg !== "--quiet" && arg !== "--format" && arg !== "json"),
+          "--profile",
+        ];
+        const started = performance.now();
+        const result = spawnSync(base.bin, args, {
+          cwd: dir,
+          env: {
+            ...process.env,
+            NO_COLOR: "1",
+            FORCE_COLOR: "0",
+            XDG_CACHE_HOME: mkdtempSync(join(work, "cache-")),
+            NODE_OPTIONS,
+          },
+          encoding: "utf8",
+          maxBuffer: 1024 * 1024 * 1024,
+        });
+        writeFileSync(
+          join(profileDir, "vize-check.txt"),
+          `wall ${((performance.now() - started) / 1000).toFixed(2)}s status ${result.status}\n--- stderr\n${result.stderr}\n--- stdout (tail)\n${(result.stdout ?? "").slice(-20000)}`,
+        );
+        const artifacts = join(dir, "node_modules", ".vize", "check-profile");
+        if (existsSync(artifacts))
+          cpSync(artifacts, join(profileDir, "check-profile"), { recursive: true });
+      }
     }
     if (!values.keep) rmSync(dir, { recursive: true, force: true });
   }

@@ -90,6 +90,7 @@ jobs:
       - name: Measure
         env:
           VIZE_SCALING_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+          VIZE_SCALING_PROFILE: "1"
         run: |
           node tools/benchmarks/scripts/typecheck-scaling.ts \
             --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
