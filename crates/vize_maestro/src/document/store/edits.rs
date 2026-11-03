@@ -4,7 +4,7 @@ use std::sync::{Arc, OnceLock};
 
 use tower_lsp::lsp_types::TextDocumentContentChangeEvent;
 #[cfg(feature = "native")]
-use tower_lsp::lsp_types::{Diagnostic, Range, Url};
+use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Range, Url};
 
 use super::{Document, DocumentText, next_revision};
 use crate::utils::position_to_offset;
@@ -17,12 +17,20 @@ use crate::{ide::diagnostics::NativeFamily, utils::offset_to_position};
 #[derive(Debug)]
 pub(super) struct CarriedNative {
     anchored: Vec<(usize, usize, Diagnostic)>,
+    /// Holds only for the text the family was computed on: after an edit the
+    /// script parser alone describes the current syntax (#11626).
     owns_script_syntax: bool,
 }
 
 #[cfg(feature = "native")]
 impl CarriedNative {
     fn replace(&mut self, start: usize, end: usize, inserted: usize) {
+        if std::mem::take(&mut self.owns_script_syntax) {
+            // TypeScript's syntax errors (TS1xxx) described the old text.
+            self.anchored.retain(|(_, _, diagnostic)| {
+                !matches!(diagnostic.code, Some(NumberOrString::Number(1000..=1999)))
+            });
+        }
         self.anchored.retain_mut(|(from, to, _)| {
             if *to <= start {
                 return true;

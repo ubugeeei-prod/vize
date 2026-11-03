@@ -1,7 +1,7 @@
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use tower_lsp::lsp_types::{
-    Diagnostic, DiagnosticRelatedInformation, Location, Position, Range,
+    Diagnostic, DiagnosticRelatedInformation, Location, NumberOrString, Position, Range,
     TextDocumentContentChangeEvent, Url,
 };
 
@@ -54,13 +54,15 @@ fn carried(
         owns_script_syntax: true,
     };
     assert!(store.carry_native(&uri(), 1, family));
+    let edited = !versions.is_empty();
     let mut version = 1;
     for changes in versions {
         version += 1;
         assert!(store.apply_changes(&uri(), changes, version));
     }
     let family = store.carried_native(&uri(), version).unwrap();
-    assert!(family.owns_script_syntax);
+    // A moved family no longer describes the current script syntax (#11626).
+    assert_eq!(family.owns_script_syntax, !edited);
     family
         .diagnostics
         .into_iter()
@@ -200,4 +202,37 @@ fn carried_families_belong_to_one_open_version() {
     store.close(&uri());
     store.open(uri(), "const a = 1;\n".into(), 1, "vue".into());
     assert!(store.carried_native(&uri(), 1).is_none());
+}
+
+/// #11626: a family computed on an earlier text cannot own the current text's
+/// script syntax, so the prompt set keeps the script parser's fresh errors.
+#[test]
+fn carried_native_family_does_not_own_the_edited_script_syntax() {
+    let store = DocumentStore::new();
+    store.open(uri(), "const a: number = 1;\n".into(), 1, "vue".into());
+    let coded = |range, message: &str, code| Diagnostic {
+        code: Some(NumberOrString::Number(code)),
+        ..diagnostic(range, message)
+    };
+    let family = NativeFamily {
+        diagnostics: vec![
+            coded(range((0, 6), (0, 7)), "type", 2322),
+            coded(range((0, 18), (0, 19)), "syntax", 1109),
+        ],
+        owns_script_syntax: true,
+    };
+    assert!(store.carry_native(&uri(), 1, family));
+    assert_eq!(
+        store.carried_native(&uri(), 1).unwrap().owns_script_syntax,
+        true,
+        "the family owns the text it was computed on"
+    );
+    assert!(store.apply_changes(&uri(), vec![edit(range((1, 0), (1, 0)), "const = ;\n")], 2));
+    let carried = store.carried_native(&uri(), 2).unwrap();
+    assert_eq!(carried.owns_script_syntax, false);
+    // Its syntax error described the old text; the type error stays.
+    assert_eq!(
+        carried.diagnostics,
+        vec![coded(range((0, 6), (0, 7)), "type", 2322)]
+    );
 }

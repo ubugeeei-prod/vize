@@ -121,3 +121,39 @@ fn required_prop_dedup_preserves_other_type_errors() {
         vec![duplicate],
     );
 }
+
+/// #11626: the prompt set shows a fresh script parser error beside a carried
+/// type error; a family for the current text still replaces parser errors.
+#[test]
+fn carried_family_keeps_fresh_script_parser_errors() {
+    let parser = Diagnostic {
+        range: Range::new(Position::new(1, 6), Position::new(1, 7)),
+        source: Some(sources::SCRIPT_PARSER.into()),
+        severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::ERROR),
+        message: "Expected identifier".into(),
+        ..Default::default()
+    };
+    let typed = Diagnostic {
+        range: Range::new(Position::new(0, 6), Position::new(0, 7)),
+        source: Some(sources::TYPE_CHECKER.into()),
+        code: Some(NumberOrString::Number(2322)),
+        message: "Type 'string' is not assignable to type 'number'.".into(),
+        ..Default::default()
+    };
+    let carried = super::NativeFamily {
+        diagnostics: vec![typed.clone()],
+        owns_script_syntax: false,
+    };
+    assert_eq!(
+        super::combine(vec![parser.clone()], true, Some(carried)).diagnostics,
+        vec![parser.clone(), typed.clone()]
+    );
+    let current = super::NativeFamily {
+        diagnostics: vec![typed.clone()],
+        owns_script_syntax: true,
+    };
+    assert_eq!(
+        super::combine(vec![parser], true, Some(current)).diagnostics,
+        vec![typed]
+    );
+}
