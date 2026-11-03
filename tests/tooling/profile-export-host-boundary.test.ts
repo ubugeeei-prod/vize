@@ -3,11 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { test } from "node:test";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import {
-  profileHostImports,
-  previousCuratorProfileImport,
-} from "./support/davinci-profile-host-imports.ts";
-import { hashes } from "../../tools/support/levels/profile-export-host-contract.ts";
+import { profileHostImports } from "./support/davinci-profile-host-imports.ts";
 
 // The profile-export host move is complete. These tests keep the host import
 // boundary; the move replay that pinned live caller bytes is retired.
@@ -51,17 +47,14 @@ test("every tracked Rust caller retires the L0 wire API and inherent export meth
   assert.doesNotMatch(read("davinci/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
 });
 
-test("both exact Curator input APIs remain limited to the original host path", () => {
-  const file = hashes.snapshotCaller[0];
-  for (const declaration of [profileHostImports[file], previousCuratorProfileImport]) {
-    assert.doesNotMatch(withoutHostRuntimeReferences(declaration, file), forbidden);
-    for (const other of ["davinci/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
-      assert.match(withoutHostRuntimeReferences(declaration, other), forbidden);
-    for (const changed of [
-      declaration.replace("export_report", "unreviewed_report"),
-      declaration.replace("ProfileExportOptions", "String"),
-      declaration.replace("ProfileExportBudget", "*"),
-    ])
-      assert.match(withoutHostRuntimeReferences(changed, file), forbidden);
-  }
+test("the retired Curator ladder profile host admits no export import", () => {
+  const file = "crates/vize_curator/src/inspector/stages/profile.rs";
+  for (const declaration of [
+    `use vize_carton::profile_export::{
+    ProfileExportBudget, ProfileExportOptions, export_report_from_snapshots,
+};`,
+    "use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};",
+  ])
+    for (const path of [file, "crates/vize_curator/src/other.rs"])
+      assert.match(withoutHostRuntimeReferences(declaration, path), forbidden);
 });

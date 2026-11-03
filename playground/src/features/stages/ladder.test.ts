@@ -2,8 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import type { StageFeed } from "../../wasm/types/stages";
 import { buildLadder } from "./ladder";
 
-// The feed `analyzeSfc` returns for `<div>{{ msg }}</div>`, byte-for-byte as
-// the Rust `wasm::tests_stage_feed` pin states it.
+// A schema-1 feed for `<div>{{ msg }}</div>`, in the compiler's page grammar.
 const L2 = `[l2-dump-v2]
 ops=2
 

@@ -86,7 +86,7 @@ function isRemark(value: unknown): value is StageFeedRemark {
 }
 
 /**
- * Accept a raw `stageFeed` member only when its `schema_version` is the one
+ * Accept a raw stage feed only when its `schema_version` is the one
  * this view understands and every page has the committed shape.
  */
 export function negotiateStageFeed(raw: unknown): StageNegotiation {

@@ -1,7 +1,6 @@
 // P0-11 profile export (`docs/davinci/plan/profile-export.schema.json`): the
-// timing artifact the stage view reads. `analyzeSfc` returns the ladder run's step
-// timings in this shape under `stageProfile`; like the feed, it is
-// negotiated on `schema_version` before any span is read.
+// `--profile-json` artifact the flame view reads, negotiated on
+// `schema_version` before any span is read.
 
 import { layerId } from "./stages";
 
