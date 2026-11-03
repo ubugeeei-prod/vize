@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { availableParallelism } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -6,10 +7,13 @@ import { resolveVuePackageDir } from "./check-gate-env.mjs";
 import { createSurface, ENGINE_CLASSES_BY_SURFACE } from "./compare-tools-report.mjs";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
 import {
+  CHECKER_SETTINGS,
   createMapperLanes,
   mapperHostBins,
   prepareMapperPackages,
   resolveMapperHosts,
+  settingLabel,
+  vizeCheckerLaneId,
 } from "./typecheck-mapper-hosts.ts";
 import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
 
@@ -69,6 +73,7 @@ export function prepareTypecheckDir({
  *   corsaPath: string,
  *   resolveWorkspaceBin: (name: string) => string,
  *   mapperHosts?: import("./typecheck-mapper-hosts.ts").MapperHosts | null,
+ *   cpus?: number,
  *   runCommand?: Function,
  * }} options
  */
@@ -78,6 +83,7 @@ export function createTypecheckToolVariants({
   corsaPath,
   resolveWorkspaceBin,
   mapperHosts = null,
+  cpus = availableParallelism(),
   runCommand = runTypecheckCommand,
 }) {
   const vueTscBin = resolveWorkspaceBin("vue-tsc");
@@ -87,6 +93,8 @@ export function createTypecheckToolVariants({
     {
       id: "vue-tsc",
       label: "vue-tsc",
+      tool: "vue-tsc",
+      setting: "default",
       files: fileCount,
       run: (cwd) =>
         runCommand(vueTscBin, ["--noEmit", "-p", join(cwd, "tsconfig.json"), "--pretty", "false"], {
@@ -96,6 +104,8 @@ export function createTypecheckToolVariants({
     {
       id: "verter-tsc",
       label: "verter-tsc",
+      tool: "verter-tsc",
+      setting: "default",
       files: fileCount,
       run: (cwd) =>
         runCommand(verterTscBin, ["--noEmit", "-p", join(cwd, "tsconfig.json")], {
@@ -106,6 +116,8 @@ export function createTypecheckToolVariants({
     {
       id: "golar-typecheck",
       label: "Golar typecheck",
+      tool: "Golar typecheck",
+      setting: "default",
       files: fileCount,
       run: (cwd) =>
         runCommand(golarBin, ["typecheck"], {
@@ -115,15 +127,34 @@ export function createTypecheckToolVariants({
     {
       id: "golar-default",
       label: "Golar (lint+check)",
+      tool: "Golar (lint+check)",
+      setting: "default",
       files: fileCount,
       run: (cwd) =>
         runCommand(golarBin, [], {
           cwd,
         }),
     },
-    ...["1t", "max"].map((lane) => ({
-      id: `vize-check-${lane}`,
-      label: `Vize check (${lane === "1t" ? "1T" : "max"})`,
+    ...[
+      {
+        id: "vize-check-1t",
+        label: "Vize check (1T)",
+        setting: "--servers 1, RAYON_NUM_THREADS=1",
+        args: ["--servers", "1"],
+        env: { RAYON_NUM_THREADS: "1" },
+      },
+      { id: "vize-check-max", label: "Vize check (max)", setting: "auto servers", args: [] },
+      ...CHECKER_SETTINGS.map((setting) => ({
+        id: vizeCheckerLaneId(setting),
+        label: `Vize check (${settingLabel(setting, cpus)})`,
+        setting: settingLabel(setting, cpus),
+        args: setting.args(cpus),
+      })),
+    ].map(({ id, label, setting, args, env = {} }) => ({
+      id,
+      label,
+      tool: "vize check",
+      setting,
       files: fileCount,
       format: "json",
       run: (cwd) =>
@@ -139,12 +170,12 @@ export function createTypecheckToolVariants({
             join(cwd, "tsconfig.json"),
             "--corsa-path",
             corsaPath,
-            ...(lane === "1t" ? ["--servers", "1"] : []),
+            ...args,
           ],
-          { cwd, env: lane === "1t" ? { RAYON_NUM_THREADS: "1" } : {} },
+          { cwd, env },
         ),
     })),
-    ...(mapperHosts ? createMapperLanes({ fileCount, hosts: mapperHosts, runCommand }) : []),
+    ...(mapperHosts ? createMapperLanes({ fileCount, hosts: mapperHosts, cpus, runCommand }) : []),
   ];
 }
 

@@ -59,20 +59,30 @@ export function summaryTable(data, locale, ids = SURFACE_ORDER) {
   );
 }
 
-/** Every gated type-check row: cold, warm and CPU beside the ratio against vue-tsc. */
+const formatKb = (kb) =>
+  Number.isFinite(kb) ? `${Math.round(kb / 1024).toLocaleString("en-US")} MB` : "n/a";
+
+/** The fastest gated setting of each type-check tool, named, with cold, CPU and peak RSS beside it. */
 export function typecheckTable(surface) {
   const baseline = getVariant(surface, surface.baselineId);
-  const rows = surface.variants.map((variant) => [
-    variant.label,
+  const best = new Map();
+  for (const variant of surface.variants) {
+    const tool = variant.tool ?? variant.label;
+    if (!best.has(tool) || variant.medianMs < best.get(tool).medianMs) best.set(tool, variant);
+  }
+  const rows = [...best].map(([tool, variant]) => [
+    tool,
+    variant.setting ?? "n/a",
     ENGINE_CLASSES[surface.engineClasses?.[variant.id]] ?? "n/a",
     formatMs(variant.coldMs),
     formatMs(variant.medianMs),
     formatMs(variant.cpuMedianMs),
+    formatKb(variant.rssMedianKb),
     baseline ? formatSpeedup(baseline.medianMs / variant.medianMs).replace("x", "×") : "n/a",
   ]);
   return [
-    `Type-check rows on the ${surface.files.toLocaleString("en-US")}-SFC corpus. Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, and CPU is user+sys time of the whole process tree, mapper processes included.`,
-    table(["Checker", "Engine", "Cold", "Warm", "CPU", "vs vue-tsc"], rows),
+    `Type-check rows on the ${surface.files.toLocaleString("en-US")}-SFC corpus: each tool at its fastest measured setting (the full checker-count matrix is in the snapshot). Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, CPU is user+sys time of the whole process tree (mapper processes included), and Peak RSS is the largest single process.`,
+    table(["Checker", "Setting", "Engine", "Cold", "Warm", "CPU", "Peak RSS", "vs vue-tsc"], rows),
   ].join("\n\n");
 }
 

@@ -22,11 +22,13 @@ export const TYPECHECK_HOSTS_DIR = resolve(benchDir, "..", "typecheck-hosts");
 export const VIZE_CLI_PACKAGE_DIR = join(rootDir, "npm", "cli");
 
 type ContentMapper = { id: string; label: string; package: string };
+/** A checker setting: lane id suffix (empty for the host default) and its flags on a runner with `cpus` vCPUs. */
+type Setting = { id: string; args: (cpus: number) => string[] };
 type MapperHost = {
   id: "tsc" | "tsrs";
   label: string;
   engineClass: "tsgo-native" | "tsrs-native";
-  args: string[];
+  settings: Setting[];
 };
 export type MapperHosts = {
   tsc: string;
@@ -43,23 +45,51 @@ export const CONTENT_MAPPERS: ContentMapper[] = [
   { id: "vue", label: "Vue mapper", package: "@vue/content-mapper" },
 ];
 
+const DEFAULT_SETTING: Setting = { id: "", args: () => [] };
+
+/** Checker counts beyond the default; `max` is the runner's vCPU count. */
+export const CHECKER_SETTINGS: Setting[] = ["4", "8", "16", "max"].map((count) => ({
+  id: `checkers-${count}`,
+  args: (cpus) => ["--checkers", count === "max" ? String(cpus) : count],
+}));
+
+export const settingLabel = (setting: Setting, cpus: number): string =>
+  setting.args(cpus).join(" ") || "default";
+
 export const MAPPER_HOSTS: MapperHost[] = [
-  { id: "tsc", label: "tsc", engineClass: "tsgo-native", args: [] },
-  { id: "tsrs", label: "tsrs", engineClass: "tsrs-native", args: ["--fast"] },
+  {
+    id: "tsc",
+    label: "tsc",
+    engineClass: "tsgo-native",
+    settings: [DEFAULT_SETTING, ...CHECKER_SETTINGS],
+  },
+  {
+    id: "tsrs",
+    label: "tsrs",
+    engineClass: "tsrs-native",
+    settings: [DEFAULT_SETTING, { id: "fast", args: () => ["--fast"] }],
+  },
 ];
 
-export const mapperLaneId = (host: MapperHost, mapper: ContentMapper): string =>
-  `${host.id}-${mapper.id}-mapper`;
+export const mapperLaneId = (host: MapperHost, mapper: ContentMapper, setting: Setting): string =>
+  `${host.id}-${mapper.id}-mapper${setting.id ? `-${setting.id}` : ""}`;
+export const vizeCheckerLaneId = (setting: Setting): string => `vize-check-${setting.id}`;
 export const mapperTsconfigName = (mapper: ContentMapper): string =>
   `tsconfig.${mapper.id}-mapper.json`;
 
-/** Every mapper lane id with its engine class, in measurement order. */
-export const MAPPER_LANE_ENGINE_CLASSES: Record<string, MapperHost["engineClass"]> =
-  Object.fromEntries(
+/** Every mapper and `vize check --checkers` lane id with its engine class. */
+export const SETTING_LANE_ENGINE_CLASSES: Record<string, MapperHost["engineClass"]> = {
+  ...Object.fromEntries(
+    CHECKER_SETTINGS.map((setting) => [vizeCheckerLaneId(setting), "tsgo-native" as const]),
+  ),
+  ...Object.fromEntries(
     MAPPER_HOSTS.flatMap((host) =>
-      CONTENT_MAPPERS.map((mapper) => [mapperLaneId(host, mapper), host.engineClass]),
+      CONTENT_MAPPERS.flatMap((mapper) =>
+        host.settings.map((setting) => [mapperLaneId(host, mapper, setting), host.engineClass]),
+      ),
     ),
-  );
+  ),
+};
 
 function hostPaths(hostsDir: string): { tsc: string; tsrs: string; vueMapper: string } {
   const modules = join(hostsDir, "node_modules");
@@ -128,26 +158,47 @@ export function prepareMapperPackages(dir: string, hosts: MapperHosts): void {
 }
 
 /** One lane per host and mapper; each checks the project through its mapper tsconfig. */
+type Lane<Result> = {
+  id: string;
+  label: string;
+  tool: string;
+  setting: string;
+  files: number;
+  run: (cwd: string) => Result;
+};
+
+/** One lane per host, mapper and checker setting. */
 export function createMapperLanes<Result>({
   fileCount,
   hosts,
+  cpus,
   runCommand,
 }: {
   fileCount: number;
   hosts: MapperHosts;
+  cpus: number;
   runCommand: RunCommand<Result>;
-}): Array<{ id: string; label: string; files: number; run: (cwd: string) => Result }> {
+}): Lane<Result>[] {
   return MAPPER_HOSTS.flatMap((host) =>
-    CONTENT_MAPPERS.map((mapper) => ({
-      id: mapperLaneId(host, mapper),
-      label: `${host.label} + ${mapper.label}`,
+    CONTENT_MAPPERS.flatMap((mapper) =>
+      host.settings.map((setting) => laneFor(host, mapper, setting)),
+    ),
+  );
+  function laneFor(host: MapperHost, mapper: ContentMapper, setting: Setting): Lane<Result> {
+    const tool = `${host.label} + ${mapper.label}`;
+    const label = settingLabel(setting, cpus);
+    return {
+      id: mapperLaneId(host, mapper, setting),
+      label: setting.id ? `${tool} (${label})` : tool,
+      tool,
+      setting: label,
       files: fileCount,
       run: (cwd: string) =>
         runCommand(
           hosts[host.id],
           [
             "--noEmit",
-            ...host.args,
+            ...setting.args(cpus),
             "--runExternalCode",
             "--pretty",
             "false",
@@ -156,6 +207,6 @@ export function createMapperLanes<Result>({
           ],
           { cwd },
         ),
-    })),
-  );
+    };
+  }
 }

@@ -180,7 +180,13 @@ for (const id of ["check", "large-check"]) {
       assert.throws(() => validatePublishedSnapshot(data));
     });
   }
-  type ProcessVariant = { cpuRuns: number[]; cpuMedianMs: number; coldMs: number };
+  type ProcessVariant = {
+    cpuRuns: number[];
+    cpuMedianMs: number;
+    coldMs: number;
+    rssRuns: number[];
+    rssMedianKb: number;
+  };
   const processFailures: [string, (variant: ProcessVariant) => void][] = [
     ["missing CPU samples", (v) => void Reflect.deleteProperty(v, "cpuRuns")],
     ["short CPU samples", (v) => void v.cpuRuns.pop()],
@@ -188,12 +194,19 @@ for (const id of ["check", "large-check"]) {
     ["CPU median", (v) => void (v.cpuMedianMs += 1)],
     ["missing cold run", (v) => void Reflect.deleteProperty(v, "coldMs")],
     ["no-op cold run", (v) => void (v.coldMs = 0)],
+    ["missing peak RSS samples", (v) => void Reflect.deleteProperty(v, "rssRuns")],
+    ["fractional peak RSS sample", (v) => void (v.rssRuns[0] = 1.5)],
+    ["peak RSS median", (v) => void (v.rssMedianKb += 1)],
+    ["missing tool setting", (v) => void Reflect.deleteProperty(v, "tool")],
   ];
   for (const [label, corrupt] of processFailures) {
     test(`publication refuses ${id} ${label}`, () => {
       const data = structuredClone(artifact);
       corrupt(data.surfaces.find((s: { id: string }) => s.id === id).variants.at(-1));
-      assert.throws(() => validatePublishedSnapshot(data), /CPU samples|cold run/u);
+      assert.throws(
+        () => validatePublishedSnapshot(data),
+        /CPU samples|cold run|peak RSS|tool setting/u,
+      );
     });
   }
 }

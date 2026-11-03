@@ -16,8 +16,9 @@ const round = (ms) => Number(ms.toFixed(3));
 
 /**
  * A lane's `measure` returns its wall time in ms, or a process sample
- * `{ ms, cpuMs }`. Process samples also publish the CPU median and the first
- * warmup as the cold run; the cold run never enters either median.
+ * `{ ms, cpuMs, rssKb }`. Process samples also publish the CPU and peak-RSS
+ * medians and the first warmup as the cold run; the cold run never enters a
+ * median.
  */
 export async function measureVariants(variants, options, onRejected) {
   const rejected = new Set();
@@ -57,6 +58,7 @@ export async function measureVariants(variants, options, onRejected) {
       const measured = {
         id: variant.id,
         label: variant.label,
+        ...(variant.tool ? { tool: variant.tool, setting: variant.setting } : {}),
         medianMs,
         runs,
         throughput: formatThroughput(variant.files, medianMs),
@@ -66,12 +68,16 @@ export async function measureVariants(variants, options, onRejected) {
         measured.coldMs = round(cold.ms);
         if (cold.cpuMs != null) measured.coldCpuMs = round(cold.cpuMs);
       }
-      if (
+      const every = (key) =>
         samples.length > 0 &&
-        samples.every((sample) => typeof sample === "object" && sample.cpuMs != null)
-      ) {
+        samples.every((sample) => typeof sample === "object" && sample[key] != null);
+      if (every("cpuMs")) {
         measured.cpuRuns = samples.map((sample) => round(sample.cpuMs));
         measured.cpuMedianMs = round(median(measured.cpuRuns));
+      }
+      if (every("rssKb")) {
+        measured.rssRuns = samples.map((sample) => sample.rssKb);
+        measured.rssMedianKb = median(measured.rssRuns);
       }
       return measured;
     });

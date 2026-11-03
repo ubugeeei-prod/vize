@@ -72,7 +72,11 @@ export function checkedMeasurement(variant, cwd, baseline) {
     if (cpuMs != null && !(Number.isFinite(cpuMs) && cpuMs >= 0)) {
       throw new Error(`${variant.id}: invalid measured CPU time`);
     }
-    return { ms: result.ms, cpuMs };
+    const rssKb = result.rssKb ?? null;
+    if (rssKb != null && !(Number.isInteger(rssKb) && rssKb > 0)) {
+      throw new Error(`${variant.id}: invalid measured peak RSS`);
+    }
+    return { ms: result.ms, cpuMs, rssKb };
   };
 }
 

@@ -49,46 +49,82 @@ void test("each host checks the project through each mapper's tsconfig", () => {
     corsaPath: "/bin/tsgo",
     resolveWorkspaceBin: (name: string) => `/bin/${name}`,
     mapperHosts: hosts,
+    cpus: 32,
     runCommand: (bin: string, args: string[], options: { cwd: string }) => {
       calls.push({ bin, args, cwd: options.cwd });
       return { ms: 1, cpuMs: 1, status: 0, stdout: "", stderr: "" };
     },
   });
-  const lanes = variants.filter((v: { id: string }) => v.id.endsWith("-mapper"));
+  const lanes = variants.filter((v: { id: string }) => v.id.includes("-mapper"));
   assert.deepEqual(
-    lanes.map((v: { id: string; label: string }) => [v.id, v.label]),
+    lanes.map((v: { id: string; label: string; tool: string; setting: string }) => [
+      v.id,
+      v.label,
+      v.tool,
+      v.setting,
+    ]),
     [
-      ["tsc-vize-mapper", "tsc + Vize mapper"],
-      ["tsc-vue-mapper", "tsc + Vue mapper"],
-      ["tsrs-vize-mapper", "tsrs + Vize mapper"],
-      ["tsrs-vue-mapper", "tsrs + Vue mapper"],
+      ["tsc-vize-mapper", "tsc + Vize mapper", "tsc + Vize mapper", "default"],
+      ...["4", "8", "16", "max"].map((n) => [
+        `tsc-vize-mapper-checkers-${n}`,
+        `tsc + Vize mapper (--checkers ${n === "max" ? 32 : n})`,
+        "tsc + Vize mapper",
+        `--checkers ${n === "max" ? 32 : n}`,
+      ]),
+      ["tsc-vue-mapper", "tsc + Vue mapper", "tsc + Vue mapper", "default"],
+      ...["4", "8", "16", "max"].map((n) => [
+        `tsc-vue-mapper-checkers-${n}`,
+        `tsc + Vue mapper (--checkers ${n === "max" ? 32 : n})`,
+        "tsc + Vue mapper",
+        `--checkers ${n === "max" ? 32 : n}`,
+      ]),
+      ["tsrs-vize-mapper", "tsrs + Vize mapper", "tsrs + Vize mapper", "default"],
+      ["tsrs-vize-mapper-fast", "tsrs + Vize mapper (--fast)", "tsrs + Vize mapper", "--fast"],
+      ["tsrs-vue-mapper", "tsrs + Vue mapper", "tsrs + Vue mapper", "default"],
+      ["tsrs-vue-mapper-fast", "tsrs + Vue mapper (--fast)", "tsrs + Vue mapper", "--fast"],
     ],
   );
   for (const lane of lanes) lane.run("/project");
   const tail = (mapper: string) => [
+    "--runExternalCode",
     "--pretty",
     "false",
     "-p",
     `/project/tsconfig.${mapper}-mapper.json`,
   ];
+  const checkers = ["4", "8", "16", "32"].map((n) => ["--checkers", n]);
   assert.deepEqual(
     calls.map((call) => [call.bin, call.cwd, ...call.args]),
     [
-      ["/hosts/tsc", "/project", "--noEmit", "--runExternalCode", ...tail("vize")],
-      ["/hosts/tsc", "/project", "--noEmit", "--runExternalCode", ...tail("vue")],
-      ["/hosts/tsrs", "/project", "--noEmit", "--fast", "--runExternalCode", ...tail("vize")],
-      ["/hosts/tsrs", "/project", "--noEmit", "--fast", "--runExternalCode", ...tail("vue")],
+      ...["vize", "vue"].flatMap((mapper) =>
+        [[], ...checkers].map((flags) => [
+          "/hosts/tsc",
+          "/project",
+          "--noEmit",
+          ...flags,
+          ...tail(mapper),
+        ]),
+      ),
+      ...["vize", "vue"].flatMap((mapper) =>
+        [[], ["--fast"]].map((flags) => [
+          "/hosts/tsrs",
+          "/project",
+          "--noEmit",
+          ...flags,
+          ...tail(mapper),
+        ]),
+      ),
     ],
   );
-  // Without hosts the existing six lanes are unchanged.
+  // Without hosts no mapper lane is created.
   assert.equal(
     createTypecheckToolVariants({
       fileCount: 20,
       vizeBin: "/bin/vize",
       corsaPath: "/bin/tsgo",
       resolveWorkspaceBin: (name: string) => `/bin/${name}`,
-    }).length,
-    6,
+    }).filter((v: { id: string }) => v.id.includes("-mapper")).length,
+    0,
   );
 });
 
@@ -162,10 +198,10 @@ void test("the Vize mapper is installed as its published files, never into a lin
 
 void test("process lanes publish CPU and a cold first run; wall-only lanes are unchanged", async () => {
   const process = [
-    { ms: 50, cpuMs: 90 },
-    { ms: 10, cpuMs: 30 },
-    { ms: 12, cpuMs: 20 },
-    { ms: 11, cpuMs: 40 },
+    { ms: 50, cpuMs: 90, rssKb: 900 },
+    { ms: 10, cpuMs: 30, rssKb: 700 },
+    { ms: 12, cpuMs: 20, rssKb: 500 },
+    { ms: 11, cpuMs: 40, rssKb: 600 },
   ];
   const measured = await measureVariants(
     [
@@ -197,6 +233,8 @@ void test("process lanes publish CPU and a cold first run; wall-only lanes are u
     coldCpuMs: 90,
     cpuRuns: [30, 20, 40],
     cpuMedianMs: 30,
+    rssRuns: [700, 500, 600],
+    rssMedianKb: 600,
   });
   assert.deepEqual(Object.keys(measured[1]), ["id", "label", "medianMs", "runs", "throughput"]);
   // A lane whose CPU is missing for any run publishes no CPU figure at all.
@@ -217,7 +255,9 @@ void test("an invocation is charged the CPU of the processes it waited for", (t)
   assert.equal(result.status, 0);
   if (process.platform === "linux") {
     assert.ok((result.cpuMs ?? 0) >= 250, `grandchild CPU missing: ${result.cpuMs}ms`);
+    assert.ok((result.rssKb ?? 0) > 0, "peak RSS missing");
   } else {
     assert.equal(result.cpuMs, null);
+    assert.equal(result.rssKb, null);
   }
 });

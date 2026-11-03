@@ -118,6 +118,17 @@ export function validatePublishedSnapshot(input) {
         `invalid ${surface.id}/${variant.id} CPU samples`,
       );
       requireValue(
+        Array.isArray(variant.rssRuns) &&
+          variant.rssRuns.length === variant.runs.length &&
+          variant.rssRuns.every((kb) => Number.isInteger(kb) && kb > 0) &&
+          variant.rssMedianKb === median(variant.rssRuns),
+        `invalid ${surface.id}/${variant.id} peak RSS samples`,
+      );
+      requireValue(
+        typeof variant.tool === "string" && variant.tool && typeof variant.setting === "string",
+        `missing ${surface.id}/${variant.id} tool setting`,
+      );
+      requireValue(
         Number.isFinite(variant.coldMs) && variant.coldMs > 0,
         `missing ${surface.id}/${variant.id} cold run`,
       );

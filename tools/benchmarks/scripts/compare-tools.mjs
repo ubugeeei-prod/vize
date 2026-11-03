@@ -988,15 +988,18 @@ export function renderMarkdown(data) {
   for (const surface of data.surfaces) {
     lines.push(`### ${surface.label}`);
     lines.push("");
-    // Process lanes also record CPU (user+sys of the process tree) and a cold first run.
+    // Process lanes also record CPU (user+sys of the process tree), peak RSS and a cold first run.
     const processLanes = surface.variants.some((variant) => variant.cpuRuns);
     lines.push(
-      `| Variant | Median | ${processLanes ? "CPU median | Cold | " : ""}Throughput | Raw measured runs |`,
+      `| Variant | Median | ${processLanes ? "CPU median | Peak RSS | Cold | " : ""}Throughput | Raw measured runs |`,
     );
-    lines.push(`| --- | ---: | ${processLanes ? "---: | ---: | " : ""}---: | --- |`);
+    lines.push(`| --- | ---: | ${processLanes ? "---: | ---: | ---: | " : ""}---: | --- |`);
     for (const variant of surface.variants) {
+      const rss = Number.isFinite(variant.rssMedianKb)
+        ? `${Math.round(variant.rssMedianKb / 1024)} MB`
+        : "n/a";
       const process = processLanes
-        ? `${formatMs(variant.cpuMedianMs)} | ${formatMs(variant.coldMs)} | `
+        ? `${formatMs(variant.cpuMedianMs)} | ${rss} | ${formatMs(variant.coldMs)} | `
         : "";
       lines.push(
         `| ${variant.label} | ${formatMs(variant.medianMs)} | ${process}${variant.throughput} | ${formatRunList(variant.runs)} |`,
