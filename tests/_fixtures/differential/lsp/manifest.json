@@ -1854,6 +1854,104 @@
       }
     },
     {
+      "id": "lsp/regression/generic-attribute-references-11503",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "generic-attribute-references-11503",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85"
+          },
+          {
+            "path": "types.ts.txt",
+            "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da"
+          }
+        ]
+      },
+      "case": {
+        "path": "generic-attribute-references-11503/case.json",
+        "sha256": "27e3febda9364121c4037fb14db69ebfc39cb47ca1f3df60154469c9f93e22d1"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/generic-attribute-rename-11515",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "generic-attribute-rename-11515",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85"
+          },
+          {
+            "path": "types.ts.txt",
+            "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da"
+          }
+        ]
+      },
+      "case": {
+        "path": "generic-attribute-rename-11515/case.json",
+        "sha256": "2d971436db5420200e053a8bede6bd524d6ad85454a79d53b25c6ca334cf7d70"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/html-element-hover-documentation",
       "state": "active",
       "targets": ["stdio"],

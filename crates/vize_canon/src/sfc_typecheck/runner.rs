@@ -115,20 +115,13 @@ fn type_check_analyzed(
     // Create allocator for template parsing
     let allocator = Allocator::new();
 
-    let generic_parameters = descriptor
-        .script_setup
-        .as_ref()
-        .and_then(|block| block.attrs.get("generic"))
-        .map(|value| value.as_ref())
-        .filter(|value: &&str| !value.trim().is_empty())
-        .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
+    let generic_parameters =
+        crate::virtual_ts::generic_parameters::GenericParameters::from_setup(source, &descriptor);
     let mut has_script_parse_errors = false;
     if let Some(plan) = &generic_parameters
         && !plan.diagnostics.is_empty()
     {
-        let offset =
-            crate::virtual_ts::generic_parameters::authored_generic_range(source, &descriptor)
-                .map_or(0, |range| range.start as u32);
+        let offset = plan.origin.map_or(0, |origin| origin as u32);
         has_script_parse_errors = true;
         add_script_parse_diagnostics(
             plan.diagnostics

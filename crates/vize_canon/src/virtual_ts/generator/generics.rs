@@ -27,6 +27,24 @@ pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, Option<&str>,
         .unwrap_or((None, None, false))
 }
 
+/// `function __setup<...>`: the authored list is written verbatim and owns
+/// the attribute's rows.
+pub(super) fn emit_setup_signature(
+    ts: &mut String,
+    mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
+    is_async: bool,
+    plan: Option<&GenericParameters>,
+) {
+    ts.push_str(if is_async { "async " } else { "" });
+    ts.push_str("function __setup");
+    if let Some(plan) = plan {
+        ts.push('<');
+        mappings.extend(plan.authored_rows(ts.len()));
+        ts.push_str(plan.authored());
+        ts.push('>');
+    }
+}
+
 pub(super) fn generic_suffix(parameters: &str) -> String {
     if parameters.trim().is_empty() {
         String::default()

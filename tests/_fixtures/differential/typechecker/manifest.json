@@ -12216,6 +12216,45 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-attribute-navigation-11515",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-attribute-navigation-11515/App.vue.txt",
+          "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-attribute-navigation-11515/types.ts.txt",
+          "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-attribute-navigation-11515/tsconfig.json.txt",
+          "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_attribute::tests::generic_constraints_and_defaults_report_from_one_copy and generic_parameters::recovery_tests; reported #11503/#11515 generic attribute whose setup-signature rows now carry navigation in the batch, content-mapper and sfc_typecheck projections. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-global-template-ref-11368",
       "state": "active",
       "targets": [

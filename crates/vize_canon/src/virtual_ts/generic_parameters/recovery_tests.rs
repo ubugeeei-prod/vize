@@ -88,11 +88,29 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                         raw_generated - 1 <= row[0] && row[0] <= raw_generated + RAW.len()
                     })
                     .collect();
+                let type_import = exact_mapped_chunk(&source, &result, TYPE_IMPORT);
+                let script_features = result
+                    .mappings
+                    .iter()
+                    .find(|row| {
+                        row.0[0] <= type_import.start && type_import.start < row.0[0] + row.0[1]
+                    })
+                    .map(|row| row.0[5])
+                    .unwrap();
+                assert_ne!(script_features, 0);
+                // The quotes stay diagnostic-only; the list navigates like script.
                 assert_eq!(
                     signature_rows,
                     vec![
                         [raw_generated - 1, 1, raw_authored - 1, 1, 1, 0],
-                        [raw_generated, RAW.len(), raw_authored, RAW.len(), 0, 0],
+                        [
+                            raw_generated,
+                            RAW.len(),
+                            raw_authored,
+                            RAW.len(),
+                            0,
+                            script_features
+                        ],
                         [
                             raw_generated + RAW.len(),
                             1,
@@ -103,7 +121,6 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                         ],
                     ]
                 );
-                let type_import = exact_mapped_chunk(&source, &result, TYPE_IMPORT);
                 let value_import = exact_mapped_chunk(&source, &result, VALUE_IMPORT);
                 let body = exact_mapped_chunk(&source, &result, &BODY.replace('\n', newline));
                 assert!(type_import.end <= signature);
