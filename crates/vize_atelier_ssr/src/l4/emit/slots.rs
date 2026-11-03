@@ -2,6 +2,7 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString};
+use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::{self as l2, DynamicName};
 
 use super::{Emitter, PLAIN, Result};
@@ -79,24 +80,32 @@ fn quote_padded<'f>(file: &'f str, source: &'f str, span: vize_l0::Span) -> &'f 
 }
 
 /// The slot name and props pattern of a `v-slot` spelling.
-fn slot_head(file: &str, content: &l2::SlotContentOp<'_>) -> Result<(String, Option<String>)> {
+fn slot_head(
+    file: &str,
+    exprs: &TransformExpressions<'_>,
+    content: &l2::SlotContentOp<'_>,
+) -> Result<(String, Option<String>)> {
     let name = match content.name {
         None => "default".to_compact_string(),
         Some(DynamicName::Static(name)) => name.to_compact_string(),
         Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Operation.into()),
     };
-    Ok((name, slot_pattern(file, content)?))
+    Ok((name, slot_pattern(file, exprs, content)?))
 }
 
-/// The props pattern of a `v-slot` spelling, TypeScript erased.
-pub(super) fn slot_pattern(file: &str, content: &l2::SlotContentOp<'_>) -> Result<Option<String>> {
+/// The props pattern of a `v-slot` spelling, as the expression lane spells
+/// parameter lists.
+pub(super) fn slot_pattern(
+    file: &str,
+    exprs: &TransformExpressions<'_>,
+    content: &l2::SlotContentOp<'_>,
+) -> Result<Option<String>> {
     if !content.modifiers.is_empty() {
         return Err(LegacyReason::Operation.into());
     }
-    Ok(content.params.map(|params| {
-        let authored = quote_padded(file, params.source(), params.span());
-        vize_atelier_core::steps::strip_typescript_from_expression(authored)
-    }))
+    Ok(content
+        .params
+        .map(|params| exprs.params(quote_padded(file, params.source(), params.span()))))
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -148,7 +157,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             forwarded: self.forwarded_slots(component)?,
         };
         if let Some(content) = slot_content(&component.bindings) {
-            let (name, pattern) = slot_head(self.ctx.source, content)?;
+            let (name, pattern) = slot_head(self.ctx.source, self.exprs, content)?;
             // Nested `<template v-slot>` is transparent: all children belong here.
             let mut ranges = std::vec::Vec::new();
             for child in children {
@@ -169,7 +178,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             if let Some(dynamic) = self.dynamic_slot_source(child)? {
                 slots.dynamic.push(dynamic);
             } else if let Some((element, content)) = self.template_slot(child) {
-                let (name, pattern) = slot_head(self.ctx.source, content)?;
+                let (name, pattern) = slot_head(self.ctx.source, self.exprs, content)?;
                 let inner = child + 1 + element.attributes.len() + element.bindings.len();
                 let ranges = self
                     .direct_children(inner)?

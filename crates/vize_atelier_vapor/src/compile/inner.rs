@@ -366,6 +366,7 @@ fn generate(
         },
         spans,
         runtime_module_name,
+        options.is_ts,
     );
 
     VaporCompileResult {
