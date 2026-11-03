@@ -128,6 +128,7 @@ export function markdown(
   summaries: EditorSummary[],
   sessions: SessionResult[],
   meta: Record<string, string>,
+  crashes: string[] = [],
 ): string {
   const names = summaries.map((summary) => summary.editor);
   const column = (pick: (summary: EditorSummary) => string) => summaries.map(pick);
@@ -196,9 +197,12 @@ export function markdown(
     "</details>",
     "",
   );
-  const failures = summaries.flatMap((summary) =>
-    summary.failures.map((failure) => `- ${summary.editor}, ${failure}`),
-  );
+  const failures = [
+    ...crashes.map((crash) => `- ${crash.replace(/\s+/g, " ").slice(0, 400)}`),
+    ...summaries.flatMap((summary) =>
+      summary.failures.map((failure) => `- ${summary.editor}, ${failure}`),
+    ),
+  ];
   if (failures.length) lines.push("Failures:", "", ...failures.slice(0, 50), "");
   return lines.join("\n");
 }

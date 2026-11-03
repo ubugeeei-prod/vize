@@ -112,7 +112,7 @@ jobs:
         run: |
           # One source of truth: the workspace catalog pins vue-tsc (same release
           # train as @vue/language-server), TypeScript and the Corsa runtime.
-          pin() { sed -n "s/^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$/\1/p" pnpm-workspace.yaml | head -1; }
+          pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
           vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
           test -n "$vue" && test -n "$ts" && test -n "$corsa"
           mkdir "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
@@ -145,5 +145,6 @@ jobs:
           path: |
             lsp-vs-volar-${{ matrix.fixture }}.md
             lsp-vs-volar-${{ matrix.fixture }}.json
-          if-no-files-found: error
+          # Sessions write their JSON as they finish; a failed run keeps what it measured.
+          if-no-files-found: warn
           retention-days: 30

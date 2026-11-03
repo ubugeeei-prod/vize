@@ -127,17 +127,41 @@ async function main() {
   const meta = Object.fromEntries(pairs(values.meta, "=", "--meta"));
   const fixturesDir = resolve(values["fixtures-dir"] ?? join(os.tmpdir(), "vize-lsp-bench"));
 
-  const report: string[] = ["# vize lsp vs Vue language tools", ""];
-  const all: Record<string, SessionResult[]> = {};
+  const all: Record<string, { sessions: SessionResult[]; crashes: string[] }> = {};
+  const write = () => {
+    const sections = Object.entries(all).map(([id, { sessions, crashes }]) =>
+      markdown(
+        id,
+        summarize(sessions),
+        sessions,
+        { ...meta, rounds: String(rounds), cycles: String(options.cycles) },
+        crashes,
+      ),
+    );
+    const text = ["# vize lsp vs Vue language tools", "", ...sections].join("\n");
+    if (values.out) writeFileSync(values.out, text);
+    if (values.json) {
+      const summaries = Object.fromEntries(
+        Object.entries(all).map(([id, run]) => [id, summarize(run.sessions)]),
+      );
+      writeFileSync(
+        values.json,
+        `${JSON.stringify({ meta, options, summaries, runs: all }, null, 1)}\n`,
+      );
+    }
+    return text;
+  };
   for (const spec of fixtures) {
     const workspace = prepareFixture(repoRoot, spec, fixturesDir);
     const filePath = join(workspace, spec.file);
     const original = readFileSync(filePath, "utf8");
     const planted = plantProbes(spec, original);
-    const sessions: SessionResult[] = [];
+    const run = { sessions: [] as SessionResult[], crashes: [] as string[] };
+    all[spec.id] = run;
     // Importers read the edited SFC from disk; both editors see the same planted file.
     writeFileSync(filePath, planted);
     try {
+      /** A session that throws (a crashed or hung server) is reported, and the run goes on. */
       const once = async (factory: EditorFactory, round: number, session: SessionOptions) => {
         const home = mkdtempSync(join(os.tmpdir(), "lsp-bench-home-"));
         const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
@@ -155,6 +179,13 @@ async function main() {
             `${spec.id} round ${round} ${factory.label}: cold ${result.cold.totalMs.toFixed(0)}ms, ${result.failures.length} failures`,
           );
           return result;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          console.error(`${spec.id} round ${round} ${factory.label} crashed: ${message}`);
+          run.crashes.push(
+            `${factory.label}, round ${round}: session aborted: ${message.slice(0, 2000)}`,
+          );
+          return null;
         } finally {
           rmSync(home, { recursive: true, force: true });
         }
@@ -166,33 +197,19 @@ async function main() {
       for (let round = 1; round <= rounds; round += 1) {
         const shift = (round - 1) % factories.length;
         for (const factory of [...factories.slice(shift), ...factories.slice(0, shift)]) {
-          sessions.push(await once(factory, round, options));
+          const result = await once(factory, round, options);
+          if (result) run.sessions.push(result);
+          write();
         }
       }
     } finally {
       writeFileSync(filePath, original);
     }
-    all[spec.id] = sessions;
-    report.push(
-      markdown(spec.id, summarize(sessions), sessions, {
-        ...meta,
-        rounds: String(rounds),
-        cycles: String(options.cycles),
-      }),
-    );
   }
-  const text = report.join("\n");
-  if (values.out) writeFileSync(values.out, text);
-  else console.log(text);
-  if (values.json) {
-    const summaries = Object.fromEntries(
-      Object.entries(all).map(([id, sessions]) => [id, summarize(sessions)]),
-    );
-    writeFileSync(
-      values.json,
-      `${JSON.stringify({ meta, options, summaries, sessions: all }, null, 1)}\n`,
-    );
-  }
+  const text = write();
+  if (!values.out) console.log(text);
+  // Evidence is complete only when every session ran; a crash fails the job after writing it.
+  if (Object.values(all).some((run) => run.crashes.length)) process.exitCode = 1;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
