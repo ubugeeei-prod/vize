@@ -7,7 +7,9 @@
     {
       "id": "compiler/dialect/quirks-adjacent-attributes",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/quirks-adjacent-attributes",
@@ -34,7 +36,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -42,7 +50,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue-quirks"],
+            "dialects": [
+              "vue-quirks"
+            ],
             "selector": "compiler-cli-ssr-template-v1 default Vue 3; --template-syntax quirks; parser quirks"
           }
         ]
@@ -51,7 +61,9 @@
     {
       "id": "compiler/dialect/quirks-void-close",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/quirks-void-close",
@@ -78,7 +90,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -86,7 +104,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue-quirks"],
+            "dialects": [
+              "vue-quirks"
+            ],
             "selector": "compiler-cli-ssr-template-v1 default Vue 3; --template-syntax quirks; parser quirks"
           }
         ]
@@ -95,7 +115,9 @@
     {
       "id": "compiler/dialect/vue0-10-repeat",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/vue0-10-repeat",
@@ -122,7 +144,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -130,7 +158,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue0-template"],
+            "dialects": [
+              "vue0-template"
+            ],
             "selector": "compiler-cli-ssr-template-v1 Vue 0.10 via generated vite.config.mjs; --template-syntax standard; parser legacy-v0.10"
           }
         ]
@@ -139,7 +169,9 @@
     {
       "id": "compiler/dialect/vue0-11-repeat",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/vue0-11-repeat",
@@ -166,7 +198,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -174,7 +212,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue0-template"],
+            "dialects": [
+              "vue0-template"
+            ],
             "selector": "compiler-cli-ssr-template-v1 Vue 0.11 via generated vite.config.mjs; --template-syntax standard; parser legacy-v0.11"
           }
         ]
@@ -183,7 +223,9 @@
     {
       "id": "compiler/dialect/vue1-attribute-interpolation",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/vue1-attribute-interpolation",
@@ -211,7 +253,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -219,7 +267,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue1-template"],
+            "dialects": [
+              "vue1-template"
+            ],
             "selector": "compiler-cli-ssr-template-v1-legacy Vue 1 via generated vite.config.mjs; --template-syntax standard; parser legacy-v1; build cargo build --profile ci -p vize --features legacy"
           }
         ]
@@ -228,7 +278,9 @@
     {
       "id": "compiler/dialect/vue1-list",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/vue1-list",
@@ -256,7 +308,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -264,7 +322,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue1-template"],
+            "dialects": [
+              "vue1-template"
+            ],
             "selector": "compiler-cli-ssr-template-v1-legacy Vue 1 via generated vite.config.mjs; --template-syntax standard; parser legacy-v1; build cargo build --profile ci -p vize --features legacy"
           }
         ]
@@ -273,7 +333,9 @@
     {
       "id": "compiler/dialect/vue1-raw-html",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "dialectInput": {
           "id": "dialect/vue1-raw-html",
@@ -301,7 +363,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "verified",
@@ -309,7 +377,9 @@
         "evidence": [
           {
             "kind": "adapter-execution",
-            "dialects": ["vue1-template"],
+            "dialects": [
+              "vue1-template"
+            ],
             "selector": "compiler-cli-ssr-template-v1-legacy Vue 1 via generated vite.config.mjs; --template-syntax standard; parser legacy-v1; build cargo build --profile ci -p vize --features legacy"
           }
         ]
@@ -318,7 +388,9 @@
     {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "asset-import-binding-collision-10710",
         "files": [
@@ -343,7 +415,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -351,7 +429,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -360,7 +441,9 @@
     {
       "id": "compiler/sfc/builtin-computed-props-11073",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "builtin-computed-props-11073",
         "files": [
@@ -385,7 +468,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -393,7 +482,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -402,7 +494,9 @@
     {
       "id": "compiler/sfc/compact-scoped-at-rules-10639",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "compact-scoped-at-rules-10639",
         "files": [
@@ -429,7 +523,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -437,7 +537,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -450,7 +553,9 @@
     {
       "id": "compiler/sfc/component-event-modifiers-10894",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "component-event-modifiers-10894",
         "files": [
@@ -475,7 +580,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -483,7 +594,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -492,7 +606,9 @@
     {
       "id": "compiler/sfc/component-v-once-10815",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "component-v-once-10815",
         "files": [
@@ -517,7 +633,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -525,7 +647,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -538,7 +663,9 @@
     {
       "id": "compiler/sfc/computed-keep-alive-filter-11101",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "computed-keep-alive-filter-11101",
         "files": [
@@ -563,7 +690,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -571,7 +704,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -580,7 +716,9 @@
     {
       "id": "compiler/sfc/computed-v-once-event-6839",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "computed-v-once-event-6839",
         "files": [
@@ -605,7 +743,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -613,7 +757,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -626,7 +773,9 @@
     {
       "id": "compiler/sfc/default-export-statement-boundary-11617",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "default-export-statement-boundary-11617",
         "files": [
@@ -651,7 +800,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -659,7 +814,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -668,7 +826,9 @@
     {
       "id": "compiler/sfc/element-v-once-10875",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "element-v-once-10875",
         "files": [
@@ -693,7 +853,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -701,7 +867,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -714,7 +883,9 @@
     {
       "id": "compiler/sfc/escaped-for-bindings-10714",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "escaped-for-bindings-10714",
         "files": [
@@ -739,7 +910,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -747,7 +924,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -756,7 +936,9 @@
     {
       "id": "compiler/sfc/for-alias-initializers-10746",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "for-alias-initializers-10746",
         "files": [
@@ -781,7 +963,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -789,7 +977,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -802,7 +993,9 @@
     {
       "id": "compiler/sfc/generic-keyof-operands-skip-check",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "generic-keyof-operands-skip-check",
         "files": [
@@ -828,7 +1021,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -836,7 +1035,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -845,7 +1048,9 @@
     {
       "id": "compiler/sfc/generic-union-skip-check-11466",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "generic-union-skip-check-11466",
         "files": [
@@ -871,7 +1076,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -879,7 +1090,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -888,7 +1103,9 @@
     {
       "id": "compiler/sfc/incomplete-script-setup-recovery-10200",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "incomplete-script-setup-recovery-10200",
         "files": [
@@ -914,7 +1131,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -922,7 +1145,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -931,7 +1158,9 @@
     {
       "id": "compiler/sfc/inline-for-ref-shadow-11210",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "inline-for-ref-shadow-11210",
         "files": [
@@ -956,7 +1185,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -964,7 +1199,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -973,7 +1211,9 @@
     {
       "id": "compiler/sfc/inline-method-handlers-10777",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "inline-method-handlers-10777",
         "files": [
@@ -998,7 +1238,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1006,7 +1252,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1068,7 +1317,9 @@
     {
       "id": "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "jsx-vapor-runtime-slots-6889",
         "files": [
@@ -1093,7 +1344,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1101,7 +1358,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1163,7 +1423,9 @@
     {
       "id": "compiler/sfc/legacy-for-alias-initializers-10811",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "legacy-for-alias-initializers-10811",
         "files": [
@@ -1188,7 +1450,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1196,7 +1464,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1209,7 +1480,9 @@
     {
       "id": "compiler/sfc/maybe-ref-authored-handlers-10164",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "maybe-ref-authored-handlers-10164",
         "files": [
@@ -1234,7 +1507,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1242,7 +1521,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1251,7 +1533,9 @@
     {
       "id": "compiler/sfc/maybe-ref-model-parity-10044",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "maybe-ref-model-parity-10044",
         "files": [
@@ -1276,7 +1560,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1284,7 +1574,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1346,7 +1639,9 @@
     {
       "id": "compiler/sfc/ordered-object-props-10458",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "ordered-object-props-10458",
         "files": [
@@ -1371,7 +1666,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1379,7 +1680,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1388,7 +1692,9 @@
     {
       "id": "compiler/sfc/package-import-prop-type-9894",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "package-import-prop-type-9894",
         "files": [
@@ -1414,7 +1720,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1422,7 +1734,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1431,7 +1747,9 @@
     {
       "id": "compiler/sfc/plain-script-import-10903",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "plain-script-import-10903",
         "files": [
@@ -1456,7 +1774,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
         "scriptLang": "ts"
       },
       "dialectCoverage": {
@@ -1465,7 +1789,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1474,7 +1802,9 @@
     {
       "id": "compiler/sfc/production-v-if-comment-9920",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "production-v-if-comment-9920",
         "files": [
@@ -1499,7 +1829,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1507,7 +1843,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1516,7 +1855,9 @@
     {
       "id": "compiler/sfc/root-text-patch-flag-10168",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "root-text-patch-flag-10168",
         "files": [
@@ -1542,7 +1883,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1550,7 +1897,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1559,7 +1910,9 @@
     {
       "id": "compiler/sfc/scoped-checkout-stability-10067",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-checkout-stability-10067",
         "files": [
@@ -1586,7 +1939,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1594,7 +1953,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1603,7 +1965,9 @@
     {
       "id": "compiler/sfc/scoped-deep-nested-list-11109",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-deep-nested-list-11109",
         "files": [
@@ -1630,7 +1994,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1638,7 +2008,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1651,7 +2024,9 @@
     {
       "id": "compiler/sfc/scoped-keyframes-nesting-9829",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-keyframes-nesting-9829",
         "files": [
@@ -1678,7 +2053,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1686,7 +2067,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1695,7 +2079,9 @@
     {
       "id": "compiler/sfc/scoped-list-nesting-10606",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-list-nesting-10606",
         "files": [
@@ -1722,7 +2108,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1730,7 +2122,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1743,7 +2138,9 @@
     {
       "id": "compiler/sfc/scoped-scope-nesting-10648",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-scope-nesting-10648",
         "files": [
@@ -1770,7 +2167,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1778,7 +2181,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1791,7 +2197,9 @@
     {
       "id": "compiler/sfc/scoped-slot-closure-10169",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-slot-closure-10169",
         "files": [
@@ -1817,7 +2225,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1825,7 +2239,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1834,7 +2252,9 @@
     {
       "id": "compiler/sfc/scoped-where-nesting-9830",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "scoped-where-nesting-9830",
         "files": [
@@ -1861,7 +2281,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1869,7 +2295,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1878,7 +2307,9 @@
     {
       "id": "compiler/sfc/script-setup-default-expose-10891",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "script-setup-default-expose-10891",
         "files": [
@@ -1903,7 +2334,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1911,7 +2348,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1924,7 +2364,9 @@
     {
       "id": "compiler/sfc/setup-component-literal-const-10877",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "setup-component-literal-const-10877",
         "files": [
@@ -1949,7 +2391,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1957,7 +2405,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -1970,7 +2421,9 @@
     {
       "id": "compiler/sfc/sfc-entry-validation-11262-11263",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "sfc-entry-validation-11262-11263",
         "files": [
@@ -1995,7 +2448,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2003,7 +2462,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2012,7 +2474,9 @@
     {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "sfc-runtime-options-native",
         "files": [
@@ -2037,7 +2501,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2045,7 +2515,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2054,7 +2527,9 @@
     {
       "id": "compiler/sfc/sibling-script-import-reads-10616",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "sibling-script-import-reads-10616",
         "files": [
@@ -2079,7 +2554,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
         "scriptLang": "ts"
       },
       "dialectCoverage": {
@@ -2088,7 +2569,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2097,7 +2582,9 @@
     {
       "id": "compiler/sfc/slot-fallback-adjacent-text-10087",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "slot-fallback-adjacent-text-10087",
         "files": [
@@ -2122,7 +2609,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2130,7 +2623,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2139,7 +2635,9 @@
     {
       "id": "compiler/sfc/slot-fallback-compound-text-9889",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "slot-fallback-compound-text-9889",
         "files": [
@@ -2164,7 +2662,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2172,7 +2676,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2181,7 +2688,9 @@
     {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "ssr-slot-scope",
         "files": [
@@ -2206,7 +2715,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2214,7 +2729,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2223,7 +2741,9 @@
     {
       "id": "compiler/sfc/ssr-slot-text-runs-11593",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "ssr-slot-text-runs-11593",
         "files": [
@@ -2248,7 +2768,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2256,7 +2782,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2269,7 +2798,9 @@
     {
       "id": "compiler/sfc/ssr-transition-children-11594",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "ssr-transition-children-11594",
         "files": [
@@ -2294,7 +2825,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2302,7 +2839,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2311,7 +2851,9 @@
     {
       "id": "compiler/sfc/template-asset-markup-10761",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-asset-markup-10761",
         "files": [
@@ -2336,7 +2878,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2344,7 +2892,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2353,7 +2904,9 @@
     {
       "id": "compiler/sfc/template-asset-urls-9895",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-asset-urls-9895",
         "files": [
@@ -2378,7 +2931,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2386,7 +2945,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2395,7 +2957,9 @@
     {
       "id": "compiler/sfc/template-global-prefix-10927",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-global-prefix-10927",
         "files": [
@@ -2420,7 +2984,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
         "scriptLang": "ts"
       },
       "dialectCoverage": {
@@ -2429,7 +2999,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2441,7 +3015,9 @@
     {
       "id": "compiler/sfc/template-handler-typescript-declaration",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-handler-typescript-declaration",
         "files": [
@@ -2467,7 +3043,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2475,7 +3057,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2484,7 +3070,9 @@
     {
       "id": "compiler/sfc/template-host-globals-10927",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-host-globals-10927",
         "files": [
@@ -2509,7 +3097,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
         "scriptLang": "ts"
       },
       "dialectCoverage": {
@@ -2518,7 +3112,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2530,7 +3128,9 @@
     {
       "id": "compiler/sfc/template-only-ssr-context-11406",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-only-ssr-context-11406",
         "files": [
@@ -2555,7 +3155,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2563,7 +3169,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2572,7 +3181,9 @@
     {
       "id": "compiler/sfc/template-ts-unscanned-erasure",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "template-ts-unscanned-erasure",
         "files": [
@@ -2598,7 +3209,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2606,7 +3223,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2615,7 +3236,9 @@
     {
       "id": "compiler/sfc/tsx-setup-jsx-bindings",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "tsx-setup-jsx-bindings",
         "files": [
@@ -2641,7 +3264,13 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "tsx",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2649,7 +3278,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "tsx"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2658,7 +3291,9 @@
     {
       "id": "compiler/sfc/uppercase-native-event-keys-10826",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "uppercase-native-event-keys-10826",
         "files": [
@@ -2683,7 +3318,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2691,7 +3332,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2704,7 +3348,9 @@
     {
       "id": "compiler/sfc/v-model-maybe-ref-9897",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "v-model-maybe-ref-9897",
         "files": [
@@ -2729,7 +3375,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2737,7 +3389,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2746,7 +3401,9 @@
     {
       "id": "compiler/sfc/vue2-preserve-boundaries-9886",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "vue2-preserve-boundaries-9886",
         "files": [
@@ -2771,7 +3428,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2779,7 +3442,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
@@ -2788,7 +3454,9 @@
     {
       "id": "compiler/sfc/vue2-preserve-comment-edges-10065",
       "state": "active",
-      "targets": ["ssr"],
+      "targets": [
+        "ssr"
+      ],
       "inputs": {
         "root": "vue2-preserve-comment-edges-10065",
         "files": [
@@ -2813,7 +3481,13 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -2821,10 +3495,71 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
+      }
+    },
+    {
+      "id": "compiler/sfc/nested-dynamic-vfor-11728",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "nested-dynamic-vfor-11728",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "510e5867d7e892ce9fd22e3af9f55a45611eb2fa1d51adaebc339f3013706e8f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "nested-dynamic-vfor-11728/module.expected.txt",
+        "sha256": "ba96f9acc62d4201bb1079d6216e6330446ebc7ce345fb236487151e61d81378",
+        "source": "Exact source CLI a3169b6e4fd2e15e7dd12e083b54ee3b30da8508 build --ssr --no-config full-module observation; parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop consumes this pinned authored input."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The whole-product native compiler remains unavailable; this source-built SSR compatibility observation grants no native-only or independent compiler parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop preserves the pinned component under the authored table row; native foster parenting, v-pre and configured custom-element controls remain independent."
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11728",
+        "reporter": "makarasty"
       }
     }
   ],
@@ -2907,7 +3642,9 @@
       "id": "compiler/css/source-map-10693",
       "state": "active",
       "adapter": "compile-css-original-input-map-10693",
-      "targets": ["css"],
+      "targets": [
+        "css"
+      ],
       "inputs": {
         "root": "css-source-map-10693",
         "files": [
@@ -2949,7 +3686,9 @@
       "id": "compiler/css/v-bind-source-map-10712",
       "state": "active",
       "adapter": "compile-css-binding-map-10712",
-      "targets": ["css"],
+      "targets": [
+        "css"
+      ],
       "inputs": {
         "root": "v-bind-source-map-10712",
         "files": [
@@ -2998,7 +3737,9 @@
       "id": "compiler/vapor/literal-object-styles-10749",
       "state": "active",
       "adapter": "shared-vapor-literal-style-source-v1",
-      "targets": ["vapor-csr"],
+      "targets": [
+        "vapor-csr"
+      ],
       "scope": "source-only; generic SSR CLI unsupported; no whole-product native or browser parity credit",
       "inputs": [
         {

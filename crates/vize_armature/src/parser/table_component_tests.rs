@@ -7,7 +7,17 @@ use vize_relief::{ElementType, ParserOptions, TemplateChildNode};
 #[test]
 fn dynamic_component_stays_inside_its_authored_table_loop() {
     let allocator = Allocator::new();
-    let source = r#"<table><tr v-for="(line, r) in rows"><component :is="r === 0 ? 'th' : 'td'" v-for="(cell, c) in line">{{ cell }}</component></tr></table>"#;
+    let input = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/compiler/nested-dynamic-vfor-11728/Layout.vue.txt"
+    ));
+    let source = input
+        .split_once("<template>")
+        .expect("pinned template opening")
+        .1
+        .split_once("</template>")
+        .expect("pinned template closing")
+        .0;
     let (root, errors) = parse(&allocator, source);
     assert_eq!(root.children.len(), 1, "{errors:?}");
     let TemplateChildNode::Element(table) = &root.children[0] else {
