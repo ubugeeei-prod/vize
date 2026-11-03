@@ -12,6 +12,11 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::String;
 use vize_carton::append;
 
+enum TemplatePart {
+    Text,
+    Substitution(usize),
+}
+
 pub(crate) fn rewrite_reserved_template_binding(
     expression: &str,
     template_binding_access: &TemplateBindingAccess,
@@ -109,11 +114,44 @@ fn rewrite_binding(
     let mut changed = false;
     let mut copied_source = 0;
     let mut copied_generated = 0;
+    let mut templates = Vec::new();
 
     while let Some(&current) = bytes.get(i) {
-        if current == b'\'' || current == b'"' || current == b'`' {
+        if matches!(templates.last(), Some(TemplatePart::Text)) {
+            let start = i;
+            while let Some(&byte) = bytes.get(i) {
+                i += 1;
+                if byte == b'\\' {
+                    i = (i + 1).min(len);
+                } else if byte == b'`' {
+                    templates.pop();
+                    break;
+                } else if byte == b'$' && bytes.get(i) == Some(&b'{') {
+                    i += 1;
+                    *templates.last_mut()? = TemplatePart::Substitution(0);
+                    break;
+                }
+            }
+            output.push_str(expression.get(start..i)?);
+            continue;
+        }
+
+        if current == b'`' {
+            templates.push(TemplatePart::Text);
+            output.push('`');
+            i += 1;
+            continue;
+        }
+
+        if current == b'\'' || current == b'"' {
             let end = skip_quoted_literal(bytes, i);
             output.push_str(expression.get(i..end).unwrap_or_default());
+            i = end;
+            continue;
+        }
+
+        if let Some(end) = skip_comment(bytes, i) {
+            output.push_str(expression.get(i..end)?);
             i = end;
             continue;
         }
@@ -130,6 +168,20 @@ fn rewrite_binding(
             continue;
         }
 
+        if let Some(TemplatePart::Substitution(depth)) = templates.last_mut() {
+            if current == b'{' {
+                *depth += 1;
+            } else if current == b'}' {
+                if *depth == 0 {
+                    *templates.last_mut()? = TemplatePart::Text;
+                    output.push('}');
+                    i += 1;
+                    continue;
+                }
+                *depth -= 1;
+            }
+        }
+
         if is_identifier_start(current) {
             let start = i;
             i += 1;
@@ -141,11 +193,15 @@ fn rewrite_binding(
             }
             let ident = expression.get(start..i).unwrap_or_default();
             if is_reserved_identifier(ident)
+                && !matches!(ident, "as" | "from" | "of")
                 && let Some(receiver) = template_binding_access.receiver(ident)
                 && !is_property_access(bytes, start)
-                && !is_object_property_key(bytes, i)
+                && !is_object_property_key(bytes, start, i)
                 && !is_typescript_as_assertion_operator(bytes, start, i, ident)
             {
+                // A `${` delimiter starts an expression, never an object member.
+                let shorthand = !matches!(templates.last(), Some(TemplatePart::Substitution(0)))
+                    && is_object_shorthand(bytes, start, i);
                 if let Some(spans) = spans.as_mut() {
                     if copied_source < start {
                         spans.push(VizeSubSpan {
@@ -153,18 +209,14 @@ fn rewrite_binding(
                             src_range: copied_source..start,
                         });
                     }
-                    let shorthand_prefix = if is_object_shorthand(bytes, start, i) {
-                        ident.len() + 2
-                    } else {
-                        0
-                    };
+                    let shorthand_prefix = if shorthand { ident.len() + 2 } else { 0 };
                     let key = output.len() + shorthand_prefix + receiver.len() + 2;
                     spans.push(VizeSubSpan {
                         gen_range: key..key + ident.len(),
                         src_range: start..i,
                     });
                 }
-                if is_object_shorthand(bytes, start, i) {
+                if shorthand {
                     append!(output, "{ident}: {receiver}[\"{ident}\"]");
                 } else {
                     append!(output, "{receiver}[\"{ident}\"]");
@@ -195,7 +247,68 @@ fn rewrite_binding(
         });
     }
 
+    let contextual = template_binding_access.contextual_reserved_bindings();
+    if !contextual.is_empty() {
+        let empty_scopes;
+        let scopes = match template_binding_access.instance_summary() {
+            Some(summary) => &summary.scopes,
+            None => {
+                empty_scopes = vize_croquis::ScopeChain::default();
+                &empty_scopes
+            }
+        };
+        if let Some(rewrite) = super::spread_reserved_props::rewrite_reserved_spread_references(
+            output.as_str(),
+            &contextual,
+            scopes,
+            template_binding_access.scope_id(),
+        ) {
+            if let Some(spans) = spans.as_mut() {
+                let segments = if changed {
+                    let first = spans
+                        .iter()
+                        .map(|span| super::spread_reserved_props::SpreadRewriteSegment {
+                            generated: span.gen_range.clone(),
+                            source: span.src_range.clone(),
+                        })
+                        .collect::<Vec<_>>();
+                    super::instance_rewrite::compose(&first, &rewrite.segments)
+                } else {
+                    rewrite.segments
+                };
+                *spans = segments
+                    .into_iter()
+                    .map(|segment| VizeSubSpan {
+                        gen_range: segment.generated,
+                        src_range: segment.source,
+                    })
+                    .collect();
+            }
+            return Some(rewrite.code);
+        }
+    }
     changed.then_some(output)
+}
+
+fn skip_comment(bytes: &[u8], start: usize) -> Option<usize> {
+    if bytes.get(start) != Some(&b'/') {
+        return None;
+    }
+    match bytes.get(start + 1)? {
+        b'/' => Some(
+            bytes[start + 2..]
+                .iter()
+                .position(|byte| matches!(byte, b'\r' | b'\n'))
+                .map_or(bytes.len(), |offset| start + 2 + offset),
+        ),
+        b'*' => Some(
+            bytes[start + 2..]
+                .windows(2)
+                .position(|pair| pair == b"*/")
+                .map_or(bytes.len(), |offset| start + 4 + offset),
+        ),
+        _ => None,
+    }
 }
 
 fn skip_quoted_literal(bytes: &[u8], start: usize) -> usize {
@@ -288,8 +401,11 @@ fn is_property_access(bytes: &[u8], ident_start: usize) -> bool {
     previous_significant_byte(bytes, ident_start) == Some(b'.')
 }
 
-fn is_object_property_key(bytes: &[u8], ident_end: usize) -> bool {
-    next_significant_byte(bytes, ident_end) == Some(b':')
+fn is_object_property_key(bytes: &[u8], ident_start: usize, ident_end: usize) -> bool {
+    matches!(
+        previous_significant_byte(bytes, ident_start),
+        Some(b'{') | Some(b',')
+    ) && next_significant_byte(bytes, ident_end) == Some(b':')
 }
 
 fn is_object_shorthand(bytes: &[u8], ident_start: usize, ident_end: usize) -> bool {
