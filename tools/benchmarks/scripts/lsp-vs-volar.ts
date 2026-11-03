@@ -5,15 +5,18 @@
  * Every editor gets the same session on the same prepared project, in fresh
  * processes with a fresh `HOME`/`XDG_CACHE_HOME` (cold for on-disk caches; the
  * OS page cache stays warm after the unrecorded warmup). Rounds rotate the
- * editor order so load drift hits all of them. Reports cold start, process-tree
- * CPU and PSS/RSS over the session, CPU per edit, idle CPU and p50/p99 latency
- * of diagnostics and requests, counting only correct answers.
+ * fixture and editor order so load drift hits all of them. Reports cold start,
+ * process-tree CPU and PSS/RSS over the session, CPU per edit, idle CPU and
+ * p50/p99 latency of diagnostics and requests, counting only correct answers;
+ * fixtures on one size curve add each metric against SFC count.
  *
  * Usage:
  *   node tools/benchmarks/scripts/lsp-vs-volar.ts --fixture misskey \
  *     --vize head=target/ci-opt/vize --vize base=/tmp/vize-base --tsgo <tsgo> \
  *     --volar-root <dir with node_modules/{@vue/language-server,@vue/typescript-plugin,typescript}> \
  *     --fixtures-dir /tmp/projects --rounds 3 --cycles 10 --out lsp.md --json lsp.json
+ *   node tools/benchmarks/scripts/lsp-vs-volar.ts --plan --fixture misskey --fixture scale-1k
+ *     (prints the CI jobs: one per fixture, one per size curve)
  */
 
 import {
@@ -39,6 +42,7 @@ import {
   plantProbes,
   prepareFixture,
 } from "./lsp-vs-volar-fixtures.ts";
+import { curveMarkdown, curvesOf, planJobs } from "./lsp-vs-volar-curve.ts";
 import { markdown, summarize } from "./lsp-vs-volar-report.ts";
 import { runSession, type SessionOptions, type SessionResult } from "./lsp-vs-volar-session.ts";
 
@@ -63,6 +67,11 @@ function pairs(
   });
 }
 
+const rotate = <T>(items: T[], shift: number) => [
+  ...items.slice(shift % items.length),
+  ...items.slice(0, shift % items.length),
+];
+
 function positiveInteger(value: string | undefined, fallback: number, what: string): number {
   const parsed = value == null ? fallback : Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0)
@@ -74,6 +83,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       fixture: { type: "string", multiple: true },
+      plan: { type: "boolean" },
       vize: { type: "string", multiple: true },
       "vize-env": { type: "string", multiple: true },
       tsgo: { type: "string" },
@@ -103,6 +113,10 @@ async function main() {
     return spec;
   });
   if (!fixtures.length) throw new Error("pass at least one --fixture");
+  if (values.plan) {
+    console.log(JSON.stringify(planJobs(fixtures)));
+    return;
+  }
   const vizeEnv = new Map<string, Record<string, string>>();
   for (const [label, assignment] of pairs(values["vize-env"], ":", "--vize-env")) {
     const [key, value] = pairs([assignment], "=", "--vize-env")[0];
@@ -166,15 +180,19 @@ async function main() {
 
   const all: Record<string, { sessions: SessionResult[]; crashes: string[] }> = {};
   const write = () => {
-    const sections = Object.entries(all).map(([id, { sessions, crashes }]) =>
-      markdown(
-        id,
-        summarize(sessions),
-        sessions,
-        { ...meta, rounds: String(rounds), cycles: String(options.cycles) },
-        crashes,
-      ),
-    );
+    const sections = Object.entries(all)
+      .filter(([, run]) => run.sessions.length || run.crashes.length)
+      .map(([id, { sessions, crashes }]) =>
+        markdown(
+          id,
+          summarize(sessions),
+          sessions,
+          { ...meta, rounds: String(rounds), cycles: String(options.cycles) },
+          crashes,
+        ),
+      );
+    const curves = curvesOf(fixtures, (id) => all[id]?.sessions ?? []);
+    for (const { name, ids, curve } of curves) sections.push(curveMarkdown(name, ids, curve));
     const text = ["# vize lsp vs Vue language tools", "", ...sections].join("\n");
     if (values.out) writeFileSync(values.out, text);
     if (values.json) {
@@ -183,74 +201,81 @@ async function main() {
       );
       writeFileSync(
         values.json,
-        `${JSON.stringify({ meta, options, summaries, runs: all }, null, 1)}\n`,
+        `${JSON.stringify({ meta, options, summaries, curves, runs: all }, null, 1)}\n`,
       );
     }
     return text;
   };
-  for (const spec of fixtures) {
-    const workspace = prepareFixture(repoRoot, spec, fixturesDir);
+  const prepared = fixtures.map((spec) => {
+    const { root: workspace, original } = prepareFixture(repoRoot, spec, fixturesDir);
     const filePath = join(workspace, spec.file);
-    const original = readFileSync(filePath, "utf8");
-    const planted = plantProbes(spec, original);
-    const run = { sessions: [] as SessionResult[], crashes: [] as string[] };
-    all[spec.id] = run;
-    // Importers read the edited SFC from disk; both editors see the same planted file.
-    writeFileSync(filePath, planted);
+    all[spec.id] = { sessions: [], crashes: [] };
+    return { spec, workspace, filePath, original, planted: plantProbes(spec, original) };
+  });
+  type Prepared = (typeof prepared)[number];
+  /** A session that throws (a crashed or hung server) is reported, and the run goes on. */
+  const once = async (
+    { spec, workspace, filePath, planted }: Prepared,
+    factory: EditorFactory,
+    round: number,
+    session: SessionOptions,
+  ) => {
+    const run = all[spec.id];
+    const home = mkdtempSync(join(os.tmpdir(), "lsp-bench-home-"));
+    const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
+    const restore = factory.setup?.(workspace, spec);
     try {
-      /** A session that throws (a crashed or hung server) is reported, and the run goes on. */
-      const once = async (factory: EditorFactory, round: number, session: SessionOptions) => {
-        const home = mkdtempSync(join(os.tmpdir(), "lsp-bench-home-"));
-        const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
-        const restore = factory.setup?.(workspace, spec);
-        try {
-          const result = await runSession(
-            factory.create(workspace, env),
-            spec,
-            workspace,
-            filePath,
-            planted,
-            session,
-            round,
-          );
-          console.error(
-            `${spec.id} round ${round} ${factory.label}: cold ${result.cold.totalMs.toFixed(0)}ms, ${result.failures.length} failures`,
-          );
-          return result;
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          console.error(`${spec.id} round ${round} ${factory.label} crashed: ${message}`);
-          run.crashes.push(
-            `${factory.label}, round ${round}: session aborted: ${message.slice(0, 2000)}`,
-          );
-          return null;
-        } finally {
-          restore?.();
-          // The server's own log (Vize writes it under XDG_CACHE_HOME) explains where time went.
-          const log = join(home, ".cache/vize/logs/lsp.log");
-          if (values.logs && round === 1 && existsSync(log)) {
-            mkdirSync(values.logs, { recursive: true });
-            const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}.log`;
-            copyFileSync(log, join(values.logs, name));
-          }
-          rmSync(home, { recursive: true, force: true });
-        }
-      };
+      const result = await runSession(
+        factory.create(workspace, env),
+        spec,
+        workspace,
+        filePath,
+        planted,
+        session,
+        round,
+      );
+      console.error(
+        `${spec.id} round ${round} ${factory.label}: cold ${result.cold.totalMs.toFixed(0)}ms, ${result.failures.length} failures`,
+      );
+      if (round > 0) run.sessions.push(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`${spec.id} round ${round} ${factory.label} crashed: ${message}`);
+      run.crashes.push(
+        `${factory.label}, round ${round}: session aborted: ${message.slice(0, 2000)}`,
+      );
+    } finally {
+      restore?.();
+      // The server's own log (Vize writes it under XDG_CACHE_HOME) explains where time went.
+      const log = join(home, ".cache/vize/logs/lsp.log");
+      if (values.logs && round === 1 && existsSync(log)) {
+        mkdirSync(values.logs, { recursive: true });
+        const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}.log`;
+        copyFileSync(log, join(values.logs, name));
+      }
+      rmSync(home, { recursive: true, force: true });
+    }
+  };
+  // Importers read the edited SFC from disk; every editor sees the same planted file.
+  for (const fixture of prepared) writeFileSync(fixture.filePath, fixture.planted);
+  try {
+    for (const fixture of prepared) {
       for (let warmup = 0; warmup < warmups; warmup += 1) {
         for (const factory of factories)
-          await once(factory, 0, { ...options, cycles: 1, idleMs: 0 });
+          await once(fixture, factory, 0, { ...options, cycles: 1, idleMs: 0 });
       }
-      for (let round = 1; round <= rounds; round += 1) {
-        const shift = (round - 1) % factories.length;
-        for (const factory of [...factories.slice(shift), ...factories.slice(0, shift)]) {
-          const result = await once(factory, round, options);
-          if (result) run.sessions.push(result);
+    }
+    // Rounds interleave fixtures too, so drift over a long job cannot pose as a size effect.
+    for (let round = 1; round <= rounds; round += 1) {
+      for (const fixture of rotate(prepared, round - 1)) {
+        for (const factory of rotate(factories, round - 1)) {
+          await once(fixture, factory, round, options);
           write();
         }
       }
-    } finally {
-      writeFileSync(filePath, original);
     }
+  } finally {
+    for (const fixture of prepared) writeFileSync(fixture.filePath, fixture.original);
   }
   const text = write();
   if (!values.out) console.log(text);

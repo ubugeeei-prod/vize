@@ -2,8 +2,9 @@ name: LSP vs Vue language tools
 
 # `vize lsp` against @vue/language-server + tsserver with @vue/typescript-plugin
 # (what VS Code runs for "Vue (Official)"), driven over stdio by one scripted
-# editing session on pinned real projects. Reports cold start, process-tree
-# CPU and PSS/RSS, CPU per edit and p50/p99 latency of correct answers.
+# editing session on pinned real projects and generated ones. Reports cold
+# start, process-tree CPU and PSS/RSS, CPU per edit and p50/p99 latency of
+# correct answers; the scale-<n>k fixtures add each metric against SFC count.
 # Report only: it gates nothing. Pinned to `cpus` cores so the numbers resemble
 # a developer laptop; `compare_ref` adds a second vize row for before/after.
 
@@ -11,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       fixtures:
-        description: Space-separated fixture ids (misskey, n8n)
+        description: Space-separated fixture ids (misskey, n8n, scale-1k, scale-5k, scale-20k, scale-monorepo)
         required: true
         default: "misskey n8n"
       compare_ref:
@@ -72,22 +73,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      fixtures: ${{ steps.plan.outputs.fixtures }}
+      jobs: ${{ steps.plan.outputs.jobs }}
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout: tools/benchmarks/scripts
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      # One job per fixture, except that the fixtures of one size curve run
+      # sequentially in one job: every point of the curve is then measured on the
+      # same machine with the same build, and rounds interleave the sizes.
       - id: plan
         env:
           FIXTURES: ${{ inputs.fixtures || 'misskey n8n' }}
-        run: echo "fixtures=$(printf '%s\n' $FIXTURES | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+        run: |
+          args=()
+          for id in $FIXTURES; do args+=(--fixture "$id"); done
+          echo "jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")" >> "$GITHUB_OUTPUT"
 
   bench:
-    name: lsp-vs-volar (${{ matrix.fixture }})
+    name: lsp-vs-volar (${{ matrix.job.name }})
     needs: plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 240
+    # A size curve runs every size in one job; 20k SFCs alone take hours across three editors.
+    timeout-minutes: 720
     strategy:
       fail-fast: false
       matrix:
-        fixture: ${{ fromJSON(needs.plan.outputs.fixtures) }}
+        job: ${{ fromJSON(needs.plan.outputs.jobs) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -146,10 +161,12 @@ jobs:
 
       - name: Measure
         env:
-          FIXTURE: ${{ matrix.fixture }}
+          JOB: ${{ matrix.job.name }}
+          FIXTURE_IDS: ${{ matrix.job.ids }}
         run: |
           tools="$RUNNER_TEMP/tools/node_modules"
-          args=(--fixture "$FIXTURE" --vize "head=$RUNNER_TEMP/vize-head")
+          args=(--vize "head=$RUNNER_TEMP/vize-head")
+          for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
           if [ -n "$COMPARE_REF" ]; then
             args+=(--vize "compare=$RUNNER_TEMP/vize-compare" --meta "compare=$COMPARE_REF")
           fi
@@ -168,17 +185,17 @@ jobs:
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
             --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
             --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
-            --out "lsp-vs-volar-$FIXTURE.md" --json "lsp-vs-volar-$FIXTURE.json" --logs "lsp-vs-volar-logs-$FIXTURE"
-          cat "lsp-vs-volar-$FIXTURE.md" >> "$GITHUB_STEP_SUMMARY"
+            --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
+          cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: lsp-vs-volar-${{ matrix.fixture }}
+          name: lsp-vs-volar-${{ matrix.job.name }}
           path: |
-            lsp-vs-volar-${{ matrix.fixture }}.md
-            lsp-vs-volar-${{ matrix.fixture }}.json
-            lsp-vs-volar-logs-${{ matrix.fixture }}/
+            lsp-vs-volar-${{ matrix.job.name }}.md
+            lsp-vs-volar-${{ matrix.job.name }}.json
+            lsp-vs-volar-logs-${{ matrix.job.name }}/
           # Sessions write their JSON as they finish; a failed run keeps what it measured.
           if-no-files-found: warn
           retention-days: 30

@@ -98,3 +98,8 @@ export function insertAfter(source: string, after: string, insert: string): stri
   const at = first + after.length;
   return `${source.slice(0, at)}${insert}${source.slice(at)}`;
 }
+
+/** The anchor at `at`, a unique part of the unique `text`. */
+export function anchorIn(text: string, at: string): Anchor {
+  return { find: text, at: text.indexOf(at) };
+}
