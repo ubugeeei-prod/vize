@@ -265,7 +265,7 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
 
   const lspUnknownReadinessCases = 83;
 
-  const typecheckerUnknownReadinessCases = 288;
+  const typecheckerUnknownReadinessCases = 289;
   assert.deepEqual(
     Object.fromEntries(
       products.map((product) => [product, summaries[product].unknownReadinessCases]),

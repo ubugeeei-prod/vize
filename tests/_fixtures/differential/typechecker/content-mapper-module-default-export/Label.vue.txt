@@ -1,0 +1,7 @@
+<script lang="ts">
+export const label = 'export default';
+</script>
+<script setup lang="ts">
+const a = label;
+</script>
+<template><div>{{ a }}</div></template>
