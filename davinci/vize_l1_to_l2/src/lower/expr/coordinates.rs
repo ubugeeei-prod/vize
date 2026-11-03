@@ -6,11 +6,17 @@ use vize_l0::Span;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::entity::needs_decoding;
 use vize_l2::expr::JsExpr;
+use vize_l2::provenance::ProvenanceSink;
 
 #[cfg(test)]
 mod tests;
 
-pub(super) fn expression<'a>(cx: &Cx<'a>, raw: &'a str, span: Span, filters: bool) -> ExprRef<'a> {
+pub(super) fn expression<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    raw: &'a str,
+    span: Span,
+    filters: bool,
+) -> ExprRef<'a> {
     // Retain the current reference-free path and allocation count.
     if !needs_decoding(raw.as_bytes()) {
         return plain(cx, raw, span, filters);
@@ -47,11 +53,21 @@ pub(super) fn expression<'a>(cx: &Cx<'a>, raw: &'a str, span: Span, filters: boo
     }
 }
 
-fn plain<'a>(cx: &Cx<'a>, text: &'a str, span: Span, filters: bool) -> ExprRef<'a> {
+fn plain<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    text: &'a str,
+    span: Span,
+    filters: bool,
+) -> ExprRef<'a> {
     filter(cx, text, span, filters).unwrap_or_else(|| expression_in(cx, text, span))
 }
 
-fn filter<'a>(cx: &Cx<'a>, text: &'a str, span: Span, filters: bool) -> Option<ExprRef<'a>> {
+fn filter<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    text: &'a str,
+    span: Span,
+    filters: bool,
+) -> Option<ExprRef<'a>> {
     if filters && let Some(filter) = VueFilterExpr::parse_in(cx.allocator, text, span) {
         return Some(ExprRef::Filter(filter));
     }

@@ -26,6 +26,7 @@ use vize_l0::{Box, Span, String, Vec, cstr};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, DynamicName, ModelOp, SlotContentOp, VueDirectiveOp,
 };
+use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
@@ -44,7 +45,7 @@ pub(crate) struct Owner<'a> {
 /// Lower one non-structural directive attribute of an element or
 /// component.
 pub(crate) fn lower_attr<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
@@ -111,7 +112,7 @@ pub(crate) fn lower_attr<'a>(
                 "drop.structural-duplicate",
                 None,
                 attr_slice(cx, attr),
-                String::default(),
+                String::default,
                 attr_span(cx, attr),
             );
         }
@@ -120,14 +121,14 @@ pub(crate) fn lower_attr<'a>(
 
 /// An `Info` deferral: rule + record + diagnostic, owner kept.
 pub(crate) fn defer(
-    cx: &mut Cx<'_>,
+    cx: &mut Cx<'_, impl ProvenanceSink>,
     rule: &'static str,
     span: Span,
     before: &str,
     message: String,
 ) {
     cx.info(span, message);
-    cx.record(rule, None, before, String::default(), span);
+    cx.record(rule, None, before, String::default, span);
 }
 
 /// `v-model` into the `ui.model` contract: read and write are the same
@@ -135,7 +136,7 @@ pub(crate) fn defer(
 /// the argument rides the model name position, and element kind plus
 /// modifiers ride as synthesized attributes carrying the binding's span.
 fn lower_model<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
@@ -148,7 +149,7 @@ fn lower_model<'a>(
             "error.v-model-no-expression",
             None,
             attr_slice(cx, attr),
-            String::default(),
+            String::default,
             span,
         );
         return None;
@@ -182,7 +183,7 @@ fn lower_model<'a>(
         "lower.model",
         node,
         attr_slice(cx, attr),
-        String::from("ui.model"),
+        || String::from("ui.model"),
         span,
     );
     Some(BindingOp::Model(Box::new_in(
@@ -202,7 +203,7 @@ fn lower_model<'a>(
 /// A user-defined directive rides through as the `vue.directive` dialect
 /// op, exactly as authored.
 fn lower_custom<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
@@ -224,7 +225,7 @@ fn lower_custom<'a>(
         "lower.vue-directive",
         node,
         attr_slice(cx, attr),
-        cstr!("vue.directive \"{}\"", directive.name),
+        || cstr!("vue.directive \"{}\"", directive.name),
         span,
     );
     BindingOp::VueDirective(Box::new_in(
@@ -251,7 +252,7 @@ fn lower_custom<'a>(
 /// recorded when it is a simple identifier; patterns wait for the one
 /// identifier-enumeration seam (#4365).
 pub(crate) fn lower_slot_content<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
@@ -286,7 +287,7 @@ pub(crate) fn lower_slot_content<'a>(
             },
         );
     }
-    let after = match &name {
+    let after = || match &name {
         None => String::from("ui.slot-content"),
         Some(DynamicName::Static(text)) => cstr!("ui.slot-content \"{text}\""),
         Some(DynamicName::Dynamic(expr)) => cstr!("ui.slot-content {}", desc(expr)),

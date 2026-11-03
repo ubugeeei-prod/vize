@@ -3,10 +3,15 @@
 //! decoded newline, so later entity decoding remains exactly once.
 
 use vize_l0::String;
+use vize_l2::provenance::ProvenanceSink;
 
 use crate::lower::cx::Cx;
 
-pub(super) fn normalize_special_text(cx: &Cx<'_>, text: &str, start: u32) -> Option<String> {
+pub(super) fn normalize_special_text(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    text: &str,
+    start: u32,
+) -> Option<String> {
     let leading = cx.ignore_newline_at == Some(start);
     let normalize = cx.normalize_pre_newlines();
     if !leading && !normalize {

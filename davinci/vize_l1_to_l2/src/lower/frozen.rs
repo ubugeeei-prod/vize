@@ -3,6 +3,7 @@
 use super::{Allocator, LegacyCaps, Lowered, cx::Cx, finish};
 use vize_l0::{SourceBlock, Span};
 use vize_l1::markup::{Element, SurfaceError, SurfaceTree};
+use vize_l2::provenance::ProvenanceSink;
 
 const FOREIGN: &str = "Frozen lowering custody belongs to a different whole template source.";
 const BOUNDS: &str = "Frozen lowering opening spans are unordered, overlapping or out of bounds.";
@@ -80,7 +81,7 @@ impl<'a> FrozenOpenings<'a> {
     }
 }
 
-impl<'a> Cx<'a> {
+impl<'a, P: ProvenanceSink> Cx<'a, P> {
     /// Consume only the actual element walk, never lookahead or synthetic owners.
     pub(super) fn frozen_literal(&mut self, element: &Element<'a>, frozen: bool) -> bool {
         if matches!(self.frozen_openings, FrozenOpenings::Absent) {

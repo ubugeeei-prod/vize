@@ -1,12 +1,13 @@
 use vize_l0::String;
 use vize_l1::markup::SurfaceChild;
 use vize_l2::op::Op;
+use vize_l2::provenance::ProvenanceSink;
 
 use super::super::{TextAction, normalize_special_text};
 use crate::lower::cx::Cx;
 
 pub(super) fn lower_single_text<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     child: &SurfaceChild<'a>,
     action: TextAction<'a>,
     out: &mut vize_l0::Vec<'a, Op<'a>>,
@@ -26,7 +27,7 @@ pub(super) fn lower_single_text<'a>(
                     "condense.whitespace",
                     None,
                     token.text,
-                    String::from(content),
+                    || String::from(content),
                     span,
                 );
             }

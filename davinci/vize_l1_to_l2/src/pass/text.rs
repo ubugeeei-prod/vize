@@ -21,6 +21,6 @@ pub use vize_l2::analysis::text_facts::TextFacts;
 /// Publish the lowering's already-validated compound text facts without
 /// walking the op tree.
 #[must_use]
-pub(super) fn facts_from_lowering(lowered: &Lowered<'_>) -> SideTable<TextFacts> {
+pub(super) fn facts_from_lowering<P>(lowered: &Lowered<'_, P>) -> SideTable<TextFacts> {
     vize_l2::analysis::text_facts::publish_text_facts(&lowered.texts)
 }

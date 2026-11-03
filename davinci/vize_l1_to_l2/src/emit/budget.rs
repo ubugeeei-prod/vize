@@ -5,6 +5,7 @@ use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
 use vize_l0::{Allocator, String, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options};
 use vize_l2::dump::Page as L2Page;
+use vize_l2::provenance::NoProvenance;
 
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
 use crate::pass::{TransformProfile, run_dom_transform_with_profile};
@@ -246,7 +247,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
         {
             return Err(EmitError::Diagnostics);
         }
-        let mut lowered = lower_with_caps_and_comment_policy(
+        let mut lowered = lower_with_caps_and_comment_policy::<NoProvenance>(
             allocator,
             &tree,
             &errors,
@@ -319,7 +320,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
             text
         });
-        let mut lowered = lower_with_caps_and_comment_policy(
+        let mut lowered = lower_with_caps_and_comment_policy::<NoProvenance>(
             allocator,
             &tree,
             &errors,
