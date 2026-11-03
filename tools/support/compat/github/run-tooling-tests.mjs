@@ -1,11 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
 import { TOOLING_TIMINGS_LOG_MARKER, selectToolingShard } from "./tooling-test-shards.ts";
 import { prepareCssCustodyHistory } from "./prepare-css-custody-history.mjs";
+import { packet } from "./test-cases.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -56,6 +57,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         "--test-reporter-destination=stdout",
         `--test-reporter=${fileURLToPath(new URL("./tooling-test-timing-reporter.ts", import.meta.url))}`,
         `--test-reporter-destination=${destination}`,
+        // CI asks for this job's test case packet for the Check test report.
+        ...(process.env.VIZE_TEST_CASES
+          ? [
+              `--test-reporter=${fileURLToPath(new URL("./test-case-reporter.ts", import.meta.url))}`,
+              `--test-reporter-destination=${process.env.VIZE_TEST_CASES}`,
+            ]
+          : []),
       ];
       const result = spawnSync(process.execPath, [...reporters, ...args], {
         cwd: root,
@@ -78,5 +86,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     }
   } else {
     process.stdout.write("No tooling tests selected by the declared inputs.\n");
+    if (process.env.VIZE_TEST_CASES)
+      writeFileSync(process.env.VIZE_TEST_CASES, `${JSON.stringify(packet(process.env, []))}\n`);
   }
 }

@@ -109,6 +109,19 @@ jobs:
           mkdir -p "target/nextest/$NEXTEST_PROFILE"
           printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
+      - name: Record Rust test cases
+        id: cases
+        if: ${{ !cancelled() && hashFiles(format('target/nextest/{0}/junit.xml', env.NEXTEST_PROFILE)) != '' }}
+        env: { TEST_CASES_JOB: "Rust tests (${{ matrix.name }})" }
+        run: node tools/support/compat/github/test-cases.ts nextest "target/nextest/$NEXTEST_PROFILE/junit.xml" "$RUNNER_TEMP/test-cases-rust-$COHORT.json"
+      - name: Upload Rust test cases
+        if: ${{ !cancelled() && steps.cases.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-rust-${{ matrix.cohort }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-rust-${{ matrix.cohort }}.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Retain genuine pending Canon snapshot observations
         # Observation transport only; the original failed test remains failed.
         # Pending files are reviewed before any checked-in golden changes.
