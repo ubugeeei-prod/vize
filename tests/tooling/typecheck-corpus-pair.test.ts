@@ -35,6 +35,7 @@ import {
 import {
   diffBatchMapper,
   renderBatchDiff,
+  runBatchCheck,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-batch.ts";
 import { PAIR_HOST_ARGS } from "../../tools/benchmarks/scripts/typecheck-corpus-pair.ts";
 import { MAPPER_HOSTS } from "../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
@@ -471,4 +472,40 @@ void test("the batch diff keeps every diagnostic only one path reports, matched 
     /3 diagnostics, tsc with the Vize mapper 3; 1 only in batch, 1 only through the mapper/u,
   );
   assert.match(markdown, /\| `C\.vue` \| 9:3 \| TS7006 \| m \|/u);
+});
+
+void test("every batch check starts from an empty cache, so a second width cannot replay the first", (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "vize-batch-cache-test-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const bin = join(dir, "build", "npm", "cli", "bin");
+  mkdirSync(bin, { recursive: true });
+  const log = join(dir, "caches.log");
+  // A stand-in vize that reports what it found in its cache and leaves build info behind.
+  writeFileSync(
+    join(bin, "vize"),
+    [
+      `const fs = require("node:fs");`,
+      `const cache = process.env.XDG_CACHE_HOME;`,
+      `fs.appendFileSync(${JSON.stringify(log)}, cache + " " + fs.readdirSync(cache).length + " " + (process.env.VIZE_CHECKERS ?? "-") + "\\n");`,
+      `fs.writeFileSync(cache + "/tsconfig.tsbuildinfo", "{}");`,
+      `process.stdout.write(JSON.stringify({ files: [], errorCount: 0, warningCount: 0 }));`,
+    ].join("\n"),
+  );
+  mkdirSync(join(dir, "project"));
+  for (const env of [{}, { VIZE_CHECKERS: "8" }]) {
+    assert.deepEqual(runBatchCheck(join(dir, "build"), join(dir, "project"), "tsgo", env), []);
+  }
+  const runs = readFileSync(log, "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => line.split(" "));
+  assert.equal(runs.length, 2);
+  assert.notEqual(runs[0]![0], runs[1]![0]);
+  assert.deepEqual(
+    runs.map(([, entries, checkers]) => [entries, checkers]),
+    [
+      ["0", "-"],
+      ["0", "8"],
+    ],
+  );
 });

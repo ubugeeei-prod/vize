@@ -8,6 +8,8 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { normalizeTypecheckResult } from "./typecheck-command.mjs";
@@ -19,11 +21,30 @@ export function hostCorsaPath(hostsDir: string): string {
   return join(hostsDir, "node_modules", "@typescript", platform, "lib", "tsc");
 }
 
+/**
+ * One `vize check` from an empty user cache. It keeps tsgo's `--incremental`
+ * build info there, and a second run over the unchanged project would replay
+ * the first run's diagnostics, whatever its checker width.
+ */
 export function runBatchCheck(
   buildDir: string,
   projectDir: string,
   corsaPath: string,
   env: Record<string, string> = {},
+): Diagnostic[] {
+  const cache = mkdtempSync(join(tmpdir(), "vize-batch-cache-"));
+  try {
+    return batchCheck(buildDir, projectDir, corsaPath, { ...env, XDG_CACHE_HOME: cache });
+  } finally {
+    rmSync(cache, { recursive: true, force: true });
+  }
+}
+
+function batchCheck(
+  buildDir: string,
+  projectDir: string,
+  corsaPath: string,
+  env: Record<string, string>,
 ): Diagnostic[] {
   const result = spawnSync(
     process.execPath,
