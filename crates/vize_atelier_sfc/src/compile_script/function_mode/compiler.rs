@@ -21,7 +21,7 @@ use super::super::props::{
     PropTypeInfo, add_null_to_runtime_type, extract_emit_names_from_type,
     extract_prop_types_from_type_with_context,
     normalize_destructure_default_value_with_factory as normalize_default, resolve_prop_js_type,
-    runtime_prop_key, validate_macro_scope_and_props,
+    runtime_prop_key, split_skip_check, validate_macro_scope_and_props,
 };
 use super::super::typescript::transform_typescript_to_js;
 use super::expose::emit_expose;
@@ -481,7 +481,10 @@ fn resolve_prop_type(prop_type: &PropTypeInfo, ctx: &ScriptCompileContext) -> St
             .ts_type
             .as_ref()
             .and_then(|ts_type| resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases))
-            .unwrap_or_else(|| prop_type.js_type.clone())
+            .map_or_else(
+                || prop_type.js_type.clone(),
+                |js_type| split_skip_check(&js_type).0,
+            )
     } else {
         prop_type.js_type.clone()
     }

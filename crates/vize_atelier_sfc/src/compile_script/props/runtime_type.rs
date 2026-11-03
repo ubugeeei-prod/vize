@@ -2,6 +2,8 @@
 //! runtime constructors and related string-level helpers.
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
+
+use super::ast_resolve::combine_runtime_js_types;
 pub(crate) fn runtime_prop_key(name: &str) -> String {
     if is_valid_identifier(name) {
         return name.to_compact_string();
@@ -206,39 +208,11 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
                 return "null".to_compact_string();
             }
 
-            // Collect unique JS types for each union member
-            let mut js_types: Vec<String> = Vec::new();
-            for part in &meaningful {
-                let jt = ts_type_to_js_type(part);
-                if jt == "null" {
-                    return jt;
-                }
-                // A member that is itself a union (`[A, B]`) contributes its
-                // constructors individually.
-                let members = jt
-                    .strip_prefix('[')
-                    .and_then(|rest| rest.strip_suffix(']'))
-                    .map_or_else(|| vec![jt.as_str()], |inner| inner.split(", ").collect());
-                for member in members {
-                    if !js_types.iter().any(|existing| existing == member) {
-                        js_types.push(member.to_compact_string());
-                    }
-                }
-            }
-
-            if js_types.len() == 1
-                && let Some(only) = js_types.pop()
-            {
-                return only;
-            }
-
-            // Multiple distinct types → array form: [String, Number]
-            let joined = js_types.join(", ");
-            let mut result = String::with_capacity(joined.len() + 2);
-            result.push('[');
-            result.push_str(&joined);
-            result.push(']');
-            return result;
+            // Vue's rule: an unresolvable member erases the union unless
+            // `Boolean` or `Function` survives beside it.
+            return combine_runtime_js_types(
+                meaningful.iter().map(|part| ts_type_to_js_type(part)),
+            );
         }
     }
 

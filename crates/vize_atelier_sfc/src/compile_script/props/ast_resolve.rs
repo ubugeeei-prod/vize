@@ -16,8 +16,10 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
 mod indexed_access;
+mod keyof;
 mod runtime_type_combine;
-use runtime_type_combine::{combine_runtime_intersection_types, combine_runtime_js_types};
+use runtime_type_combine::combine_runtime_intersection_types;
+pub(crate) use runtime_type_combine::{combine_runtime_js_types, split_skip_check};
 pub(super) const TYPE_ALIAS_PREFIX: &str = "type $Props = ";
 
 pub(super) fn extract_prop_types_from_ast(
@@ -182,6 +184,7 @@ fn collect_props_from_ts_type_literal(
                 } else {
                     (None, "null".to_compact_string(), false)
                 };
+                let (js_type, skip_check) = split_skip_check(&js_type);
                 push_prop_type_info(
                     props,
                     name,
@@ -190,6 +193,7 @@ fn collect_props_from_ts_type_literal(
                         ts_type,
                         optional: prop.optional,
                         nullable,
+                        skip_check,
                     },
                 );
             }
@@ -205,6 +209,7 @@ fn collect_props_from_ts_type_literal(
                         ts_type: None,
                         optional: method.optional,
                         nullable: false,
+                        skip_check: false,
                     },
                 );
             }
@@ -264,6 +269,7 @@ fn collect_props_from_mapped_type(
             (None, "null".to_compact_string(), false)
         };
 
+        let (js_type, skip_check) = split_skip_check(&js_type);
         push_prop_type_info(
             props,
             prop_name,
@@ -275,6 +281,7 @@ fn collect_props_from_mapped_type(
                     Some(TSMappedTypeModifierOperator::True | TSMappedTypeModifierOperator::Plus)
                 ),
                 nullable,
+                skip_check,
             },
         );
     }
@@ -387,7 +394,9 @@ fn ts_type_to_js_type_from_ast_inner(
                 type_aliases,
                 seen,
             ),
-            TSTypeOperatorOperator::Keyof => "String".to_compact_string(),
+            TSTypeOperatorOperator::Keyof => {
+                keyof::runtime_type(&op.type_annotation, interfaces, type_aliases)
+            }
             TSTypeOperatorOperator::Unique => "null".to_compact_string(),
         },
         TSType::TSTypeReference(type_ref) => {

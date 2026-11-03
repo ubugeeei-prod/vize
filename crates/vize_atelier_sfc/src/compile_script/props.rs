@@ -22,6 +22,7 @@ pub use types::PropTypeInfo;
 pub use validation::script_setup_has_semantic_validator_candidates;
 pub use validation::{validate_script_setup_semantics, validate_script_setup_semantics_located};
 
+pub(crate) use ast_resolve::split_skip_check;
 #[cfg(test)]
 pub(crate) use defaults::normalize_destructure_default_value;
 pub(crate) use defaults::{

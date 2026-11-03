@@ -13,4 +13,7 @@ pub struct PropTypeInfo {
     pub optional: bool,
     /// Whether the prop accepts null at runtime
     pub nullable: bool,
+    /// Whether an unresolvable union member was dropped beside `Boolean` or
+    /// `Function`; Vue then emits `skipCheck: true`.
+    pub skip_check: bool,
 }

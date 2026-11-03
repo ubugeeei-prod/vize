@@ -5,6 +5,7 @@ use crate::script::{PropsDestructuredBindings, ScriptCompileContext};
 use super::super::super::props::{
     WithDefaultsValues, add_null_to_runtime_type, extract_prop_types_from_type_with_context,
     normalize_destructure_default_value_with_factory, resolve_prop_js_type, runtime_prop_key,
+    split_skip_check,
 };
 use super::super::type_handling::resolve_type_args;
 
@@ -81,16 +82,21 @@ pub(super) fn build_user_props_decl(
             for (name, prop_type) in &prop_types {
                 item_idx += 1;
                 // Try to resolve type references for props that resolved to `null`
-                let resolved_js_type = if prop_type.js_type == "null" {
-                    if let Some(ref ts_type) = prop_type.ts_type {
-                        resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
-                            .unwrap_or_else(|| prop_type.js_type.clone())
-                    } else {
-                        prop_type.js_type.clone()
-                    }
+                let (resolved_js_type, resolved_skip_check) = if prop_type.js_type == "null" {
+                    prop_type
+                        .ts_type
+                        .as_ref()
+                        .and_then(|ts_type| {
+                            resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
+                        })
+                        .map_or_else(
+                            || (prop_type.js_type.clone(), false),
+                            |js_type| split_skip_check(&js_type),
+                        )
                 } else {
-                    prop_type.js_type.clone()
+                    (prop_type.js_type.clone(), false)
                 };
+                let skip_check = prop_type.skip_check || resolved_skip_check;
                 let runtime_js_type =
                     add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
                 decl.extend_from_slice(b"    ");
@@ -129,6 +135,9 @@ pub(super) fn build_user_props_decl(
                         decl.extend_from_slice(b"required: false");
                     } else {
                         decl.extend_from_slice(b"required: true");
+                    }
+                    if skip_check {
+                        decl.extend_from_slice(b", skipCheck: true");
                     }
                     has_option = true;
                 }

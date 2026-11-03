@@ -4,7 +4,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, String, ToCompactString};
 
-use super::runtime_type_combine::combine_runtime_js_types;
+use super::runtime_type_combine::{combine_runtime_js_types, join_skip_check};
 use super::{
     collect_props_from_ts_type, finish_resolved_type_reference, literal_values_from_ts_type,
     property_key_name, resolve_type_reference_text, simple_type_name,
@@ -180,7 +180,7 @@ fn resolve_property_runtime_type_by_collecting(
         return None;
     }
     let (_, prop) = props.iter().find(|(name, _)| name.as_str() == key)?;
-    Some(prop.js_type.clone())
+    Some(join_skip_check(&prop.js_type, prop.skip_check))
 }
 
 #[cfg(test)]

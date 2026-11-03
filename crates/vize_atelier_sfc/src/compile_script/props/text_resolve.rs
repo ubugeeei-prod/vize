@@ -7,7 +7,7 @@
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
 
-use super::ast_resolve::extract_prop_types_from_ast;
+use super::ast_resolve::{extract_prop_types_from_ast, split_skip_check};
 use super::runtime_type::{is_valid_identifier, ts_type_to_js_type, type_includes_top_level_null};
 use super::types::PropTypeInfo;
 
@@ -202,6 +202,7 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
                             ts_type: Some(ts_type_str),
                             optional,
                             nullable: false,
+                            skip_check: false,
                         },
                     ));
                 }
@@ -218,7 +219,7 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
 
         if !name.is_empty() && is_valid_identifier(name) {
             let ts_type_str = type_part.trim().to_compact_string();
-            let js_type = ts_type_to_js_type(&ts_type_str);
+            let (js_type, skip_check) = split_skip_check(&ts_type_to_js_type(&ts_type_str));
             // Avoid duplicates (intersection types may have overlapping props)
             if !props.iter().any(|(n, _)| n == name) {
                 props.push((
@@ -228,6 +229,7 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
                         ts_type: Some(ts_type_str),
                         optional,
                         nullable,
+                        skip_check,
                     },
                 ));
             }

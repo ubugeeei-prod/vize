@@ -9,6 +9,7 @@ use vize_carton::String;
 use crate::script::ScriptCompileContext;
 use crate::types::SfcError;
 
+use super::ast_resolve::split_skip_check;
 use super::runtime_type::resolve_prop_js_type;
 use super::text_resolve::extract_prop_types_from_type_with_context;
 
@@ -183,7 +184,10 @@ pub(crate) fn validate_props_destructure_default_types(
                 .and_then(|ts_type| {
                     resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
                 })
-                .unwrap_or_else(|| prop_type.js_type.clone())
+                .map_or_else(
+                    || prop_type.js_type.clone(),
+                    |js_type| split_skip_check(&js_type).0,
+                )
         } else {
             prop_type.js_type.clone()
         };
