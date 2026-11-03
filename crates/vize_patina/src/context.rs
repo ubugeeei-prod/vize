@@ -84,6 +84,8 @@ pub struct LintContext<'a> {
     facts: Option<vize_croquis::facts::CroquisFacts<'a>>,
     /// Optional parsed SFC descriptor shared by SFC-level rules.
     sfc_descriptor: Option<&'a SfcDescriptor<'a>>,
+    /// The descriptor's script blocks, each parsed once for every rule.
+    sfc_scripts: Option<&'a dyn crate::linter::sfc_scripts::ScriptParses>,
     /// Rules that should ignore semantic analysis for this lint pass.
     analysis_excluded_rules: Option<&'static [&'static str]>,
     /// SSR mode for linting.
@@ -148,6 +150,7 @@ impl<'a> LintContext<'a> {
             art_script_analysis: None,
             facts: None,
             sfc_descriptor: None,
+            sfc_scripts: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
@@ -197,6 +200,7 @@ impl<'a> LintContext<'a> {
             art_script_analysis: None,
             facts: Some(vize_croquis::facts::CroquisFacts::new(analysis)),
             sfc_descriptor: None,
+            sfc_scripts: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
@@ -222,6 +226,19 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn sfc_descriptor(&self) -> Option<&SfcDescriptor<'a>> {
         self.sfc_descriptor
+    }
+
+    /// Share the descriptor's script parses with SFC-level rules.
+    pub(crate) fn set_sfc_scripts(
+        &mut self,
+        scripts: &'a dyn crate::linter::sfc_scripts::ScriptParses,
+    ) {
+        self.sfc_scripts = Some(scripts);
+    }
+
+    /// The descriptor's script parses, when the engine prepared them.
+    pub(crate) fn sfc_scripts(&self) -> Option<&'a dyn crate::linter::sfc_scripts::ScriptParses> {
+        self.sfc_scripts
     }
 
     /// Set SSR mode.

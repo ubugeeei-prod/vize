@@ -26,6 +26,7 @@ mod native_type_aware;
 mod restricted_rules;
 mod rule_selection;
 pub(crate) mod script_rules;
+pub(crate) mod sfc_scripts;
 mod severity;
 
 pub use config::{LintResult, Linter};

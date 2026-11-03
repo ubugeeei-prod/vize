@@ -6,6 +6,7 @@ use super::{
     SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, extract_template_fast, offset_result,
 };
 use crate::linter::config::{LintResult, Linter};
+use crate::linter::sfc_scripts::{ScriptParses, SfcScripts};
 use vize_armature::Parser;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
@@ -14,8 +15,9 @@ impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(
         &self,
         input: SfcTemplateLintInput<'a>,
+        scripts: &SfcScripts<'_>,
     ) -> (LintResult, LintResult) {
-        let mut scripts = empty_lint_result(input.filename);
+        let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
         let lint = self.lint_template_root_with_finish(
             super::template::TemplateExecution {
@@ -24,7 +26,7 @@ impl Linter {
                 filename: input.filename,
                 root: input.root,
                 env: TemplateRuleEnv {
-                    sfc_descriptor: input.descriptor,
+                    sfc_descriptor: Some(input.descriptor),
                     art_script_analysis: None,
                     dialect: VueDialect::Vue,
                     facade_rules: facade::RULES,
@@ -32,25 +34,25 @@ impl Linter {
             },
             input.analysis,
             |ctx| {
-                if let Some(descriptor) = input.descriptor {
-                    super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
-                        self,
-                        descriptor,
-                        &mut scripts,
-                        valid_template.then_some((input.root, input.template.loc.start as u32)),
-                        input.template_syntax,
-                        Some(ctx),
-                    );
-                }
+                super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
+                    self,
+                    input.descriptor,
+                    scripts,
+                    &mut script_result,
+                    valid_template.then_some((input.root, input.template.loc.start as u32)),
+                    input.template_syntax,
+                    Some(ctx),
+                );
             },
         );
-        (lint, scripts)
+        (lint, script_result)
     }
 
     fn lint_sfc_with_descriptor<'a>(
         &self,
         filename: &str,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
+        scripts: &SfcScripts<'_>,
         derived: bool,
     ) -> LintResult {
         let Some(template) = descriptor.template.as_ref() else {
@@ -58,6 +60,7 @@ impl Linter {
             super::super::script_rules::append_builtin_script_diagnostics(
                 self,
                 descriptor,
+                scripts,
                 &mut result,
                 None,
                 None,
@@ -127,21 +130,24 @@ impl Linter {
         let mut parse_result =
             Self::template_parse_lint_result(filename, template.content.len(), &parse_errors);
         offset_result(&mut parse_result, template.loc.start as u32);
-        let (lint_result, scripts) = self.lint_sfc_template_root(SfcTemplateLintInput {
-            filename,
-            template,
-            allocator: &allocator,
-            root: &root,
-            descriptor: Some(descriptor),
-            analysis: if has_fatal_parse_errors {
-                TemplateAnalysis::Disabled
-            } else if let Some(analysis) = analysis.as_ref() {
-                TemplateAnalysis::Precomputed(analysis)
-            } else {
-                TemplateAnalysis::Lazy
+        let (lint_result, scripts) = self.lint_sfc_template_root(
+            SfcTemplateLintInput {
+                filename,
+                template,
+                allocator: &allocator,
+                root: &root,
+                descriptor,
+                analysis: if has_fatal_parse_errors {
+                    TemplateAnalysis::Disabled
+                } else if let Some(analysis) = analysis.as_ref() {
+                    TemplateAnalysis::Precomputed(analysis)
+                } else {
+                    TemplateAnalysis::Lazy
+                },
+                template_syntax: template_syntax.as_ref(),
             },
-            template_syntax: template_syntax.as_ref(),
-        });
+            scripts,
+        );
 
         let mut result = Self::merge_lint_results(parse_result, lint_result);
         result.error_count += scripts.error_count;
@@ -197,11 +203,19 @@ impl Linter {
         let shared_descriptor = shared_descriptor_result
             .as_ref()
             .and_then(|result| result.as_ref().ok());
+        let script_allocator = oxc_allocator::Allocator::default();
+        let scripts =
+            shared_descriptor.map(|descriptor| SfcScripts::new(&script_allocator, descriptor));
+        let shared = shared_descriptor.zip(scripts.as_ref());
 
         let sfc_result = sfc_parse_result.unwrap_or_else(|| {
             profile!(
                 "patina.sfc.level_rules",
-                self.lint_sfc_level(source, filename, shared_descriptor)
+                self.lint_sfc_level(
+                    source,
+                    filename,
+                    shared.map(|(descriptor, scripts)| (descriptor, scripts as &dyn ScriptParses)),
+                )
             )
         });
 
@@ -231,10 +245,10 @@ impl Linter {
             || self.has_active_shared_sfc_descriptor_rules()
             || super::super::musea_rules::has_active_builtin_musea_rules(self)
         {
-            let template_result = match shared_descriptor {
-                Some(descriptor) => {
+            let template_result = match shared {
+                Some((descriptor, scripts)) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        self.lint_sfc_with_descriptor(filename, descriptor, derived)
+                        self.lint_sfc_with_descriptor(filename, descriptor, scripts, derived)
                     })
                 }
                 None => self.fast_template_lint_or_empty(source, filename),

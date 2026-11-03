@@ -7,12 +7,11 @@ use super::{
     LintResult, Linter, active_builtin_script_rule_entries, entry_may_match,
     has_active_builtin_script_rules, merge_script_result, resolved_rule, run_builtin_script_rule,
 };
+use crate::linter::sfc_scripts::SfcScripts;
 use crate::rules::script::{
     EmitsModuleScript, NoDupeKeys, NoDupeKeysModuleScript, NoDuplicateAttrInheritance,
-    ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext, script_source_type,
+    ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext,
 };
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
 
@@ -21,6 +20,7 @@ use vize_l0::profile;
 pub(crate) fn append_builtin_script_diagnostics<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
+    scripts: &SfcScripts<'_>,
     result: &mut LintResult,
     template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
     template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
@@ -28,6 +28,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     append_builtin_script_diagnostics_with_template_context(
         linter,
         descriptor,
+        scripts,
         result,
         template_ast,
         template_syntax,
@@ -38,6 +39,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
 pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
+    scripts: &SfcScripts<'_>,
     result: &mut LintResult,
     template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
     template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
@@ -159,30 +161,13 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     });
     let script_setup =
         script_setup_source.filter(|_| planned.iter().any(|(_, _, setup_matches)| *setup_matches));
-    let setup_alloc = Allocator::default();
     let script_setup_parsed = script_setup
         .filter(|_| {
             planned.iter().any(|(entry, _, setup_matches)| {
                 *setup_matches && resolved_rule(linter, entry).uses_ast()
             })
         })
-        .map(|(source, _)| {
-            let parsed = profile!(
-                "patina.script_rule.parse",
-                Parser::new(
-                    &setup_alloc,
-                    source,
-                    sfc_script_source_type(
-                        descriptor
-                            .script_setup
-                            .as_ref()
-                            .and_then(|block| block.lang.as_deref())
-                    )
-                )
-                .parse()
-            );
-            parsed
-        });
+        .and_then(|_| scripts.script_setup());
 
     // Only the actual active return-validator rule can request normal-script
     // ownership evidence. Other rules retain their existing dispatch and parse
@@ -207,7 +192,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             .is_none_or(|block| block.src.is_none());
     let needs_emits_module = inline_emits_blocks
         && emits_setup_rule.is_some()
-        && script_setup_parsed.as_ref().is_some_and(|parsed| {
+        && script_setup_parsed.is_some_and(|parsed| {
             !parsed.panicked
                 && parsed.diagnostics.is_empty()
                 && ReturnInEmitsValidator::setup_needs_module(&parsed.program)
@@ -219,12 +204,11 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         .and_then(|entry| resolved_rule(linter, entry).as_setup_dupe_keys());
     let needs_dupe_module = inline_emits_blocks
         && dupe_setup_rule.is_some()
-        && script_setup_parsed.as_ref().is_some_and(|parsed| {
+        && script_setup_parsed.is_some_and(|parsed| {
             !parsed.panicked
                 && parsed.diagnostics.is_empty()
                 && NoDupeKeys::setup_needs_module(&parsed.program)
         });
-    let script_alloc = Allocator::default();
     let script_parsed = script_source
         .filter(|_| {
             registered_scripts
@@ -234,22 +218,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                     *script_matches && resolved_rule(linter, entry).uses_ast()
                 })
         })
-        .map(|(source, _)| {
-            profile!(
-                "patina.script_rule.parse",
-                Parser::new(
-                    &script_alloc,
-                    source,
-                    sfc_script_source_type(
-                        descriptor
-                            .script
-                            .as_ref()
-                            .and_then(|block| block.lang.as_deref())
-                    )
-                )
-                .parse()
-            )
-        });
+        .and_then(|_| scripts.script());
     let needs_component_bindings = template_references.as_ref().is_some_and(|(references, _)| {
         references.references().iter().any(|reference| {
             reference.owner == vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
@@ -259,14 +228,14 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     let component_bindings = if needs_component_bindings {
         crate::rules::script::TemplateComponentBindings::from_parsed_sfc(
             descriptor,
-            script_setup_parsed.as_ref(),
-            script_parsed.as_ref(),
+            script_setup_parsed,
+            script_parsed,
         )
     } else {
         Default::default()
     };
     append_template(result, &component_bindings);
-    let emits_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
+    let emits_module = match (inline_emits_blocks, script_source, script_parsed) {
         (false, _, _) => EmitsModuleScript::Unavailable,
         (true, None, _) => EmitsModuleScript::Absent,
         (true, Some((_, offset)), Some(parsed))
@@ -280,7 +249,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         _ => EmitsModuleScript::Unavailable,
     };
 
-    let dupe_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
+    let dupe_module = match (inline_emits_blocks, script_source, script_parsed) {
         (false, _, _) => NoDupeKeysModuleScript::Unavailable,
         (true, None, _) => NoDupeKeysModuleScript::Absent,
         (true, Some((_, offset)), Some(parsed))
@@ -322,11 +291,9 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     };
 
     let setup_program = script_setup_parsed
-        .as_ref()
         .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
         .map(|parsed| &parsed.program);
     let normal_program = script_parsed
-        .as_ref()
         .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
         .map(|parsed| &parsed.program);
     for (entry, script_matches, setup_matches) in planned {
@@ -338,7 +305,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 rule,
                 source,
                 offset,
-                script_parsed.as_ref(),
+                script_parsed,
                 SfcScriptContext {
                     typescript: is_typescript_block(descriptor.script.as_ref()),
                     sibling_program: setup_program,
@@ -359,7 +326,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 rule,
                 source,
                 offset,
-                script_setup_parsed.as_ref(),
+                script_setup_parsed,
                 SfcScriptContext {
                     is_script_setup: true,
                     typescript: is_typescript_block(descriptor.script_setup.as_ref()),
@@ -378,27 +345,10 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         }
     }
     if let Some((source, offset)) = script {
-        registered_sfc::run(
-            linter,
-            source,
-            offset,
-            script_parsed.as_ref(),
-            sfc_context,
-            result,
-        );
+        registered_sfc::run(linter, source, offset, script_parsed, sfc_context, result);
     }
 }
 mod registered_sfc;
-
-// JSX render functions are valid in JavaScript SFC blocks. Keep TypeScript
-// blocks in TS mode so generic arrows and angle-bracket assertions retain
-// their grammar; only an explicit TSX block opts those files into JSX.
-fn sfc_script_source_type(lang: Option<&str>) -> oxc_span::SourceType {
-    script_source_type().with_jsx(matches!(
-        lang,
-        None | Some("js" | "javascript" | "jsx" | "tsx")
-    ))
-}
 
 fn is_typescript_block(block: Option<&vize_atelier_sfc::SfcScriptBlock<'_>>) -> bool {
     matches!(
