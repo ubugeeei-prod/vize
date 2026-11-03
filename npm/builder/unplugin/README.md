@@ -116,7 +116,8 @@ TypeScript/JSX transforms in the pipeline if your SFC scripts use those syntaxes
 
 - Vite is still the recommended integration if you need the most complete behavior today.
 - Plain inline CSS is injected into JavaScript at runtime; CSS asset extraction and SSR stylesheet delivery are not provided by this path.
-- External `<style src="...">` blocks and `@import` in plain inline CSS are unsupported and cause an explicit build error. Inline those styles without external imports, or use `@vizejs/vite-plugin` for stylesheet dependency resolution. The unplugin does not read, watch, or cache those external stylesheets.
+- `<style src>`, `<script src>` and `<template src>` files are read relative to the SFC (or from an absolute path), inlined before compilation and watched, as in `@vizejs/vite-plugin`. Alias and package specifiers are not resolved, and a missing file is a build error.
+- `@import` in plain CSS is a build error. Plain CSS is injected at runtime as a string, so an `@import` would be fetched relative to the page. Inline the imported CSS, move the block to a preprocessor or CSS Module (handled by the host CSS pipeline), or use `@vizejs/vite-plugin`.
 - CSS Modules and preprocessors depend on the host bundler CSS pipeline and are more likely to change than the Vite path.
 - Scoped preprocessor styles are compiled before they are scoped, as in Vue: Webpack uses your `.scss`/`.less`/`.styl` rules, while Rollup, Rolldown and esbuild run the project's installed `sass` (or `sass-embedded`), `less` or `stylus`.
 - If your bundler inlines the Vue runtime, Vize injects the usual Vue 3 compile-time feature flags for Rollup-like and Webpack hosts when its compiler is active.

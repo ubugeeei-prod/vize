@@ -20,9 +20,10 @@ export function assertSupportedStyleDependencies(
   filename: string,
 ): void {
   for (const style of styles) {
+    // `src` blocks are inlined before compilation; one left here was unreadable.
     if (style.src !== undefined) {
       throw new Error(
-        `[vize] ${filename}: <style src=${JSON.stringify(style.src)}> is not supported by @vizejs/unplugin. Use inline CSS without external imports, or @vizejs/vite-plugin for external stylesheet resolution.`,
+        `[vize] ${filename}: <style src=${JSON.stringify(style.src)}> could not be inlined by @vizejs/unplugin. Write it as <style src="./file.css"> with a quoted relative path, or use @vizejs/vite-plugin.`,
       );
     }
 

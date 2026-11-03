@@ -10,6 +10,7 @@ import type {
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
 import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
+import { inlineSfcSrcBlocks } from "./src-blocks.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -48,17 +49,20 @@ export function compileVueModule(
   source: string,
   options: NormalizedVizeUnpluginOptions,
   cache: Map<string, CachedCompiledModule>,
-): { compiled: CompiledModule; warnings: string[] } {
-  const sourceHash = buildSourceHash(source);
+): { compiled: CompiledModule; warnings: string[]; dependencies: string[] } {
+  // Hash the inlined source so an edited `src` file invalidates the cache.
+  const { source: inlined, dependencies } = inlineSfcSrcBlocks(filePath, source);
+  const sourceHash = buildSourceHash(inlined);
   const signature = buildSignature(options);
   const cached = cache.get(filePath);
 
   if (cached && cached.sourceHash === sourceHash && cached.signature === signature) {
-    return { compiled: cached.compiled, warnings: [] };
+    return { compiled: cached.compiled, warnings: [], dependencies };
   }
 
+  // The authored source keeps scope ids equal to @vizejs/vite-plugin's.
   const scopeId = generateScopeId(filePath, options.root, options.isProduction, source);
-  const result = compileSfc(source, {
+  const result = compileSfc(inlined, {
     filename: filePath,
     mode: options.mode,
     sourceMap: options.sourceMap,
@@ -105,6 +109,7 @@ export function compileVueModule(
   return {
     compiled,
     warnings: result.warnings,
+    dependencies,
   };
 }
 

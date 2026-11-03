@@ -36,7 +36,7 @@ function filesUnder(
   });
 }
 
-void test("real tsdown/Rolldown refuses original style src and import instead of dropping CSS", (t) => {
+void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses imports", (t) => {
   const requireFromWorkspace = createRequire(path.join(workspaceRoot, "package.json"));
   const tsdown = requireFromWorkspace.resolve("tsdown");
   const cli = requireFromWorkspace.resolve("tsdown/run");
@@ -59,8 +59,31 @@ void test("real tsdown/Rolldown refuses original style src and import instead of
     .toString("utf8")
     .replace('"@vizejs/unplugin/rolldown"', JSON.stringify(pathToFileURL(plugin).href))
     .replace('"tsdown"', JSON.stringify(pathToFileURL(tsdown).href));
-  const cases = [
-    { id: "original-src", source: input.content.toString("utf8"), expectedError: "<style src=" },
+  const replaceStyle = (style: string) =>
+    input.content.toString("utf8").replace('<style scoped src="./foo.css"></style>', style);
+  const cases: Array<{
+    id: string;
+    source: string;
+    expectedError: RegExp | null;
+    scoped?: boolean;
+  }> = [
+    {
+      id: "original-src",
+      source: input.content.toString("utf8"),
+      expectedError: null,
+      scoped: true,
+    },
+    {
+      id: "plain-src",
+      source: replaceStyle('<style src="./foo.css"></style>'),
+      expectedError: null,
+      scoped: false,
+    },
+    {
+      id: "missing-src",
+      source: replaceStyle('<style scoped src="./missing.css"></style>'),
+      expectedError: /<style src="\.\/missing\.css"> not found/,
+    },
     {
       id: "inline-import",
       source: input.content
@@ -69,7 +92,7 @@ void test("real tsdown/Rolldown refuses original style src and import instead of
           '<style scoped src="./foo.css"></style>',
           '<style scoped>@import "./foo.css";</style>',
         ),
-      expectedError: "CSS @import",
+      expectedError: /CSS @import in <style> is not supported by @vizejs\/unplugin/,
     },
     {
       id: "inline-scoped",
@@ -80,6 +103,7 @@ void test("real tsdown/Rolldown refuses original style src and import instead of
           "<style scoped>.foo { color: red; }</style>",
         ),
       expectedError: null,
+      scoped: true,
     },
   ];
   const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-style-src-11456-")));
@@ -127,14 +151,13 @@ void test("real tsdown/Rolldown refuses original style src and import instead of
       assert.equal(actual.signal, null);
       if (actual.expectedError) {
         assert.notEqual(actual.status, 0, actual.id);
-        assert.ok(`${actual.stdout}${actual.stderr}`.includes(actual.expectedError), actual.id);
-        assert.match(`${actual.stdout}${actual.stderr}`, /not supported by @vizejs\/unplugin/);
+        assert.match(`${actual.stdout}${actual.stderr}`, actual.expectedError, actual.id);
       } else {
         assert.equal(actual.status, 0, actual.stderr);
         const emitted = actual.output.map((file) => file.content).join("\n");
-        assert.match(emitted, /color:\s*red/);
-        assert.match(emitted, /data-v-/);
-        assert.match(emitted, /document\.createElement\("style"\)/);
+        assert.match(emitted, /color:\s*red/, actual.id);
+        assert.match(emitted, /document\.createElement\("style"\)/, actual.id);
+        assert.equal(/\.foo\[data-v-[0-9a-f]{8}\]/.test(emitted), actual.scoped, actual.id);
       }
     }
   } finally {
