@@ -9,7 +9,7 @@ import { MappedModule, parseSourceMap } from "./source-map.ts";
 /** Assemble the compiler's component export before CSS and HMR decoration. */
 export function assembleComponentOutput(
   compiled: Pick<CompiledModule, "code" | "map" | "moduleShape" | "hasScoped" | "scopeId">,
-): { emitted: MappedModule; hasExportDefault: boolean } {
+): { emitted: MappedModule; hasExportDefault: boolean; exportsSfcMain: boolean } {
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
 
   // The native compiler already parsed this module and reports its shape, so
@@ -22,6 +22,9 @@ export function assembleComponentOutput(
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
   const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;
   const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
+  // Whether the assembled module default-exports `_sfc_main`; decorations that
+  // attach to it are appended after the module instead of located in it.
+  let exportsSfcMain = true;
 
   if (hasExportDefault && !hasSfcMainDefined) {
     emitted.edit(rewriteDefaultExportToSfcMain(emitted.code, moduleInfo));
@@ -31,18 +34,18 @@ export function assembleComponentOutput(
     }
     emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
   } else if (hasExportDefault && hasSfcMainDefined) {
+    exportsSfcMain = moduleInfo.defaultExportIsSfcMain;
     // _sfc_main already defined, just add scopeId if needed
     if (compiled.hasScoped && compiled.scopeId) {
       // `emitted.code` is still `compiled.code` on this branch -- nothing above
       // it rewrote the module -- so `moduleInfo`'s offsets describe it exactly and
       // the insertion can reuse them instead of parsing the module again
-      // (#3425). The later CSS-modules insertion below cannot: by then the
-      // module has been rewritten and the offsets are stale.
+      // (#3425).
       emitted.edit(
         insertBeforeSfcMainDefaultExport(
           emitted.code,
           `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
-          { moduleInfo },
+          moduleInfo,
         ),
       );
     }
@@ -58,7 +61,9 @@ export function assembleComponentOutput(
     emitted.edit(
       `${emitted.code}\nconst _sfc_main = { ssrRender${scope} };\nexport default _sfc_main;`,
     );
+  } else {
+    exportsSfcMain = false;
   }
 
-  return { emitted, hasExportDefault };
+  return { emitted, hasExportDefault, exportsSfcMain };
 }

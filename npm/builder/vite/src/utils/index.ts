@@ -3,7 +3,6 @@ import path from "node:path";
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 import { assembleComponentOutput } from "./component-output.ts";
-import { insertBeforeSfcMainDefaultExport } from "./module-output.ts";
 import type { SourceMapV3 } from "./source-map.ts";
 import { createStyleVirtualId } from "../plugin/style-request.ts";
 
@@ -202,7 +201,7 @@ export function generateOutputWithMap(
   const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath, root } =
     options;
 
-  const { emitted, hasExportDefault } = assembleComponentOutput(compiled);
+  const { emitted, hasExportDefault, exportsSfcMain } = assembleComponentOutput(compiled);
 
   // Determine whether to use style imports or inline CSS injection.
   // Import styles through Vite in every mode, including SSR dependency discovery.
@@ -254,16 +253,14 @@ export function generateOutputWithMap(
       emitted.edit(insertAfterStaticImports(emitted.code, allImports));
     }
 
-    // Inject CSS module bindings into the component
-    if (customElementStyleBindings.length > 0) {
+    // Style bindings are appended to the exported `_sfc_main`: they run after
+    // the module body, before any importer reads the export, so the emitted
+    // code is never parsed again to locate `export default` (#11526).
+    if (exportsSfcMain && customElementStyleBindings.length > 0) {
       emitted.edit(
-        insertBeforeSfcMainDefaultExport(
-          emitted.code,
-          `_sfc_main.styles = [${customElementStyleBindings.join(", ")}];`,
-          { normalizeSemicolon: true },
-        ),
+        `${emitted.code}\n_sfc_main.styles = [${customElementStyleBindings.join(", ")}];`,
       );
-    } else if (cssModuleImports.length > 0) {
+    } else if (exportsSfcMain && cssModuleImports.length > 0) {
       // Extract binding names from the CSS module imports
       const moduleBindings: { name: string; bindingName: string }[] = [];
       for (const block of compiled.styles!) {
@@ -281,11 +278,7 @@ export function generateOutputWithMap(
             `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(m.name)}] = ${m.bindingName};`,
         )
         .join("\n");
-      emitted.edit(
-        insertBeforeSfcMainDefaultExport(emitted.code, cssModuleSetup, {
-          normalizeSemicolon: true,
-        }),
-      );
+      emitted.edit(`${emitted.code}\n${cssModuleSetup}`);
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Fallback for callers without per-block style metadata ---

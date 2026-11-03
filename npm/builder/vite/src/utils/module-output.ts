@@ -18,12 +18,7 @@ export type ModuleOutputInfo = {
   hasNamedSsrRenderExport: boolean;
   defaultExportKeywordEnd: number | null;
   defaultExportStart: number | null;
-  /**
-   * End offset of the whole `export default ...` statement, or `null`.
-   *
-   * Recorded so {@link insertBeforeSfcMainDefaultExport} can reuse the caller's
-   * analysis instead of parsing the module a second time (#3425).
-   */
+  /** End offset of the whole `export default ...` statement, or `null`. */
   defaultExportEnd: number | null;
   /**
    * Whether the default export's declaration is exactly the `_sfc_main`
@@ -230,58 +225,18 @@ export function rewriteDefaultExportToSfcMain(
 }
 
 /**
- * Locate `export default _sfc_main` when the caller has no analysis to hand.
- *
- * The string test is a sound pre-filter: the AST check below only succeeds when
- * the default export's declaration *is* the `_sfc_main` identifier, which cannot
- * happen unless that name occurs in the module.
+ * Insert `insertion` before `export default _sfc_main`. `moduleInfo` must
+ * describe `code` exactly (offsets are used verbatim), so the module is never
+ * parsed again (#3425).
  */
-function findSfcMainDefaultExport(code: string): {
-  defaultExportStart: number | null;
-  defaultExportEnd: number | null;
-  defaultExportIsSfcMain: boolean;
-} {
-  if (!code.includes(SFC_MAIN_NAME)) {
-    return { defaultExportStart: null, defaultExportEnd: null, defaultExportIsSfcMain: false };
-  }
-
-  const defaultExport = findDefaultExport(parseProgram(code));
-  return {
-    defaultExportStart: getNodeStart(defaultExport),
-    defaultExportEnd: getNodeEnd(defaultExport),
-    defaultExportIsSfcMain: isSfcMainDefaultExport(defaultExport),
-  };
-}
-
 export function insertBeforeSfcMainDefaultExport(
   code: string,
   insertion: string,
-  options: {
-    normalizeSemicolon?: boolean;
-    /**
-     * Analysis of *this exact* `code`, when the caller already has one. Passing
-     * it removes a second full oxc parse of the module the caller just parsed
-     * (#3425). It must describe `code` as given: every offset is used verbatim,
-     * so a caller that mutated the module after analyzing it must omit this.
-     */
-    moduleInfo?: Pick<
-      ModuleOutputInfo,
-      "defaultExportStart" | "defaultExportEnd" | "defaultExportIsSfcMain"
-    >;
-  } = {},
+  moduleInfo: Pick<ModuleOutputInfo, "defaultExportStart" | "defaultExportIsSfcMain">,
 ): string {
-  const {
-    defaultExportStart: exportStart,
-    defaultExportEnd: exportEnd,
-    defaultExportIsSfcMain,
-  } = options.moduleInfo ?? findSfcMainDefaultExport(code);
-  if (!defaultExportIsSfcMain || exportStart == null) {
+  const exportStart = moduleInfo.defaultExportStart;
+  if (!moduleInfo.defaultExportIsSfcMain || exportStart == null) {
     return code;
-  }
-
-  if (options.normalizeSemicolon && exportEnd != null) {
-    const suffixStart = code[exportEnd] === ";" ? exportEnd + 1 : exportEnd;
-    return `${code.slice(0, exportStart)}${insertion}\nexport default ${SFC_MAIN_NAME};${code.slice(suffixStart)}`;
   }
 
   return `${code.slice(0, exportStart)}${insertion}\n${code.slice(exportStart)}`;
