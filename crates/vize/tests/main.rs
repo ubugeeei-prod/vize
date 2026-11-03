@@ -44,6 +44,7 @@ mod check_config_change_invalidation_cli;
 mod check_config_recovery_cli;
 mod check_declaration_emit_cli;
 mod check_declaration_emit_vue_floor_cli;
+mod check_declaration_fallthrough_attrs_cli;
 mod check_default_imports_cli;
 mod check_default_run_project_root_cli;
 mod check_define_props_cli;
