@@ -34,6 +34,12 @@ import {
 } from "./typecheck-corpus-pair-report.ts";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
 import {
+  diffBatchMapper,
+  hostCorsaPath,
+  renderBatchDiff,
+  runBatchCheck,
+} from "./typecheck-corpus-pair-batch.ts";
+import {
   checkerBusyMs,
   checkMsByFile,
   probeBytesByFile,
@@ -254,6 +260,8 @@ function main(): void {
       "base-sha": { type: "string" },
       "head-sha": { type: "string" },
       runs: { type: "string", default: "5" },
+      // Also diff the head build's `vize check` against its mapper under tsc.
+      batch: { type: "boolean", default: false },
       work: { type: "string" },
       out: { type: "string" },
     },
@@ -416,6 +424,21 @@ function main(): void {
       };
     }),
   };
+  if (values.batch) {
+    const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
+    const diffs = CORPORA.map((corpus) => {
+      const project = projects(corpus, "head");
+      const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
+      if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
+      return diffBatchMapper(
+        corpus.id,
+        runBatchCheck(resolve(values.head), project, corsa),
+        mapper,
+      );
+    });
+    writeFileSync(join(out, "batch-vs-mapper.json"), `${JSON.stringify(diffs, null, 1)}\n`);
+    writeFileSync(join(out, "batch-vs-mapper.md"), renderBatchDiff(diffs));
+  }
   const summary = summarizePair(results);
   // Full diagnostic lists live in diagnostics/<lane>.json.
   const lean = results.lanes.map(({ diagnostics, ...lane }) => ({

@@ -32,6 +32,10 @@ import {
   projectionReport,
   renderProjection,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-projection.ts";
+import {
+  diffBatchMapper,
+  renderBatchDiff,
+} from "../../tools/benchmarks/scripts/typecheck-corpus-pair-batch.ts";
 import { PAIR_HOST_ARGS } from "../../tools/benchmarks/scripts/typecheck-corpus-pair.ts";
 import { MAPPER_HOSTS } from "../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
 import { root } from "./support/github-workflows.ts";
@@ -435,4 +439,36 @@ void test("the projection report ranks SFCs by bytes and traced check time again
   assert.match(markdown, /1 of 2 SFCs are at most Vue's size/u);
   assert.match(markdown, /Vize head 13 \/ 2; Vue n\/a/u);
   assert.ok(markdown.indexOf("`A.vue` | 0.2 | 0.1 | 1.33×") > 0, markdown);
+});
+
+void test("the batch diff keeps every diagnostic only one path reports, matched by position and code", () => {
+  const at = (file: string, line: string, code: string, message = "m"): Diagnostic => [
+    file,
+    "error",
+    line,
+    "3",
+    code,
+    message,
+  ];
+  const diff = diffBatchMapper(
+    "demo",
+    [
+      at("A.vue", "1", "TS2345"),
+      at("A.vue", "1", "TS2345"),
+      at("B.vue", "4", "TS2322", "batch text"),
+    ],
+    [
+      at("A.vue", "1", "TS2345"),
+      at("B.vue", "4", "TS2322", "mapper text"),
+      at("C.vue", "9", "TS7006"),
+    ],
+  );
+  assert.deepEqual(diff.batchOnly, [at("A.vue", "1", "TS2345")]);
+  assert.deepEqual(diff.mapperOnly, [at("C.vue", "9", "TS7006")]);
+  const markdown = renderBatchDiff([diff]);
+  assert.match(
+    markdown,
+    /3 diagnostics, tsc with the Vize mapper 3; 1 only in batch, 1 only through the mapper/u,
+  );
+  assert.match(markdown, /\| `C\.vue` \| 9:3 \| TS7006 \| m \|/u);
 });
