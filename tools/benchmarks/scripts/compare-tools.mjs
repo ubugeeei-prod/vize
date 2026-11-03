@@ -39,6 +39,7 @@ import {
 } from "./compare-tools-typecheck.mjs";
 import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
+import { prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { linkColdNodeModules } from "./nuxt-build-cache.ts";
 
 export { createSurface } from "./compare-tools-report.mjs";
@@ -325,7 +326,7 @@ function prepareLargeSfcDir(blockCount) {
   };
 }
 
-function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
+function prepareNuxtDir(inputDir, files, label, invocation, useVize, install) {
   const outputDir = join(workRoot, "nuxt", `${label}-${String(invocation).padStart(4, "0")}`);
   rmSync(outputDir, { recursive: true, force: true });
   mkdirSync(join(outputDir, "components"), { recursive: true });
@@ -333,11 +334,7 @@ function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
   for (const file of files) {
     copyFileSync(join(inputDir, file), join(outputDir, "components", file));
   }
-  linkColdNodeModules(
-    outputDir,
-    [join(rootDir, "npm", "framework/nuxt", "node_modules"), join(benchDir, "node_modules")],
-    label,
-  );
+  linkColdNodeModules(outputDir, [install.modules], label);
 
   const imports = [];
   const componentNames = [];
@@ -367,8 +364,7 @@ const benchComponents = [${componentNames.join(", ")}]
 `,
   );
 
-  const vizeModuleUrl = pathToFileURL(join(rootDir, "npm/framework/nuxt/dist/index.mjs")).href;
-  const moduleImport = useVize ? `import vizeNuxt from '${vizeModuleUrl}'\n` : "";
+  const moduleImport = useVize ? "import vizeNuxt from '@vizejs/nuxt'\n" : "";
   const modules = useVize ? "modules: [vizeNuxt]," : "modules: [],";
   const vizeOptions = useVize
     ? `  vize: {
@@ -400,10 +396,7 @@ ${vizeOptions}
       {
         private: true,
         type: "module",
-        dependencies: {
-          nuxt: "4.4.6",
-          vue: "3.5.34",
-        },
+        dependencies: install.dependencies,
       },
       null,
       2,
@@ -901,18 +894,12 @@ async function measureVite(inputDir, files, options) {
 }
 
 async function measureNuxt(inputDir, files, options) {
-  const nuxtBin = resolveWorkspaceBin("nuxt");
-  const vizeNuxtPath = join(rootDir, "npm", "framework/nuxt", "dist", "index.mjs");
-  if (!existsSync(vizeNuxtPath)) {
-    throw new Error(
-      `Nuxt module build not found: ${vizeNuxtPath}. Run vp run --workspace-root build:nuxt-stack first.`,
-    );
-  }
+  const install = prepareNuxtBenchInstall();
 
   let invocation = 0;
   const runNuxtBuild = (label, useVize) => {
-    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize);
-    return runCommand(nuxtBin, ["build"], {
+    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize, install);
+    return runCommand(install.nuxtBin, ["build"], {
       cwd: workDir,
       allowNonZeroExit: false,
       env: {

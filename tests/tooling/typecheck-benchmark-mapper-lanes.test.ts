@@ -39,6 +39,7 @@ void test("each host checks the project through each mapper's tsconfig", () => {
   const hosts = {
     tsc: "/hosts/tsc",
     tsrs: "/hosts/tsrs",
+    typescriptDir: "/typescript",
     vueMapperDir: "/vue",
     vizeCliDir: "/cli",
   };
@@ -96,28 +97,45 @@ void test("the Vize mapper is installed as its published files, never into a lin
   const cli = join(root, "cli");
   write(
     join(cli, "package.json"),
-    JSON.stringify({ name: "vize", files: ["bin", "dist"], dependencies: { "dep-a": "1" } }),
+    JSON.stringify({
+      name: "vize",
+      files: ["bin", "dist"],
+      dependencies: { "dep-a": "1", "dep-b": "1" },
+    }),
   );
   write(join(cli, "bin", "vize"), "#!/usr/bin/env node\n");
   write(join(cli, "dist", "cli.mjs"), "export {};\n");
   write(join(cli, "tests", "unpublished.ts"));
   write(join(cli, "node_modules", "dep-a", "package.json"), "{}");
+  write(join(cli, "node_modules", "dep-b", "package.json"), "{}");
+  const typescript = join(root, "typescript");
+  write(join(typescript, "package.json"), "{}");
   const vueMapper = join(root, "vue-mapper");
   write(join(vueMapper, "package.json"), "{}");
   const store = join(root, "store-scope");
   write(join(store, "shared", "package.json"), "{}");
   const project = join(root, "project");
-  mkdirSync(join(project, "node_modules"), { recursive: true });
+  write(join(project, "node_modules", "dep-b", "package.json"), "{}");
   symlinkSync(store, join(project, "node_modules", "@vue"));
-  const hosts = { tsc: "/tsc", tsrs: "/tsrs", vueMapperDir: vueMapper, vizeCliDir: cli };
+  const hosts = {
+    tsc: "/tsc",
+    tsrs: "/tsrs",
+    typescriptDir: typescript,
+    vueMapperDir: vueMapper,
+    vizeCliDir: cli,
+  };
 
   prepareMapperPackages(project, hosts);
+  write(join(project, "node_modules", "vize", "stale.txt"));
   prepareMapperPackages(project, hosts);
 
   const vize = join(project, "node_modules", "vize");
   assert.ok(!lstatSync(vize).isSymbolicLink());
   assert.ok(existsSync(join(vize, "bin", "vize")) && existsSync(join(vize, "dist", "cli.mjs")));
-  assert.ok(!existsSync(join(vize, "tests")));
+  assert.ok(!existsSync(join(vize, "tests")) && !existsSync(join(vize, "stale.txt")));
+  // The project's own install wins; Vue's mapper loads the project's typescript.
+  assert.ok(!lstatSync(join(project, "node_modules", "dep-b")).isSymbolicLink());
+  assert.equal(readlinkSync(join(project, "node_modules", "typescript")), typescript);
   assert.equal(
     readlinkSync(join(project, "node_modules", "dep-a")),
     join(cli, "node_modules", "dep-a"),

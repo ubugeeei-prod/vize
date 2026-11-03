@@ -1,0 +1,9 @@
+{
+  "name": "vize-benchmark-nuxt-app",
+  "private": true,
+  "description": "Pinned Nuxt install for the tool benchmark's Nuxt build surface, resolved the way a user's app resolves it.",
+  "dependencies": {
+    "nuxt": "4.6.3",
+    "vue": "3.5.44"
+  }
+}

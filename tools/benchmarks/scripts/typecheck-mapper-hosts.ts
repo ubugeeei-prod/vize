@@ -4,26 +4,16 @@
  *
  * Hosts and Vue's mapper come from the pinned npm lockfile in
  * tools/benchmarks/typecheck-hosts. The Vize mapper is the workspace's built
- * `npm/cli` package, installed into each project the way npm installs it: a
- * real directory of its published `files`, with its dependencies beside it.
- * A symlink to the source package would resolve helper imports such as `vue`
- * from the source tree instead of from the project.
+ * `npm/cli` package, installed into each project as package files. Each
+ * project also gets the hosts' `typescript`, which Vue's mapper loads from
+ * the project, as `npm i -D typescript@beta` provides it.
  */
 
-import {
-  cpSync,
-  existsSync,
-  lstatSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { installPackageFiles, linkPackage } from "./install-package-files.ts";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(benchDir, "..", "..", "..");
@@ -38,7 +28,13 @@ type MapperHost = {
   engineClass: "tsgo-native" | "tsrs-native";
   args: string[];
 };
-export type MapperHosts = { tsc: string; tsrs: string; vueMapperDir: string; vizeCliDir: string };
+export type MapperHosts = {
+  tsc: string;
+  tsrs: string;
+  typescriptDir: string;
+  vueMapperDir: string;
+  vizeCliDir: string;
+};
 type CommandOptions = { cwd: string; env?: Record<string, string> };
 type RunCommand<Result> = (binary: string, args: string[], options: CommandOptions) => Result;
 
@@ -104,49 +100,10 @@ export function resolveMapperHosts(
   return {
     tsc: paths.tsc,
     tsrs: paths.tsrs,
+    typescriptDir: realpathSync(join(hostsDir, "node_modules", "typescript")),
     vueMapperDir: realpathSync(paths.vueMapper),
     vizeCliDir: cliDir,
   };
-}
-
-/** A symlinked scope (`node_modules/@vue -> store`) becomes a real dir of links, so adding to it never writes into the store. */
-function ensureRealDirectory(dir: string): void {
-  if (existsSync(dir) && lstatSync(dir).isSymbolicLink()) {
-    const source = realpathSync(dir);
-    rmSync(dir);
-    mkdirSync(dir);
-    for (const entry of readdirSync(source)) symlinkSync(join(source, entry), join(dir, entry));
-  }
-  mkdirSync(dir, { recursive: true });
-}
-
-function linkPackage(source: string, target: string): void {
-  if (existsSync(target)) return;
-  ensureRealDirectory(dirname(target));
-  symlinkSync(source, target, "dir");
-}
-
-function installPackageFiles(sourceDir: string, modules: string, name: string): void {
-  const target = join(modules, name);
-  if (existsSync(target)) return;
-  const manifest = JSON.parse(readFileSync(join(sourceDir, "package.json"), "utf8")) as {
-    files: string[];
-    dependencies?: Record<string, string>;
-  };
-  for (const entry of ["package.json", ...manifest.files]) {
-    if (!existsSync(join(sourceDir, entry))) {
-      throw new Error(
-        `type-check mapper lanes: ${name} is not built (${join(sourceDir, entry)} missing)`,
-      );
-    }
-    cpSync(join(sourceDir, entry), join(target, entry), { recursive: true });
-  }
-  for (const dependency of Object.keys(manifest.dependencies ?? {})) {
-    linkPackage(
-      realpathSync(join(sourceDir, "node_modules", dependency)),
-      join(modules, dependency),
-    );
-  }
 }
 
 /** Install both mappers into one project and write one tsconfig per mapper. */
@@ -154,6 +111,7 @@ export function prepareMapperPackages(dir: string, hosts: MapperHosts): void {
   const modules = join(dir, "node_modules");
   installPackageFiles(hosts.vizeCliDir, modules, "vize");
   linkPackage(hosts.vueMapperDir, join(modules, "@vue", "content-mapper"));
+  linkPackage(hosts.typescriptDir, join(modules, "typescript"));
   for (const mapper of CONTENT_MAPPERS) {
     writeFileSync(
       join(dir, mapperTsconfigName(mapper)),

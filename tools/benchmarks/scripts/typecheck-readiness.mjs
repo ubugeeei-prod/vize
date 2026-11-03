@@ -24,7 +24,9 @@ export function assertMinimalPlant(report, plant) {
         codes.includes(code),
     )
   ) {
-    throw new Error(`missed the ${plant.label} plant`);
+    throw new Error(
+      `missed the ${plant.label} plant (status ${report.status}): ${JSON.stringify(report.diagnostics.slice(0, 3))}`,
+    );
   }
 }
 
@@ -141,6 +143,8 @@ export function gateTypecheckVariants(variants, checkDir, prepareProject, onReje
 export const OPTIONAL_TYPECHECK_VARIANTS = new Set(["golar-typecheck", "golar-default"]);
 
 export function recordTypecheckRejection(rejected, variant, error, phase) {
-  if (!OPTIONAL_TYPECHECK_VARIANTS.has(variant.id)) throw error;
+  if (!OPTIONAL_TYPECHECK_VARIANTS.has(variant.id)) {
+    throw new Error(`${variant.id}: ${error.message}`, { cause: error });
+  }
   rejected.push({ id: variant.id, label: variant.label, phase, reason: error.message });
 }
