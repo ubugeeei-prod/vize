@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 1,
+    "character": 35
+  },
+  "result": {
+    "range": {
+      "end": {
+        "character": 34,
+        "line": 0
+      },
+      "start": {
+        "character": 33,
+        "line": 0
+      }
+    },
+    "uri": "${workspace}/Generic.art.vue"
+  }
+}
