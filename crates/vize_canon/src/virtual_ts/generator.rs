@@ -366,15 +366,19 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
-    let async_prefix = if is_async { "async " } else { "" };
-    let generic_params = generic_parameters
-        .map(|g| cstr!("<{}>", g.authored()))
-        .unwrap_or_default();
+    ts.push_str(if is_async { "async " } else { "" });
+    ts.push_str("function __setup");
+    if let Some(plan) = generic_parameters {
+        ts.push('<');
+        mappings.extend(plan.authored_rows(ts.len()));
+        ts.push_str(plan.authored());
+        ts.push('>');
+    }
     let mut has_root_el = false;
     let mut define_emits_runtime_args: Option<&String> = None;
     let mut authored_default = super::types::AuthoredDefaultKind::None;
     ts! { &mut ts =>
-        #async_prefix function __setup #generic_params #("() ") {
+        #("() ") {
             #("\n")
             #{
                 (|mut ts: &mut String| {

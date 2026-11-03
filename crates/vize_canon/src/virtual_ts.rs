@@ -32,6 +32,7 @@ mod reference_paths;
 pub(crate) use generator::generic_recovery;
 pub(crate) use reference_paths::validate_reference_paths;
 pub(crate) mod generic_parameters;
+pub use generic_parameters::authored_generic_range;
 mod helpers;
 mod import_meta;
 pub mod incremental;

@@ -25,7 +25,6 @@ pub(crate) fn generate(
     summary: &Croquis,
     script: &str,
     source: (u32, SourceType),
-    attribute: Range<usize>,
     plan: &GenericParameters,
     options: &VirtualTsOptions,
     generation: VirtualTsGenerationOptions<'_>,
@@ -36,6 +35,7 @@ pub(crate) fn generate(
     if !plan.recoverable_at_closing_delimiter || generation.split_script_setup_offsets.is_some() {
         return None;
     }
+    let attribute = plan.attribute()?;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, source_type).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() || parsed.program.hashbang.is_some() {
@@ -109,10 +109,10 @@ pub(crate) fn generate(
         ),
         diagnostic,
     );
-    mapping.push_with(
-        VizeMapping::new(parameters..parameters + plan.raw().len(), attribute.clone()),
-        diagnostic,
-    );
+    // The quotes are not TypeScript; the verbatim list between them is.
+    for row in plan.authored_rows(parameters) {
+        mapping.push(row);
+    }
     mapping.push_with(
         VizeMapping::new(
             closing..closing + 1,
