@@ -1,0 +1,160 @@
+// Generated from the canonical listener contracts. Do not edit.
+import type { $IsAny } from "./generated/content-mapper-types.js" with {
+  "resolution-mode": "import",
+};
+
+// Component listener contracts shared by every generated module in a batch
+// project. Each alias is the per-event text the generator used to inline,
+// with the component or boxed contract as a parameter: TypeScript then
+// instantiates it once per component and listener key across the program.
+// `NoInfer<X> extends` keeps each check non-distributive, as the inlined
+// `typeof Component extends` and alias-reference checks were.
+type $ListenerArgs<P, K extends PropertyKey> = P extends { [_ in K]?: (...args: infer __A) => any }
+  ? __A
+  : P extends { [_ in K]?: infer __H }
+    ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never]
+      ? unknown[]
+      : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any
+        ? __A
+        : unknown[]
+    : unknown[];
+type $ListenerArgsRaw<P, K extends PropertyKey, R extends PropertyKey> = P extends {
+  [_ in K]?: (...args: infer __A) => any;
+}
+  ? __A
+  : P extends { [_ in K]?: infer __H }
+    ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never]
+      ? P extends { [_ in R]?: (...args: infer __A) => any }
+        ? __A
+        : unknown[]
+      : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any
+        ? __A
+        : P extends { [_ in R]?: (...args: infer __A) => any }
+          ? __A
+          : unknown[]
+    : P extends { [_ in R]?: (...args: infer __A) => any }
+      ? __A
+      : unknown[];
+// Not `keyof C`: a mapped type over `keyof` of a type parameter is homomorphic
+// and would map a `never` component to `never` instead of filtering its keys.
+type $ListenerKeysOf<C> = [C] extends [infer __X] ? keyof __X : never;
+export type $ListenerLibrary<C> =
+  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }
+    ? false
+    : NoInfer<C> extends (...args: any[]) => infer __R
+      ? 0 extends 1 & __R
+        ? false
+        : "__ctx" extends keyof __R
+          ? true
+          : false
+      : false;
+export type $ListenerPropsBox<C> =
+  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }
+    ? [__P]
+    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any
+      ? [__P]
+      : [];
+export type $ListenerEmitPropsBox<C> =
+  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+export type $ListenerNativeFallthroughBox<C> =
+  NoInfer<C> extends {
+    readonly __vizeNativeFallthroughRoot: true;
+    readonly __vizeFallthroughProps?: infer __F;
+  }
+    ? "__vizeEmitProps" extends keyof {
+        [
+          __K in $ListenerKeysOf<C> as string extends __K
+            ? never
+            : number extends __K
+              ? never
+              : symbol extends __K
+                ? never
+                : __K
+        ]: unknown;
+      }
+      ? $IsAny<__F> extends true
+        ? []
+        : [__F]
+      : []
+    : [];
+export type $ListenerFallthroughBox<C> =
+  NoInfer<C> extends { readonly __vizeFallthroughProps?: infer __F }
+    ? $IsAny<__F> extends true
+      ? []
+      : [__F]
+    : [];
+export type $ListenerPropArgs<L, B, K extends PropertyKey> =
+  NoInfer<L> extends true
+    ? unknown[]
+    : NoInfer<B> extends infer __B
+      ? __B extends [infer __P]
+        ? $ListenerArgs<__P, K>
+        : unknown[]
+      : never;
+export type $ListenerPropArgsRaw<L, B, K extends PropertyKey, R extends PropertyKey> =
+  NoInfer<L> extends true
+    ? unknown[]
+    : NoInfer<B> extends infer __B
+      ? __B extends [infer __P]
+        ? $ListenerArgsRaw<__P, K, R>
+        : unknown[]
+      : never;
+export type $ListenerFallthroughArgs<F, K extends PropertyKey> =
+  NoInfer<F> extends infer __B
+    ? __B extends [infer __F]
+      ? NonNullable<__F> extends infer __P
+        ? $ListenerArgs<__P, K> extends infer __A extends unknown[]
+          ? __A extends []
+            ? unknown[]
+            : __A
+          : unknown[]
+        : unknown[]
+      : unknown[]
+    : never;
+export type $ListenerFallthroughArgsRaw<F, K extends PropertyKey, R extends PropertyKey> =
+  NoInfer<F> extends infer __B
+    ? __B extends [infer __F]
+      ? NonNullable<__F> extends infer __P
+        ? $ListenerArgsRaw<__P, K, R> extends infer __A extends unknown[]
+          ? __A extends []
+            ? unknown[]
+            : __A
+          : unknown[]
+        : unknown[]
+      : unknown[]
+    : never;
+export type $ListenerStaticEmitArgs<E, K extends PropertyKey> =
+  NoInfer<E> extends infer __B
+    ? __B extends [infer __EP]
+      ? __EP extends { [_ in K]?: (...args: infer __A) => any }
+        ? __A
+        : unknown[]
+      : unknown[]
+    : never;
+export type $ListenerNativeReturn<F, K extends PropertyKey> =
+  NoInfer<F> extends infer __B
+    ? __B extends [infer __F]
+      ? NonNullable<__F> extends { [_ in K]?: infer __H }
+        ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R
+          ? __R
+          : any
+        : any
+      : any
+    : never;
+export type $ListenerReturn<PA, U, B, K extends PropertyKey> = unknown[] extends PA
+  ? U
+  : NoInfer<B> extends infer __B
+    ? __B extends [infer __P]
+      ? __P extends { [_ in K]?: (...args: any[]) => infer __R }
+        ? __R
+        : any
+      : any
+    : never;
+export type $ListenerPropArrays<B, K extends PropertyKey> =
+  NoInfer<B> extends infer __B
+    ? __B extends [infer __P]
+      ? __P extends { [_ in K]?: infer __H }
+        ? Extract<NonNullable<__H>, readonly unknown[]>
+        : never
+      : never
+    : never;
