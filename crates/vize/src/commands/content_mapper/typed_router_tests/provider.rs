@@ -82,7 +82,8 @@ fn expected(root: &Path) -> Value {
             settings.transform_options,
             &settings.project_context,
         )
-        .unwrap(),
+        .unwrap()
+        .with_unmapped_ignores(),
     )
     .unwrap()
 }

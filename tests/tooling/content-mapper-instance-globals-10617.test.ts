@@ -37,6 +37,7 @@ import {
   decodeFrames,
   expectedHost,
   frame,
+  expectPacket,
   makeSourceProject,
   readGlobalsFixture,
   request,
@@ -65,8 +66,7 @@ test("10617 retains the original reported files, exact beta host and closed fram
       golden.packets[0].result,
       golden.packets.find((row) => row.label === "lf/loop-shadow")!.result,
     );
-    const directivePacket = golden.packets.find((row) => "diagnosticDirectives" in row.result)!;
-    fullPacketMutations(directivePacket.result, golden.packets[0].result);
+    fullPacketMutations(expectPacket(golden.packets).result, golden.packets[0].result);
     const response = { id: 3, jsonrpc: "2.0", result: golden.packets[0].result };
     assertTransformEnvelope(response, 3);
     assert.throws(() => assertTransformEnvelope({ ...response, id: 4 }, 3));

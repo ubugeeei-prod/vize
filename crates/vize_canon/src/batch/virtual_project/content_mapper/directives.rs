@@ -39,15 +39,22 @@ pub(super) fn sfc_diagnostic_directives(
         .map(|echo| &echo.generated)
         .collect::<Vec<_>>();
 
-    for directive in authored.directives() {
-        // Exported navigation mappings stay untouched. Only emitter-proven
-        // echoes with a real primary are excluded from EXPECT ownership.
-        let excluded = if directive.policy == DirectivePolicy::Expect {
-            owned_echoes.as_slice()
-        } else {
-            &[]
-        };
-        let ranges = mapped_virtual_ranges(spans, &directive.targets, excluded);
+    // Exported navigation mappings stay untouched. Only emitter-proven
+    // echoes with a real primary are excluded from EXPECT ownership.
+    let mapped = authored
+        .directives()
+        .iter()
+        .map(|directive| {
+            let excluded = if directive.policy == DirectivePolicy::Expect {
+                owned_echoes.as_slice()
+            } else {
+                &[]
+            };
+            mapped_virtual_ranges(spans, &directive.targets, excluded)
+        })
+        .collect::<Vec<_>>();
+
+    for (index, (directive, ranges)) in authored.directives().iter().zip(&mapped).enumerate() {
         let policy = match directive.policy {
             DirectivePolicy::Expect => {
                 expects_unused_table = true;
@@ -61,8 +68,32 @@ pub(super) fn sfc_diagnostic_directives(
             // tuple per disjoint range would emit a false unused expectation
             // when only one of its ranges has a diagnostic. Navigation reads
             // carry no diagnostic, so they must not stretch that one interval
-            // across a later sibling.
-            let (start, end) = expect_interval(generated, spans, &directive.targets, &ranges);
+            // across a later sibling. Sibling checks and foreign echoes
+            // interleave in generated order; their starts split this interval
+            // so tuples never overlap. Own echoes stay inside it.
+            let sibling_starts = mapped
+                .iter()
+                .enumerate()
+                .filter(|(other, _)| *other != index)
+                .flat_map(|(_, other)| other.iter().map(|range| range.start))
+                .chain(
+                    echoes
+                        .iter()
+                        .filter(|echo| {
+                            !directive.targets.iter().any(|target| {
+                                echo.authored.start < target.end && target.start < echo.authored.end
+                            })
+                        })
+                        .map(|echo| echo.generated.start),
+                )
+                .collect::<Vec<_>>();
+            let (start, end) = expect_interval(
+                generated,
+                spans,
+                &directive.targets,
+                ranges,
+                &sibling_starts,
+            );
             directives.push(ContentMapperDiagnosticDirective([
                 directive.token.start,
                 directive.token.len(),
@@ -72,7 +103,7 @@ pub(super) fn sfc_diagnostic_directives(
                 0,
             ]));
         } else {
-            directives.extend(ranges.into_iter().map(|range| {
+            directives.extend(ranges.iter().map(|range| {
                 ContentMapperDiagnosticDirective([
                     directive.token.start,
                     directive.token.len(),
@@ -213,6 +244,8 @@ pub(super) fn with_component_prop_echoes(
 /// Only an emitter-proven repeated expression is excluded. Put synthetic
 /// ignores first: upstream marks the first matching tuple used, so an echo
 /// must never satisfy an authored expect directive on a different check.
+/// Expect intervals only retain their own node's echoes and the host rejects
+/// overlapping tuples, so both policies are subtracted.
 pub(super) fn with_owned_input_echoes(
     directives: Option<ContentMapperDiagnosticDirectives>,
     echoes: &[crate::virtual_ts::diagnostic_ownership::DiagnosticEcho],
@@ -222,8 +255,8 @@ pub(super) fn with_owned_input_echoes(
         .into_iter()
         .flat_map(|table| &table.directives)
         .filter_map(|directive| {
-            let [_, _, start, end, policy, _] = directive.0;
-            (policy == DIRECTIVE_POLICY_IGNORE && start < end).then_some(start..end)
+            let [_, _, start, end, _, _] = directive.0;
+            (start < end).then_some(start..end)
         })
         .collect::<Vec<_>>();
     covered_ignores.sort_unstable_by_key(|range| range.start);
@@ -298,11 +331,20 @@ fn expect_interval(
     spans: &[ContentMapperSpan],
     targets: &[Range<usize>],
     ranges: &[Range<usize>],
+    sibling_starts: &[usize],
 ) -> (usize, usize) {
     let Some((start, end)) = range_bounds(ranges) else {
         return (0, 0);
     };
-    let cuts = foreign_diagnostic_cuts(generated, spans, targets, start, end);
+    let mut cuts = foreign_diagnostic_cuts(generated, spans, targets, start, end);
+    cuts.extend(
+        sibling_starts
+            .iter()
+            .copied()
+            .filter(|cut| start < *cut && *cut < end),
+    );
+    cuts.sort_unstable();
+    cuts.dedup();
     if cuts.is_empty() {
         return (start, end);
     }

@@ -250,9 +250,25 @@ const count = 1
         "{}",
         responses[2]
     );
-    let tuple = directives["directives"][0].as_array().unwrap();
-    assert_eq!(tuple.len(), 6, "{}", responses[2]);
-    assert_eq!(tuple[4], 1, "expect policy: {}", responses[2]);
+    let tuples = directives["directives"].as_array().unwrap();
+    let expects = tuples
+        .iter()
+        .filter(|tuple| tuple[4] == 1)
+        .map(|tuple| tuple.as_array().unwrap().len())
+        .collect::<Vec<_>>();
+    assert_eq!(expects, [6], "one expect tuple: {}", responses[2]);
+    // Every other tuple ignores unmapped scaffolding without an authored token.
+    let ignores = tuples
+        .iter()
+        .filter(|tuple| tuple[4] != 1)
+        .map(|tuple| (tuple[0].clone(), tuple[1].clone(), tuple[4].clone()))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        ignores,
+        vec![(json!(0), json!(0), json!(0)); tuples.len() - 1],
+        "{}",
+        responses[2]
+    );
 }
 
 #[test]

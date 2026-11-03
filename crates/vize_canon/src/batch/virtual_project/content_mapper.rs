@@ -24,6 +24,7 @@ pub use protocol::{
 };
 
 mod directives;
+mod unmapped_ignores;
 use directives::{
     sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
     with_owned_input_echoes,

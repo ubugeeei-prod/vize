@@ -216,6 +216,13 @@ export function assertTransformEnvelope(response: Response, id: number) {
   assert.ok(response.result, "a transform response must contain its complete result");
   assert.deepEqual(response, { id, jsonrpc: "2.0", result: response.result });
 }
+/** Unmapped-range ignores give every packet a table; only expects add this row. */
+export const expectPacket = <P extends { result: Transform }>(packets: P[]) =>
+  packets.find((packet) => hasUnusedExpects(packet.result))!;
+const hasUnusedExpects = (result: Transform) =>
+  ((result.diagnosticDirectives as { unusedExpectDirectiveDiagnostics?: unknown[] } | undefined)
+    ?.unusedExpectDirectiveDiagnostics?.length ?? 0) > 0;
+
 export function fullPacketMutations(golden: Transform, foreign: Transform) {
   const changes: Array<(copy: Transform) => void> = [
     (copy) => {
@@ -252,12 +259,13 @@ export function fullPacketMutations(golden: Transform, foreign: Transform) {
     changes.push((copy) => {
       delete copy.diagnosticDirectives;
     });
-    changes.push((copy) => {
-      const payload = copy.diagnosticDirectives as {
-        unusedExpectDirectiveDiagnostics: Array<{ code: number }>;
-      };
-      payload.unusedExpectDirectiveDiagnostics[0].code = 9999;
-    });
+    if (hasUnusedExpects(golden))
+      changes.push((copy) => {
+        const payload = copy.diagnosticDirectives as {
+          unusedExpectDirectiveDiagnostics: Array<{ code: number }>;
+        };
+        payload.unusedExpectDirectiveDiagnostics[0].code = 9999;
+      });
     for (const index of [0, 1, 2, 3, 4, 5])
       for (const delta of [-1, 1])
         changes.push((copy) => {

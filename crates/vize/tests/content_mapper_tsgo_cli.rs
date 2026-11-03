@@ -12,6 +12,7 @@ const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 mod commented_vif_11378;
 mod const_enum_import;
 mod contextual_prop_anchors;
+mod directive_tables;
 mod dynamic_component_event_names;
 mod dynamic_template_refs;
 mod generic_constructor_slots;
