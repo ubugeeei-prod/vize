@@ -133,12 +133,34 @@ const links = [{ url: '/docs' }]
         }
 
         for (source, input) in [
-            ("<button>Save</button>", Input::Template),
-            ("<button>Save</button>", Input::Html),
-            ("<template><button>Save</button></template>", Input::Sfc),
-            ("<button>Save</button><RouterLink />", Input::Template),
             (
-                "<template><button>Save</button><RouterLink /></template>",
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"
+                ),
+                Input::Template,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"
+                ),
+                Input::Html,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.vue.txt"
+                ),
+                Input::Sfc,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/ButtonAndLink.html.txt"
+                ),
+                Input::Template,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/ButtonAndLink.vue.txt"
+                ),
                 Input::Sfc,
             ),
         ] {
@@ -214,7 +236,7 @@ const links = [{ url: '/docs' }]
         registry.replace(Box::new(CustomButtonRule(&REPLACEMENT_META)));
         assert!(registry.ecosystem_template_prefix().is_none());
         let linter = Linter::with_registry(registry);
-        let result = linter.lint_template("<button>Save</button>", "Custom.vue");
+        let result = linter.lint_template(include_str!("../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"), "Custom.vue");
         let diagnostic = result
             .diagnostics
             .iter()
@@ -224,7 +246,7 @@ const links = [{ url: '/docs' }]
         assert_eq!(diagnostic.message, "Host button rule");
         assert!(diagnostic.fix.is_some());
 
-        let clean = linter.lint_template("<div></div>", "Custom.vue");
+        let clean = linter.lint_template(include_str!("../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/NoButton.html.txt"), "Custom.vue");
         assert!(
             clean
                 .diagnostics
