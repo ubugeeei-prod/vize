@@ -23,6 +23,7 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
   ["generate_vue_language_code", "crates/vize_vitrine/src/napi/language_code.rs"],
   ["init", "npm/typescript-plugin/index.cjs"],
   ["createProjectConfiguration", "npm/typescript-plugin/virtual-modules.cjs"],
+  ["createSourceDocuments", "npm/typescript-plugin/source-documents.cjs"],
   ["createMappedLanguageService", "npm/typescript-plugin/language-service.cjs"],
   ["readProjectFixture", "tests/typescript-plugin/project-fixture.cjs"],
   ["checkInheritedConfig", "tests/typescript-plugin/inherited-config.ts"],

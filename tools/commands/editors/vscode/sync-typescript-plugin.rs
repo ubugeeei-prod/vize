@@ -29,6 +29,7 @@ const PLUGIN_FILES: [&str; 10] = [
     "module-resolution.cjs",
     "package.json",
     "provider.cjs",
+    "source-documents.cjs",
     "virtual-modules.cjs",
 ];
 

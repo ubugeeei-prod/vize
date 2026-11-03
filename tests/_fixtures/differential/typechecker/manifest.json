@@ -16127,7 +16127,12 @@
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "cbd6352f2bc709a5edf6c93463cc4e02718c6e2d5454b2b762c2d79b6e42bbf4"
+          "sha256": "2be3ed0da856b064f9319ea66510810de2734181652452eec92540d77deb8d63"
+        },
+        {
+          "selector": "createSourceDocuments",
+          "source": "npm/typescript-plugin/source-documents.cjs",
+          "sha256": "eb7ee6a42286fde73c7f7361d58816c99a6897e4690ed08f9aa449119e031f81"
         },
         {
           "selector": "createMappedLanguageService",
