@@ -128,6 +128,7 @@ mod check_tsx_intrinsic_elements_cli;
 mod check_tsx_sfc_attrs_cli;
 mod check_undefined_default_props_cli;
 mod check_unknown_template_options_cli;
+mod check_vendored_vue_declaration_cli;
 mod check_vue2_vuetify_props_cli;
 mod check_vue_helper_scope_cli;
 mod check_vue_reexports_cli;

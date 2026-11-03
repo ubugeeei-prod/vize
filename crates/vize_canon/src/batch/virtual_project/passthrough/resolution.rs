@@ -10,8 +10,10 @@ const PACKAGE_ENTRY_FIELDS: &[&str] = &["types", "typings", "main"];
 
 pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
     let base = dir.join(specifier);
+    // Without its SFC, a .vue import names a declaration; it keeps its
+    // authored identity so its own relative imports still resolve.
     if specifier.ends_with(".vue") && !base.is_file() {
-        return first_existing_with_extensions(&base, &["d.ts"]);
+        return None;
     }
     if let Some((stripped, extensions)) = explicit_typescript_substitution(&base, specifier) {
         if let Some(path) = first_existing_with_extensions(&stripped, extensions) {
@@ -22,10 +24,6 @@ pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -
         }
         return first_existing_directory_module(&base, TYPESCRIPT_EXTENSIONS);
     }
-    if let Some(path) = explicit_declaration_substitution(&base, specifier) {
-        return Some(path);
-    }
-
     if specifier_has_passthrough_extension(specifier) && base.is_file() {
         return Some(normalize_existing_path(&base));
     }
@@ -46,26 +44,6 @@ fn explicit_typescript_substitution<'a>(
     };
     let name = base.file_name()?.to_str()?;
     Some((base.with_file_name(name.strip_suffix(suffix)?), extensions))
-}
-
-fn explicit_declaration_substitution(base: &Path, specifier: &str) -> Option<PathBuf> {
-    let (suffix, declaration_suffix) = if specifier.ends_with(".ts") {
-        (".ts", ".d.ts")
-    } else if specifier.ends_with(".tsx") {
-        (".tsx", ".d.ts")
-    } else if specifier.ends_with(".mts") {
-        (".mts", ".d.mts")
-    } else if specifier.ends_with(".cts") {
-        (".cts", ".d.cts")
-    } else {
-        return None;
-    };
-    let name = base.file_name()?.to_str()?;
-    let stem = name.strip_suffix(suffix)?;
-    let candidate = base.with_file_name(cstr!("{stem}{declaration_suffix}").as_str());
-    candidate
-        .is_file()
-        .then(|| normalize_existing_path(&candidate))
 }
 
 fn first_existing_with_extensions(base: &Path, extensions: &[&str]) -> Option<PathBuf> {
@@ -208,39 +186,36 @@ mod tests {
         assert!(resolved.ends_with("Component.vue.tsx"));
     }
 
+    /// #11496: these declarations keep their authored identity, so the mirror
+    /// must not hold a detached copy of them.
     #[test]
-    fn explicit_ts_import_can_resolve_to_adjacent_declaration() {
+    fn substituted_declarations_are_not_passthrough_modules() {
         let case = tempfile::tempdir().expect("temp project");
         let root = &std::fs::canonicalize(case.path()).unwrap();
         for path in [
             "runtime/types.d.ts",
+            "runtime/view.d.ts",
             "runtime/module.d.mts",
             "runtime/common.d.cts",
+            "runtime/Foo.vue.d.ts",
         ] {
             let path = root.join(path);
             std::fs::create_dir_all(path.parent().unwrap()).unwrap();
             std::fs::write(path, "export {}\n").unwrap();
         }
 
-        let resolve = |specifier| {
-            resolve_relative_passthrough_module(root, specifier)
-                .unwrap()
-                .strip_prefix(root)
-                .unwrap()
-                .to_path_buf()
-        };
-
-        assert_eq!(
-            resolve("./runtime/types.ts"),
-            Path::new("runtime/types.d.ts")
-        );
-        assert_eq!(
-            resolve("./runtime/module.mts"),
-            Path::new("runtime/module.d.mts")
-        );
-        assert_eq!(
-            resolve("./runtime/common.cts"),
-            Path::new("runtime/common.d.cts")
-        );
+        for specifier in [
+            "./runtime/types.ts",
+            "./runtime/view.tsx",
+            "./runtime/module.mts",
+            "./runtime/common.cts",
+            "./runtime/Foo.vue",
+        ] {
+            assert_eq!(
+                resolve_relative_passthrough_module(root, specifier),
+                None,
+                "{specifier}"
+            );
+        }
     }
 }
