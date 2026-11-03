@@ -42,6 +42,7 @@ let
   # tests, which `doCheck = false` skips, and there are several thousand.
   crateAssetSuffixes = [
     ".d.ts"
+    ".js"
     ".json"
     ".mjs"
     ".txt"
