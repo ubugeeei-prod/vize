@@ -17,7 +17,7 @@ vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 
 [dev-dependencies]
-davinci_test_support = { workspace = true }
+davinci_test_support = { workspace = true, features = ["l3-reference"] }
 vize_atelier_sfc = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }

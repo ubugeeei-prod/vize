@@ -42,3 +42,6 @@ pub mod script_block_project;
 
 #[cfg(feature = "formatter")]
 pub mod css_multi_value_reference;
+
+#[cfg(feature = "l3-reference")]
+pub mod l3_reference;

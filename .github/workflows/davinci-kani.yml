@@ -9,6 +9,14 @@ on:
       - "davinci/vize_l3/src/lattice/effect.rs"
       - "davinci/vize_l3/src/lattice/kani.rs"
       - "davinci/vize_l3/src/lattice/classify_proofs.rs"
+      - "tests/davinci_test_support/src/l3_reference/checker.rs"
+      - "tests/davinci_test_support/src/l3_reference/checker_proofs.rs"
+      - "tests/davinci_test_support/src/l3_reference/graphs.rs"
+      - "tests/davinci_test_support/src/l3_reference/kani.rs"
+      - "tests/davinci_test_support/src/l3_reference/program.rs"
+      - "tests/davinci_test_support/src/l3_reference/schedule.rs"
+      - "tests/davinci_test_support/src/l3_reference/schedule_proofs.rs"
+      - "tests/davinci_test_support/src/l3_reference/trace.rs"
       - "crates/vize_patina/src/html_content_model/tri.rs"
       - "crates/vize_patina/src/html_content_model/walk.rs"
       - "crates/vize_patina/src/html_content_model/kani.rs"
@@ -34,6 +42,20 @@ jobs:
           kani-version: "0.68.0"
           command: kani
           args: davinci/vize_l3/src/lattice/kani.rs --output-format=terse
+
+  l3-reference:
+    name: L3 reference schedule and checker laws
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f # v1.1
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: tests/davinci_test_support/src/l3_reference/kani.rs --output-format=terse --jobs 2
 
   html-content-model:
     name: HTML content-model kernel properties
