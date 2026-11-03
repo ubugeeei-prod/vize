@@ -72,10 +72,20 @@ void test("only the exact supporting-client profile changes initialization witho
     workspace: { workspaceEdit: { documentChanges: true } },
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, before);
+  const plannedIds = loaded.manifest.cases.map((row) => row.id);
   const earlier = loaded.cases.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
-  assert.equal(earlier.length, 85);
-  assert.equal(earlier.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 84);
-  assert.equal(loaded.cases.length, 86);
+  assert.deepEqual(
+    earlier.map((row) => row.id),
+    plannedIds.filter((id) => id !== MODEL_BINDING_UNIT_ID),
+  );
+  assert.deepEqual(
+    earlier.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).map((row) => row.id),
+    plannedIds.filter((id) => id !== MODEL_BINDING_UNIT_ID && id !== VERSIONED_AUTO_IMPORT_ID),
+  );
+  assert.deepEqual(
+    loaded.cases.map((row) => row.id),
+    plannedIds,
+  );
 });
 
 void test("the closed whole import contract refuses foreign metadata, altered pins and partial responses", () => {
