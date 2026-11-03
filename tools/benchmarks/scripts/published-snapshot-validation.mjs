@@ -49,13 +49,17 @@ export function validatePublishedSnapshot(input) {
     input.backend?.ready === true && input.backend.engine === "tsgo-native",
     "native backend was not ready",
   );
-  for (const binary of ["vize", "tsgo", "vueTsc", "verterTsc"]) {
+  for (const binary of ["vize", "tsgo", "vueTsc", "verterTsc", "typescriptMapperHost", "tsrs"]) {
     requireValue(
       typeof input.versions?.[binary] === "string" && input.versions[binary].trim(),
       `missing ${binary} version`,
     );
     requireValue(HASH.test(input.binaries?.[binary] ?? ""), `missing ${binary} binary hash`);
   }
+  requireValue(
+    typeof input.versions?.vueContentMapper === "string" && input.versions.vueContentMapper.trim(),
+    "missing vueContentMapper version",
+  );
   requireValue(
     Number.isInteger(input.settings?.runs) && input.settings.runs >= 3,
     "at least three measured runs are required",
@@ -106,6 +110,28 @@ export function validatePublishedSnapshot(input) {
         `inconsistent ${surface.id}/${variant.id} median`,
       );
       if (!["check", "large-check"].includes(surface.id)) continue;
+      requireValue(
+        Array.isArray(variant.cpuRuns) &&
+          variant.cpuRuns.length === variant.runs.length &&
+          variant.cpuRuns.every((ms) => Number.isFinite(ms) && ms >= 0) &&
+          variant.cpuMedianMs === median(variant.cpuRuns),
+        `invalid ${surface.id}/${variant.id} CPU samples`,
+      );
+      requireValue(
+        Array.isArray(variant.rssRuns) &&
+          variant.rssRuns.length === variant.runs.length &&
+          variant.rssRuns.every((kb) => Number.isInteger(kb) && kb > 0) &&
+          variant.rssMedianKb === median(variant.rssRuns),
+        `invalid ${surface.id}/${variant.id} peak RSS samples`,
+      );
+      requireValue(
+        typeof variant.tool === "string" && variant.tool && typeof variant.setting === "string",
+        `missing ${surface.id}/${variant.id} tool setting`,
+      );
+      requireValue(
+        Number.isFinite(variant.coldMs) && variant.coldMs > 0,
+        `missing ${surface.id}/${variant.id} cold run`,
+      );
       const proof = variant.correctness;
       requireValue(
         proof?.corpusPlant === true &&

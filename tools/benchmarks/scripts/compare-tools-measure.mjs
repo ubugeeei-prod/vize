@@ -12,6 +12,14 @@ function formatThroughput(files, ms) {
   return `${filesPerSecond.toFixed(0)} files/s`;
 }
 
+const round = (ms) => Number(ms.toFixed(3));
+
+/**
+ * A lane's `measure` returns its wall time in ms, or a process sample
+ * `{ ms, cpuMs, rssKb }`. Process samples also publish the CPU and peak-RSS
+ * medians and the first warmup as the cold run; the cold run never enters a
+ * median.
+ */
 export async function measureVariants(variants, options, onRejected) {
   const rejected = new Set();
   const run = async (variant, phase, iteration) => {
@@ -24,30 +32,53 @@ export async function measureVariants(variants, options, onRejected) {
       rejected.add(variant.id);
     }
   };
+  const coldById = new Map();
   for (let i = 0; i < options.warmups; i++) {
-    for (const variant of variants) await run(variant, "warmup", i);
+    for (const variant of variants) {
+      const sample = await run(variant, "warmup", i);
+      if (i === 0 && typeof sample === "object" && sample != null) coldById.set(variant.id, sample);
+    }
   }
 
-  const runsById = new Map(variants.map((variant) => [variant.id, []]));
+  const samplesById = new Map(variants.map((variant) => [variant.id, []]));
   for (let i = 0; i < options.runs; i++) {
     const ordered = i % 2 === 0 ? variants : [...variants].reverse();
     for (const variant of ordered) {
-      const ms = await run(variant, "measure", i);
-      if (!rejected.has(variant.id)) runsById.get(variant.id).push(ms);
+      const sample = await run(variant, "measure", i);
+      if (!rejected.has(variant.id)) samplesById.get(variant.id).push(sample);
     }
   }
 
   return variants
     .filter((variant) => !rejected.has(variant.id))
     .map((variant) => {
-      const runs = runsById.get(variant.id).map((ms) => Number(ms.toFixed(3)));
-      const medianMs = Number(median(runs).toFixed(3));
-      return {
+      const samples = samplesById.get(variant.id);
+      const runs = samples.map((sample) => round(typeof sample === "number" ? sample : sample.ms));
+      const medianMs = round(median(runs));
+      const measured = {
         id: variant.id,
         label: variant.label,
+        ...(variant.tool ? { tool: variant.tool, setting: variant.setting } : {}),
         medianMs,
         runs,
         throughput: formatThroughput(variant.files, medianMs),
       };
+      const cold = coldById.get(variant.id);
+      if (cold) {
+        measured.coldMs = round(cold.ms);
+        if (cold.cpuMs != null) measured.coldCpuMs = round(cold.cpuMs);
+      }
+      const every = (key) =>
+        samples.length > 0 &&
+        samples.every((sample) => typeof sample === "object" && sample[key] != null);
+      if (every("cpuMs")) {
+        measured.cpuRuns = samples.map((sample) => round(sample.cpuMs));
+        measured.cpuMedianMs = round(median(measured.cpuRuns));
+      }
+      if (every("rssKb")) {
+        measured.rssRuns = samples.map((sample) => sample.rssKb);
+        measured.rssMedianKb = median(measured.rssRuns);
+      }
+      return measured;
     });
 }

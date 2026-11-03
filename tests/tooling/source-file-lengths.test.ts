@@ -354,10 +354,11 @@ test("source length script accepts unchanged over-limit files", () => {
   assert.match(result.stdout, /No new or grown files exceed 500 lines/);
 });
 
-test("source length script ignores package manifests", () => {
+test("source length script ignores package manifests and npm lockfiles", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-package-"));
   const packagePath = path.join(cwd, "package.json");
   const nestedPackagePath = path.join(cwd, "packages", "ui", "package.json");
+  const lockPath = path.join(cwd, "packages", "ui", "package-lock.json");
   fs.mkdirSync(path.dirname(nestedPackagePath), { recursive: true });
   runGit(cwd, ["init", "-q"]);
   writeLines(packagePath, 501);
@@ -376,6 +377,9 @@ test("source length script ignores package manifests", () => {
 
   writeLines(packagePath, 502);
   writeLines(nestedPackagePath, 502);
+  // A new generated lockfile is data, like Cargo.lock and pnpm-lock.yaml.
+  writeLines(lockPath, 900);
+  runGit(cwd, ["add", "packages/ui/package-lock.json"]);
   const result = runSourceLengthScript(
     ["--check", "--base-ref", baseRef, "--max-lines", "500", "--limit", "5"],
     cwd,

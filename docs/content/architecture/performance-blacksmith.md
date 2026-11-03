@@ -12,87 +12,159 @@ Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run t
 
 ## Latest Result
 
-Measured: 2026-09-16T08:19:25.262Z
-Commit: `f9cc50ee2e2f` ([run](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669))
+Measured: 2026-11-03T10:47:09.539Z
+Commit: `86abbb6da5e3` ([run](https://github.com/ubugeeei-prod/vize/actions/runs/41620714772))
 Runner: `blacksmith-32vcpu-ubuntu-2404` (32 logical CPU, AMD EPYC, 32 vCPU / 128 GB RAM / 1.5 TB storage)
 Input: 3,000 generated SFC files (11.7 MB). Median of 3 measured run(s) after 1 warmup run(s).
 Large SFC: 300 repeated template blocks (225.6 KB). Nuxt import set: 250 SFC files.
 
 | Surface                                | Files | Existing tool          | Existing median | Vize 1T | Vize max | Speedup |
 | -------------------------------------- | ----: | ---------------------- | --------------: | ------: | -------: | ------: |
-| SFC compile                            | 3,000 | @vue/compiler-sfc (1T) |           3.57s | 835.3ms |   65.0ms |   54.8x |
-| Large SFC compile                      |     1 | @vue/compiler-sfc (1T) |          61.4ms |  16.3ms |   15.2ms |    4.0x |
-| Large SFC type check                   |     1 | vue-tsc                |           1.34s | 186.4ms |  190.1ms |    7.0x |
-| Lint                                   | 3,000 | eslint-plugin-vue (1T) |          20.75s | 432.3ms |  114.0ms |  182.0x |
-| Format                                 | 3,000 | Prettier CLI           |          29.72s |   1.07s |  351.4ms |   84.6x |
-| Type check                             |   500 | vue-tsc                |           6.75s |   2.03s |    1.37s |    4.9x |
-| Vite build (end-to-end)                | 1,000 | @vitejs/plugin-vue     |           1.66s |     n/a |  889.2ms |    1.9x |
-| Nuxt SPA build (end-to-end)            |   250 | Nuxt default compiler  |           3.07s |     n/a |    3.21s |   0.95x |
-| Musea plugin hooks (art gallery build) |   240 | n/a                    |             n/a |     n/a |   30.9ms |     n/a |
+| SFC compile                            | 3,000 | @vue/compiler-sfc (1T) |           3.40s | 798.9ms |   62.1ms |   54.7x |
+| Large SFC compile                      |     1 | @vue/compiler-sfc (1T) |          56.5ms |  17.3ms |   14.6ms |    3.9x |
+| Large SFC type check                   |     1 | vue-tsc                |           1.30s | 102.6ms |  102.5ms |   12.7x |
+| Lint                                   | 3,000 | eslint-plugin-vue (1T) |          19.61s |   1.38s |  188.0ms |  104.3x |
+| Format                                 | 3,000 | Prettier CLI           |          29.70s |   1.25s |  475.9ms |   62.4x |
+| Type check                             |   500 | vue-tsc                |           6.49s | 429.5ms |  350.3ms |   18.5x |
+| Vite build (end-to-end)                | 1,000 | @vitejs/plugin-vue     |           1.54s |     n/a |  497.1ms |    3.1x |
+| Nuxt SPA build (end-to-end)            |   250 | Nuxt default compiler  |           2.72s |     n/a |    2.48s |    1.1x |
+| Musea plugin hooks (art gallery build) |   240 | n/a                    |             n/a |     n/a |   58.9ms |     n/a |
 
 #### Large SFC type check — engine classes ranked separately
 
-| Engine class                    | Row              |  Median | Relative to fastest in class |
-| ------------------------------- | ---------------- | ------: | ---------------------------: |
-| JS TypeScript engine (tsc)      | vue-tsc          |   1.34s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (1T)  | 186.4ms |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (max) | 190.1ms |                        1.02x |
-| native TypeScript engine (tsgo) | verter-tsc       |   1.58s |                        8.48x |
+| Engine class                    | Row                               |  Median | Relative to fastest in class |
+| ------------------------------- | --------------------------------- | ------: | ---------------------------: |
+| JS TypeScript engine (tsc)      | vue-tsc                           |   1.30s |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (max)                  | 102.5ms |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (1T)                   | 102.6ms |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 4)         | 103.6ms |                        1.01x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 8)         | 105.2ms |                        1.03x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 16)        | 105.7ms |                        1.03x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 32)        | 108.0ms |                        1.05x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 4)  | 343.2ms |                        3.35x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 8)  | 345.9ms |                        3.37x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper                 | 346.0ms |                        3.37x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 32) | 353.7ms |                        3.45x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 16) | 354.0ms |                        3.45x |
+| native TypeScript engine (tsgo) | verter-tsc                        |   1.56s |                       15.25x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 4)   |   1.67s |                       16.27x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 32)  |   1.67s |                       16.31x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper                  |   1.68s |                       16.34x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 8)   |   1.68s |                       16.40x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 16)  |   1.78s |                       17.34x |
+| native TypeScript port (tsrs)   | tsrs + Vize mapper                | 185.0ms |                        1.00x |
+| native TypeScript port (tsrs)   | tsrs + Vize mapper (--fast)       | 189.2ms |                        1.02x |
+| native TypeScript port (tsrs)   | tsrs + Vue mapper (--fast)        |   1.47s |                        7.94x |
+| native TypeScript port (tsrs)   | tsrs + Vue mapper                 |   1.56s |                        8.42x |
 
 The Large SFC type check ratio compares Vize with vue-tsc, the checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so that ratio is the whole toolchain and not the Vue layer alone; the per-engine-class rows above isolate the Vue layer by ranking each class against its own fastest row. Diagnostic coverage can differ between tools; no ratio here is an accuracy-parity claim.
 
 Golar typecheck: rejected during preflight; no timing or rank published.
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1019","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1157","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1019","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1157","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1019","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1226","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1019","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1226","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Golar (lint+check): rejected during preflight; no timing or rank published.
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1088","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1088","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1042","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1042","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1065","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):
 
-| Row              | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
-| ---------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
-| vue-tsc          |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| verter-tsc       |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (1T)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (max) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Row                               | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
+| --------------------------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
+| vue-tsc                           |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| verter-tsc                        |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (1T)                   |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (max)                  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 4)         |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 8)         |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 16)        |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 32)        |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper                 |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 4)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 8)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 16) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 32) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vue mapper                  |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsc + Vue mapper (--checkers 4)   |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsc + Vue mapper (--checkers 8)   |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsc + Vue mapper (--checkers 16)  |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsc + Vue mapper (--checkers 32)  |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsrs + Vize mapper                |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsrs + Vize mapper (--fast)       |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsrs + Vue mapper                 |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| tsrs + Vue mapper (--fast)        |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
 
 #### Type check — engine classes ranked separately
 
-| Engine class                    | Row              | Median | Relative to fastest in class |
-| ------------------------------- | ---------------- | -----: | ---------------------------: |
-| JS TypeScript engine (tsc)      | vue-tsc          |  6.75s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (max) |  1.37s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (1T)  |  2.03s |                        1.47x |
-| native TypeScript engine (tsgo) | verter-tsc       |  2.08s |                        1.51x |
+| Engine class                    | Row                               |  Median | Relative to fastest in class |
+| ------------------------------- | --------------------------------- | ------: | ---------------------------: |
+| JS TypeScript engine (tsc)      | vue-tsc                           |   6.49s |                        1.00x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 16) | 237.0ms |                        1.00x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 8)  | 239.2ms |                        1.01x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 32) | 250.9ms |                        1.06x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper (--checkers 4)  | 256.3ms |                        1.08x |
+| native TypeScript engine (tsgo) | tsc + Vize mapper                 | 257.6ms |                        1.09x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 32)        | 339.1ms |                        1.43x |
+| native TypeScript engine (tsgo) | Vize check (max)                  | 350.3ms |                        1.48x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 4)         | 350.9ms |                        1.48x |
+| native TypeScript engine (tsgo) | Vize check (1T)                   | 429.5ms |                        1.81x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 16)        | 468.0ms |                        1.97x |
+| native TypeScript engine (tsgo) | Vize check (--checkers 8)         | 518.7ms |                        2.19x |
+| native TypeScript engine (tsgo) | verter-tsc                        |   2.09s |                        8.84x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 16)  |   2.77s |                       11.69x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 32)  |   2.79s |                       11.77x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 8)   |   2.83s |                       11.95x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper                  |   2.97s |                       12.54x |
+| native TypeScript engine (tsgo) | tsc + Vue mapper (--checkers 4)   |   2.98s |                       12.57x |
+| native TypeScript port (tsrs)   | tsrs + Vize mapper (--fast)       | 197.8ms |                        1.00x |
+| native TypeScript port (tsrs)   | tsrs + Vize mapper                | 208.9ms |                        1.06x |
+| native TypeScript port (tsrs)   | tsrs + Vue mapper (--fast)        |   2.63s |                       13.31x |
+| native TypeScript port (tsrs)   | tsrs + Vue mapper                 |   2.72s |                       13.74x |
 
 The Type check ratio compares Vize with vue-tsc, the checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so that ratio is the whole toolchain and not the Vue layer alone; the per-engine-class rows above isolate the Vue layer by ranking each class against its own fastest row. Diagnostic coverage can differ between tools; no ratio here is an accuracy-parity claim.
 
 Golar typecheck: rejected during preflight; no timing or rank published.
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0007.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0017.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0027.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0007.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0017.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0027.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0027.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0107.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0027.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0107.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Golar (lint+check): rejected during preflight; no timing or rank published.
 
 ```text
-missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0037.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0197.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0037.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0197.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
+missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0067.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0117.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0067.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0097.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0117.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
 Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):
 
-| Row              | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
-| ---------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
-| vue-tsc          |              4 | passed       |         450 |           2 | `ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5` |
-| verter-tsc       |              4 | passed       |        4250 |           1 | `7f6641e728fa345abc3ac7eebb7f77a5e694c0cdaf81bf951c8829c0b2c32cfe` |
-| Vize check (1T)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (max) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Row                               | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
+| --------------------------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
+| vue-tsc                           |              4 | passed       |         450 |           2 | `ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5` |
+| verter-tsc                        |              4 | passed       |        4250 |           1 | `7f6641e728fa345abc3ac7eebb7f77a5e694c0cdaf81bf951c8829c0b2c32cfe` |
+| Vize check (1T)                   |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (max)                  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 4)         |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 8)         |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 16)        |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (--checkers 32)        |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper                 |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 4)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 8)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 16) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vize mapper (--checkers 32) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsc + Vue mapper                  |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsc + Vue mapper (--checkers 4)   |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsc + Vue mapper (--checkers 8)   |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsc + Vue mapper (--checkers 16)  |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsc + Vue mapper (--checkers 32)  |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsrs + Vize mapper                |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsrs + Vize mapper (--fast)       |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| tsrs + Vue mapper                 |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
+| tsrs + Vue mapper (--fast)        |              4 | passed       |         450 |           2 | `d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37` |
 
 Fairness notes:
 
@@ -102,26 +174,31 @@ Fairness notes:
 - Destructive formatter runs receive a fresh copy of the same input before each invocation.
 - SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details. Explicit sequence variants run 1→max and max→1 in one Node process and measure the second call's full JavaScript wall time, including scoped pool creation.
 - Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.
-- Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.
+- Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Nuxt and Vue come from tools/benchmarks/nuxt-app/package-lock.json, resolved the way a user's app resolves them (no workspace overrides), and `@vizejs/nuxt` is this commit's build installed beside them as package files. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.
 - Musea rows are the one surface that does not run on the shared SFC corpus: `@vizejs/vite-plugin-musea` only does work for `.art.vue` files, so the lane generates its own pinned art corpus from `tools/benchmarks/scripts/musea-corpus.mjs`. They publish no speedup because no incumbent tool performs this work, and they measure the plugin's own `buildStart`/`load`/`transform` hooks rather than an end-to-end build — by the same reasoning as the Nuxt row above, a whole-build number would sit under the noise floor and could not move when the plugin regresses. `tools/benchmarks/scripts/musea.mjs` runs the lane on its own.
 - Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.
 - Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.
+- Type-check rows also run TypeScript 7.1's content-mapper hosts, `tsc --runExternalCode` and `tsrs --runExternalCode` (default and `--fast`), each with Vize's mapper and with Vue's official `@vue/content-mapper`. `tsc` and `vize check` are also measured at `--checkers` 4, 8, 16 and the runner's vCPU count, so the full matrix shows what extra parallelism costs in CPU and memory; the README lists each tool at its fastest setting and names it. The Vize mapper is this commit's `vize` package and `@vizejs/native` build, installed into the project as files; the hosts and Vue's mapper are pinned by tools/benchmarks/typecheck-hosts/package-lock.json. `vize check` keeps its own pinned tsgo, so its engine version can differ from the mapper hosts' TypeScript; both versions are listed below.
+- Every type-check row records wall time, CPU time (user+sys of the whole process tree, mapper and checker processes included, from the kernel's reaped-child accounting) and peak RSS (GNU time `%M`: the largest single process of the tree, not the sum). Cold is each row's first timed run after the planted-diagnostic preflight; it never enters the warm median.
 
 <details class="benchmark-provenance">
 <summary>Tool versions and binary checksums</summary>
 
-| Tool                 | Version                              | Binary SHA-256                                                                |
-| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
-| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
-| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
-| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
-| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
-| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
-| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
-| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
-| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
-| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
-| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+| Tool                     | Version                                                                                       | Binary SHA-256                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>569cf0dfc50c97564244d1503c13506a8520e10a7f7479cbfcb7c8cb2a803594</code> |
+| tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                    | <code>Golar version 0.1.10</code>                                                             | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (mapper host) | <code>Version 7.1.0-beta</code>                                                               | <code>2219f428a7e55aaf1f7ad85b9b0f0cf5078aeb76ccc9a7c6036c92d48f492ffd</code> |
+| tsrs                     | <code>Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)</code> | <code>9d7f26b2c80d4e45576f6e783675c5f624b055a15f94cb4089b9e9cc529722f3</code> |
+| @vue/content-mapper      | <code>4.0.0-alpha.3</code>                                                                    | n/a                                                                           |
+| TypeScript (vue-tsc)     | n/a                                                                                           | n/a                                                                           |
+| Vue                      | <code>3.6.0-beta.10</code>                                                                    | n/a                                                                           |
+| ESLint                   | <code>v10.4.1</code>                                                                          | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
 Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
 
@@ -142,84 +219,120 @@ node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts
 
 | Variant                                   |  Median |    Throughput | Raw measured runs         |
 | ----------------------------------------- | ------: | ------------: | ------------------------- |
-| @vue/compiler-sfc (1T)                    |   3.57s |   841 files/s | 3.57s, 3.57s, 3.55s       |
-| @vue/compiler-sfc (32 workers)            |   1.61s |  1.9k files/s | 1.70s, 1.53s, 1.61s       |
-| Vize native loop (1T)                     | 835.3ms |  3.6k files/s | 898.0ms, 835.3ms, 834.4ms |
-| Vize native batch results (max)           |  65.0ms | 46.1k files/s | 59.6ms, 71.3ms, 65.0ms    |
-| Vize native batch stats-only (core max)   |  35.5ms | 84.4k files/s | 34.9ms, 35.5ms, 39.3ms    |
-| Vize batch sequence (1→32T, measures 32T) |  37.3ms | 80.5k files/s | 37.3ms, 36.8ms, 38.0ms    |
-| Vize batch sequence (32T→1, measures 1T)  | 612.5ms |  4.9k files/s | 612.5ms, 589.0ms, 613.7ms |
+| @vue/compiler-sfc (1T)                    |   3.40s |   883 files/s | 3.40s, 3.41s, 3.40s       |
+| @vue/compiler-sfc (32 workers)            |   1.53s |  2.0k files/s | 1.45s, 1.53s, 1.59s       |
+| Vize native loop (1T)                     | 798.9ms |  3.8k files/s | 804.6ms, 798.0ms, 798.9ms |
+| Vize native batch results (max)           |  62.1ms | 48.3k files/s | 63.8ms, 62.1ms, 55.1ms    |
+| Vize native batch stats-only (core max)   |  38.7ms | 77.6k files/s | 40.2ms, 38.7ms, 37.2ms    |
+| Vize batch sequence (1→32T, measures 32T) |  39.2ms | 76.5k files/s | 39.2ms, 40.0ms, 39.1ms    |
+| Vize batch sequence (32T→1, measures 1T)  | 636.5ms |  4.7k files/s | 630.2ms, 636.5ms, 640.0ms |
 
 ### Large SFC compile
 
 | Variant                                   |  Median | Throughput | Raw measured runs         |
 | ----------------------------------------- | ------: | ---------: | ------------------------- |
-| @vue/compiler-sfc (1T)                    |  61.4ms | 16 files/s | 64.5ms, 61.4ms, 56.3ms    |
-| @vue/compiler-sfc (1 workers)             | 203.2ms |  5 files/s | 189.7ms, 203.2ms, 204.3ms |
-| Vize native loop (1T)                     |  16.3ms | 61 files/s | 16.3ms, 15.1ms, 17.1ms    |
-| Vize native batch results (max)           |  15.2ms | 66 files/s | 15.2ms, 15.9ms, 15.2ms    |
-| Vize native batch stats-only (core max)   |  11.7ms | 86 files/s | 11.4ms, 12.5ms, 11.7ms    |
-| Vize batch sequence (1→32T, measures 32T) |  12.5ms | 80 files/s | 12.6ms, 11.7ms, 12.5ms    |
-| Vize batch sequence (32T→1, measures 1T)  |  12.3ms | 81 files/s | 12.3ms, 12.6ms, 12.2ms    |
+| @vue/compiler-sfc (1T)                    |  56.5ms | 18 files/s | 60.0ms, 56.5ms, 56.2ms    |
+| @vue/compiler-sfc (1 workers)             | 198.1ms |  5 files/s | 198.1ms, 200.2ms, 197.4ms |
+| Vize native loop (1T)                     |  17.3ms | 58 files/s | 16.9ms, 18.2ms, 17.3ms    |
+| Vize native batch results (max)           |  14.6ms | 69 files/s | 14.6ms, 15.3ms, 14.5ms    |
+| Vize native batch stats-only (core max)   |  14.4ms | 70 files/s | 14.4ms, 14.5ms, 12.2ms    |
+| Vize batch sequence (1→32T, measures 32T) |  14.0ms | 71 files/s | 13.4ms, 14.5ms, 14.0ms    |
+| Vize batch sequence (32T→1, measures 1T)  |  16.2ms | 62 files/s | 16.3ms, 16.2ms, 14.5ms    |
 
 ### Large SFC type check
 
-| Variant          |  Median | Throughput | Raw measured runs         |
-| ---------------- | ------: | ---------: | ------------------------- |
-| vue-tsc          |   1.34s |  1 files/s | 1.35s, 1.32s, 1.34s       |
-| verter-tsc       |   1.58s |  1 files/s | 1.58s, 1.61s, 1.56s       |
-| Vize check (1T)  | 186.4ms |  5 files/s | 186.4ms, 181.1ms, 188.8ms |
-| Vize check (max) | 190.1ms |  5 files/s | 190.1ms, 190.8ms, 183.3ms |
+| Variant                           |  Median | CPU median | Peak RSS |    Cold | Throughput | Raw measured runs         |
+| --------------------------------- | ------: | ---------: | -------: | ------: | ---------: | ------------------------- |
+| vue-tsc                           |   1.30s |      2.42s |   440 MB |   1.32s |  1 files/s | 1.30s, 1.27s, 1.32s       |
+| verter-tsc                        |   1.56s |      1.50s |    45 MB |   1.57s |  1 files/s | 1.56s, 1.55s, 1.58s       |
+| Vize check (1T)                   | 102.6ms |    290.0ms |    81 MB | 107.1ms | 10 files/s | 102.6ms, 102.6ms, 101.4ms |
+| Vize check (max)                  | 102.5ms |    290.0ms |    81 MB | 104.6ms | 10 files/s | 106.0ms, 102.5ms, 102.5ms |
+| Vize check (--checkers 4)         | 103.6ms |    310.0ms |    83 MB | 104.3ms | 10 files/s | 103.1ms, 103.6ms, 107.6ms |
+| Vize check (--checkers 8)         | 105.2ms |    310.0ms |    83 MB | 106.6ms | 10 files/s | 103.5ms, 105.2ms, 109.3ms |
+| Vize check (--checkers 16)        | 105.7ms |    320.0ms |    87 MB | 107.7ms |  9 files/s | 104.3ms, 108.9ms, 105.7ms |
+| Vize check (--checkers 32)        | 108.0ms |    350.0ms |    94 MB | 109.4ms |  9 files/s | 109.2ms, 107.8ms, 108.0ms |
+| tsc + Vize mapper                 | 346.0ms |    490.0ms |    82 MB | 349.9ms |  3 files/s | 346.0ms, 339.9ms, 353.5ms |
+| tsc + Vize mapper (--checkers 4)  | 343.2ms |    480.0ms |    82 MB | 341.4ms |  3 files/s | 336.8ms, 344.5ms, 343.2ms |
+| tsc + Vize mapper (--checkers 8)  | 345.9ms |    490.0ms |    83 MB | 352.2ms |  3 files/s | 345.9ms, 354.1ms, 341.3ms |
+| tsc + Vize mapper (--checkers 16) | 354.0ms |    540.0ms |    85 MB | 354.8ms |  3 files/s | 354.0ms, 353.2ms, 369.7ms |
+| tsc + Vize mapper (--checkers 32) | 353.7ms |    590.0ms |    93 MB | 353.0ms |  3 files/s | 342.7ms, 364.8ms, 353.7ms |
+| tsc + Vue mapper                  |   1.68s |      2.33s |   206 MB |   1.65s |  1 files/s | 1.66s, 1.80s, 1.68s       |
+| tsc + Vue mapper (--checkers 4)   |   1.67s |      2.34s |   203 MB |   1.78s |  1 files/s | 1.67s, 1.68s, 1.67s       |
+| tsc + Vue mapper (--checkers 8)   |   1.68s |      2.36s |   210 MB |   1.63s |  1 files/s | 1.68s, 1.75s, 1.68s       |
+| tsc + Vue mapper (--checkers 16)  |   1.78s |      2.49s |   227 MB |   1.68s |  1 files/s | 1.80s, 1.78s, 1.66s       |
+| tsc + Vue mapper (--checkers 32)  |   1.67s |      2.47s |   214 MB |   1.71s |  1 files/s | 1.78s, 1.67s, 1.65s       |
+| tsrs + Vize mapper                | 185.0ms |    220.0ms |    76 MB | 190.0ms |  5 files/s | 192.4ms, 185.0ms, 184.5ms |
+| tsrs + Vize mapper (--fast)       | 189.2ms |    230.0ms |    76 MB | 186.3ms |  5 files/s | 189.2ms, 190.2ms, 188.4ms |
+| tsrs + Vue mapper                 |   1.56s |      1.99s |   226 MB |   1.41s |  1 files/s | 1.56s, 1.46s, 1.56s       |
+| tsrs + Vue mapper (--fast)        |   1.47s |      1.92s |   227 MB |   1.56s |  1 files/s | 1.41s, 1.47s, 1.57s       |
 
 ### Lint
 
 | Variant                        |  Median |    Throughput | Raw measured runs         |
 | ------------------------------ | ------: | ------------: | ------------------------- |
-| eslint-plugin-vue (1T)         |  20.75s |   145 files/s | 20.61s, 20.83s, 20.75s    |
-| eslint-plugin-vue (32 workers) |   6.98s |   430 files/s | 6.98s, 6.99s, 6.97s       |
-| Vize lint (1T)                 | 432.3ms |  6.9k files/s | 431.4ms, 432.3ms, 447.5ms |
-| Vize lint (max)                | 114.0ms | 26.3k files/s | 114.0ms, 108.5ms, 120.3ms |
+| eslint-plugin-vue (1T)         |  19.61s |   153 files/s | 19.61s, 19.68s, 19.34s    |
+| eslint-plugin-vue (32 workers) |   6.75s |   445 files/s | 6.69s, 6.85s, 6.75s       |
+| Vize lint (1T)                 |   1.38s |  2.2k files/s | 1.38s, 1.37s, 1.38s       |
+| Vize lint (max)                | 188.0ms | 16.0k files/s | 188.0ms, 184.4ms, 193.2ms |
 
 ### Format
 
 | Variant        |  Median |   Throughput | Raw measured runs         |
 | -------------- | ------: | -----------: | ------------------------- |
-| Prettier CLI   |  29.72s |  101 files/s | 28.95s, 29.75s, 29.72s    |
-| Vize fmt (1T)  |   1.07s | 2.8k files/s | 1.06s, 1.10s, 1.07s       |
-| Vize fmt (max) | 351.4ms | 8.5k files/s | 351.4ms, 342.5ms, 358.9ms |
+| Prettier CLI   |  29.70s |  101 files/s | 29.46s, 29.70s, 29.84s    |
+| Vize fmt (1T)  |   1.25s | 2.4k files/s | 1.25s, 1.25s, 1.25s       |
+| Vize fmt (max) | 475.9ms | 6.3k files/s | 475.9ms, 469.0ms, 487.6ms |
 
 ### Type check
 
-| Variant          | Median |  Throughput | Raw measured runs   |
-| ---------------- | -----: | ----------: | ------------------- |
-| vue-tsc          |  6.75s |  74 files/s | 6.44s, 6.75s, 6.77s |
-| verter-tsc       |  2.08s | 240 files/s | 2.08s, 2.08s, 2.10s |
-| Vize check (1T)  |  2.03s | 247 files/s | 2.03s, 2.00s, 2.05s |
-| Vize check (max) |  1.37s | 364 files/s | 1.38s, 1.33s, 1.37s |
+| Variant                           |  Median | CPU median | Peak RSS |    Cold |   Throughput | Raw measured runs         |
+| --------------------------------- | ------: | ---------: | -------: | ------: | -----------: | ------------------------- |
+| vue-tsc                           |   6.49s |     10.21s |  1255 MB |   6.54s |   77 files/s | 6.49s, 6.55s, 6.49s       |
+| verter-tsc                        |   2.09s |      1.33s |   251 MB |   2.10s |  239 files/s | 2.08s, 2.09s, 2.10s       |
+| Vize check (1T)                   | 429.5ms |      1.70s |   246 MB | 428.6ms | 1.2k files/s | 424.1ms, 429.8ms, 429.5ms |
+| Vize check (max)                  | 350.3ms |      4.29s |   431 MB | 505.3ms | 1.4k files/s | 515.6ms, 348.5ms, 350.3ms |
+| Vize check (--checkers 4)         | 350.9ms |      4.24s |   436 MB | 345.5ms | 1.4k files/s | 350.9ms, 460.2ms, 333.9ms |
+| Vize check (--checkers 8)         | 518.7ms |      7.86s |   431 MB | 521.1ms |  964 files/s | 536.6ms, 336.8ms, 518.7ms |
+| Vize check (--checkers 16)        | 468.0ms |      6.00s |   413 MB | 461.8ms | 1.1k files/s | 468.0ms, 324.8ms, 473.0ms |
+| Vize check (--checkers 32)        | 339.1ms |      3.28s |   410 MB | 335.1ms | 1.5k files/s | 346.6ms, 339.1ms, 335.8ms |
+| tsc + Vize mapper                 | 257.6ms |      1.95s |   243 MB | 253.1ms | 1.9k files/s | 257.6ms, 251.7ms, 258.3ms |
+| tsc + Vize mapper (--checkers 4)  | 256.3ms |      1.96s |   242 MB | 250.9ms | 2.0k files/s | 253.2ms, 256.3ms, 260.0ms |
+| tsc + Vize mapper (--checkers 8)  | 239.2ms |      2.06s |   254 MB | 239.4ms | 2.1k files/s | 237.3ms, 239.2ms, 243.4ms |
+| tsc + Vize mapper (--checkers 16) | 237.0ms |      2.23s |   281 MB | 238.6ms | 2.1k files/s | 248.6ms, 231.8ms, 237.0ms |
+| tsc + Vize mapper (--checkers 32) | 250.9ms |      2.57s |   320 MB | 248.7ms | 2.0k files/s | 245.3ms, 250.9ms, 251.3ms |
+| tsc + Vue mapper                  |   2.97s |      7.14s |   531 MB |   2.93s |  168 files/s | 2.94s, 2.97s, 3.00s       |
+| tsc + Vue mapper (--checkers 4)   |   2.98s |      6.92s |   536 MB |   2.92s |  168 files/s | 2.98s, 2.98s, 2.94s       |
+| tsc + Vue mapper (--checkers 8)   |   2.83s |      7.06s |   533 MB |   2.85s |  177 files/s | 2.83s, 2.82s, 2.88s       |
+| tsc + Vue mapper (--checkers 16)  |   2.77s |      7.88s |   541 MB |   2.83s |  181 files/s | 2.77s, 2.75s, 2.78s       |
+| tsc + Vue mapper (--checkers 32)  |   2.79s |      9.92s |   682 MB |   2.77s |  179 files/s | 2.79s, 2.79s, 2.84s       |
+| tsrs + Vize mapper                | 208.9ms |    700.0ms |   186 MB | 209.2ms | 2.4k files/s | 201.6ms, 215.3ms, 208.9ms |
+| tsrs + Vize mapper (--fast)       | 197.8ms |    800.0ms |   199 MB | 194.8ms | 2.5k files/s | 197.8ms, 193.2ms, 201.2ms |
+| tsrs + Vue mapper                 |   2.72s |      4.46s |   526 MB |   2.78s |  184 files/s | 2.67s, 2.72s, 2.74s       |
+| tsrs + Vue mapper (--fast)        |   2.63s |      4.82s |   528 MB |   2.62s |  190 files/s | 2.61s, 2.63s, 2.74s       |
 
 ### Vite build (end-to-end)
 
 | Variant             |  Median |   Throughput | Raw measured runs         |
 | ------------------- | ------: | -----------: | ------------------------- |
-| @vitejs/plugin-vue  |   1.66s |  604 files/s | 1.66s, 1.60s, 1.73s       |
-| @vizejs/vite-plugin | 889.2ms | 1.1k files/s | 889.2ms, 882.0ms, 947.8ms |
+| @vitejs/plugin-vue  |   1.54s |  649 files/s | 1.61s, 1.54s, 1.54s       |
+| @vizejs/vite-plugin | 497.1ms | 2.0k files/s | 507.7ms, 497.1ms, 482.4ms |
 
 ### Nuxt SPA build (end-to-end)
 
-| Variant               | Median | Throughput | Raw measured runs   |
-| --------------------- | -----: | ---------: | ------------------- |
-| Nuxt default compiler |  3.07s | 81 files/s | 3.08s, 3.07s, 3.06s |
-| @vizejs/nuxt          |  3.21s | 78 files/s | 3.26s, 3.21s, 3.18s |
+| Variant               | Median |  Throughput | Raw measured runs   |
+| --------------------- | -----: | ----------: | ------------------- |
+| Nuxt default compiler |  2.72s |  92 files/s | 2.72s, 2.77s, 2.72s |
+| @vizejs/nuxt          |  2.48s | 101 files/s | 2.50s, 2.47s, 2.48s |
 
 ### Musea plugin hooks (art gallery build)
 
 | Variant                                                        | Median |           Throughput | Raw measured runs      |
 | -------------------------------------------------------------- | -----: | -------------------: | ---------------------- |
-| options: preserve configured Rollup inputs                     |  0.0ms | 500.0k build hooks/s | 0.0ms, 0.0ms, 0.0ms    |
-| buildStart: scan + parse art files                             | 16.5ms |    14.5k art files/s | 16.8ms, 16.5ms, 15.9ms |
-| load: generate art modules                                     |  9.2ms |    26.2k art files/s | 11.5ms, 9.2ms, 9.0ms   |
-| transform: TS to JS on generated modules                       |  4.0ms |    59.3k art files/s | 4.0ms, 4.5ms, 3.8ms    |
-| musea-nuxt: resolve Nuxt mock specifiers                       |  0.1ms |  22.3M resolutions/s | 0.1ms, 0.1ms, 0.0ms    |
-| whole plugin: config + options + buildStart + load + transform | 30.9ms |     7.8k art files/s | 33.6ms, 29.9ms, 30.9ms |
+| options: preserve configured Rollup inputs                     |  0.0ms | 333.3k build hooks/s | 0.0ms, 0.0ms, 0.0ms    |
+| buildStart: scan + parse art files                             | 24.0ms |    10.0k art files/s | 24.0ms, 23.8ms, 24.0ms |
+| load: generate art modules                                     | 31.6ms |     7.6k art files/s | 31.6ms, 37.2ms, 30.5ms |
+| transform: TS to JS on generated modules                       |  3.9ms |    61.7k art files/s | 3.9ms, 4.1ms, 3.7ms    |
+| musea-nuxt: resolve Nuxt mock specifiers                       |  0.1ms |  33.8M resolutions/s | 0.1ms, 0.1ms, 0.0ms    |
+| whole plugin: config + options + buildStart + load + transform | 58.9ms |     4.1k art files/s | 59.0ms, 58.9ms, 58.1ms |
 
 </details>

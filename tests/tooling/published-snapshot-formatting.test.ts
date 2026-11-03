@@ -16,7 +16,17 @@ test("ratio formatting never rounds a regression to parity or zero", () => {
     assert.equal(formatSpeedup(value), expected);
 });
 
-test("all published summary tables retain the measured Nuxt slowdown", () => {
+test("all published summary tables retain the measured Nuxt ratio", () => {
+  const latest = JSON.parse(
+    readFileSync(
+      new URL("../../tools/benchmarks/results/tool-benchmark-latest.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const nuxt = latest.surfaces.find(({ id }: { id: string }) => id === "nuxt");
+  const ratio = formatSpeedup(nuxt.primarySpeedup);
+  const cell = (glyph: string) =>
+    new RegExp(`(?<![\\d.])${ratio.slice(0, -1).replace(".", "\\.")}${glyph}(?!\\d)`);
   for (const locale of ["", "ja/", "zh-CN/", "fr/", "pt-BR/"]) {
     const page = readFileSync(
       new URL(
@@ -28,12 +38,12 @@ test("all published summary tables retain the measured Nuxt slowdown", () => {
     assert.ok(
       page
         .split("\n")
-        .some((line) => line.startsWith("|") && /Nuxt/.test(line) && /0\.95x/.test(line)),
+        .some((line) => line.startsWith("|") && /Nuxt/.test(line) && cell("x").test(line)),
     );
   }
   const readme = readFileSync(new URL("../../README.md", import.meta.url), "utf8");
   assert.ok(
-    readme.split("\n").some((line) => line.startsWith("| Nuxt build") && /0\.95×/.test(line)),
+    readme.split("\n").some((line) => line.startsWith("| Nuxt build") && cell("×").test(line)),
   );
 });
 

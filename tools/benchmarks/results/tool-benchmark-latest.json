@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "kind": "tool-comparison",
-  "generatedAt": "2026-09-16T08:19:25.262Z",
+  "generatedAt": "2026-11-03T10:47:09.539Z",
   "commit": {
-    "sha": "f9cc50ee2e2ff14cd120241cd87a0162446df65b",
-    "ref": "6148/merge",
+    "sha": "86abbb6da5e30504b344120b0f2e62e451388f98",
+    "ref": "perf/readme-bench-mappers",
     "repository": "ubugeeei-prod/vize",
-    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/35072615669"
+    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/41620714772"
   },
   "runner": {
     "label": "blacksmith-32vcpu-ubuntu-2404",
@@ -19,11 +19,14 @@
     "node": "v24.14.0"
   },
   "versions": {
-    "vize": "vize 0.424.11",
+    "vize": "vize 0.474.0-dev",
     "tsgo": "Version 7.0.2",
     "vueTsc": "Version 6.0.3",
     "verterTsc": "verter-tsc 0.0.1-beta.3",
     "golar": "Golar version 0.1.10",
+    "typescriptMapperHost": "Version 7.1.0-beta",
+    "tsrs": "Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)",
+    "vueContentMapper": "4.0.0-alpha.3",
     "typescript": null,
     "vue": "3.6.0-beta.10",
     "eslint": "v10.4.1",
@@ -31,11 +34,13 @@
     "node": "v24.14.0"
   },
   "binaries": {
-    "vize": "dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3",
+    "vize": "569cf0dfc50c97564244d1503c13506a8520e10a7f7479cbfcb7c8cb2a803594",
     "tsgo": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
     "vueTsc": "811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d",
     "verterTsc": "81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224",
     "golar": "a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da",
+    "typescriptMapperHost": "2219f428a7e55aaf1f7ad85b9b0f0cf5078aeb76ccc9a7c6036c92d48f492ffd",
+    "tsrs": "9d7f26b2c80d4e45576f6e783675c5f624b055a15f94cb4089b9e9cc529722f3",
     "eslint": "41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc",
     "prettier": "a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428"
   },
@@ -74,10 +79,12 @@
     "Destructive formatter runs receive a fresh copy of the same input before each invocation.",
     "SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details. Explicit sequence variants run 1→max and max→1 in one Node process and measure the second call's full JavaScript wall time, including scoped pool creation.",
     "Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.",
-    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
+    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Nuxt and Vue come from tools/benchmarks/nuxt-app/package-lock.json, resolved the way a user's app resolves them (no workspace overrides), and `@vizejs/nuxt` is this commit's build installed beside them as package files. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
     "Musea rows are the one surface that does not run on the shared SFC corpus: `@vizejs/vite-plugin-musea` only does work for `.art.vue` files, so the lane generates its own pinned art corpus from `tools/benchmarks/scripts/musea-corpus.mjs`. They publish no speedup because no incumbent tool performs this work, and they measure the plugin's own `buildStart`/`load`/`transform` hooks rather than an end-to-end build — by the same reasoning as the Nuxt row above, a whole-build number would sit under the noise floor and could not move when the plugin regresses. `tools/benchmarks/scripts/musea.mjs` runs the lane on its own.",
     "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",
-    "Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating."
+    "Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
+    "Type-check rows also run TypeScript 7.1's content-mapper hosts, `tsc --runExternalCode` and `tsrs --runExternalCode` (default and `--fast`), each with Vize's mapper and with Vue's official `@vue/content-mapper`. `tsc` and `vize check` are also measured at `--checkers` 4, 8, 16 and the runner's vCPU count, so the full matrix shows what extra parallelism costs in CPU and memory; the README lists each tool at its fastest setting and names it. The Vize mapper is this commit's `vize` package and `@vizejs/native` build, installed into the project as files; the hosts and Vue's mapper are pinned by tools/benchmarks/typecheck-hosts/package-lock.json. `vize check` keeps its own pinned tsgo, so its engine version can differ from the mapper hosts' TypeScript; both versions are listed below.",
+    "Every type-check row records wall time, CPU time (user+sys of the whole process tree, mapper and checker processes included, from the kernel's reaped-child accounting) and peak RSS (GNU time `%M`: the largest single process of the tree, not the sum). Cold is each row's first timed run after the planted-diagnostic preflight; it never enters the warm median."
   ],
   "surfaces": [
     {
@@ -89,57 +96,57 @@
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 3565.85,
-          "runs": [3567.88, 3565.85, 3550.948],
-          "throughput": "841 files/s"
+          "medianMs": 3398.737,
+          "runs": [3396.896, 3410.584, 3398.737],
+          "throughput": "883 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (32 workers)",
-          "medianMs": 1606.347,
-          "runs": [1697.16, 1528.422, 1606.347],
-          "throughput": "1.9k files/s"
+          "medianMs": 1534.313,
+          "runs": [1452.104, 1534.313, 1590.801],
+          "throughput": "2.0k files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 835.251,
-          "runs": [897.995, 835.251, 834.409],
-          "throughput": "3.6k files/s"
+          "medianMs": 798.93,
+          "runs": [804.587, 798.023, 798.93],
+          "throughput": "3.8k files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 65.028,
-          "runs": [59.568, 71.303, 65.028],
-          "throughput": "46.1k files/s"
+          "medianMs": 62.12,
+          "runs": [63.821, 62.12, 55.132],
+          "throughput": "48.3k files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 35.54,
-          "runs": [34.897, 35.54, 39.299],
-          "throughput": "84.4k files/s"
+          "medianMs": 38.669,
+          "runs": [40.214, 38.669, 37.187],
+          "throughput": "77.6k files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
-          "medianMs": 37.278,
-          "runs": [37.278, 36.847, 37.976],
-          "throughput": "80.5k files/s"
+          "medianMs": 39.222,
+          "runs": [39.222, 39.983, 39.114],
+          "throughput": "76.5k files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
-          "medianMs": 612.523,
-          "runs": [612.523, 588.983, 613.67],
-          "throughput": "4.9k files/s"
+          "medianMs": 636.517,
+          "runs": [630.232, 636.517, 640.009],
+          "throughput": "4.7k files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 54.83560927600418,
+      "primarySpeedup": 54.71244365743722,
       "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -153,57 +160,57 @@
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 61.376,
-          "runs": [64.493, 61.376, 56.331],
-          "throughput": "16 files/s"
+          "medianMs": 56.52,
+          "runs": [60.022, 56.52, 56.187],
+          "throughput": "18 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (1 workers)",
-          "medianMs": 203.181,
-          "runs": [189.705, 203.181, 204.253],
+          "medianMs": 198.092,
+          "runs": [198.092, 200.24, 197.403],
           "throughput": "5 files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 16.263,
-          "runs": [16.263, 15.058, 17.05],
-          "throughput": "61 files/s"
+          "medianMs": 17.32,
+          "runs": [16.947, 18.215, 17.32],
+          "throughput": "58 files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 15.244,
-          "runs": [15.177, 15.902, 15.244],
-          "throughput": "66 files/s"
+          "medianMs": 14.588,
+          "runs": [14.588, 15.296, 14.539],
+          "throughput": "69 files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 11.67,
-          "runs": [11.374, 12.518, 11.67],
-          "throughput": "86 files/s"
+          "medianMs": 14.37,
+          "runs": [14.37, 14.502, 12.236],
+          "throughput": "70 files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
-          "medianMs": 12.469,
-          "runs": [12.587, 11.654, 12.469],
-          "throughput": "80 files/s"
+          "medianMs": 14.026,
+          "runs": [13.421, 14.481, 14.026],
+          "throughput": "71 files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
-          "medianMs": 12.33,
-          "runs": [12.33, 12.615, 12.214],
-          "throughput": "81 files/s"
+          "medianMs": 16.177,
+          "runs": [16.256, 16.177, 14.483],
+          "throughput": "62 files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 4.026239832065075,
+      "primarySpeedup": 3.8744173293117634,
       "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -217,9 +224,17 @@
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 1337.752,
-          "runs": [1348.946, 1315.192, 1337.752],
+          "tool": "vue-tsc",
+          "setting": "default",
+          "medianMs": 1301.695,
+          "runs": [1301.695, 1272.645, 1317.054],
           "throughput": "1 files/s",
+          "coldMs": 1318.414,
+          "coldCpuMs": 2470,
+          "cpuRuns": [2420, 2350, 2420],
+          "cpuMedianMs": 2420,
+          "rssRuns": [447016, 451756, 450440],
+          "rssMedianKb": 450440,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -233,9 +248,17 @@
         {
           "id": "verter-tsc",
           "label": "verter-tsc",
-          "medianMs": 1580.097,
-          "runs": [1580.097, 1611.568, 1563.42],
+          "tool": "verter-tsc",
+          "setting": "default",
+          "medianMs": 1563.127,
+          "runs": [1563.127, 1548.454, 1578.932],
           "throughput": "1 files/s",
+          "coldMs": 1567.982,
+          "coldCpuMs": 1510,
+          "cpuRuns": [1500, 1490, 1540],
+          "cpuMedianMs": 1500,
+          "rssRuns": [46080, 46336, 46080],
+          "rssMedianKb": 46080,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -249,9 +272,17 @@
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 186.426,
-          "runs": [186.426, 181.091, 188.789],
-          "throughput": "5 files/s",
+          "tool": "vize check",
+          "setting": "--servers 1, RAYON_NUM_THREADS=1",
+          "medianMs": 102.637,
+          "runs": [102.639, 102.637, 101.388],
+          "throughput": "10 files/s",
+          "coldMs": 107.108,
+          "coldCpuMs": 280,
+          "cpuRuns": [290, 290, 250],
+          "cpuMedianMs": 290,
+          "rssRuns": [82688, 81920, 84224],
+          "rssMedianKb": 82688,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -265,9 +296,17 @@
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 190.067,
-          "runs": [190.067, 190.793, 183.272],
-          "throughput": "5 files/s",
+          "tool": "vize check",
+          "setting": "auto servers",
+          "medianMs": 102.525,
+          "runs": [105.996, 102.505, 102.525],
+          "throughput": "10 files/s",
+          "coldMs": 104.554,
+          "coldCpuMs": 270,
+          "cpuRuns": [310, 290, 270],
+          "cpuMedianMs": 290,
+          "rssRuns": [82688, 82176, 82688],
+          "rssMedianKb": 82688,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -277,6 +316,438 @@
             "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
             "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
           }
+        },
+        {
+          "id": "vize-check-checkers-4",
+          "label": "Vize check (--checkers 4)",
+          "tool": "vize check",
+          "setting": "--checkers 4",
+          "medianMs": 103.616,
+          "runs": [103.127, 103.616, 107.568],
+          "throughput": "10 files/s",
+          "coldMs": 104.299,
+          "coldCpuMs": 270,
+          "cpuRuns": [300, 310, 310],
+          "cpuMedianMs": 310,
+          "rssRuns": [84480, 83712, 84992],
+          "rssMedianKb": 84480,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-8",
+          "label": "Vize check (--checkers 8)",
+          "tool": "vize check",
+          "setting": "--checkers 8",
+          "medianMs": 105.237,
+          "runs": [103.542, 105.237, 109.305],
+          "throughput": "10 files/s",
+          "coldMs": 106.584,
+          "coldCpuMs": 320,
+          "cpuRuns": [300, 310, 310],
+          "cpuMedianMs": 310,
+          "rssRuns": [83200, 84992, 85760],
+          "rssMedianKb": 84992,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-16",
+          "label": "Vize check (--checkers 16)",
+          "tool": "vize check",
+          "setting": "--checkers 16",
+          "medianMs": 105.749,
+          "runs": [104.266, 108.936, 105.749],
+          "throughput": "9 files/s",
+          "coldMs": 107.671,
+          "coldCpuMs": 350,
+          "cpuRuns": [310, 320, 320],
+          "cpuMedianMs": 320,
+          "rssRuns": [87808, 89344, 88832],
+          "rssMedianKb": 88832,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-max",
+          "label": "Vize check (--checkers 32)",
+          "tool": "vize check",
+          "setting": "--checkers 32",
+          "medianMs": 107.965,
+          "runs": [109.191, 107.822, 107.965],
+          "throughput": "9 files/s",
+          "coldMs": 109.396,
+          "coldCpuMs": 330,
+          "cpuRuns": [350, 340, 380],
+          "cpuMedianMs": 350,
+          "rssRuns": [96768, 94976, 96512],
+          "rssMedianKb": 96512,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper",
+          "label": "tsc + Vize mapper",
+          "tool": "tsc + Vize mapper",
+          "setting": "default",
+          "medianMs": 345.966,
+          "runs": [345.966, 339.935, 353.489],
+          "throughput": "3 files/s",
+          "coldMs": 349.896,
+          "coldCpuMs": 500,
+          "cpuRuns": [520, 460, 490],
+          "cpuMedianMs": 490,
+          "rssRuns": [84480, 83712, 83968],
+          "rssMedianKb": 83968,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-4",
+          "label": "tsc + Vize mapper (--checkers 4)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 4",
+          "medianMs": 343.23,
+          "runs": [336.813, 344.46, 343.23],
+          "throughput": "3 files/s",
+          "coldMs": 341.435,
+          "coldCpuMs": 490,
+          "cpuRuns": [470, 480, 500],
+          "cpuMedianMs": 480,
+          "rssRuns": [83968, 83456, 83712],
+          "rssMedianKb": 83712,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-8",
+          "label": "tsc + Vize mapper (--checkers 8)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 8",
+          "medianMs": 345.85,
+          "runs": [345.85, 354.149, 341.304],
+          "throughput": "3 files/s",
+          "coldMs": 352.249,
+          "coldCpuMs": 490,
+          "cpuRuns": [490, 510, 480],
+          "cpuMedianMs": 490,
+          "rssRuns": [82432, 84992, 84480],
+          "rssMedianKb": 84480,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-16",
+          "label": "tsc + Vize mapper (--checkers 16)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 16",
+          "medianMs": 354.012,
+          "runs": [354.012, 353.215, 369.709],
+          "throughput": "3 files/s",
+          "coldMs": 354.764,
+          "coldCpuMs": 510,
+          "cpuRuns": [530, 540, 540],
+          "cpuMedianMs": 540,
+          "rssRuns": [87296, 88064, 86272],
+          "rssMedianKb": 87296,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-max",
+          "label": "tsc + Vize mapper (--checkers 32)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 32",
+          "medianMs": 353.723,
+          "runs": [342.671, 364.811, 353.723],
+          "throughput": "3 files/s",
+          "coldMs": 352.953,
+          "coldCpuMs": 520,
+          "cpuRuns": [560, 600, 590],
+          "cpuMedianMs": 590,
+          "rssRuns": [95744, 92672, 95488],
+          "rssMedianKb": 95488,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper",
+          "label": "tsc + Vue mapper",
+          "tool": "tsc + Vue mapper",
+          "setting": "default",
+          "medianMs": 1675.79,
+          "runs": [1659.426, 1798.389, 1675.79],
+          "throughput": "1 files/s",
+          "coldMs": 1654.1,
+          "coldCpuMs": 2310,
+          "cpuRuns": [2330, 2460, 2320],
+          "cpuMedianMs": 2330,
+          "rssRuns": [208728, 233676, 210532],
+          "rssMedianKb": 210532,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-4",
+          "label": "tsc + Vue mapper (--checkers 4)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 4",
+          "medianMs": 1668.092,
+          "runs": [1665.826, 1676.623, 1668.092],
+          "throughput": "1 files/s",
+          "coldMs": 1776.375,
+          "coldCpuMs": 2440,
+          "cpuRuns": [2340, 2350, 2330],
+          "cpuMedianMs": 2340,
+          "rssRuns": [208120, 209520, 207804],
+          "rssMedianKb": 208120,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-8",
+          "label": "tsc + Vue mapper (--checkers 8)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 8",
+          "medianMs": 1681.632,
+          "runs": [1681.632, 1745.093, 1677.01],
+          "throughput": "1 files/s",
+          "coldMs": 1634.592,
+          "coldCpuMs": 2320,
+          "cpuRuns": [2360, 2440, 2350],
+          "cpuMedianMs": 2360,
+          "rssRuns": [215024, 241132, 207392],
+          "rssMedianKb": 215024,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-16",
+          "label": "tsc + Vue mapper (--checkers 16)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 16",
+          "medianMs": 1777.256,
+          "runs": [1797.502, 1777.256, 1658.904],
+          "throughput": "1 files/s",
+          "coldMs": 1676.361,
+          "coldCpuMs": 2450,
+          "cpuRuns": [2500, 2490, 2340],
+          "cpuMedianMs": 2490,
+          "rssRuns": [233164, 232644, 206596],
+          "rssMedianKb": 232644,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-max",
+          "label": "tsc + Vue mapper (--checkers 32)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 32",
+          "medianMs": 1672.427,
+          "runs": [1780.031, 1672.427, 1647.234],
+          "throughput": "1 files/s",
+          "coldMs": 1706.348,
+          "coldCpuMs": 2460,
+          "cpuRuns": [2560, 2470, 2400],
+          "cpuMedianMs": 2470,
+          "rssRuns": [233140, 210696, 219424],
+          "rssMedianKb": 219424,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsrs-vize-mapper",
+          "label": "tsrs + Vize mapper",
+          "tool": "tsrs + Vize mapper",
+          "setting": "default",
+          "medianMs": 185.011,
+          "runs": [192.443, 185.011, 184.457],
+          "throughput": "5 files/s",
+          "coldMs": 189.963,
+          "coldCpuMs": 210,
+          "cpuRuns": [230, 200, 220],
+          "cpuMedianMs": 220,
+          "rssRuns": [78072, 78080, 78072],
+          "rssMedianKb": 78072,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsrs-vize-mapper-fast",
+          "label": "tsrs + Vize mapper (--fast)",
+          "tool": "tsrs + Vize mapper",
+          "setting": "--fast",
+          "medianMs": 189.153,
+          "runs": [189.153, 190.174, 188.375],
+          "throughput": "5 files/s",
+          "coldMs": 186.326,
+          "coldCpuMs": 240,
+          "cpuRuns": [220, 240, 230],
+          "cpuMedianMs": 230,
+          "rssRuns": [78072, 78072, 78080],
+          "rssMedianKb": 78072,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsrs-vue-mapper",
+          "label": "tsrs + Vue mapper",
+          "tool": "tsrs + Vue mapper",
+          "setting": "default",
+          "medianMs": 1558.187,
+          "runs": [1564.61, 1464.035, 1558.187],
+          "throughput": "1 files/s",
+          "coldMs": 1413.797,
+          "coldCpuMs": 1820,
+          "cpuRuns": [1990, 1880, 1990],
+          "cpuMedianMs": 1990,
+          "rssRuns": [235200, 208552, 231832],
+          "rssMedianKb": 231832,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "tsrs-vue-mapper-fast",
+          "label": "tsrs + Vue mapper (--fast)",
+          "tool": "tsrs + Vue mapper",
+          "setting": "--fast",
+          "medianMs": 1469.363,
+          "runs": [1412.733, 1469.363, 1566.638],
+          "throughput": "1 files/s",
+          "coldMs": 1561.517,
+          "coldCpuMs": 2010,
+          "cpuRuns": [1820, 1920, 2030],
+          "cpuMedianMs": 1920,
+          "rssRuns": [215040, 232608, 238212],
+          "rssMedianKb": 232608,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
         }
       ],
       "rejectedVariants": [
@@ -284,13 +755,13 @@
           "id": "golar-typecheck",
           "label": "Golar typecheck",
           "phase": "preflight",
-          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1157\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1157\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1065\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1226\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1065\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1226\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         },
         {
           "id": "golar-default",
           "label": "Golar (lint+check)",
           "phase": "preflight",
-          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1088\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1088\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1042\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1065\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1042\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1065\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         }
       ],
       "baselineId": "vue-tsc",
@@ -302,9 +773,27 @@
         "verter-tsc": "tsgo-native",
         "vue-tsc": "typescript-js",
         "vize-check-1t": "tsgo-native",
-        "vize-check-max": "tsgo-native"
+        "vize-check-max": "tsgo-native",
+        "vize-check-checkers-4": "tsgo-native",
+        "vize-check-checkers-8": "tsgo-native",
+        "vize-check-checkers-16": "tsgo-native",
+        "vize-check-checkers-max": "tsgo-native",
+        "tsc-vize-mapper": "tsgo-native",
+        "tsc-vize-mapper-checkers-4": "tsgo-native",
+        "tsc-vize-mapper-checkers-8": "tsgo-native",
+        "tsc-vize-mapper-checkers-16": "tsgo-native",
+        "tsc-vize-mapper-checkers-max": "tsgo-native",
+        "tsc-vue-mapper": "tsgo-native",
+        "tsc-vue-mapper-checkers-4": "tsgo-native",
+        "tsc-vue-mapper-checkers-8": "tsgo-native",
+        "tsc-vue-mapper-checkers-16": "tsgo-native",
+        "tsc-vue-mapper-checkers-max": "tsgo-native",
+        "tsrs-vize-mapper": "tsrs-native",
+        "tsrs-vize-mapper-fast": "tsrs-native",
+        "tsrs-vue-mapper": "tsrs-native",
+        "tsrs-vue-mapper-fast": "tsrs-native"
       },
-      "primarySpeedup": 7.0383180667869745,
+      "primarySpeedup": 12.696366739819554,
       "speedupBaselineId": "vue-tsc",
       "speedupStatus": "cross-engine",
       "engineClassRanking": [
@@ -315,7 +804,7 @@
             {
               "id": "vue-tsc",
               "label": "vue-tsc",
-              "medianMs": 1337.752,
+              "medianMs": 1301.695,
               "relativeToFastest": 1
             }
           ]
@@ -325,22 +814,136 @@
           "label": "native TypeScript engine (tsgo)",
           "rows": [
             {
-              "id": "vize-check-1t",
-              "label": "Vize check (1T)",
-              "medianMs": 186.426,
+              "id": "vize-check-max",
+              "label": "Vize check (max)",
+              "medianMs": 102.525,
               "relativeToFastest": 1
             },
             {
-              "id": "vize-check-max",
-              "label": "Vize check (max)",
-              "medianMs": 190.067,
-              "relativeToFastest": 1.02
+              "id": "vize-check-1t",
+              "label": "Vize check (1T)",
+              "medianMs": 102.637,
+              "relativeToFastest": 1.001
+            },
+            {
+              "id": "vize-check-checkers-4",
+              "label": "Vize check (--checkers 4)",
+              "medianMs": 103.616,
+              "relativeToFastest": 1.011
+            },
+            {
+              "id": "vize-check-checkers-8",
+              "label": "Vize check (--checkers 8)",
+              "medianMs": 105.237,
+              "relativeToFastest": 1.026
+            },
+            {
+              "id": "vize-check-checkers-16",
+              "label": "Vize check (--checkers 16)",
+              "medianMs": 105.749,
+              "relativeToFastest": 1.031
+            },
+            {
+              "id": "vize-check-checkers-max",
+              "label": "Vize check (--checkers 32)",
+              "medianMs": 107.965,
+              "relativeToFastest": 1.053
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-4",
+              "label": "tsc + Vize mapper (--checkers 4)",
+              "medianMs": 343.23,
+              "relativeToFastest": 3.348
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-8",
+              "label": "tsc + Vize mapper (--checkers 8)",
+              "medianMs": 345.85,
+              "relativeToFastest": 3.373
+            },
+            {
+              "id": "tsc-vize-mapper",
+              "label": "tsc + Vize mapper",
+              "medianMs": 345.966,
+              "relativeToFastest": 3.374
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-max",
+              "label": "tsc + Vize mapper (--checkers 32)",
+              "medianMs": 353.723,
+              "relativeToFastest": 3.45
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-16",
+              "label": "tsc + Vize mapper (--checkers 16)",
+              "medianMs": 354.012,
+              "relativeToFastest": 3.453
             },
             {
               "id": "verter-tsc",
               "label": "verter-tsc",
-              "medianMs": 1580.097,
-              "relativeToFastest": 8.476
+              "medianMs": 1563.127,
+              "relativeToFastest": 15.246
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-4",
+              "label": "tsc + Vue mapper (--checkers 4)",
+              "medianMs": 1668.092,
+              "relativeToFastest": 16.27
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-max",
+              "label": "tsc + Vue mapper (--checkers 32)",
+              "medianMs": 1672.427,
+              "relativeToFastest": 16.312
+            },
+            {
+              "id": "tsc-vue-mapper",
+              "label": "tsc + Vue mapper",
+              "medianMs": 1675.79,
+              "relativeToFastest": 16.345
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-8",
+              "label": "tsc + Vue mapper (--checkers 8)",
+              "medianMs": 1681.632,
+              "relativeToFastest": 16.402
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-16",
+              "label": "tsc + Vue mapper (--checkers 16)",
+              "medianMs": 1777.256,
+              "relativeToFastest": 17.335
+            }
+          ]
+        },
+        {
+          "engineClass": "tsrs-native",
+          "label": "native TypeScript port (tsrs)",
+          "rows": [
+            {
+              "id": "tsrs-vize-mapper",
+              "label": "tsrs + Vize mapper",
+              "medianMs": 185.011,
+              "relativeToFastest": 1
+            },
+            {
+              "id": "tsrs-vize-mapper-fast",
+              "label": "tsrs + Vize mapper (--fast)",
+              "medianMs": 189.153,
+              "relativeToFastest": 1.022
+            },
+            {
+              "id": "tsrs-vue-mapper-fast",
+              "label": "tsrs + Vue mapper (--fast)",
+              "medianMs": 1469.363,
+              "relativeToFastest": 7.942
+            },
+            {
+              "id": "tsrs-vue-mapper",
+              "label": "tsrs + Vue mapper",
+              "medianMs": 1558.187,
+              "relativeToFastest": 8.422
             }
           ]
         }
@@ -355,36 +958,36 @@
         {
           "id": "eslint-plugin-vue-1t",
           "label": "eslint-plugin-vue (1T)",
-          "medianMs": 20752.434,
-          "runs": [20609.852, 20830.969, 20752.434],
-          "throughput": "145 files/s"
+          "medianMs": 19614.885,
+          "runs": [19614.885, 19683.584, 19342.237],
+          "throughput": "153 files/s"
         },
         {
           "id": "eslint-plugin-vue-workers",
           "label": "eslint-plugin-vue (32 workers)",
-          "medianMs": 6984.314,
-          "runs": [6984.314, 6989.249, 6969.495],
-          "throughput": "430 files/s"
+          "medianMs": 6747.594,
+          "runs": [6693.32, 6854.812, 6747.594],
+          "throughput": "445 files/s"
         },
         {
           "id": "vize-lint-1t",
           "label": "Vize lint (1T)",
-          "medianMs": 432.254,
-          "runs": [431.379, 432.254, 447.485],
-          "throughput": "6.9k files/s"
+          "medianMs": 1380.31,
+          "runs": [1380.31, 1371.681, 1383.912],
+          "throughput": "2.2k files/s"
         },
         {
           "id": "vize-lint-max",
           "label": "Vize lint (max)",
-          "medianMs": 114.045,
-          "runs": [114.045, 108.49, 120.315],
-          "throughput": "26.3k files/s"
+          "medianMs": 187.988,
+          "runs": [187.988, 184.379, 193.246],
+          "throughput": "16.0k files/s"
         }
       ],
       "baselineId": "eslint-plugin-vue-1t",
       "vizeSingleId": "vize-lint-1t",
       "vizeMaxId": "vize-lint-max",
-      "primarySpeedup": 181.96706563198737,
+      "primarySpeedup": 104.34115475455879,
       "speedupBaselineId": "eslint-plugin-vue-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -398,29 +1001,29 @@
         {
           "id": "prettier-cli",
           "label": "Prettier CLI",
-          "medianMs": 29723.111,
-          "runs": [28949.562, 29745.493, 29723.111],
+          "medianMs": 29698.371,
+          "runs": [29463.825, 29698.371, 29837.563],
           "throughput": "101 files/s"
         },
         {
           "id": "vize-fmt-1t",
           "label": "Vize fmt (1T)",
-          "medianMs": 1072.253,
-          "runs": [1059.388, 1104.777, 1072.253],
-          "throughput": "2.8k files/s"
+          "medianMs": 1251.361,
+          "runs": [1252.998, 1251.361, 1248.451],
+          "throughput": "2.4k files/s"
         },
         {
           "id": "vize-fmt-max",
           "label": "Vize fmt (max)",
-          "medianMs": 351.408,
-          "runs": [351.408, 342.484, 358.852],
-          "throughput": "8.5k files/s"
+          "medianMs": 475.876,
+          "runs": [475.876, 468.998, 487.553],
+          "throughput": "6.3k files/s"
         }
       ],
       "baselineId": "prettier-cli",
       "vizeSingleId": "vize-fmt-1t",
       "vizeMaxId": "vize-fmt-max",
-      "primarySpeedup": 84.58290932477348,
+      "primarySpeedup": 62.40779320663366,
       "speedupBaselineId": "prettier-cli",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -434,9 +1037,17 @@
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 6754.668,
-          "runs": [6435.819, 6754.668, 6772.635],
-          "throughput": "74 files/s",
+          "tool": "vue-tsc",
+          "setting": "default",
+          "medianMs": 6493.659,
+          "runs": [6493.659, 6545.564, 6489.659],
+          "throughput": "77 files/s",
+          "coldMs": 6536.949,
+          "coldCpuMs": 10280,
+          "cpuRuns": [10210, 10240, 10150],
+          "cpuMedianMs": 10210,
+          "rssRuns": [1287568, 1282520, 1285592],
+          "rssMedianKb": 1285592,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -450,9 +1061,17 @@
         {
           "id": "verter-tsc",
           "label": "verter-tsc",
-          "medianMs": 2079.699,
-          "runs": [2079.699, 2075.939, 2102.418],
-          "throughput": "240 files/s",
+          "tool": "verter-tsc",
+          "setting": "default",
+          "medianMs": 2094.7,
+          "runs": [2078.193, 2094.7, 2098.751],
+          "throughput": "239 files/s",
+          "coldMs": 2097.148,
+          "coldCpuMs": 1450,
+          "cpuRuns": [1330, 1430, 1320],
+          "cpuMedianMs": 1330,
+          "rssRuns": [256816, 260456, 249804],
+          "rssMedianKb": 256816,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -466,9 +1085,17 @@
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 2025.704,
-          "runs": [2025.704, 1996.936, 2046.702],
-          "throughput": "247 files/s",
+          "tool": "vize check",
+          "setting": "--servers 1, RAYON_NUM_THREADS=1",
+          "medianMs": 429.493,
+          "runs": [424.122, 429.77, 429.493],
+          "throughput": "1.2k files/s",
+          "coldMs": 428.584,
+          "coldCpuMs": 1840,
+          "cpuRuns": [1700, 1670, 1880],
+          "cpuMedianMs": 1700,
+          "rssRuns": [250368, 251392, 251392],
+          "rssMedianKb": 251392,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -482,9 +1109,17 @@
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 1374.02,
-          "runs": [1384.116, 1332.651, 1374.02],
-          "throughput": "364 files/s",
+          "tool": "vize check",
+          "setting": "auto servers",
+          "medianMs": 350.335,
+          "runs": [515.632, 348.455, 350.335],
+          "throughput": "1.4k files/s",
+          "coldMs": 505.344,
+          "coldCpuMs": 5200,
+          "cpuRuns": [5060, 4130, 4290],
+          "cpuMedianMs": 4290,
+          "rssRuns": [444932, 436236, 440996],
+          "rssMedianKb": 440996,
           "correctness": {
             "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
             "corpusPlant": true,
@@ -494,6 +1129,438 @@
             "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
             "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
           }
+        },
+        {
+          "id": "vize-check-checkers-4",
+          "label": "Vize check (--checkers 4)",
+          "tool": "vize check",
+          "setting": "--checkers 4",
+          "medianMs": 350.884,
+          "runs": [350.884, 460.198, 333.902],
+          "throughput": "1.4k files/s",
+          "coldMs": 345.455,
+          "coldCpuMs": 4180,
+          "cpuRuns": [4240, 6000, 3910],
+          "cpuMedianMs": 4240,
+          "rssRuns": [449568, 443604, 446964],
+          "rssMedianKb": 446964,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-8",
+          "label": "Vize check (--checkers 8)",
+          "tool": "vize check",
+          "setting": "--checkers 8",
+          "medianMs": 518.677,
+          "runs": [536.643, 336.839, 518.677],
+          "throughput": "964 files/s",
+          "coldMs": 521.101,
+          "coldCpuMs": 7550,
+          "cpuRuns": [7990, 3660, 7860],
+          "cpuMedianMs": 7860,
+          "rssRuns": [411324, 451008, 441084],
+          "rssMedianKb": 441084,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-16",
+          "label": "Vize check (--checkers 16)",
+          "tool": "vize check",
+          "setting": "--checkers 16",
+          "medianMs": 467.991,
+          "runs": [467.991, 324.765, 473.006],
+          "throughput": "1.1k files/s",
+          "coldMs": 461.794,
+          "coldCpuMs": 6010,
+          "cpuRuns": [6000, 3170, 6020],
+          "cpuMedianMs": 6000,
+          "rssRuns": [423096, 406068, 441012],
+          "rssMedianKb": 423096,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "vize-check-checkers-max",
+          "label": "Vize check (--checkers 32)",
+          "tool": "vize check",
+          "setting": "--checkers 32",
+          "medianMs": 339.117,
+          "runs": [346.608, 339.117, 335.772],
+          "throughput": "1.5k files/s",
+          "coldMs": 335.092,
+          "coldCpuMs": 3180,
+          "cpuRuns": [3320, 3280, 3170],
+          "cpuMedianMs": 3280,
+          "rssRuns": [435120, 419496, 413512],
+          "rssMedianKb": 419496,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper",
+          "label": "tsc + Vize mapper",
+          "tool": "tsc + Vize mapper",
+          "setting": "default",
+          "medianMs": 257.57,
+          "runs": [257.57, 251.749, 258.316],
+          "throughput": "1.9k files/s",
+          "coldMs": 253.144,
+          "coldCpuMs": 1950,
+          "cpuRuns": [1940, 1950, 2100],
+          "cpuMedianMs": 1950,
+          "rssRuns": [252416, 246016, 248832],
+          "rssMedianKb": 248832,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-4",
+          "label": "tsc + Vize mapper (--checkers 4)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 4",
+          "medianMs": 256.282,
+          "runs": [253.24, 256.282, 260.022],
+          "throughput": "2.0k files/s",
+          "coldMs": 250.882,
+          "coldCpuMs": 1930,
+          "cpuRuns": [1960, 1970, 1880],
+          "cpuMedianMs": 1960,
+          "rssRuns": [247808, 246272, 249088],
+          "rssMedianKb": 247808,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-8",
+          "label": "tsc + Vize mapper (--checkers 8)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 8",
+          "medianMs": 239.217,
+          "runs": [237.324, 239.217, 243.35],
+          "throughput": "2.1k files/s",
+          "coldMs": 239.424,
+          "coldCpuMs": 1980,
+          "cpuRuns": [2070, 2050, 2060],
+          "cpuMedianMs": 2060,
+          "rssRuns": [259840, 257536, 262144],
+          "rssMedianKb": 259840,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-16",
+          "label": "tsc + Vize mapper (--checkers 16)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 16",
+          "medianMs": 237.031,
+          "runs": [248.554, 231.765, 237.031],
+          "throughput": "2.1k files/s",
+          "coldMs": 238.644,
+          "coldCpuMs": 2240,
+          "cpuRuns": [2230, 2260, 2120],
+          "cpuMedianMs": 2230,
+          "rssRuns": [287488, 285440, 290560],
+          "rssMedianKb": 287488,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vize-mapper-checkers-max",
+          "label": "tsc + Vize mapper (--checkers 32)",
+          "tool": "tsc + Vize mapper",
+          "setting": "--checkers 32",
+          "medianMs": 250.909,
+          "runs": [245.288, 250.909, 251.271],
+          "throughput": "2.0k files/s",
+          "coldMs": 248.705,
+          "coldCpuMs": 2620,
+          "cpuRuns": [2570, 2570, 2620],
+          "cpuMedianMs": 2570,
+          "rssRuns": [327680, 327680, 332032],
+          "rssMedianKb": 327680,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper",
+          "label": "tsc + Vue mapper",
+          "tool": "tsc + Vue mapper",
+          "setting": "default",
+          "medianMs": 2972.059,
+          "runs": [2936.273, 2972.059, 3000.883],
+          "throughput": "168 files/s",
+          "coldMs": 2933.119,
+          "coldCpuMs": 7020,
+          "cpuRuns": [7080, 7140, 7140],
+          "cpuMedianMs": 7140,
+          "rssRuns": [543372, 556392, 538768],
+          "rssMedianKb": 543372,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-4",
+          "label": "tsc + Vue mapper (--checkers 4)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 4",
+          "medianMs": 2978.693,
+          "runs": [2978.693, 2984.258, 2941.982],
+          "throughput": "168 files/s",
+          "coldMs": 2923.096,
+          "coldCpuMs": 7040,
+          "cpuRuns": [7120, 6920, 6840],
+          "cpuMedianMs": 6920,
+          "rssRuns": [547252, 548788, 554176],
+          "rssMedianKb": 548788,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-8",
+          "label": "tsc + Vue mapper (--checkers 8)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 8",
+          "medianMs": 2831.957,
+          "runs": [2831.957, 2818.23, 2876.81],
+          "throughput": "177 files/s",
+          "coldMs": 2854.604,
+          "coldCpuMs": 7500,
+          "cpuRuns": [7060, 7050, 7160],
+          "cpuMedianMs": 7060,
+          "rssRuns": [543696, 545652, 557912],
+          "rssMedianKb": 545652,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-16",
+          "label": "tsc + Vue mapper (--checkers 16)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 16",
+          "medianMs": 2769.742,
+          "runs": [2769.742, 2751.921, 2784.755],
+          "throughput": "181 files/s",
+          "coldMs": 2831.048,
+          "coldCpuMs": 8060,
+          "cpuRuns": [8150, 7840, 7880],
+          "cpuMedianMs": 7880,
+          "rssRuns": [553172, 553728, 557824],
+          "rssMedianKb": 553728,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsc-vue-mapper-checkers-max",
+          "label": "tsc + Vue mapper (--checkers 32)",
+          "tool": "tsc + Vue mapper",
+          "setting": "--checkers 32",
+          "medianMs": 2788.824,
+          "runs": [2786.615, 2788.824, 2838.04],
+          "throughput": "179 files/s",
+          "coldMs": 2772.71,
+          "coldCpuMs": 9570,
+          "cpuRuns": [9920, 9720, 10360],
+          "cpuMedianMs": 9920,
+          "rssRuns": [692904, 698216, 720020],
+          "rssMedianKb": 698216,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsrs-vize-mapper",
+          "label": "tsrs + Vize mapper",
+          "tool": "tsrs + Vize mapper",
+          "setting": "default",
+          "medianMs": 208.9,
+          "runs": [201.59, 215.336, 208.9],
+          "throughput": "2.4k files/s",
+          "coldMs": 209.209,
+          "coldCpuMs": 680,
+          "cpuRuns": [690, 700, 700],
+          "cpuMedianMs": 700,
+          "rssRuns": [191084, 190216, 190860],
+          "rssMedianKb": 190860,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsrs-vize-mapper-fast",
+          "label": "tsrs + Vize mapper (--fast)",
+          "tool": "tsrs + Vize mapper",
+          "setting": "--fast",
+          "medianMs": 197.817,
+          "runs": [197.817, 193.173, 201.227],
+          "throughput": "2.5k files/s",
+          "coldMs": 194.79,
+          "coldCpuMs": 790,
+          "cpuRuns": [810, 780, 800],
+          "cpuMedianMs": 800,
+          "rssRuns": [203276, 204456, 204024],
+          "rssMedianKb": 204024,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        },
+        {
+          "id": "tsrs-vue-mapper",
+          "label": "tsrs + Vue mapper",
+          "tool": "tsrs + Vue mapper",
+          "setting": "default",
+          "medianMs": 2718.007,
+          "runs": [2673.53, 2718.007, 2742.425],
+          "throughput": "184 files/s",
+          "coldMs": 2781.353,
+          "coldCpuMs": 4540,
+          "cpuRuns": [4440, 4460, 4610],
+          "cpuMedianMs": 4460,
+          "rssRuns": [538788, 539836, 533756],
+          "rssMedianKb": 538788,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
+        },
+        {
+          "id": "tsrs-vue-mapper-fast",
+          "label": "tsrs + Vue mapper (--fast)",
+          "tool": "tsrs + Vue mapper",
+          "setting": "--fast",
+          "medianMs": 2633.232,
+          "runs": [2613.856, 2633.232, 2744.786],
+          "throughput": "190 files/s",
+          "coldMs": 2621.086,
+          "coldCpuMs": 4760,
+          "cpuRuns": [4700, 4820, 4920],
+          "cpuMedianMs": 4820,
+          "rssRuns": [540464, 536728, 541764],
+          "rssMedianKb": 540464,
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37",
+            "corpusBaselineFingerprint": "d151e8b1bf5bdaeb8064fc5e287ccdf138ec0ad2a6c46de016a5f3d98f874a37"
+          }
         }
       ],
       "rejectedVariants": [
@@ -501,13 +1568,13 @@
           "id": "golar-typecheck",
           "label": "Golar typecheck",
           "phase": "preflight",
-          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0007.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0017.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0027.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0007.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0017.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0027.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0027.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0097.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0107.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0027.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0097.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0107.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         },
         {
           "id": "golar-default",
           "label": "Golar (lint+check)",
           "phase": "preflight",
-          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0037.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0057.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0197.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0037.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0057.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0197.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0067.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0097.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0117.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0067.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0097.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0117.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         }
       ],
       "baselineId": "vue-tsc",
@@ -519,9 +1586,27 @@
         "verter-tsc": "tsgo-native",
         "vue-tsc": "typescript-js",
         "vize-check-1t": "tsgo-native",
-        "vize-check-max": "tsgo-native"
+        "vize-check-max": "tsgo-native",
+        "vize-check-checkers-4": "tsgo-native",
+        "vize-check-checkers-8": "tsgo-native",
+        "vize-check-checkers-16": "tsgo-native",
+        "vize-check-checkers-max": "tsgo-native",
+        "tsc-vize-mapper": "tsgo-native",
+        "tsc-vize-mapper-checkers-4": "tsgo-native",
+        "tsc-vize-mapper-checkers-8": "tsgo-native",
+        "tsc-vize-mapper-checkers-16": "tsgo-native",
+        "tsc-vize-mapper-checkers-max": "tsgo-native",
+        "tsc-vue-mapper": "tsgo-native",
+        "tsc-vue-mapper-checkers-4": "tsgo-native",
+        "tsc-vue-mapper-checkers-8": "tsgo-native",
+        "tsc-vue-mapper-checkers-16": "tsgo-native",
+        "tsc-vue-mapper-checkers-max": "tsgo-native",
+        "tsrs-vize-mapper": "tsrs-native",
+        "tsrs-vize-mapper-fast": "tsrs-native",
+        "tsrs-vue-mapper": "tsrs-native",
+        "tsrs-vue-mapper-fast": "tsrs-native"
       },
-      "primarySpeedup": 4.915989578026521,
+      "primarySpeedup": 18.535570239913227,
       "speedupBaselineId": "vue-tsc",
       "speedupStatus": "cross-engine",
       "engineClassRanking": [
@@ -532,7 +1617,7 @@
             {
               "id": "vue-tsc",
               "label": "vue-tsc",
-              "medianMs": 6754.668,
+              "medianMs": 6493.659,
               "relativeToFastest": 1
             }
           ]
@@ -542,22 +1627,136 @@
           "label": "native TypeScript engine (tsgo)",
           "rows": [
             {
+              "id": "tsc-vize-mapper-checkers-16",
+              "label": "tsc + Vize mapper (--checkers 16)",
+              "medianMs": 237.031,
+              "relativeToFastest": 1
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-8",
+              "label": "tsc + Vize mapper (--checkers 8)",
+              "medianMs": 239.217,
+              "relativeToFastest": 1.009
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-max",
+              "label": "tsc + Vize mapper (--checkers 32)",
+              "medianMs": 250.909,
+              "relativeToFastest": 1.059
+            },
+            {
+              "id": "tsc-vize-mapper-checkers-4",
+              "label": "tsc + Vize mapper (--checkers 4)",
+              "medianMs": 256.282,
+              "relativeToFastest": 1.081
+            },
+            {
+              "id": "tsc-vize-mapper",
+              "label": "tsc + Vize mapper",
+              "medianMs": 257.57,
+              "relativeToFastest": 1.087
+            },
+            {
+              "id": "vize-check-checkers-max",
+              "label": "Vize check (--checkers 32)",
+              "medianMs": 339.117,
+              "relativeToFastest": 1.431
+            },
+            {
               "id": "vize-check-max",
               "label": "Vize check (max)",
-              "medianMs": 1374.02,
-              "relativeToFastest": 1
+              "medianMs": 350.335,
+              "relativeToFastest": 1.478
+            },
+            {
+              "id": "vize-check-checkers-4",
+              "label": "Vize check (--checkers 4)",
+              "medianMs": 350.884,
+              "relativeToFastest": 1.48
             },
             {
               "id": "vize-check-1t",
               "label": "Vize check (1T)",
-              "medianMs": 2025.704,
-              "relativeToFastest": 1.474
+              "medianMs": 429.493,
+              "relativeToFastest": 1.812
+            },
+            {
+              "id": "vize-check-checkers-16",
+              "label": "Vize check (--checkers 16)",
+              "medianMs": 467.991,
+              "relativeToFastest": 1.974
+            },
+            {
+              "id": "vize-check-checkers-8",
+              "label": "Vize check (--checkers 8)",
+              "medianMs": 518.677,
+              "relativeToFastest": 2.188
             },
             {
               "id": "verter-tsc",
               "label": "verter-tsc",
-              "medianMs": 2079.699,
-              "relativeToFastest": 1.514
+              "medianMs": 2094.7,
+              "relativeToFastest": 8.837
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-16",
+              "label": "tsc + Vue mapper (--checkers 16)",
+              "medianMs": 2769.742,
+              "relativeToFastest": 11.685
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-max",
+              "label": "tsc + Vue mapper (--checkers 32)",
+              "medianMs": 2788.824,
+              "relativeToFastest": 11.766
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-8",
+              "label": "tsc + Vue mapper (--checkers 8)",
+              "medianMs": 2831.957,
+              "relativeToFastest": 11.948
+            },
+            {
+              "id": "tsc-vue-mapper",
+              "label": "tsc + Vue mapper",
+              "medianMs": 2972.059,
+              "relativeToFastest": 12.539
+            },
+            {
+              "id": "tsc-vue-mapper-checkers-4",
+              "label": "tsc + Vue mapper (--checkers 4)",
+              "medianMs": 2978.693,
+              "relativeToFastest": 12.567
+            }
+          ]
+        },
+        {
+          "engineClass": "tsrs-native",
+          "label": "native TypeScript port (tsrs)",
+          "rows": [
+            {
+              "id": "tsrs-vize-mapper-fast",
+              "label": "tsrs + Vize mapper (--fast)",
+              "medianMs": 197.817,
+              "relativeToFastest": 1
+            },
+            {
+              "id": "tsrs-vize-mapper",
+              "label": "tsrs + Vize mapper",
+              "medianMs": 208.9,
+              "relativeToFastest": 1.056
+            },
+            {
+              "id": "tsrs-vue-mapper-fast",
+              "label": "tsrs + Vue mapper (--fast)",
+              "medianMs": 2633.232,
+              "relativeToFastest": 13.311
+            },
+            {
+              "id": "tsrs-vue-mapper",
+              "label": "tsrs + Vue mapper",
+              "medianMs": 2718.007,
+              "relativeToFastest": 13.74
             }
           ]
         }
@@ -572,22 +1771,22 @@
         {
           "id": "vite-plugin-vue",
           "label": "@vitejs/plugin-vue",
-          "medianMs": 1656.557,
-          "runs": [1656.557, 1600.439, 1730.685],
-          "throughput": "604 files/s"
+          "medianMs": 1541.155,
+          "runs": [1614.263, 1537.987, 1541.155],
+          "throughput": "649 files/s"
         },
         {
           "id": "vize-vite-plugin",
           "label": "@vizejs/vite-plugin",
-          "medianMs": 889.18,
-          "runs": [889.18, 881.988, 947.765],
-          "throughput": "1.1k files/s"
+          "medianMs": 497.118,
+          "runs": [507.7, 497.118, 482.351],
+          "throughput": "2.0k files/s"
         }
       ],
       "baselineId": "vite-plugin-vue",
       "vizeSingleId": null,
       "vizeMaxId": "vize-vite-plugin",
-      "primarySpeedup": 1.8630164871004746,
+      "primarySpeedup": 3.1001794342590694,
       "speedupBaselineId": "vite-plugin-vue",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -601,22 +1800,22 @@
         {
           "id": "nuxt-default",
           "label": "Nuxt default compiler",
-          "medianMs": 3067.515,
-          "runs": [3083.42, 3067.515, 3057.014],
-          "throughput": "81 files/s"
+          "medianMs": 2721.526,
+          "runs": [2721.526, 2772.552, 2718.209],
+          "throughput": "92 files/s"
         },
         {
           "id": "vize-nuxt",
           "label": "@vizejs/nuxt",
-          "medianMs": 3213.326,
-          "runs": [3259.084, 3213.326, 3176.535],
-          "throughput": "78 files/s"
+          "medianMs": 2484.568,
+          "runs": [2496.039, 2468.446, 2484.568],
+          "throughput": "101 files/s"
         }
       ],
       "baselineId": "nuxt-default",
       "vizeSingleId": null,
       "vizeMaxId": "vize-nuxt",
-      "primarySpeedup": 0.9546230292226807,
+      "primarySpeedup": 1.0953719117367686,
       "speedupBaselineId": "nuxt-default",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -630,68 +1829,68 @@
         {
           "id": "musea-options",
           "label": "options: preserve configured Rollup inputs",
-          "medianMs": 0.002,
-          "msPerUnit": 0.002,
-          "runs": [0.009, 0.002, 0.001],
+          "medianMs": 0.003,
+          "msPerUnit": 0.003,
+          "runs": [0.013, 0.003, 0.002],
           "units": 1,
           "unitLabel": "build hooks",
           "digest": "836b4ad1c5a4e4607258e6f145ee3419b6837fed4d9a6d015f0947a4bae8fa13",
-          "throughput": "500.0k build hooks/s"
+          "throughput": "333.3k build hooks/s"
         },
         {
           "id": "musea-build-start",
           "label": "buildStart: scan + parse art files",
-          "medianMs": 16.52,
-          "msPerUnit": 0.068833,
-          "runs": [16.817, 16.52, 15.88],
+          "medianMs": 23.962,
+          "msPerUnit": 0.099842,
+          "runs": [23.962, 23.83, 23.971],
           "units": 240,
           "unitLabel": "art files",
-          "digest": "e2176d3d38a433f7efb0b83438998a9b5886c6df3a84e46ffcd4e3eb4e0738f2",
-          "throughput": "14.5k art files/s"
+          "digest": "64be4cbb5045e9ef77d9f50911df1a3a72aeeb3bd152afa59df8e456b2dfe71a",
+          "throughput": "10.0k art files/s"
         },
         {
           "id": "musea-load",
           "label": "load: generate art modules",
-          "medianMs": 9.163,
-          "msPerUnit": 0.038179,
-          "runs": [11.451, 9.163, 8.979],
+          "medianMs": 31.61,
+          "msPerUnit": 0.131708,
+          "runs": [31.61, 37.161, 30.487],
           "units": 240,
           "unitLabel": "art files",
-          "digest": "e2176d3d38a433f7efb0b83438998a9b5886c6df3a84e46ffcd4e3eb4e0738f2",
-          "throughput": "26.2k art files/s"
+          "digest": "64be4cbb5045e9ef77d9f50911df1a3a72aeeb3bd152afa59df8e456b2dfe71a",
+          "throughput": "7.6k art files/s"
         },
         {
           "id": "musea-transform",
           "label": "transform: TS to JS on generated modules",
-          "medianMs": 4.048,
-          "msPerUnit": 0.016867,
-          "runs": [4.048, 4.459, 3.772],
+          "medianMs": 3.892,
+          "msPerUnit": 0.016217,
+          "runs": [3.892, 4.083, 3.734],
           "units": 240,
           "unitLabel": "art files",
-          "digest": "d0161f3f0e9c988f6595a3006034f024c2ebe7d4a7e9596ac94009dcd7b912ff",
-          "throughput": "59.3k art files/s"
+          "digest": "a624fd461ae5ac90d691df90ffbe2aaf5820d518e763e1db844f85be4a3fc182",
+          "throughput": "61.7k art files/s"
         },
         {
           "id": "musea-nuxt-virtual",
           "label": "musea-nuxt: resolve Nuxt mock specifiers",
-          "medianMs": 0.097,
-          "msPerUnit": 0.000045,
-          "runs": [0.097, 0.102, 0.046],
+          "medianMs": 0.064,
+          "msPerUnit": 0.00003,
+          "runs": [0.101, 0.064, 0.044],
           "units": 2160,
           "unitLabel": "resolutions",
-          "digest": "8b501b1fd2c7c18017f188fd2d13724ee5f78c3ae3e084a13952b14bca51a5e2",
-          "throughput": "22.3M resolutions/s"
+          "digest": "6358f2a63fa3f8e55456d2ccfc391351c5daaa3424bd7b62c31d0c65ccad4021",
+          "throughput": "33.8M resolutions/s"
         },
         {
           "id": "musea-plugin-total",
           "label": "whole plugin: config + options + buildStart + load + transform",
-          "medianMs": 30.852,
-          "msPerUnit": 0.12855,
-          "runs": [33.577, 29.868, 30.852],
+          "medianMs": 58.927,
+          "msPerUnit": 0.245529,
+          "runs": [59.035, 58.927, 58.067],
           "units": 240,
           "unitLabel": "art files",
-          "digest": "ad92480f10967d92865f32341c5a23a57752b5367a0b2d6f1c62ae3a1f080327",
-          "throughput": "7.8k art files/s"
+          "digest": "7540bd7d05294f7994e1f03ba471bd88d5c47f0a7a295499d2c088b06d86ef8f",
+          "throughput": "4.1k art files/s"
         }
       ],
       "baselineId": null,
@@ -700,19 +1899,27 @@
       "variantCount": 720,
       "artifacts": {
         "museaNuxt": {
-          "sha256": "a7e42f758b20a227391dab8ca738e18640db919ff358990e587dc0cc97e92313",
+          "sha256": "acb2ea42a2c1003a7bee4423e4d0b36ce4687ce00a07bbc895661653d3d450bd",
+          "pinned": true
+        },
+        "museaNuxt:auto-imports.mjs": {
+          "sha256": "8d9800fbd786f2be731c1be3dc5020f1ec86b26423c9afe1dbd4904dba7904ec",
+          "pinned": true
+        },
+        "museaNuxt:error-k5KbRk2C.mjs": {
+          "sha256": "cd64b77e53588f6b271138cb7ad788bc0ff8006264811a5ce2d704c264f225d6",
           "pinned": true
         },
         "museaPlugin": {
-          "sha256": "c9917c45f16cd8d216967aea6c753ea91c07efc9a891d8a825e65588cc4f9215",
+          "sha256": "a8422349425fcd277d8efa16e2b3016e5f98d71d173d7038c53c423138291290",
           "pinned": true
         },
-        "museaPlugin:a11y-Ci9EEv6F.mjs": {
-          "sha256": "7b6fd0ef06cf0f13e537420f0957445f39ee1d379afe2412c2b46d60efddb3e4",
+        "museaPlugin:a11y-CR7bHK1d.mjs": {
+          "sha256": "2ead791dcb84e60fff8555a9ff1bb2fc26b19c3e80097f82b272b8377ad0cfb4",
           "pinned": true
         },
         "museaPlugin:a11y/index.mjs": {
-          "sha256": "9acd3d8677d4ceb27fc68a8319d22ddea6619d73c9457cccd4bdd43dc738c0ba",
+          "sha256": "8238b14dcee490bd46a4eff3cae9f6bdf2f7858aaaf19c0d02975c14d9f736fc",
           "pinned": true
         },
         "museaPlugin:autogen-B-N0cJbZ.mjs": {
@@ -723,20 +1930,24 @@
           "sha256": "70f3926b7d6d268cfab092953c287160754061e66d92a271105fbf390688aabd",
           "pinned": true
         },
+        "museaPlugin:browser-launch-L43ulIaZ.mjs": {
+          "sha256": "04fe9bcab3684f8d1372e889125e3225c7ee16c410b8e0588dcb8d86034f3dcb",
+          "pinned": true
+        },
         "museaPlugin:cli/index.mjs": {
-          "sha256": "5e509c2c01e6b818631f1efc8bdf4da4051974c5545adbf2d8ac8178b8d56358",
+          "sha256": "0170d6500d76e1c17691e0c0be9f931f55f77596355baa18ffda455d543d4cc6",
           "pinned": true
         },
-        "museaPlugin:gallery-DnAsudTG.mjs": {
-          "sha256": "771f8db8b42c1289910a7445d7b776f0f689f60203a556e25db8ce586432096c",
+        "museaPlugin:gallery-DLl3pMOF.mjs": {
+          "sha256": "f9bd41a7fb9686967a869b7e3703617f4b5fd39112fe067758005abd4060b0ec",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/MonacoEditor-B5OyIH1m.js": {
-          "sha256": "956a64735c43912bf8f88d06125a6204a7d7f625194efeee3b9f49c23c7a8363",
+        "museaPlugin:gallery/assets/MonacoEditor-BGVrhc2X.js": {
+          "sha256": "e228564bbc983be8173777d0a0446053f4481d794f61de10604dbb06ad874694",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/MonacoEditor-Db3Q217Z.css": {
-          "sha256": "3281191a529588c5b4a52c602ca16c2103ea494d6018574b877cd4b09cb64dd5",
+        "museaPlugin:gallery/assets/MonacoEditor-DU1ISS17.css": {
+          "sha256": "4dcb288c56b8b7ba64258f5936e9b72878cd8c01fc37d5946d38fc3946a397d5",
           "pinned": true
         },
         "museaPlugin:gallery/assets/abap-08VXUWAP.js": {
@@ -795,8 +2006,8 @@
           "sha256": "cb0ca775c6f05da4106150dacfd39536f25f75105a8c7590c04834af1508c398",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/cssMode-BWWzBUk5.js": {
-          "sha256": "13564b34cb198d857ca87646e4116cf12e6fece845ac4649faaeb92658703dbb",
+        "museaPlugin:gallery/assets/cssMode-COgcB_Po.js": {
+          "sha256": "fd4b0d5363a243e019da0ebf6be775dbbea0d606e59faba6a0dc86f872397cc0",
           "pinned": true
         },
         "museaPlugin:gallery/assets/cypher-CVaqCwHa.js": {
@@ -819,8 +2030,8 @@
           "sha256": "b5e048bbfd096ae7fc3f1e13918e62ca9942fbdc4ddc62fb3b4b074fbcc200ee",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/editor.api-C7kRTlDS.js": {
-          "sha256": "8a6bdd6a1ee9f20593b1ef5e98d901b1ba11a1b013bc4526da8178a021c20ac1",
+        "museaPlugin:gallery/assets/editor.api-qJSJ7Gzk.js": {
+          "sha256": "554d58d7a25d556674eb5ce5634de7c3dd65d86b2d7f5b4efdf1fc5b1851d59c",
           "pinned": true
         },
         "museaPlugin:gallery/assets/editor.worker-s_hwqnK9.js": {
@@ -835,8 +2046,8 @@
           "sha256": "9146223a874645367aa89e7189e958f0abb9c815e5b0439bf64c5263815a8dbd",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/freemarker2-D5qYoWcn.js": {
-          "sha256": "f6d063166fb108a9e8d2dd9c786102c0b1c63e7d9121c745130634424b75e3a6",
+        "museaPlugin:gallery/assets/freemarker2-CZxq_R_C.js": {
+          "sha256": "7292b10d0a886433d33c413a27cc9e8cbfec7c73e0dcf28cc559d784f74614dc",
           "pinned": true
         },
         "museaPlugin:gallery/assets/fsharp-C8Ef5oNN.js": {
@@ -851,32 +2062,32 @@
           "sha256": "a66e3b8eacf8ad4017403825f7cc7978fbefc5fd1f80ea6c044f8059848c5186",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/handlebars-BPh2NhGB.js": {
-          "sha256": "c517a1dfcbb9116cb021f72c4d07557a52305659b6e7cd7186f296991cfa388b",
+        "museaPlugin:gallery/assets/handlebars-B5ngu8JD.js": {
+          "sha256": "a0c5c2d39e7b63628a7fbb5cd6fcec8583d2cf9c64c41a0a17d26145842f0305",
           "pinned": true
         },
         "museaPlugin:gallery/assets/hcl-CpzslTdj.js": {
           "sha256": "15310bb6f51d2670886bac778d8c23351697bd2a8393bff1e1295361e84c99d2",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/html-VzRJrOtd.js": {
-          "sha256": "b51f358f953f251e283fb0b5514cd534403764d0d8a55c1503130e2a3c65bc09",
+        "museaPlugin:gallery/assets/html-DBLTHxjC.js": {
+          "sha256": "f68f8f8ba6e1332627d910c4f1a3aa80cf9f670ba9dd94b7823f35ef599fbdee",
           "pinned": true
         },
         "museaPlugin:gallery/assets/html.worker-BFmRaMni.js": {
           "sha256": "0a844fb62d6f4ce9779e240603d229559ebf136e70c9ecee83c7e0b9e79c4289",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/htmlMode-BbOT-uyH.js": {
-          "sha256": "b00d3624f7d5b34926613feb4e67a78664dd19f83732443645451856207adf02",
+        "museaPlugin:gallery/assets/htmlMode-C_F6F2nC.js": {
+          "sha256": "c38d8c6cf17601e4767561efc7543b46f53cf5fb38d86912da09a2308c3060c5",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/index-BD1UzCKA.css": {
-          "sha256": "633cc61e0fead283ea62d78027b35909d9163f79f2ac360c1c8862f8fb65c8a8",
+        "museaPlugin:gallery/assets/index-CcXWIUyZ.js": {
+          "sha256": "1a22c6f223201e15661fc7ca958d87a60de78c6c6d35a69579d374f91933cedf",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/index-qxYSmh_-.js": {
-          "sha256": "737ab3d1d103ba2c7485c6e25cf3698e26f70204b6b02cabe2a072d4b85ba985",
+        "museaPlugin:gallery/assets/index-DgbWDrHF.css": {
+          "sha256": "85de84cf4769ac48365ac3eaf55b6ffc796c69146308227690b592b895ae6e59",
           "pinned": true
         },
         "museaPlugin:gallery/assets/ini-sBoK_t0W.js": {
@@ -887,16 +2098,16 @@
           "sha256": "77d3a91eeaf54e004f8ec321e6208afecebe2435232146b41f68135373800953",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/javascript-DZuuvDeD.js": {
-          "sha256": "f14466fd5b93ee16e29556b32c177a8ae5c90cb55ef804d3466398960f03f3ec",
+        "museaPlugin:gallery/assets/javascript-BnPalvVR.js": {
+          "sha256": "9e10b5ad98ff06ae2f3cac30ddfad544416bba53bf9deed354bfc6e0fa698f25",
           "pinned": true
         },
         "museaPlugin:gallery/assets/json.worker-CD0GJfW6.js": {
           "sha256": "d678cbe7ddcae01f3bd7dbc8dee782438070963a2e5db91d5c56114bfdf987e4",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/jsonMode-SmA2ZClY.js": {
-          "sha256": "5b3623a587a5d78983a95af10f2381673134938d322dbe5176c1d2d4cf63bb79",
+        "museaPlugin:gallery/assets/jsonMode-B9mP-X5z.js": {
+          "sha256": "a7daf9f5ec01eff629abea5be041b389bd6b607a88c38be2ed7fc835b6835f2f",
           "pinned": true
         },
         "museaPlugin:gallery/assets/julia-Bri6UV-V.js": {
@@ -915,12 +2126,12 @@
           "sha256": "df071e61a9754e5ff7a082a5bab4f6f5ee3a082c251f40d85d1c47ca48ba6807",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/liquid-BVS1iXA-.js": {
-          "sha256": "bba2aada1313d3683a9c1fae950def1b362aa910de596f20c56bf8af16d67565",
+        "museaPlugin:gallery/assets/liquid-CQB9SE7f.js": {
+          "sha256": "6c192ca1de3d9346507a96f40f3cd3262afa53fae8a1e3f452d5f0028f4a659d",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/lspLanguageFeatures-Cjxz_0Ho.js": {
-          "sha256": "4d354f6ba30e3e132cbd679a6122f2e376ca51f13c48e613ac3f822203f4cac7",
+        "museaPlugin:gallery/assets/lspLanguageFeatures-DCCz4pcV.js": {
+          "sha256": "ec143bc18ddf97d0f774c014a57bf25a55ed5b7d6872215acaa5a7d60b3ded75",
           "pinned": true
         },
         "museaPlugin:gallery/assets/lua-CsQS60Ue.js": {
@@ -935,8 +2146,8 @@
           "sha256": "621e51234c4fea96a2a3a6e0dd59151f1c0216d7cb4a963361ee29aa302c7977",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/mdx-DD28jO-L.js": {
-          "sha256": "52721cba9fe38764fdfd47e742b5099ce93c25e987cd5f6e9e79f0fbef9ea1a3",
+        "museaPlugin:gallery/assets/mdx-YmzWuhKr.js": {
+          "sha256": "be060038ebba0e0ec8dd843dcc60205d8583259eb5b58d70f91de156a8e0acfa",
           "pinned": true
         },
         "museaPlugin:gallery/assets/mips-CIPQ_RoX.js": {
@@ -999,8 +2210,8 @@
           "sha256": "dd6fd0e69c38d8f4a1bd74de666762779629cd2dbd644288b46dcd6cc6646486",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/python-BiGCUOvL.js": {
-          "sha256": "9043d5e20b04a03c23301fe4a5b801a20ff3dc8ac24156dd87bb0ce3a5ea7417",
+        "museaPlugin:gallery/assets/python-QmC9tp9f.js": {
+          "sha256": "275babfb5ab1dd4e512c041c553bf0cd562592ae3a9f910ba4a165623847664a",
           "pinned": true
         },
         "museaPlugin:gallery/assets/qsharp-DkqhCAOL.js": {
@@ -1011,8 +2222,8 @@
           "sha256": "923bf047ed7decb6ba5ab3df467b6f739552e06715b3b49550872ae5bae00e1e",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/razor-BdNIBW4a.js": {
-          "sha256": "751c152170857135c74da5712772751f7183fc61dbfb1ef320f054f0201027aa",
+        "museaPlugin:gallery/assets/razor-Lo6W7GI9.js": {
+          "sha256": "d753636d54084b879fa7e9679d2b7992779554afd4f8b365ebd01e8b196a0e4d",
           "pinned": true
         },
         "museaPlugin:gallery/assets/redis-ClamHrr6.js": {
@@ -1023,8 +2234,8 @@
           "sha256": "3e62d2f263de782216bbe34bc3548c53b9d9a7de16bd6edaa8a006ed36c9bf77",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/register-BQ5qO17Y.js": {
-          "sha256": "876365820ae2b96ad195002bbca0e05836a70a875cf1ee39cb391709afae9d9a",
+        "museaPlugin:gallery/assets/register-CyJ9awu9.js": {
+          "sha256": "5a0cad8fbe086028d1b986b6dd8b6e0f11a5782d229fe168f98e006f9e30fda1",
           "pinned": true
         },
         "museaPlugin:gallery/assets/restructuredtext-BYgofb2h.js": {
@@ -1091,28 +2302,28 @@
           "sha256": "b460f0ae3471b62c331c14155f86981cfc76b6f9f3c826ec937328b9137c9c62",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/toggleHighContrast-B39EEDqx.js": {
-          "sha256": "90c896394ca07d7cbb8b9c6dace33af6a94be1d3f10070b050095af97355310b",
-          "pinned": true
-        },
         "museaPlugin:gallery/assets/toggleHighContrast-CFGa3V3O.css": {
           "sha256": "69d007659e83e5e6ddc2931432630afc8ee7ff5c92aaeb29cccc59992e37af93",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/toggleHighContrast-DoKT5tKP.js": {
+          "sha256": "daebea39be4442ab5ed52185b997b54c0602a767fe51a3305993cd2b487b1797",
           "pinned": true
         },
         "museaPlugin:gallery/assets/ts.worker-BFy34-VB.js": {
           "sha256": "10abf27091c1bc1157b063f5a2b1346663d51f2e984af92328d4cb3690937660",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/tsMode-d3dEcYGg.js": {
-          "sha256": "bd5ade52b9a1e5d6f50110343f5b86b68deda98e05f5cc19dfecd091a7e1d936",
+        "museaPlugin:gallery/assets/tsMode-DkbE8yJ8.js": {
+          "sha256": "083276324157106493ffc377289cf2c1b7c51282372679b328255bd1a1a681fc",
           "pinned": true
         },
         "museaPlugin:gallery/assets/twig-De2hgUGE.js": {
           "sha256": "ed42be999634b7600e1b6ba924576151f93f84de2343134edfbc56fe95ec6119",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/typescript-B51Kbxgt.js": {
-          "sha256": "2663cc40ba193a0ddaf67a6353347734aed2d0ccef663321be876d2f97cbf617",
+        "museaPlugin:gallery/assets/typescript-RprmrDbF.js": {
+          "sha256": "58f987a75e706582113615f20610872dca9b60d4866a43257d66862454754155",
           "pinned": true
         },
         "museaPlugin:gallery/assets/typespec-B8J7ngcE.js": {
@@ -1123,64 +2334,84 @@
           "sha256": "83a1714a1a12ba92d31b12ab18752ddf5a4ee85a02ad8f67a4c310a674aab6c3",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/vs-BBmQVzdb.js": {
-          "sha256": "ae49b735c30bf40a24a57364fd5fc133117787eecbe0af6d89ab4ddb1ac6e419",
+        "museaPlugin:gallery/assets/vs-LGo4H9EM.js": {
+          "sha256": "258147a3c7252ad71a62739c1dbeb3ba26054cbffc7fbf3f066368c65dec62ac",
           "pinned": true
         },
         "museaPlugin:gallery/assets/wgsl-DpFanUEy.js": {
           "sha256": "335b9279c9f8966b751b7990c9309dc53e267c70b8837023240c3b72e530020e",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/workers-DBTa0nL3.js": {
-          "sha256": "1b5f997f2214ddeed307514cab7e598e5712142ba64cb689c6ba5e3a6f03a639",
+        "museaPlugin:gallery/assets/workers-CEMoRP2P.js": {
+          "sha256": "d30e9b26eff20269aa9e6999b321f254c8c3f5a39b3a71bea8633e81888e103b",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/xml-DeDP833m.js": {
-          "sha256": "6c08255116012fa74a10d5f9945cc58c058c484eb97c9b249f79f736a13d829f",
+        "museaPlugin:gallery/assets/xml-B4CO-th0.js": {
+          "sha256": "b9352c311d743937ea7afc622b71e0edcd3af1b1c75626d344c55b34985ec5a9",
           "pinned": true
         },
-        "museaPlugin:gallery/assets/yaml-Dcbt7d1o.js": {
-          "sha256": "d99e4735faf006d434396a1e478f03e9a05f83f3a894017e88545b64747513f7",
+        "museaPlugin:gallery/assets/yaml-BTEADe-G.js": {
+          "sha256": "0d80430257f41521ad4ca6faefe3b7f9c2784eb422247b646ce2a15da3f6e756",
           "pinned": true
         },
         "museaPlugin:gallery/index.html": {
-          "sha256": "cf9de1440961d9104c8a799cd6798d025041d48d87c5b48c5a772f278add7f7d",
+          "sha256": "c804f3273adb48a833112dd1f0c3dd91596dacf18326877c48cac5b6f9648697",
           "pinned": true
         },
-        "museaPlugin:options-CGA4BetG.mjs": {
-          "sha256": "9c0c07ab2a1a32b097db81cfb5242dff8efb9c1fd7c2bb8ce99f3293496c30ca",
+        "museaPlugin:options-BD6L2LTb.mjs": {
+          "sha256": "992c65357a4d7ffe01051ded3c3aeef0f7ab9cb7d7156205eb3dea6032b210a0",
           "pinned": true
         },
-        "museaPlugin:template-B_y7_OsF.mjs": {
-          "sha256": "4c71d90f3fa8e4f7098f9b79f66e4de13cddf2eccbefd86b994907f08da0e6e2",
+        "museaPlugin:template-D12HYJCn.mjs": {
+          "sha256": "a52987e757270786a85d66867876a50964f37af2afd93b2d15bf66d1952a6327",
           "pinned": true
         },
-        "museaPlugin:vrt-UxzWFygI.mjs": {
-          "sha256": "eab5301bb66ae427dcabbab9bfc975529a47ccfbeabd79d7d745292bda6663d9",
+        "museaPlugin:utils-BQi1club.mjs": {
+          "sha256": "12129aa65402cc05fa20a0721a029c03cffd034a1323264f3337368e7e971863",
+          "pinned": true
+        },
+        "museaPlugin:vrt-CUz4NxKK.mjs": {
+          "sha256": "e87c863cb9b7dea4105fb7d36af936f122c60f4462c7b4ab586dc3e0fb56cd6d",
           "pinned": true
         },
         "museaPlugin:vrt.mjs": {
-          "sha256": "dd0c30568dcb78b9089d91cf290c546043d069efeffe75064c344f6f39c63fb5",
+          "sha256": "230e8d698ac490f0001746a46cbc97c19ace544d04d13e5392bd70b01fcd2fe0",
           "pinned": true
         },
         "native": {
-          "sha256": "cf96bebfe5aa04cd760602eb4ea98c952d2e0efde7bdef9993523c91504d9921",
+          "sha256": "4f5d92aa9cd65807873ee3bfa94b0d2a9b5cbbd7e84659fc000e8818d38cddf6",
+          "pinned": true
+        },
+        "nativeLoader:index.d.ts": {
+          "sha256": "93b4142d6ce936954a25ef06d9e2ab18a92aec2839ccff81182defcd6127235d",
           "pinned": true
         },
         "nativeLoader:index.js": {
-          "sha256": "40692a65032911af09b08c161f7d8c5b7572405b251a7c3831f7a0df9f2d7a2f",
+          "sha256": "609cfb6924275f7055c57df84178bd597741b2d3d5ac8f3429ecfe88fad8cac3",
+          "pinned": true
+        },
+        "nativeLoader:language-projection.d.ts": {
+          "sha256": "c654c0cf272e19a8f2b0fe6ad95792c248c3a5353497640ef376e5eb1f44a5e3",
+          "pinned": true
+        },
+        "nativeLoader:language-projection.js": {
+          "sha256": "9f2a8aa56033b86bbb51e25ec2f80f3d681e300ef547ef54d4731b0af90cbffe",
+          "pinned": true
+        },
+        "nativeLoader:native-binding-identity.js": {
+          "sha256": "77174fd3b02313bd0cdd9ba781e4a87f74b4e22c1d386cfef775aa3fd81e7039",
           "pinned": true
         },
         "nativeLoader:native-binding.js": {
-          "sha256": "13a15d0eaf0dd2e15f0aede8a17ae8c601fb9606d1b11903ce148428b8ef466e",
+          "sha256": "88a86f7d253bc4d08afb96d198feda5c8e0f4c1b5310ab1a3190ecc7a0eb46ba",
           "pinned": true
         },
         "nativeLoader:native-targets.js": {
-          "sha256": "ad0e2d2a898271aaeaa5d4fb365a979e6ad518385b8332715a79dc4cbe133460",
+          "sha256": "0c10b80b3f712c81f7fa3271de6dea12fc2e13cdf79c041e2a3b921b6cd16524",
           "pinned": true
         },
         "nativeLoader:package.json": {
-          "sha256": "e806bbef61920cea7e93d2b5d6d3010192ced5c5f6625ed50cebd006af75e956",
+          "sha256": "4cc8199cb2d3af49cee2becf3eb9288badd579ad3f27fea98204ad9a240a391f",
           "pinned": true
         }
       },

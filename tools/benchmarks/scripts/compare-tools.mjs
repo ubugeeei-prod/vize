@@ -29,19 +29,17 @@ import { buildMetadata } from "./compare-tools-metadata.mjs";
 import { DEFAULT_MUSEA_FILE_COUNT, measureMuseaSurface } from "./compare-tools-musea.mjs";
 import {
   createSurface,
-  ENGINE_CLASSES_BY_SURFACE,
   renderEngineClassSections,
   renderSurfaceTable,
 } from "./compare-tools-report.mjs";
 import {
-  createTypecheckToolVariants,
+  measureTypecheckSurface,
   prepareTypecheckDir,
-  prepareTypecheckPackages,
   typecheckToolBins,
 } from "./compare-tools-typecheck.mjs";
-import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
 import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
+import { prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { linkColdNodeModules } from "./nuxt-build-cache.ts";
 
 export { createSurface } from "./compare-tools-report.mjs";
@@ -328,7 +326,7 @@ function prepareLargeSfcDir(blockCount) {
   };
 }
 
-function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
+function prepareNuxtDir(inputDir, files, label, invocation, useVize, install) {
   const outputDir = join(workRoot, "nuxt", `${label}-${String(invocation).padStart(4, "0")}`);
   rmSync(outputDir, { recursive: true, force: true });
   mkdirSync(join(outputDir, "components"), { recursive: true });
@@ -336,11 +334,7 @@ function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
   for (const file of files) {
     copyFileSync(join(inputDir, file), join(outputDir, "components", file));
   }
-  linkColdNodeModules(
-    outputDir,
-    [join(rootDir, "npm", "framework/nuxt", "node_modules"), join(benchDir, "node_modules")],
-    label,
-  );
+  linkColdNodeModules(outputDir, [install.modules], label);
 
   const imports = [];
   const componentNames = [];
@@ -370,8 +364,7 @@ const benchComponents = [${componentNames.join(", ")}]
 `,
   );
 
-  const vizeModuleUrl = pathToFileURL(join(rootDir, "npm/framework/nuxt/dist/index.mjs")).href;
-  const moduleImport = useVize ? `import vizeNuxt from '${vizeModuleUrl}'\n` : "";
+  const moduleImport = useVize ? "import vizeNuxt from '@vizejs/nuxt'\n" : "";
   const modules = useVize ? "modules: [vizeNuxt]," : "modules: [],";
   const vizeOptions = useVize
     ? `  vize: {
@@ -403,10 +396,7 @@ ${vizeOptions}
       {
         private: true,
         type: "module",
-        dependencies: {
-          nuxt: "4.4.6",
-          vue: "3.5.34",
-        },
+        dependencies: install.dependencies,
       },
       null,
       2,
@@ -825,49 +815,15 @@ async function measureFormat(inputDir, files, options) {
   });
 }
 
-async function measureCheck(inputDir, files, options) {
-  const checkDir = prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles });
-  const vizeBin = resolve(options.vizeBin);
-  if (!existsSync(vizeBin)) {
-    throw new Error(`Vize CLI not found: ${vizeBin}`);
-  }
-  // Fail closed: without a resolvable native TypeScript engine `vize check`
-  // is not measuring type checking, and a timing published from it would be
-  // the heuristic-fallback result the upstream vue-benchmarks report hit.
-  if (!options.backend.ready) {
-    throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
-  }
-  const rejectedVariants = [];
-  const onRejected = (variant, error, phase) =>
-    recordTypecheckRejection(rejectedVariants, variant, error, phase);
-  const variants = gateTypecheckVariants(
-    createTypecheckToolVariants({
-      fileCount: files.length,
-      vizeBin,
-      corsaPath: options.backend.corsaPath,
-      resolveWorkspaceBin,
-    }),
-    checkDir,
-    prepareTypecheckPackages,
-    onRejected,
-  );
-
-  return createSurface({
-    id: "check",
-    label: "Type check",
-    files: files.length,
+function measureCheck(inputDir, files, options) {
+  return measureTypecheckSurface({
+    files,
     bytes: totalFileBytes(inputDir, files),
-    variants: (await measureVariants(variants, options, onRejected)).map((measured) => ({
-      ...measured,
-      correctness: variants.find((variant) => variant.id === measured.id).correctness,
-    })),
-    rejectedVariants,
-    baselineId: "vue-tsc",
-    vizeSingleId: "vize-check-1t",
-    vizeMaxId: "vize-check-max",
-    // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
-    // native tsgo. Declaring the classes suppresses the cross-engine ratio.
-    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
+    options,
+    prepareDir: (prepareProject) =>
+      prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles, prepareProject }),
+    resolveWorkspaceBin,
+    measureVariants,
   });
 }
 
@@ -938,18 +894,12 @@ async function measureVite(inputDir, files, options) {
 }
 
 async function measureNuxt(inputDir, files, options) {
-  const nuxtBin = resolveWorkspaceBin("nuxt");
-  const vizeNuxtPath = join(rootDir, "npm", "framework/nuxt", "dist", "index.mjs");
-  if (!existsSync(vizeNuxtPath)) {
-    throw new Error(
-      `Nuxt module build not found: ${vizeNuxtPath}. Run vp run --workspace-root build:nuxt-stack first.`,
-    );
-  }
+  const install = prepareNuxtBenchInstall();
 
   let invocation = 0;
   const runNuxtBuild = (label, useVize) => {
-    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize);
-    return runCommand(nuxtBin, ["build"], {
+    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize, install);
+    return runCommand(install.nuxtBin, ["build"], {
       cwd: workDir,
       allowNonZeroExit: false,
       env: {
@@ -1038,11 +988,21 @@ export function renderMarkdown(data) {
   for (const surface of data.surfaces) {
     lines.push(`### ${surface.label}`);
     lines.push("");
-    lines.push("| Variant | Median | Throughput | Raw measured runs |");
-    lines.push("| --- | ---: | ---: | --- |");
+    // Process lanes also record CPU (user+sys of the process tree), peak RSS and a cold first run.
+    const processLanes = surface.variants.some((variant) => variant.cpuRuns);
+    lines.push(
+      `| Variant | Median | ${processLanes ? "CPU median | Peak RSS | Cold | " : ""}Throughput | Raw measured runs |`,
+    );
+    lines.push(`| --- | ---: | ${processLanes ? "---: | ---: | ---: | " : ""}---: | --- |`);
     for (const variant of surface.variants) {
+      const rss = Number.isFinite(variant.rssMedianKb)
+        ? `${Math.round(variant.rssMedianKb / 1024)} MB`
+        : "n/a";
+      const process = processLanes
+        ? `${formatMs(variant.cpuMedianMs)} | ${rss} | ${formatMs(variant.coldMs)} | `
+        : "";
       lines.push(
-        `| ${variant.label} | ${formatMs(variant.medianMs)} | ${variant.throughput} | ${formatRunList(variant.runs)} |`,
+        `| ${variant.label} | ${formatMs(variant.medianMs)} | ${process}${variant.throughput} | ${formatRunList(variant.runs)} |`,
       );
     }
     lines.push("");

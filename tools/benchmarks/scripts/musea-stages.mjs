@@ -63,15 +63,15 @@ function hookOf(plugin, name) {
  * parse fails the run rather than producing a fast, meaningless number.
  */
 function resolvedConfigFor(workDir, configPatch) {
+  const build = { ssr: false, rollupOptions: configPatch?.build?.rollupOptions ?? {} };
   return {
     root: workDir,
     command: "build",
     mode: "production",
     plugins: [],
-    build: {
-      ssr: false,
-      rollupOptions: configPatch?.build?.rollupOptions ?? {},
-    },
+    build,
+    // Vite always resolves the client environment; the plugin reads it.
+    environments: { client: { build, optimizeDeps: {} } },
   };
 }
 
@@ -103,13 +103,22 @@ async function configurePlugin(museaEntry, workDir) {
   }
   const { musea } = await import(pathToFileURL(museaEntry).href);
   const plugins = musea({ include: ["**/*.art.vue"], exclude: ["node_modules/**", "dist/**"] });
-  const [plugin] = plugins;
-  // If the factory ever returns more than the one plugin, measuring only the
-  // first would quietly under-report the package's cost. Fail instead.
-  if (plugins.length !== 1 || plugin?.name !== "vite-plugin-musea") {
+  const [plugin, ...postTransforms] = plugins;
+  if (plugin?.name !== "vite-plugin-musea") {
     throw new Error(
-      `musea-stages: expected one plugin named vite-plugin-musea, got [${plugins.map((entry) => entry?.name).join(", ")}]`,
+      `musea-stages: expected vite-plugin-musea first, got [${plugins.map((entry) => entry?.name).join(", ")}]`,
     );
+  }
+  // Companion plugins run in the transform stage after the main plugin, as
+  // Vite orders them. A companion hook this lane does not drive would be cost
+  // it silently leaves out, so any other hook fails the lane.
+  for (const companion of postTransforms) {
+    const hooks = Object.keys(companion).filter((key) => key !== "name");
+    if (hooks.length !== 1 || hooks[0] !== "transform") {
+      throw new Error(
+        `musea-stages: ${companion?.name} has hooks this lane does not measure: [${hooks.join(", ")}]`,
+      );
+    }
   }
   const userConfig = {
     root: workDir,
@@ -121,7 +130,11 @@ async function configurePlugin(museaEntry, workDir) {
   await withoutConsole(() =>
     hookOf(plugin, "configResolved")(resolvedConfigFor(workDir, configPatch)),
   );
-  return { plugin, rollupOptions: structuredClone(configPatch?.build?.rollupOptions ?? {}) };
+  return {
+    plugin,
+    postTransforms,
+    rollupOptions: structuredClone(configPatch?.build?.rollupOptions ?? {}),
+  };
 }
 
 async function runOptions(configured) {
@@ -136,7 +149,7 @@ async function startPlugin(museaEntry, workDir) {
   const configured = await configurePlugin(museaEntry, workDir);
   await runOptions(configured);
   await runBuildStart(configured.plugin);
-  return configured.plugin;
+  return configured;
 }
 
 function virtualIdsFor(plugin, files) {
@@ -188,12 +201,16 @@ function loadAll(plugin, ids) {
   });
 }
 
-async function transformAll(plugin, ids, modules) {
-  const transform = hookOf(plugin, "transform");
+async function transformAll({ plugin, postTransforms }, ids, modules) {
+  const transforms = [plugin, ...postTransforms].map((entry) => hookOf(entry, "transform"));
   const results = [];
   for (const [index, id] of ids.entries()) {
-    const result = await transform(modules[index], id);
-    results.push(result == null ? modules[index] : (result.code ?? modules[index]));
+    let code = modules[index];
+    for (const transform of transforms) {
+      const result = await transform(code, id);
+      code = result == null ? code : (result.code ?? code);
+    }
+    results.push(code);
   }
   return results;
 }
@@ -261,7 +278,7 @@ export function createMuseaStages({ artifacts, workDir, files }) {
       units: files.length,
       unitLabel: "art files",
       prepare: async () => {
-        const plugin = await startPlugin(museaEntry, workDir);
+        const { plugin } = await startPlugin(museaEntry, workDir);
         loadStage = { plugin, ids: virtualIdsFor(plugin, files) };
       },
       run: async () => loadAll(loadStage.plugin, loadStage.ids),
@@ -273,12 +290,12 @@ export function createMuseaStages({ artifacts, workDir, files }) {
       units: files.length,
       unitLabel: "art files",
       prepare: async () => {
-        const plugin = await startPlugin(museaEntry, workDir);
-        const ids = virtualIdsFor(plugin, files);
-        transformStage = { plugin, ids, modules: loadAll(plugin, ids) };
+        const configured = await startPlugin(museaEntry, workDir);
+        const ids = virtualIdsFor(configured.plugin, files);
+        transformStage = { configured, ids, modules: loadAll(configured.plugin, ids) };
       },
       run: async () =>
-        transformAll(transformStage.plugin, transformStage.ids, transformStage.modules),
+        transformAll(transformStage.configured, transformStage.ids, transformStage.modules),
       observe: async (modules) => digestOf(modules),
     },
     {
@@ -335,7 +352,7 @@ export function createMuseaStages({ artifacts, workDir, files }) {
         const plugin = configured.plugin;
         const ids = virtualIdsFor(plugin, files);
         const modules = loadAll(plugin, ids);
-        const transformed = await transformAll(plugin, ids, modules);
+        const transformed = await transformAll(configured, ids, modules);
         return {
           rollupOptions: configured.rollupOptions,
           optionsReturned,

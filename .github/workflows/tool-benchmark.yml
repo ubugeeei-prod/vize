@@ -35,6 +35,10 @@ on:
         description: Warmup runs per variant
         required: true
         default: "1"
+      tasks:
+        description: Comma-separated surfaces to measure (empty measures all; publication requires all)
+        required: false
+        default: ""
       commit_results:
         description: Commit the generated docs benchmark snapshot back to the branch
         required: true
@@ -62,6 +66,7 @@ env:
   VIZE_TOOL_BENCH_LARGE_BLOCKS: ${{ github.event_name == 'workflow_dispatch' && inputs.large_blocks || '300' }}
   VIZE_TOOL_BENCH_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '3' }}
   VIZE_TOOL_BENCH_WARMUPS: ${{ github.event_name == 'workflow_dispatch' && inputs.warmups || '1' }}
+  VIZE_TOOL_BENCH_TASKS: ${{ github.event_name == 'workflow_dispatch' && inputs.tasks || '' }}
 
 jobs:
   tool-benchmark-impact:
@@ -156,6 +161,12 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
 
+      - name: Install the pinned content-mapper hosts and Vue mapper
+        run: npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+
+      - name: Install the pinned Nuxt benchmark app
+        run: npm ci --prefix tools/benchmarks/nuxt-app --ignore-scripts --no-audit --no-fund
+
       - name: Build Vize CLI
         run: cargo build --release -p vize
 
@@ -189,6 +200,7 @@ jobs:
             --nuxt-file-count "$VIZE_TOOL_BENCH_NUXT_FILE_COUNT" \
             --musea-file-count "$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT" \
             --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
+            ${VIZE_TOOL_BENCH_TASKS:+--tasks "$VIZE_TOOL_BENCH_TASKS"} \
             --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
             --ref "$VIZE_BENCH_REF" \
@@ -247,7 +259,9 @@ jobs:
     name: tool-benchmark-commit
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
+    # The implicit success() is false whenever an ancestor job was skipped, and
+    # tool-benchmark-impact is skipped on every dispatch; gate on the measured job.
+    if: ${{ !cancelled() && needs.tool-benchmark.result == 'success' && github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
     needs:
       - tool-benchmark
     permissions:

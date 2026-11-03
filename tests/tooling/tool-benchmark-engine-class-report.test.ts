@@ -4,7 +4,20 @@ import { test } from "node:test";
 import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.ts";
 import { createSurface } from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
 import { renderMarkdown } from "../../tools/benchmarks/scripts/compare-tools.mjs";
-import { checkSurfaceInput } from "./support/benchmark/check-surface.ts";
+import {
+  CHECK_ENGINE_CLASSES,
+  SETTING_VARIANTS,
+  checkSurfaceInput,
+} from "./support/benchmark/check-surface.ts";
+
+const seconds = (ms: number) => `${(ms / 1000).toFixed(2)}s`;
+const settingsIn = (engineClass: string) =>
+  SETTING_VARIANTS.filter(({ id }) => CHECK_ENGINE_CLASSES[id] === engineClass);
+const rankedSettings = (label: string, engineClass: string, fastest: number) =>
+  settingsIn(engineClass).map(
+    ({ id, medianMs }) =>
+      `| ${label} | ${id} | ${seconds(medianMs)} | ${Number((medianMs / fastest).toFixed(3)).toFixed(2)}x |`,
+  );
 
 test("the type-check summary ranks engine classes beside the published ratio", () => {
   const surface = createSurface(checkSurfaceInput());
@@ -88,6 +101,12 @@ test("the type-check summary ranks engine classes beside the published ratio", (
     "| native TypeScript engine (tsgo) | Golar typecheck | 1.50s | 3.00x |",
     "| native TypeScript engine (tsgo) | Vize check (1T) | 2.00s | 4.00x |",
     "| native TypeScript engine (tsgo) | Golar (lint+check) | 2.50s | 5.00x |",
+    ...rankedSettings("native TypeScript engine (tsgo)", "tsgo-native", 500),
+    ...rankedSettings(
+      "native TypeScript port (tsrs)",
+      "tsrs-native",
+      settingsIn("tsrs-native")[0]!.medianMs,
+    ),
     "",
     "The Type check ratio compares Vize with vue-tsc, the checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so that ratio is the whole toolchain and not the Vue layer alone; the per-engine-class rows above isolate the Vue layer by ranking each class against its own fastest row. Diagnostic coverage can differ between tools; no ratio here is an accuracy-parity claim.",
     "",
@@ -104,6 +123,9 @@ test("the type-check summary ranks engine classes beside the published ratio", (
     "| vue-tsc | <code>3.2.0</code> | n/a |",
     `| verter-tsc | <code>verter-tsc 0.0.1-beta.3</code> | <code>${"f".repeat(64)}</code> |`,
     `| Golar | <code>golar 0.1.10</code> | <code>${"g".repeat(64)}</code> |`,
+    "| TypeScript (mapper host) | n/a | n/a |",
+    "| tsrs | n/a | n/a |",
+    "| @vue/content-mapper | n/a | n/a |",
     "| TypeScript (vue-tsc) | <code>5.9.0</code> | n/a |",
     "| Vue | <code>3.6.0</code> | n/a |",
     "| ESLint | <code>9.0.0</code> | n/a |",
@@ -135,6 +157,9 @@ test("the type-check summary ranks engine classes beside the published ratio", (
     "| Golar (lint+check) | 2.50s | 200.0 files/s | 2.50s |",
     "| Vize check (1T) | 2.00s | 250.0 files/s | 2.00s |",
     "| Vize check (max) | 500.0ms | 1.0k files/s | 500.0ms |",
+    ...SETTING_VARIANTS.map(
+      ({ id, medianMs }) => `| ${id} | ${seconds(medianMs)} | n/a | ${seconds(medianMs)} |`,
+    ),
     "",
     "</details>",
     "",
@@ -147,6 +172,7 @@ test("the fairness notes name the incumbent the published ratio is measured agai
     buildFairnessNotes(500).filter((note) => note.startsWith("Type-check rows")),
     [
       "Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
+      "Type-check rows also run TypeScript 7.1's content-mapper hosts, `tsc --runExternalCode` and `tsrs --runExternalCode` (default and `--fast`), each with Vize's mapper and with Vue's official `@vue/content-mapper`. `tsc` and `vize check` are also measured at `--checkers` 4, 8, 16 and the runner's vCPU count, so the full matrix shows what extra parallelism costs in CPU and memory; the README lists each tool at its fastest setting and names it. The Vize mapper is this commit's `vize` package and `@vizejs/native` build, installed into the project as files; the hosts and Vue's mapper are pinned by tools/benchmarks/typecheck-hosts/package-lock.json. `vize check` keeps its own pinned tsgo, so its engine version can differ from the mapper hosts' TypeScript; both versions are listed below.",
     ],
   );
 });
