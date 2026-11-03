@@ -2313,7 +2313,7 @@
       },
       "reference": {
         "path": "template-assignment-shorthand-11707/module.expected.txt",
-        "sha256": "5eec0b4647d09009d6f0b7f207d655dddcfc1559b71055670ec1a0645767c82d",
+        "sha256": "f4f34110121d868aef9225b97b124f6984b234caa6e44d3fd3956d8d812021b7",
         "source": "crates/vize_atelier_sfc/tests/template_assignment_patterns.rs:assignment_shorthand_has_a_pinned_ssr_module; DOM inline/separate, SSR and Vapor syntax regression in destructuring_assignment_targets_emit_javascript_in_every_lane"
       },
       "adapters": {
