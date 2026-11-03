@@ -412,11 +412,12 @@ fn foreign_diagnostic_cuts(
             if length == 0 || generated_at < start || end <= generated_at {
                 return None;
             }
+            // A span mapped outside the owner belongs to another node. Unless
+            // it only navigates, it is that node's check: never cover it.
             let overlaps_target = targets
                 .iter()
                 .any(|target| original < target.end && original + original_length > target.start);
-            (!overlaps_target && template_expression_cut(generated, generated_at))
-                .then_some(generated_at)
+            (!overlaps_target && !navigation_read(generated, generated_at)).then_some(generated_at)
         })
         .collect::<Vec<_>>();
     cuts.sort_unstable();
@@ -424,7 +425,9 @@ fn foreign_diagnostic_cuts(
     cuts
 }
 
-fn template_expression_cut(generated: &str, start: usize) -> bool {
+/// Navigation reads resolve a tag (`void Tag;`) or a key on an open
+/// `__vize_*nav*` record and report nothing.
+fn navigation_read(generated: &str, start: usize) -> bool {
     let line_start = generated
         .get(..start)
         .and_then(|before| before.rfind('\n'))
@@ -432,11 +435,18 @@ fn template_expression_cut(generated: &str, start: usize) -> bool {
     let Some(rest) = generated.get(line_start..) else {
         return false;
     };
-    let line = rest
-        .split_once('\n')
-        .map_or(rest, |(line, _)| line)
-        .trim_start();
-    line.starts_with("void (") && !line.contains("__vize_")
+    let line = rest.split_once('\n').map_or(rest, |(line, _)| line).trim();
+    let tag = |tag: &str| {
+        !tag.is_empty()
+            && tag
+                .bytes()
+                .all(|byte| matches!(byte, b'_' | b'$' | b'.') || byte.is_ascii_alphanumeric())
+    };
+    line.contains("_nav")
+        || line
+            .strip_prefix("void ")
+            .and_then(|rest| rest.strip_suffix(';'))
+            .is_some_and(tag)
 }
 
 fn preceded_by_named_prop_ignore(generated: &str, start: usize) -> bool {
