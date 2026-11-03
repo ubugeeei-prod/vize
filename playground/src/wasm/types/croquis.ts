@@ -287,12 +287,4 @@ export interface CroquisResult {
   diagnostics: CroquisDiagnostic[];
   /** VIR (Vize Intermediate Representation) text format */
   vir?: string;
-  /**
-   * The raw stage feed (stage ladder pages). Kept `unknown` on purpose:
-   * consumers negotiate its `schema_version` through `negotiateStageFeed`
-   * before reading any page.
-   */
-  stageFeed?: unknown;
-  /** The same ladder run's step timings: a raw P0-11 profile export. */
-  stageProfile?: unknown;
 }

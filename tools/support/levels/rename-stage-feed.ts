@@ -150,7 +150,8 @@ export function run(mode: string, cwd = root): string[] {
   }
   for (const [from, to] of moves) {
     const hasOld = existsSync(path.join(cwd, from));
-    if (hasOld === existsSync(path.join(cwd, to))) {
+    // A moved file may be deleted later (#11545); only the old path must stay gone.
+    if (mode === "moves" && hasOld === existsSync(path.join(cwd, to))) {
       throw new Error(`Expected exactly one of ${from} and ${to}`);
     }
     if (mode !== "moves" && hasOld) throw new Error(`Unmoved: ${from}`);

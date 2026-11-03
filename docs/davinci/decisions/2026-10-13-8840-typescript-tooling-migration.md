@@ -115,12 +115,15 @@ Node step. The pilot adds SHA-pinned `actions/setup-node` to
 `pr-benchmark-budget`, following the
 [dependency gate precedent](./2026-10-13-level-dependency-node-setup.md).
 
-Three entrypoints remain in batch 5:
+Two entrypoints remain in batch 5:
 
 - `comment-pr.mjs`, which runs from the trusted base in both comment jobs and
   also needs an old/new path transition;
-- `comment-test-report.mjs` in `check.yml`;
 - the `sfc-parse-replay-contract.mjs` import, which runs before `setup-vp`.
+
+The test report comment is typed as
+`tools/support/compat/github/comment-test-report.ts`. It runs in the required
+`test-report` job, after that job's pinned `actions/setup-node` step.
 
 ## Source-length budget
 

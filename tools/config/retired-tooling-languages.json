@@ -609,7 +609,6 @@
       "tools/benchmarks/scripts/check-gate-plants.mjs",
       "tools/benchmarks/scripts/check-gate.mjs",
       "tools/benchmarks/scripts/comment-pr.mjs",
-      "tools/benchmarks/scripts/comment-test-report.mjs",
       "tools/benchmarks/scripts/compare-tools-large-sfc.mjs",
       "tools/benchmarks/scripts/compare-tools-measure.mjs",
       "tools/benchmarks/scripts/compare-tools-metadata.mjs",

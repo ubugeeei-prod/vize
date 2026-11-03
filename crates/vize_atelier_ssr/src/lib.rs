@@ -11,6 +11,8 @@ pub mod errors;
 mod l4;
 pub mod options;
 #[cfg(test)]
+mod slot_params_typescript_tests;
+#[cfg(test)]
 mod source_map_tests;
 mod stage_options;
 pub mod steps;

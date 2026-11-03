@@ -55,10 +55,10 @@ const currentEmitProps =
   "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };";
 const historicalEmitProps =
   "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $HandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };";
-// #11454: emitted `$ExtraInputKeys` admits vue-tsc's props fallback.
+// #11454/#11591: `$ExtraInputKeys` admits vue-tsc's props fallback unless vize checks the program.
 const currentExtraKeys =
-  "Exclude<keyof Authored, keyof Allowed | (typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P } ? keyof P : never)>";
-const historicalExtraKeys = "Exclude<keyof Authored, keyof Allowed>";
+  "K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>>";
+const historicalExtraKeys = "K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>>";
 const successors = [
   [currentExtraKeys, historicalExtraKeys],
   [currentEmitProps, historicalEmitProps],

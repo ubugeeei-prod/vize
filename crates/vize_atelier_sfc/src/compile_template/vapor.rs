@@ -38,6 +38,7 @@ pub(crate) fn compile_template_block_vapor(
         bindings,
         component_name,
         experimental_self_component,
+        is_ts,
         ..
     } = ctx;
 
@@ -46,6 +47,7 @@ pub(crate) fn compile_template_block_vapor(
         prefix_identifiers: false,
         ssr: false,
         binding_metadata: bindings.cloned(),
+        is_ts,
         custom_renderer: options.custom_renderer,
         experimental_in_tag_comments: compiler_options
             .is_some_and(|opts| opts.experimental_in_tag_comments),

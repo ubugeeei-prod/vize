@@ -25,7 +25,7 @@ export interface Location {
 
 export interface Editor {
   readonly label: string;
-  readonly kind: "vize" | "volar" | "tsgo";
+  readonly kind: "vize" | "volar" | "tsgo" | "tsserver";
   pids(): number[];
   start(): Promise<void>;
   open(doc: OpenDocument): void;

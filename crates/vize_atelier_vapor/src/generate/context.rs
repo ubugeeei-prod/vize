@@ -72,6 +72,9 @@ pub(crate) struct GenerateContext<'a> {
     /// closure (JSX/TSX authoring), so free identifiers resolve to enclosing
     /// scope variables and must stay bare instead of being `_ctx.`-prefixed.
     pub(crate) jsx_closure: bool,
+    /// Authored expressions may contain TypeScript: each parsed expression is
+    /// type-erased first (`expression::resolve_with_oxc`).
+    pub(crate) is_ts: bool,
     /// Emit the scoped JSX DOM/block normalizer only when a child operation uses it.
     pub(crate) jsx_children: bool,
     /// Current SFC component name for experimental `<Self>` resolution.
@@ -116,6 +119,7 @@ impl<'a> GenerateContext<'a> {
             loop_row_ifs: std::vec::Vec::new(),
             binding_metadata,
             jsx_closure: false,
+            is_ts: false,
             jsx_children: false,
             component_name: None,
             experimental_self_component: false,

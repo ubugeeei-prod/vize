@@ -18,21 +18,18 @@ pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
     out
 }
 
-pub(super) fn slot_props_pattern_to_string(expr: &ExpressionNode, source_text: &str) -> String {
-    let source = match expr {
-        ExpressionNode::Simple(simple) => String::new(simple.loc.span.slice(source_text)),
-        ExpressionNode::Compound(compound) => String::new(compound.loc.span.slice(source_text)),
-    };
-    vize_atelier_core::steps::strip_typescript_from_expression(&source)
-}
-
 impl crate::codegen::SsrCodegenContext<'_> {
-    /// [`slot_props_pattern_to_string`] against this context's source text.
+    /// The authored `v-slot` props pattern; under `is_ts`, the parameter-list
+    /// erasure the expression lane uses.
     pub(in crate::codegen) fn slot_props_pattern(&self, dir: &DirectiveNode<'_>) -> Option<String> {
-        dir.exp
-            .as_ref()
-            .map(|exp| slot_props_pattern_to_string(exp, self.source))
-            .filter(|pattern| !pattern.trim().is_empty())
+        let source = dir.exp.as_ref()?.loc().span.slice(self.source);
+        let pattern = self
+            .options
+            .is_ts
+            .then(|| vize_atelier_core::steps::erase_typescript_params(source))
+            .flatten()
+            .unwrap_or_else(|| String::new(source));
+        (!pattern.trim().is_empty()).then_some(pattern)
     }
 }
 

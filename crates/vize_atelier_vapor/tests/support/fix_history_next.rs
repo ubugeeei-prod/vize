@@ -51,7 +51,10 @@ pub fn option_payload(prefix: bool) -> Value {
         experimental_in_tag_comments,
         experimental_patterned_template,
         davinci_retained_lane,
+        is_ts,
     } = options(prefix);
+    // Added after these captures; its default is how they compiled.
+    assert!(!is_ts);
     let VaporCompilerExperimentalOptions {
         component_name,
         self_component,

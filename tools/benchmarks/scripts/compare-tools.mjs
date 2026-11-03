@@ -37,8 +37,10 @@ import {
   prepareTypecheckDir,
   typecheckToolBins,
 } from "./compare-tools-typecheck.mjs";
+import { measureFormat as measureFormatSurface } from "./compare-tools-format.ts";
 import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
+import { reapedChildCpuMs } from "./typecheck-command.mjs";
 import { prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { linkColdNodeModules } from "./nuxt-build-cache.ts";
 
@@ -164,6 +166,7 @@ function shellEnv(cwd, extraEnv = {}) {
 }
 
 function runCommand(binary, commandArgs, options) {
+  const cpuBefore = reapedChildCpuMs();
   const start = performance.now();
   const result = spawnSync(binary, commandArgs, {
     cwd: options.cwd,
@@ -172,6 +175,7 @@ function runCommand(binary, commandArgs, options) {
     maxBuffer: 64 * 1024 * 1024,
   });
   const elapsedMs = performance.now() - start;
+  const cpuAfter = reapedChildCpuMs();
 
   if (result.error) {
     throw result.error;
@@ -182,7 +186,7 @@ function runCommand(binary, commandArgs, options) {
       `${basename(binary)} ${commandArgs.join(" ")} exited with ${result.status}\n${output}`,
     );
   }
-  return elapsedMs;
+  return { ms: elapsedMs, cpuMs: cpuBefore == null ? null : cpuAfter - cpuBefore };
 }
 
 function resolveWorkspaceBin(name) {
@@ -237,12 +241,6 @@ function copySelectedFiles(inputDir, outputDir, files, extraFiles = []) {
       copyFileSync(source, join(outputDir, file));
     }
   }
-}
-
-function prepareFormatDir(inputDir, files, label, invocation) {
-  const outputDir = join(workRoot, "fmt", `${label}-${String(invocation).padStart(4, "0")}`);
-  copySelectedFiles(inputDir, outputDir, files, ["vite.config.mjs"]);
-  return outputDir;
 }
 
 function prepareViteDir(inputDir, files, label, invocation) {
@@ -760,58 +758,15 @@ async function measureLint(inputDir, files, options) {
   });
 }
 
-async function measureFormat(inputDir, files, options) {
-  const prettierBin = resolveWorkspaceBin("prettier");
-  const vizeBin = resolve(options.vizeBin);
-  if (!existsSync(vizeBin)) {
-    throw new Error(`Vize CLI not found: ${vizeBin}`);
-  }
-
-  let invocation = 0;
-  const nextWorkDir = (label) => prepareFormatDir(inputDir, files, label, ++invocation);
-  const variants = [
-    {
-      id: "prettier-cli",
-      label: "Prettier CLI",
-      files: files.length,
-      measure: () =>
-        runCommand(prettierBin, ["--write", "*.vue", "--log-level", "error"], {
-          cwd: nextWorkDir("prettier"),
-          allowNonZeroExit: false,
-        }),
-    },
-    {
-      id: "vize-fmt-1t",
-      label: "Vize fmt (1T)",
-      files: files.length,
-      measure: () =>
-        runCommand(vizeBin, ["fmt", "--write", "*.vue"], {
-          cwd: nextWorkDir("vize-1t"),
-          allowNonZeroExit: false,
-          env: { RAYON_NUM_THREADS: "1" },
-        }),
-    },
-    {
-      id: "vize-fmt-max",
-      label: "Vize fmt (max)",
-      files: files.length,
-      measure: () =>
-        runCommand(vizeBin, ["fmt", "--write", "*.vue"], {
-          cwd: nextWorkDir("vize-max"),
-          allowNonZeroExit: false,
-        }),
-    },
-  ];
-
-  return createSurface({
-    id: "fmt",
-    label: "Format",
-    files: files.length,
-    bytes: totalFileBytes(inputDir, files),
-    variants: await measureVariants(variants, options),
-    baselineId: "prettier-cli",
-    vizeSingleId: "vize-fmt-1t",
-    vizeMaxId: "vize-fmt-max",
+function measureFormat(inputDir, files, options) {
+  return measureFormatSurface(inputDir, files, options, {
+    workRoot,
+    runCommand,
+    resolveWorkspaceBin,
+    copySelectedFiles,
+    totalFileBytes,
+    measureVariants,
+    createSurface,
   });
 }
 

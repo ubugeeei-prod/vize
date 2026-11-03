@@ -181,9 +181,6 @@ export function createTransformAnalyzeSfc(
       diagnostics: rawResult.diagnostics || [],
       // VIR (Vize Intermediate Representation) text from WASM
       vir: rawResult.vir || "",
-      // Stage-ladder feed, passed through un-interpreted.
-      stageFeed: rawResult.stageFeed,
-      stageProfile: rawResult.stageProfile,
     };
 
     return result;

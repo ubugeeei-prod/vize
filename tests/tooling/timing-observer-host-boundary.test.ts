@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import { hostCallers, hostImport } from "../../tools/support/levels/move-timing-observer-host.ts";
+import { hostImport } from "../../tools/support/levels/move-timing-observer-host.ts";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { timingHostCallers } from "./support/davinci-timing-host-imports.ts";
 
 // The timing observer host move is complete. This keeps the host import
 // boundary; the move replay that pinned live observer bytes is retired.
 const read = (file: string) => fs.readFileSync(new URL("../../" + file, import.meta.url), "utf8");
 
-test("only the two existing normal host imports are admitted", () => {
-  for (const file of hostCallers) {
+test("only the existing normal host import is admitted", () => {
+  for (const file of timingHostCallers) {
     assert.doesNotMatch(withoutHostRuntimeReferences(read(file), file), /\bvize_carton\b/u);
     for (const extra of [
       hostImport,
@@ -22,6 +23,10 @@ test("only the two existing normal host imports are admitted", () => {
         /\bvize_carton\b/u,
       );
   }
-  for (const file of ["davinci/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
+  for (const file of [
+    "davinci/vize_l0/src/lib.rs",
+    "crates/vize_curator/src/other.rs",
+    "crates/vize_curator/src/inspector/stages/profile.rs",
+  ])
     assert.match(withoutHostRuntimeReferences(hostImport, file), /\bvize_carton\b/u);
 });

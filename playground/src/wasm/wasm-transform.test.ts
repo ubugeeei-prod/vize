@@ -111,13 +111,4 @@ describe("createTransformAnalyzeSfc", () => {
     expect(result.croquis.reactivityOverlay.summary.sourceCount).toBe(1);
     expect(result.croquis.reactivityOverlay.losses[0]?.targetName).toBe("plain");
   });
-
-  it("passes the stage feed through un-interpreted for negotiation downstream", () => {
-    const stageFeed = { schema_version: 99, command: "analyze-sfc", pages: "opaque" };
-    const stageProfile = { schema_version: 99, spans: "opaque" };
-    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, stageFeed, stageProfile }));
-    expect(analyze("", {}).stageFeed).toBe(stageFeed);
-    expect(analyze("", {}).stageProfile).toBe(stageProfile);
-    expect(createTransformAnalyzeSfc(() => ({ croquis: {} }))("", {}).stageFeed).toBeUndefined();
-  });
 });

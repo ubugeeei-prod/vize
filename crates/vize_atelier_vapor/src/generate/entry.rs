@@ -103,9 +103,11 @@ pub(crate) fn generate_vapor_with_spans(
         experimental_options,
         spans,
         "vue",
+        false,
     )
 }
 
+/// `is_ts`: the IR's authored expressions may contain TypeScript.
 pub(crate) fn generate_vapor_with_spans_and_runtime(
     ir: &RootIRNode<'_>,
     binding_metadata: Option<&BindingMetadata>,
@@ -113,6 +115,7 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     experimental_options: VaporGenerateExperimentalOptions<'_>,
     spans: Option<&VaporSourceSpans>,
     runtime_module_name: &str,
+    is_ts: bool,
 ) -> VaporGenerateResult {
     let ir_only =
         (spans.is_none() && experimental_options.source_map).then(VaporSourceSpans::default);
@@ -125,6 +128,7 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     );
     ctx.templates = &ir.templates;
     ctx.jsx_closure = options.jsx_closure;
+    ctx.is_ts = is_ts;
     ctx.component_name = experimental_options.component_name;
     ctx.experimental_self_component = experimental_options.self_component;
     ctx.spans = spans;

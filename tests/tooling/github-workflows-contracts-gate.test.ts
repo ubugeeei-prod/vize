@@ -97,7 +97,10 @@ test("retiring the WIT lane preserves the required source report and existing Ch
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
   assert.equal(aggregate["continue-on-error"], undefined);
-  assert.equal(reportSteps.at(-1), aggregate);
+  assert.deepEqual(
+    reportSteps.slice(reportSteps.indexOf(aggregate) + 1).map((step) => step["continue-on-error"]),
+    [true, true],
+  );
   assert.deepEqual(check.permissions, { contents: "read" });
   assert.deepEqual(source.permissions, {
     contents: "read",

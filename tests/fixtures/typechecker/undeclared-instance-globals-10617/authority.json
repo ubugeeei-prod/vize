@@ -111,8 +111,8 @@
     },
     {
       "path": "CURRENT.md",
-      "bytes": 8027,
-      "sha256": "739dd968bc6bdefa4fa12985316f9d046460c0ce90311a147fda11ac07379189"
+      "bytes": 7757,
+      "sha256": "27faf241bef574628a6627af4668169b2ca4862a75e6bc19d5c0b608bce61f96"
     },
     {
       "path": "source-packets-current-4543862023a0.json",
@@ -145,15 +145,15 @@
       "sha256": "9ff051099ac343f927c4c215ece552c41a32ed257e2a601c343cdbe90048d08f"
     },
     {
-      "path": "source-packets-current-8844827414c2.json",
-      "bytes": 396515,
-      "sha256": "13b1246c84b4bd80fb2036e1fbf80e835a898c672097183082c1353e2ce1e495"
+      "path": "source-packets-current-949a579fb06d.json",
+      "bytes": 397167,
+      "sha256": "f5aab61c09b8d566e7397379dee6001ea8a0d68395edff0e97fad6a8ab27bb12"
     },
     {
-      "path": "source-packets-current-8844827414c2-provenance.json",
-      "bytes": 186169,
-      "sha256": "fc0e1785ccf9eeaaffd79b6b559178d1c9620356def462a724d6a5da4a0eb5b5"
+      "path": "source-packets-current-949a579fb06d-provenance.json",
+      "bytes": 1662967,
+      "sha256": "616f7818c74dba49035040ea53e0d05d78e8508131d9dffa37e39f736884cd8d"
     }
   ],
-  "currentSourcePackets": "source-packets-current-8844827414c2.json"
+  "currentSourcePackets": "source-packets-current-949a579fb06d.json"
 }

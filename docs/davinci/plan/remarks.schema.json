@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/remarks.schema.json",
   "title": "Davinci optimization remarks",
-  "description": "A pipeline run's optimization remarks (P3-13): every remark a pass emitted through the pass manager's observer channel, in canonical order (emitting pass's run position, then span start ascending, span end descending, then remark name). Produced by RemarkLog::to_json - `davinci-opt --remarks <path>` writes it. The text twin is the `[remarks]` folio page; both serialize the same RemarkLog. Grammar, kinds and the per-pass vocabulary: docs/davinci/plan/remarks-format.md. Consumers negotiate schema_version before reading remarks and refuse a mismatch loudly (devtool.md data layer).",
+  "description": "A pipeline run's optimization remarks (P3-13): every remark a pass emitted through the pass manager's observer channel, in canonical order (emitting pass's run position, then span start ascending, span end descending, then remark name). Produced by RemarkLog::to_json. The text twin is the `[remarks]` folio page; both serialize the same RemarkLog. Grammar, kinds and the per-pass vocabulary: docs/davinci/plan/remarks-format.md. Consumers negotiate schema_version before reading remarks and refuse a mismatch loudly (devtool.md data layer).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "command", "remarks"],
@@ -16,7 +16,7 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "Producing surface (for example `davinci-opt`)."
+      "description": "Producing surface."
     },
     "remarks": {
       "type": "array",

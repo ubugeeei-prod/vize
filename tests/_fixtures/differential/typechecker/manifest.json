@@ -12070,6 +12070,45 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-declaration-fallthrough-11591",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-declaration-fallthrough-11591/Foo.vue.txt",
+          "sha256": "e18a6a8ffa38986c625a24e5850dc30bdb80d1c1e503619dba98315eb83ce800",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-declaration-fallthrough-11591/Probe.vue.txt",
+          "sha256": "7e242871f1722f8364d2fb36bcc0fc4082ecfd0885418f7b84894832176d99da",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-declaration-fallthrough-11591/tsconfig.json.txt",
+          "sha256": "6d39de5662d14f91613ca88af39480946ca02215d4f856cc623c9b59279cf13e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_declaration_fallthrough_cli::mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; reported #11591 emit-only producer through the installed-package content mapper and a vue-tsc consumer of its declaration, with native and custom attribute variants plus genuine wrong-prop, missing-prop, wrong-listener, checkUnknownProps, generic-library and plain TSX controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/content-mapper-directive-tables",
       "state": "active",
       "targets": [
