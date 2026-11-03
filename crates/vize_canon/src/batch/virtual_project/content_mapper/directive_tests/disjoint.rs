@@ -90,11 +90,20 @@ fn every_entry_point_ignores_unmapped_scaffolding() {
     let context = ContentMapperProjectContext::default();
     for (source, fallback) in [
         (
-            "<script setup lang=\"ts\">\nconst n: number = 1\n</script>\n<template>\n  <p>{{ n }}</p>\n</template>\n",
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/typechecker/unmapped-ignores-entry-points-11472/App.vue.txt"
+            )),
             false,
         ),
         // The invalid-SFC fallback has no mappings at all.
-        ("<script setup lang=\"ts\">\nconst n = 1\n", true),
+        (
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/typechecker/unmapped-ignores-entry-points-11472/Unclosed.vue.txt"
+            )),
+            true,
+        ),
     ] {
         let complete = published(source);
         assert_eq!(complete.mappings.is_empty(), fallback, "{source}");

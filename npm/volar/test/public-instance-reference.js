@@ -32,10 +32,28 @@ export function historicalPublicInstanceReference(packets) {
   return out;
 }
 
+// #11472: the listener check in Events.vue starts in unmapped scaffolding, so
+// Canon's unmapped ignore now drops it, as the CLI mapper already did.
+function withoutUnmappedListenerCheck(packets) {
+  const packet = packets.find((row) => row.name === "feature-boundary-diagnostics");
+  assert.ok(packet, "missing archived packet: feature-boundary-diagnostics");
+  const [listener, ...rest] = packet.result;
+  assert.equal(listener.code, 2322);
+  assert.equal(listener.start, 105);
+  assert.equal(listener.length, 30);
+  assert.equal(listener.file.text.slice(105, 135), '="(value: number) => undefined');
+  assert.deepEqual(
+    rest.map((diagnostic) => [diagnostic.code, diagnostic.start]),
+    [[2322, 83]],
+  );
+  packet.result = rest;
+  return packets;
+}
+
 // This source-owned display successor has no new native-capture credit. The
 // original26/38 native packet archives retain their complete historical bytes.
 export function publicInstanceReference(packets) {
-  const out = historicalPublicInstanceReference(packets);
+  const out = withoutUnmappedListenerCheck(historicalPublicInstanceReference(packets));
   for (const [packetName, index, name] of changes) {
     const diagnostic = out.find((row) => row.name === packetName).result[index];
     assert.equal(
