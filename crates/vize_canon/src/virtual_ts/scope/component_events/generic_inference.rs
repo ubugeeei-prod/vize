@@ -307,9 +307,30 @@ pub(super) fn generate_inferred_emit_args(
             ctx.indent
         );
     }
+    // Mirror the factory's exact identity admission, including resolver
+    // precedence. A resolver's props record may itself own an unrelated __ctx.
+    let inferred_props = cstr!("{inferred_args}_props");
+    let native_identity = cstr!("{inferred_args}_native_identity");
+    let identity = cstr!("{inferred_args}_identity");
     append!(
         *ts,
-        "{}type {inferred_args} = typeof {emit_props} extends {{ {}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
+        "{}type {native_identity}<__T> = __T extends new (...args: any[]) => {{ $emit: any }} ? false : __T extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : __T extends (props: any) => infer __R ? Parameters<__T> extends [] ? false : 0 extends (1 & __R) ? false : [__R] extends [never] ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+        ctx.indent,
+    );
+    append!(
+        *ts,
+        "{}type {identity}<__T> = 0 extends (1 & __T) ? false : __T extends {{ __vizeResolveEmitProps?: infer __F }} ? __F extends (...args: any[]) => any ? false : {native_identity}<__T> : __T extends {{ __vizeResolveProps?: infer __F }} ? __F extends (...args: any[]) => any ? false : {native_identity}<__T> : {native_identity}<__T>;\n",
+        ctx.indent,
+    );
+    append!(
+        *ts,
+        "{}type {inferred_props} = {identity}<typeof {}> extends true ? 0 extends (1 & typeof {emit_props}) ? {{}} : [typeof {emit_props}] extends [never] ? {{}} : '__ctx' extends keyof typeof {emit_props} ? typeof {emit_props} extends {{ __ctx?: infer __C }} ? 0 extends (1 & __C) ? {{}} : [NonNullable<__C>] extends [never] ? {{}} : NonNullable<__C> extends {{ props: infer __P }} ? 0 extends (1 & __P) ? {{}} : [__P] extends [never] ? {{}} : __P : {{}} : {{}} : {{}} : typeof {emit_props};\n",
+        ctx.indent,
+        ctx.component_ref,
+    );
+    append!(
+        *ts,
+        "{}type {inferred_args} = {inferred_props} extends {{ {}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
         ctx.indent,
         ctx.prop_key,
     );

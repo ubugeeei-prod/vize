@@ -133,7 +133,19 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
         $EmitOwnedKeys<C>
       >
     : typeof __vizeConstructorEmitProps
-  : (component: C) => (props: any) => {};
+  : C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }
+    ? (component: C) => (props: any) => {}
+    : C extends (props: any) => infer R
+      ? Parameters<C> extends []
+        ? (component: C) => (props: any) => {}
+        : 0 extends 1 & R
+          ? (component: C) => (props: any) => {}
+          : [R] extends [never]
+            ? (component: C) => (props: any) => {}
+            : "__ctx" extends keyof R
+              ? (component: C) => C
+              : (component: C) => (props: any) => {}
+      : (component: C) => (props: any) => {};
 export type $EmitPropsFactory<C> =
   $IsAny<C> extends true
     ? (component: C) => (props: any) => {}
