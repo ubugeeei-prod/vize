@@ -98,7 +98,6 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    let current = &super::emit_props_input::preamble_before(current);
     previous(current, 44_025, PREAMBLE_BEFORE_SHA, PREAMBLE_AFTER_SHA)
 }
 
@@ -142,9 +141,7 @@ mod tests {
         let preamble = preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
         assert_eq!(
             preamble.replacen(BEFORE, AFTER, 1),
-            super::super::emit_props_input::preamble_before(
-                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
-            )
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
         );
         let public = source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
         assert_eq!(
