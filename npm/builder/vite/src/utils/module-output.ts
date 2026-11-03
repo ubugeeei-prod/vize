@@ -1,4 +1,5 @@
 import { parseSync } from "oxc-parser";
+import { findExportDefaultKeywordEnd } from "../../../shared/native-shape.ts";
 
 const OUTPUT_PARSE_ID = "vize-output.tsx";
 const SFC_MAIN_NAME = "_sfc_main";
@@ -162,16 +163,6 @@ function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
   };
 }
 
-function getExportDefaultKeywordEnd(code: string, defaultExport: AstNode): number | null {
-  const exportStart = getNodeStart(defaultExport);
-  if (exportStart == null) {
-    return null;
-  }
-
-  const match = /^export\s+default\b/.exec(code.slice(exportStart));
-  return match ? exportStart + match[0].length : null;
-}
-
 export function analyzeModuleOutput(code: string): ModuleOutputInfo {
   const fastOutput = analyzeFastDefaultOutput(code);
   if (fastOutput) {
@@ -182,9 +173,8 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
   const body = getProgramBody(program);
   const defaultExport = findDefaultExport(program);
   const defaultExportStart = getNodeStart(defaultExport);
-  const defaultExportKeywordEnd = defaultExport
-    ? getExportDefaultKeywordEnd(code, defaultExport)
-    : null;
+  const defaultExportKeywordEnd =
+    defaultExportStart != null ? findExportDefaultKeywordEnd(code, defaultExportStart) : null;
   const exportedNames = body
     .filter((statement) => statement.type === "ExportNamedDeclaration")
     .flatMap(getExportedNames);
