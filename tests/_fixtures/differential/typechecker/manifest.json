@@ -16717,5 +16717,173 @@
         "artifact": 12610814625
       }
     }
+  ],
+  "diagnosticPhaseCases": [
+    {
+      "id": "typechecker/protocol/native-diagnostic-phase-11626",
+      "state": "active",
+      "adapter": "native-diagnostic-phase-current-v1",
+      "targets": [
+        "native-diagnostic-phase"
+      ],
+      "sources": [
+        {
+          "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
+          "before": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20",
+          "after": "9fc5d6f0415203ab49dc1b04d988cffb0950dc784eaf2c0201eda7f974735764"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
+          "before": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98",
+          "after": "8fcd08f2ac4e7fa2313c4737760e5bb9f68507baa5ae0aef554d573266eb9ea8"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "before": "741f997d5bf8327d5894f500daf91e618fc5ce11318b34df35672e073cf3752d",
+          "after": "5581eb8c8f2e2086087996b663d40cf17dc93ea087232afbd41f5466912071b0"
+        }
+      ],
+      "inputs": [
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json",
+          "sha256": "d0d8a3045e768f817a1583ffe97a0f13c12cdee68086ec8229696b8f2af813d1"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/native7-lsp-receipt.json",
+          "sha256": "e26c7adfaf780e38ea7cdfafdcd48d60621f3573b4fbb9773ce1a0ef07642a7a"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt",
+          "sha256": "591a69672055d55d6bb0c20e8a4d39074accedd81d65bf797cdd051a01f9f67b"
+        }
+      ],
+      "tests": [
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics_api.rs",
+          "selector": "lsp_client::diagnostics_api::tests::api_phase_comes_from_the_owned_bucket_not_the_diagnostic_code",
+          "sha256": "bfd126b8fdef2590d0531f63ef1c3f16cd4f0eb11b2e49b6fb233c16a0ec37b7",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::framed_phase_comes_from_each_completed_compiler_kind_not_the_code",
+          "sha256": "5581eb8c8f2e2086087996b663d40cf17dc93ea087232afbd41f5466912071b0",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::an_unphased_transport_never_classifies_a_numeric_code",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/native7-lsp-receipt.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::warm_provenance_read_retains_phase_from_one_current_snapshot_and_exact_rpc_order",
+          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::an_unsupported_kind_cannot_publish_a_partial_warm_result_or_reprobe_the_api",
+          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::a_rejected_current_api_owner_never_probes_compiler_kinds",
+          "sha256": "af74ba545882180420d8a39bc6be217622f75daffa248819b0ef926b0cf9e8e8",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/tests.rs",
+          "selector": "corsa_bridge::bridge::initial_diagnostics::tests::refreshed_snapshot_rejects_both_old_success_and_old_error_without_effects",
+          "sha256": "6871d70e3796b03ad61020bb7b6e6571c713f0c3c2ef8f592b6a3acd599e3722",
+          "input": null
+        },
+        {
+          "source": "crates/vize_maestro/src/document/store/edits/tests.rs",
+          "selector": "document::store::edits::tests::carried_diagnostic_retirement_uses_the_observed_phase",
+          "sha256": "0de1c7447291a30bd607f0546a21ff13280549689a065efafec1ba238b3dffe9",
+          "input": null
+        },
+        {
+          "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
+          "selector": "an unrelated edit retains a semantic TS1xxx diagnostic in the prompt",
+          "sha256": "21710c019e30a3a9ca87d4131046746a6584f9f4fd5513950592fc61589a74ec",
+          "input": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::phase_metadata_never_changes_the_legacy_diagnostic_wire",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::uri_remapping_preserves_phase_and_the_legacy_wire_shape",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": null
+        }
+      ],
+      "legacyProtocol": {
+        "id": "typechecker/protocol/native-beta-diagnostic-dto-10731",
+        "registrationSha256": "a9523b2a7f5ee5eafe46945c30e0df419ac7244fc69355e29f2967fa11e61d4b",
+        "inputs": [
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.bin",
+            "sha256": "8471ad6dc1a7635dc0a1a5d6298fd8683b16480c26517a9a99c89ee1c8a0cbf8"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.json",
+            "sha256": "40211fca517530cc9421b8e19422c9f0a819e785561f16cb0a0c28f888449f65"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/actual-beta-wire.json",
+            "sha256": "896566d20578fc4a69384b945216b9490d0f04aeecd10753627798a5dada2bbd"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/source-pairs.json",
+            "sha256": "512e95f921e6ec064f281ec00d777cab0df66964d69087384cbb8615c22e21b1"
+          }
+        ],
+        "tests": [
+          {
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::actual_pinned_beta_dto_and_source_reproduce_the_complete_semantic_packet",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::metadata_null_unknown_fields_partial_ranges_and_wrong_source_never_become_clean",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9/tests.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::protocol::protocol9::tests::actual_beta_complete_text_is_independent_of_the_opaque_ast_and_source_id",
+            "sha256": "7d4f62460e61a609d2d0cf3ec2caad0c5b7bade9d71feb292ae9d5ca73599eda",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+            "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
+            "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55",
+            "input": null
+          }
+        ],
+        "workflow": {
+          "path": ".github/workflows/native-beta-diagnostic-dto.yml",
+          "sha256": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310"
+        }
+      },
+      "qualification": "Source registration only. Old ABI laws and actual A/B controls remain required; this row does not claim runtime or performance acceptance."
+    }
   ]
 }
