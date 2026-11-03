@@ -24,19 +24,23 @@ const NUXT_VUE_TYPE_GATED_TRANSFORMS = new Set([
   "nuxt:tree-shake-composables:transform",
   "nuxt:vue-async-context",
   "nuxt:prehydrate-transform",
+  "nuxt:navigate-to-early-return",
 ]);
 
 /** The id Vize gives a compiled SFC module (`Foo.vue?vue&vize`). */
 export const VIZE_VUE_MODULE_ID_RE = /\.vue\?vue&vize(?:-ssr)?(?:&|$)/;
 
-/** Give Nuxt's `isVue(type)` gate a script identity while the plugin runs. */
+/**
+ * Give Nuxt's `isVue(type)` gate a script identity while the plugin runs, in
+ * @vitejs/plugin-vue's shape: Nuxt 4.6's gates match `vue&type=script` with the
+ * two keys adjacent (`/[?&]vue&type=script\b/`).
+ */
 export function toNuxtVueTransformId(id: string): string {
   if (!isVizeGeneratedVueModuleId(id)) return id;
 
-  const hasQuery = id.includes("?");
-  const hasVueMarker = /[?&]vue(?:[=&]|$)/.test(id);
-  const suffix = `${hasQuery ? "&" : "?"}${hasVueMarker ? "" : "vue&"}type=script`;
-  return id + suffix;
+  const marker = /([?&])vue=?(?=&|$)/;
+  if (marker.test(id)) return id.replace(marker, "$1vue&type=script");
+  return `${id}${id.includes("?") ? "&" : "?"}vue&type=script`;
 }
 
 type FilterPattern = string | RegExp;
