@@ -356,8 +356,18 @@ jobs:
           key: compile-bench-verify
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+
+      # Snapshot fixtures are Pkl.
+      - name: Install Pkl
+        run: npm install --global @pkl-community/pkl@0.27.2
+
       - name: Clippy
         run: cargo clippy $COMPILE_BENCH_VERIFY -- -D warnings -D clippy::wildcard_imports
 
       - name: Test
-        run: cargo test $COMPILE_BENCH_VERIFY
+        run: cargo test --no-fail-fast $COMPILE_BENCH_VERIFY
