@@ -147,7 +147,8 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 &applied_toggle,
                 2,
                 false,
-                diagnostics,
+                diagnostics.clone(),
+                json!([]),
             );
             let app_diagnostics = safe_update::publish(
                 &mut fixture,
@@ -155,6 +156,7 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 &applied_app,
                 2,
                 false,
+                json!([]),
                 json!([]),
             );
             let actual_partial = json!([
@@ -170,6 +172,13 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
             ] {
                 std::fs::write(fixture.project.path().join(name), text).unwrap();
             }
+            // A declaration repair leaves the call's type error in place until
+            // the native answer; a call repair overlaps and drops it.
+            let carried = if kind == "CallOnly" {
+                json!([diagnostics[1].clone()])
+            } else {
+                json!([])
+            };
             let child_diagnostics = safe_update::publish(
                 &mut fixture,
                 "src/Toggle.vue",
@@ -177,6 +186,7 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 3,
                 false,
                 json!([]),
+                carried,
             );
             let app_diagnostics = safe_update::publish(
                 &mut fixture,
@@ -184,6 +194,7 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 &golden_app,
                 3,
                 false,
+                json!([]),
                 json!([]),
             );
             let actual = json!({"rename":rename,"partialFiles":actual_partial,"independentRepair":[
