@@ -35,7 +35,7 @@ pub(super) fn emit_event_references(
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in checkable_usages {
-        if is_closure_scoped(ctx.summary, usage) {
+        if is_closure_scoped(ctx.summary, usage) || ctx.dynamic_aliases.is_scoped(usage.start) {
             continue;
         }
         let component_ref = component_binding_reference(

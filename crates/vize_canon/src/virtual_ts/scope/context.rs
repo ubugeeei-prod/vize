@@ -13,6 +13,7 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapp
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
 
+use super::dynamic_component::DynamicComponentAliases;
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
 
@@ -141,6 +142,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) legacy_vue2: bool,
     pub(crate) hoist_shared_preamble: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
     /// Component usages whose props have already been materialized for event
     /// inference. Every listener on one usage reads the same resolved object.
     pub(crate) event_inference_usages: &'a RefCell<FxHashSet<usize>>,
@@ -216,6 +218,10 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) hoist_shared_preamble: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
+    /// Declarations of the usages whose component only their scope can see.
+    pub(super) scoped_usage_declarations:
+        &'a super::component_props::ScopedUsageDeclarations<'a, 'template>,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {
@@ -287,6 +293,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) relaxed_required_usage_starts: &'a FxHashSet<u32>,
     /// `@vue-generic` usages and the instantiated binding each resolves through.
     pub(super) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
 }
 
 impl<'a> ComponentPropsContext<'a, '_> {

@@ -23,6 +23,7 @@ mod diagnostic_normalization;
 mod directive_anchors;
 mod directive_values;
 mod dynamic_component_index_targets;
+mod dynamic_component_scoped_aliases;
 mod dynamic_component_union_listener;
 mod emit_camel_kebab_twins;
 mod empty_required_props;

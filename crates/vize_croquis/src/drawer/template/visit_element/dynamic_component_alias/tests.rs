@@ -58,8 +58,10 @@ fn script_owned_guards_and_member_keys_keep_their_component_event_owner() {
     }
 }
 
+// #11491: the alias is declared in the scope its `:is` is evaluated in, so
+// slot props, loop aliases, unknown globals and type-only names keep the owner.
 #[test]
-fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
+fn scope_bound_targets_keep_their_component_event_owner() {
     let script = "import Child from './Child.vue'; const map = { foo: Child }; const key = 'foo';";
     for template in [
         r#"<Panel><template #foo="{ open }"><component v-if="open" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
@@ -69,14 +71,21 @@ fn captured_local_unknown_and_type_only_roots_cannot_be_hoisted() {
         r#"<Panel><template #foo="{ key }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo="{ map }"><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo><component v-for="key in ['foo']" :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
+        r#"<component v-for="item in [{ comp: Child }]" :is="item.comp" @select="value => value.toFixed()"></component>"#,
+        r#"<Panel><template #foo="{ Comp }"><component :is="Comp" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo><component :is="map[unknownKey]" @select="value => value.toFixed()"></component></template></Panel>"#,
         r#"<Panel><template #foo><component :is="globalThis[key]" @select="value => value.toFixed()"></component></template></Panel>"#,
     ] {
-        assert!(!captured_target(script, template), "{template}");
+        assert!(captured_target(script, template), "{template}");
     }
-    assert!(!captured_target(
+    assert!(captured_target(
         "import type { map } from './map'; const key = 'foo';",
         r#"<Panel><template #foo><component :is="map[key]" @select="value => value.toFixed()"></component></template></Panel>"#
+    ));
+    // A script component reference stays named.
+    assert!(!captured_target(
+        script,
+        r#"<Panel><template #foo="{ open }"><component :is="Child" @select="value => value.toFixed()"></component></template></Panel>"#
     ));
 }
 
