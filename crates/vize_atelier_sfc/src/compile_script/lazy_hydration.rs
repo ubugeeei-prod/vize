@@ -9,7 +9,6 @@ use oxc_ast::ast::{
     Argument, ArrowFunctionExpression, BindingPattern, Declaration, Expression, Statement,
     VariableDeclaration,
 };
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 
@@ -84,7 +83,7 @@ pub(crate) fn transform_lazy_hydration_macros_with_runtime(
 
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, content, source_type);
     if ret.panicked {
         return None;
     }

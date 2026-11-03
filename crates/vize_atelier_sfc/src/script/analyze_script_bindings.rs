@@ -11,7 +11,6 @@ use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use vize_carton::{CompactString, ToCompactString};
@@ -26,7 +25,7 @@ pub fn analyze_script_bindings(source: &str) -> BindingMetadata {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
-    let ret = Parser::new(&allocator, source, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, source, source_type);
 
     if ret.panicked {
         return BindingMetadata::default();

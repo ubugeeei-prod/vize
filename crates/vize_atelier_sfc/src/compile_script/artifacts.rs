@@ -6,7 +6,6 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
@@ -34,7 +33,7 @@ pub(crate) fn extract_macro_artifacts(
 
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, content, source_type);
 
     if ret.panicked {
         return Vec::new();
@@ -121,7 +120,7 @@ pub(crate) fn erase_artifact_macro_statements_traced(
 
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, content, source_type);
 
     if ret.panicked {
         return None;

@@ -18,6 +18,8 @@ mod define_props_destructure;
 mod define_slots;
 mod import_usage_check;
 mod static_expression;
+#[cfg(test)]
+mod tsx_setup_tests;
 pub(crate) mod type_resolution;
 mod utils;
 
@@ -97,6 +99,28 @@ pub fn analyze_script_setup_fast(content: &str) -> ScriptParseResult {
     vize_croquis::script_parser::parse_script_setup(content)
 }
 
+/// Parse script text with `source_type`. A `lang="tsx"` or `"jsx"` block may
+/// carry JSX, which the TypeScript grammar rejects; text that only parses with
+/// JSX enabled is read that way, so stages without the authored `lang` agree
+/// with the TSX setup program.
+pub(crate) fn parse_script_text<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    source: &'a str,
+    source_type: oxc_span::SourceType,
+) -> oxc_parser::ParserReturn<'a> {
+    let parsed = oxc_parser::Parser::new(allocator, source, source_type).parse();
+    if (parsed.panicked || !parsed.diagnostics.is_empty())
+        && !source_type.is_jsx()
+        && source.contains('<')
+    {
+        let jsx = oxc_parser::Parser::new(allocator, source, source_type.with_jsx(true)).parse();
+        if !jsx.panicked && jsx.diagnostics.is_empty() {
+            return jsx;
+        }
+    }
+    parsed
+}
+
 /// Analyze script setup and return a croquis Croquis.
 ///
 /// This uses vize_croquis for the core analysis and converts
@@ -114,21 +138,29 @@ pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
 ///
 /// Returns `None` when bounded edit recovery cannot produce a complete
 /// program; callers fall back to the legacy per-stage parse paths.
+///
+/// A `lang="tsx"` or `"jsx"` setup script may contain JSX, which the
+/// TypeScript grammar rejects; such content is read with the TSX grammar.
 pub fn parse_script_setup_program<'a>(
     allocator: &'a oxc_allocator::Allocator,
     content: &'a str,
 ) -> Option<oxc_ast::ast::Program<'a>> {
-    use oxc_span::SourceType;
     use vize_carton::profile;
 
     // Same source type as the per-stage parsers this replaces
     // (croquis `parse_script_setup`, `ScriptCompileContext::parse_with_oxc`,
     // and `extract_script_sections` all parse as "script.ts").
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let source_type = oxc_span::SourceType::from_path("script.ts").unwrap_or_default();
     let ret = profile!(
         "atelier.sfc.script_setup.oxc_parse",
         vize_croquis::script_parser::parse_program_for_analysis(allocator, content, source_type)
     );
+    if (ret.panicked || !ret.diagnostics.is_empty()) && content.contains('<') {
+        let jsx = oxc_parser::Parser::new(allocator, content, source_type.with_jsx(true)).parse();
+        if !jsx.panicked && jsx.diagnostics.is_empty() {
+            return Some(jsx.program);
+        }
+    }
     (!ret.panicked).then_some(ret.program)
 }
 

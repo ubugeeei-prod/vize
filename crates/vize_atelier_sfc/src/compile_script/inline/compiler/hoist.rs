@@ -2,7 +2,6 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 
@@ -39,7 +38,7 @@ pub(super) fn separate_hoisted_consts(
     let allocator = Allocator::default();
     // TS parses a superset of the transformed setup in either lang.
     let source_type = SourceType::ts();
-    let parsed = Parser::new(&allocator, transformed_setup, source_type).parse();
+    let parsed = crate::script::parse_script_text(&allocator, transformed_setup, source_type);
     // `panicked` alone only covers an unrecoverable abort: oxc also returns a
     // recovered program with diagnostics attached, and the statements it
     // salvaged around a syntax error are not a trustworthy basis for moving

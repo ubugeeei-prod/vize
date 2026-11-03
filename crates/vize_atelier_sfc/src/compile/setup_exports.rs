@@ -22,12 +22,11 @@ pub(super) fn validate(
     let program = match program {
         Some(program) if content == setup.content.as_ref() => program,
         _ => {
-            fallback = oxc_parser::Parser::new(
+            fallback = crate::script::parse_script_text(
                 &allocator,
                 setup.content.as_ref(),
                 oxc_span::SourceType::ts(),
-            )
-            .parse();
+            );
             &fallback.program
         }
     };

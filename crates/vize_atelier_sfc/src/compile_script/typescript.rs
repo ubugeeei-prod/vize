@@ -7,7 +7,7 @@ use oxc_codegen::{Codegen, CodegenOptions};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
+use oxc_transformer::{JsxOptions, TransformOptions, Transformer, TypeScriptOptions};
 use vize_carton::{String, ToCompactString, profile};
 
 use crate::module_map::{Runs, replace_traced, reprint_points};
@@ -53,9 +53,16 @@ fn print_javascript(
 /// back unchanged.
 fn strip_typescript(code: &str, trace: bool) -> (String, Option<Runs>) {
     let allocator = Allocator::default();
-    let source_type = SourceType::ts();
-    let parser = Parser::new(&allocator, code, source_type);
-    let parse_result = profile!("atelier.script.ts.parse", parser.parse());
+    // `lang="tsx"` output keeps its JSX for the bundler's JSX plugin.
+    let parse_result = profile!(
+        "atelier.script.ts.parse",
+        crate::script::parse_script_text(&allocator, code, SourceType::ts())
+    );
+    let jsx = if parse_result.program.source_type.is_jsx() {
+        JsxOptions::disable()
+    } else {
+        JsxOptions::default()
+    };
 
     if !parse_result.diagnostics.is_empty() {
         // If parsing fails, return original code
@@ -89,6 +96,7 @@ fn strip_typescript(code: &str, trace: bool) -> (String, Option<Runs>) {
             only_remove_type_imports: false,
             ..Default::default()
         },
+        jsx,
         ..Default::default()
     };
     let ret = profile!(

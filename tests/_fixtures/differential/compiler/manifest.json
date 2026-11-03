@@ -2291,6 +2291,49 @@
       }
     },
     {
+      "id": "compiler/sfc/tsx-setup-jsx-bindings",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "tsx-setup-jsx-bindings",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "687db3b1e3551e842498814af6c56a82bbdb7994e39ac85013a61c837fbd26ac",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "tsx-setup-jsx-bindings/module.expected.txt",
+        "sha256": "a5e79934af41a6fd0a693edd766ad85ed89453d798b30a6a8a23d323f4afbaad",
+        "source": "crates/vize_atelier_sfc/src/script/tsx_setup_tests.rs:tsx_setup_keeps_macros_and_bindings_beside_jsx"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards the legacy TSX setup parse only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "tsx",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "tsx"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/uppercase-native-event-keys-10826",
       "state": "active",
       "targets": ["ssr"],
