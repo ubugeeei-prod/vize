@@ -89,7 +89,8 @@ impl crate::linter::config::Linter {
     }
 }
 
-use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
+use crate::linter::sfc_scripts::SfcScripts;
+use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
 use vize_l0::dialect::VueDialect;
 use vize_relief::RootNode;
@@ -110,16 +111,16 @@ pub(crate) struct TemplateRuleEnv<'a> {
 }
 
 pub(crate) fn analyze_descriptor_for_lint(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    scripts: &SfcScripts<'_>,
     template_ast: Option<&RootNode<'_>>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
-    analyze_descriptor_for_lint_with_reuse(descriptor, template_ast, unused, derived, None)
+    analyze_descriptor_for_lint_with_reuse(scripts, template_ast, unused, derived, None)
 }
 
 pub(crate) fn analyze_descriptor_for_lint_with_reuse(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    scripts: &SfcScripts<'_>,
     template_ast: Option<&RootNode<'_>>,
     unused: bool,
     derived: bool,
@@ -136,35 +137,36 @@ pub(crate) fn analyze_descriptor_for_lint_with_reuse(
     } else {
         options
     };
-    if reuse.is_some() {
-        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_template_reuse(
-            descriptor,
-            template_ast,
-            options,
-            reuse,
-        )
-    } else {
-        analyze_sfc_descriptor(descriptor, template_ast, options)
-    }
+    vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_template_reuse(
+        scripts,
+        template_ast,
+        options,
+        reuse,
+    )
 }
 
 /// Request positive authored reads within the existing single descriptor draw.
 pub(super) fn analyze_descriptor_for_component_reads(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    scripts: &SfcScripts<'_>,
     template_ast: Option<&RootNode<'_>>,
     unused: bool,
     derived: bool,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
-    if descriptor.script_setup.as_ref().is_none_or(|script| {
-        script.src.is_some()
-            || script
-                .lang
-                .as_deref()
-                .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
-    }) {
+    if scripts
+        .descriptor()
+        .script_setup
+        .as_ref()
+        .is_none_or(|script| {
+            script.src.is_some()
+                || script
+                    .lang
+                    .as_deref()
+                    .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
+    {
         return analyze_descriptor_for_lint_with_reuse(
-            descriptor,
+            scripts,
             template_ast,
             unused,
             derived,
@@ -184,7 +186,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     };
     let (mut analysis, packet) =
         vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_occurrences_and_template_reuse(
-            descriptor,
+            scripts,
             template_ast,
             options,
             reuse,

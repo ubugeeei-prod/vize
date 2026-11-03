@@ -65,7 +65,7 @@ impl Linter {
                 // just as they do after a fatal HTML template parse error.
                 let script_allocator = oxc_allocator::Allocator::default();
                 let scripts =
-                    crate::linter::sfc_scripts::SfcScripts::new(&script_allocator, &descriptor);
+                    crate::linter::sfc_scripts::lint_scripts(&script_allocator, &descriptor);
                 let mut result =
                     self.lint_sfc_level(source, filename, Some((&descriptor, &scripts)));
                 super::super::super::script_rules::append_builtin_script_diagnostics(

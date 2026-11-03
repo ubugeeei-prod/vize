@@ -57,16 +57,42 @@ impl Drawer {
         if !self.options.analyze_script {
             return self;
         }
+        crate::script_parser::with_parsed_script_setup(source, jsx, |parsed| {
+            self.draw_parsed_script_setup::<BUILTIN_TYPES>(source, generic, parsed);
+        });
+        self
+    }
+
+    /// Draw a script setup block from its authored parse, in the dialect the
+    /// caller lints or compiles it as. A failed parse is repaired as
+    /// [`crate::script_parser::parse_program_for_analysis`] repairs it.
+    pub fn draw_script_setup_parsed(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+        parsed: &oxc_parser::ParserReturn<'_>,
+    ) -> &mut Self {
+        self.draw_parsed_script_setup::<false>(source, generic, parsed)
+    }
+
+    fn draw_parsed_script_setup<const BUILTIN_TYPES: bool>(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+        parsed: &oxc_parser::ParserReturn<'_>,
+    ) -> &mut Self {
+        if !self.options.analyze_script {
+            return self;
+        }
 
         self.script_drawn = true;
 
-        // Use OXC-based parser for accurate AST drawing
         let result = profile!(
             "croquis.drawer.script_setup",
-            crate::script_parser::parse_script_setup_with_exports::<BUILTIN_TYPES>(
+            crate::script_parser::analyze_parsed_script_setup::<BUILTIN_TYPES>(
+                parsed,
                 source,
                 generic,
-                jsx,
                 self.track_unused_bindings,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
@@ -138,19 +164,36 @@ impl Drawer {
         if !self.options.analyze_script {
             return self;
         }
+        let path = if jsx { "script.tsx" } else { "script.ts" };
+        let source_type = oxc_span::SourceType::from_path(path).unwrap_or_default();
+        crate::script_parser::with_parsed_script_plain(source, source_type, |parsed| {
+            self.draw_script_plain_parsed(source, parsed);
+        });
+        self
+    }
+
+    /// Draw a non-script-setup block from its authored parse, in the dialect
+    /// the caller lints or compiles it as.
+    pub fn draw_script_plain_parsed(
+        &mut self,
+        source: &str,
+        parsed: &oxc_parser::ParserReturn<'_>,
+    ) -> &mut Self {
+        if !self.options.analyze_script {
+            return self;
+        }
 
         self.script_drawn = true;
 
-        // Use OXC-based parser for non-script-setup
         let result = profile!(
             "croquis.drawer.script_plain",
-            crate::script_parser::parse_script_plain_with_exports(
+            crate::script_parser::analyze_parsed_script_plain(
+                parsed,
                 source,
                 crate::script_parser::ScriptParserOptions {
                     options_api: self.options_api,
                     legacy_vue2: self.legacy_vue2,
                 },
-                jsx,
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
                 self.track_unused_bindings,

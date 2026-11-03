@@ -69,7 +69,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     let allocator =
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let script_allocator = oxc_allocator::Allocator::default();
-    let scripts = crate::linter::sfc_scripts::SfcScripts::new(&script_allocator, descriptor);
+    let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
         let parser = TemplateParser::new(&allocator, &template.content);
@@ -112,7 +112,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     };
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint_with_reuse(
-            descriptor,
+            &scripts,
             template_ast
                 .as_ref()
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),

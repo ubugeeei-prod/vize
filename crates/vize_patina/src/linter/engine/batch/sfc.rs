@@ -89,7 +89,7 @@ impl Linter {
             };
         // The type-aware plan re-reads scripts later, past this scope.
         let script_allocator = oxc_allocator::Allocator::default();
-        let scripts = crate::linter::sfc_scripts::SfcScripts::new(&script_allocator, &descriptor);
+        let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, &descriptor);
         let level = self.lint_sfc_level(source, filename, Some((&descriptor, &scripts)));
         let plan = native_type_aware::prepare_with_descriptor(
             self,

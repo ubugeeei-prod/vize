@@ -126,7 +126,7 @@ impl Linter {
                 .ok()
             );
             owned_scripts = owned_descriptor.as_ref().map(|descriptor| {
-                crate::linter::sfc_scripts::SfcScripts::new(&script_allocator, descriptor)
+                crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor)
             });
             owned_descriptor.as_ref().zip(
                 owned_scripts

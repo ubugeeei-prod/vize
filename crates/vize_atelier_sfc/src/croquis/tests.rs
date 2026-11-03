@@ -99,3 +99,34 @@ void props
         );
     }
 }
+
+#[test]
+fn compile_and_check_read_scripts_in_the_compile_language_only() {
+    use super::{
+        SfcScriptParses, analyze_sfc_descriptor, analyze_sfc_descriptor_with_template_reuse,
+    };
+    let tsx = |_: Option<&str>| oxc_span::SourceType::tsx();
+    let analyze = |source: &str| {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+        let options = SfcCroquisOptions::full();
+        let compiled = analyze_sfc_descriptor(&descriptor, None, options);
+        let allocator = oxc_allocator::Allocator::default();
+        let scripts = SfcScriptParses::new(&allocator, &descriptor, tsx);
+        let lenient = analyze_sfc_descriptor_with_template_reuse(&scripts, None, options, None);
+        (
+            compiled.bindings.contains("view"),
+            lenient.bindings.contains("view"),
+        )
+    };
+    // A lang-less script is JavaScript to Vue: its JSX does not parse there,
+    // while a caller that passes a JSX language reads the binding.
+    assert_eq!(
+        analyze("<script setup>\nconst view = <div />\n</script>\n"),
+        (false, true)
+    );
+    // Valid JavaScript reads identically in both languages.
+    assert_eq!(
+        analyze("<script setup>\nconst view = 1\n</script>\n"),
+        (true, true)
+    );
+}

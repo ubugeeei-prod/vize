@@ -6,7 +6,7 @@ use super::{
     SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, extract_template_fast, offset_result,
 };
 use crate::linter::config::{LintResult, Linter};
-use crate::linter::sfc_scripts::{ScriptParses, SfcScripts};
+use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
 use vize_armature::Parser;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
@@ -107,7 +107,7 @@ impl Linter {
                     })
                 {
                     super::rule_sets::analyze_descriptor_for_component_reads(
-                        descriptor,
+                        scripts,
                         Some(&root),
                         self.has_unused_bindings_demand(),
                         derived,
@@ -115,7 +115,7 @@ impl Linter {
                     )
                 } else {
                     super::rule_sets::analyze_descriptor_for_lint_with_reuse(
-                        descriptor,
+                        scripts,
                         Some(&root),
                         self.has_unused_bindings_demand(),
                         derived,
@@ -205,7 +205,7 @@ impl Linter {
             .and_then(|result| result.as_ref().ok());
         let script_allocator = oxc_allocator::Allocator::default();
         let scripts =
-            shared_descriptor.map(|descriptor| SfcScripts::new(&script_allocator, descriptor));
+            shared_descriptor.map(|descriptor| lint_scripts(&script_allocator, descriptor));
         let shared = shared_descriptor.zip(scripts.as_ref());
 
         let sfc_result = sfc_parse_result.unwrap_or_else(|| {

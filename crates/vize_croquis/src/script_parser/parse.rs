@@ -6,12 +6,12 @@ use oxc_span::SourceType;
 
 use super::globals::setup_global_scopes;
 use super::module_exports::ModuleExportCapture;
-pub(crate) use super::module_exports::{parse_script_plain, parse_script_setup_for_unused};
+pub(crate) use super::module_exports::parse_script_setup_for_unused;
 use super::process;
-use super::recovery::parse_program_for_analysis;
-use super::result::{ScriptParseResult, ScriptParserOptions};
+use super::recovery::{parse_original_for_analysis, recover_program_for_analysis};
+use super::result::ScriptParseResult;
 use crate::croquis::BindingMetadata;
-use crate::scope::{NonScriptSetupScopeData, ScriptSetupScopeData};
+use crate::scope::ScriptSetupScopeData;
 use vize_carton::{CompactString, profile};
 
 /// Parse script setup source code using OXC parser with an optional generic parameter.
@@ -65,19 +65,81 @@ fn parse_script_setup_with_exports_capture<const BUILTIN_TYPES: bool>(
     unused: bool,
     skip_diagnostics: bool,
     occurrences: bool,
-    mut exports: Option<&mut ModuleExportCapture>,
+    exports: Option<&mut ModuleExportCapture>,
     force_value_origins: bool,
 ) -> ScriptParseResult {
+    with_parsed_script_setup(source, jsx, |parsed| {
+        analyze_parsed_script_setup_capture::<BUILTIN_TYPES>(
+            parsed,
+            source,
+            generic,
+            unused,
+            skip_diagnostics,
+            occurrences,
+            exports,
+            force_value_origins,
+        )
+    })
+}
+
+/// Parse a script setup block once, in the dialect its analysis reads.
+pub(crate) fn with_parsed_script_setup<R>(
+    source: &str,
+    jsx: bool,
+    analyze: impl FnOnce(&oxc_parser::ParserReturn<'_>) -> R,
+) -> R {
     vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
     let source_type = SourceType::from_path(path).unwrap_or_default();
-
-    let ret = profile!(
+    let parsed = profile!(
         "croquis.script_setup.oxc_parse",
-        parse_program_for_analysis(&allocator, source, source_type)
+        parse_original_for_analysis(&allocator, source, source_type)
     );
-    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
+    analyze(&parsed)
+}
+
+/// Analyze `original`, the authored parse of `source`, repairing it first
+/// exactly as `parse_program_for_analysis` would.
+pub(crate) fn analyze_parsed_script_setup<const BUILTIN_TYPES: bool>(
+    original: &oxc_parser::ParserReturn<'_>,
+    source: &str,
+    generic: Option<&str>,
+    unused: bool,
+    skip_diagnostics: bool,
+    occurrences: bool,
+    exports: Option<&mut ModuleExportCapture>,
+) -> ScriptParseResult {
+    analyze_parsed_script_setup_capture::<BUILTIN_TYPES>(
+        original,
+        source,
+        generic,
+        unused,
+        skip_diagnostics,
+        occurrences,
+        exports,
+        false,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "internal demand carrier keeps the public parse surface unchanged"
+)]
+fn analyze_parsed_script_setup_capture<const BUILTIN_TYPES: bool>(
+    original: &oxc_parser::ParserReturn<'_>,
+    source: &str,
+    generic: Option<&str>,
+    unused: bool,
+    skip_diagnostics: bool,
+    occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
+    force_value_origins: bool,
+) -> ScriptParseResult {
+    let allocator = Allocator::default();
+    let recovered = recover_program_for_analysis(&allocator, source, original);
+    let ret = recovered.as_ref().unwrap_or(original);
+    ModuleExportCapture::observe_if(exports.as_deref_mut(), ret);
     if ret.panicked {
         return ScriptParseResult {
             source_program_count: 1,
@@ -301,175 +363,4 @@ fn analyze_script_setup_program_demand_capture<const BUILTIN_TYPES: bool>(
 /// providing accurate AST-based detection with proper span tracking.
 pub fn parse_script_setup(source: &str) -> ScriptParseResult {
     parse_script_setup_with_generic(source, None)
-}
-
-/// Parse non-script-setup (Options API) source code using OXC parser.
-pub fn parse_script(source: &str) -> ScriptParseResult {
-    parse_script_with_options(source, ScriptParserOptions::default())
-}
-
-/// Parse non-script-setup source code using OXC parser with explicit options.
-pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
-    parse_script_with_options_source_type(
-        source,
-        options,
-        SourceType::from_path("script.ts").unwrap_or_default(),
-        false,
-        false,
-        false,
-        None,
-    )
-}
-
-/// Parse non-script-setup source code using OXC parser with JSX enabled.
-pub fn parse_script_with_options_and_jsx(
-    source: &str,
-    options: ScriptParserOptions,
-    jsx: bool,
-) -> ScriptParseResult {
-    parse_script_plain(source, options, jsx, false, false)
-}
-
-pub(crate) fn parse_script_plain_with_exports(
-    source: &str,
-    options: ScriptParserOptions,
-    jsx: bool,
-    skip_diagnostics: bool,
-    occurrences: bool,
-    unused: bool,
-    exports: Option<&mut ModuleExportCapture>,
-) -> ScriptParseResult {
-    let path = if jsx { "script.tsx" } else { "script.ts" };
-    parse_script_with_options_source_type(
-        source,
-        options,
-        SourceType::from_path(path).unwrap_or_default(),
-        skip_diagnostics,
-        occurrences,
-        unused,
-        exports,
-    )
-}
-
-pub(crate) fn parse_script_with_options_source_type(
-    source: &str,
-    options: ScriptParserOptions,
-    source_type: SourceType,
-    skip_diagnostics: bool,
-    occurrences: bool,
-    unused: bool,
-    mut exports: Option<&mut ModuleExportCapture>,
-) -> ScriptParseResult {
-    vize_carton::micro_count!("croquis.plain.parse_requests.bytes", source.len());
-    let allocator = Allocator::default();
-
-    let ret = profile!(
-        "croquis.script_plain.oxc_parse",
-        parse_program_for_analysis(&allocator, source, source_type)
-    );
-    ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
-    if ret.panicked {
-        let mut result = ScriptParseResult {
-            source_program_count: 1,
-            ..Default::default()
-        };
-        if unused {
-            result
-                .setup_context
-                .set_module_read_facts(super::ModuleReadFacts::Unknown);
-        }
-        return result;
-    }
-
-    let source_len = source.len() as u32;
-
-    let mut result = ScriptParseResult {
-        source_program_count: 1,
-        occurrence_capture: occurrences.then(Default::default),
-        bindings: BindingMetadata::new(), // Not script setup
-        nuxt_static_render_script: Some(!ret.panicked && ret.diagnostics.is_empty()),
-        is_non_setup_script: true, // Mark as non-setup script for violation detection
-        skip_diagnostics,
-        ..Default::default()
-    };
-    result.scopes.reserve_scopes(16);
-
-    // Setup global scope hierarchy (universal → mod)
-    profile!(
-        "croquis.script_plain.global_scopes",
-        setup_global_scopes(&mut result.scopes, source_len)
-    );
-
-    // Enter non-script-setup scope (parent: ~mod)
-    result.scopes.enter_non_script_setup_scope(
-        NonScriptSetupScopeData {
-            is_ts: true,
-            has_define_component: false,
-        },
-        0,
-        source_len,
-    );
-
-    if !skip_diagnostics {
-        super::extract::prepare_race_analysis(&mut result, &ret.program);
-    }
-
-    process::collect_options_api_component_metadata(
-        &mut result,
-        &ret.program,
-        source,
-        options.options_api,
-        options.legacy_vue2,
-    );
-
-    if !skip_diagnostics {
-        result.value_binding_origins = Some(Box::new(
-            super::value_binding_origins::ValueBindingOrigins::new(
-                result.scopes.current_id(),
-                false,
-            ),
-        ));
-    }
-
-    // Process all statements
-    profile!("croquis.script_plain.walk_statements", {
-        for stmt in ret.program.body.iter() {
-            ModuleExportCapture::observe_statement_if(exports.as_deref_mut(), stmt, false);
-            process::process_statement(&mut result, stmt, source);
-        }
-    });
-
-    if let Some(origins) = result.value_binding_origins.as_mut() {
-        if !result.invalid_exports.is_empty() {
-            origins.refuse();
-        }
-        origins.finish(&result.scopes);
-    }
-
-    // Mirror the setup path so non-setup scripts also keep typeof-anchored
-    // types adjacent to their value bindings in any downstream emitters.
-    profile!(
-        "croquis.script_plain.resolve_type_hoisting",
-        result.resolve_type_export_hoisting()
-    );
-
-    if !ret.diagnostics.is_empty() {
-        if let Some(origins) = result.value_binding_origins.as_mut() {
-            origins.refuse();
-        }
-        result.setup_context.clear_ssr_facts();
-        result.occurrence_capture = None;
-    }
-    if unused {
-        result.setup_context.set_module_read_facts(profile!(
-            "croquis.script_plain.module_reads",
-            if ret.diagnostics.is_empty() {
-                super::module_reads::observe(&ret.program)
-            } else {
-                super::ModuleReadFacts::Unknown
-            }
-        ));
-    }
-    result.macros.invalidate_default_objects();
-    result
 }
