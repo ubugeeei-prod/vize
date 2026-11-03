@@ -27,9 +27,13 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   LINTFMT_BENCH_FILES: "3000"
-  LINTFMT_BENCH_VERSIONS: ${{ inputs.versions || '0.424.10 0.441.0 0.474.0 0.490.0 0.511.0 0.531.0 0.551.0 0.571.0 0.591.0 0.611.0 0.621.0 0.631.0 0.641.0 0.651.0 0.661.0 0.667.0' }}
+  LINTFMT_BENCH_VERSIONS: ${{ inputs.versions || '0.424.10 0.425.1 0.426.3 0.427.0 0.428.1 0.429.2 0.430.1 0.431.0 0.432.0 0.433.0 0.434.0 0.435.0 0.439.0 0.440.0 0.441.0 0.442.0 0.443.0 0.457.0 0.458.0 0.463.0 0.467.0 0.471.0 0.474.0 0.667.0' }}
+  # Versions whose 1T instructions are counted.
+  LINTFMT_BENCH_INSTRUCTION_VERSIONS: "0.424.10 0.441.0 0.474.0 0.667.0"
+  # Config setups for the history sweep (vite, json, none).
+  LINTFMT_BENCH_SETUPS: "json,none"
   # Source refs the profile job builds; empty means the merge base and HEAD.
-  LINTFMT_BENCH_PROFILE_REFS: ""
+  LINTFMT_BENCH_PROFILE_REFS: "v0.424.10 HEAD"
   LINTFMT_BENCH_BASE: ""
   LINTFMT_BENCH_VERIFY: "-p vize_patina -p vize_glyph"
 
@@ -83,19 +87,18 @@ jobs:
           for v in $LINTFMT_BENCH_VERSIONS; do args+=(--bin "$v=$RUNNER_TEMP/cli/$v/vize"); done
           node tools/benchmarks/scripts/lintfmt-history.ts \
             --corpus tools/benchmarks/scripts/__in__ --work target/lintfmt-bench \
-            "${args[@]}" --perf "$PERF_BIN" --runs 3 --warmups 1 --rounds 2 \
+            "${args[@]}" --setups "$LINTFMT_BENCH_SETUPS" --perf "$PERF_BIN" --runs 3 --warmups 1 --rounds 2 \
             --out lintfmt-history.md --json lintfmt-history.json
           cat lintfmt-history.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Count instructions at the ends
+      - name: Count instructions
         run: |
           set -euo pipefail
-          first="${LINTFMT_BENCH_VERSIONS%% *}"
-          last="${LINTFMT_BENCH_VERSIONS##* }"
+          args=()
+          for v in $LINTFMT_BENCH_INSTRUCTION_VERSIONS; do args+=(--bin "$v=$RUNNER_TEMP/cli/$v/vize"); done
           node tools/benchmarks/scripts/lintfmt-history.ts \
             --corpus tools/benchmarks/scripts/__in__ --work target/lintfmt-bench \
-            --bin "$first=$RUNNER_TEMP/cli/$first/vize" --bin "$last=$RUNNER_TEMP/cli/$last/vize" \
-            --valgrind --threads 1t --runs 1 --warmups 0 --rounds 1 \
+            "${args[@]}" --setups none --valgrind --threads 1t --runs 1 --warmups 0 --rounds 1 \
             --out lintfmt-instructions.md --json lintfmt-instructions.json
           cat lintfmt-instructions.md >> "$GITHUB_STEP_SUMMARY"
 
