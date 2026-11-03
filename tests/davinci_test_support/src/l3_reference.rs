@@ -6,6 +6,7 @@
 //! proves their laws.
 #![expect(
     clippy::disallowed_macros,
+    clippy::disallowed_methods,
     clippy::disallowed_types,
     reason = "the reference reports with std strings"
 )]

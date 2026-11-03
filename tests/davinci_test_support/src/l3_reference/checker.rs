@@ -155,8 +155,8 @@ pub fn violations(p: &Program) -> Vec<&'static str> {
         (edges_resolved(p), "L3V004"),
         (ordered(p), "L3V008"),
     ]
-    .into_iter()
+    .iter()
     .filter(|(holds, _)| !holds)
-    .map(|(_, code)| code)
+    .map(|(_, code)| *code)
     .collect()
 }
