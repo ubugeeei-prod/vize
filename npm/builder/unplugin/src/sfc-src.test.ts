@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { inlineSfcSrcBlocks, listSfcSrcBlocks } from "./src-blocks.ts";
+import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
 
 void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-blocks-")));
@@ -101,8 +101,7 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
       src,
     );
   }
-  assert.deepEqual(listSfcSrcBlocks(file, '<style src="a.css"></style><style src="./b.css" />'), [
+  assert.deepEqual(listSfcSrcRequests(file, '<style src="a.css"></style><style src="./b.css" />'), [
     "a.css",
-    "./b.css",
   ]);
 });

@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { classifyVitePluginRequest } from "@vizejs/native";
-import { resolveSfcSrcRequests } from "../../../shared/sfc-src.ts";
-import { listSfcSrcRequests } from "../compiler.ts";
+import { listSfcSrcRequests, resolveSfcSrcRequests } from "../../../shared/sfc-src.ts";
 import { fromPluginVisibleVirtualId } from "../virtual.ts";
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import type { VizePluginState } from "./state.ts";

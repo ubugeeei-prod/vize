@@ -9,6 +9,7 @@
     "./hot-reload": "./hot-reload.ts"
   },
   "dependencies": {
+    "@vizejs/native": "workspace:*",
     "diff": "8.0.4",
     "oxc-parser": "catalog:oxc",
     "oxc-transform": "catalog:oxc",

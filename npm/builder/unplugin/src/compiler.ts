@@ -10,8 +10,7 @@ import type {
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
 import { assertInlinedStyleSrc } from "./style-dependencies.ts";
-import { inlineSfcSrcBlocks } from "./src-blocks.ts";
-import type { SfcSrcResolutions } from "../../shared/sfc-src.ts";
+import { inlineSfcSrcBlocks, type SfcSrcResolutions } from "../../shared/sfc-src.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
