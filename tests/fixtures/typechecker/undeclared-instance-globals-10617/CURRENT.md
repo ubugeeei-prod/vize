@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-949a579fb06d.json`: all 80 whole transform results from [source Actions 41633971310](https://github.com/ubugeeei-prod/vize/actions/runs/41633971310/job/125911274132), actual merge producer `949a579fb06d3f11fb57e21e82278cb15b42bc88` (PR head `e4d41f75eb820d6953d2aed96d1805fcb194a686`). Its launch receipt binds the physical CLI it built.
+
+The original strict capture remains **unqualified**: 318 of 398 outcomes passed. Exactly the 80 whole packets differ from the previous population. Installed-package content-mapper modules now import the checker-only `vize/virtual-ts-checker` entry instead of `vize/virtual-ts` (#11591), so the import grows by 8 bytes. Every generated coordinate after it moves by exactly 8 in text map comments, mappings, directive rows and semantic links. Authored coordinates and every other field are unchanged. Per-packet import ends are retained in `source-packets-current-949a579fb06d-provenance.json`.
+
+`complete: true` means the complete observed expected population. It gives no strict native, host-matrix or installed-public acceptance. The existing comparator still checks complete result objects, ordered mappings and opaque fields; every semantic, ownership, geometry and mutation outcome remains required. Historical packets, original inputs and qualification flags are preserved. No packet normalizer or diagnostic filter is added.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-03836b7ea580.json`: all 80 whole transform results from [source Actions 41553510751](https://github.com/ubugeeei-prod/vize/actions/runs/41553510751/job/125647594443), actual merge producer `03836b7ea580fedea8c01952992967326fc6d01b` (PR head `b5cdac72d8f8105f7fae14c2635c6f00851e7152`). Its launch receipt binds the physical CLI it built.
 
 The original strict capture remains **unqualified**: 318 of 398 outcomes passed. Exactly the 80 whole packets differ from the previous population, and only in `diagnosticDirectives`: like Vue's content mapper, the transform reply now ignores every virtual range no span maps, minus every explicit directive interval. All 80 generated texts, mappings, diagnostics, semantic links and explicit directive rows are unchanged; each added row is `[0, 0, start, end, ignore, 0]` over an unmapped gap. Previous and current directive tables are retained per packet in `source-packets-current-03836b7ea580-provenance.json`; whole-packet gap details are retained by digest.

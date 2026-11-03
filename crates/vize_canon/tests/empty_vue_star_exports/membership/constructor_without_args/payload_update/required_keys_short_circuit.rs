@@ -91,6 +91,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::extra_keys_policy::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -105,7 +106,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 pub(super) fn preamble_before(current: &str) -> String {
     invert(
-        current,
+        &super::extra_keys_policy::preamble_before(current),
         PREAMBLE_EDITS,
         PREAMBLE_BEFORE_BYTES,
         PREAMBLE_BEFORE_SHA,
@@ -155,11 +156,14 @@ mod tests {
             let body = current(file.path);
             assert_eq!(
                 redo(source_before(file.path, body.clone()), file.edits),
-                body
+                super::super::extra_keys_policy::source_before(file.path, body)
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(redo(preamble_before(preamble), PREAMBLE_EDITS), preamble);
+        assert_eq!(
+            redo(preamble_before(preamble), PREAMBLE_EDITS),
+            super::super::extra_keys_policy::preamble_before(preamble)
+        );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });

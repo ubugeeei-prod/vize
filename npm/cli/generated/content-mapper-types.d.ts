@@ -201,7 +201,12 @@ type $ExtraInputKeys<
   Declared,
   Authored,
   Allowed,
-  K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,
+  K extends keyof Authored = Exclude<
+    Exclude<keyof Authored, keyof Allowed>,
+    typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never }
+      ? keyof P
+      : never
+  >,
 > = K extends unknown
   ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
     ? never

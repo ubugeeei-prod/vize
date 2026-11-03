@@ -462,6 +462,7 @@ export function makeSourceProject(
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.cts",
     "generated/content-mapper-types.d.ts",
+    "virtual-ts-checker.d.ts",
     "virtual-ts-globals.d.ts",
     "virtual-ts-patterns.d.ts",
     "virtual-ts-slots.d.ts",
