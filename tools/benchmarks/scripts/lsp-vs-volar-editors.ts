@@ -144,10 +144,17 @@ export function hoverText(hover: any): string {
   return parts.map((part) => (typeof part === "string" ? part : (part?.value ?? ""))).join("\n");
 }
 
+/**
+ * What each item completes to: `filterText`, else the label. Editors decorate
+ * labels (VS Code's TypeScript provider shows an optional member as
+ * `channel?` and inserts `channel`), so labels alone do not compare across
+ * servers; tsserver entry names already are the completed identifier.
+ */
 export function completionLabels(result: any): string[] {
   const items = Array.isArray(result) ? result : (result?.items ?? []);
-  return items.map((item: { label: string | { label: string } }) =>
-    typeof item.label === "string" ? item.label : item.label.label,
+  return items.map(
+    (item: { label: string | { label: string }; filterText?: string }) =>
+      item.filterText ?? (typeof item.label === "string" ? item.label : item.label.label),
   );
 }
 
