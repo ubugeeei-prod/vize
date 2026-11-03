@@ -1,23 +1,17 @@
 /**
- * `ModuleOutputInfo` now carries the two facts `insertBeforeSfcMainDefaultExport`
- * used to recover by parsing the module a second time (#3425): the end offset of
- * the `export default ...` statement, and whether its declaration is the
- * `_sfc_main` identifier. `generateOutput` already analyzed the module, so the
- * second parse was pure duplicated work -- 60 of 300 modules on the bench corpus
- * take a full oxc parse, and those same 60 were parsed twice.
+ * `analyzeModuleOutput` reports what the native `moduleShape` reports (#3425),
+ * offsets in UTF-8 bytes (#11583): the default export's span, the end of the
+ * `export default ...` statement, and whether its declaration is the
+ * `_sfc_main` identifier.
  *
  * These fixtures are the output shapes the Rust SFC emitter can produce, so the
- * two new fields are pinned against every branch a real build takes rather than
- * against a synthetic module.
+ * fields are pinned against every branch a real build takes rather than
+ * against a synthetic module. Non-ASCII modules: native-shape-binding.test.ts.
  */
 
 import assert from "node:assert/strict";
 
-import {
-  analyzeModuleOutput,
-  insertBeforeSfcMainDefaultExport,
-  type ModuleOutputInfo,
-} from "./utils/module-output.ts";
+import { analyzeModuleOutput, type ModuleOutputInfo } from "./utils/module-output.ts";
 
 /** Emitted module shapes, named for the emitter path that produces them. */
 const SHAPES: Record<string, string> = {
@@ -147,18 +141,6 @@ assert.deepEqual(
   NAMES.map((name) => [name, analyzeModuleOutput(SHAPES[name])]),
   NAMES.map((name) => [name, EXPECTED[name]]),
   "analyzeModuleOutput reports the default export's end offset and whether it is `_sfc_main`",
-);
-
-// The insertion is the documented rewrite: pinned for one `_sfc_main` shape and
-// one non-`_sfc_main` shape, which the function must leave alone.
-const INSERTION = '_sfc_main.__scopeId = "data-v-1a2b3c4d";';
-assert.equal(
-  insertBeforeSfcMainDefaultExport(SHAPES.scriptOnly, INSERTION, EXPECTED.scriptOnly),
-  "const _sfc_main = {\n  name: 'Foo'\n};\n_sfc_main.__scopeId = \"data-v-1a2b3c4d\";\nexport default _sfc_main",
-);
-assert.equal(
-  insertBeforeSfcMainDefaultExport(SHAPES.scriptSetupPlain, INSERTION, EXPECTED.scriptSetupPlain),
-  SHAPES.scriptSetupPlain,
 );
 
 console.log("✅ vite-plugin-vize module output info tests passed!");

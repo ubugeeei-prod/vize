@@ -1,9 +1,6 @@
+import { bindDefaultExport } from "../../../shared/native-shape.ts";
 import type { CompiledModule } from "../types.ts";
-import {
-  analyzeModuleOutput,
-  insertBeforeSfcMainDefaultExport,
-  rewriteDefaultExportToSfcMain,
-} from "./module-output.ts";
+import { analyzeModuleOutput } from "./module-output.ts";
 import { MappedModule, parseSourceMap } from "./source-map.ts";
 
 /** Assemble the compiler's component export before CSS and HMR decoration. */
@@ -27,7 +24,8 @@ export function assembleComponentOutput(
   let exportsSfcMain = true;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    emitted.edit(rewriteDefaultExportToSfcMain(emitted.code, moduleInfo));
+    // The shape describes `compiled.code`, so this is the first edit.
+    bindDefaultExport(emitted, moduleInfo, "_sfc_main");
     // Add __scopeId for scoped CSS support
     if (compiled.hasScoped && compiled.scopeId) {
       emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
@@ -35,19 +33,10 @@ export function assembleComponentOutput(
     emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
   } else if (hasExportDefault && hasSfcMainDefined) {
     exportsSfcMain = moduleInfo.defaultExportIsSfcMain;
-    // _sfc_main already defined, just add scopeId if needed
-    if (compiled.hasScoped && compiled.scopeId) {
-      // `emitted.code` is still `compiled.code` on this branch -- nothing above
-      // it rewrote the module -- so `moduleInfo`'s offsets describe it exactly and
-      // the insertion can reuse them instead of parsing the module again
-      // (#3425).
-      emitted.edit(
-        insertBeforeSfcMainDefaultExport(
-          emitted.code,
-          `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
-          moduleInfo,
-        ),
-      );
+    // Attach to the exported `_sfc_main` after the module, like the style
+    // bindings: it runs before any importer reads the export (#11583).
+    if (exportsSfcMain && compiled.hasScoped && compiled.scopeId) {
+      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
     }
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
     const scope =

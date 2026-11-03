@@ -16,6 +16,7 @@ import "./internal/config-bridge.test.ts";
 import "./options-api-events.test.ts";
 import "./output-ast.test.ts";
 import "./output-module-info.test.ts";
+import "./native-shape-binding.test.ts";
 import "./css-module-output.test.ts";
 import "./transform.test.ts";
 import "./utils-filter.test.ts";

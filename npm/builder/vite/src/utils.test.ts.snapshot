@@ -101,9 +101,9 @@ exports[`generateOutput snapshots production scoped CSS extraction 1`] = `
 import "/src/PlainCss.vue.__vize_style_0.css?vue=&type=style&index=0&scoped=data-v-plaincss&lang=css&vize-file=%2Fsrc%2FPlainCss%2Evue";
 
 const _sfc_main = { name: "PlainCss" }
-_sfc_main.__scopeId = "data-v-plaincss";
 export default _sfc_main
 
+_sfc_main.__scopeId = "data-v-plaincss";
 `;
 
 exports[`generateOutput snapshots standalone render template-only HMR 1`] = `

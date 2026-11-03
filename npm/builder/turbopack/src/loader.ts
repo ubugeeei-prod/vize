@@ -13,23 +13,12 @@ import {
   createGeneratedNameAllocator,
   hmrImportSnapshot,
 } from "@vizejs/builder-shared/module-output";
+import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "@vizejs/builder-shared/hot-reload";
 import type { LoaderContext, SfcLoaderOptions } from "./types.ts";
 
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex").slice(0, 16);
-}
-
-/** Native module shape offsets use UTF-8 bytes; source-map edits use UTF-16. */
-function utf16Offset(code: string, offset: number | undefined): number {
-  if (offset === undefined || offset < 0 || !Number.isInteger(offset)) {
-    throw new Error("[vize] Missing native component export geometry.");
-  }
-  const bytes = Buffer.from(code);
-  if (offset > bytes.length || (offset < bytes.length && (bytes[offset] & 0xc0) === 0x80)) {
-    throw new Error("[vize] Invalid native component export geometry.");
-  }
-  return bytes.subarray(0, offset).toString("utf8").length;
 }
 
 export function compileTurbopackSfc(filename: string, source: string, options: SfcLoaderOptions) {
@@ -99,13 +88,8 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   const unique = createGeneratedNameAllocator(compiled.code);
   const component = unique("__vize_component__");
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
-  if (shape.hasDefaultExport) {
-    emitted.replace(
-      utf16Offset(compiled.code, shape.defaultExportStart),
-      utf16Offset(compiled.code, shape.defaultExportKeywordEnd),
-      `const ${component} =`,
-    );
-  } else if (shape.hasNamedRenderExport || shape.hasNamedSsrRenderExport) {
+  if (shape.hasDefaultExport) bindDefaultExport(emitted, shape, component);
+  else if (shape.hasNamedRenderExport || shape.hasNamedSsrRenderExport) {
     const render = shape.hasNamedSsrRenderExport ? "ssrRender" : "render";
     emitted.append(`\nconst ${component} = { ${render} };`);
   } else {

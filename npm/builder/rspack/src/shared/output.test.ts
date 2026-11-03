@@ -1,12 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { encodedMap, originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
+import { compileSfc } from "@vizejs/native";
 import type { CompiledModule, TemplateAssetUrl } from "../types/index.ts";
 import { generateOutput, generateOutputWithMap } from "./output.ts";
+
+/** The native shape of `code`: a script-only SFC is emitted verbatim. */
+function nativeShape(code: string) {
+  const result = compileSfc(`<script>${code}</script>`, { filename: "/src/App.vue" });
+  assert.equal(result.code, code, "the fixture is emitted verbatim");
+  return result.moduleShape;
+}
 
 function compiledModule(code: string, overrides: Partial<CompiledModule> = {}): CompiledModule {
   return {
     code,
+    moduleShape: overrides.moduleShape ?? nativeShape(code),
     errors: [],
     warnings: [],
     scopeId: "test1234",
@@ -250,6 +259,14 @@ void test("template-only render output gains a default component export", () => 
     compiledModule(`export function render(_ctx, _cache) {\n  return null;\n}`, {
       hasScoped: true,
       templateAssetUrls: [],
+      // A template-only client compile's native shape.
+      moduleShape: {
+        hasDefaultExport: false,
+        hasSfcMainDefined: false,
+        hasNamedRenderExport: true,
+        hasNamedSsrRenderExport: false,
+        defaultExportIsSfcMain: false,
+      },
     }),
     { requestPath: "./App.vue" },
   );
