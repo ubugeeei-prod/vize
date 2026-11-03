@@ -8,7 +8,8 @@ import {
   transformScopedPreprocessorCss,
 } from "./compat.ts";
 import { oxContentModuleToSfc } from "./markdown.ts";
-import type { VizePluginState } from "./state.ts";
+import { getEnvironmentCache, type VizePluginState } from "./state.ts";
+import { generateOutput } from "../utils/index.ts";
 
 function createState(overrides: Partial<VizePluginState> = {}): VizePluginState {
   return {
@@ -117,6 +118,28 @@ const oxContentFixture = readFileSync(
     result.map,
     null,
     "SSR post-transforms should not allocate discarded OXC sourcemaps",
+  );
+}
+
+// #11210: the emitter returns JavaScript, so its output is not re-printed
+// through Vite's TypeScript strip.
+for (const ssr of [false, true]) {
+  const state = createState();
+  const plugin = createPostTransformPlugin(state);
+  const result = await plugin.transform?.(virtualSfcSource, virtualSfcId, { ssr });
+  assert.ok(result && typeof result === "object");
+  const compiled = getEnvironmentCache(state, ssr).get(virtualSfcId);
+  assert.ok(compiled, "the post-transform compiles into the environment cache");
+  assert.equal(
+    result.code,
+    generateOutput(compiled, {
+      isProduction: false,
+      isDev: false,
+      ssr,
+      extractCss: false,
+      filePath: virtualSfcId,
+    }),
+    "generated virtual SFC output must reach Vite as emitted",
   );
 }
 

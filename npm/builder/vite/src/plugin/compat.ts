@@ -15,7 +15,6 @@ import { generateOutput } from "../utils/index.ts";
 import { DEFAULT_EXCLUDE_PATTERN, DEFAULT_INCLUDE_PATTERN } from "../utils/filter.ts";
 import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
-import { transformVirtualTypeScript } from "./vite-transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
 import { prepareSfcSrcRequests, viteHostResolve } from "./src-requests.ts";
@@ -202,17 +201,14 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
           );
           syncCollectedCssForFile({ ...state, extractCss }, id, compiled);
 
-          const output = generateOutput(compiled, {
+          let transformed = generateOutput(compiled, {
             isProduction: state.isProduction,
             isDev: state.server !== null,
             ssr: isSsr,
             extractCss,
             filePath: id,
           });
-
-          const result = await transformVirtualTypeScript(output, id);
           const defines = transformOptions?.ssr ? state.serverViteDefine : state.clientViteDefine;
-          let transformed = result.code;
           if (Object.keys(defines).length > 0) {
             transformed = applyDefineReplacements(transformed, defines);
           }

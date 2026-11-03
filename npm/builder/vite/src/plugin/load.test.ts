@@ -205,7 +205,7 @@ await assert.rejects(
     transformHook(
       { ...virtualDefineState, root: failingVirtualTransformRoot },
       `export default {`,
-      toVirtualId("/src/BrokenVirtual.vue"),
+      `\0/src/BrokenVirtual.vue?macro=true`,
       { ssr: false },
     ),
   /Virtual module transform failed for \/src\/BrokenVirtual\.vue/,
