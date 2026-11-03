@@ -1,4 +1,4 @@
-// The Spolvero feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
+// The stage feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
 // L3 Impeto), their pages, a few counts read off the canonical pages, and the
 // pass timeline in feed order. Pure data shaping over the negotiated feed -
 // every fact shown comes from a page the compiler printed.

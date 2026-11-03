@@ -1,4 +1,4 @@
-//! The croquis alias byte-identity pin and the `analyzeSfc` Spolvero feed
+//! The croquis alias byte-identity pin and the `analyzeSfc` stage feed
 //! (P2-18; the full L1 -> L2 -> L3 stage ladder since C-2/C-5).
 //!
 //! The alias contract (Davinci P0-10): the wasm `analyzeSfc` result carries
@@ -120,7 +120,7 @@ fn the_croquis_alias_keys_stay_byte_identical() {
     assert_eq!(result["vir"], again["vir"]);
     assert_eq!(result["vir"], result["folio"]["croquis"]);
     // The alias object itself gained no siblings: the stage pages live in
-    // the top-level `spolvero` feed, not inside the alias.
+    // the top-level `stageFeed` member, not inside the alias.
     let folio = result["folio"].as_object().expect("folio is an object");
     assert_eq!(folio.len(), 1);
     assert_eq!(result["folio"]["croquis"], result["vir"]);
@@ -139,7 +139,7 @@ fn the_analyze_result_carries_the_full_stage_ladder_feed() {
     let start = TEMPLATE.find("<div>").expect("div opens");
     let end = TEMPLATE.find("</div>").expect("div closes") + "</div>".len();
     assert_eq!(
-        result["spolvero"],
+        result["stageFeed"],
         serde_json::json!({
             "schema_version": 1,
             "command": "analyze-sfc",
@@ -193,7 +193,7 @@ fn a_template_less_sfc_feeds_zero_pages() {
         .expect("analysis succeeds");
 
     assert_eq!(
-        result["spolvero"],
+        result["stageFeed"],
         serde_json::json!({
             "schema_version": 1,
             "command": "analyze-sfc",

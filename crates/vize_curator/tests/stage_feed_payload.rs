@@ -1,6 +1,6 @@
-//! The inspector payload's Spolvero feed (P2-18): the `spolvero` member of
+//! The inspector payload's stage feed (P2-18): the `stageFeed` member of
 //! every `build_payload` result validates against the committed schema
-//! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
+//! (`docs/davinci/plan/stage-ladder-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content is pinned exactly.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
@@ -21,7 +21,7 @@ fn load_schema() -> serde_json::Value {
         .join("..")
         .join("docs/davinci")
         .join("plan")
-        .join("spolvero-feed.schema.json");
+        .join("stage-ladder-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
@@ -71,13 +71,13 @@ fn the_payload_feed_validates_and_carries_the_l1_page_exactly() {
             "name": name, "span": { "start": start, "end": end }, "args": args,
         })
     };
-    let spolvero = &json["spolvero"];
+    let stage_feed = &json["stageFeed"];
     assert_eq!(
-        schema_check::validate(&load_schema(), spolvero, "$"),
+        schema_check::validate(&load_schema(), stage_feed, "$"),
         Ok(())
     );
     assert_eq!(
-        *spolvero,
+        *stage_feed,
         serde_json::json!({
             "schema_version": 1,
             "command": "inspector",
@@ -109,13 +109,13 @@ fn files_without_a_renderable_template_contribute_no_page() {
         },
     ]);
 
-    let spolvero = &json["spolvero"];
+    let stage_feed = &json["stageFeed"];
     assert_eq!(
-        schema_check::validate(&load_schema(), spolvero, "$"),
+        schema_check::validate(&load_schema(), stage_feed, "$"),
         Ok(())
     );
     assert_eq!(
-        *spolvero,
+        *stage_feed,
         serde_json::json!({
             "schema_version": 1,
             "command": "inspector",
@@ -136,13 +136,13 @@ fn a_malformed_template_still_feeds_its_bytes_faithfully() {
         source: cstr!("<template>{template}</template>\n"),
     }]);
 
-    let spolvero = &json["spolvero"];
+    let stage_feed = &json["stageFeed"];
     assert_eq!(
-        schema_check::validate(&load_schema(), spolvero, "$"),
+        schema_check::validate(&load_schema(), stage_feed, "$"),
         Ok(())
     );
     assert_eq!(
-        spolvero["pages"],
+        stage_feed["pages"],
         serde_json::json!([
             { "path": "src/Broken.vue", "stage": "s1", "pass": "parse", "text": template },
         ])

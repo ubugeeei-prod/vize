@@ -42,9 +42,9 @@ mod source_offsets;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
-mod tests_spolvero;
+mod tests_stage_feed;
 #[cfg(test)]
-mod tests_spolvero_profile;
+mod tests_stage_profile;
 
 // Re-export type checking bindings from separate module
 mod wasm_typecheck;

@@ -1,9 +1,9 @@
-//! The `analyzeSfc` `spolveroProfile` member (C-3): the ladder run behind the
-//! `spolvero` feed, timed by the host clock the entry passes (every step,
+//! The `analyzeSfc` `stageProfile` member (C-3): the ladder run behind the
+//! `stageFeed` member, timed by the host clock the entry passes (every step,
 //! and every walk of the transform plan), exported as a P0-11 profile
 //! document. A deterministic clock pins it exactly; schema
 //! validation of the same exporter output is `vize_curator`'s
-//! `spolvero_timing` suite.
+//! `stage_ladder_timing` suite.
 
 use std::cell::Cell;
 
@@ -55,10 +55,9 @@ fn the_analyze_result_times_every_ladder_step_by_the_host_clock() {
     // Reads 0..10 bracket parse, L2 lower, the fused analyses
     // (`hoist-static`, then `template-complexity`) and L3 lower. The walk
     // opens on read 4 and closes on read 7.
-    let step =
-        |stage, pass, nanos, bucket| span("davinci.spolvero.step", stage, pass, nanos, bucket);
+    let step = |stage, pass, nanos, bucket| span("stages.step", stage, pass, nanos, bucket);
     assert_eq!(
-        result["spolveroProfile"],
+        result["stageProfile"],
         profile(vec![
             span("davinci.pass.walk", "s2", "hoist-static", 33_000, 64_000),
             step("s3", "lower", 17_000, 32_000),
@@ -81,5 +80,5 @@ fn a_template_less_sfc_profiles_no_step() {
         &clock,
     )
     .expect("analysis");
-    assert_eq!(result["spolveroProfile"], profile(vec![]));
+    assert_eq!(result["stageProfile"], profile(vec![]));
 }

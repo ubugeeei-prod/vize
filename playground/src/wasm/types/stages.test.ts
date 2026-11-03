@@ -1,43 +1,43 @@
 import { describe, expect, it } from "vite-plus/test";
-import { SPOLVERO_FEED_SCHEMA_VERSION, layerId, negotiateSpolveroFeed } from "./stages";
+import { STAGE_FEED_SCHEMA_VERSION, layerId, negotiateStageFeed } from "./stages";
 
 const page = { path: "Component.vue", stage: "s1", pass: "parse", text: "<p />" };
 
-describe("negotiateSpolveroFeed", () => {
+describe("negotiateStageFeed", () => {
   it("accepts the committed schema version with well-formed pages", () => {
     const raw = { schema_version: 1, command: "analyze-sfc", pages: [page] };
-    expect(negotiateSpolveroFeed(raw)).toEqual({ ok: true, feed: raw });
-    expect(SPOLVERO_FEED_SCHEMA_VERSION).toBe(1);
+    expect(negotiateStageFeed(raw)).toEqual({ ok: true, feed: raw });
+    expect(STAGE_FEED_SCHEMA_VERSION).toBe(1);
   });
 
   it("refuses another schema version before reading pages", () => {
     // Pages of an unknown shape must not be inspected once the version fails.
     const raw = { schema_version: 2, command: "analyze-sfc", pages: "not read" };
-    expect(negotiateSpolveroFeed(raw)).toEqual({
+    expect(negotiateStageFeed(raw)).toEqual({
       ok: false,
-      error: "Spolvero feed schema_version 2 is not supported; this view renders version 1.",
+      error: "Stage feed schema_version 2 is not supported; this view renders version 1.",
     });
   });
 
   it("refuses a missing feed, a missing version and malformed pages", () => {
-    expect(negotiateSpolveroFeed(undefined)).toEqual({
+    expect(negotiateStageFeed(undefined)).toEqual({
       ok: false,
-      error: "The compiler result carries no Spolvero feed.",
+      error: "The compiler result carries no stage feed.",
     });
-    expect(negotiateSpolveroFeed({ command: "x", pages: [] })).toEqual({
+    expect(negotiateStageFeed({ command: "x", pages: [] })).toEqual({
       ok: false,
-      error: "The Spolvero feed has no numeric schema_version.",
+      error: "The stage feed has no numeric schema_version.",
     });
     expect(
-      negotiateSpolveroFeed({
+      negotiateStageFeed({
         schema_version: 1,
         command: "analyze-sfc",
         pages: [page, { ...page, text: 3 }],
       }),
-    ).toEqual({ ok: false, error: "Spolvero feed page 1 does not match the schema." });
-    expect(negotiateSpolveroFeed({ schema_version: 1, pages: [] })).toEqual({
+    ).toEqual({ ok: false, error: "Stage feed page 1 does not match the schema." });
+    expect(negotiateStageFeed({ schema_version: 1, pages: [] })).toEqual({
       ok: false,
-      error: "The Spolvero feed is missing its command or pages.",
+      error: "The stage feed is missing its command or pages.",
     });
   });
 
@@ -52,13 +52,13 @@ describe("negotiateSpolveroFeed", () => {
       args: [{ key: "tag", value: "h1" }],
     };
     const raw = { schema_version: 1, command: "analyze-sfc", pages: [page], remarks: [remark] };
-    expect(negotiateSpolveroFeed(raw)).toEqual({ ok: true, feed: raw });
-    expect(
-      negotiateSpolveroFeed({ ...raw, remarks: [remark, { ...remark, kind: "maybe" }] }),
-    ).toEqual({ ok: false, error: "Spolvero feed remark 1 does not match the schema." });
-    expect(negotiateSpolveroFeed({ ...raw, remarks: "none" })).toEqual({
+    expect(negotiateStageFeed(raw)).toEqual({ ok: true, feed: raw });
+    expect(negotiateStageFeed({ ...raw, remarks: [remark, { ...remark, kind: "maybe" }] })).toEqual(
+      { ok: false, error: "Stage feed remark 1 does not match the schema." },
+    );
+    expect(negotiateStageFeed({ ...raw, remarks: "none" })).toEqual({
       ok: false,
-      error: "Spolvero feed remark 0 does not match the schema.",
+      error: "Stage feed remark 0 does not match the schema.",
     });
   });
 });
@@ -71,7 +71,7 @@ describe("layerId", () => {
       ),
     ).toEqual(["l0", "l1", "l2-plan", "l3-values", "l4", "l2-to-l3", "custom", "custom-s2", "l2"]);
     const raw = { schema_version: 1, command: "analyze-sfc", pages: [page] };
-    negotiateSpolveroFeed(raw);
+    negotiateStageFeed(raw);
     expect(raw.pages[0].stage).toBe("s1");
   });
 });

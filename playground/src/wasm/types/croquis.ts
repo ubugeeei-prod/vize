@@ -288,11 +288,11 @@ export interface CroquisResult {
   /** VIR (Vize Intermediate Representation) text format */
   vir?: string;
   /**
-   * The raw Spolvero feed (stage ladder pages). Kept `unknown` on purpose:
-   * consumers negotiate its `schema_version` through `negotiateSpolveroFeed`
+   * The raw stage feed (stage ladder pages). Kept `unknown` on purpose:
+   * consumers negotiate its `schema_version` through `negotiateStageFeed`
    * before reading any page.
    */
-  spolvero?: unknown;
+  stageFeed?: unknown;
   /** The same ladder run's step timings: a raw P0-11 profile export. */
-  spolveroProfile?: unknown;
+  stageProfile?: unknown;
 }

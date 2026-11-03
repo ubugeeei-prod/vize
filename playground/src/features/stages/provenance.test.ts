@@ -3,7 +3,7 @@ import { isPassRecord, parseProvenance, recordsForNode } from "./provenance";
 import { dumpLines, dumpTokens } from "./dumpLines";
 
 // Byte-for-byte what the compiler prints for `<div :class="cls">{{ msg }}</div>`
-// with a trailing comment (see the Rust `spolvero_ladder` pins).
+// with a trailing comment (see the Rust `stage_ladder` pins).
 const PAGE = `[l2-provenance-dump-v2]
 
 [l2-provenance-dump-v2.records]

@@ -112,12 +112,12 @@ describe("createTransformAnalyzeSfc", () => {
     expect(result.croquis.reactivityOverlay.losses[0]?.targetName).toBe("plain");
   });
 
-  it("passes the Spolvero feed through un-interpreted for negotiation downstream", () => {
-    const spolvero = { schema_version: 99, command: "analyze-sfc", pages: "opaque" };
-    const spolveroProfile = { schema_version: 99, spans: "opaque" };
-    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, spolvero, spolveroProfile }));
-    expect(analyze("", {}).spolvero).toBe(spolvero);
-    expect(analyze("", {}).spolveroProfile).toBe(spolveroProfile);
-    expect(createTransformAnalyzeSfc(() => ({ croquis: {} }))("", {}).spolvero).toBeUndefined();
+  it("passes the stage feed through un-interpreted for negotiation downstream", () => {
+    const stageFeed = { schema_version: 99, command: "analyze-sfc", pages: "opaque" };
+    const stageProfile = { schema_version: 99, spans: "opaque" };
+    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, stageFeed, stageProfile }));
+    expect(analyze("", {}).stageFeed).toBe(stageFeed);
+    expect(analyze("", {}).stageProfile).toBe(stageProfile);
+    expect(createTransformAnalyzeSfc(() => ({ croquis: {} }))("", {}).stageFeed).toBeUndefined();
   });
 });

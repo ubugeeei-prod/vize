@@ -1,4 +1,4 @@
-//! The `analyzeSfc` Spolvero members: the stage-ladder feed (P2-18, C-2/C-5,
+//! The `analyzeSfc` stage members: the stage-ladder feed (P2-18, C-2/C-5,
 //! with P3-13's remarks) and the ladder's step and walk timings as a P0-11
 //! profile document (C-3), both
 //! from one ladder run in `vize_curator`.
@@ -7,9 +7,9 @@
 /// `performance.now()`; native tests pass a deterministic counter.
 pub(crate) type HostClock<'c> = &'c dyn Fn() -> u64;
 
-/// `(spolvero, spolveroProfile)` for the SFC's template (no template: an
+/// `(stageFeed, stageProfile)` for the SFC's template (no template: an
 /// empty feed and an empty profile).
-pub(super) fn spolvero_members(
+pub(super) fn stage_members(
     filename: &str,
     template: Option<&str>,
     include_remarks: bool,
@@ -32,7 +32,7 @@ pub(super) fn spolvero_members(
         })
         .unwrap_or_default();
     (
-        vize_curator::inspector::spolvero_value_with_remarks("analyze-sfc", pages, remarks),
+        vize_curator::inspector::stage_feed_value_with_remarks("analyze-sfc", pages, remarks),
         vize_curator::inspector::ladder_profile("analyze-sfc", &steps, &walks),
     )
 }

@@ -42,7 +42,7 @@ constraint that keeps the tool honest.
 
 **Decided: document over JSON-RPC** (P2-19 spike, 2026-08-21 —
 [record](./plan/phase-2-records/p2-19.md), with the measurements). The
-historical v1 feed document (P2-18, `spolvero-feed.schema.json`) was the
+historical v1 feed document (P2-18, `stage-ladder-feed.schema.json`) was the
 unit on those surfaces. Current product capture has a distinct version 2
 schema and reports only stages executed by the selected compiler lane:
 

@@ -1,6 +1,6 @@
 //! The historical stage feed v1 (P2-18), pinned through typed collectors.
 //! The document validates against the committed schema
-//! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
+//! (`docs/davinci/plan/stage-ladder-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content equals the dump's pages
 //! exactly, escaping law included.
 
@@ -74,7 +74,7 @@ fn load_schema() -> serde_json::Value {
         .join("..")
         .join("docs/davinci")
         .join("plan")
-        .join("spolvero-feed.schema.json");
+        .join("stage-ladder-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }

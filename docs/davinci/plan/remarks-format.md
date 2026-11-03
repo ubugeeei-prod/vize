@@ -111,7 +111,7 @@ baseline `missed` remark, so the ledger cannot rot.
 
 ## Spolvero and the backlog
 
-The Spolvero feed (`spolvero-feed.schema.json`) carries a `remarks` member
+The Spolvero feed (`stage-ladder-feed.schema.json`) carries a `remarks` member
 since P3-13: each item is a remark document item plus the `path` it was
 produced for, spans in the frame of that file's pages (template bytes for
 the inspector and `analyzeSfc`). The member is additive to feed v1 —

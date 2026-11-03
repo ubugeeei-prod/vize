@@ -24,7 +24,7 @@ vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 # The L1 surface tree observed by the inspector.
 vize_l1 = { workspace = true }
-# The full stage ladder (L1 -> L2 -> L3) the Spolvero feed pages, produced by
+# The full stage ladder (L1 -> L2 -> L3) the stage feed pages, produced by
 # the real lowerings and the L2 transform pass manager rather than re-derived,
 # and the transform pipeline whose optimization remarks (P3-13) it carries.
 vize_l1_to_l2 = { workspace = true }
