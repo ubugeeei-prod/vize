@@ -132,3 +132,30 @@ void test("webpack without a .css rule fails on the style block instead of dropp
   t.assert.match(errors[0].moduleName ?? "", /App\.vue\.__vize_style_0\.data-v-[0-9a-f]{8}\.css$/);
   t.assert.match(errors[0].message, /Module parse failed[\s\S]*You may need an additional loader/);
 });
+
+void test("webpack: a JSX <style scoped> block goes through the host's .css rule (#11520)", async (t) => {
+  const outputPath = prepareOutputDir("webpack-jsx-style");
+  // A .jsx copy: webpack's experiments.typescript refuses any .tsx resource.
+  const entry = path.join(outputPath, "ScopedApp.jsx");
+  fs.copyFileSync(resolveFixturePath("jsx", "ScopedApp.tsx"), entry);
+  const compiler = webpack({
+    mode: "development",
+    devtool: false,
+    entry,
+    externals: { vue: "vue" },
+    output: { path: path.join(outputPath, "dist"), filename: "bundle.js", clean: true },
+    infrastructureLogging: { level: "error" },
+    module: { rules: [{ test: /\.css$/, use: [CSS_LOADER] }] },
+    plugins: [vize({ isProduction: true })],
+  });
+
+  const stats = await runWebpackCompiler(compiler);
+  t.assert.deepEqual(stats.toJson({ all: false, errors: true }).errors, []);
+  const code = fs.readFileSync(path.join(outputPath, "dist", "bundle.js"), "utf8");
+  t.assert.doesNotMatch(code, /__vize_css__/);
+  t.assert.match(code, /ScopedApp\.jsx\.__vize_style_0\.css/);
+  t.assert.match(
+    code,
+    /__WEBPACK_DEFAULT_EXPORT__ = \("\.box\[data-v-[0-9a-f]+\]\{ color: red \}"\)/,
+  );
+});
