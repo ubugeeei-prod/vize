@@ -142,6 +142,7 @@ fn installed_virtual_module_points_helpers_at_the_package() {
             "generated/content-mapper-types.d.ts",
             "generated/content-mapper-types.d.ts",
         ),
+        ("virtual-ts-checker.d.ts", "virtual-ts-checker.d.ts"),
         ("virtual-ts-globals.d.ts", "virtual-ts-globals.d.ts"),
         ("virtual-ts-patterns.d.ts", "virtual-ts-patterns.d.ts"),
         ("virtual-ts-slots.d.ts", "virtual-ts-slots.d.ts"),
@@ -159,7 +160,7 @@ fn installed_virtual_module_points_helpers_at_the_package() {
     ]));
     let text = responses[2]["result"]["text"].as_str().unwrap();
     assert_eq!(
-        text.matches("import type {} from \"vize/virtual-ts\";")
+        text.matches("import type {} from \"vize/virtual-ts-checker\";")
             .count(),
         1,
         "{text}"

@@ -177,7 +177,7 @@ fn installed_virtual_ts_module(config_file_name: &Path) -> bool {
     };
     project_directory.ancestors().any(|directory| {
         directory
-            .join("node_modules/vize/virtual-ts.d.ts")
+            .join("node_modules/vize/virtual-ts-checker.d.ts")
             .is_file()
     })
 }
