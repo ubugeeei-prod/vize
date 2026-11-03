@@ -9,7 +9,7 @@ use vize_atelier_sfc::croquis::{
     SfcCroquisOptions, analyze_sfc_descriptor_with_context, analyze_sfc_descriptor_with_occurrences,
 };
 use vize_canon::virtual_ts::{
-    VirtualTsOptions, generate_virtual_ts_with_offsets, generate_virtual_ts_with_split_offsets,
+    GenericParameters, VirtualTsOptions, generate_virtual_ts_with_generic,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_l0::cstr;
@@ -40,7 +40,7 @@ pub(super) fn template_document(
     let packet = source.zip(packet).and_then(|(source, packet)| {
         super::occurrences::PhysicalOccurrences::from_sfc(packet, &analysis, descriptor, source)
     });
-    let output = generate_virtual_ts_with_split_offsets(
+    let output = generate_virtual_ts_with_generic(
         &analysis.croquis,
         analysis.script_content.as_deref(),
         Some(root),
@@ -48,6 +48,7 @@ pub(super) fn template_document(
         template_offset,
         &VirtualTsOptions::default(),
         analysis.split_script_setup_offsets(descriptor),
+        GenericParameters::from_setup(&descriptor.source, descriptor).as_ref(),
     );
     (
         VirtualDocument::from_emission(
@@ -64,10 +65,12 @@ pub(super) fn template_document(
 ///
 /// `template_offset` is the fragment's start in the authored file. Script
 /// mappings use `script_offset` the same way.
+/// `generic` is the setup's anchored plan; a fragment without one has none.
 pub(super) fn fragment_document(
     script: Option<&str>,
     script_setup: bool,
     script_offset: u32,
+    generic: Option<&GenericParameters>,
     root: &RootNode<'_>,
     template_offset: u32,
     uri: String,
@@ -76,6 +79,7 @@ pub(super) fn fragment_document(
         script,
         script_setup,
         script_offset,
+        generic,
         root,
         template_offset,
         uri,
@@ -84,10 +88,15 @@ pub(super) fn fragment_document(
     .0
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one fragment owner and its anchored plan"
+)]
 pub(super) fn fragment_document_demand(
     script: Option<&str>,
     script_setup: bool,
     script_offset: u32,
+    generic: Option<&GenericParameters>,
     root: &RootNode<'_>,
     template_offset: u32,
     uri: String,
@@ -102,7 +111,7 @@ pub(super) fn fragment_document_demand(
     }
     if let Some(script) = script {
         if script_setup {
-            analyzer.analyze_script_setup(script);
+            analyzer.analyze_script_setup_with_generic(script, generic.map(GenericParameters::raw));
         } else {
             analyzer.analyze_script(script);
         }
@@ -121,13 +130,15 @@ pub(super) fn fragment_document_demand(
             source,
         )
     });
-    let output = generate_virtual_ts_with_offsets(
+    let output = generate_virtual_ts_with_generic(
         &summary,
         script,
         Some(root),
         script_offset,
         template_offset,
         &VirtualTsOptions::default(),
+        None,
+        generic.filter(|_| script_setup),
     );
     (
         VirtualDocument::from_emission(

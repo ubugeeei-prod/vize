@@ -202,6 +202,7 @@ impl VirtualCodeGenerator {
             None,
             false,
             0,
+            None,
             &ast,
             0,
             "__inline.__template.ts".to_string(),
@@ -213,6 +214,7 @@ pub(crate) fn project_template_fragment(
     script: Option<&str>,
     script_setup: bool,
     script_offset: u32,
+    generic: Option<&vize_canon::virtual_ts::GenericParameters>,
     root: &vize_relief::RootNode<'_>,
     template_offset: u32,
     uri: String,
@@ -221,16 +223,22 @@ pub(crate) fn project_template_fragment(
         script,
         script_setup,
         script_offset,
+        generic,
         root,
         template_offset,
         uri,
     )
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one fragment owner and its anchored plan"
+)]
 pub(crate) fn project_template_fragment_with_occurrences(
     script: Option<&str>,
     script_setup: bool,
     script_offset: u32,
+    generic: Option<&vize_canon::virtual_ts::GenericParameters>,
     root: &vize_relief::RootNode<'_>,
     template_offset: u32,
     uri: String,
@@ -240,6 +248,7 @@ pub(crate) fn project_template_fragment_with_occurrences(
         script,
         script_setup,
         script_offset,
+        generic,
         root,
         template_offset,
         uri,
