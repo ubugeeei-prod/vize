@@ -17,6 +17,8 @@ mod original_program;
 #[cfg(test)]
 mod outside_import_editor_tests;
 pub(crate) mod preparation_trace;
+#[cfg(test)]
+mod retirement_tests;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;

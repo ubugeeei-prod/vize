@@ -158,25 +158,21 @@ impl SessionCache {
         Some(Arc::clone(&cached.context))
     }
 
-    /// Take the host's revision whose graph still holds when only the host's
-    /// text moved. Its disk inputs are validated exactly as a hit's are.
+    /// Remove the host's previous revision before its successor is prepared.
+    /// It is returned only while its graph still holds for the new buffer, with
+    /// disk inputs validated as a hit's are; otherwise it is released here.
     pub(super) fn take_revisable(
         &mut self,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
     ) -> Option<(ContextFingerprint, Arc<AliasContext>)> {
         let key = RevisionKey::new(source_path.to_path_buf(), fingerprint);
-        let cached = self.slots.get(&key)?;
+        let cached = self.slots.remove(&key)?;
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
         let revisable = fingerprint.revises(&cached.fingerprint)
             && (self.trust_watched_disk_inputs
                 || cached.fingerprint.stamps_still_valid(&mut observed));
-        if !revisable {
-            return None;
-        }
-        self.slots
-            .remove(&key)
-            .map(|cached| (cached.fingerprint, cached.context))
+        revisable.then_some((cached.fingerprint, cached.context))
     }
 
     pub(super) fn insert(

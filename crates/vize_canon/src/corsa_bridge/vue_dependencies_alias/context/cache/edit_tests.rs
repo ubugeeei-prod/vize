@@ -213,3 +213,43 @@ fn an_edit_to_another_open_buffer_rebuilds_the_host_revision() {
     assert_eq!(registered(&rebuilt), 2);
     workspace.assert_matches_build(rebuilt, revision, 2);
 }
+
+/// Only a revision handed to its successor survives the next one; a rebuild
+/// releases the revision it replaces before building.
+#[test]
+fn a_rebuild_never_holds_the_revision_it_replaces() {
+    use crate::batch::virtual_project::live_projects::{live_projects, take_peak_projects};
+    let workspace = Workspace::new();
+    drop(workspace.open(Revision {
+        child: Some(CHILD),
+        ..Revision::host(HOST)
+    }));
+    assert_eq!(live_projects(), 1);
+    take_peak_projects();
+
+    let unsaved = CHILD.replace("child = 1", "child = 2");
+    drop(workspace.open(Revision {
+        child: Some(&unsaved),
+        ..Revision::host(HOST)
+    }));
+    assert_eq!(
+        (take_peak_projects(), live_projects()),
+        (1, 1),
+        "other buffer"
+    );
+
+    let importing = HOST.replace("const token = 1;", "import './Other.vue'; const token = 1;");
+    drop(workspace.open(Revision {
+        child: Some(&unsaved),
+        ..Revision::host(&importing)
+    }));
+    assert_eq!((take_peak_projects(), live_projects()), (1, 1), "import");
+
+    let edited = importing.replace("token = 1", "token = 2");
+    let revised = workspace.open(Revision {
+        child: Some(&unsaved),
+        ..Revision::host(&edited)
+    });
+    assert_eq!((take_peak_projects(), live_projects()), (1, 1), "revision");
+    assert_eq!(registered(&revised), 4);
+}

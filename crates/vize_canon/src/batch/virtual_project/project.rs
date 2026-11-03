@@ -109,6 +109,8 @@ impl VirtualProject {
             unchecked_javascript_files: FxHashSet::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
+            #[cfg(test)]
+            _live: super::live_projects::LiveProject::new(),
         };
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
