@@ -7,7 +7,8 @@ use alloc::vec::Vec as StdVec;
 
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
-    walk_assignment_expression, walk_object_property, walk_update_expression,
+    walk_assignment_expression, walk_assignment_target, walk_object_property,
+    walk_update_expression,
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -144,8 +145,12 @@ impl Visit<'_> for IdentifierVisitor<'_> {
         self.rewrites.push((start, end, replacement));
     }
 
+    fn visit_assignment_target(&mut self, target: &oxc_ast::ast::AssignmentTarget<'_>) {
+        self.collect_assignment_targets(target);
+        walk_assignment_target(self, target);
+    }
+
     fn visit_assignment_expression(&mut self, expr: &oxc_ast::ast::AssignmentExpression<'_>) {
-        self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
     }
 
@@ -156,6 +161,24 @@ impl Visit<'_> for IdentifierVisitor<'_> {
             self.assignment_targets.push(ident.span.start as usize);
         }
         walk_update_expression(self, expr);
+    }
+
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        property: &oxc_ast::ast::AssignmentTargetPropertyIdentifier<'_>,
+    ) {
+        let before = self.rewrites.len();
+        self.visit_identifier_reference(&property.binding);
+        if self.rewrites.len() != before {
+            let (_, _, replacement) = self.rewrites.last_mut().expect("identifier rewrite");
+            let mut expanded = String::from(property.binding.name.as_str());
+            expanded.push_str(": ");
+            expanded.push_str(replacement);
+            *replacement = expanded;
+        }
+        if let Some(init) = &property.init {
+            self.visit_expression(init);
+        }
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast::ast::ObjectProperty<'_>) {

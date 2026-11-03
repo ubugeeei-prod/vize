@@ -7,8 +7,8 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_assignment_target_property_identifier,
-        walk_object_property, walk_update_expression,
+        walk_assignment_expression, walk_assignment_target, walk_object_property,
+        walk_update_expression,
     },
 };
 use oxc_syntax::scope::ScopeFlags;
@@ -304,8 +304,12 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         self.scoped_function(function, flags);
     }
 
+    fn visit_assignment_target(&mut self, target: &oxc_ast_types::AssignmentTarget<'_>) {
+        self.collect_assignment_targets(target);
+        walk_assignment_target(self, target);
+    }
+
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
-        self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
         self.guard_setup_assignment(expr);
     }
@@ -370,35 +374,33 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         walk_object_property(self, prop);
     }
 
-    /// `({ x } = y)` assigns `x`; a prefixed or ref target needs a key:
-    /// `({ x: _ctx.x } = _ctx.y)`, `({ x: x.value } = y)`.
     fn visit_assignment_target_property_identifier(
         &mut self,
         property: &oxc_ast_types::AssignmentTargetPropertyIdentifier<'_>,
     ) {
         let ident = &property.binding;
         let name = ident.name.as_str();
-        if !self.is_local(name) && !is_template_global(name) && !self.ctx.is_in_scope(name) {
-            let prefix = get_identifier_prefix(name, self.ctx).filter(|prefix| !prefix.is_empty());
-            let is_ref = self.ctx.options.inline && self.is_ref_binding(name);
-            if prefix.is_some() || is_ref {
-                self.has_identifiers = true;
-                let prefix = prefix.unwrap_or("");
-                let mut key = String::with_capacity(name.len() + 2 + prefix.len());
-                key.push_str(name);
-                key.push_str(": ");
-                key.push_str(prefix);
-                self.rewrites.insert((ident.span.start as usize, key));
-                if is_ref {
-                    self.suffix_rewrites
-                        .push((ident.span.end as usize, String::new(".value")));
-                }
-                if let Some(init) = &property.init {
-                    self.visit_expression(init);
-                }
-                return;
-            }
+        let start = ident.span.start as usize;
+        let suffixes = self.suffix_rewrites.len();
+        self.visit_identifier_reference(ident);
+        let prefix = self
+            .rewrites
+            .iter()
+            .find(|(position, text)| *position == start && !text.is_empty())
+            .cloned();
+        if let Some((position, prefix)) = prefix {
+            self.rewrites.remove(&(position, prefix.clone()));
+            let mut expanded = String::from(name);
+            expanded.push_str(": ");
+            expanded.push_str(&prefix);
+            self.rewrites.insert((position, expanded));
+        } else if self.suffix_rewrites.len() != suffixes {
+            let mut expanded = String::from(name);
+            expanded.push_str(": ");
+            self.rewrites.insert((start, expanded));
         }
-        walk_assignment_target_property_identifier(self, property);
+        if let Some(init) = &property.init {
+            self.visit_expression(init);
+        }
     }
 }
