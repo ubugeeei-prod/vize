@@ -31,7 +31,7 @@ env:
   COMPILE_BENCH_VERSIONS: ${{ inputs.versions || '0.424.10 0.425.1 0.429.2 0.441.0 0.481.0 0.511.0 0.541.0 0.571.0 0.601.0 0.631.0 0.646.0 0.661.0' }}
   COMPILE_BENCH_PROFILE_VERSIONS: ${{ inputs.profile_versions || '0.424.10 0.661.0' }}
   # Crates the verify job tests and lints.
-  COMPILE_BENCH_VERIFY: "-p vize_atelier_sfc"
+  COMPILE_BENCH_VERIFY: "-p vize_l2 -p vize_l1_to_l2 -p vize_atelier_dom -p vize_atelier_sfc"
 
 jobs:
   published:
