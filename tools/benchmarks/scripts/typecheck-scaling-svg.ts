@@ -85,7 +85,7 @@ const label = (value: number) =>
         : value.toPrecision(2);
 
 export function renderScalingSvg(results: ScalingResults): string {
-  const rows = results.cells.filter((cell) => cell.kind === "project").map(rowOf);
+  const rows = results.cells.filter((cell) => cell.kind === "vue").map(rowOf);
   const tools = [...new Map(rows.map((row) => [row.cell.tool, row.cell])).values()];
   const sizes = [...new Set(rows.map((row) => row.cell.sfcs))].sort((a, b) => a - b);
   const width = GAP + 3 * (PANEL_W + GAP);
