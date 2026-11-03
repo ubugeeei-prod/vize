@@ -28,7 +28,7 @@ void test("external style dependency guards preserve lexical and delegated CSS b
     generateOutput(compiled, {
       isProduction: true,
       isDev: false,
-      cssPipeline: false,
+      hostCss: "none",
       filePath: "/project/Foo.vue",
     });
   };
@@ -151,12 +151,12 @@ void test("#11456 compilation inlines style src; only injected output refuses im
     try {
       const first = compileVueModule(filePath, item.source, options, cache);
       const second = compileVueModule(filePath, item.source, options, cache);
-      const output = (cssPipeline: boolean) => {
+      const output = (hostCss: "none" | "preprocessors") => {
         try {
           return generateOutput(first.compiled, {
             isProduction: true,
             isDev: false,
-            cssPipeline,
+            hostCss,
             filePath,
           });
         } catch (error) {
@@ -189,9 +189,13 @@ void test("#11456 compilation inlines style src; only injected output refuses im
     assert.equal(message, null, item.id);
     assert.ok(first && second, item.id);
     // A pipeline host imports every block; the host resolves its @import.
-    assert.match(output(true), /^import "[^"]+\/Foo\.vue\?vue&type=style&index=0&/, item.id);
+    assert.match(
+      output("preprocessors"),
+      /^import "[^"]+\/Foo\.vue\?vue&type=style&index=0&/,
+      item.id,
+    );
     if ("injectError" in item) {
-      assert.match(output(false), item.injectError, item.id);
+      assert.match(output("none"), item.injectError, item.id);
       continue;
     }
     assert.equal(second.compiled, first.compiled, item.id);
@@ -201,7 +205,7 @@ void test("#11456 compilation inlines style src; only injected output refuses im
       first.compiled.styles.every((style) => style.src === null),
       item.id,
     );
-    assert.match(output(false), /__vize_css__/, item.id);
+    assert.match(output("none"), /__vize_css__/, item.id);
     assert.match(first.compiled.css ?? "", /color:\s*red/, item.id);
     assert.equal(/\.foo\[data-v-/.test(first.compiled.css ?? ""), item.expected.scoped, item.id);
   }

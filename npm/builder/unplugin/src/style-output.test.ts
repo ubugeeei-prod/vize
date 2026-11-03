@@ -151,7 +151,7 @@ void test("hasDelegatedStyles is true when one of several blocks delegates", (t)
 void test("generateOutput (a): export default with hasScoped and no _sfc_main rewrites and appends scopeId", (t) => {
   const out = generateOutput(
     makeCompiled({ code: "export default { name: 'A' }", scopeId: "abc123", hasScoped: true }),
-    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
   );
 
   // rewritten declaration
@@ -170,7 +170,7 @@ void test("generateOutput (a'): export default WITHOUT hasScoped does not append
   const out = generateOutput(makeCompiled({ code: "export default {}", hasScoped: false }), {
     isProduction: true,
     isDev: false,
-    cssPipeline: true,
+    hostCss: "preprocessors",
     filePath: "/proj/App.vue",
   });
 
@@ -187,7 +187,7 @@ void test("generateOutput (b): without a host CSS pipeline, plain css is injecte
       css: ".x{color:red}",
       styles: [makeBlock({ content: ".x{color:red}" })],
     }),
-    { isProduction: false, isDev: false, cssPipeline: false, filePath: "/proj/App.vue" },
+    { isProduction: false, isDev: false, hostCss: "none", filePath: "/proj/App.vue" },
   );
 
   t.assert.match(out, /export const __vize_css__ = ".x\{color:red\}";/);
@@ -208,7 +208,7 @@ void test("generateOutput (b'): with a host CSS pipeline, plain css is a style m
         css: ".y[data-v-abc123]{}",
         styles: [makeBlock({ content: ".y{}", scoped: true }), makeBlock({ index: 1 })],
       }),
-      { isProduction, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+      { isProduction, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
     );
     t.assert.match(
       out,
@@ -229,7 +229,7 @@ void test("generateOutput (b''): injected css cannot resolve @import; a pipeline
       generateOutput(compiled, {
         isProduction: true,
         isDev: false,
-        cssPipeline: false,
+        hostCss: "none",
         filePath: "/proj/App.vue",
       }),
     /\/proj\/App\.vue: CSS @import in <style> needs a bundler CSS pipeline/,
@@ -237,7 +237,7 @@ void test("generateOutput (b''): injected css cannot resolve @import; a pipeline
   const out = generateOutput(compiled, {
     isProduction: true,
     isDev: false,
-    cssPipeline: true,
+    hostCss: "preprocessors",
     filePath: "/proj/App.vue",
   });
   t.assert.match(out, /import "\/proj\/App\.vue\?vue&type=style&index=0&lang\.css";/);
@@ -254,7 +254,7 @@ void test("generateOutput (c): delegated scss (scoped) + css module emits style 
         makeBlock({ module: true, index: 1 }),
       ],
     }),
-    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
   );
 
   // scoped scss block -> side-effect import of the compiled, scoped CSS
@@ -286,7 +286,7 @@ void test("generateOutput (c'): named css module uses its name as binding and ur
       hasScoped: false,
       styles: [makeBlock({ module: "cls", index: 0 })],
     }),
-    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
   );
 
   t.assert.match(
@@ -304,7 +304,7 @@ void test("generateOutput (c''): without a host CSS pipeline, preprocessor block
       css: ".p{}",
       styles: [makeBlock({ lang: "scss", scoped: true, index: 0 }), makeBlock({ index: 1 })],
     }),
-    { isProduction: true, isDev: false, cssPipeline: false, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "none", filePath: "/proj/App.vue" },
   );
 
   t.assert.match(
@@ -323,7 +323,7 @@ void test("generateOutput (d): named render export with no export default and no
       hasScoped: true,
       styles: [],
     }),
-    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
   );
 
   // original named export preserved
@@ -343,7 +343,7 @@ void test("generateOutput (d'): named render export without scoping skips __scop
       hasScoped: false,
       styles: [],
     }),
-    { isProduction: true, isDev: false, cssPipeline: true, filePath: "/proj/App.vue" },
+    { isProduction: true, isDev: false, hostCss: "preprocessors", filePath: "/proj/App.vue" },
   );
 
   t.assert.match(out, /const _sfc_main = \{\};/);

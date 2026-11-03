@@ -218,10 +218,21 @@ export interface NormalizedVizeUnpluginOptions {
   debug: boolean;
 }
 
+/** What the host bundler does with a stylesheet a module imports. */
+export type HostCss =
+  /** Bundles none (Babel, esbuild without `bundle`): plain CSS is injected. */
+  | "none"
+  /** Bundles CSS but compiles no preprocessor language (esbuild). */
+  | "css"
+  /** Its plugins also compile Sass, Less and Stylus (Rollup, Rolldown, webpack). */
+  | "preprocessors";
+
 export interface ParsedVueRequestQuery {
   vue: boolean;
   type: string | null;
   index: number | null;
+  /** The language the style module holds, from its `lang.<ext>` key. */
+  lang: string | null;
   module: boolean | string;
   scoped: string | null;
 }

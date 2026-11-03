@@ -2,7 +2,7 @@ import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
 import { styleRequestId } from "./request.ts";
 import { assertInjectableCss } from "./style-dependencies.ts";
 import { isPreprocessorLang } from "./style-scope.ts";
-import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
+import type { CompiledModule, HostCss, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
 function needsPreprocessor(block: StyleBlockInfo): boolean {
   return isPreprocessorLang(block.lang);
@@ -78,18 +78,17 @@ export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
   /**
-   * The host bundles the stylesheets a module imports, so every block is a
-   * style module and the host writes the CSS. Otherwise plain CSS is injected
-   * at run time (Babel, esbuild without `bundle`).
+   * A host that bundles stylesheets gets every block as a style module and
+   * writes the CSS; with `"none"`, plain CSS is injected at run time.
    */
-  cssPipeline: boolean;
+  hostCss: HostCss;
   filePath: string;
   /** Overrides the `?vue&type=style` import specifier (webpack style files). */
   styleRequest?: (block: StyleBlockInfo, scoped: string | null) => string;
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, cssPipeline, filePath, styleRequest } = options;
+  const { isProduction, isDev, hostCss, filePath, styleRequest } = options;
 
   let output = compiled.code;
   const exportDefaultRegex = /^export default /m;
@@ -117,14 +116,14 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     output += "\nexport default _sfc_main;";
   }
 
-  if (cssPipeline || hasDelegatedStyles(compiled)) {
+  if (hostCss !== "none" || hasDelegatedStyles(compiled)) {
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
 
     for (const block of compiled.styles) {
       const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
       const styleFile = styleRequest?.(block, scoped);
-      const styleId = styleFile ?? styleRequestId(filePath, block, scoped);
+      const styleId = styleFile ?? styleRequestId(filePath, block, scoped, hostCss);
 
       if (isCssModule(block)) {
         const bindingName = typeof block.module === "string" ? block.module : "$style";
