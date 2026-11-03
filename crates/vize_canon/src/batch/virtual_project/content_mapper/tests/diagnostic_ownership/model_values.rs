@@ -47,16 +47,10 @@ fn reporting_copies(source: &str, target: &str, occurrence: usize) -> usize {
         .count()
 }
 
-const COMPONENT: &str = r#"<script setup lang="ts">
-import { reactive } from "vue";
-import KitField from "./KitField.vue";
-const state = reactive({ name: "" });
-</script>
-<template>
-  <KitField v-model="state.missing" />
-  <KitField :model-value="state.other" />
-</template>
-"#;
+const COMPONENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/component-v-model-once-11655/Component.vue.txt"
+));
 
 #[test]
 fn component_model_value_reports_from_one_copy() {
@@ -64,34 +58,20 @@ fn component_model_value_reports_from_one_copy() {
     assert_eq!(reporting_copies(COMPONENT, "state.other", 0), 1);
 }
 
-const SLOT_CONTENT: &str = r#"<script setup lang="ts">
-import { ref } from "vue";
-import KitField from "./KitField.vue";
-import List from "./List.vue";
-const fields = ref([{ id: "a" }]);
-</script>
-<template>
-  <List :items="fields">
-    <template #default="{ item }">
-      <KitField v-model="item.name" />
-    </template>
-  </List>
-</template>
-"#;
+const SLOT_CONTENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/component-v-model-once-11655/SlotContent.vue.txt"
+));
 
 #[test]
 fn slot_scoped_component_model_value_reports_from_one_copy() {
     assert_eq!(reporting_copies(SLOT_CONTENT, "item.name", 0), 1);
 }
 
-const NATIVE: &str = r#"<script setup lang="ts">
-import { reactive } from "vue";
-const state = reactive({ name: "" });
-</script>
-<template>
-  <input v-model="state.missing" />
-</template>
-"#;
+const NATIVE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/component-v-model-once-11655/Native.vue.txt"
+));
 
 /// A native `v-model` has no component prop check, so its statement stays.
 #[test]
