@@ -27,6 +27,7 @@ impl MarkupElement<'_> {
                 surface: Some(element),
                 doc,
                 op,
+                ..
             } => {
                 for attr in &element.open.attrs {
                     let span = attr_span(doc.source, attr);
@@ -102,6 +103,7 @@ impl MarkupElement<'_> {
                 surface: Some(element),
                 doc,
                 op,
+                ..
             } => {
                 let opening_v_pre = opens_v_pre(doc, element, op.attributes());
                 for attr in &element.open.attrs {

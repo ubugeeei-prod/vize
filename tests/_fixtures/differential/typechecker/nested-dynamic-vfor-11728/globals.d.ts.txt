@@ -1,0 +1,10 @@
+import 'vue';
+export {};
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    line: number;
+    r: string;
+    cell: boolean;
+    c: { globalOnly: true };
+  }
+}

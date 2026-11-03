@@ -64,4 +64,4 @@ export default defineConfig({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L31)

@@ -99,12 +99,13 @@ impl<'a> Parser<'a> {
             return true;
         }
 
-        // Compiler policies resolve static casts; default lint parsing keeps
-        // the authored tag classification used by its existing rule corpus.
-        self.options.is_native_tag.is_some()
+        // The dynamic component is Vue syntax in every parser entry point.
+        // Compiler policies additionally resolve authored static Vue casts.
+        (self.options.is_native_tag.is_some() || tag == "component")
             && !self.in_v_pre
             && !element.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"))
-            && element.props.iter().any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "is" && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:"))))
+            && (tag == "component"
+                || element.props.iter().any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "is" && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))))
     }
 
     /// Resolve the foreign (SVG/MathML) namespace for a start tag whose

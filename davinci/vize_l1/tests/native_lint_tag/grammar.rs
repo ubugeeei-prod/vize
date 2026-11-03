@@ -11,7 +11,7 @@ fn original_lint_categories_do_not_use_dom_or_runtime_tag_resolution() {
         ("<foo:bar></foo:bar>", Kind::Element),
         ("<teleport></teleport>", Kind::Element),
         ("<transition-group></transition-group>", Kind::Element),
-        ("<component :is='view'></component>", Kind::Element),
+        ("<component :is='view'></component>", Kind::Component),
         ("<input is='Foo' :is='view' />", Kind::Element),
         ("<div v-is='view'></div>", Kind::Element),
         ("<Foo is='input'/>", Kind::Component),

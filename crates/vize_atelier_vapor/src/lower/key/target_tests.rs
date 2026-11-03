@@ -20,7 +20,7 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
         ),
         (
             "<component :is=\"selected\" :key=\"epoch\"></component>",
-            ElementType::Element,
+            ElementType::Component,
             false,
             None,
         ),

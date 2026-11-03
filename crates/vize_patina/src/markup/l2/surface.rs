@@ -52,6 +52,29 @@ pub(in crate::markup) fn element_at<'a>(
     }
 }
 
+/// Locate a dynamic-component header together with its inherited literal scope.
+/// The compatibility L2 op kind does not retain this default lint distinction.
+pub(in crate::markup) fn element_with_v_pre_at<'a>(
+    tree: &'a SurfaceTree<'a>,
+    start: u32,
+) -> Option<(&'a Element<'a>, bool)> {
+    let mut children: &'a [SurfaceChild<'a>] = &tree.children;
+    let mut frozen = false;
+    loop {
+        let index = children
+            .partition_point(|child| child_start(tree.source, child) <= start)
+            .checked_sub(1)?;
+        let SurfaceChild::Element(element) = children.get(index)? else {
+            return None;
+        };
+        frozen |= element.open.attrs.iter().any(super::binding::is_v_pre);
+        if offset_in(tree.source, element.open.lt_name.text) == start {
+            return Some((element, frozen));
+        }
+        children = &element.children;
+    }
+}
+
 /// The L1 sibling list holding the element whose `<tag` token starts at
 /// `start`.
 pub(in crate::markup) fn siblings_at<'a>(

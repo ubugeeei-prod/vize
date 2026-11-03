@@ -1344,6 +1344,65 @@
       }
     },
     {
+      "id": "compiler/sfc/nested-dynamic-vfor-11728",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "nested-dynamic-vfor-11728",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "510e5867d7e892ce9fd22e3af9f55a45611eb2fa1d51adaebc339f3013706e8f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "nested-dynamic-vfor-11728/module.expected.txt",
+        "sha256": "ba96f9acc62d4201bb1079d6216e6330446ebc7ce345fb236487151e61d81378",
+        "source": "Exact source CLI a3169b6e4fd2e15e7dd12e083b54ee3b30da8508 build --ssr --no-config full-module observation; parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop consumes this pinned authored input."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The whole-product native compiler remains unavailable; this source-built SSR compatibility observation grants no native-only or independent compiler parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11728",
+        "reporter": "makarasty"
+      }
+    },
+    {
       "id": "compiler/sfc/ordered-object-props-10458",
       "state": "active",
       "targets": ["ssr"],
