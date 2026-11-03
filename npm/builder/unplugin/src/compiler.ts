@@ -80,6 +80,10 @@ export function compileVueModule(
     runtimeGlobalName: options.runtimeGlobalName,
     vueVersion: String(options.vueVersion),
     scopeId: `data-v-${scopeId}`,
+    // Production matches @vizejs/vite-plugin and @vitejs/plugin-vue: render
+    // inlined into setup, no dev prop runtime types. SSR keeps a separate render.
+    isProd: options.isProduction,
+    inlineTemplate: options.isProduction && !options.ssr && options.mode !== "function",
   });
 
   if (result.errors.length > 0) {

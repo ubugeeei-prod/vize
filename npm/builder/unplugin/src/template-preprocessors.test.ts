@@ -59,17 +59,15 @@ const msg = "x"
   // No warnings were collected during compilation.
   t.assert.deepStrictEqual(warnings, []);
 
-  // Module mode emits a top-level render function and attaches it to the SFC
-  // descriptor while setup returns the bindings consumed through `$setup`.
+  // A production build inlines the render into setup (#11481).
   t.assert.match(result.code, /_sfc_main/);
-  t.assert.match(result.code, /function _sfc_render\(/);
-  t.assert.match(result.code, /render: _sfc_render/);
-  t.assert.match(result.code, /setup\(__props, \{ expose: __expose \}\)/);
+  t.assert.doesNotMatch(result.code, /_sfc_render|__expose/);
+  t.assert.match(result.code, /setup\(__props\) \{\s*return \(_ctx, _cache\) =>/);
   t.assert.match(result.code, /_createElementBlock/);
   t.assert.match(result.code, /from "vue"/);
 
-  // `{{ msg }}` interpolation was resolved into a real binding reference.
-  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
+  // `{{ msg }}` interpolation was resolved into the inlined setup binding.
+  t.assert.match(result.code, /_toDisplayString\(msg\)/);
 
   // No leftover TS-only syntax in this JS `<script setup>` case.
   t.assert.doesNotMatch(result.code, /\binterface\b/);
@@ -144,5 +142,5 @@ const msg = "x"
   // The standard parser produces a real `div` element (contrast with the pug path,
   // where `div.box` is emitted as plain text).
   t.assert.match(result.code, /_createElementBlock\("div"/);
-  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
+  t.assert.match(result.code, /_toDisplayString\(msg\)/);
 });

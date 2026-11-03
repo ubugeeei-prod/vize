@@ -26,8 +26,13 @@ export function scopeCss(css: string, scoped: string): string {
  * `v-bind()` in a delegated block, named like the compiled `useCssVars` call.
  * The plugin compiles without `isProd`, so both sides use the dev names.
  */
-export function transformStyleVars(css: string, scopeId: string): string {
-  return transformViteCssVarsForPipeline(css, scopeId);
+/** `productionFilename` selects the hashed production names `useCssVars` uses. */
+export function transformStyleVars(
+  css: string,
+  scopeId: string,
+  productionFilename?: string,
+): string {
+  return transformViteCssVarsForPipeline(css, scopeId, productionFilename);
 }
 
 interface SassModule {
