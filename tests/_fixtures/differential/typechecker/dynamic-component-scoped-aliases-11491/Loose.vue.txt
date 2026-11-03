@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type { Component, VNode } from "vue";
+defineSlots<{ default: (props: { comp: Component; node: VNode; tag: "a" | "button" }) => unknown }>();
+</script>
+
+<template>
+  <slot :comp="{}" :node="undefined as unknown as VNode" tag="a" />
+</template>

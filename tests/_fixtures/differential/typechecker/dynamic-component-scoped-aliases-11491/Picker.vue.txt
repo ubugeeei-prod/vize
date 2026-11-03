@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ x?: number }>();
+const emit = defineEmits<{ pick: [value: string]; select: [value: string] }>();
+</script>
+
+<template>
+  <button @click="emit('pick', 'a')" @focus="emit('select', 'b')" />
+</template>
