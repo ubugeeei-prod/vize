@@ -97,6 +97,7 @@ pub(crate) fn rewrite_default_traced(
                             let class_start = class_decl.span.start as usize;
                             output.copy(class_start, decl.span.end as usize);
                         }
+                        output.push_str(";");
                     }
                     ExportDefaultDeclarationKind::FunctionDeclaration(func_decl) => {
                         // export default function foo() {} -> function foo() {} \n const as_name = foo
@@ -115,6 +116,7 @@ pub(crate) fn rewrite_default_traced(
                             let func_start = func_decl.span.start as usize;
                             output.copy(func_start, decl.span.end as usize);
                         }
+                        output.push_str(";");
                     }
                     _ => {
                         // export default {...} -> const as_name = {...}
@@ -122,8 +124,7 @@ pub(crate) fn rewrite_default_traced(
                         output.push_str(as_name);
                         output.push_str(" = ");
                         let expr_start = decl.declaration.span().start as usize;
-                        let expr_end = decl.declaration.span().end as usize;
-                        output.copy(expr_start, expr_end);
+                        output.copy(expr_start, decl.span.end as usize);
                     }
                 }
 
@@ -296,6 +297,7 @@ pub(crate) fn rewrite_default_traced(
                         }
                     }
 
+                    output.push_str(";");
                     last_end = named_decl.span.end as usize;
                 }
             }
