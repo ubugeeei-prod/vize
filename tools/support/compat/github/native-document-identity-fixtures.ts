@@ -7,7 +7,7 @@ import { nativeBetaDtoProducerCustody } from "./native-beta-dto-fixtures.ts";
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_DOCUMENT_IDENTITY_ID = "typechecker/protocol/native-document-identity-11586";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
-const registrationSha256 = "cbe3def290a060a0486c3709e37d004a9003ae9e83c049242886e04fabef93cc";
+const registrationSha256 = "af67b8df1449f29d3d5318181edbeb25c986106628e0d9512cfde90918609976";
 const componentSource = "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs";
 const canonical = (value: unknown): string =>
   JSON.stringify(value, (_, item: unknown) =>
@@ -23,9 +23,9 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: unknown) {
-  assert.equal(typeof path, "string");
-  assert.equal(typeof expected, "string");
-  const bytes = read(side, String(path));
+  assert.ok(typeof path === "string");
+  assert.ok(typeof expected === "string");
+  const bytes = read(side, path);
   assert.ok(bytes, `missing ${side} identity source: ${path}`);
   assert.equal(hash(bytes), expected, `changed ${side} identity source: ${path}`);
   return bytes;
@@ -33,13 +33,13 @@ function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: 
 function consumer(read: ReadFile, value: unknown) {
   const test = object(value);
   const source = pinned(read, "head", test.source, test.sha256).toString("utf8");
-  assert.equal(typeof test.selector, "string");
-  const name = String(test.selector).split("::").at(-1)!;
+  assert.ok(typeof test.selector === "string");
+  const name = test.selector.split("::").at(-1)!;
   assert.match(source, new RegExp(`#\\[test\\][\\s\\S]*?\\bfn ${name}\\(`));
   if (test.input !== null) {
-    assert.equal(typeof test.input, "string");
+    assert.ok(typeof test.input === "string");
     assert.ok(source.includes("include_bytes!(concat!("));
-    assert.ok(source.includes(String(test.input)), "compiled consumer must read its pinned input");
+    assert.ok(source.includes(test.input), "compiled consumer must read its pinned input");
   }
 }
 function preserveHistoricalAbi(read: ReadFile, value: unknown) {
@@ -114,7 +114,7 @@ export function newNativeDocumentIdentityCases(
   assert.equal(row.adapter, "native-document-identity-current-v1");
   assert.deepEqual(row.targets, ["native-document-identity"]);
   assert.equal(row.nativeQualification, false);
-  assert.ok(Array.isArray(row.sources) && row.sources.length === 16);
+  assert.ok(Array.isArray(row.sources) && row.sources.length === 17);
   const archive = object(row.sourceArchive);
   const originals = JSON.parse(
     gunzipSync(pinned(read, "head", archive.path, archive.sha256)).toString("utf8"),
@@ -131,19 +131,33 @@ export function newNativeDocumentIdentityCases(
     result.sources.add(String(source.path));
   }
   assert.ok(result.sources.has(componentSource));
-  assert.ok(Array.isArray(row.inputs) && row.inputs.length === 1);
-  for (const value of row.inputs) {
+  assert.ok(Array.isArray(row.inputs) && row.inputs.length === 2);
+  for (const [index, value] of row.inputs.entries()) {
     const input = object(value);
     const fixture = JSON.parse(pinned(read, "head", input.path, input.sha256).toString("utf8"));
     assert.equal(fixture.schema, 1);
-    assert.equal(fixture.id, NATIVE_DOCUMENT_IDENTITY_ID);
-    assert.deepEqual(
-      fixture.documents.map((item: { name: string }) => item.name),
-      ["App", "Child", "Leaf"],
-    );
-    assert.equal(fixture.methods.length, 5);
+    if (index === 0) {
+      assert.equal(fixture.id, NATIVE_DOCUMENT_IDENTITY_ID);
+      assert.deepEqual(
+        fixture.documents.map((item: { name: string }) => item.name),
+        ["App", "Child", "Leaf"],
+      );
+      assert.equal(fixture.methods.length, 5);
+    } else {
+      assert.equal(fixture.id, "native-disk-definition-uri-11586");
+      assert.deepEqual(fixture.rejects, [
+        "missing-definition",
+        "null-definition",
+        "missing-entry",
+        "extra-entry",
+        "missing-uri",
+        "foreign-target",
+        "same-name-other-file",
+        "wrong-caller-target",
+      ]);
+    }
   }
-  assert.ok(Array.isArray(row.tests) && row.tests.length === 1);
+  assert.ok(Array.isArray(row.tests) && row.tests.length === 2);
   row.tests.forEach((value) => consumer(read, value));
   preserveHistoricalAbi(read, row.legacyProtocol);
   result.ids.push(NATIVE_DOCUMENT_IDENTITY_ID);

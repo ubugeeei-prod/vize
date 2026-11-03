@@ -1,8 +1,8 @@
 //! Range-action diagnostics and edits share one synchronized editor snapshot.
 
 use corsa::runtime::block_on;
-use serde_json::{json, Value};
-use vize_l0::{cstr, String};
+use serde_json::{Value, json};
+use vize_l0::{String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession};
 use crate::LspRange;

@@ -4,7 +4,7 @@ use super::EditorLspSession;
 use crate::lsp_client::CorsaProjectClient;
 use corsa::runtime::block_on;
 use serde_json::Value;
-use vize_l0::{cstr, String};
+use vize_l0::{String, cstr};
 
 struct InlayHintRequest;
 

@@ -41,7 +41,7 @@ test("the exact identity transition consumes its input and retains every ABI law
     [...result.sources],
     row.sources.map((source: { path: string }) => source.path),
   );
-  assert.equal(result.sources.size, 16);
+  assert.equal(result.sources.size, 17);
   assert.equal(row.nativeQualification, false);
   assert.equal(row.legacyProtocol.inputs.length, 4);
   assert.equal(row.legacyProtocol.tests.length, 5);

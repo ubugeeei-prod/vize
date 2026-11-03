@@ -1,14 +1,14 @@
 //! Component classification uses Vue's actual exported type in one snapshot.
 
 use super::{
-    snapshot_source::{SnapshotSourceOwner, SourceTextOutcome},
     EditorLspSession,
+    snapshot_source::{SnapshotSourceOwner, SourceTextOutcome},
 };
-use crate::lsp_client::{session::uri_document_identifier, CorsaProjectClient};
+use crate::lsp_client::{CorsaProjectClient, session::uri_document_identifier};
 use corsa::{api::TypeResponse, runtime::block_on};
 use serde_json::json;
 use std::path::Path;
-use vize_l0::{cstr, String};
+use vize_l0::{String, cstr};
 
 mod capture;
 mod shape;
