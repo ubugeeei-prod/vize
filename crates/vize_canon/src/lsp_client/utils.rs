@@ -72,6 +72,15 @@ pub(super) fn remap_query_uris(
                     return Some(crate::file_uri::path_to_file_uri(&authored.join(relative)));
                 }
             }
+            // Closed dependencies no longer have an open-document spelling.
+            // Keep their owned URI identity consistent with open targets, while
+            // preserving explicit caller mappings and foreign native results.
+            if mapped.is_none()
+                && identity != uri
+                && super::session_paths::is_within_project_namespace(&path, authored_root)
+            {
+                return Some(identity);
+            }
         }
         mapped.cloned()
     });
@@ -132,6 +141,36 @@ mod tests {
     use super::remap_json_uris;
     use serde_json::json;
     use vize_l0::{FxHashMap, String};
+
+    #[test]
+    fn closed_owned_targets_keep_identity_after_their_open_mapping_is_removed() {
+        use crate::file_uri::path_to_file_uri;
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let workspace = root.join("workspace");
+        std::fs::create_dir_all(workspace.join("src")).unwrap();
+        let request = path_to_file_uri(&workspace.join("src/App.vue.ts"));
+        let caller = path_to_file_uri(&workspace.join("src/format.ts"));
+        let encoded = caller.replace("format.ts", "format%2Ets");
+        let foreign =
+            path_to_file_uri(&root.join("foreign.ts")).replace("foreign.ts", "foreign%2Ets");
+        let known = "file:///native/known.ts";
+        let mappings = FxHashMap::from_iter([(String::from(known), encoded.clone().into())]);
+        let mut response = json!({
+            "uri":encoded,"targetUri":known,
+            "locations":[{"uri":foreign}],"data":{"uri":encoded},
+            "edit":{"changes":{encoded.clone():[{"newText":encoded}]}},
+        });
+        super::remap_query_uris(&mut response, &mappings, &request, &workspace);
+        assert_eq!(
+            response,
+            json!({
+                "uri":caller,"targetUri":encoded,
+                "locations":[{"uri":foreign}],"data":{"uri":encoded},
+                "edit":{"changes":{caller:[{"newText":encoded}]}},
+            })
+        );
+    }
 
     #[cfg(unix)]
     #[test]
