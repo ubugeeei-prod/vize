@@ -290,7 +290,7 @@ export function vize(
     },
 
     async load(id, loadOptions) {
-      await prepareLoadSrcRequests(
+      const sfcSource = await prepareLoadSrcRequests(
         state,
         viteHostResolve((request, importer) => this.resolve(request, importer, { skipSelf: true })),
         id,
@@ -299,6 +299,7 @@ export function vize(
         ...loadOptions,
         ssr: resolveHookSsr(this, loadOptions),
         addWatchFile: this.addWatchFile.bind(this),
+        sfcSource,
       });
     },
 

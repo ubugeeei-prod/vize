@@ -36,10 +36,17 @@ import {
   normalizeStyleVirtualId,
 } from "./load-style.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
+import type { LoadedSfcSource } from "./src-requests.ts";
 
 export { normalizeVueServerRendererImport };
 
 type LoadResult = { code: string; map: SourceMapV3 | null; moduleSideEffects?: boolean };
+type LoadOptions = {
+  ssr?: boolean;
+  addWatchFile?: (id: string) => void;
+  /** The SFC source `load` read for its `src` request scan. */
+  sfcSource?: LoadedSfcSource;
+};
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -87,7 +94,7 @@ function loadCompiledSfcModule(
   isSsr: boolean,
   currentBase: string,
   needsGlobBaseRewrite: boolean,
-  loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
+  loadOptions?: LoadOptions,
 ): LoadResult | string | null {
   const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
   if (placeholderCode) {
@@ -100,10 +107,12 @@ function loadCompiledSfcModule(
   const extractCss = shouldExtractCssForRequest(state, isSsr) && !customElement;
   let compiled = cache.get(realPath);
 
-  // On-demand compile if not cached
-  if (!compiled && fs.existsSync(realPath)) {
+  // On-demand compile if not cached, from the source `load` already read.
+  const source =
+    loadOptions?.sfcSource?.file === realPath ? loadOptions.sfcSource.source : undefined;
+  if (!compiled && (source !== undefined || fs.existsSync(realPath))) {
     state.logger.log(`load: on-demand compiling ${realPath}`);
-    compiled = compileFile(realPath, cache, compileOptions(state, isSsr, realPath), undefined, {
+    compiled = compileFile(realPath, cache, compileOptions(state, isSsr, realPath), source, {
       logWarnings: shouldLogSfcWarnings(state, realPath),
     });
   }
@@ -182,7 +191,7 @@ function loadDefinePageMetaArtifact(
 export function loadHook(
   state: VizePluginState,
   id: string,
-  loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
+  loadOptions?: LoadOptions,
 ): string | LoadResult | null {
   if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) return null;
 

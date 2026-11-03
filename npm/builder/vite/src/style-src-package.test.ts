@@ -150,3 +150,20 @@ void test("#11482 the synchronous compile reads module requests from prepared re
     /<style src="fake-normalize\/n\.css"> not found: the bundler resolved no file/,
   );
 });
+
+void test("#11528 an on-demand load reads its SFC once", async (t) => {
+  const { root, file } = project(t);
+  let reads = 0;
+  const { readFileSync } = fs;
+  fs.readFileSync = ((target: fs.PathOrFileDescriptor, ...rest: never[]) => {
+    if (target === file) reads++;
+    return readFileSync(target, ...rest);
+  }) as typeof fs.readFileSync;
+  try {
+    // The `src` request resolved from that one read still reaches the compile.
+    assert.match(await viteBuild(root, false), /line-height: 1\.15/);
+  } finally {
+    fs.readFileSync = readFileSync;
+  }
+  assert.equal(reads, 1, "the src request scan and the compile share one read");
+});
