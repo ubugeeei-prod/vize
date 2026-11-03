@@ -7,7 +7,10 @@ import { readRepoFile } from "./support/github-workflows.ts";
 void test("the scaling workflow builds one SHA and measures every size on the 32-vCPU runner", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "typecheck-scaling.yml")) as {
     on: { workflow_dispatch: { inputs: Record<string, { default?: string; required?: boolean }> } };
-    jobs: Record<string, { "runs-on": string; steps: Array<{ run?: string; uses?: string }> }>;
+    jobs: Record<
+      string,
+      { if?: string; "runs-on": string; steps: Array<{ run?: string; uses?: string }> }
+    >;
   };
   const inputs = workflow.on.workflow_dispatch.inputs;
   assert.equal(inputs.sha?.required, true);
@@ -16,6 +19,7 @@ void test("the scaling workflow builds one SHA and measures every size on the 32
   assert.equal(inputs.monorepo_sfcs?.default, "5000");
   const job = workflow.jobs.measure;
   assert.equal(job?.["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(job?.if, "github.event_name == 'workflow_dispatch'");
   const steps = job?.steps ?? [];
   const script = steps.map((step) => step.run ?? "").join("\n");
   assert.match(script, /npm ci --prefix tools\/benchmarks\/typecheck-hosts/u);

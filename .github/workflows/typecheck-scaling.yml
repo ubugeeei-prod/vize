@@ -19,9 +19,12 @@ on:
         description: SFCs of the project-references monorepo (0 skips it)
         type: string
         default: "5000"
+  # Registers the dispatch-only workflow from its PR; the job runs only on dispatch.
+  pull_request:
+    paths: [.github/workflows/typecheck-scaling.yml]
 permissions: { contents: read }
 concurrency:
-  group: typecheck-scaling-${{ inputs.sha }}-${{ inputs.sizes }}-${{ inputs.monorepo_sfcs }}
+  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.monorepo_sfcs }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -29,6 +32,7 @@ env:
   CARGO_INCREMENTAL: "0"
 jobs:
   measure:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 330
     env:
