@@ -99,7 +99,7 @@ fn rust_lattice_fact_page_matches_reference_fixture() {
     expected.push(b'\n');
 
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/formal/impeto/fixtures/reactivity-lattice.folio");
+        .join("../../tests/fixtures/l3-reference/reactivity-lattice.folio");
     if std::env::var("VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE").as_deref() == Ok("1") {
         std::fs::write(&path, &expected).unwrap();
     }

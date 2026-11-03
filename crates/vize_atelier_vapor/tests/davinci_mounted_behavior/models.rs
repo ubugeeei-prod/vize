@@ -3,7 +3,7 @@
 //! Every case in `model-reference.cases.jsonl` drives user events and reactive
 //! patches through the compiled DOM and Vapor output. Each full observation,
 //! including live `value`, `checked` and `selected` state, must equal the
-//! independent Lean model reference in `model-reference.behavior.jsonl`.
+//! independent L3 model reference in `model-reference.behavior.jsonl`.
 
 use super::native_control::element;
 use crate::{Scenario, mounted_trace, mounted_trace_with_identity};
@@ -12,7 +12,7 @@ use std::path::Path;
 
 fn lines(name: &str) -> Vec<Value> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/formal/impeto/fixtures")
+        .join("../../tests/fixtures/l3-reference")
         .join(name);
     std::fs::read_to_string(path)
         .unwrap()
@@ -63,24 +63,24 @@ fn run_stem(stem: &str, prefixes: &[&str], identities: bool, minimum: usize) {
 }
 
 #[test]
-fn mounted_text_models_match_the_lean_model_reference() {
+fn mounted_text_models_match_the_model_reference() {
     run_family(&["text-", "member-", "recreated-"]);
 }
 
 #[test]
-fn mounted_toggle_models_match_the_lean_model_reference() {
+fn mounted_toggle_models_match_the_model_reference() {
     run_family(&["checkbox-", "radio-"]);
 }
 
 #[test]
-fn mounted_select_models_match_the_lean_model_reference() {
+fn mounted_select_models_match_the_model_reference() {
     run_family(&["select-"]);
 }
 
 /// Keyed interactions: element identity decides which item an in-flight IME
 /// commit or a checkbox toggle reaches when rows reorder around it.
 #[test]
-fn mounted_looped_models_match_the_lean_model_reference() {
+fn mounted_looped_models_match_the_model_reference() {
     run_stem("model-loop-reference", &["keyed-", "positional-"], true, 4);
 }
 

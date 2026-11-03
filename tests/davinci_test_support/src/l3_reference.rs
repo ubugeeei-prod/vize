@@ -38,5 +38,5 @@ use std::path::{Path, PathBuf};
 /// The committed reference fixtures.
 #[must_use]
 pub fn fixtures() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../formal/impeto/fixtures")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures/l3-reference")
 }
