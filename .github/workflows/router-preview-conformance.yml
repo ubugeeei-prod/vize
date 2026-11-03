@@ -9,6 +9,7 @@ on:
       - tests/fixtures/typechecker/experimental-router-project-capability/**
       - tests/_fixtures/differential/typechecker/router-mapper-capability-10579/**
       - tests/tooling/router-preview-*.ts
+      - tests/tooling/router-page-workflow.test.ts
       - tests/tooling/support/router-preview/**
       - tests/tooling/support/router-experimental-provider.ts
       - crates/vize_canon/src/batch/virtual_project/typed_router/**
@@ -160,3 +161,49 @@ jobs:
             echo 'Preview discovery or a failed control cannot qualify source support.' >&2
             exit 1
           fi
+
+  page-route-cli-editor:
+    name: Published Router 5.1 page CLI and editor
+    needs: [source-cli]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.source-cli.outputs.receipt-sha256 }}
+      VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+      VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Require the reviewed source revision
+        if: github.event_name == 'workflow_dispatch'
+        env: { EXPECTED_SOURCE_SHA: "${{ inputs.expected-source-sha }}" }
+        run: |
+          if [[ ! "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$GITHUB_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
+            echo 'The checked out source must equal the reviewed immutable revision.' >&2
+            exit 1
+          fi
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Install frozen source dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+      - name: Check the unchanged published page CLI and editor oracle
+        uses: ./.github/actions/check-router-page-types
+      - name: Retain complete page inputs, raw observations and source custody
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-page-cli-editor-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/differential/router-page-types/
+            target/differential/router-page-types-secondary/
+            target/ci/vize.differential-build.json
+            target/ci/vize.source-build.json
+            target/ci/vize.source-use.json
+          if-no-files-found: error
+          retention-days: 7
