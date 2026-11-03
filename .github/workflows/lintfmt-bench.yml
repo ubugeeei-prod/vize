@@ -37,7 +37,7 @@ env:
   # Extra lint arguments and the tasks the profile job records.
   LINTFMT_BENCH_PROFILE_LINT_ARGS: "--no-config --preset ecosystem"
   LINTFMT_BENCH_PROFILE_TASKS: "lint"
-  LINTFMT_BENCH_BASE: ""
+  LINTFMT_BENCH_BASE: "ed574e77c93f130b96e6250ce5b08ad3eb6e7446"
   LINTFMT_BENCH_VERIFY: "-p vize_patina -p vize_glyph"
 
 jobs:
