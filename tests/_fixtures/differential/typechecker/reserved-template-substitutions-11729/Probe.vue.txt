@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const label = (zone: string, start: number): string => zone + start;
+defineProps<{ zone: string; from: number }>();
+</script>
+
+<template>
+  <p :title="`Times in ${label(zone, from)}`">a</p>
+  <p>{{ `Times in ${label(zone, from)}` }}</p>
+</template>

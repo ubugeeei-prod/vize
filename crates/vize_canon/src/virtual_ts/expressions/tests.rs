@@ -112,3 +112,51 @@ fn still_rewrites_as_when_used_as_template_prop_identifier() {
         Some("{ as: props[\"as\"], tag: props[\"as\"] }")
     );
 }
+
+#[test]
+fn reserved_props_inside_template_literal_substitutions_are_rewritten() {
+    let props = TemplateBindingAccess::from_props(["from"].into_iter().map(Into::into).collect());
+    assert_eq!(
+        rewrite_reserved_template_binding("`Times in ${label(zone, from)}`", &props).as_deref(),
+        Some("`Times in ${label(zone, props[\"from\"])}`")
+    );
+}
+
+#[test]
+fn nested_template_substitutions_keep_quasis_strings_regexes_and_members() {
+    let props = TemplateBindingAccess::from_props(["from"].into_iter().map(Into::into).collect());
+    let expression = r#"`from \${from} ${`nested ${from} ${({ from: 'from', value: from }).value}`} ${/}/.test('from') ? from : item.from}`"#;
+    assert_eq!(
+        rewrite_reserved_template_binding(expression, &props).as_deref(),
+        Some(
+            r#"`from \${from} ${`nested ${props["from"]} ${({ from: 'from', value: props["from"] }).value}`} ${/}/.test('from') ? props["from"] : item.from}`"#
+        )
+    );
+}
+
+#[test]
+fn substitutions_keep_comment_braces_out_of_the_template_grammar() {
+    let props = TemplateBindingAccess::from_props(["from"].into_iter().map(Into::into).collect());
+    assert_eq!(
+        rewrite_reserved_template_binding("`x ${/* } from */ from // } from\n} tail from`", &props)
+            .as_deref(),
+        Some("`x ${/* } from */ props[\"from\"] // } from\n} tail from`")
+    );
+}
+
+#[test]
+fn ternary_value_before_a_colon_is_not_an_object_property_key() {
+    assert_eq!(
+        rewrite_reserved_template_binding("static ? default : class", &reserved_props()).as_deref(),
+        Some("props[\"static\"] ? props[\"default\"] : props[\"class\"]")
+    );
+}
+
+#[test]
+fn contextual_prop_reads_respect_authored_callback_bindings_inside_substitutions() {
+    let props = TemplateBindingAccess::from_props(["from"].into_iter().map(Into::into).collect());
+    assert_eq!(
+        rewrite_reserved_template_binding("`${((from) => from)(1)} ${from}`", &props).as_deref(),
+        Some("`${((from) => from)(1)} ${props[\"from\"]}`")
+    );
+}

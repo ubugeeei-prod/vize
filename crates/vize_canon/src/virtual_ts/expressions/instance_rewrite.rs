@@ -96,7 +96,7 @@ pub(super) fn rewrite<'a>(
 
 /// Both rewrites map only unchanged bytes and actual property-name tokens.
 /// Their segments are therefore affine, even when a shorthand maps twice.
-fn compose(
+pub(super) fn compose(
     first: &[SpreadRewriteSegment],
     second: &[SpreadRewriteSegment],
 ) -> Vec<SpreadRewriteSegment> {

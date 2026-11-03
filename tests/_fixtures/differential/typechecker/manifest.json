@@ -13419,6 +13419,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reserved-template-substitutions-11729",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reserved-template-substitutions-11729/Probe.vue.txt",
+          "sha256": "7e0c0caf1841800dc03e39309f44774e0d91e57b8b738a9d86d4d6cf940f8608",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "reserved-template-substitutions-11729/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reserved_template_substitutions::reserved_props_in_substitutions_keep_original_acceptance_and_authored_errors; consumes the exact reporter source/config with genuine wrong-argument and repair controls, LF and CRLF; input-only registration, no frozen native admission or published acceptance claim"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],

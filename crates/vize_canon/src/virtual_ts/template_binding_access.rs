@@ -7,6 +7,7 @@
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
 
 mod authored_calls;
+mod contextual;
 #[cfg(test)]
 mod script_binding_names_tests;
 use std::{
