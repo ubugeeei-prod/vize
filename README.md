@@ -149,6 +149,11 @@ Vite configs are not rewritten automatically. See [Project Setup](https://vizejs
 Vize is in its Real World Testing phase: fix requests and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.
 
+> **Benchmark correction pending:** The `vize check` timings and speedups below include
+> warm incremental-cache replay and do not measure a fresh type check. Treat those rows as
+> invalid until the [empty-cache correction run](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891)
+> replaces them. The content-mapper rows were measured separately and are unaffected by this cache defect.
+
 <!-- benchmark:readme:start -->
 
 ## Benchmarks
