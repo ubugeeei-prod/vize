@@ -10,7 +10,8 @@ mod slot_props;
 
 pub(in crate::drawer) use callbacks::classify_retained_event_handler;
 pub use callbacks::{
-    EventHandlerExpression, classify_event_handler, extract_inline_callback_params,
+    EventHandlerExpression, classify_event_handler, classify_event_handler_with_identifier,
+    extract_inline_callback_params,
 };
 pub(in crate::drawer) use slot_props::extract_retained_slot_prop_bindings;
 pub use slot_props::{extract_slot_prop_bindings, extract_slot_props};

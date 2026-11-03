@@ -19,6 +19,13 @@ pub enum EventHandlerExpression {
 }
 
 pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
+    classify_event_handler_with_identifier(source).0
+}
+
+/// Classify a complete handler and retain its normalized standalone identifier.
+pub fn classify_event_handler_with_identifier(
+    source: &str,
+) -> (EventHandlerExpression, Option<CompactString>) {
     let allocator = Allocator::default();
     // Parsing the entire wrapped program rejects valid expression prefixes
     // followed by statements, which must retain their implicit event scope.
@@ -30,12 +37,19 @@ pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
         parsed
     };
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return EventHandlerExpression::Inline;
+        return (EventHandlerExpression::Inline, None);
     }
     let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice() else {
-        return EventHandlerExpression::Inline;
+        return (EventHandlerExpression::Inline, None);
     };
-    classify_event_handler_ast(&statement.expression)
+    let expression = &statement.expression;
+    let identifier = match expression.get_inner_expression() {
+        Expression::Identifier(identifier) if identifier.name != "undefined" => {
+            Some(CompactString::new(identifier.name.as_str()))
+        }
+        _ => None,
+    };
+    (classify_event_handler_ast(expression), identifier)
 }
 
 /// Reuse only the actual producer-owned complete expression. Classification is
@@ -91,7 +105,65 @@ pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactS
 
 #[cfg(test)]
 mod tests {
-    use super::extract_inline_callback_params;
+    use super::{
+        EventHandlerExpression, classify_event_handler, classify_event_handler_with_identifier,
+        extract_inline_callback_params,
+    };
+    use vize_carton::CompactString;
+
+    #[test]
+    fn complete_handler_classification_preserves_normalized_identifier_facts() {
+        for source in ["onPress", "(((onPress)))", r"on\u0050ress"] {
+            let actual = classify_event_handler_with_identifier(source);
+            assert_eq!(
+                actual,
+                (
+                    EventHandlerExpression::Reference,
+                    Some(CompactString::new("onPress")),
+                ),
+                "{source}"
+            );
+            assert_eq!(classify_event_handler(source), actual.0, "{source}");
+        }
+
+        for source in [
+            "handlers.onPress",
+            "handlers['onPress']",
+            "handlers?.onPress",
+        ] {
+            assert_eq!(
+                classify_event_handler_with_identifier(source),
+                (EventHandlerExpression::Reference, None),
+                "{source}"
+            );
+        }
+
+        assert_eq!(
+            classify_event_handler_with_identifier("event => onPress(event)"),
+            (
+                EventHandlerExpression::Callback {
+                    params: [CompactString::new("event")].into_iter().collect(),
+                    accepts_event: true,
+                },
+                None,
+            )
+        );
+
+        for source in [
+            "onPress($event)",
+            "onPress(); onClear()",
+            "undefined",
+            "(undefined)",
+            r"\u0075ndefined",
+            "",
+        ] {
+            assert_eq!(
+                classify_event_handler_with_identifier(source),
+                (EventHandlerExpression::Inline, None),
+                "{source}"
+            );
+        }
+    }
 
     #[test]
     fn parameters_belong_only_to_the_outer_callback() {

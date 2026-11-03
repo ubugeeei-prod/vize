@@ -2,7 +2,8 @@ use std::borrow::Cow;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    ArrowFunctionExpression, Class, Expression, Function, StringLiteral, TemplateLiteral,
+    ArrowFunctionExpression, Class, Expression, Function, IdentifierReference, StringLiteral,
+    TemplateLiteral,
 };
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
@@ -113,19 +114,36 @@ pub(super) fn common_vif_guard_prefix_for_guards(guards: &[&str]) -> Option<Stri
     common_guard_prefix_from_terms(first, rest.iter().copied())
 }
 
-/// Return the positive guard terms that must be repeated inside a generated
-/// callback to restore narrowing for captured object properties.
-///
-/// Negated branch terms are intentionally omitted. Rechecking an exclusion
-/// after the surrounding control flow has already narrowed the discriminant
-/// can itself produce an impossible-comparison diagnostic.
-pub(super) fn callback_vif_guard(guard: &str) -> Option<String> {
-    let positive_terms: Vec<_> = split_guard_terms(guard)
-        .into_iter()
-        .filter(|term| !term.starts_with('!'))
-        .collect();
+/// Replay every branch condition after a generated callback boundary.
+/// Captured properties and mutable bindings also lose negative narrowing.
+/// Generated-only comparison diagnostics belong to the existing guard ignores.
+pub(super) fn callback_vif_guard(guard: &str, handler_binding: Option<&str>) -> Option<String> {
+    if let Some(name) = handler_binding {
+        let allocator = Allocator::default();
+        if let Ok(expression) = Parser::new(&allocator, guard, SourceType::ts()).parse_expression()
+        {
+            let span = expression.span();
+            if guard.get(span.start as usize..span.end as usize) == Some(guard.trim()) {
+                let mut reference = GuardReference { name, used: false };
+                reference.visit_expression(&expression);
+                if !reference.used {
+                    return None;
+                }
+            }
+        }
+    }
+    Some(String::from(guard))
+}
 
-    (!positive_terms.is_empty()).then(|| String::from(positive_terms.join(" && ").as_str()))
+struct GuardReference<'s> {
+    name: &'s str,
+    used: bool,
+}
+
+impl<'a> Visit<'a> for GuardReference<'_> {
+    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
+        self.used |= identifier.name == self.name;
+    }
 }
 
 /// Remove a guard prefix that is already active in the surrounding generated
@@ -325,17 +343,44 @@ mod tests {
     }
 
     #[test]
-    fn callback_guard_keeps_positive_narrowing_terms() {
+    fn callback_guard_keeps_positive_and_negative_narrowing_terms() {
         assert_eq!(
-            callback_vif_guard("!(item.type === 'text') && ready && (item.type === 'container')")
-                .as_deref(),
-            Some("ready && (item.type === 'container')")
+            callback_vif_guard(
+                "!(item.type === 'text') && ready && (item.type === 'container')",
+                None
+            )
+            .as_deref(),
+            Some("!(item.type === 'text') && ready && (item.type === 'container')")
         );
     }
 
     #[test]
-    fn callback_guard_omits_negated_branch_terms() {
-        assert_eq!(callback_vif_guard("!(item.type === 'text')"), None);
+    fn callback_guard_replays_negated_branch_terms() {
+        for guard in ["!(row.item.kind === 'header')", "!(!draft)"] {
+            assert_eq!(callback_vif_guard(guard, None).as_deref(), Some(guard));
+        }
+    }
+
+    #[test]
+    fn callback_guard_omits_only_conditions_unrelated_to_a_bare_handler_binding() {
+        assert_eq!(
+            callback_vif_guard("state.kind === 'entry'", Some("onPress")),
+            None
+        );
+        assert_eq!(callback_vif_guard("state.handler", Some("handler")), None);
+        for guard in [
+            "typeof handler === 'function'",
+            "typeof \\u0068andler === 'function'",
+        ] {
+            assert_eq!(
+                callback_vif_guard(guard, Some("handler")).as_deref(),
+                Some(guard)
+            );
+        }
+        assert_eq!(
+            callback_vif_guard("handler trailing", Some("onPress")).as_deref(),
+            Some("handler trailing")
+        );
     }
 
     #[test]

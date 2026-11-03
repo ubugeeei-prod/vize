@@ -3,7 +3,7 @@
 //! [`super::handler_shape`].
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler_with_identifier};
 
 use crate::virtual_ts::expressions::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
@@ -30,10 +30,10 @@ pub(super) fn generate_event_handler_expressions(
             let content = rewritten.as_deref().unwrap_or(authored_content);
             // Croquis already established that an inline body owns `$event`.
             // Classify only the remaining reference/callback shapes, once.
-            let shape = if ctx.data.has_implicit_event {
-                EventHandlerExpression::Inline
+            let (shape, handler_binding) = if ctx.data.has_implicit_event {
+                (EventHandlerExpression::Inline, None)
             } else {
-                classify_event_handler(authored_content)
+                classify_event_handler_with_identifier(authored_content)
             };
             let is_callable_reference = matches!(shape, EventHandlerExpression::Reference);
             let is_reference = ctx.check_emits && is_callable_reference;
@@ -50,16 +50,16 @@ pub(super) fn generate_event_handler_expressions(
             };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
-            let guard = expr.vif_guard.as_ref().map(|guard| {
-                let trimmed_guard = guard.as_str().trim();
-                rewrite_reserved_template_binding(trimmed_guard, &scoped_access)
-                    .unwrap_or_else(|| String::from(guard.as_str()))
+            let guard = expr.vif_guard.as_ref().and_then(|guard| {
+                let guard = match ctx.enclosing_vif_guard {
+                    Some(_) => callback_vif_guard(guard.as_str(), handler_binding.as_deref()),
+                    None => Some(String::from(guard.as_str())),
+                }?;
+                Some(
+                    rewrite_reserved_template_binding(guard.as_str().trim(), &scoped_access)
+                        .unwrap_or(guard),
+                )
             });
-            let guard = match (guard, ctx.enclosing_vif_guard) {
-                (Some(guard), Some(_)) => callback_vif_guard(guard.as_str()),
-                (guard, None) => guard,
-                (None, _) => None,
-            };
             // A handler declared against the listener type returns its lone
             // expression, so its guard is an early exit (`vue-tsc`'s own
             // `if (!cond) throw 0`) rather than a block: a block would add
