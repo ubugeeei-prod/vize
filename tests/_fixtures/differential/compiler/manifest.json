@@ -3534,6 +3534,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
         "requiredFacets": [
           "code",
           "css",
@@ -3553,7 +3554,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop preserves the pinned component under the authored table row; native foster parenting, v-pre and configured custom-element controls remain independent."
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
       },
