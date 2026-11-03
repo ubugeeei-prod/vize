@@ -196,17 +196,21 @@ void test("the sitemap ships the locales the docs site is built for", () => {
 });
 
 void test("the sidebar groups the pages the site actually publishes", () => {
+  // Product sections, then the rule reference, then the project itself.
   assert.deepEqual(
     sitemap.navGroups.map((group) => group.key),
     [
       "start",
-      "projectSetup",
-      "staticAnalysis",
-      "formatting",
+      "linter",
+      "formatter",
+      "typeChecker",
+      "editor",
+      "compiler",
+      "configuration",
+      "components",
+      "tools",
       "rules",
       "ruleGuides",
-      "tooling",
-      "tools",
       "architecture",
       "blog",
     ],
@@ -214,50 +218,63 @@ void test("the sidebar groups the pages the site actually publishes", () => {
   assert.deepEqual(sitemap.navGroups.at(-1)?.paths, sitemap.blogNavigationPaths);
   assert.deepEqual(sitemap.blogNavigationPaths, ["/blog", "/blog/notes", "/blog/releases"]);
 
-  assert.deepEqual(sitemap.navGroups.find((group) => group.key === "projectSetup")?.paths, [
+  const compiler = sitemap.navGroups.find((group) => group.key === "compiler")!;
+  const compilerPaths = [
     "/guide/vite-plugin",
     "/integrations/nuxt",
     "/integrations/void",
-    "/guide/workflows",
+    "/guide/unplugin",
     "/guide/jsx",
     "/guide/jsx-babel-compat",
+    "/guide/compiler-inspector",
+    "/guide/wasm",
+  ];
+  assert.deepEqual(compiler.paths, compilerPaths);
+  const authoredCompilerPaths = [
+    "/guide/vite-plugin",
+    "/integrations/nuxt",
+    "/integrations/void",
     "/guide/unplugin",
+    "/guide/jsx",
+    "/guide/jsx-babel-compat",
+    "/guide/vapor",
+    "/guide/compiler-inspector",
+    "/guide/wasm",
+    "/guide/jsr",
+  ];
+  assert.deepEqual(compiler.pathsByLocale, {
+    en: authoredCompilerPaths,
+    ja: authoredCompilerPaths,
+  });
+
+  // The option references are listed in every locale, not hidden behind the
+  // Configuration page.
+  const configuration = sitemap.navGroups.find((group) => group.key === "configuration")!;
+  assert.deepEqual(configuration.paths, [
+    "/guide/configuration",
+    "/guide/configuration-reference",
+    "/guide/compiler-configuration-reference",
   ]);
 
   const start = sitemap.navGroups.find((group) => group.key === "start")!;
   assert.deepEqual(start.paths, [
     "/",
     "/getting-started",
-    "/guide/content-mapper",
     "/philosophy",
-    "/guide/configuration",
+    "/guide/workflows",
+    "/guide/troubleshooting",
   ]);
-  assert.deepEqual(start.pathsByLocale, {
-    en: [
-      "/",
-      "/getting-started",
-      "/guide/content-mapper",
-      "/guide/type-checking",
-      "/philosophy",
-      "/guide/vite-plus",
-      "/guide/vite-plus-editor",
-      "/guide/init",
-      "/guide/migration",
-      "/guide/configuration",
-    ],
-    ja: [
-      "/",
-      "/getting-started",
-      "/guide/content-mapper",
-      "/guide/type-checking",
-      "/philosophy",
-      "/guide/vite-plus",
-      "/guide/vite-plus-editor",
-      "/guide/init",
-      "/guide/migration",
-      "/guide/configuration",
-    ],
-  });
+  const authoredStartPaths = [
+    "/",
+    "/getting-started",
+    "/philosophy",
+    "/guide/init",
+    "/guide/vite-plus",
+    "/guide/workflows",
+    "/guide/migration",
+    "/guide/troubleshooting",
+  ];
+  assert.deepEqual(start.pathsByLocale, { en: authoredStartPaths, ja: authoredStartPaths });
   // Every common path remains mandatory in all five locales. Authored locale
   // overrides must retain those paths and publish every additional entry.
   for (const group of sitemap.navGroups) {
@@ -323,7 +340,7 @@ void test("the Babel JSX compatibility page is labelled in every locale", () => 
       localeCodes.map((code) => [code, locales[code].labels["/guide/jsx-babel-compat"]]),
     ),
     {
-      en: "Babel JSX Compat",
+      en: "Babel JSX compatibility",
       ja: "Babel JSX 互換",
       "zh-CN": "Babel JSX 兼容",
       "pt-BR": "Compatibilidade com Babel JSX",

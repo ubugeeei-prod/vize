@@ -17,7 +17,7 @@ for (const basename of SCRIPT_BASENAMES.filter((name) => name.startsWith("i18n/"
 const navigation = globalThis.__vizeDocsNavigation;
 
 for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
-  void test(`navigation puts Content Mapper in the open Start section (${code})`, () => {
+  void test(`navigation files Content Mapper under Type checker and keeps Getting started open (${code})`, () => {
     const prefix = code === "en" ? "" : `/${code}`;
     const document = createNavigationDocument([
       [`${prefix}/getting-started`, "Getting Started"],
@@ -30,20 +30,24 @@ for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
     assert.deepEqual(sections(document), [
       {
         title: strings.ui.groups.start,
-        labels: [
-          strings.labels["/getting-started"],
-          strings.labels["/guide/content-mapper"],
-          strings.labels["/philosophy"],
-        ],
+        labels: [strings.labels["/getting-started"], strings.labels["/philosophy"]],
       },
-      { title: strings.ui.groups.tooling, labels: [strings.labels["/guide/musea"]] },
+      {
+        title: strings.ui.groups.typeChecker,
+        labels: [strings.labels["/guide/content-mapper"]],
+      },
+      { title: strings.ui.groups.components, labels: [strings.labels["/guide/musea"]] },
     ]);
+    assert.deepEqual(
+      document.querySelectorAll(".nav-section").map((group) => group.getAttribute("open") !== null),
+      [true, true, false],
+    );
     assert.deepEqual(
       document.querySelectorAll(".nav-link[href]").map((link) => link.getAttribute("href")),
       [
         `${prefix}/getting-started`,
-        `${prefix}/guide/content-mapper`,
         `${prefix}/philosophy`,
+        `${prefix}/guide/content-mapper`,
         `${prefix}/guide/musea`,
       ],
     );
@@ -67,7 +71,7 @@ void test("applyNavigationOrder keeps the Blog group compact", () => {
 
   assert.deepEqual(sections(document), [
     {
-      title: "Start",
+      title: "Getting started",
       labels: ["Overview"],
     },
     {
@@ -89,11 +93,11 @@ void test("applyNavigationOrder places the stability contract with the project p
 
   assert.deepEqual(sections(document), [
     {
-      title: "Start",
-      labels: ["Overview", "Getting Started"],
+      title: "Getting started",
+      labels: ["Overview", "Quick start"],
     },
     {
-      title: "Project & internals",
+      title: "Project and architecture",
       labels: ["Stability", "Credits"],
     },
   ]);
@@ -109,8 +113,8 @@ void test("applyNavigationOrder groups component exploration together", () => {
 
   assert.deepEqual(sections(document), [
     {
-      title: "Explore components",
-      labels: ["Musea", "UI Styles"],
+      title: "Components",
+      labels: ["Musea", "UI styles"],
     },
   ]);
 });
@@ -123,7 +127,11 @@ void test("applyNavigationOrder files former More pages under the task they belo
     ["/rules/options-vue", "Vue Rule Options"],
     ["/rules/vue-sfc", "Vue Rules: SFC Blocks"],
     ["/guide/musea-hosting", "Musea Hosting"],
+    ["/integrations/mcp", "MCP Server"],
     ["/guide/doctor", "Doctor Diagnostics"],
+    ["/guide/check-performance", "Type-checking performance"],
+    ["/guide/vite-plus-editor", "Vite+ editor setup"],
+    ["/guide/compiler-inspector", "Compiler Inspector"],
     ["/contributing", "Contributing"],
     ["/guide/experimentals-reference", "Experimentals Reference"],
   ]);
@@ -133,15 +141,43 @@ void test("applyNavigationOrder files former More pages under the task they belo
   // No trailing "More" section: every page has a named group, and the
   // experimentals reference is reached from the Experimentals page instead.
   assert.deepEqual(sections(document), [
-    { title: "Start", labels: ["Project initializer"] },
-    { title: "Check code", labels: ["Lint Execution"] },
-    { title: "Format code", labels: ["Indent Width"] },
+    { title: "Getting started", labels: ["Project initializer"] },
+    { title: "Linter", labels: ["Lint run settings"] },
+    { title: "Formatter", labels: ["Indent width"] },
+    { title: "Type checker", labels: ["Type-check performance"] },
+    { title: "Editor", labels: ["Editor setup"] },
+    { title: "Compiler and integrations", labels: ["Compiler inspector"] },
+    { title: "Components", labels: ["Musea hosting", "MCP server"] },
+    { title: "CLI and tools", labels: ["Doctor"] },
     { title: "Rule reference", labels: ["Options: Vue"] },
     { title: "Rules by topic", labels: ["Vue: SFC Blocks"] },
-    { title: "Explore components", labels: ["Musea Hosting"] },
-    { title: "CLI & tools", labels: ["Doctor"] },
-    { title: "Project & internals", labels: ["Contributing"] },
+    { title: "Project and architecture", labels: ["Contributing"] },
   ]);
+});
+
+void test("applyNavigationOrder lists the option references under Configuration", () => {
+  const document = createNavigationDocument([
+    ["/guide/configuration", "Configuration"],
+    ["/guide/configuration-reference", "Shared Configuration Reference"],
+    ["/guide/compiler-configuration-reference", "Compiler Configuration Reference"],
+    ["/guide/experimentals", "Experimentals"],
+    ["/guide/experimentals-vue-rfcs", "Vue RFC experimentals"],
+  ]);
+
+  applyNavigation(document, "/guide/compiler-configuration-reference/index.html");
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "Configuration",
+      labels: [
+        "Overview",
+        "Configuration reference",
+        "Compiler options reference",
+        "Experimental features",
+      ],
+    },
+  ]);
+  assert.notEqual(document.querySelector(".nav-section").getAttribute("open"), null);
 });
 
 void test("applyNavigationOrder keeps developer architecture pages together", () => {
@@ -157,12 +193,12 @@ void test("applyNavigationOrder keeps developer architecture pages together", ()
 
   assert.deepEqual(sections(document), [
     {
-      title: "Project & internals",
+      title: "Project and architecture",
       labels: [
-        "Architecture Overview",
+        "Architecture overview",
         "Crates",
-        "Source Guide",
-        "Language Engineering",
+        "Source guide",
+        "Language engineering",
         "Performance",
       ],
     },
@@ -208,11 +244,11 @@ void test("applyNavigationOrder keeps only the current locale and localizes labe
 
   assert.deepEqual(sections(document), [
     {
-      title: "スタート",
-      labels: ["はじめる"],
+      title: "はじめに",
+      labels: ["クイックスタート"],
     },
     {
-      title: "コードを検査する",
+      title: "リンター",
       labels: ["静的解析"],
     },
   ]);
@@ -231,13 +267,14 @@ void test("navigation opens the current goal and keeps generated leaf pages out 
     ["/rules/reference/vue-no-v-html", "vue/no-v-html"],
     ["/guide/ui", "UI"],
     ["/guide/ui/button", "Button"],
-    ["/guide/configuration-reference", "Standalone reference"],
+    ["/guide/composables", "Composables"],
+    ["/guide/composables/use-toggle", "useToggle"],
   ]);
   applyNavigation(document, "/rules/reference/vue-no-v-html/index.html");
   assert.deepEqual(sections(document), [
-    { title: "Start", labels: ["Getting Started", "Vite+ integration", "Migration"] },
+    { title: "Getting started", labels: ["Quick start", "Vite+ integration", "Migration"] },
+    { title: "Components", labels: ["UI components", "Composables"] },
     { title: "Rule reference", labels: ["All Rules"] },
-    { title: "Explore components", labels: ["UI Reference"] },
   ]);
   const groups = document.querySelectorAll(".nav-section");
   assert.deepEqual(
@@ -246,11 +283,11 @@ void test("navigation opens the current goal and keeps generated leaf pages out 
   );
   assert.deepEqual(
     groups.map((group) => group.getAttribute("open") !== null),
-    [true, true, false],
+    [true, false, true],
   );
   assert.deepEqual(
     groups.map((group) => group.querySelector(".nav-list").inert),
-    [false, false, true],
+    [false, true, false],
   );
   assert.equal(groups[0].querySelector(".nav-title").tagName, "SUMMARY");
 });

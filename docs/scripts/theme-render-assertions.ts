@@ -291,18 +291,37 @@ export async function verifyIntroductoryNavigation(page: Page, route: string) {
   const prefix = locale === "en" ? "" : `/${locale}`;
   const groups = await page.locator(".sidebar details").evaluateAll((elements) =>
     elements.map((element) => ({
+      title: element.querySelector("summary")?.textContent ?? "",
       paths: [...element.querySelectorAll("a")].map((link) =>
         new URL(link.href).pathname.replace(/\/index\.html$|\/$/g, ""),
       ),
     })),
   );
   if (!groups.length) return;
+  // The headings the shipped locale script names, read from the page itself.
+  const headings = await page.evaluate(
+    (code) =>
+      (
+        globalThis as {
+          __vizeDocsLocales?: Record<string, { ui: { groups: Record<string, string> } }>;
+        }
+      ).__vizeDocsLocales?.[code]?.ui.groups,
+    locale,
+  );
+  assert(headings, `${locale}: the page ships its sidebar headings`);
   const philosophy = `${prefix}/philosophy`;
   const mapper = `${prefix}/guide/content-mapper`;
-  assert(groups[0].paths.includes(philosophy), `${locale}: Philosophy belongs in Start`);
-  assert(groups[0].paths.includes(mapper), `${locale}: Content Mapper belongs in Start`);
-  assert.equal(groups.filter((group) => group.paths.includes(philosophy)).length, 1);
-  assert.equal(groups.filter((group) => group.paths.includes(mapper)).length, 1);
+  assert.equal(groups[0].title, headings.start, `${locale}: Getting started comes first`);
+  assert.deepEqual(
+    groups.filter((group) => group.paths.includes(philosophy)).map(({ title }) => title),
+    [headings.start],
+    `${locale}: Philosophy belongs in Getting started`,
+  );
+  assert.deepEqual(
+    groups.filter((group) => group.paths.includes(mapper)).map(({ title }) => title),
+    [headings.typeChecker],
+    `${locale}: Content Mapper belongs in Type checker`,
+  );
 }
 
 export async function switchDocsTheme(page: Page, theme: string, device: string) {
