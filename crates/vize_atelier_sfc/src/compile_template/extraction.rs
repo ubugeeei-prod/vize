@@ -2,10 +2,10 @@
 
 use vize_l0::{String, ToCompactString};
 
-use super::TemplateCodeSections;
 use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
+use super::{TemplateBlockCompileResult, TemplateCodeSections};
 
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
@@ -47,6 +47,17 @@ pub(crate) fn slice_template_parts(
     let render_body = String::new(body);
 
     (imports, hoisted, preamble, render_body, "render")
+}
+
+/// Imports, hoists and the whole render function of a compiled template:
+/// sliced from its recorded sections when its lane records them (DOM).
+pub(crate) fn template_parts_full(
+    output: &TemplateBlockCompileResult,
+) -> (String, String, String, &'static str) {
+    match &output.sections {
+        Some(sections) => slice_template_parts_full(&output.code, sections),
+        None => extract_template_parts_full(&output.code),
+    }
 }
 
 /// [`extract_template_parts_full`] over emission-recorded sections: only the

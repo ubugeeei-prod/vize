@@ -15,10 +15,7 @@ mod section_offsets_tests;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
-    slice_template_parts_full,
-};
+pub(crate) use extraction::{extract_template_parts, slice_template_parts, template_parts_full};
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
