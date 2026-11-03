@@ -8,6 +8,16 @@ use super::scope::{MarkupConditional, MarkupList};
 use super::{MarkupContext, MarkupDocument};
 use crate::ir::ByteRange;
 
+/// The Davinci level a [`MarkupRule`] reads: the authored L1 surface, or the
+/// L1→L2 lowering.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MarkupLevel {
+    /// The authored L1 surface tree.
+    L1,
+    /// The L1→L2 lowering.
+    L2,
+}
+
 /// A lint rule expressed against the zero-copy markup IR.
 ///
 /// This is the parallel of [`crate::rule::Rule`] for the unified IR: the same
@@ -22,6 +32,11 @@ pub trait MarkupRule {
     /// The rule name, used to set [`LintContext::current_rule`] before each
     /// callback so diagnostics are attributed and rule-level suppression works.
     fn name(&self) -> &'static str;
+
+    /// The level this rule reads.
+    fn level(&self) -> MarkupLevel {
+        MarkupLevel::L1
+    }
 
     /// Called once before traversal begins.
     fn enter_document(&self, _ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {}
