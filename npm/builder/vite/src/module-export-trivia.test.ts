@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
 import { parseSync } from "oxc-parser";
 
 import { bindDefaultExport } from "../../shared/native-shape.ts";
@@ -90,4 +91,28 @@ void test("invalid trivia and stale offsets still fail instead of binding a comp
       ),
     );
   }
+});
+
+void test("pinned differential module uses the same comment-aware builder splice", () => {
+  const code = readFileSync(
+    new URL(
+      "../../../../tests/_fixtures/differential/compiler/module-export-trivia-11764/module.expected.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const shape = analyzeModuleOutput(code);
+  assert.equal(
+    shape.defaultExportStart,
+    Buffer.byteLength(code.slice(0, code.indexOf("export/*"))),
+  );
+  const keywordEnd = code.indexOf("default/* tail */") + "default".length;
+  assert.equal(shape.defaultExportKeywordEnd, Buffer.byteLength(code.slice(0, keywordEnd)));
+  const module = moduleText(code);
+  bindDefaultExport(module, shape, "_sfc_main");
+  assert.equal(
+    module.code,
+    code.slice(0, code.indexOf("export/*")) + "const _sfc_main =" + code.slice(keywordEnd),
+  );
+  assert.deepEqual(parseSync("output.mjs", module.code).errors, []);
 });

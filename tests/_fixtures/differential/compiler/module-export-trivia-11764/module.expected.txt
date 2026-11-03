@@ -1,0 +1,5 @@
+
+const label = '雪😀';
+export/* default decoy */
+// export decoy
+default/* tail */ { data() { return { label }; } };

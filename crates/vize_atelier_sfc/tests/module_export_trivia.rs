@@ -87,3 +87,23 @@ fn large_comment_gaps_keep_exact_utf8_byte_offsets() {
     );
     assert_eq!(shape.default_export_end, Some(source.len() as u32));
 }
+
+#[test]
+fn pinned_module_preserves_comment_boundaries_for_builder_splice() {
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/compiler/module-export-trivia-11764/module.expected.txt"
+    );
+    let keyword_start = source.find("export/*").unwrap();
+    let keyword_end = source.find("default/* tail */").unwrap() + "default".len();
+    let shape = analyze_module_shape(source).expect("pinned valid module");
+    assert_eq!(shape.default_export_start, Some(keyword_start as u32));
+    assert_eq!(shape.default_export_keyword_end, Some(keyword_end as u32));
+    let rewritten = format!(
+        "{}const _sfc_main ={}",
+        &source[..keyword_start],
+        &source[keyword_end..]
+    );
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &rewritten, SourceType::mjs()).parse();
+    assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
+}
