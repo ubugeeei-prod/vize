@@ -205,10 +205,9 @@ fn registered_import_need_is_exact_and_removed_on_replacement_or_delete() {
         .into_iter()
         .find(|file| file.original_path == path)
         .unwrap();
-    assert!(
-        file.content
-            .contains("ReturnType<typeof import('vue-router').useRoute<")
-    );
+    assert!(file
+        .content
+        .contains("ReturnType<typeof import('vue-router').useRoute<"));
     assert!(!file.content.contains("const $route: __Global<'$route'"));
     project.remove_registered_source(&path);
     assert!(!project.has_typed_router_imports());
@@ -233,11 +232,16 @@ fn normalized_typescript_before_route_call_keeps_page_specialization() {
                 .replace('\n', newline);
             project.register_vue_file(&path, &source).unwrap();
             let file = project.find_by_original(&path).unwrap();
-            assert!(file.content.contains("const identity = <T,>"));
-            assert!(
-                file.content.contains(&format!("{identifier}<import('vue-router/auto-routes')._RouteNamesForFilePath<\"Probe.vue\">>()")),
-                "normalized setup must retain the configured route call: {}",
-                file.content,
+            let normalized = file
+                .content
+                .lines()
+                .map(str::trim)
+                .find(|line| line.starts_with("const identity = "))
+                .unwrap();
+            assert_eq!(
+                normalized,
+                format!("const identity = <T,>(value: T) => value; const asserted = <number>1; const route = {identifier}<import('vue-router/auto-routes')._RouteNamesForFilePath<\"Probe.vue\">>(); const typedId: number = route.params.userId;"),
+                "the complete normalized statement retains the configured route call",
             );
             let generated = file.content.find("const typedId").unwrap() + "const ".len();
             let authored = source.find("const typedId").unwrap() + "const ".len();
