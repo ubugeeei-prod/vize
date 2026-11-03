@@ -41,13 +41,19 @@ export async function prepareSfcSrcRequests(
   );
 }
 
-/** A `load` that compiles its SFC on demand resolves the SFC's requests first. */
+/** An SFC's source as `load` read it for the `src` request scan. */
+export type LoadedSfcSource = { file: string; source: string };
+
+/**
+ * A `load` that compiles its SFC on demand resolves the SFC's requests first.
+ * It returns the source it read, so that compile does not read the file again.
+ */
 export async function prepareLoadSrcRequests(
   state: VizePluginState,
   resolve: HostResolve,
   id: string,
-): Promise<void> {
-  if (!id.includes(".vue")) return;
+): Promise<LoadedSfcSource | undefined> {
+  if (!id.includes(".vue")) return undefined;
   const request = classifyVitePluginRequest(id);
   const file =
     request.vizeVirtualPath ?? fromPluginVisibleVirtualId(id) ?? getLoadableVueSfcPath(request);
@@ -58,7 +64,9 @@ export async function prepareLoadSrcRequests(
     state.srcResolutions?.has(file) ||
     !fs.existsSync(file)
   ) {
-    return;
+    return undefined;
   }
-  await prepareSfcSrcRequests(state, resolve, file, fs.readFileSync(file, "utf-8"));
+  const source = fs.readFileSync(file, "utf-8");
+  await prepareSfcSrcRequests(state, resolve, file, source);
+  return { file, source };
 }
