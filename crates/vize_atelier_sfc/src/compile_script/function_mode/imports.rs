@@ -39,9 +39,9 @@ pub(super) fn insert_imports(
         }
     }
     output.splice(at..at, text);
-    if erasure.is_some()
+    if let Some(erasure) = erasure.as_ref()
         && let Ok(code) = std::str::from_utf8(output)
-        && let Some((elided, _)) = elide_generated_imports(code, at)
+        && let Some((elided, _)) = elide_generated_imports(code, at, erasure)
     {
         *output = elided.as_bytes().to_vec();
     }

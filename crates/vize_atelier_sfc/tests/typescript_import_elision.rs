@@ -101,26 +101,40 @@ fn sfc(script: &str, template: &str) -> String {
 
 #[test]
 fn compiler_helper_names_in_non_reference_positions_do_not_keep_imports() {
-    for script in [
-        "const label = '_createCommentVNode'; const show = true",
-        "const label = { '_createCommentVNode': true }; const show = true",
-        "const label = { _createCommentVNode: true }; const show = true",
-        "const label = /_createCommentVNode/; const show = true",
-        "const label = `_createCommentVNode`; const show = true",
-        "const label = true; const show = true; // _createCommentVNode",
+    const PLAIN: &str = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"";
+    const UNREF: &str = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from \"vue\"";
+    for (script, imports) in [
+        (
+            "const label = '_createCommentVNode'; const show = true",
+            PLAIN,
+        ),
+        (
+            "const label = { '_createCommentVNode': true }; const show = true",
+            PLAIN,
+        ),
+        (
+            "const label = { _createCommentVNode: true }; const show = true",
+            PLAIN,
+        ),
+        (
+            "const label = /_createCommentVNode/; const show = true",
+            UNREF,
+        ),
+        (
+            "const label = `_createCommentVNode`; const show = true",
+            PLAIN,
+        ),
+        (
+            "const label = true; const show = true; // _createCommentVNode",
+            PLAIN,
+        ),
     ] {
         let source = sfc(
             script,
             "<div v-if=\"show\">{{ label }}</div><div v-else>off</div>",
         );
         let code = compile(&source, Shape::Inline);
-        assert_eq!(
-            code.lines().next(),
-            Some(
-                "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\""
-            ),
-            "{script}\n{code}",
-        );
+        assert_eq!(code.lines().next(), Some(imports), "{script}\n{code}",);
     }
     let code = compile(
         &sfc("const show = true", "<div v-if=\"show\">on</div>"),
@@ -132,6 +146,71 @@ fn compiler_helper_names_in_non_reference_positions_do_not_keep_imports() {
             "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\""
         ),
     );
+}
+
+fn unresolved_generated_helpers(code: &str) -> Vec<String> {
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, code, oxc_span::SourceType::mjs()).parse();
+    assert_eq!(parsed.diagnostics.len(), 0);
+    let semantic = oxc_semantic::SemanticBuilder::new().build(&parsed.program);
+    assert_eq!(semantic.diagnostics.len(), 0);
+    let scoping = semantic.semantic.into_scoping();
+    let mut names: Vec<String> = scoping
+        .root_unresolved_references()
+        .keys()
+        .filter(|name| name.as_str().starts_with('_'))
+        .map(|name| name.as_str().to_compact_string())
+        .collect();
+    names.sort();
+    names
+}
+
+#[test]
+fn compiler_glue_keeps_the_runtime_helpers_it_actually_calls() {
+    for source in [
+        sfc("const slots = defineSlots()", "<slot/>"),
+        sfc("const count = defineModel<number>()", "<p>{{ count }}</p>"),
+        sfc(
+            "const value: number = await Promise.resolve(1)",
+            "<p>{{ value }}</p>",
+        ),
+        sfc("defineOptions({ inheritAttrs: false })", "<div/>"),
+        sfc(
+            "const { title = 'x', ...rest } = defineProps(['title', 'other'])",
+            "<p>{{ title }}{{ rest.other }}</p>",
+        ),
+        sfc(
+            "const props = withDefaults(defineProps<{ label?: string }>(), { label: 'x' })",
+            "<p>{{ props.label }}</p>",
+        ),
+        cstr!(
+            "{}<style>.x {{ color: v-bind(color) }}</style>",
+            sfc("const color: string = 'red'", "<div/>")
+        ),
+        cstr!(
+            "{}<style module>.x {{ color: red }}</style>",
+            sfc(
+                "const label: string = 'x'",
+                "<div :class=\"$style.x\">{{ label }}</div>"
+            )
+        ),
+    ] {
+        for shape in SHAPES {
+            let code = compile(&source, shape);
+            assert_eq!(
+                unresolved_generated_helpers(&code),
+                Vec::<String>::new(),
+                "{shape:?}\n{source}\n{code}"
+            );
+        }
+    }
+    let code = compile(
+        &sfc("const slots = defineSlots()", "<slot/>"),
+        Shape::Inline,
+    );
+    let changed = code.replace("useSlots as _useSlots", "useSlots as _missingUseSlots");
+    assert_ne!(changed, code);
+    assert_eq!(unresolved_generated_helpers(&changed), vec!["_useSlots"]);
 }
 
 #[test]

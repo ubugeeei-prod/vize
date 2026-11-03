@@ -16,7 +16,6 @@ use oxc_codegen::Codegen;
 use oxc_parser::{ParseOptions, Parser};
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, SourceType};
-use oxc_syntax::identifier::is_identifier_part;
 use oxc_transformer::{JsxOptions, TransformOptions, Transformer, TypeScriptOptions};
 use vize_carton::{FxHashSet, String, ToCompactString, profile};
 
@@ -121,19 +120,8 @@ impl Erasure {
         }
     }
 
-    /// Record the value names of generated JavaScript that may name one of
-    /// `candidates`; text that names none of them is not parsed.
-    pub(crate) fn generated(&mut self, code: &str, candidates: &[String]) {
-        if candidates
-            .iter()
-            .any(|name| !self.uses(name) && code.contains(name.as_str()))
-        {
-            self.javascript(code);
-        }
-    }
-
-    /// [`Self::generated`] for one expression.
-    pub(crate) fn generated_expression(&mut self, code: &str, candidates: &[String]) {
+    /// [`Self::javascript`] for one expression.
+    pub(crate) fn javascript_expression(&mut self, code: &str) {
         if code.trim().is_empty() {
             return;
         }
@@ -141,7 +129,7 @@ impl Erasure {
         wrapped.push('(');
         wrapped.push_str(code);
         wrapped.push_str("\n)");
-        self.generated(&wrapped, candidates);
+        self.javascript(&wrapped);
     }
 
     /// Record the value names of JavaScript kept as written. A top-level
@@ -297,11 +285,13 @@ fn print_import(program: &Program<'_>, import: &str) -> String {
 
 /// The module with the compiler's own imports (`code[..end]`) left without
 /// the specifiers the rest of the module never names, and its provenance in
-/// `code`; `None` when every specifier is named. Naming is textual: a
-/// runtime helper alias that merely appears in a string is kept, which is
-/// harmless, while a used one is never dropped.
-pub(crate) fn elide_generated_imports(code: &str, end: usize) -> Option<(String, Runs)> {
-    let (head, rest) = (code.get(..end)?, code.get(end..)?);
+/// `code`; `None` when every specifier has a recorded value reference.
+pub(crate) fn elide_generated_imports(
+    code: &str,
+    end: usize,
+    erasure: &Erasure,
+) -> Option<(String, Runs)> {
+    let head = code.get(..end)?;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, head, SourceType::mjs()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -317,7 +307,7 @@ pub(crate) fn elide_generated_imports(code: &str, end: usize) -> Option<(String,
         };
         let kept: Vec<&str> = specifiers
             .iter()
-            .filter(|specifier| names(rest, &specifier.local().name))
+            .filter(|specifier| erasure.uses(&specifier.local().name))
             .filter_map(|specifier| {
                 head.get(specifier.span().start as usize..specifier.span().end as usize)
             })
@@ -357,13 +347,14 @@ pub(crate) fn elide_generated_imports(code: &str, end: usize) -> Option<(String,
     ))
 }
 
-/// Whether `text` holds `name` as a whole identifier.
-fn names(text: &str, name: &str) -> bool {
-    text.match_indices(name).any(|(at, _)| {
-        let before = text.get(..at).and_then(|before| before.chars().next_back());
-        let after = text
-            .get(at + name.len()..)
-            .and_then(|after| after.chars().next());
-        !before.is_some_and(is_identifier_part) && !after.is_some_and(is_identifier_part)
-    })
+/// Emit a compiler-owned runtime reference and record it at its write site.
+pub(crate) fn emit_runtime_helper(
+    output: &mut Vec<u8>,
+    erasure: Option<&mut Erasure>,
+    alias: &str,
+) {
+    output.extend_from_slice(alias.as_bytes());
+    if let Some(erasure) = erasure {
+        erasure.note(alias);
+    }
 }

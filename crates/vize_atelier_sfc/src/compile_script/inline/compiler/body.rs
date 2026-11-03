@@ -232,11 +232,10 @@ pub(super) fn compile_script_setup_inline_body(
             .iter()
             .map(|import| extract_import_identifiers(import))
             .collect();
-        let candidates: Vec<String> = locals.iter().flatten().cloned().collect();
         // SAFETY: the render return is ASCII glue around UTF-8 template code.
         let render_return = unsafe { std::str::from_utf8_unchecked(&render_return) };
         for generated in [render_return, template.hoisted, template.render_fn] {
-            erasure.generated(generated, &candidates);
+            erasure.javascript(generated);
         }
         // Erased macro arguments count where they are emitted.
         let mut options =
@@ -246,20 +245,17 @@ pub(super) fn compile_script_setup_inline_body(
         options.extend_from_slice(&model_props_emits_buf);
         options.extend_from_slice(b"})");
         // SAFETY: macro arguments and ASCII glue are UTF-8.
-        erasure.generated(
-            unsafe { std::str::from_utf8_unchecked(&options) },
-            &candidates,
-        );
+        erasure.javascript(unsafe { std::str::from_utf8_unchecked(&options) });
         let macros = &ctx.macros;
         for call in [&macros.define_options, &macros.define_expose]
             .into_iter()
             .flatten()
         {
-            erasure.generated_expression(&call.args, &candidates);
+            erasure.javascript_expression(&call.args);
         }
         let model_options = model_infos.iter().filter_map(|info| info.4.as_ref());
         for value in css_var_values.iter().chain(model_options) {
-            erasure.generated_expression(value, &candidates);
+            erasure.javascript_expression(value);
         }
         if erasure.is_complete() {
             head.elide(erasure, &locals);
@@ -311,9 +307,13 @@ pub(super) fn compile_script_setup_inline_body(
         &template,
         vapor_render_alias.as_deref(),
         css_modules,
+        erasure.as_mut(),
     );
 
     if let Some(declaration) = rest_proxy {
+        if let Some(erasure) = erasure.as_mut() {
+            erasure.javascript(&declaration);
+        }
         output.extend_from_slice(declaration.as_bytes());
         output.push(b'\n');
     }
@@ -334,6 +334,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_prod,
         has_css_vars,
         setup_css_module_names,
+        erasure.as_mut(),
         &mut tracer,
     );
 
@@ -361,8 +362,8 @@ pub(super) fn compile_script_setup_inline_body(
 
     let final_code: String = if is_ts {
         annotate_event_params(&output_str, &mut tracer)
-    } else if erasure.is_some() {
-        match elide_generated_imports(&output_str, generated_imports_end) {
+    } else if let Some(erasure) = erasure.as_ref().filter(|erasure| erasure.is_complete()) {
+        match elide_generated_imports(&output_str, generated_imports_end, erasure) {
             Some((code, runs)) => {
                 if let Some(trace) = tracer.trace() {
                     trace.output = runs.compose(&trace.output);
