@@ -23,7 +23,9 @@ use vize_l2::op::{IfBranch, IfOp, Namespace, Op, Region};
 use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::element::{Analyzed, BranchKind, analyze, attr_text, element_core};
+use super::element::{
+    Analyzed, BranchKind, Structure, analyze, attr_text, element_core, structure, template_unwraps,
+};
 use super::expr::expr_at;
 use super::forop::lower_for;
 use super::if_keys;
@@ -38,14 +40,102 @@ pub(crate) use wrapper::{
 };
 use wrapper::{chain_once_attr, record_wrapper_key};
 
-/// One scanned branch of a chain: its element, analysis, branch
-/// attribute, and the gap children it consumes.
-type Branch<'a, 't> = (
-    &'t Element<'a>,
-    Analyzed<'a>,
-    &'t Attribute<'a>,
-    StdVec<usize>,
-);
+/// One scanned branch of a chain: its sibling index, element, its
+/// reading, branch attribute, and the gap children it consumes.
+type Branch<'a, 't, R = Analyzed<'a>> =
+    (usize, &'t Element<'a>, R, &'t Attribute<'a>, StdVec<usize>);
+
+/// One `v-if` chain over L1 siblings, grouped as the lowering groups it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IfChain {
+    /// Each branch's sibling index and kind, in authored order.
+    pub branches: StdVec<(usize, BranchKind)>,
+    /// Whether a branch lowers without a condition.
+    pub unconditional: bool,
+    /// The index just past the last consumed sibling.
+    pub end: usize,
+}
+
+/// A `v-else` value lowers as its condition only when it is not blank.
+fn else_condition<'a>(attr: &Attribute<'a>) -> Option<&'a str> {
+    attr_text(attr).filter(|text| !text.trim().is_empty())
+}
+
+/// The chain the lowering builds from `children[start]`, when that child
+/// opens one. `in_v_pre` when an ancestor carries `v-pre`.
+pub fn if_chain(children: &[SurfaceChild<'_>], start: usize, in_v_pre: bool) -> Option<IfChain> {
+    let Some(SurfaceChild::Element(first)) = children.get(start) else {
+        return None;
+    };
+    let read = structure(first, in_v_pre);
+    let Some((attr, BranchKind::If)) = read.branch_attr(first) else {
+        return None;
+    };
+    let (branches, end) = scan_if_chain(
+        children,
+        start,
+        (start, first, read, attr, StdVec::new()),
+        |element| structure(element, in_v_pre),
+        Structure::branch_attr,
+    );
+    let kinds: StdVec<(usize, BranchKind)> = branches
+        .iter()
+        .map(|(index, _, read, _, _)| {
+            let kind = read.branch.map_or(BranchKind::If, |(_, kind)| kind);
+            (*index, kind)
+        })
+        .collect();
+    let unconditional = branches
+        .iter()
+        .zip(&kinds)
+        .any(|((_, _, _, attr, _), (_, kind))| {
+            *kind == BranchKind::Else && else_condition(attr).is_none()
+        });
+    Some(IfChain {
+        branches: kinds,
+        unconditional,
+        end,
+    })
+}
+
+/// Scan a chain from its opening branch: the branches plus the gap nodes
+/// each consumes, and the index just past the last consumed sibling.
+fn scan_if_chain<'a, 't, R>(
+    children: &'t [SurfaceChild<'a>],
+    start: usize,
+    first: Branch<'a, 't, R>,
+    read: impl Fn(&'t Element<'a>) -> R,
+    branch_attr: impl Fn(&R, &'t Element<'a>) -> Option<(&'t Attribute<'a>, BranchKind)>,
+) -> (StdVec<Branch<'a, 't, R>>, usize) {
+    let mut branches: StdVec<Branch<'a, 't, R>> = StdVec::new();
+    branches.push(first);
+    let mut j = start + 1;
+    let mut pending: StdVec<usize> = StdVec::new();
+    while let Some(child) = children.get(j) {
+        match child {
+            gap if is_branch_gap(gap) => pending.push(j),
+            SurfaceChild::Element(element) => {
+                let reading = read(element);
+                match branch_attr(&reading, element) {
+                    Some((attr, kind @ (BranchKind::ElseIf | BranchKind::Else))) => {
+                        branches.push((j, element, reading, attr, core::mem::take(&mut pending)));
+                        j += 1;
+                        if kind == BranchKind::Else {
+                            break;
+                        }
+                        continue;
+                    }
+                    _ => break,
+                }
+            }
+            _ => break,
+        }
+        j += 1;
+    }
+    // Gap nodes past the last branch were scanned but not consumed; they
+    // re-enter the main loop.
+    (branches, j - pending.len())
+}
 
 /// Lower one children level into a region's ops, in document order.
 ///
@@ -67,7 +157,7 @@ fn lower_children_guarded<'a>(
     children: &[SurfaceChild<'a>],
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
-    let plan = text::plan_whitespace(cx, children);
+    let plan = cx.text_lane().plan(children);
     let mut out: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
     let mut i = 0usize;
     while let Some(child) = children.get(i) {
@@ -104,11 +194,7 @@ fn lower_children_guarded<'a>(
                 }
             }
             SurfaceChild::Text(_) | SurfaceChild::Interpolation(_) => {
-                i = if cx.v_pre_suppressed() {
-                    text::lower_v_pre_text_run(cx, children, &plan, i, &mut out)
-                } else {
-                    text::lower_text_run(cx, children, &plan, i, &mut out)
-                };
+                i = text::lower_text_run(cx, children, &plan, i, &mut out);
                 continue;
             }
             other => lower_leaf(cx, other, &mut out),
@@ -139,40 +225,19 @@ fn lower_if_group<'a, 't>(
     ns: Namespace,
     out: &mut Vec<'a, Op<'a>>,
 ) -> usize {
-    // Scan the chain first: branches plus the gap nodes each consumes.
-    let mut branches: StdVec<Branch<'a, 't>> = StdVec::new();
-    branches.push((first, first_analyzed, first_attr, StdVec::new()));
-    let mut j = start + 1;
-    let mut pending: StdVec<usize> = StdVec::new();
-    while let Some(child) = children.get(j) {
-        match child {
-            gap if is_branch_gap(gap) => pending.push(j),
-            SurfaceChild::Element(element) => {
-                let analyzed = analyze(element, cx.v_pre_suppressed());
-                match analyzed.branch_attr(element) {
-                    Some((attr, kind @ (BranchKind::ElseIf | BranchKind::Else))) => {
-                        branches.push((element, analyzed, attr, core::mem::take(&mut pending)));
-                        j += 1;
-                        if kind == BranchKind::Else {
-                            break;
-                        }
-                        continue;
-                    }
-                    _ => break,
-                }
-            }
-            _ => break,
-        }
-        j += 1;
-    }
-    // Gap nodes past the last branch were scanned but not consumed; they
-    // re-enter the main loop.
-    let consumed_until = j - pending.len();
+    let in_v_pre = cx.v_pre_suppressed();
+    let (branches, consumed_until) = scan_if_chain(
+        children,
+        start,
+        (start, first, first_analyzed, first_attr, StdVec::new()),
+        |element| analyze(element, in_v_pre),
+        Analyzed::branch_attr,
+    );
 
     let node = cx.mint_op();
     let last_end = branches
         .last()
-        .map(|(element, ..)| element_span(cx, element).end)
+        .map(|(_, element, ..)| element_span(cx, element).end)
         .unwrap_or_else(|| element_span(cx, first).end);
     let span = Span::new(cx.offset(first.open.lt_name.text), last_end);
 
@@ -189,7 +254,7 @@ fn lower_if_group<'a, 't>(
     let mut branch_keys: StdVec<Option<if_keys::BranchKey>> = StdVec::new();
     let mut from_template: StdVec<bool> = StdVec::new();
     let mut once = false;
-    for (element, analyzed, attr, gaps) in branches {
+    for (_, element, analyzed, attr, gaps) in branches {
         for gap in gaps {
             if let Some(SurfaceChild::Text(token) | SurfaceChild::Comment(token)) =
                 children.get(gap)
@@ -209,8 +274,7 @@ fn lower_if_group<'a, 't>(
             None => BranchKind::If,
         };
         let condition = match kind {
-            BranchKind::Else => attr_text(attr)
-                .and_then(|text| (!text.trim().is_empty()).then(|| expr_at(cx, text))),
+            BranchKind::Else => else_condition(attr).map(|text| expr_at(cx, text)),
             BranchKind::If | BranchKind::ElseIf => {
                 let text = attr_text(attr);
                 if text.map(str::trim).is_none_or(str::is_empty) {
@@ -289,15 +353,7 @@ fn branch_body<'a>(
         ops.push(op);
         return (ops, None, false);
     }
-    if element.tag() == "template" {
-        if analyzed.has_slot_spelling() {
-            // Keep the carrier so `ui.slot-content` has an op. Unwrap
-            // would drop `#name` (the recorded conditional-carrier gap).
-            let op = element_core(cx, element, analyzed, ns);
-            let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
-            ops.push(op);
-            return (ops, None, false);
-        }
+    if template_unwraps(element, analyzed.has_slot_spelling()) {
         cx.report_missing_close(element);
         let captured = capture_wrapper_key(cx, element, analyzed);
         let (skip, key) = match captured {
