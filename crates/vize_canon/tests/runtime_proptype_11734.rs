@@ -44,7 +44,7 @@ fn check_case(repo: &Path, fixtures: &Path, case: &Value) {
     #[cfg(unix)]
     std::os::unix::fs::symlink(vue, root.join("node_modules/vue")).unwrap();
     #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(vue, root.join("node_modules/vue")).unwrap();
+    junction::create(vue, root.join("node_modules/vue")).unwrap();
     for input in case["inputs"].as_array().unwrap() {
         std::fs::copy(
             fixtures.join(input["source"].as_str().unwrap()),
