@@ -449,12 +449,19 @@ const save = () => undefined
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert_eq!(
-        output.code.matches("_click_prop_args_library =").count(),
-        2,
-        "each sibling generated guard must declare the stable listener contract it references: {}",
-        output.code
-    );
+    for alias in ["__library =", "_click_prop_args ="] {
+        assert_eq!(
+            output
+                .code
+                .lines()
+                .filter(|line| line.trim_start().starts_with("type __MyButton_")
+                    && line.contains(alias))
+                .count(),
+            2,
+            "each sibling generated guard must declare the {alias} contract it references: {}",
+            output.code
+        );
+    }
     assert_eq!(
         output.code.matches("_click_prop_arrays =").count(),
         2,

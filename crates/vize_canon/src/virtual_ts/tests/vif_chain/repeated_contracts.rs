@@ -57,12 +57,39 @@ const onClose = () => undefined
         "each usage should resolve its props once for all of its listeners: {}",
         output.code
     );
+    // One component contract derives the child's props, emit props and
+    // library shape once; each event then reads them for its own key.
+    for alias in ["__library =", "__props =", "__emit_props ="] {
+        assert_eq!(
+            output
+                .code
+                .lines()
+                .filter(
+                    |line| line.trim_start().starts_with("type __MyChild_") && line.contains(alias)
+                )
+                .count(),
+            1,
+            "{alias} should be declared once for both events: {}",
+            output.code
+        );
+    }
     assert_eq!(
-        output.code.matches("_prop_args_library =").count(),
-        2,
-        "select and close should each resolve their stable listener contract once: {}",
+        output
+            .code
+            .matches("typeof MyChild extends { new (")
+            .count(),
+        1,
+        "the constructor props are inferred once per component contract: {}",
         output.code
     );
+    for event in ["select", "close"] {
+        assert_eq!(
+            output.code.matches(&*cstr!("_{event}_prop_args =")).count(),
+            1,
+            "{event} should resolve its stable listener contract once: {}",
+            output.code
+        );
+    }
 }
 
 #[test]
