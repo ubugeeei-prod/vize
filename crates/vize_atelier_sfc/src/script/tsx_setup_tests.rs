@@ -100,3 +100,36 @@ export default {
 };"##
     );
 }
+
+#[test]
+fn jsx_setup_rewrites_props_but_not_shadowing_jsx_parameters() {
+    let source = r#"<script setup lang="jsx">
+const { title } = defineProps({ title: String })
+const Row = ({ title: label }) => <b title={title}>{label}</b>
+const Inner = (title) => <i>{title}</i>
+</script>
+<template><Row /><Inner /></template>"#;
+    assert_eq!(
+        compile(source),
+        r##"import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+
+
+export default {
+  __name: 'anonymous',
+  props: { title: String },
+  setup(__props) {
+
+const Row = ({ title: label }) => <b title={__props.title}>{label}</b>
+const Inner = (title) => <i>{title}</i>
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createVNode(Row),
+    _createVNode(Inner)
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}"##
+    );
+}
