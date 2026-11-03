@@ -1,7 +1,8 @@
 // Webpack style blocks become virtual files beside the SFC, e.g.
 // `App.vue.__vize_style_0.data-v-1a2b3c4d.scss`, so the host's own `.scss`
 // rule (sass-loader, css-loader, ...) matches them and relative `@use` and
-// `@import` resolve from the SFC's directory.
+// `@import` resolve from the SFC's directory. A `<style src>` block's file
+// sits beside its src file instead, which its relative references name.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Compiler as WebpackCompiler } from "webpack";
@@ -20,7 +21,8 @@ export function webpackStylePath(
 ): string {
   const scope = scoped ? `.${scoped}` : "";
   const module = block.module === false ? "" : ".module";
-  return `${filePath}.__vize_style_${block.index}${scope}${module}.${block.lang ?? "css"}`;
+  const base = block.srcFile ?? filePath;
+  return `${base}.__vize_style_${block.index}${scope}${module}.${block.lang ?? "css"}`;
 }
 
 // vue-loader configs pick the CSS modules rule by resource query

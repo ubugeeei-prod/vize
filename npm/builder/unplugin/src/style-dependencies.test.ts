@@ -198,10 +198,14 @@ void test("#11456 compilation inlines style src; only injected output refuses im
     }
     assert.equal(message, null, item.id);
     assert.ok(first && second, item.id);
-    // A pipeline host imports every block; the host resolves its @import.
+    // A pipeline host imports every block; the host resolves its @import. A
+    // `<style src>` block's module sits beside its file (#11522).
+    const fromSrc = "expected" in item && item.expected.dependencies.length > 0;
     assert.match(
       output("preprocessors"),
-      /^import "[^"]+\/Foo\.vue\?vue&type=style&index=0&/,
+      fromSrc
+        ? /^import "[^"]+\/foo\.css\.__vize_style_0\?vue&type=style&index=0&owner=[^"&]+%2FFoo\.vue&/
+        : /^import "[^"]+\/Foo\.vue\?vue&type=style&index=0&/,
       item.id,
     );
     if ("injectError" in item) {
@@ -213,6 +217,13 @@ void test("#11456 compilation inlines style src; only injected output refuses im
     assert.deepEqual(second.dependencies, item.expected.dependencies, item.id);
     assert.ok(
       first.compiled.styles.every((style) => style.src === null),
+      item.id,
+    );
+    assert.deepEqual(
+      first.compiled.styles.map((style) => style.srcFile),
+      first.compiled.styles.map((_, index) =>
+        index === 0 ? (item.expected.dependencies[0] ?? null) : null,
+      ),
       item.id,
     );
     assert.match(output("none"), /__vize_css__/, item.id);

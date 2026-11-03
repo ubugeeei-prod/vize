@@ -165,6 +165,8 @@ export interface VizeCompatibilityOptions {
 export interface StyleBlockInfo {
   content: string;
   src?: string | null;
+  /** The file an inlined `<style src>` block was read from (#11522). */
+  srcFile?: string | null;
   lang: string | null;
   scoped: boolean;
   module: boolean | string;

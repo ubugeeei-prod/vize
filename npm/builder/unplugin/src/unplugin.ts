@@ -354,8 +354,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
     },
 
     esbuild: {
-      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
-      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
+      // A `<style src>` module's path sits beside its src file (styleRequestId).
+      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
+      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

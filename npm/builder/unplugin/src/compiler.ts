@@ -62,6 +62,7 @@ export function compileVueModule(
     source: inlined,
     dependencies,
     imports,
+    styleSrcs,
   } = inlineSfcSrcBlocks(native.parseSfc, filePath, source, srcResolutions);
   const sourceHash = buildSourceHash(inlined);
   const signature = buildSignature(options);
@@ -112,7 +113,11 @@ export function compileVueModule(
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
-    styles: result.styles.map(toStyleBlockInfo),
+    // An inlined `<style src>` block keeps the file it came from (#11522).
+    styles: result.styles.map((style) => ({
+      ...toStyleBlockInfo(style),
+      srcFile: styleSrcs.get(style.index) ?? null,
+    })),
   };
 
   cache.set(filePath, {
