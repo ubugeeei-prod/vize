@@ -82,16 +82,17 @@ pub fn erase_all<S: Clone, P: Clone>(nodes: &[Node<S, P>]) -> Vec<View<S, P>> {
     nodes.iter().map(erase).collect()
 }
 
-/// The identity and children kept for `owner`, and the allocator after it.
-pub type Retained<S, P> = (u32, Vec<Node<S, P>>, u32);
+/// The identity and the previous children kept for `owner`, and the
+/// allocator after it. The children are borrowed, never copied.
+pub type Retained<'p, S, P> = (u32, &'p [Node<S, P>], u32);
 
 /// Reuse the first previous sibling with the same L3 address, or allocate.
-pub fn retain<S: Clone + PartialEq, P: Clone>(
-    previous: &[Node<S, P>],
+pub fn retain<'p, S: PartialEq, P>(
+    previous: &'p [Node<S, P>],
     owner: &S,
     tag: &S,
     next: u32,
-) -> Result<Retained<S, P>, &'static str> {
+) -> Result<Retained<'p, S, P>, &'static str> {
     match previous.iter().find(|node| node.address() == Some(owner)) {
         Some(Node::Element {
             identity,
@@ -100,14 +101,14 @@ pub fn retain<S: Clone + PartialEq, P: Clone>(
             ..
         }) => {
             if tag == old {
-                Ok((*identity, children.clone(), next))
+                Ok((*identity, children, next))
             } else {
                 Err("stable L3 identity changed element kind")
             }
         }
         _ => {
             let after = next.checked_add(1).ok_or("identity allocator overflow")?;
-            Ok((next, Vec::new(), after))
+            Ok((next, &[], after))
         }
     }
 }
@@ -127,7 +128,7 @@ pub fn reconcile<S: Clone + PartialEq, P: Clone>(
     siblings(fuel, previous, &[], desired, next)
 }
 
-/// Siblings left to right; `seen` holds the addresses already placed here.
+/// Siblings left to right; `seen` holds the addresses placed before them.
 pub fn siblings<S: Clone + PartialEq, P: Clone>(
     fuel: usize,
     previous: &[Node<S, P>],
@@ -135,10 +136,9 @@ pub fn siblings<S: Clone + PartialEq, P: Clone>(
     desired: &[View<S, P>],
     next: u32,
 ) -> Result<Reconciled<S, P>, &'static str> {
-    let mut seen = seen.to_vec();
-    let mut nodes = Vec::new();
+    let mut nodes = Vec::with_capacity(desired.len());
     let mut next = next;
-    for view in desired {
+    for (index, view) in desired.iter().enumerate() {
         match view {
             View::Text(value) => nodes.push(Node::Text(value.clone())),
             View::Element {
@@ -147,13 +147,17 @@ pub fn siblings<S: Clone + PartialEq, P: Clone>(
                 payload,
                 children,
             } => {
-                if seen.contains(address) {
+                // Placed so far: `seen`, then every earlier element here.
+                let earlier = desired.get(..index).unwrap_or_default();
+                let placed = |other: &View<S, P>| {
+                    matches!(other, View::Element { address: placed, .. } if placed == address)
+                };
+                if seen.iter().any(|placed| placed == address) || earlier.iter().any(placed) {
                     return Err("duplicate materialized address");
                 }
                 let (identity, old, after) = retain(previous, address, tag, next)?;
-                let (updated, after) = reconcile(fuel, &old, children, after)?;
+                let (updated, after) = reconcile(fuel, old, children, after)?;
                 next = after;
-                seen.push(address.clone());
                 nodes.push(Node::Element {
                     address: address.clone(),
                     identity,

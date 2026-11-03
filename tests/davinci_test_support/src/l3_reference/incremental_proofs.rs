@@ -31,51 +31,47 @@ fn fuel() -> usize {
     fuel
 }
 
-fn width() -> usize {
-    let len: usize = kani::any();
-    kani::assume(len <= WIDTH);
-    len
+/// Up to two siblings, each list built at its final size: cutting a longer
+/// list would run drop glue over a symbolic tail, which costs CBMC dearly.
+fn siblings_of<T>(item: impl Fn() -> T) -> Vec<T> {
+    match kani::any::<u8>() % 3 {
+        0 => Vec::new(),
+        1 => vec![item()],
+        _ => vec![item(), item()],
+    }
+}
+
+fn view(depth: usize) -> V {
+    if depth == 0 || kani::any() {
+        return View::Text(letter());
+    }
+    View::Element {
+        address: letter(),
+        tag: letter(),
+        payload: kani::any(),
+        children: views(depth - 1),
+    }
 }
 
 fn views(depth: usize) -> Vec<V> {
-    let len = width();
-    let mut out = Vec::new();
-    for index in 0..WIDTH {
-        if index < len {
-            out.push(if depth == 0 || kani::any() {
-                View::Text(letter())
-            } else {
-                View::Element {
-                    address: letter(),
-                    tag: letter(),
-                    payload: kani::any(),
-                    children: views(depth - 1),
-                }
-            });
-        }
+    siblings_of(|| view(depth))
+}
+
+fn node(depth: usize) -> N {
+    if depth == 0 || kani::any() {
+        return Node::Text(letter());
     }
-    out
+    Node::Element {
+        address: letter(),
+        identity: identity(),
+        tag: letter(),
+        payload: kani::any(),
+        children: nodes(depth - 1),
+    }
 }
 
 fn nodes(depth: usize) -> Vec<N> {
-    let len = width();
-    let mut out = Vec::new();
-    for index in 0..WIDTH {
-        if index < len {
-            out.push(if depth == 0 || kani::any() {
-                Node::Text(letter())
-            } else {
-                Node::Element {
-                    address: letter(),
-                    identity: identity(),
-                    tag: letter(),
-                    payload: kani::any(),
-                    children: nodes(depth - 1),
-                }
-            });
-        }
-    }
-    out
+    siblings_of(|| node(depth))
 }
 
 /// Identity of the first previous sibling carrying `owner`.
@@ -110,6 +106,7 @@ fn allocations_one(previous: &[N], view: &V) -> u64 {
 /// keeping its children and the allocator, or allocates the next identity.
 #[kani::proof]
 #[kani::unwind(4)]
+#[kani::solver(cadical)]
 fn retain_keeps_the_addressed_element_or_allocates() {
     let previous = nodes(1);
     let (owner, tag) = (letter(), letter());
@@ -122,7 +119,7 @@ fn retain_keeps_the_addressed_element_or_allocates() {
                 ..
             }) => {
                 assert!(retained_identity(&previous, owner) == Some(*identity));
-                assert!(kept == *identity && after == next && children == *old);
+                assert!(kept == *identity && after == next && children == old.as_slice());
             }
             _ => {
                 assert!(retained_identity(&previous, owner).is_none());
@@ -136,6 +133,7 @@ fn retain_keeps_the_addressed_element_or_allocates() {
 /// erased, is exactly the freshly rendered view.
 #[kani::proof]
 #[kani::unwind(4)]
+#[kani::solver(cadical)]
 fn the_patched_tree_displays_the_view() {
     let previous = nodes(DEPTH);
     let desired = views(DEPTH);
@@ -157,6 +155,7 @@ fn the_patched_tree_displays_the_view() {
 /// the allocator advances by exactly the elements with no retained address.
 #[kani::proof]
 #[kani::unwind(4)]
+#[kani::solver(cadical)]
 fn allocation_is_exactly_the_inserted_delta() {
     let previous = nodes(DEPTH);
     let desired = views(DEPTH);
@@ -180,6 +179,7 @@ fn allocation_is_exactly_the_inserted_delta() {
 /// previous sibling with its address, or takes a fresh one from `[next, after)`.
 #[kani::proof]
 #[kani::unwind(4)]
+#[kani::solver(cadical)]
 fn top_level_identities_are_retained_or_fresh() {
     let previous = nodes(DEPTH);
     let desired = views(DEPTH);
@@ -210,6 +210,7 @@ fn top_level_identities_are_retained_or_fresh() {
 /// every address survives allocates nothing.
 #[kani::proof]
 #[kani::unwind(4)]
+#[kani::solver(cadical)]
 fn an_update_is_recompute_and_reorders_allocate_nothing() {
     let state = State {
         roots: nodes(DEPTH),
