@@ -359,17 +359,10 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     const errors = query("feature-boundary-diagnostics", { file }, () =>
       e.languageService.getSemanticDiagnostics(file),
     );
-    assert.equal(
-      errors.filter((diagnostic) => diagnostic.code === 2322).length,
-      2,
-      "both the wrong prop and wrong event parameter survive; native prop echo stays suppressed",
-    );
-    assert(
-      errors.some((diagnostic) =>
-        ts
-          .flattenDiagnosticMessageText(diagnostic.messageText, "\n")
-          .includes("Types of parameters 'value'"),
-      ),
+    // The wrong listener parameter and the wrong prop both survive (#11657).
+    assert.deepEqual(
+      errors.map((diagnostic) => [diagnostic.code, diagnostic.start]),
+      [[2322, eventParent.indexOf('="(value')], [2322, eventParent.indexOf("foo-bar")]],
     );
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
