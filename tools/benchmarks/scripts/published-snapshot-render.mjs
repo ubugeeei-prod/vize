@@ -62,7 +62,13 @@ export function summaryTable(data, locale, ids = SURFACE_ORDER) {
 const formatKb = (kb) =>
   Number.isFinite(kb) ? `${Math.round(kb / 1024).toLocaleString("en-US")} MB` : "n/a";
 
-/** The fastest gated setting of each type-check tool, named, with cold, CPU and peak RSS beside it. */
+const TYPECHECK_TABLE_SCOPE = {
+  check: "each tool at its default setting (tsrs with `--fast`)",
+  "check-small":
+    "each tool at its fastest measured setting (the full checker-count matrix is in the snapshot)",
+};
+
+/** One row per type-check tool, its fastest gated setting named, with cold, CPU and peak RSS beside it. */
 export function typecheckTable(surface) {
   const baseline = getVariant(surface, surface.baselineId);
   const best = new Map();
@@ -81,20 +87,23 @@ export function typecheckTable(surface) {
     baseline ? formatSpeedup(baseline.medianMs / variant.medianMs).replace("x", "×") : "n/a",
   ]);
   return [
-    `Type-check rows on the ${surface.files.toLocaleString("en-US")}-SFC corpus: each tool at its fastest measured setting (the full checker-count matrix is in the snapshot). Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, CPU is user+sys time of the whole process tree (mapper processes included), and Peak RSS is the largest single process.`,
+    `Type-check rows on the ${surface.files.toLocaleString("en-US")}-SFC generated project: ${TYPECHECK_TABLE_SCOPE[surface.id]}.${surface.id === "check" ? " Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, CPU is user+sys time of the whole process tree (mapper processes included), and Peak RSS is the largest single process." : ""}`,
     table(["Checker", "Setting", "Engine", "Cold", "Warm", "CPU", "Peak RSS", "vs vue-tsc"], rows),
   ].join("\n\n");
 }
 
 export function readmeSection(data) {
-  const nuxt = data.surfaces.find((surface) => surface.id === "nuxt");
+  const surface = (id) => data.surfaces.find((s) => s.id === id);
+  const [nuxt, nuxtSmall] = [surface("nuxt"), surface("nuxt-small")];
   const tools = {
     compile: "@vue/compiler-sfc",
     lint: "eslint-plugin-vue",
     fmt: "Prettier",
     check: "vue-tsc",
+    "check-small": "vue-tsc",
     vite: "@vitejs/plugin-vue",
     nuxt: "Nuxt compiler",
+    "nuxt-small": "Nuxt compiler",
   };
   const rows = Object.entries(tools).map(([id, tool]) => {
     const s = data.surfaces.find((surface) => surface.id === id);
@@ -111,9 +120,10 @@ export function readmeSection(data) {
     "## Benchmarks",
     provenance(data, "en"),
     table(["Surface", "Files", "Existing tool", "Existing", "Vize", "Speedup"], rows),
-    typecheckTable(data.surfaces.find((surface) => surface.id === "check")),
+    typecheckTable(surface("check")),
+    typecheckTable(surface("check-small")),
     SNAPSHOT_LOCALES.en.note,
-    `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${formatSpeedup(nuxt.primarySpeedup)}; a ratio below 1 means Vize was slower in this run.`,
+    `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${formatSpeedup(nuxt.primarySpeedup)} at ${nuxt.files.toLocaleString("en-US")} SFCs and ${formatSpeedup(nuxtSmall.primarySpeedup)} at ${nuxtSmall.files.toLocaleString("en-US")}; a ratio below 1 means Vize was slower in this run.`,
     "See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.",
     provenanceDetails(data, "en"),
   ].join("\n\n");
@@ -204,7 +214,7 @@ export function typecheckSection(data, locale) {
   return [
     `## ${t.typecheck}`,
     provenance(data, locale),
-    summaryTable(data, locale, ["check", "large-check"]),
+    summaryTable(data, locale, ["check", "check-small", "large-check"]),
     t.note,
     `[${t.full}](./performance-blacksmith.md)`,
     t.profile,

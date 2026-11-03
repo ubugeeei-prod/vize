@@ -68,9 +68,10 @@ const CHECK_ENGINE_CLASSES: Record<string, string> = {
   ...SETTING_LANE_ENGINE_CLASSES,
 };
 
+/** The small tier, which runs every lane and setting. */
 function checkSurfaceInput(overrides: Record<string, unknown> = {}) {
   return {
-    id: "check",
+    id: "check-small",
     label: "Type check",
     files: 500,
     bytes: 1_000_000,

@@ -8,17 +8,17 @@ on:
         required: true
         default: "15000"
       check_file_count:
-        description: Generated SFC files for vue-tsc/Vize check benchmarks
+        description: SFCs in the generated type-check project's headline tier (the small tier is a quarter)
         required: true
-        default: "500"
+        default: "10000"
       vite_file_count:
         description: Generated SFC files imported by the Vite benchmark entry
         required: true
         default: "1000"
       nuxt_file_count:
-        description: Generated SFC files imported by the Nuxt benchmark app
+        description: SFCs in the generated Nuxt app's headline tier (the small tier is a quarter)
         required: true
-        default: "500"
+        default: "10000"
       musea_file_count:
         description: Generated art files measured by the Musea plugin benchmark
         required: true
@@ -45,7 +45,7 @@ on:
         type: boolean
         default: false
   schedule:
-    # A full tool benchmark is far too heavy (75 min) to run on every push to
+    # A full tool benchmark is far too heavy (about 2 h) to run on every push to
     # main, so a scheduled run publishes benchmark artifacts on a fixed cadence.
     # Committed baseline refreshes must go through a non-main branch because
     # main is protected by required status checks.
@@ -129,7 +129,8 @@ jobs:
     needs: tool-benchmark-impact
     if: ${{ always() && !cancelled() && (github.event_name != 'pull_request' || needs.tool-benchmark-impact.outputs.runtime == 'true') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 75
+    # The dispatch defaults check and build 10,000-SFC projects; PR runs use small tiers.
+    timeout-minutes: 180
     permissions:
       contents: read
     steps:

@@ -7,9 +7,12 @@ const REQUIRED_SURFACES = [
   "lint",
   "fmt",
   "check",
+  "check-small",
   "vite",
   "nuxt",
+  "nuxt-small",
 ];
+const TYPECHECK_SURFACES = ["check", "check-small", "large-check"];
 const HASH = /^[a-f0-9]{64}$/u;
 const PLANTS = ["script", "templateProp", "templateEvent", "componentProp"];
 
@@ -109,7 +112,7 @@ export function validatePublishedSnapshot(input) {
         variant.medianMs === median(variant.runs),
         `inconsistent ${surface.id}/${variant.id} median`,
       );
-      if (!["check", "large-check"].includes(surface.id)) continue;
+      if (!TYPECHECK_SURFACES.includes(surface.id)) continue;
       requireValue(
         Array.isArray(variant.cpuRuns) &&
           variant.cpuRuns.length === variant.runs.length &&

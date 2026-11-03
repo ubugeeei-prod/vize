@@ -27,7 +27,7 @@ test("a cross-engine surface publishes the ratio against its declared incumbent"
   const surface = createSurface(checkSurfaceInput());
 
   assert.deepEqual(surface, {
-    id: "check",
+    id: "check-small",
     label: "Type check",
     files: 500,
     bytes: 1_000_000,

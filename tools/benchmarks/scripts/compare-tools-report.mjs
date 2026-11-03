@@ -23,32 +23,41 @@
 import { ENGINE_CLASS_LABELS, SETTING_LANE_ENGINE_CLASSES } from "./typecheck-mapper-hosts.ts";
 import { OPTIONAL_TYPECHECK_VARIANTS } from "./typecheck-readiness.mjs";
 
+const TYPECHECK_ENGINE_CLASSES = {
+  "golar-default": "tsgo-native",
+  "golar-typecheck": "tsgo-native",
+  "verter-tsc": "tsgo-native",
+  "vue-tsc": "typescript-js",
+  "vize-check-1t": "tsgo-native",
+  "vize-check-max": "tsgo-native",
+  ...SETTING_LANE_ENGINE_CLASSES,
+};
+
+/**
+ * The headline type-check tier's lanes: one per tool, at the setting a user
+ * gets without flags (tsrs with `--fast`, as its README recommends).
+ */
+export const HEADLINE_CHECK_LANES = [
+  "vue-tsc",
+  "vize-check-max",
+  "tsc-vize-mapper",
+  "tsc-vue-mapper",
+  "tsrs-vize-mapper-fast",
+  "tsrs-vue-mapper-fast",
+];
+
 /**
  * Which surfaces span engine classes, and which class each of their variants
  * belongs to. Declared here rather than at the measurement site so a recorded
  * artifact can be re-rendered (tools/benchmarks/scripts/render-results.mjs) with the same
- * classification that produced it. `large-check` is `check` re-run over one
- * large SFC, so it carries the same variant ids.
+ * classification that produced it. `check` is the headline tier,
+ * `check-small` the smaller tier with every setting, and `large-check` the
+ * same lanes over one large SFC.
  */
 export const ENGINE_CLASSES_BY_SURFACE = {
-  check: {
-    "golar-default": "tsgo-native",
-    "golar-typecheck": "tsgo-native",
-    "verter-tsc": "tsgo-native",
-    "vue-tsc": "typescript-js",
-    "vize-check-1t": "tsgo-native",
-    "vize-check-max": "tsgo-native",
-    ...SETTING_LANE_ENGINE_CLASSES,
-  },
-  "large-check": {
-    "golar-default": "tsgo-native",
-    "golar-typecheck": "tsgo-native",
-    "verter-tsc": "tsgo-native",
-    "vue-tsc": "typescript-js",
-    "vize-check-1t": "tsgo-native",
-    "vize-check-max": "tsgo-native",
-    ...SETTING_LANE_ENGINE_CLASSES,
-  },
+  check: Object.fromEntries(HEADLINE_CHECK_LANES.map((id) => [id, TYPECHECK_ENGINE_CLASSES[id]])),
+  "check-small": TYPECHECK_ENGINE_CLASSES,
+  "large-check": TYPECHECK_ENGINE_CLASSES,
 };
 
 function assertRequiredEngineVariants(surface) {

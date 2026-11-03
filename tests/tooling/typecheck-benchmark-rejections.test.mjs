@@ -193,14 +193,14 @@ void test("rejected optional comparators are accounted for but cannot affect a r
     reason: "unstable diagnostics",
   }));
   const input = {
-    id: "check",
-    label: "Type check",
+    id: "check-small",
+    label: "Type check (small tier)",
     files: 500,
     baselineId: "vue-tsc",
     vizeSingleId: "vize-check-1t",
     vizeMaxId: "vize-check-max",
-    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
-    variants: Object.keys(ENGINE_CLASSES_BY_SURFACE.check)
+    engineClasses: ENGINE_CLASSES_BY_SURFACE["check-small"],
+    variants: Object.keys(ENGINE_CLASSES_BY_SURFACE["check-small"])
       .filter((id) => !id.startsWith("golar"))
       .map((id) => ({
         id,

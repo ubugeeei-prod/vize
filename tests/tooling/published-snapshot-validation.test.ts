@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { HEADLINE_CHECK_LANES } from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
 import {
   validatePublishedSnapshot,
   assertFreshSnapshot,
@@ -16,9 +17,11 @@ const artifact = JSON.parse(
 test("publication retains all raw measurements, binary hashes and diagnostic proofs", () => {
   const validated = validatePublishedSnapshot(artifact);
   assert.deepEqual(validated, artifact);
-  const ids = artifact.surfaces
-    .find((s: { id: string }) => s.id === "check")
-    .variants.map((v: { id: string }) => v.id);
+  const lanes = (surfaceId: string) =>
+    artifact.surfaces
+      .find((s: { id: string }) => s.id === surfaceId)
+      .variants.map((v: { id: string }) => v.id);
+  assert.deepEqual(lanes("check").sort(), [...HEADLINE_CHECK_LANES].sort());
   for (const id of [
     "vue-tsc",
     "verter-tsc",
@@ -29,7 +32,7 @@ test("publication retains all raw measurements, binary hashes and diagnostic pro
     "tsrs-vize-mapper",
     "tsrs-vue-mapper",
   ])
-    assert.ok(ids.includes(id));
+    assert.ok(lanes("check-small").includes(id), id);
 });
 
 test("derived ratios are recomputed instead of trusting stale or inflated claims", () => {

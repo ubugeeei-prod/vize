@@ -19,6 +19,9 @@ import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-rea
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 
+/** vue-tsc runs on Node's default heap otherwise, which a 10,000-SFC project overflows. */
+export const VUE_TSC_NODE_OPTIONS = "--max-old-space-size=65536";
+
 const GOLAR_CONFIG = `import { defineConfig } from "golar/unstable";
 import "@golar/vue";
 
@@ -99,6 +102,7 @@ export function createTypecheckToolVariants({
       run: (cwd) =>
         runCommand(vueTscBin, ["--noEmit", "-p", join(cwd, "tsconfig.json"), "--pretty", "false"], {
           cwd,
+          env: { NODE_OPTIONS: VUE_TSC_NODE_OPTIONS },
         }),
     },
     {
@@ -190,9 +194,12 @@ export function typecheckToolBins(optionalWorkspaceBin) {
 
 /**
  * Gate every lane on the planted diagnostics, then measure the survivors.
- * `prepareDir` copies the corpus and installs each project's packages.
+ * `prepareDir` writes the project and installs its packages; `id` picks the
+ * surface's lanes from ENGINE_CLASSES_BY_SURFACE.
  */
 export async function measureTypecheckSurface({
+  id,
+  label,
   files,
   bytes,
   options,
@@ -219,23 +226,24 @@ export async function measureTypecheckSurface({
   const rejectedVariants = [];
   const onRejected = (variant, error, phase) =>
     recordTypecheckRejection(rejectedVariants, variant, error, phase);
+  const engineClasses = ENGINE_CLASSES_BY_SURFACE[id];
   const variants = gateTypecheckVariants(
     createTypecheckToolVariants({
-      fileCount: files.length,
+      fileCount: files,
       vizeBin,
       corsaPath: options.backend.corsaPath,
       resolveWorkspaceBin,
       mapperHosts,
-    }),
+    }).filter((variant) => variant.id in engineClasses),
     checkDir,
     prepareProject,
     onRejected,
   );
 
   return createSurface({
-    id: "check",
-    label: "Type check",
-    files: files.length,
+    id,
+    label,
+    files,
     bytes,
     variants: (await measureVariants(variants, options, onRejected)).map((measured) => ({
       ...measured,
@@ -243,10 +251,10 @@ export async function measureTypecheckSurface({
     })),
     rejectedVariants,
     baselineId: "vue-tsc",
-    vizeSingleId: "vize-check-1t",
+    vizeSingleId: "vize-check-1t" in engineClasses ? "vize-check-1t" : null,
     vizeMaxId: "vize-check-max",
     // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
     // native tsgo. Declaring the classes suppresses the cross-engine ratio.
-    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
+    engineClasses,
   });
 }

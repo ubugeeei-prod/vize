@@ -42,7 +42,13 @@ import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.ts";
 import { reapedChildCpuMs } from "./typecheck-command.mjs";
 import { prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
-import { linkColdNodeModules } from "./nuxt-build-cache.ts";
+import {
+  measureScaleNuxt,
+  nuxtTiers,
+  smallTierSfcs,
+  typecheckTiers,
+  writeScaleCheckProject,
+} from "./compare-tools-scale.ts";
 
 export { createSurface } from "./compare-tools-report.mjs";
 
@@ -55,9 +61,10 @@ const explicitMaxThreads = Math.max(1, Math.min(os.availableParallelism(), 256))
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
-const DEFAULT_CHECK_FILE_COUNT = 500;
+// Generated scale projects: the headline tier; the small tier is a quarter of it.
+const DEFAULT_CHECK_FILE_COUNT = 10_000;
 const DEFAULT_VITE_FILE_COUNT = 1000;
-const DEFAULT_NUXT_FILE_COUNT = 500;
+const DEFAULT_NUXT_FILE_COUNT = 10_000;
 const DEFAULT_LARGE_BLOCKS = 900;
 export const DEFAULT_TASKS = ["compile", "large", "lint", "fmt", "check", "vite", "nuxt", "musea"];
 
@@ -322,86 +329,6 @@ function prepareLargeSfcDir(blockCount) {
     files: [filename],
     bytes: totalFileBytes(outputDir, [filename]),
   };
-}
-
-function prepareNuxtDir(inputDir, files, label, invocation, useVize, install) {
-  const outputDir = join(workRoot, "nuxt", `${label}-${String(invocation).padStart(4, "0")}`);
-  rmSync(outputDir, { recursive: true, force: true });
-  mkdirSync(join(outputDir, "components"), { recursive: true });
-
-  for (const file of files) {
-    copyFileSync(join(inputDir, file), join(outputDir, "components", file));
-  }
-  linkColdNodeModules(outputDir, [install.modules], label);
-
-  const imports = [];
-  const componentNames = [];
-  for (let i = 0; i < files.length; i++) {
-    const name = `BenchComponent${i}`;
-    imports.push(`import ${name} from './components/${files[i]}'`);
-    componentNames.push(name);
-  }
-
-  writeFileSync(
-    join(outputDir, "app.vue"),
-    `<template>
-  <main>
-    <component
-      v-for="(BenchComponent, index) in benchComponents"
-      :key="index"
-      :is="BenchComponent"
-    />
-  </main>
-</template>
-
-<script setup lang="ts">
-${imports.join("\n")}
-
-const benchComponents = [${componentNames.join(", ")}]
-</script>
-`,
-  );
-
-  const moduleImport = useVize ? "import vizeNuxt from '@vizejs/nuxt'\n" : "";
-  const modules = useVize ? "modules: [vizeNuxt]," : "modules: [],";
-  const vizeOptions = useVize
-    ? `  vize: {
-    compiler: {
-      scanPatterns: ['app.vue', 'components/*.vue'],
-      precompileBatchSize: ${files.length + 1},
-    },
-  },`
-    : "";
-
-  writeFileSync(
-    join(outputDir, "nuxt.config.mjs"),
-    `import { defineNuxtConfig } from 'nuxt/config'
-${moduleImport}export default defineNuxtConfig({
-  devtools: { enabled: false },
-  telemetry: false,
-  ssr: false,
-  typescript: {
-    typeCheck: false,
-  },
-  ${modules}
-${vizeOptions}
-})
-`,
-  );
-  writeFileSync(
-    join(outputDir, "package.json"),
-    `${JSON.stringify(
-      {
-        private: true,
-        type: "module",
-        dependencies: install.dependencies,
-      },
-      null,
-      2,
-    )}\n`,
-  );
-
-  return outputDir;
 }
 
 function vueCompileSfc(compiler, source, filename) {
@@ -679,20 +606,8 @@ async function measureCompile(inputDir, files, options) {
 
 async function measureLargeSfc(largeSfc, options) {
   const compile = await measureCompile(largeSfc.dir, largeSfc.files, options);
-  const check = await measureCheck(largeSfc.dir, largeSfc.files, options);
-
-  return [
-    {
-      ...compile,
-      id: "large-compile",
-      label: "Large SFC compile",
-    },
-    {
-      ...check,
-      id: "large-check",
-      label: "Large SFC type check",
-    },
-  ];
+  const check = await measureLargeCheck(largeSfc.dir, largeSfc.files, options);
+  return [{ ...compile, id: "large-compile", label: "Large SFC compile" }, check];
 }
 
 async function measureLint(inputDir, files, options) {
@@ -770,9 +685,11 @@ function measureFormat(inputDir, files, options) {
   });
 }
 
-function measureCheck(inputDir, files, options) {
+function measureLargeCheck(inputDir, files, options) {
   return measureTypecheckSurface({
-    files,
+    id: "large-check",
+    label: "Large SFC type check",
+    files: files.length,
     bytes: totalFileBytes(inputDir, files),
     options,
     prepareDir: (prepareProject) =>
@@ -848,47 +765,16 @@ async function measureVite(inputDir, files, options) {
   });
 }
 
-async function measureNuxt(inputDir, files, options) {
-  const install = prepareNuxtBenchInstall();
-
-  let invocation = 0;
-  const runNuxtBuild = (label, useVize) => {
-    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize, install);
-    return runCommand(install.nuxtBin, ["build"], {
-      cwd: workDir,
-      allowNonZeroExit: false,
-      env: {
-        CI: "1",
-        NITRO_PRESET: "node-server",
-        NUXT_TELEMETRY_DISABLED: "1",
-      },
-    });
-  };
-
-  const variants = [
-    {
-      id: "nuxt-default",
-      label: "Nuxt default compiler",
-      files: files.length,
-      measure: () => runNuxtBuild("default", false),
-    },
-    {
-      id: "vize-nuxt",
-      label: "@vizejs/nuxt",
-      files: files.length,
-      measure: () => runNuxtBuild("vize", true),
-    },
-  ];
-
-  return createSurface({
-    id: "nuxt",
-    label: "Nuxt SPA build (end-to-end)",
-    files: files.length,
-    bytes: totalFileBytes(inputDir, files),
-    variants: await measureVariants(variants, options),
-    baselineId: "nuxt-default",
-    vizeSingleId: null,
-    vizeMaxId: "vize-nuxt",
+async function measureScaleCheck(tier, options) {
+  const { dir, bytes } = writeScaleCheckProject(workRoot, tier);
+  return measureTypecheckSurface({
+    ...tier,
+    files: tier.sfcs,
+    bytes,
+    options,
+    prepareDir: (prepareProject) => (prepareProject(dir), dir),
+    resolveWorkspaceBin,
+    measureVariants,
   });
 }
 
@@ -906,11 +792,11 @@ export function renderMarkdown(data) {
     `Runner: \`${data.runner.label}\` (${data.runner.cpuCount} logical CPU, ${data.runner.cpuModel}${runnerSpec})`,
   );
   lines.push(
-    `Input: ${data.input.fileCount.toLocaleString()} generated SFC files (${formatBytes(data.input.totalBytes)}). Median of ${data.settings.runs} measured run(s) after ${data.settings.warmups} warmup run(s).`,
+    `Input: ${data.input.fileCount.toLocaleString()} generated SFC files (${formatBytes(data.input.totalBytes)}); type check and Nuxt build run on generated scale projects of the sizes in each row. Median of ${data.settings.runs} measured run(s) after ${data.settings.warmups} warmup run(s).`,
   );
   if (data.input.largeSfcBytes > 0) {
     lines.push(
-      `Large SFC: ${data.input.largeBlocks.toLocaleString()} repeated template blocks (${formatBytes(data.input.largeSfcBytes)}). Nuxt import set: ${data.input.nuxtFileCount.toLocaleString()} SFC files.`,
+      `Large SFC: ${data.input.largeBlocks.toLocaleString()} repeated template blocks (${formatBytes(data.input.largeSfcBytes)}).`,
     );
   }
   lines.push("");
@@ -1022,9 +908,12 @@ async function runBenchmarks(args) {
     runs,
     warmups,
     vizeBin: args["vize-bin"] ?? join(rootDir, "target", "release", "vize"),
-    checkFileCount: Math.min(checkFileCount, allFiles.length),
+    // The type-check and Nuxt tiers generate their own projects.
+    checkFileCount,
+    checkSmallFileCount: smallTierSfcs(checkFileCount, "vue"),
     viteFileCount: Math.min(viteFileCount, allFiles.length),
-    nuxtFileCount: Math.min(nuxtFileCount, allFiles.length),
+    nuxtFileCount,
+    nuxtSmallFileCount: smallTierSfcs(nuxtFileCount, "nuxt"),
     // Not clamped to `allFiles`: the Musea surface generates its own `.art.vue`
     // corpus rather than reusing the plain-SFC input directory.
     museaFileCount,
@@ -1064,9 +953,9 @@ async function runBenchmarks(args) {
     data.surfaces.push(await measureFormat(inputDir, allFiles, options));
   }
   if (taskList.includes("check")) {
-    data.surfaces.push(
-      await measureCheck(inputDir, allFiles.slice(0, options.checkFileCount), options),
-    );
+    for (const tier of typecheckTiers(options.checkFileCount, options.checkSmallFileCount)) {
+      data.surfaces.push(await measureScaleCheck(tier, options));
+    }
   }
   if (taskList.includes("vite")) {
     data.surfaces.push(
@@ -1074,9 +963,20 @@ async function runBenchmarks(args) {
     );
   }
   if (taskList.includes("nuxt")) {
-    data.surfaces.push(
-      await measureNuxt(inputDir, allFiles.slice(0, options.nuxtFileCount), options),
-    );
+    const install = prepareNuxtBenchInstall();
+    for (const tier of nuxtTiers(options.nuxtFileCount, options.nuxtSmallFileCount)) {
+      data.surfaces.push(
+        await measureScaleNuxt({
+          tier,
+          workRoot,
+          install,
+          runCommand,
+          measureVariants,
+          createSurface,
+          options,
+        }),
+      );
+    }
   }
   if (taskList.includes("musea")) {
     data.surfaces.push(await measureMuseaSurface(rootDir, options));

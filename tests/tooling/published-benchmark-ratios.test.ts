@@ -75,6 +75,8 @@ test("the committed snapshot publishes the declared incumbent and discloses its 
     );
     // The same-engine incumbent keeps a measured row and an in-class rank, so
     // the Vue-layer-only comparison is still published beside the headline.
+    // The headline tier runs one lane per tool and has no verter-tsc row.
+    if (surface.id === "check") continue;
     const inClass = surface.engineClassRanking.find(
       (group: { engineClass: string }) =>
         group.engineClass === surface.engineClasses[surface.vizeMaxId],
