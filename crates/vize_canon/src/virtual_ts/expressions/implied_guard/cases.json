@@ -1,16 +1,49 @@
 [
-  { "guard": "!(c.type === 'root') && !(c.type === 'text') && (c.type === 'select')", "simplified": "(c.type === 'select')" },
-  { "guard": "(flag) && !(c.type === 'root') && (c.type === 'select')", "simplified": "(flag) && (c.type === 'select')" },
-  { "guard": "!(c.type === 'root') && (c.type === 'select') && (c.items.length > 0)", "simplified": "(c.type === 'select') && (c.items.length > 0)" },
-  { "guard": "!(props.c.type === 'root') && !(props.c.type === \"text\") && (props.c.type === 'mfm')", "simplified": "(props.c.type === 'mfm')" },
-  { "guard": "!(props.kind === 'x') && !('y' === props.kind) && (props.kind === 'z')", "simplified": "(props.kind === 'z')" },
-  { "guard": "!(props.n === 1) && !(props.n === 2) && (props.n === 3)", "simplified": "(props.n === 3)" },
+  {
+    "guard": "!(c.type === 'root') && !(c.type === 'text') && (c.type === 'select')",
+    "simplified": "(c.type === 'select')"
+  },
+  {
+    "guard": "(flag) && !(c.type === 'root') && (c.type === 'select')",
+    "simplified": "(flag) && (c.type === 'select')"
+  },
+  {
+    "guard": "!(c.type === 'root') && (c.type === 'select') && (c.items.length > 0)",
+    "simplified": "(c.type === 'select') && (c.items.length > 0)"
+  },
+  {
+    "guard": "!(props.c.type === 'root') && !(props.c.type === \"text\") && (props.c.type === 'mfm')",
+    "simplified": "(props.c.type === 'mfm')"
+  },
+  {
+    "guard": "!(props.kind === 'x') && !('y' === props.kind) && (props.kind === 'z')",
+    "simplified": "(props.kind === 'z')"
+  },
+  {
+    "guard": "!(props.n === 1) && !(props.n === 2) && (props.n === 3)",
+    "simplified": "(props.n === 3)"
+  },
   { "guard": "!(c.type === 'a') && (c.type === 'b')", "simplified": "(c.type === 'b')" },
   { "guard": "!(props.s === 'q') && (props.s === 'r')", "simplified": "(props.s === 'r')" },
-  { "guard": "!(c.type === 'root') && (c.type === 'text') && !(c.type === 'mfm') && (c.type === 'text')", "simplified": "(c.type === 'text') && (c.type === 'text')" },
-  { "guard": "!(c.type === 'select') && (c.type === 'select')", "simplified": null, "naive": "(c.type === 'select')" },
-  { "guard": "!(props.n === 1) && (props.n === 1.0)", "simplified": null, "naive": "(props.n === 1.0)" },
-  { "guard": "!(c.type === 'root') && (props.c.type === 'mfm')", "simplified": null, "naive": "(props.c.type === 'mfm')" },
+  {
+    "guard": "!(c.type === 'root') && (c.type === 'text') && !(c.type === 'mfm') && (c.type === 'text')",
+    "simplified": "(c.type === 'text') && (c.type === 'text')"
+  },
+  {
+    "guard": "!(c.type === 'select') && (c.type === 'select')",
+    "simplified": null,
+    "naive": "(c.type === 'select')"
+  },
+  {
+    "guard": "!(props.n === 1) && (props.n === 1.0)",
+    "simplified": null,
+    "naive": "(props.n === 1.0)"
+  },
+  {
+    "guard": "!(c.type === 'root') && (props.c.type === 'mfm')",
+    "simplified": null,
+    "naive": "(props.c.type === 'mfm')"
+  },
   { "guard": "!(c.type === 'root') && (flag) && (c.type === 'select')", "simplified": null },
   { "guard": "!(c.type === 'root') && !(c.type === 'text')", "simplified": null },
   { "guard": "!(c.type == 'root') && (c.type === 'select')", "simplified": null },
