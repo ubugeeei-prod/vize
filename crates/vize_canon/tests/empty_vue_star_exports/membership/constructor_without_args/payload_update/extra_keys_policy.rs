@@ -126,7 +126,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 pub(super) fn preamble_before(current: &str) -> String {
     invert(
-        current,
+        &super::input_channels::preamble_before(current),
         PREAMBLE_EDITS,
         PREAMBLE_BEFORE_BYTES,
         PREAMBLE_BEFORE_SHA,
@@ -181,7 +181,10 @@ mod tests {
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(redo(preamble_before(preamble), PREAMBLE_EDITS), preamble);
+        assert_eq!(
+            redo(preamble_before(preamble), PREAMBLE_EDITS),
+            super::super::input_channels::preamble_before(preamble)
+        );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
@@ -192,7 +195,9 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            // Mutate this layer's own input: newer layers already inverted theirs.
+            let body =
+                super::super::checker_augmentations::source_before(file.path, current(file.path));
             let (before, after) = file.edits[0];
             for mutated in [
                 body.replacen(after, "", 1),
@@ -201,7 +206,14 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| super::invert(
+                        &mutated,
+                        file.edits,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha
+                    ))
+                    .is_err()
                 );
             }
         }

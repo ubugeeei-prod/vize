@@ -322,7 +322,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
             "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
         )
@@ -354,7 +354,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         nested_dts
             .matches("import(\"../__vize_helpers.js\").__EmitProps")
             .count(),
-        5,
+        4,
         "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
     );
     assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);

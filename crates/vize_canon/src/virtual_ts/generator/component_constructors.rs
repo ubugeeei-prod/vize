@@ -177,9 +177,12 @@ pub(super) fn emit_component_constructors<'a>(
         // instantiates the component paid it for nothing. Call sites still
         // resolve the exact same intersection once `$AuthoredProps` is
         // inferred, so the authored contract is unchanged.
+        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and
+        // leave undeclared attributes to the consumer's own excess-property
+        // check; TSX binds `$JsxProps` and stays exact (#11629).
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
         );
     }
 

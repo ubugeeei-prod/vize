@@ -73,21 +73,12 @@ mod tests {
 
     #[test]
     fn declaration_helpers_are_the_canonical_helpers() {
-        // One `$ExtraInputKeys` for every declaration producer (#11591).
         let exports = helpers().0.join(", ");
         let canonical =
             vize_carton::cstr!("{DECLARATION_HELPERS_DTS}\nexport type {{ {exports} }};\n");
         assert_eq!(module(), canonical.as_str());
-        let extra_keys = module()
-            .lines()
-            .filter(|line| line.starts_with("type $ExtraInputKeys<"))
-            .collect::<Vec<_>>();
-        assert_eq!(
-            extra_keys,
-            [
-                "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;"
-            ]
-        );
+        // Consumers decide undeclared attributes themselves; no global steers the input (#11629).
+        assert_eq!(module().matches("__VLS_PROPS_FALLBACK").count(), 0);
     }
 
     #[test]

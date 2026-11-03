@@ -13397,6 +13397,50 @@
       }
     },
     {
+      "id": "typechecker/regression/tsx-in-vue-tsc-program-11629",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Foo.vue.txt",
+          "sha256": "e18a6a8ffa38986c625a24e5850dc30bdb80d1c1e503619dba98315eb83ce800",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Probe.tsx.txt",
+          "sha256": "e3d5e947b5995ec9a499db644e241045e8c2d324b74d4b25d5ef36aa141e4cd1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Probe.vue.txt",
+          "sha256": "46868cce1b40cecaade33256ccf7b6c2254bf6a9234e5331fce205cfd145f92a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/tsconfig.json.txt",
+          "sha256": "b0669b5ff8c9d696cea4b78619fef8d9e3918d76edb9b021e04ffbe3d07f359c",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_declaration_fallthrough_cli::tsx-in-vue-tsc-program and check_declaration_fallthrough_attrs_cli::tsx-in-vue-tsc-program; #11629 TSX beside a .vue file in a non-strict vue-tsc program, with template fallthrough, plain TSX, strict-template, wrong-prop, missing-prop and wrong-listener controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/unmapped-ignores-entry-points-11472",
       "state": "active",
       "targets": [

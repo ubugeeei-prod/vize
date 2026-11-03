@@ -10,6 +10,7 @@ const BEFORE_SHA: &str = "1eb094d7bc31585ac250c348d50dd22dfbaea6a3f8049cb38d5f1b
 const AFTER_SHA: &str = "5e8c28f2eec18eb6d55412c05f95c9333d464c542bc5b94f8681bcb3944349d3";
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::input_channels::source_before(path, current);
     if path != PATH {
         return current;
     }
@@ -49,7 +50,7 @@ mod tests {
         let body = current(PATH);
         assert_eq!(
             source_before(PATH, body.clone()).replacen(BEFORE, AFTER, 1),
-            body
+            super::super::input_channels::source_before(PATH, body)
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));

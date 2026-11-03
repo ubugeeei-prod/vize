@@ -1,0 +1,4 @@
+import Foo from "./vendor/Foo.vue";
+
+export const probe = <Foo id="r" />;
+export const owned = <Foo class="r" />;
