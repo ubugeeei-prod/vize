@@ -2,10 +2,11 @@
 //!
 //! Every Rust-lowered reference template is lowered, mutated by a named
 //! ordering scenario and checked by the TS-27 validator. The committed
-//! `schedule-contract.txt` records the exact violation codes. The Lean
-//! reference re-applies the same scenarios to the committed graph Dumps and
-//! recomputes the codes with its independent model of the validator's edge
-//! contract, whose acceptance is proved to order every state edge.
+//! `schedule-contract.txt` records the exact violation codes. The independent
+//! reference (`davinci_test_support::l3_reference`) re-applies the same
+//! scenarios to the committed graph Dumps and recomputes the codes with its
+//! own model of the validator's edge contract, whose acceptance Kani proves
+//! orders every state edge.
 
 #![allow(
     clippy::disallowed_macros,
@@ -15,6 +16,7 @@
 
 use std::path::Path;
 
+use davinci_test_support::l3_reference::{fixtures, schedule_fixture::schedule_contract};
 use vize_l0::Allocator;
 use vize_l3::op::{EdgeKind, EffectId, OpId, Phase, Program, StateEdge};
 use vize_l3::verify::verify;
@@ -118,7 +120,7 @@ fn mutate(program: &mut Program<'_>, scenario: &str) -> bool {
 }
 
 #[test]
-fn schedule_contract_codes_match_lean_reference() {
+fn schedule_contract_codes_match_the_independent_reference() {
     let mut actual = String::new();
     for stem in STEMS {
         let source = source(stem);
@@ -150,4 +152,5 @@ fn schedule_contract_codes_match_lean_reference() {
         std::fs::write(&path, &actual).unwrap();
     }
     assert_eq!(actual, std::fs::read_to_string(&path).unwrap());
+    assert_eq!(actual, schedule_contract(&fixtures()).unwrap());
 }
