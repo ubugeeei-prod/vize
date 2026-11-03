@@ -16,6 +16,7 @@ type Job = {
 };
 type CratePublicationFacts = {
   cancelled?: boolean;
+  crates?: string;
   quota?: string;
   resume?: string;
   tag?: string;
@@ -32,12 +33,14 @@ function evaluateCratePublication(condition: string, facts: CratePublicationFact
       condition
         .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
         .replaceAll("cancelled()", "cancelled")
+        .replaceAll("needs.publication-quota.outputs.crates", "crates")
         .replaceAll("needs.publication-quota.result", "quota")
         .replaceAll("needs.version.result", "version")
         .replaceAll("inputs.npm_resume_run", "resume")
         .replaceAll("needs.tag.result", "tag"),
       {
         cancelled: facts.cancelled ?? false,
+        crates: facts.crates ?? "publish",
         quota: facts.quota ?? "success",
         resume: facts.resume ?? "",
         tag: facts.tag ?? "success",
@@ -94,6 +97,13 @@ test("crate publication keeps its trusted identity on a hosted runner and resume
       false,
       "cancellation prevents normal and resumed publication",
     );
+    const tag = resume === "" ? "success" : "skipped";
+    for (const decision of ["defer", ""])
+      assert.equal(
+        evaluateCratePublication(crates.if, { crates: decision, resume, tag }),
+        false,
+        "only an admitted crate decision publishes",
+      );
   }
 
   const checkout = crates.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));

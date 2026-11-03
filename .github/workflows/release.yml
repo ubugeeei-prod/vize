@@ -14,6 +14,10 @@ name: Release
 # release-verify.yml checks registry visibility again after publishing, outside
 # this run. Re-running failed jobs is safe: every publisher skips versions that
 # exist.
+# npm-first: when the rolling crates.io quota refuses this version, the
+# post-build admission defers crates.io alone. Every other registry and the
+# GitHub release still publish; crates.io skips the version and a later
+# admitted release publishes the crates at its own version.
 # release-cadence.yml dispatches this workflow automatically. It is always a
 # workflow_dispatch run because crates.io trusted publishing refuses
 # workflow_run and schedule triggers.
@@ -92,13 +96,12 @@ jobs:
           [[ "$status" == ahead || "$status" == identical ]]
           git fetch --depth=1 origin "$RELEASE_SOURCE"
           git checkout --detach FETCH_HEAD
-      - name: Admit the requested source with current workflow tooling
-        id: admission
+      # The crate quota never refuses a cut; the post-build admission decides crates.
+      - name: Resolve the requested version with current workflow tooling
+        id: resolve
         if: inputs.npm_resume_run == ''
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/prepare-quota/report.json
         run: |
           mkdir -p "$RUNNER_TEMP/release-quota-tooling"
           git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
@@ -107,12 +110,11 @@ jobs:
           if [[ -z "$version" ]]; then
             version="$(node "$quota_main" next)"
           fi
-          node "$quota_main" quota-prepare "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Stamp, commit and push the release candidate
         id: cut
         if: inputs.npm_resume_run == ''
-        env: { RELEASE_VERSION: "${{ steps.admission.outputs.version }}" }
+        env: { RELEASE_VERSION: "${{ steps.resolve.outputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
       - name: Emit the actual created candidate's original producer attestation
         if: steps.cut.outputs.sha != ''
@@ -372,15 +374,20 @@ jobs:
       RELEASE_VERSION: ${{ needs.version.outputs.version }}
       RELEASE_SHA: ${{ needs.version.outputs.sha }}
       RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
+    outputs:
+      # publish, or defer when the rolling budget refuses: only crates.io waits.
+      crates: ${{ steps.admission.outputs.crates }}
+      crates_reason: ${{ steps.admission.outputs.crates_reason }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Require a fresh rolling crate budget for the original producer
+      - name: Decide crate publication from a fresh rolling budget for the original producer
+        id: admission
         env:
           RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/publication-quota/report.json
-        run: node tools/support/release/release/main.ts quota "$RELEASE_VERSION"
+        run: node tools/support/release/release/main.ts quota-publication "$RELEASE_VERSION"
       - name: Retain the publication admission receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -445,7 +452,7 @@ jobs:
   publish-crates:
     name: Publish crates
     needs: [version, tag, publication-quota]
-    if: ${{ !cancelled() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && (needs.tag.result == 'success' || (inputs.npm_resume_run != '' && needs.tag.result == 'skipped')) }}
+    if: ${{ !cancelled() && needs.publication-quota.result == 'success' && needs.publication-quota.outputs.crates == 'publish' && needs.version.result == 'success' && (needs.tag.result == 'success' || (inputs.npm_resume_run != '' && needs.tag.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: crates-io
@@ -673,7 +680,10 @@ jobs:
           done
           node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG"
       - name: Generate release notes
-        env: { GH_TOKEN: "${{ github.token }}" }
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CRATES_PUBLICATION: ${{ needs.publication-quota.outputs.crates }}
+          CRATES_PUBLICATION_REASON: ${{ needs.publication-quota.outputs.crates_reason }}
         run: node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2

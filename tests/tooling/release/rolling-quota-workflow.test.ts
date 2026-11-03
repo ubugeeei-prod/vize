@@ -33,7 +33,13 @@ const publishers = [
   "github-release",
 ];
 
-function permitted(job: Job, gate: string, resume = "", workflowCancelled = false): boolean {
+function permitted(
+  job: Job,
+  gate: string,
+  resume = "",
+  workflowCancelled = false,
+  crates = "publish",
+): boolean {
   if (!job.if?.includes("always()") && gate !== "success") return false;
   const expression = (job.if ?? "true")
     .replace(/^\$\{\{\s*|\s*\}\}$/g, "")
@@ -44,7 +50,7 @@ function permitted(job: Job, gate: string, resume = "", workflowCancelled = fals
   for (const dependency of [job.needs ?? []].flat())
     needs[dependency] = {
       result: dependency === "publication-quota" ? gate : "success",
-      outputs: { ref: "refs/release-candidates/source" },
+      outputs: { ref: "refs/release-candidates/source", crates },
     };
   return Boolean(
     compileFunction("return (" + expression + ");", ["needs", "inputs", "cancelled"])(
@@ -72,6 +78,13 @@ test("every initial registry writer requires the fresh post-build admission barr
   const crates = release.jobs["publish-crates"]!;
   assert.equal(permitted(crates, "success", "", true), false, "crates/cancelled");
   assert.equal(permitted(crates, "success", "42", true), false, "crates/resume/cancelled");
+  // npm-first: a deferred crate decision withholds only the crate writer.
+  for (const id of publishers)
+    assert.equal(
+      permitted(release.jobs[id]!, "success", "", false, "defer"),
+      id !== "publish-crates",
+      id + "/defer",
+    );
 });
 test("failed-job crate recovery refreshes the same producer-bound quota immediately before publishing", () => {
   const steps = release.jobs["publish-crates"]!.steps;
@@ -81,8 +94,15 @@ test("failed-job crate recovery refreshes the same producer-bound quota immediat
   const step = steps[guard]!;
   assert.equal(step.env?.RELEASE_SHA, "${{ needs.version.outputs.sha }}");
   assert.equal(step.env?.RELEASE_PRODUCER_RUN, "${{ inputs.npm_resume_run || github.run_id }}");
+  assert.match(
+    step.run ?? "",
+    /main\.ts" quota "\$RELEASE_VERSION"$/m,
+    "strict, not the admission",
+  );
   assert.ok(
-    release.jobs["publication-quota"]!.steps.some((s) => s.run?.match(/release\/main\.ts"? quota/)),
+    release.jobs["publication-quota"]!.steps.some((s) =>
+      s.run?.match(/release\/main\.ts"? quota-publication/),
+    ),
   );
 });
 test("live dry-run is read-only and cannot enter npm verification or JSR publication", () => {
@@ -100,19 +120,19 @@ test("live dry-run is read-only and cannot enter npm verification or JSR publica
     assert.equal(verification.jobs[id]!.if?.includes("always()") ?? false, false);
   }
 });
-test("cadence and manual preparation both use the common guard before stamping", () => {
+test("neither cadence nor the cut waits for the crate quota (npm-first)", () => {
   const main = readRepoFile("tools", "support", "release", "release", "main.ts");
   const cut = main.slice(
     main.indexOf("async function cut("),
     main.indexOf("function finishCadence("),
   );
-  assert.ok(cut.indexOf("releaseQuota(version)") >= 0);
-  assert.ok(cut.indexOf("releaseQuota(version)") < cut.indexOf("stampVersion("));
+  assert.ok(cut.indexOf("stampVersion(") >= 0);
+  assert.equal(cut.includes("releaseQuota("), false);
   const cadence = main.slice(
     main.indexOf("async function cadence("),
     main.indexOf("export async function release("),
   );
-  assert.match(cadence, /releaseQuota\(version, false, input\.greenSha/);
+  assert.equal(cadence.includes("releaseQuota("), false);
 });
 
 test("runner output paths belong to step context rather than invalid job env context", () => {
@@ -127,16 +147,16 @@ test("runner output paths belong to step context rather than invalid job env con
   }
 });
 
-test("current H tooling admits historical S before stamping and remains separate from prepared C", () => {
+test("current H tooling resolves historical S before stamping and remains separate from prepared C", () => {
   const steps = release.jobs.version!.steps;
-  const admission = steps.findIndex((s) => s.run?.includes("quota-prepare"));
+  const resolve = steps.findIndex((s) => s.run?.includes('"$quota_main" next'));
   const cut = steps.findIndex((s) => s.run?.includes("main.ts cut"));
-  assert.ok(admission >= 0 && admission < cut);
+  assert.ok(resolve >= 0 && resolve < cut);
   assert.match(
-    steps[admission]!.run ?? "",
+    steps[resolve]!.run ?? "",
     /git archive "\$GITHUB_SHA" package.json tools\/support\/release/,
   );
-  assert.equal(steps[cut]!.env?.RELEASE_VERSION, "${{ steps.admission.outputs.version }}");
+  assert.equal(steps[cut]!.env?.RELEASE_VERSION, "${{ steps.resolve.outputs.version }}");
   const crate = release.jobs["publish-crates"]!.steps.find((s) =>
     s.run?.includes('git fetch --no-tags --depth=1 origin "$GITHUB_SHA"'),
   );

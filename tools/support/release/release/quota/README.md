@@ -28,17 +28,22 @@ missing history entry is inconsistent and refuses admission.
 
 ## Admission phases
 
-Cadence and the manual cut use the same helper. Preparation checks before any
-version stamp. The Release workflow then checks again after its long CLI,
-native, WASM and package-smoke builds, before any initial registry write.
-Every initial registry publisher depends on this shared admission. The crate
-publisher also checks immediately before writes, including a failed-job retry.
+The budget gates crates.io writes only (npm-first). Neither cadence nor the
+cut reads it. The Release workflow reads it once after its long CLI, native,
+WASM and package-smoke builds, before any initial registry write, and that
+admission alone decides `crates=publish` or `crates=defer`. Every initial
+registry publisher depends on the admission, but a deferral skips only the
+crate publisher: npm, editors, JSR and the GitHub release still publish, the
+step summary and release notes state the deferral, and crates.io skips that
+version. A later admitted release publishes the crates at its own version.
+The crate publisher checks again immediately before writes, including a
+failed-job retry, and fails rather than writes past the budget.
 The existing green-main, source, serialization and completeness checks remain
 in place. Workflow tooling H is staged through git archive in RUNNER_TEMP before
 stamping source S and before crate writes from prepared commit C. Product files
-are never overlaid. The admitted version is frozen before the stamp. Publication
-and recovery read C's canonical crate cohort; cadence reads the selected green
-S's cohort, so a newer H cannot invent missing targets in an older immutable cut.
+are never overlaid. The resolved version is frozen before the stamp. Publication
+and recovery read C's canonical crate cohort, so a newer H cannot invent
+missing targets in an older immutable cut.
 
 A recovery version is not identified by its version number alone. The genuine
 original Release run, its workflow head, the requested producer source, and the
@@ -69,11 +74,9 @@ counts and SHA-256 hashes, recent timestamps, producer identity, recovery
 proof hashes and the next conservative eligibility time. Actions artifacts
 retain them for 90 days. Unavailable state has no invented eligibility time.
 
-A registry refusal is not permission to cut another version. Recover the same
-immutable cut. Cadence must only be enabled after the guard's exact-head
-qualification, normal checks, protected merge and operational review. The
-existing ten-minute interval is a burst limit; this rolling guard supplies
-the publication budget.
+A deferred version needs no crate recovery: its crates.io gap is
+intentional. The existing ten-minute interval is a burst limit; this
+rolling guard supplies the crates.io publication budget.
 
 ## Original producer authority and legacy refusal
 
