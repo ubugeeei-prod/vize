@@ -43,14 +43,15 @@ fn helpers() -> &'static (Vec<CompactString>, String) {
                     Some(alias.span)
                 }
                 _ => None,
-            })
-            .expect("canonical declaration helpers retain the component input guard");
+            });
         let exports = names.join(", ");
         let mut module = String::from(DECLARATION_HELPERS_DTS);
-        module.replace_range(
-            guard.start as usize..guard.end as usize,
-            DECLARATION_INPUT_GUARD,
-        );
+        if let Some(guard) = guard {
+            module.replace_range(
+                guard.start as usize..guard.end as usize,
+                DECLARATION_INPUT_GUARD,
+            );
+        }
         append!(module, "\nexport type {{ {exports} }};\n");
         (names, module)
     })
