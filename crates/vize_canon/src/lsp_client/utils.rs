@@ -11,11 +11,13 @@ where
     serde_json::to_value(value).map_err(|e| cstr!("Failed to encode JSON response: {e}"))
 }
 
-pub(super) fn convert_diagnostics(diagnostics: &[Diagnostic]) -> Vec<LspDiagnostic> {
+pub(super) fn convert_diagnostics<T: std::borrow::Borrow<Diagnostic>>(
+    diagnostics: &[T],
+) -> Vec<LspDiagnostic> {
     diagnostics
         .iter()
         .filter_map(|diagnostic| {
-            serde_json::to_value(diagnostic)
+            serde_json::to_value(diagnostic.borrow())
                 .ok()
                 .and_then(|value| serde_json::from_value(value).ok())
         })

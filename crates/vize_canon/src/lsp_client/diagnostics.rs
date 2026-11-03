@@ -1,12 +1,11 @@
 use super::{
-    CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
-    diagnostics_api::{document_identifier_uri, flatten_file_diagnostics, map_project_diagnostics},
+    CorsaProjectClient, DiagnosticFetch, LspDiagnostic, PhasedDiagnostic,
+    diagnostics_api::{document_identifier_uri, map_project_diagnostics, phased_file_diagnostics},
     session::uri_document_identifier,
     utils::convert_diagnostics,
 };
 use crate::file_uri::file_uri_to_path;
 use corsa::{CorsaError, runtime::block_on};
-use lsp_types::Diagnostic;
 use std::time::Duration;
 use vize_l0::{FxHashMap, String, cstr};
 
@@ -18,6 +17,7 @@ const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
 mod batch;
 mod lsp_report;
+mod provenance;
 #[cfg(test)]
 pub(super) mod test_route;
 pub(super) mod virtual_overlay_diagnostics;
@@ -57,6 +57,10 @@ impl CorsaProjectClient {
             return fetch;
         }
 
+        self.request_lsp_diagnostics_or_cache(uri)
+    }
+
+    fn request_lsp_diagnostics_or_cache(&mut self, uri: &str) -> Result<DiagnosticFetch, String> {
         if let Some(fetch) = self.request_diagnostics_full_via_lsp(uri)? {
             return Ok(fetch);
         }
@@ -118,7 +122,7 @@ impl CorsaProjectClient {
         };
         Ok(Some(Ok(self.store_file_diagnostics(
             uri,
-            self.remap_diagnostics(flatten_file_diagnostics(&response)),
+            self.remap_phased_diagnostics(phased_file_diagnostics(&response)),
         ))))
     }
 
@@ -139,18 +143,18 @@ impl CorsaProjectClient {
             .files
             .iter()
             .find(|file| document_identifier_uri(&file.file) == uri)
-            .map(flatten_file_diagnostics)
+            .map(phased_file_diagnostics)
             .unwrap_or_default();
         Ok(Some(Ok(self.store_file_diagnostics(
             uri,
-            self.remap_diagnostics(diagnostics),
+            self.remap_phased_diagnostics(diagnostics),
         ))))
     }
 
     fn store_file_diagnostics(
         &mut self,
         uri: &str,
-        diagnostics: Vec<Diagnostic>,
+        diagnostics: Vec<PhasedDiagnostic>,
     ) -> DiagnosticFetch {
         self.diagnostics.insert(uri.into(), diagnostics.clone());
         DiagnosticFetch {
@@ -159,7 +163,7 @@ impl CorsaProjectClient {
         }
     }
 
-    pub(super) fn cached_diagnostics(&self, uri: &str) -> Vec<Diagnostic> {
+    pub(super) fn cached_diagnostics(&self, uri: &str) -> Vec<PhasedDiagnostic> {
         self.diagnostics.get(uri).cloned().unwrap_or_default()
     }
 
@@ -213,7 +217,7 @@ impl CorsaProjectClient {
     fn request_materialized_diagnostics(
         &mut self,
         document_uri: &str,
-    ) -> Result<Option<Vec<Diagnostic>>, String> {
+    ) -> Result<Option<Vec<PhasedDiagnostic>>, String> {
         if self.supports_file_diagnostics_api() {
             let response = block_on(
                 self.project_session()?
@@ -243,9 +247,9 @@ impl CorsaProjectClient {
                             .files
                             .iter()
                             .find(|file| document_identifier_uri(&file.file) == document_uri)
-                            .map(flatten_file_diagnostics)
+                            .map(phased_file_diagnostics)
                             .unwrap_or_default();
-                        Ok(Some(self.remap_diagnostics(diagnostics)))
+                        Ok(Some(self.remap_phased_diagnostics(diagnostics)))
                     } else {
                         Ok(None)
                     };
@@ -255,7 +259,7 @@ impl CorsaProjectClient {
                 }
             };
             return Ok(Some(
-                self.remap_diagnostics(flatten_file_diagnostics(&response)),
+                self.remap_phased_diagnostics(phased_file_diagnostics(&response)),
             ));
         }
 
@@ -275,9 +279,9 @@ impl CorsaProjectClient {
                 .files
                 .iter()
                 .find(|file| document_identifier_uri(&file.file) == document_uri)
-                .map(flatten_file_diagnostics)
+                .map(phased_file_diagnostics)
                 .unwrap_or_default();
-            return Ok(Some(self.remap_diagnostics(diagnostics)));
+            return Ok(Some(self.remap_phased_diagnostics(diagnostics)));
         }
 
         Ok(None)
@@ -302,7 +306,7 @@ impl CorsaProjectClient {
             .map(|file| {
                 (
                     document_identifier_uri(&file.file),
-                    self.remap_diagnostics(flatten_file_diagnostics(file)),
+                    self.remap_phased_diagnostics(phased_file_diagnostics(file)),
                 )
             })
             .collect();
@@ -319,23 +323,6 @@ impl CorsaProjectClient {
                 })
                 .collect(),
         ))
-    }
-
-    fn request_diagnostics_full_via_lsp(
-        &mut self,
-        uri: &str,
-    ) -> Result<Option<DiagnosticFetch>, String> {
-        let Some(mut results) = self.request_diagnostics_batch_via_lsp(&[uri.into()])? else {
-            return Ok(None);
-        };
-        let Some((_, diagnostics)) = results.pop() else {
-            return Ok(None);
-        };
-        let diagnostics = diagnostics
-            .into_iter()
-            .map(lsp_report::lsp_diagnostic_to_native)
-            .collect::<Vec<_>>();
-        Ok(Some(self.store_file_diagnostics(uri, diagnostics)))
     }
 
     fn request_diagnostics_batch_via_lsp(
@@ -419,7 +406,8 @@ impl CorsaProjectClient {
                 }
             };
 
-            let diagnostics = self.remap_diagnostics(lsp_report::extract_diagnostics(report));
+            let diagnostics = self
+                .remap_phased_diagnostics(lsp_report::extract_diagnostics_with_provenance(report));
             self.diagnostics
                 .insert(external_uri.clone(), diagnostics.clone());
             results.push((external_uri.clone(), convert_diagnostics(&diagnostics)));

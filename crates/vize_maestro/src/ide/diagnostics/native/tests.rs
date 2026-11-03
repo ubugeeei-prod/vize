@@ -3,6 +3,23 @@ use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Position, Range};
 use super::{sources, without_duplicate_required_props};
 
 #[test]
+fn unavailable_notice_stays_in_the_carried_native_publication() {
+    let state = crate::server::ServerState::new();
+    let mut publication = super::combine(
+        Vec::new(),
+        false,
+        Some(super::NativeFamily {
+            diagnostics: Vec::new(),
+            owns_script_syntax: false,
+        }),
+    );
+    super::with_unavailable_hint(&state, &mut publication);
+    let (family, wire) = publication.into_parts();
+    assert_eq!(wire.len(), 1);
+    assert_eq!(family.unwrap().diagnostics, wire);
+}
+
+#[test]
 fn unsaved_required_prop_edit_reports_one_authored_diagnostic() {
     let Some(tsgo_path) = super::super::editor_typecheck_fixture::resolve_test_tsgo_binary() else {
         return;
@@ -108,16 +125,16 @@ fn required_prop_dedup_preserves_other_type_errors() {
     assert_eq!(
         without_duplicate_required_props(
             vec![
-                duplicate.clone(),
-                real_type_error.clone(),
-                elsewhere.clone()
+                duplicate.clone().into(),
+                real_type_error.clone().into(),
+                elsewhere.clone().into()
             ],
             std::slice::from_ref(&required),
         ),
         vec![real_type_error, elsewhere],
     );
     assert_eq!(
-        without_duplicate_required_props(vec![duplicate.clone()], &[]),
+        without_duplicate_required_props(vec![duplicate.clone().into()], &[]),
         vec![duplicate],
     );
 }
@@ -141,7 +158,7 @@ fn carried_family_keeps_fresh_script_parser_errors() {
         ..Default::default()
     };
     let carried = super::NativeFamily {
-        diagnostics: vec![typed.clone()],
+        diagnostics: vec![typed.clone().into()],
         owns_script_syntax: false,
     };
     assert_eq!(
@@ -149,7 +166,7 @@ fn carried_family_keeps_fresh_script_parser_errors() {
         vec![parser.clone(), typed.clone()]
     );
     let current = super::NativeFamily {
-        diagnostics: vec![typed.clone()],
+        diagnostics: vec![typed.clone().into()],
         owns_script_syntax: true,
     };
     assert_eq!(

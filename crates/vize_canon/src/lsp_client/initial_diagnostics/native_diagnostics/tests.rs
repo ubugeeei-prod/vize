@@ -196,7 +196,10 @@ fn execute(
         URI,
     );
     block_on(snapshot.release()).unwrap();
-    (result, peer.finish())
+    (
+        result.map(|rows| rows.map(|rows| rows.into_iter().map(|row| row.diagnostic).collect())),
+        peer.finish(),
+    )
 }
 #[cfg(unix)]
 #[test]
@@ -285,6 +288,54 @@ fn framed_complete_result_uses_original_snapshot_encoded_text_not_live_disk() {
             .filter(|row| row["method"] == "getSourceFile")
             .count(),
         1
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn framed_phase_comes_from_each_completed_compiler_kind_not_the_code() {
+    use crate::corsa_bridge::DiagnosticPhase;
+    let row = json!({"fileName":"/workspace/a #.ts","pos":0,"end":5,
+        "code":1192,"category":1,"text":"same code across kinds"});
+    let mut replies = KINDS
+        .iter()
+        .map(|method| (*method, json!([row.clone()])))
+        .collect::<Vec<_>>();
+    replies.push(("getSourceFile", json!({"data":ENCODED_TEXT})));
+    let peer = Peer::start(json!({"declaration":true}), replies, None);
+    let snapshot = block_on(peer.client.update_snapshot(Default::default())).unwrap();
+    let rows = read(
+        &peer.client,
+        &snapshot,
+        snapshot.projects.first().unwrap(),
+        URI,
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        rows.iter().map(|row| row.phase).collect::<Vec<_>>(),
+        [
+            DiagnosticPhase::Syntactic,
+            DiagnosticPhase::Semantic,
+            DiagnosticPhase::Suggestion,
+            DiagnosticPhase::Declaration,
+        ]
+    );
+    assert!(
+        rows.iter()
+            .all(|row| row.diagnostic.code == Some(lsp_types::NumberOrString::Number(1192)))
+    );
+    block_on(snapshot.release()).unwrap();
+    let observed = peer.finish();
+    assert_eq!(
+        diagnostic_methods(&observed),
+        [
+            "getSyntacticDiagnostics",
+            "getSemanticDiagnostics",
+            "getSuggestionDiagnostics",
+            "getDeclarationDiagnostics",
+            "getSourceFile",
+        ]
     );
 }
 #[cfg(unix)]

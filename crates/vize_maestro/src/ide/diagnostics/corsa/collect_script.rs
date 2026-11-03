@@ -1,7 +1,7 @@
 //! Type diagnostics for authored JavaScript and TypeScript documents.
 
 use oxc_span::SourceType;
-use tower_lsp::lsp_types::{Diagnostic, Url};
+use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaScriptVirtualDocumentRequest, CorsaVueVirtualDocumentOptions};
 
 use super::super::{DiagnosticService, VirtualTsResult};
@@ -19,7 +19,7 @@ impl DiagnosticService {
     pub(super) async fn try_collect_corsa_script_diagnostics(
         state: &ServerState,
         uri: &Url,
-    ) -> Result<Vec<Diagnostic>, CollectFailure> {
+    ) -> Result<Vec<super::super::NativeDiagnostic>, CollectFailure> {
         let Some((revision, content)) = state
             .documents
             .get(uri)

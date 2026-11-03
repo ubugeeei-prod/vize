@@ -18,7 +18,7 @@ use futures::FutureExt;
 use serde_json::{Value, json};
 
 use super::{CorsaBridge, InitialApiDiagnosticsOutcome};
-use crate::lsp_client::CorsaProjectClient;
+use crate::lsp_client::{CorsaProjectClient, PhasedDiagnostic};
 
 const BOUND: Duration = Duration::from_secs(10);
 const CONFIG: &str = "/workspace/tsconfig.json";
@@ -267,12 +267,9 @@ fn current_read_commits_whole_cache_only_after_foreground_lane_remains_usable() 
         diagnostic["message"] = json!("prior complete cached result");
         diagnostic
     };
-    let previous = prior.clone();
+    let previous = PhasedDiagnostic::unknown(serde_json::from_value(prior.clone()).unwrap());
     block_on(bridge.with_client(move |client| {
-        client.replace_initial_diagnostics_cache(
-            URI,
-            Some(vec![serde_json::from_value(previous).unwrap()]),
-        );
+        client.replace_initial_diagnostics_cache(URI, Some(vec![previous]));
         Ok(())
     }))
     .unwrap();

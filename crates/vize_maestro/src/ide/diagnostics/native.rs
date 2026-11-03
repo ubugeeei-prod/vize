@@ -10,11 +10,13 @@ use crate::{
 };
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 
+mod provenance;
 pub(super) mod timeout;
+pub(crate) use provenance::NativeDiagnostic;
 
 /// The native part of one result, kept to combine with a later sync set.
 pub(crate) struct NativeFamily {
-    pub(crate) diagnostics: Vec<Diagnostic>,
+    pub(crate) diagnostics: Vec<NativeDiagnostic>,
     /// Corsa answered, so its syntax errors replace script parser ones.
     pub(crate) owns_script_syntax: bool,
 }
@@ -22,22 +24,12 @@ pub(crate) struct NativeFamily {
 /// A publication and where its native family starts.
 pub(crate) struct CombinedDiagnostics {
     pub(crate) diagnostics: Vec<Diagnostic>,
-    pub(crate) native: Option<NativeSplit>,
-}
-
-#[derive(Clone, Copy)]
-pub(crate) struct NativeSplit {
-    pub(crate) from: usize,
-    pub(crate) owns_script_syntax: bool,
+    pub(crate) native: Option<NativeFamily>,
 }
 
 impl CombinedDiagnostics {
-    pub(crate) fn native_family(&self) -> Option<NativeFamily> {
-        let split = self.native?;
-        Some(NativeFamily {
-            diagnostics: self.diagnostics.get(split.from..)?.to_vec(),
-            owns_script_syntax: split.owns_script_syntax,
-        })
+    pub(crate) fn into_parts(self) -> (Option<NativeFamily>, Vec<Diagnostic>) {
+        (self.native, self.diagnostics)
     }
 }
 
@@ -58,15 +50,19 @@ pub(super) fn combine(
     if native.owns_script_syntax && native_script_syntax {
         sync.retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
     }
-    let split = NativeSplit {
-        from: sync.len(),
+    let family = NativeFamily {
+        diagnostics: without_duplicate_required_props(native.diagnostics, &sync),
         owns_script_syntax: native.owns_script_syntax,
     };
-    let native = without_duplicate_required_props(native.diagnostics, &sync);
-    sync.extend(native);
+    sync.extend(
+        family
+            .diagnostics
+            .iter()
+            .map(|record| record.diagnostic.clone()),
+    );
     CombinedDiagnostics {
         diagnostics: sync,
-        native: Some(split),
+        native: Some(family),
     }
 }
 
@@ -128,7 +124,7 @@ impl DiagnosticService {
                 let jsx_type_diags = jsx_future.await;
                 tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
                 let native = NativeFamily {
-                    diagnostics: jsx_type_diags,
+                    diagnostics: jsx_type_diags.into_iter().map(Into::into).collect(),
                     owns_script_syntax: false,
                 };
                 return combine(diagnostics, native_script_syntax, Some(native));
@@ -149,7 +145,11 @@ impl DiagnosticService {
                     serde_json::json!(corsa_diags)
                 });
                 tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                corsa_diags.extend(super::corsa::collect::configuration_disclosures(state));
+                corsa_diags.extend(
+                    super::corsa::collect::configuration_disclosures(state)
+                        .into_iter()
+                        .map(NativeDiagnostic::from),
+                );
                 NativeFamily {
                     diagnostics: corsa_diags,
                     owns_script_syntax: true,
@@ -161,13 +161,13 @@ impl DiagnosticService {
                     serde_json::json!(hints)
                 });
                 NativeFamily {
-                    diagnostics: hints,
+                    diagnostics: hints.into_iter().map(Into::into).collect(),
                     owns_script_syntax: false,
                 }
             }
         };
         let mut combined = combine(diagnostics, native_script_syntax, Some(native));
-        with_unavailable_hint(state, &mut combined.diagnostics);
+        with_unavailable_hint(state, &mut combined);
         combined
     }
 }
@@ -177,13 +177,18 @@ impl DiagnosticService {
 /// corsa diagnostics for an SFC), surface a hint diagnostic so the Problems
 /// panel reflects what is happening. Without this, the editor goes silent and
 /// users assume their project is clean. See #681.
-pub(super) fn with_unavailable_hint(state: &ServerState, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn with_unavailable_hint(state: &ServerState, publication: &mut CombinedDiagnostics) {
     if !state.has_corsa_bridge()
-        && !diagnostics
+        && !publication
+            .diagnostics
             .iter()
             .any(|d| d.source.as_deref() == Some(super::sources::TYPE_CHECKER))
     {
-        diagnostics.push(typecheck_unavailable_hint());
+        let hint = typecheck_unavailable_hint();
+        if let Some(native) = &mut publication.native {
+            native.diagnostics.push(hint.clone().into());
+        }
+        publication.diagnostics.push(hint);
     }
 }
 
@@ -206,9 +211,9 @@ pub(super) fn native_script_syntax(
 /// A native TS2345 for the generated checker call repeats it and exposes
 /// internal helper types, especially after an unsaved dependency edit.
 fn without_duplicate_required_props(
-    corsa: Vec<Diagnostic>,
+    corsa: Vec<NativeDiagnostic>,
     authored: &[Diagnostic],
-) -> Vec<Diagnostic> {
+) -> Vec<NativeDiagnostic> {
     let required_tags = authored
         .iter()
         .filter(|diagnostic| {

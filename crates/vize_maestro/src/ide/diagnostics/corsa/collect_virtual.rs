@@ -7,6 +7,7 @@
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
 use vize_canon::ImportSourceMap;
+use vize_canon::corsa_bridge::{DiagnosticPhase, PhasedLspDiagnostic};
 use vize_canon::projection::{
     AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic, ProjectedDocument,
     assemble_diagnostics,
@@ -14,7 +15,7 @@ use vize_canon::projection::{
 use vize_canon::virtual_ts::{ProjectionFeatures, ProjectionMapping, ProjectionMeta};
 use vize_l0::line_index::LineBreaks;
 
-use super::super::{VirtualTsResult, sources};
+use super::super::{NativeDiagnostic, VirtualTsResult, sources};
 use super::message::strip_corsa_overlay_paths;
 
 /// One virtual document synced to Corsa, ready for assembly.
@@ -45,7 +46,13 @@ impl CorsaDocument {
 }
 
 /// A finished Corsa diagnostic; the payload keeps Corsa's own code spelling.
-pub(super) type CorsaFinished = FinishedDiagnostic<Option<serde_json::Value>>;
+pub(super) type CorsaFinished = FinishedDiagnostic<CorsaPayload>;
+
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct CorsaPayload {
+    code: Option<serde_json::Value>,
+    phase: DiagnosticPhase,
+}
 
 /// Ask Corsa for one synced document's diagnostics, in generated coordinates.
 pub(super) async fn fetch_finished_diagnostics(
@@ -65,11 +72,13 @@ pub(super) async fn fetch_finished_diagnostics(
         "native_query_started",
         || serde_json::json!({"generated":document.code,"mapping":vize_l0::cstr!("{:?}",document.mapping)}),
     );
-    let result = bridge.get_diagnostics(virtual_uri).await;
+    let result = bridge.get_diagnostics_with_provenance(virtual_uri).await;
     #[cfg(test)]
     super::super::assembly_parity_custody::native(virtual_uri, "native_query_returned", || {
         match &result {
-            Ok(diagnostics) => serde_json::json!({"Ok":diagnostics}),
+            Ok(diagnostics) => {
+                serde_json::json!({"Ok":diagnostics.iter().map(|record| &record.diagnostic).collect::<Vec<_>>()})
+            }
             Err(error) => serde_json::json!({"Err":vize_l0::cstr!("{error:?}")}),
         }
     });
@@ -82,7 +91,7 @@ pub(super) async fn fetch_finished_diagnostics(
     let decode_started = std::time::Instant::now();
     let finished: Vec<_> = corsa_diags
         .into_iter()
-        .filter_map(|diag| finished_from_lsp(&document.code, diag, index))
+        .filter_map(|diag| finished_from_phased_lsp(&document.code, diag, index))
         .collect();
     tracing::info!(
         "decoded {} Corsa diagnostics in {:?}",
@@ -93,11 +102,28 @@ pub(super) async fn fetch_finished_diagnostics(
 }
 
 /// Decode one LSP diagnostic of the synced (import-rewritten) document.
-pub(super) fn finished_from_lsp(
+#[cfg(test)]
+fn finished_from_lsp(
     code: &str,
     diagnostic: vize_canon::corsa_bridge::LspDiagnostic,
     document: usize,
 ) -> Option<CorsaFinished> {
+    finished_from_phased_lsp(
+        code,
+        PhasedLspDiagnostic {
+            diagnostic,
+            phase: DiagnosticPhase::Unknown,
+        },
+        document,
+    )
+}
+
+pub(super) fn finished_from_phased_lsp(
+    code: &str,
+    record: PhasedLspDiagnostic,
+    document: usize,
+) -> Option<CorsaFinished> {
+    let PhasedLspDiagnostic { diagnostic, phase } = record;
     let start = LineBreaks::Lsp.position_to_offset(
         code,
         diagnostic.range.start.line,
@@ -120,7 +146,10 @@ pub(super) fn finished_from_lsp(
             _ => 4,
         }),
         message: diagnostic.message.as_str().into(),
-        payload: diagnostic.code,
+        payload: CorsaPayload {
+            code: diagnostic.code,
+            phase,
+        },
     })
 }
 
@@ -137,7 +166,7 @@ pub(super) fn assemble_corsa_diagnostics(
     content: &str,
     documents: &[CorsaDocument],
     finished: Vec<CorsaFinished>,
-) -> Vec<Diagnostic> {
+) -> Vec<NativeDiagnostic> {
     assemble_corsa_diagnostics_for_source(
         &AuthoredSource::vue(content),
         content,
@@ -150,7 +179,7 @@ pub(super) fn assemble_script_corsa_diagnostics(
     content: &str,
     documents: &[CorsaDocument],
     finished: Vec<CorsaFinished>,
-) -> Vec<Diagnostic> {
+) -> Vec<NativeDiagnostic> {
     assemble_corsa_diagnostics_for_source(
         &AuthoredSource::script(content),
         content,
@@ -164,7 +193,7 @@ fn assemble_corsa_diagnostics_for_source(
     content: &str,
     documents: &[CorsaDocument],
     finished: Vec<CorsaFinished>,
-) -> Vec<Diagnostic> {
+) -> Vec<NativeDiagnostic> {
     let projected: Vec<_> = documents
         .iter()
         .map(|document| ProjectedDocument {
@@ -193,32 +222,37 @@ fn assemble_corsa_diagnostics_for_source(
                 LineBreaks::Lsp.offset_to_position(content, assembled.start.min(content.len()));
             let (end_line, end_character) =
                 LineBreaks::Lsp.offset_to_position(content, assembled.end.min(content.len()));
-            let code = match assembled.origin {
-                AssembledOrigin::Checker(Some(raw))
-                | AssembledOrigin::MissingVueImport(Some(raw))
-                    if parse_code(&raw) == assembled.code =>
-                {
-                    Some(corsa_diagnostic_code(raw))
+            let (phase, raw_code) = match assembled.origin {
+                AssembledOrigin::Checker(payload) | AssembledOrigin::MissingVueImport(payload) => {
+                    (payload.phase, payload.code)
                 }
+                AssembledOrigin::GeneratedGiveUp(payload) => (payload.phase, None),
+                AssembledOrigin::UnusedExpectation => (DiagnosticPhase::Unknown, None),
+            };
+            let code = match raw_code {
+                Some(raw) if parse_code(&raw) == assembled.code => Some(corsa_diagnostic_code(raw)),
                 _ => assembled
                     .code
                     .map(|code| NumberOrString::Number(code as i32)),
             };
-            Diagnostic {
-                range: Range {
-                    start: Position::new(start_line, start_character),
-                    end: Position::new(end_line, end_character),
+            NativeDiagnostic {
+                diagnostic: Diagnostic {
+                    range: Range {
+                        start: Position::new(start_line, start_character),
+                        end: Position::new(end_line, end_character),
+                    },
+                    severity: assembled.severity.map(|severity| match severity {
+                        1 => DiagnosticSeverity::ERROR,
+                        2 => DiagnosticSeverity::WARNING,
+                        3 => DiagnosticSeverity::INFORMATION,
+                        _ => DiagnosticSeverity::HINT,
+                    }),
+                    code,
+                    source: Some(sources::TYPE_CHECKER.to_string()),
+                    message: strip_corsa_overlay_paths(&assembled.message),
+                    ..Default::default()
                 },
-                severity: assembled.severity.map(|severity| match severity {
-                    1 => DiagnosticSeverity::ERROR,
-                    2 => DiagnosticSeverity::WARNING,
-                    3 => DiagnosticSeverity::INFORMATION,
-                    _ => DiagnosticSeverity::HINT,
-                }),
-                code,
-                source: Some(sources::TYPE_CHECKER.to_string()),
-                message: strip_corsa_overlay_paths(&assembled.message),
-                ..Default::default()
+                phase,
             }
         })
         .collect();
@@ -303,6 +337,9 @@ mod tests {
             .filter_map(|diagnostic| finished_from_lsp(GENERATED, diagnostic, 0))
             .collect();
         assemble_corsa_diagnostics(CONTENT, &[document()], finished)
+            .into_iter()
+            .map(|record| record.diagnostic)
+            .collect()
     }
 
     fn at(needle: &str, code: NumberOrString, message: &str) -> Diagnostic {
@@ -319,6 +356,38 @@ mod tests {
             source: Some(super::sources::TYPE_CHECKER.to_string()),
             message: message.to_string(),
             ..Default::default()
+        }
+    }
+
+    #[test]
+    fn assembly_preserves_producer_phase_without_changing_the_diagnostic_wire() {
+        use super::{DiagnosticPhase, PhasedLspDiagnostic, finished_from_phased_lsp};
+        for phase in [
+            DiagnosticPhase::Syntactic,
+            DiagnosticPhase::Semantic,
+            DiagnosticPhase::Unknown,
+        ] {
+            let finished = finished_from_phased_lsp(
+                GENERATED,
+                PhasedLspDiagnostic {
+                    diagnostic: lsp("count", 1, serde_json::json!(1192), "No default export."),
+                    phase,
+                },
+                0,
+            )
+            .unwrap();
+            let rendered = assemble_corsa_diagnostics(CONTENT, &[document()], vec![finished]);
+            assert_eq!(rendered.len(), 1);
+            assert_eq!(rendered[0].phase, phase);
+            assert_eq!(
+                serde_json::to_value(&rendered[0]).unwrap(),
+                serde_json::to_value(at(
+                    "count",
+                    NumberOrString::Number(1192),
+                    "No default export."
+                ))
+                .unwrap(),
+            );
         }
     }
 

@@ -29,7 +29,8 @@ const typeErrors = (params: PublishDiagnosticsParams) =>
   params.diagnostics.filter(
     (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2322,
   );
-// The script parser's errors and TypeScript's own syntax errors (TS1xxx).
+// This pinned case must have no stale native TS1xxx output beside the parser.
+// Semantic TS1xxx findings have a separate retention control below.
 const scriptSyntax = (params: PublishDiagnosticsParams) =>
   params.diagnostics.filter(
     (diagnostic) =>
@@ -40,6 +41,7 @@ const at = (start: number, end: number, text: string) => ({
   range: { start: { line: start, character: 0 }, end: { line: end, character: 0 } },
   text,
 });
+
 const summary = (publications: PublishDiagnosticsParams[]) =>
   publications
     .map(
@@ -142,6 +144,94 @@ test("a new script syntax error reaches the prompt publication", async (t) => {
       [BROKEN_LINE - 1],
       summary(publications),
     );
+  } finally {
+    if (!stopped) await session.shutdown();
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("an unrelated edit retains a semantic TS1xxx diagnostic in the prompt", async (t) => {
+  const runtime = requireTypecheckDependency(
+    t,
+    resolveTypecheckRuntime(root),
+    "TypeScript 7 runtime for semantic diagnostic retention",
+    "TypeScript 7 runtime not found; skipping semantic diagnostic retention",
+  );
+  if (!runtime) return;
+  const directory = workspace("lsp-semantic-retention-");
+  const filePath = path.join(directory, "src/App.vue");
+  const uri = pathToFileURL(filePath).href;
+  const source =
+    '<script setup lang="ts">\nconst make = () => 1;\nconst result = make() as const;\nvoid result;\n</script>\n<template><div /></template>\n';
+  const publications: PublishDiagnosticsParams[] = [];
+  const session = new LspSession();
+  let stopped = false;
+  const semantic = (params: PublishDiagnosticsParams) =>
+    params.diagnostics.filter(
+      (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 1355,
+    );
+  try {
+    fs.mkdirSync(path.join(directory, "src"));
+    fs.writeFileSync(filePath, source);
+    fs.writeFileSync(
+      path.join(directory, "tsconfig.json"),
+      JSON.stringify({ compilerOptions: { strict: true, noEmit: true }, include: ["src"] }),
+    );
+    writeVueConfigFixture(directory, {
+      lsp: { lint: true, typecheck: true },
+      typeChecker: { corsaPath: runtime },
+    });
+    session.notificationObservers.push((method, params) => {
+      if (method === "textDocument/publishDiagnostics" && isDiagnosticsForUri(params, uri)) {
+        publications.push(params as PublishDiagnosticsParams);
+      }
+    });
+    await session.initialize(directory, { editor: true, lint: true, typecheck: true });
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri, languageId: "vue", version: 1, text: source },
+    });
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, uri) &&
+        (params as PublishDiagnosticsParams).version === 1 &&
+        semantic(params as PublishDiagnosticsParams).length === 1,
+      60_000,
+    );
+    session.notify("textDocument/didChange", {
+      textDocument: { uri, version: 2 },
+      contentChanges: [at(4, 4, "\n")],
+    });
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, uri) && (params as PublishDiagnosticsParams).version === 2,
+      60_000,
+    );
+    const prompt = publications.find((params) => params.version === 2)!;
+    assert.deepEqual(
+      semantic(prompt).map((row) => row.range?.start.line),
+      [2],
+      summary(publications),
+    );
+    session.notify("textDocument/didChange", {
+      textDocument: { uri, version: 3 },
+      contentChanges: [at(2, 3, "const result = make();\n")],
+    });
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, uri) && (params as PublishDiagnosticsParams).version === 3,
+      60_000,
+    );
+    assert.deepEqual(
+      semantic(publications.find((params) => params.version === 3)!),
+      [],
+      summary(publications),
+    );
+    await session.shutdown();
+    stopped = true;
+    await session.waitForClosed();
   } finally {
     if (!stopped) await session.shutdown();
     fs.rmSync(directory, { recursive: true, force: true });

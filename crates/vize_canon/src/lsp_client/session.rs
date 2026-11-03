@@ -3,7 +3,6 @@
 use super::{
     CorsaProjectClient,
     session_paths::{build_materialized_session_document_uri, build_session_document_uri},
-    utils::remap_serialized_uris,
     virtual_overlay,
 };
 use crate::file_uri::file_uri_to_path;
@@ -16,7 +15,6 @@ use corsa::{
     fast::CompactString,
     runtime::block_on,
 };
-use lsp_types::Diagnostic;
 use serde_json::Value;
 use vize_l0::{String, cstr};
 
@@ -275,8 +273,11 @@ impl CorsaProjectClient {
         mapped
     }
 
-    pub(super) fn remap_diagnostics(&self, diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
-        remap_serialized_uris(diagnostics.clone(), &self.external_document_uris)
+    pub(super) fn remap_phased_diagnostics(
+        &self,
+        diagnostics: Vec<super::PhasedDiagnostic>,
+    ) -> Vec<super::PhasedDiagnostic> {
+        super::utils::remap_serialized_uris(diagnostics.clone(), &self.external_document_uris)
             .unwrap_or(diagnostics)
     }
 

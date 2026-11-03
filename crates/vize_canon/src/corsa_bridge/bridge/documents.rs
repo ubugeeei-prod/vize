@@ -9,10 +9,11 @@ use std::sync::{Arc, atomic::Ordering};
 use vize_carton::{String, cstr};
 
 use super::{
-    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome,
+    InitialApiDiagnosticsProvenanceOutcome, PendingInitialApiDiagnostics,
 };
 use crate::corsa_bridge::types::{
-    CorsaBridgeError, LspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
+    CorsaBridgeError, LspDiagnostic, PhasedLspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 
 impl CorsaBridge {
@@ -203,6 +204,38 @@ impl CorsaBridge {
     where
         F: FnOnce(&mut dyn FnMut() -> bool) -> bool + Send + 'static,
     {
+        Ok(
+            match self
+                .finish_initial_api_diagnostics_with_provenance(pending, with_current_source)
+                .await?
+            {
+                InitialApiDiagnosticsProvenanceOutcome::Stale => {
+                    InitialApiDiagnosticsOutcome::Stale
+                }
+                InitialApiDiagnosticsProvenanceOutcome::Unsupported => {
+                    InitialApiDiagnosticsOutcome::Unsupported
+                }
+                InitialApiDiagnosticsProvenanceOutcome::Complete(rows) => {
+                    InitialApiDiagnosticsOutcome::Complete(
+                        rows.into_iter().map(|row| row.diagnostic).collect(),
+                    )
+                }
+                InitialApiDiagnosticsProvenanceOutcome::Failed(error) => {
+                    InitialApiDiagnosticsOutcome::Failed(error)
+                }
+            },
+        )
+    }
+
+    /// Commit the same guarded initial read while retaining its compiler phases.
+    pub async fn finish_initial_api_diagnostics_with_provenance<F>(
+        &self,
+        pending: PendingInitialApiDiagnostics,
+        with_current_source: F,
+    ) -> Result<InitialApiDiagnosticsProvenanceOutcome, CorsaBridgeError>
+    where
+        F: FnOnce(&mut dyn FnMut() -> bool) -> bool + Send + 'static,
+    {
         let (outcome, cache_len) = self
             .with_client(move |client| {
                 let uri = pending.read.uri().to_owned();
@@ -210,20 +243,24 @@ impl CorsaBridge {
                 // host-document guard; the guarded section only swaps a row.
                 let read = pending.read;
                 let (mut diagnostics, staged) = match pending.result {
-                    Ok(Some(diagnostics)) => match convert_bridge_diagnostics(&diagnostics) {
-                        Ok(mapped) => (
-                            Some(diagnostics),
-                            InitialApiDiagnosticsOutcome::Complete(mapped),
-                        ),
-                        Err(error) => (None, InitialApiDiagnosticsOutcome::Failed(error)),
-                    },
-                    Ok(None) => (None, InitialApiDiagnosticsOutcome::Unsupported),
-                    Err(error) => (None, InitialApiDiagnosticsOutcome::Failed(error)),
+                    Ok(Some(diagnostics)) => {
+                        match convert_bridge_diagnostics_with_provenance(&diagnostics) {
+                            Ok(mapped) => (
+                                Some(diagnostics),
+                                InitialApiDiagnosticsProvenanceOutcome::Complete(mapped),
+                            ),
+                            Err(error) => {
+                                (None, InitialApiDiagnosticsProvenanceOutcome::Failed(error))
+                            }
+                        }
+                    }
+                    Ok(None) => (None, InitialApiDiagnosticsProvenanceOutcome::Unsupported),
+                    Err(error) => (None, InitialApiDiagnosticsProvenanceOutcome::Failed(error)),
                 };
                 let mut staged = Some(staged);
                 let mut previous = None;
                 let mut inserted = false;
-                let mut outcome = InitialApiDiagnosticsOutcome::Stale;
+                let mut outcome = InitialApiDiagnosticsProvenanceOutcome::Stale;
                 let accepted = with_current_source(&mut || {
                     if !client.initial_diagnostics_read_is_current(&read) {
                         return false;
@@ -243,12 +280,12 @@ impl CorsaBridge {
                     if inserted {
                         client.replace_initial_diagnostics_cache(&uri, previous);
                     }
-                    outcome = InitialApiDiagnosticsOutcome::Stale;
+                    outcome = InitialApiDiagnosticsProvenanceOutcome::Stale;
                 }
                 Ok((outcome, client.diagnostics_cache_len()))
             })
             .await?;
-        if matches!(outcome, InitialApiDiagnosticsOutcome::Complete(_)) {
+        if matches!(outcome, InitialApiDiagnosticsProvenanceOutcome::Complete(_)) {
             self.cache_stats.set_entries(cache_len as u64);
             self.cache_stats.miss();
         }
@@ -262,6 +299,34 @@ impl CorsaBridge {
                     .request_diagnostics_full(uri.as_str())
                     .map_err(CorsaBridgeError::CommunicationError)?;
                 let diagnostics = convert_bridge_diagnostics(&fetch.diagnostics)?;
+                Ok((
+                    fetch.used_cache,
+                    client.diagnostics_cache_len(),
+                    diagnostics,
+                ))
+            })
+            .await?;
+        self.cache_stats.set_entries(cache_len as u64);
+        if used_cache {
+            self.cache_stats.hit();
+        } else {
+            self.cache_stats.miss();
+        }
+        Ok(diagnostics)
+    }
+
+    /// Fetch the existing diagnostic request result with producer-owned provenance.
+    pub async fn get_diagnostics_with_provenance(
+        &self,
+        uri: &str,
+    ) -> Result<Vec<PhasedLspDiagnostic>, CorsaBridgeError> {
+        let uri = uri.to_owned();
+        let (used_cache, cache_len, diagnostics) = self
+            .with_client(move |client| {
+                let fetch = client
+                    .request_diagnostics_full_with_provenance(uri.as_str())
+                    .map_err(CorsaBridgeError::CommunicationError)?;
+                let diagnostics = convert_bridge_diagnostics_with_provenance(&fetch.diagnostics)?;
                 Ok((
                     fetch.used_cache,
                     client.diagnostics_cache_len(),
@@ -324,17 +389,35 @@ pub(crate) fn normalize_document_uri(name: &str) -> String {
     }
 }
 
-pub(super) fn convert_bridge_diagnostics(
-    diagnostics: &[lsp_types::Diagnostic],
+pub(super) fn convert_bridge_diagnostics<T: std::borrow::Borrow<lsp_types::Diagnostic>>(
+    diagnostics: &[T],
 ) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {
     diagnostics
         .iter()
-        .map(|diagnostic| {
-            let value = serde_json::to_value(diagnostic).map_err(|error| {
-                CorsaBridgeError::CommunicationError(cstr!("Failed to encode diagnostic: {error}"))
-            })?;
-            serde_json::from_value(value).map_err(|error| {
-                CorsaBridgeError::CommunicationError(cstr!("Failed to parse diagnostic: {error}"))
+        .map(|row| convert_bridge_diagnostic(row.borrow()))
+        .collect()
+}
+
+fn convert_bridge_diagnostic(
+    diagnostic: &lsp_types::Diagnostic,
+) -> Result<LspDiagnostic, CorsaBridgeError> {
+    let value = serde_json::to_value(diagnostic).map_err(|error| {
+        CorsaBridgeError::CommunicationError(cstr!("Failed to encode diagnostic: {error}"))
+    })?;
+    serde_json::from_value(value).map_err(|error| {
+        CorsaBridgeError::CommunicationError(cstr!("Failed to parse diagnostic: {error}"))
+    })
+}
+
+pub(super) fn convert_bridge_diagnostics_with_provenance(
+    diagnostics: &[crate::lsp_client::PhasedDiagnostic],
+) -> Result<Vec<PhasedLspDiagnostic>, CorsaBridgeError> {
+    diagnostics
+        .iter()
+        .map(|row| {
+            Ok(PhasedLspDiagnostic {
+                diagnostic: convert_bridge_diagnostic(&row.diagnostic)?,
+                phase: row.phase,
             })
         })
         .collect()

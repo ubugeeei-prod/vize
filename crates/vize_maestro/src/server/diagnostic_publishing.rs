@@ -157,7 +157,7 @@ impl MaestroServer {
             .await
         };
         #[cfg(feature = "native")]
-        let (native, diagnostics) = (combined.native_family(), combined.diagnostics);
+        let (native, diagnostics) = combined.into_parts();
 
         #[cfg(not(feature = "native"))]
         let diagnostics = DiagnosticService::collect(&self.state, uri);

@@ -9,11 +9,14 @@
 
 use std::path::Path;
 
+use super::super::PhasedDiagnostic;
+use crate::corsa_bridge::DiagnosticPhase;
 use corsa::{
     CorsaError,
     api::{ApiClient, ApiDialect, ManagedSnapshot, ProjectResponse},
     runtime::block_on,
 };
+#[cfg(test)]
 use lsp_types::Diagnostic;
 use serde_json::{Value, json};
 use vize_l0::{FxHashMap, String, cstr};
@@ -36,7 +39,7 @@ pub(in crate::lsp_client) fn read(
     snapshot: &ManagedSnapshot,
     project: &ProjectResponse,
     document_uri: &str,
-) -> Result<Option<Vec<Diagnostic>>, String> {
+) -> Result<Option<Vec<PhasedDiagnostic>>, String> {
     let result = (|| {
         let path = file_uri_to_path(document_uri)
             .filter(|path| path.is_absolute())
@@ -73,16 +76,23 @@ pub(in crate::lsp_client) fn read(
                         "Malformed {method} response: beta fields on the session-snapshots dialect"
                     )));
                 }
-                rows.extend(diagnostics);
+                let phase = match method {
+                    "getSyntacticDiagnostics" => DiagnosticPhase::Syntactic,
+                    "getSemanticDiagnostics" => DiagnosticPhase::Semantic,
+                    "getSuggestionDiagnostics" => DiagnosticPhase::Suggestion,
+                    "getDeclarationDiagnostics" => DiagnosticPhase::Declaration,
+                    _ => unreachable!("required kinds are owned by this adapter"),
+                };
+                rows.extend(diagnostics.into_iter().map(|row| (phase, row)));
             }
         }
-        if rows.iter().any(|row| !row.belongs_to(&file)) {
+        if rows.iter().any(|(_, row)| !row.belongs_to(&file)) {
             return Err(Failure::Failed(cstr!(
                 "Native file diagnostic belongs to another source"
             )));
         }
         let mut texts = FxHashMap::<String, SnapshotText>::default();
-        for name in rows.iter().flat_map(NativeDiagnostic::source_names) {
+        for name in rows.iter().flat_map(|(_, row)| row.source_names()) {
             if texts.contains_key(name) {
                 continue;
             }
@@ -111,12 +121,13 @@ pub(in crate::lsp_client) fn read(
         }
         checkpoint()?;
         rows.into_iter()
-            .map(|row| {
+            .map(|(phase, row)| {
                 row.into_lsp(&file, |name| {
                     texts
                         .get(name)
                         .ok_or_else(|| cstr!("Missing native snapshot source {name}"))
                 })
+                .map(|diagnostic| PhasedDiagnostic { diagnostic, phase })
                 .map_err(Failure::Failed)
             })
             .collect::<Result<Vec<_>, _>>()

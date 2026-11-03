@@ -1,6 +1,8 @@
-use super::{CorsaProjectClient, LspDiagnostic, utils::convert_diagnostics};
+use super::{CorsaProjectClient, LspDiagnostic, PhasedDiagnostic, utils::convert_diagnostics};
+use crate::corsa_bridge::DiagnosticPhase;
 use crate::file_uri::path_to_file_uri;
 use corsa::api::{DocumentIdentifier, FileDiagnosticsResponse, ProjectDiagnosticsResponse};
+#[cfg(test)]
 use lsp_types::Diagnostic;
 use std::path::Path;
 use vize_l0::{FxHashMap, String};
@@ -14,7 +16,7 @@ pub(super) fn map_project_diagnostics(
 
     for file in &response.files {
         let uri = document_identifier_uri(&file.file);
-        let diagnostics = flatten_file_diagnostics(file);
+        let diagnostics = phased_file_diagnostics(file);
         client.diagnostics.insert(uri.clone(), diagnostics.clone());
         diagnostics_by_uri.insert(uri, diagnostics);
     }
@@ -27,14 +29,30 @@ pub(super) fn map_project_diagnostics(
         .collect()
 }
 
-pub(super) fn flatten_file_diagnostics(response: &FileDiagnosticsResponse) -> Vec<Diagnostic> {
+pub(super) fn phased_file_diagnostics(response: &FileDiagnosticsResponse) -> Vec<PhasedDiagnostic> {
     let mut diagnostics = Vec::with_capacity(
         response.syntactic.len() + response.semantic.len() + response.suggestion.len(),
     );
-    diagnostics.extend(response.syntactic.iter().cloned());
-    diagnostics.extend(response.semantic.iter().cloned());
-    diagnostics.extend(response.suggestion.iter().cloned());
+    for (phase, rows) in [
+        (DiagnosticPhase::Syntactic, &response.syntactic),
+        (DiagnosticPhase::Semantic, &response.semantic),
+        (DiagnosticPhase::Suggestion, &response.suggestion),
+    ] {
+        diagnostics.extend(
+            rows.iter()
+                .cloned()
+                .map(|diagnostic| PhasedDiagnostic { diagnostic, phase }),
+        );
+    }
     diagnostics
+}
+
+#[cfg(test)]
+fn flatten_file_diagnostics(response: &FileDiagnosticsResponse) -> Vec<Diagnostic> {
+    phased_file_diagnostics(response)
+        .into_iter()
+        .map(|row| row.diagnostic)
+        .collect()
 }
 
 pub(super) fn document_identifier_uri(document: &DocumentIdentifier) -> String {
@@ -68,6 +86,33 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(messages, vec!["syntactic", "semantic", "suggestion"]);
+    }
+
+    #[test]
+    fn api_phase_comes_from_the_owned_bucket_not_the_diagnostic_code() {
+        use crate::corsa_bridge::DiagnosticPhase;
+        let mut same_code = diagnostic("same diagnostic code");
+        same_code.code = Some(lsp_types::NumberOrString::Number(1192));
+        let response = FileDiagnosticsResponse {
+            file: DocumentIdentifier::from("/workspace/App.vue.ts"),
+            syntactic: vec![same_code.clone()],
+            semantic: vec![same_code.clone()],
+            suggestion: vec![same_code],
+        };
+        let diagnostics = super::phased_file_diagnostics(&response);
+        assert_eq!(
+            diagnostics.iter().map(|row| row.phase).collect::<Vec<_>>(),
+            [
+                DiagnosticPhase::Syntactic,
+                DiagnosticPhase::Semantic,
+                DiagnosticPhase::Suggestion
+            ]
+        );
+        assert!(
+            diagnostics
+                .iter()
+                .all(|row| row.diagnostic.code == Some(lsp_types::NumberOrString::Number(1192)))
+        );
     }
 
     #[test]
