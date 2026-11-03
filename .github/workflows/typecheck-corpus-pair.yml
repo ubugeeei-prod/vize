@@ -75,13 +75,17 @@ jobs:
             (
               cd "$RUNNER_TEMP/pair-$role"
               vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
+              # Install each rust-toolchain.toml toolchain before the parallel builds race on it.
+              cargo --version
             )
           done
+          pids=()
           for role in base head; do
             (cd "$RUNNER_TEMP/pair-$role" && vp run --workspace-root build:native > "$RUNNER_TEMP/build-$role.log" 2>&1) &
+            pids+=("$!")
           done
           status=0
-          for job in $(jobs -p); do wait "$job" || status=1; done
+          for pid in "${pids[@]}"; do wait "$pid" || status=1; done
           for role in base head; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
           [[ "$status" == 0 ]]
           for role in base head; do
