@@ -6,6 +6,7 @@ use super::protocol::{DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE};
 
 mod directive_exact;
 mod disjoint;
+mod inference_copies;
 
 fn transform(source: &str) -> super::ContentMapperTransform {
     generate_vue_content_mapper_transform(Path::new("/project/App.vue"), source).unwrap()
