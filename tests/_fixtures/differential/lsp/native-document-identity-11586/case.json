@@ -2,7 +2,7 @@
   "version": 1,
   "id": "lsp/regression/native-document-identity-11586",
   "provenance": {
-    "fixCommit": "ddd6a3c1348c514fa51c8eb808a382987d55521e",
+    "fixCommit": "cfe2ff660996a8a9a6de4b30d753c244bcbfb8d1",
     "issue": 11586,
     "witnessPath": "crates/vize_maestro/src/ide/definition/service/import_target/alias.rs",
     "witnessTest": "resolved_import_alias_keeps_the_authored_workspace_spelling",

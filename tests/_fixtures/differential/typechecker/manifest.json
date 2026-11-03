@@ -17380,7 +17380,7 @@
         {
           "path": "crates/vize_canon/src/lsp_client/utils.rs",
           "before": "0fbf7d5f4b76755bbfad3b84a033ebec02fd72fa8ea623ea5889d7cb9eadc2a4",
-          "after": "a0a6166453cb77da041a777a56057667d53e92e75725da693814a5021c883c2d"
+          "after": "e4493c0471d0a5d90285870a6533094e47f1573a193d1efb82e9e66452d85173"
         }
       ],
       "inputs": [

@@ -7,7 +7,7 @@ import { nativeBetaDtoProducerCustody } from "./native-beta-dto-fixtures.ts";
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_DOCUMENT_IDENTITY_ID = "typechecker/protocol/native-document-identity-11586";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
-const registrationSha256 = "af67b8df1449f29d3d5318181edbeb25c986106628e0d9512cfde90918609976";
+const registrationSha256 = "c9d327efc10cf6f88d7c4fb79256721134589df052ed55f05b662b0edc331d57";
 const componentSource = "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs";
 const canonical = (value: unknown): string =>
   JSON.stringify(value, (_, item: unknown) =>
