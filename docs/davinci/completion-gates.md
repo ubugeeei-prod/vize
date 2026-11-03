@@ -31,16 +31,16 @@ are not committed here; the tool prints them.
 
 ## T0: foundation
 
-| Gate                   | Passes when                                                                                                                                                                                                                                                                                              | Kind     | Issues                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ |
-| `levels.crates`        | The only crates under `davinci/` are `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3` and `vize_l4`.                                                                                                                                                       | measured | #6833                                                  |
-| `levels.dependencies`  | No level crate has a normal or build dependency on a legacy crate: `docs/davinci/plan/level-dependency-allowlist.json` is empty.                                                                                                                                                                         | measured | #6831                                                  |
-| `levels.skeleton`      | No `#![expect(clippy::todo, reason = "skeleton: …")]` module remains.                                                                                                                                                                                                                                    | measured | #6826                                                  |
-| `levels.codenames`     | No codename (Sinopia, Disegno, Ricalco, Impeto, Stesura, Folio, Spolvero) or `davinci-opt` appears in a path, a line or a serialized id, and no serialized id starts with `davinci.`. Exempt: `docs/`, `CHANGELOG.md`, lines that say "codename" (the crate-doc alias) and captured output of past runs. | measured | #6832                                                  |
-| `formal.rust-only`     | No Lean source, Lake file or Lean workflow remains; the laws run as Kani harnesses or Rust oracles.                                                                                                                                                                                                      | measured | #10825                                                 |
-| `ci.tiers`             | PR checks meet p50 ≤ 3 min and p90 ≤ 6 min, with the full suites in the merge queue.                                                                                                                                                                                                                     | issue    | #6830                                                  |
-| `harness.differential` | One differential harness runs every product, dialect coverage has no gaps, real-project differences reduce into fixtures, and both JSX oracles have value-sensitive rows.                                                                                                                                | issue    | #6891, #6892, #6893, #6884, #6890                      |
-| `history.fixtures`     | Every behavior fix in each product's history is a fixture in that product's differential corpus.                                                                                                                                                                                                         | issue    | #6879, #6880, #6881, #6883 (formatter #6882 is closed) |
+| Gate                   | Passes when                                                                                                                                                                                                                                                                                                   | Kind     | Issues                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ |
+| `levels.crates`        | The only crates under `davinci/` are `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3` and `vize_l4`.                                                                                                                                                            | measured | #6833                                                  |
+| `levels.dependencies`  | No level crate has a normal or build dependency on a legacy crate: `docs/davinci/plan/level-dependency-allowlist.json` is empty.                                                                                                                                                                              | measured | #6831                                                  |
+| `levels.skeleton`      | No `#![expect(clippy::todo, reason = "skeleton: …")]` module remains.                                                                                                                                                                                                                                         | measured | #6826                                                  |
+| `levels.codenames`     | No codename (Davinci, Sinopia, Disegno, Ricalco, Impeto, Stesura, Folio, Spolvero) appears in a path or a line. Exempt: `docs/davinci/`, `CHANGELOG.md`, captured output of past runs, and lines that say "codename" (the crate-doc alias). Other `docs/` pages may keep the level codenames but not Davinci. | measured | #6832                                                  |
+| `formal.rust-only`     | No Lean source, Lake file or Lean workflow remains; the laws run as Kani harnesses or Rust oracles.                                                                                                                                                                                                           | measured | #10825                                                 |
+| `ci.tiers`             | PR checks meet p50 ≤ 3 min and p90 ≤ 6 min, with the full suites in the merge queue.                                                                                                                                                                                                                          | issue    | #6830                                                  |
+| `harness.differential` | One differential harness runs every product, dialect coverage has no gaps, real-project differences reduce into fixtures, and both JSX oracles have value-sensitive rows.                                                                                                                                     | issue    | #6891, #6892, #6893, #6884, #6890                      |
+| `history.fixtures`     | Every behavior fix in each product's history is a fixture in that product's differential corpus.                                                                                                                                                                                                              | issue    | #6879, #6880, #6881, #6883 (formatter #6882 is closed) |
 
 ## T1: level structure
 
@@ -80,19 +80,20 @@ are not committed here; the tool prints them.
 
 ## T5: legacy deletion
 
-| Gate                   | Passes when                                                                                                                                                                                              | Kind     | Issues |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
-| `legacy.zero-fallback` | Every product's native-only verifier reports zero legacy fallbacks over the differential corpus, every dialect listed in `docs/davinci/plan/deletion-readiness-policy.json` and the real-project corpus. | issue    | #6854  |
-| `legacy.acceptance`    | Native-only acceptance rates are published per product.                                                                                                                                                  | issue    | #6853  |
-| `legacy.stability`     | `deletion-readiness-policy.json` sets `minimumStableDays`, and `legacy.zero-fallback` has held for that long. The tool measures the policy; the #6854 verifier owns the held period.                     | measured | #6828  |
-| `legacy.deleted`       | No legacy crate remains in the workspace: `vize_armature`, `vize_relief`, `vize_croquis`, `vize_croquis_cf` and every `vize_atelier_*`.                                                                  | measured | #6828  |
+| Gate                   | Passes when                                                                                                                                                                                                      | Kind     | Issues |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| `legacy.zero-fallback` | Every product's native-only verifier reports zero legacy fallbacks over the differential corpus, every dialect listed in `docs/davinci/plan/deletion-readiness-policy.json` and the real-project corpus.         | issue    | #6854  |
+| `legacy.acceptance`    | Native-only acceptance rates are published per product.                                                                                                                                                          | issue    | #6853  |
+| `legacy.stability`     | `deletion-readiness-policy.json` sets `minimumStableDays` (30) and `maximumGapDays`, and `legacy.zero-fallback` has held for that period. The tool measures the policy; the #6854 verifier owns the held period. | measured | #6828  |
+| `legacy.deleted`       | No legacy crate remains in the workspace: `vize_armature`, `vize_relief`, `vize_croquis`, `vize_croquis_cf` and every `vize_atelier_*`.                                                                          | measured | #6828  |
 
 ## T6: frameworks
 
-| Gate               | Passes when                                                                              | Kind  | Issues |
-| ------------------ | ---------------------------------------------------------------------------------------- | ----- | ------ |
-| `frameworks.tsrx`  | TSRX runs on the levels, compiler included, with parity against the reference compiler.  | issue | #6858  |
-| `frameworks.solid` | Solid runs on the levels, compiler included, with parity against the reference compiler. | issue | #6859  |
+| Gate                    | Passes when                                                                                                                             | Kind  | Issues |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| `frameworks.tsrx`       | TSRX runs on the levels, compiler included, with parity against the reference compiler. TSRX is a supported product surface.            | issue | #6858  |
+| `frameworks.solid-poc`  | A working Solid example under `examples/` runs on the levels and is tested in CI. A proof of concept, not a supported product surface.  | issue | #6859  |
+| `frameworks.svelte-poc` | A working Svelte example under `examples/` runs on the levels and is tested in CI. A proof of concept, not a supported product surface. | issue | #11540 |
 
 ## Roadmap closure
 
@@ -102,18 +103,13 @@ are not committed here; the tool prints them.
 - #6829 closes when every `frameworks.*` gate passes.
 - #6830 is the `ci.tiers` gate.
 
-## Pending maintainer decisions
+## Maintainer decisions (2026-11-03)
 
-1. **Stability period** (`legacy.stability`). `minimumStableDays` is `null`.
-   Options: (a) 14 days, (b) 30 days, (c) a number of consecutive releases.
-   Releases ship per fix, several a day, so a release count would pass within hours.
-2. **Framework scope** (`frameworks.*`). #6829 lists TSRX and Solid as children; Svelte,
-   Angular and Analog have no issues. Options: (a) complete means TSRX and Solid, and the
-   others are a later program; (b) add Svelte; (c) add all three.
-3. **The `davinci` name.** #6826 lists Davinci among the codenames but keeps `docs/davinci/`
-   as the program name. Since then the level crates moved under `davinci/`, and about 4,600
-   tracked paths contain `davinci` (`davinci/`, `davinci_harness`, `davinci_test_support`,
-   `davinci_*.rs` tests, `tests/tooling/davinci-*`). Options: (a) Davinci is the program
-   name, allowed in paths and tool crates, and only serialized `davinci.*` ids are banned
-   (the current gate); (b) it is a codename everywhere except `docs/davinci/`, so those
-   paths are renamed too.
+1. **Stability period** (`legacy.stability`): 30 days (`minimumStableDays: 30`).
+   `maximumGapDays` is still unset, and the readiness evaluator requires it.
+2. **Framework scope** (`frameworks.*`): TSRX is required and is a supported product surface.
+   Solid and Svelte are proofs of concept: working examples under `examples/`, not a supported
+   surface, not meant for user adoption. Angular and Analog are out of scope.
+3. **The `davinci` name** (`levels.codenames`): Davinci is a codename. It is removed everywhere
+   except `docs/davinci/` by one scripted, replayable rename, landed in a merge window the
+   maintainer schedules.

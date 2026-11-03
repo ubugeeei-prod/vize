@@ -59,12 +59,10 @@ export const codenames = [
   "stesura",
   "folio",
   "spolvero",
-  "davinci-opt",
+  "davinci",
 ] as const;
 
 const codenamePattern = new RegExp(codenames.join("|"), "gi");
-// Serialized ids such as `davinci.expr.parses`; the program name may name paths only.
-const serializedDavinci = /["'`]davinci\.[a-z0-9_]+[. ]/g;
 // Captured output of a past run is evidence, not a name the code produces.
 const capturePattern =
   /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
@@ -73,15 +71,18 @@ const capturePattern =
 const gateFiles = new Set(["tools/commands/davinci/completion-gates.ts"]);
 
 const exemptPath = (file: string) =>
-  file.startsWith("docs/") ||
+  file.startsWith("docs/davinci/") ||
   file === "CHANGELOG.md" ||
   gateFiles.has(file) ||
   capturePattern.test(file);
 
+// Other docs may keep the level codenames as aliases, but not the program name.
+const counts = (file: string, name: string) =>
+  !file.startsWith("docs/") || name.toLowerCase() === "davinci";
+
 export interface CodenameReport {
   readonly paths: number;
   readonly lines: number;
-  readonly serialized: number;
   readonly byName: Readonly<Record<string, number>>;
 }
 
@@ -92,12 +93,13 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
     byName[key] = (byName[key] ?? 0) + 1;
   };
   let paths = 0,
-    lines = 0,
-    serialized = 0;
+    lines = 0;
+  const matches = (file: string, text: string) =>
+    (text.match(codenamePattern) ?? []).filter((name) => counts(file, name));
   for (const file of repo.paths) {
     if (exemptPath(file)) continue;
-    const named = file.match(codenamePattern);
-    if (named) {
+    const named = matches(file, file);
+    if (named.length) {
       paths++;
       named.forEach(hit);
     }
@@ -106,15 +108,14 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
     for (const line of text.split("\n")) {
       // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form.
       if (/codename/i.test(line)) continue;
-      const found = line.match(codenamePattern);
-      if (found) {
+      const found = matches(file, line);
+      if (found.length) {
         lines++;
         found.forEach(hit);
       }
-      serialized += line.match(serializedDavinci)?.length ?? 0;
     }
   }
-  return { paths, lines, serialized, byName };
+  return { paths, lines, byName };
 };
 
 export const workspaceMembers = (cargoToml: string): string[] => {
@@ -173,8 +174,8 @@ const measureCodenames = (repo: Repo): Measured => {
     .map(([name, count]) => `${name} ${count}`)
     .join(", ");
   return {
-    pass: report.paths + report.lines + report.serialized === 0,
-    detail: `${report.paths} paths, ${report.lines} lines (${names}); ${report.serialized} serialized davinci.* ids`,
+    pass: report.paths + report.lines === 0,
+    detail: `${report.paths} paths, ${report.lines} lines (${names})`,
   };
 };
 
@@ -205,10 +206,14 @@ const measureProductDependencies = (repo: Repo): Measured => {
 const measureStabilityPolicy = (repo: Repo): Measured => {
   const policy = JSON.parse(
     requireText(repo, "docs/davinci/plan/deletion-readiness-policy.json"),
-  ) as { minimumStableDays?: unknown };
-  const days = policy.minimumStableDays;
-  const defined = typeof days === "number" && Number.isInteger(days) && days > 0;
-  return { pass: defined, detail: `minimumStableDays ${String(days)}` };
+  ) as { minimumStableDays?: unknown; maximumGapDays?: unknown };
+  const positive = (value: unknown) =>
+    typeof value === "number" && Number.isInteger(value) && value > 0;
+  const { minimumStableDays: days, maximumGapDays: gap } = policy;
+  return {
+    pass: positive(days) && positive(gap),
+    detail: `minimumStableDays ${String(days)}, maximumGapDays ${String(gap)}`,
+  };
 };
 
 const measureLegacyDeleted = (repo: Repo): Measured => {
@@ -249,7 +254,8 @@ export const gates: readonly Gate[] = [
   { id: "legacy.stability", tier: 5, issues: [6828], measure: measureStabilityPolicy },
   { id: "legacy.deleted", tier: 5, issues: [6828], measure: measureLegacyDeleted },
   { id: "frameworks.tsrx", tier: 6, issues: [6858] },
-  { id: "frameworks.solid", tier: 6, issues: [6859] },
+  { id: "frameworks.solid-poc", tier: 6, issues: [6859] },
+  { id: "frameworks.svelte-poc", tier: 6, issues: [11540] },
 ];
 
 const issueList = (issues: readonly number[]) => issues.map((issue) => "#" + issue).join(" ");
