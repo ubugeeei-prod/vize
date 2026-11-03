@@ -10,7 +10,7 @@ use super::{
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperSpanKind, content_mapper_span_features,
     generate_vue_content_mapper_transform,
 };
-use crate::batch::ContentMapperTransform;
+use crate::batch::{ContentMapperSpan, ContentMapperTransform};
 
 /// #10920: `:aria-labelledby` / `:error-message` map the camelized binding onto
 /// the whole attribute. An alias would name the attribute, and a prefix range
@@ -234,7 +234,21 @@ const message = "hello"
             );
         }
     }
-    assert!(result.mappings.iter().all(|mapping| {
+    // The component's export is the one navigation target: it stands for the SFC.
+    let (sfc, ordinary): (Vec<&ContentMapperSpan>, Vec<_>) = result
+        .mappings
+        .iter()
+        .partition(|mapping| mapping.0[2] == 0 && mapping.0[3] == 0);
+    assert_eq!(
+        sfc.iter()
+            .map(|mapping| (mapping.0[4], mapping.0[5]))
+            .collect::<Vec<_>>(),
+        [(
+            ContentMapperSpanKind::Atom as usize,
+            CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET
+        )]
+    );
+    assert!(ordinary.iter().all(|mapping| {
         mapping.0[5]
             == match mapping.0[4] {
                 kind if kind == ContentMapperSpanKind::Verbatim as usize => {

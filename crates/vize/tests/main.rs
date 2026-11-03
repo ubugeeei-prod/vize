@@ -148,6 +148,7 @@ mod content_mapper_tsgo_build;
 mod content_mapper_tsgo_cli;
 mod content_mapper_tsgo_declaration_lsp;
 mod content_mapper_tsgo_directives;
+mod content_mapper_tsgo_editor_accuracy;
 mod content_mapper_tsgo_incremental;
 mod content_mapper_tsgo_lsp;
 mod content_mapper_tsgo_lsp_event_forms;

@@ -833,6 +833,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         legacy_vue2,
         dialect,
     );
+    let public_names = component_export::names(&ts, summary, generation_options, script_content);
     emit_default_export_declaration(
         &mut ts,
         &emits_info,
@@ -854,18 +855,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             check_options,
             hoist_shared_preamble,
         ),
+        public_names
+            .as_ref()
+            .map(component_export::ComponentNames::type_name),
     );
-    component_export::emit_component_default_export_for_generation(
-        &mut ts,
-        summary,
-        generation_options,
-        script_content,
-    );
+    let export = component_export::default_export(&mut ts, public_names.as_ref());
     binding_output::publish(
         ts,
         mappings,
         diagnostic_mappings,
         semantic_links,
         prop_default_key_links,
+        export,
     )
 }

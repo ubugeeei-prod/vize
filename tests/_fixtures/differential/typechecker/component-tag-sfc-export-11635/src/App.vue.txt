@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import type { Note } from './types';
+import MkNoteHeader from './MkNoteHeader.vue';
+defineProps<{ note: Note }>();
+</script>
+<template>
+  <div>
+    <MkNoteHeader :note="note" :mini="true" />
+  </div>
+</template>

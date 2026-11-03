@@ -12070,6 +12070,55 @@
       }
     },
     {
+      "id": "typechecker/regression/component-tag-sfc-export-11635",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-tag-sfc-export-11635/src/App.vue.txt",
+          "sha256": "6b0cf73b7197f5893af6d8c6111ea4f1bf4f3052480145f19bf1be0cb8c1e640",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/MkNoteHeader.vue.txt",
+          "sha256": "404beeda6c705dfc85634075984d16f59d04d0bd6c0ac7d131a5b9b3db649674",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/Wrong.vue.txt",
+          "sha256": "520c93b3cfe5d979f05eeafbcc0627eba02188c2e6d78cfdae4ac0338ea45e70",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/types.ts.txt",
+          "sha256": "34ff170ed9c8b1ee63b1d00eaebbeb037606080aed6dd6104cf8e5a210a7bdae",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/tsconfig.json.txt",
+          "sha256": "a128eab9a15a4db14fb9600d13c21c44cfb92da119aded4e9c4c56b5920d2f10",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_editor_accuracy::component_tags::standard_tsgo_lsp_answers_component_tags_with_the_sfc; reported #11635 and #11637 under TypeScript 7.1's LSP: definition on a component tag returned nothing and its hover printed generated members. A wrong prop type keeps TS2322. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/content-mapper-declaration-fallthrough-11591",
       "state": "active",
       "targets": [

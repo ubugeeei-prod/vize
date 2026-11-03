@@ -39,6 +39,7 @@ use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::javascript_sfc::{descriptor_is_unchecked_javascript, prepare_script_blocks};
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
+mod component_export;
 mod masked_spans;
 mod quoted_spans;
 mod span_features;
@@ -420,6 +421,7 @@ fn protocol_spans(
         ]));
         spans.extend(delimiters.map(|(_, close)| delimiter(close)));
     }
+    component_export::insert_spans(&mut spans, mappings, metadata);
     spans
 }
 

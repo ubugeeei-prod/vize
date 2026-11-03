@@ -61,3 +61,8 @@ rewriting those historical packets. `successor-11142` records exact PR head
 [run 41004444313](https://github.com/ubugeeei-prod/vize/actions/runs/41004444313)
 and
 [legacy artifact 12954414175](https://github.com/ubugeeei-prod/vize/actions/runs/41004444313/artifacts/12954414175).
+
+`successor-11635` records the content mapper's component export change for
+issues #11635 and #11637: the component's type is named after its file and the
+exported name maps to the SFC's start. The content-mapper projection grows by
+58 bytes and one mapping row; canon and Maestro projections are byte-identical.
