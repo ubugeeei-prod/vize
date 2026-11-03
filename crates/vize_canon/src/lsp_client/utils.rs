@@ -53,7 +53,7 @@ pub(super) fn remap_query_uris(
             let Some(physical) = physical else {
                 break;
             };
-            if !physical.starts_with(authored_root) {
+            if !super::session_paths::is_within_project_namespace(&physical, authored_root) {
                 break;
             }
             if physical == authored {
@@ -64,16 +64,16 @@ pub(super) fn remap_query_uris(
     }
     remap_protocol_uris(value, &|uri| {
         let identity = crate::file_uri::file_uri_identity(uri);
-        if let Some(mapped) = mappings.get(identity.as_str()) {
-            return Some(mapped.clone());
-        }
-        let path = crate::file_uri::file_uri_to_path(&identity)?;
-        for (physical, authored) in &spellings {
-            if let Ok(relative) = path.strip_prefix(physical) {
-                return Some(crate::file_uri::path_to_file_uri(&authored.join(relative)));
+        let mapped = mappings.get(identity.as_str());
+        let external = mapped.map_or(identity.as_str(), String::as_str);
+        if let Some(path) = crate::file_uri::file_uri_to_path(external) {
+            for (physical, authored) in &spellings {
+                if let Ok(relative) = path.strip_prefix(physical) {
+                    return Some(crate::file_uri::path_to_file_uri(&authored.join(relative)));
+                }
             }
         }
-        None
+        mapped.cloned()
     });
 }
 
@@ -132,6 +132,40 @@ mod tests {
     use super::remap_json_uris;
     use serde_json::json;
     use vize_l0::{FxHashMap, String};
+
+    #[cfg(unix)]
+    #[test]
+    fn query_uris_keep_the_request_spelling_after_native_remapping() {
+        use crate::file_uri::path_to_file_uri;
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let workspace = root.join("workspace");
+        let linked = root.join("linked");
+        std::fs::create_dir_all(workspace.join("src")).unwrap();
+        std::os::unix::fs::symlink(&workspace, &linked).unwrap();
+        let request = path_to_file_uri(&linked.join("src/App.vue.ts"));
+        let physical = path_to_file_uri(&workspace.join("src/format.ts"));
+        let authored = path_to_file_uri(&linked.join("src/format.ts"));
+        let foreign = path_to_file_uri(&root.join("foreign/format.ts"));
+        let native = "file:///native/format.ts";
+        let mappings = FxHashMap::from_iter([(String::from(native), physical.clone())]);
+        let mut response = json!({
+            "uri":physical, "targetUri":native,
+            "locations":[{"uri":foreign}],
+            "edit":{"changes":{native:[{"newText":native}]}},
+            "data":{"uri":physical}, "command":{"arguments":[{"uri":native}]},
+        });
+        super::remap_query_uris(&mut response, &mappings, &request, &workspace);
+        assert_eq!(
+            response,
+            json!({
+                "uri":authored, "targetUri":authored,
+                "locations":[{"uri":foreign}],
+                "edit":{"changes":{authored:[{"newText":native}]}},
+                "data":{"uri":physical}, "command":{"arguments":[{"uri":native}]},
+            })
+        );
+    }
 
     #[test]
     fn remapping_changes_only_protocol_uris_and_workspace_edit_keys() {

@@ -224,7 +224,7 @@ fn split_rename(part: &str) -> (&str, &str) {
 
 /// The declaration of `word` inside `target`, following re-export barrels.
 fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -> Option<Location> {
-    let uri = Url::from_file_path(target).ok()?;
+    let uri = crate::ide::corsa_support::authored_file_uri(ctx, target)?;
     if target
         .extension()
         .is_some_and(|extension| extension == "vue")
