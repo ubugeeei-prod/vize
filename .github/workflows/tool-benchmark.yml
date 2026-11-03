@@ -259,7 +259,9 @@ jobs:
     name: tool-benchmark-commit
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
+    # The implicit success() is false whenever an ancestor job was skipped, and
+    # tool-benchmark-impact is skipped on every dispatch; gate on the measured job.
+    if: ${{ !cancelled() && needs.tool-benchmark.result == 'success' && github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
     needs:
       - tool-benchmark
     permissions:
