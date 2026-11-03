@@ -27,8 +27,6 @@ const testRoot = path.resolve(
   __dirname,
   "../../../../target/vize-tests/tests/vite-plugin-vize/precompile-cache",
 );
-fs.rmSync(testRoot, { recursive: true, force: true });
-fs.mkdirSync(testRoot, { recursive: true });
 
 export const BASE_SOURCE = `<template><div class="a">one</div></template>
 <script setup>const label = "one";</script>
@@ -37,8 +35,16 @@ export const BASE_SOURCE = `<template><div class="a">one</div></template>
 
 let caseId = 0;
 
-/** A throwaway project with one `src/App.vue`. */
+/**
+ * A throwaway project with one `src/App.vue`. The first call clears this
+ * suite's root, so importing the helpers (as a child process does) touches
+ * nothing on disk.
+ */
 export function makeProject(source: string): { root: string; file: string } {
+  if (caseId === 0) {
+    fs.rmSync(testRoot, { recursive: true, force: true });
+    fs.mkdirSync(testRoot, { recursive: true });
+  }
   const root = path.join(testRoot, `case-${++caseId}`);
   const srcDir = path.join(root, "src");
   fs.mkdirSync(srcDir, { recursive: true });
