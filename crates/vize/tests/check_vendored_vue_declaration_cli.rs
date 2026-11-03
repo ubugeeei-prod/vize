@@ -8,7 +8,6 @@ use std::{
 };
 use vize_l0::cstr;
 
-#[path = "check_vendored_vue_declaration_cli/checked_report.rs"]
 mod checked_report;
 
 const CONFIG: &str = include_str!(concat!(
