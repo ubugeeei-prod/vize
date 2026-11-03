@@ -87,6 +87,8 @@ fn transform_with_router_context(
     )
 }
 
+/// The explicit directive table, before unmapped ignores, so tests can
+/// compare ownership echoes and expectations alone.
 #[cfg(test)]
 fn transform_with_diagnostic_ownership(
     path: &Path,
@@ -97,7 +99,7 @@ fn transform_with_diagnostic_ownership(
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     >,
 ) -> CorsaResult<ContentMapperTransform> {
-    transform_with_shared_sources(
+    assemble_transform(
         path,
         content,
         transform_options,
@@ -107,7 +109,29 @@ fn transform_with_diagnostic_ownership(
     )
 }
 
+// Every entry point returns the complete directive table, unmapped ignores included.
 fn transform_with_shared_sources(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router: Option<super::typed_router::Config<'_>>,
+    diagnostic_ownership: Option<
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
+    type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
+) -> CorsaResult<ContentMapperTransform> {
+    assemble_transform(
+        path,
+        content,
+        transform_options,
+        typed_router,
+        diagnostic_ownership,
+        type_sources,
+    )
+    .map(ContentMapperTransform::with_unmapped_ignores)
+}
+
+fn assemble_transform(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,

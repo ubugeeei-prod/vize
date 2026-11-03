@@ -1,7 +1,7 @@
 //! Directive tables the host accepts: disjoint tuples, unmapped gaps ignored.
 
 use super::super::protocol::{DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE};
-use super::transform;
+use super::{published, transform};
 
 /// The host rejects a file whose directive tuples overlap. Sibling expects
 /// interleave their checks, and an echo ignore may sit inside an expect span.
@@ -68,4 +68,84 @@ fn unmapped_ignores_fill_only_uncovered_virtual_gaps() {
         super::super::unmapped_ignores::unmapped_ignores(None, &[Span([0, 40, 0, 40, 0, 0])], 40),
         None
     );
+}
+
+/// The CLI mapper and the napi editor projection call different entry
+/// points; each must return the same table, unmapped ignores included (#11472).
+#[test]
+fn every_entry_point_ignores_unmapped_scaffolding() {
+    use std::path::Path;
+
+    use super::super::{
+        ContentMapperTransformOptions, ContentMapperTypeSources,
+        generate_vue_content_mapper_transform_with_options,
+        generate_vue_content_mapper_transform_with_project_context,
+        generate_vue_content_mapper_transform_with_project_options,
+        generate_vue_content_mapper_transform_with_type_sources,
+    };
+    use crate::batch::virtual_project::ContentMapperProjectContext;
+
+    let path = Path::new("/project/App.vue");
+    let options = ContentMapperTransformOptions::default();
+    let context = ContentMapperProjectContext::default();
+    for (source, fallback) in [
+        (
+            "<script setup lang=\"ts\">\nconst n: number = 1\n</script>\n<template>\n  <p>{{ n }}</p>\n</template>\n",
+            false,
+        ),
+        // The invalid-SFC fallback has no mappings at all.
+        ("<script setup lang=\"ts\">\nconst n = 1\n", true),
+    ] {
+        let complete = published(source);
+        assert_eq!(complete.mappings.is_empty(), fallback, "{source}");
+        assert_complete_table(&[
+            complete,
+            generate_vue_content_mapper_transform_with_options(path, source, options).unwrap(),
+            generate_vue_content_mapper_transform_with_project_options(path, source, options, None)
+                .unwrap(),
+            generate_vue_content_mapper_transform_with_project_context(
+                path, source, options, &context,
+            )
+            .unwrap(),
+            generate_vue_content_mapper_transform_with_type_sources(
+                path,
+                source,
+                options,
+                &context,
+                &ContentMapperTypeSources::default(),
+            )
+            .unwrap(),
+        ]);
+    }
+}
+
+fn assert_complete_table(transforms: &[super::super::ContentMapperTransform]) {
+    let first = &transforms[0];
+    let table = first
+        .diagnostic_directives
+        .as_ref()
+        .expect("directive table");
+    let mut mapped = vec![false; first.text.len()];
+    for span in &first.mappings {
+        let [start, length, ..] = span.0;
+        mapped[start..start + length].fill(true);
+    }
+    let mut covered = mapped.clone();
+    for row in &table.directives {
+        let [_, _, start, end, policy, _] = row.0;
+        assert!(policy == DIRECTIVE_POLICY_IGNORE || policy == DIRECTIVE_POLICY_EXPECT);
+        covered[start..end].fill(true);
+    }
+    assert!(
+        mapped.iter().any(|byte| !byte),
+        "the projection has scaffolding"
+    );
+    assert!(
+        covered.iter().all(|byte| *byte),
+        "every unmapped byte is ignored"
+    );
+    for other in &transforms[1..] {
+        assert_eq!(other.text, first.text);
+        assert_eq!(other.diagnostic_directives, first.diagnostic_directives);
+    }
 }

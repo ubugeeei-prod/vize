@@ -10,7 +10,7 @@ impl ContentMapperTransform {
     /// TypeScript otherwise reports scaffolding diagnostics at virtual
     /// positions. Explicit tuples keep their intervals, so expectations are
     /// never swallowed.
-    pub fn with_unmapped_ignores(mut self) -> Self {
+    pub(super) fn with_unmapped_ignores(mut self) -> Self {
         self.diagnostic_directives = unmapped_ignores(
             self.diagnostic_directives.take(),
             &self.mappings,

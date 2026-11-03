@@ -109,11 +109,19 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                 assert!(type_import.end <= signature);
                 assert!(value_import.end <= signature);
                 assert!(raw_generated + RAW.len() < body.start);
+                let mapped = |start: usize, end: usize| {
+                    result.mappings.iter().any(|span| {
+                        let [from, length, ..] = span.0;
+                        start < from + length && from < end
+                    })
+                };
+                // Policy 0 over an unmapped gap is the producer's scaffolding ignore.
                 let echoes: Vec<_> = result
                     .diagnostic_directives
                     .iter()
                     .flat_map(|directives| &directives.directives)
                     .map(|directive| directive.0)
+                    .filter(|[_, _, start, end, policy, _]| *policy != 0 || mapped(*start, *end))
                     .collect();
                 assert_eq!(echoes, Vec::<[usize; 6]>::new());
                 for fabricated in [
@@ -171,7 +179,15 @@ fn unsupported_malformed_generic_shapes_return_one_complete_authored_refusal() {
                 );
                 assert_eq!(result.mappings, Vec::new());
                 assert_eq!(result.semantic_links, Vec::new());
-                assert_eq!(result.diagnostic_directives, None);
+                let ignores = result
+                    .diagnostic_directives
+                    .as_ref()
+                    .expect("the unmapped refusal module is ignored")
+                    .directives
+                    .iter()
+                    .map(|directive| directive.0)
+                    .collect::<Vec<_>>();
+                assert_eq!(ignores, [[0, 0, 0, result.text.len(), 0, 0]]);
             }
         }
     }
