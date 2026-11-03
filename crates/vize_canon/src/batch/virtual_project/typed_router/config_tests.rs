@@ -216,13 +216,21 @@ fn registered_import_need_is_exact_and_removed_on_replacement_or_delete() {
 
 #[test]
 fn normalized_typescript_before_route_call_keeps_page_specialization() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/page-route-normalization-11776/Probe.vue.txt"
+    ));
+    let config = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/page-route-normalization-11776/tsconfig.json.txt"
+    ));
     for identifier in ["useRoute", r"useR\u006fute"] {
         for newline in ["\n", "\r\n"] {
-            let (_root, mut project) = fixture_project(
-                r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
-            );
+            let (_root, mut project) = fixture_project(config);
             let path = project.project_root.join("Probe.vue");
-            let source = format!("<script setup lang=\"ts\">\nimport {{ {identifier} }} from 'vue-router';\n// 日本 😀\nconst identity = <T>(value: T) => value; const asserted = <number>1; const route = {identifier}(); const typedId: number = route.params.userId;\n</script>").replace('\n', newline);
+            let source = source
+                .replace("useRoute", identifier)
+                .replace('\n', newline);
             project.register_vue_file(&path, &source).unwrap();
             let file = project.find_by_original(&path).unwrap();
             assert!(file.content.contains("const identity = <T,>"));
