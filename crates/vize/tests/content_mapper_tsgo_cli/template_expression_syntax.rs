@@ -1,6 +1,7 @@
 //! Pin authored template-expression syntax diagnostics against vue-tsc.
 
 mod generic_arrows;
+mod reported_generic_declarations;
 
 use std::path::PathBuf;
 

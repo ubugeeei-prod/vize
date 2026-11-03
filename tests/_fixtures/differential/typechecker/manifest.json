@@ -12661,6 +12661,66 @@
       }
     },
     {
+      "id": "typechecker/reported-external-11450",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "d64036c1d019b7864b44f6df840f9d8a60158ab8",
+      "inputs": [
+        {
+          "path": "reported-generic-declarations-11450-11454/input.json",
+          "sha256": "a09bd20e2d80c17be53445617bb8cec82d8a8dd10104d04f70461648175fc75a",
+          "role": "physically-consumed-latest-original-and-source-owned-error-repair-controls-11450"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_generic_declarations::{generic_dependents_preserve_authored_unused_and_value_diagnostics,fallthrough::emitted_declarations_accept_fallthrough_without_erasing_owned_inputs}; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-external-11454",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "d64036c1d019b7864b44f6df840f9d8a60158ab8",
+      "inputs": [
+        {
+          "path": "reported-generic-declarations-11450-11454/input.json",
+          "sha256": "a09bd20e2d80c17be53445617bb8cec82d8a8dd10104d04f70461648175fc75a",
+          "role": "physically-consumed-latest-original-and-source-owned-error-repair-controls-11454"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reported_generic_declarations::{generic_dependents_preserve_authored_unused_and_value_diagnostics,fallthrough::emitted_declarations_accept_fallthrough_without_erasing_owned_inputs}; input-only source inspection, native/public/diagnostic qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/reported-model-events-11390",
       "state": "active",
       "targets": [
