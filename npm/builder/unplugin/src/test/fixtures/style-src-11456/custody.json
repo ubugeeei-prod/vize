@@ -1,0 +1,51 @@
+{
+  "schema": "vize.unplugin.originalStyleSrc11456.v1",
+  "reportSha256": "365151192d6cdd643284da79caeab56ca7b66519d62d2711fbbc3571be83445c",
+  "bodySha256": "a968c385d7944dee26bb044eb650e634c9477f83598f85004cb8e085dd5f3d8e",
+  "inputsSha256": "3637a75576d74dbdd0c133505474657bc3a234feb056ee477e7d27f41edfdd75",
+  "files": [
+    {
+      "path": "package.json",
+      "bytes": 273,
+      "sha256": "ee1f2c3e24c4c52431b18d5994927d32856ca4132c796a80ea126f04a623dec8",
+      "storedPath": "package.json.txt"
+    },
+    {
+      "path": "tsdown.config.ts",
+      "bytes": 264,
+      "sha256": "c51aad4e03d62c3edb1d13e353328e2e9b04b4b2baf7adddb38aa2b4aedd711e",
+      "storedPath": "tsdown.config.ts.txt"
+    },
+    {
+      "path": "vite.vue.config.ts",
+      "bytes": 305,
+      "sha256": "9787fe53ee34dd70fcfe96a331b0e6efd4b55049910b5e5482acb855b6386ef8",
+      "storedPath": "vite.vue.config.ts.txt"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 306,
+      "sha256": "2a907979253cb0ec2d9e1ff37feef76a3595a1427cf00ff90fb614571cfeb253",
+      "storedPath": "vite.config.ts.txt"
+    },
+    {
+      "path": "src/Foo.vue",
+      "bytes": 98,
+      "sha256": "f153b2a44093ddecd15ba5e9089d7efbfeadf336b1f81bbdd7d70fbcf4c8805b",
+      "storedPath": "src/Foo.vue.txt"
+    },
+    {
+      "path": "src/foo.css",
+      "bytes": 23,
+      "sha256": "ea7467f5be60510cb46b2ade2df3b20224b8678409ae130b326d19586e39826a",
+      "storedPath": "src/foo.css.txt"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 44,
+      "sha256": "cad3dc964cbc2399203e450160601004596b8f799613861f92198dc7efb12c96",
+      "storedPath": "src/index.ts.txt"
+    }
+  ],
+  "executionScope": "Original source/config bytes. Test installs nothing and executes the existing workspace tsdown/Rolldown provider, with only two config import addresses adapted; reported versions are not claimed as executed."
+}

@@ -201,6 +201,7 @@ tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json text eol=lf
 
 # The original slot-presence source and authored controls are byte-pinned.
 tests/_fixtures/differential/linter/slot-existence-negation-10822/Autocomplete.vue.txt -text
+npm/builder/unplugin/src/test/fixtures/style-src-11456/** -text
 tests/_fixtures/differential/linter/slot-existence-negation-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-existence-negation-10822/source-provenance.json -text
 

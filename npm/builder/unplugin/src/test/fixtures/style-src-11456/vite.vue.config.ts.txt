@@ -1,0 +1,12 @@
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  build: {
+    lib: { entry: "src/index.ts", fileName: "index", formats: ["es"] },
+    minify: false,
+    outDir: "dist-vue",
+    rolldownOptions: { external: ["vue"] },
+  },
+  plugins: [vue()],
+});

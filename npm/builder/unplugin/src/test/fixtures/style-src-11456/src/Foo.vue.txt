@@ -1,0 +1,5 @@
+<template>
+  <button class="foo">Foo</button>
+</template>
+
+<style scoped src="./foo.css"></style>
