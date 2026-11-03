@@ -159,7 +159,12 @@ fn c3() -> Value {
 fn physical() -> Vec<String> {
     PATHS
         .iter()
-        .map(|path| fs::read_to_string(support::repository().join(path)).unwrap())
+        .map(|path| {
+            super::emit_props_input::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            )
+        })
         .collect()
 }
 
