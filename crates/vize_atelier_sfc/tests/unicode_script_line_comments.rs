@@ -21,22 +21,25 @@ fn check_packet(code: &str, ssr: bool) -> Result<(), String> {
         .iter()
         .rposition(|byte| *byte == b'\n')
         .map_or(9 + code.len(), |at| code.len() - at);
-    assert_eq!(
-        serde_json::to_value(&descriptor).unwrap(),
-        json!({
-            "filename": "UnicodeLineComment.vue", "source": source.as_str(),
-            "template": null, "scriptSetup": null, "styles": [], "customBlocks": [],
-            "cssVars": [], "slotted": false, "shouldForceReload": false,
-            "script": {
-                "content": code, "lang": null, "src": null, "setup": false,
-                "attrs": {}, "bindings": null,
-                "loc": { "start": 8, "end": 8 + code.len(), "tag_start": 0,
-                    "tag_end": source.len(), "start_line": 1, "start_column": 9,
-                    "end_line": end_line, "end_column": end_column }
-            }
-        }),
-        "complete descriptor, ssr={ssr}: {source:?}"
-    );
+    let actual_descriptor = serde_json::to_value(&descriptor)
+        .map_err(|error| cstr!("serialize complete descriptor: {error}"))?;
+    let expected_descriptor = json!({
+        "filename": "UnicodeLineComment.vue", "source": source.as_str(),
+        "template": null, "scriptSetup": null, "styles": [], "customBlocks": [],
+        "cssVars": [], "slotted": false, "shouldForceReload": false,
+        "script": {
+            "content": code, "lang": null, "src": null, "setup": false,
+            "attrs": {}, "bindings": null,
+            "loc": { "start": 8, "end": 8 + code.len(), "tag_start": 0,
+                "tag_end": source.len(), "start_line": 1, "start_column": 9,
+                "end_line": end_line, "end_column": end_column }
+        }
+    });
+    if actual_descriptor != expected_descriptor {
+        return Err(cstr!(
+            "complete descriptor, ssr={ssr}: {source:?}\nexpected: {expected_descriptor:#?}\nactual: {actual_descriptor:#?}"
+        ));
+    }
     let result = compile_sfc(
         &descriptor,
         SfcCompileOptions {
@@ -51,15 +54,18 @@ fn check_packet(code: &str, ssr: bool) -> Result<(), String> {
             ..Default::default()
         },
     )
-    .expect("compile complete SFC");
-    assert_eq!(
-        serde_json::to_value(&result).unwrap(),
-        json!({
-            "code": code, "css": null, "map": null, "errors": [], "warnings": [],
-            "bindings": null, "macroArtifacts": []
-        }),
-        "complete output, ssr={ssr}: {source:?}"
-    );
+    .map_err(|error| cstr!("compile complete SFC, ssr={ssr}: {source:?}: {error:?}"))?;
+    let actual_result = serde_json::to_value(&result)
+        .map_err(|error| cstr!("serialize complete output: {error}"))?;
+    let expected_result = json!({
+        "code": code, "css": null, "map": null, "errors": [], "warnings": [],
+        "bindings": null, "macroArtifacts": []
+    });
+    if actual_result != expected_result {
+        return Err(cstr!(
+            "complete output, ssr={ssr}: {source:?}\nexpected: {expected_result:#?}\nactual: {actual_result:#?}"
+        ));
+    }
     Ok(())
 }
 
