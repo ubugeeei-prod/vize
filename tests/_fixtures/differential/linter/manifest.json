@@ -2102,6 +2102,52 @@
       }
     },
     {
+      "id": "linter/ecosystem-host-rules-11772",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "ecosystem-host-rules-11772",
+        "files": [
+          {
+            "path": "Button.html.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "3abc05b7172927038a961c799ada32ee6a532a3c5b75b6829993a8fbb26c9e8f"
+          },
+          {
+            "path": "Button.vue.txt",
+            "role": "sfc-host-rule-control",
+            "sha256": "0bd1cb98b23f6ed7d5a60f770f1dc2dd6c9c7912632e2fd5553937db7044ba22"
+          },
+          {
+            "path": "ButtonAndLink.html.txt",
+            "role": "ecosystem-target-negative-control",
+            "sha256": "8cde7f144a1f68cb3679f62454ea698aa567db1cfebd3463622d04284f84c011"
+          },
+          {
+            "path": "ButtonAndLink.vue.txt",
+            "role": "sfc-ecosystem-target-negative-control",
+            "sha256": "6dba21a92515ef67c708faf11c49e207b9c85125a89d2ceff972181bc7011051"
+          },
+          {
+            "path": "NoButton.html.txt",
+            "role": "host-rule-negative-control",
+            "sha256": "93636fa047400919d3a6fa2c57a114596546d97c9681645ed857fb014fb8fb18"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
       "targets": ["lint"],

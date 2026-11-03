@@ -21,8 +21,6 @@ pub use void_link_require_href::VoidLinkRequireHref;
 pub use void_link_valid_method::VoidLinkValidMethod;
 pub use vue_router_prefer_named_link::VueRouterPreferNamedLink;
 
-pub(crate) const TEMPLATE_RULE_COUNT: usize = 5;
-
 pub(crate) fn register(registry: &mut RuleRegistry) {
     register_if_missing(registry, Box::new(RouterLinkRequireTo));
     register_if_missing(registry, Box::new(VueRouterPreferNamedLink));
