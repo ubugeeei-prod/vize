@@ -26,8 +26,8 @@ fn ignored(transform: &ContentMapperTransform, at: usize) -> bool {
 /// Generated copies of the `occurrence`th authored `target` that map back to
 /// it verbatim and are not ignored, i.e. the copies TypeScript reports from.
 fn reporting_copies(source: &str, target: &str, occurrence: usize) -> usize {
-    let transform =
-        generate_vue_content_mapper_transform(Path::new("src/Page.vue"), source).expect("transform");
+    let transform = generate_vue_content_mapper_transform(Path::new("src/Page.vue"), source)
+        .expect("transform");
     let authored = source
         .match_indices(target)
         .nth(occurrence)
