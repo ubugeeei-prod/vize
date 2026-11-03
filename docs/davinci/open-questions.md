@@ -182,4 +182,4 @@ settles.
 
 ## Completion gates (2026-11-03)
 
-Decided: see [maintainer decisions](./completion-gates.md#maintainer-decisions-2026-11-03). Still open: `maximumGapDays` in the deletion-readiness policy.
+Decided: see [maintainer decisions](./completion-gates.md#maintainer-decisions-2026-11-03).

@@ -2,7 +2,7 @@
   "schema": "vize.deletion-readiness.policy",
   "version": 1,
   "minimumStableDays": 30,
-  "maximumGapDays": null,
+  "maximumGapDays": 7,
   "dialects": [
     "vue0-template",
     "vue1-template",
