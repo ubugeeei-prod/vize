@@ -55,6 +55,7 @@ mod options_api_inherited_template_members;
 mod package_local_vue_identity;
 mod pascal_case_prop_names;
 mod plain_options_global_augmentation;
+mod public_base_pattern_keys;
 mod public_instance_contract;
 mod real_project_parity;
 mod real_vue;

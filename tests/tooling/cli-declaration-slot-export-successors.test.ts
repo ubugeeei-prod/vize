@@ -36,16 +36,37 @@ const currentRecursive: string = recursive;
 const historicalRecursive =
   "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : $OverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;";
 
+// #11445 later key-remapped the public instance base; invert it first.
+const currentPublicBase =
+  "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;";
+const historicalPublicBase =
+  "type $ComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
+assert.equal(
+  fs
+    .readFileSync(
+      path.join(repoRoot, "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"),
+      "utf8",
+    )
+    .split(currentPublicBase).length - 1,
+  1,
+);
+const successors = [
+  [currentPublicBase, historicalPublicBase],
+  [currentRecursive, historicalRecursive],
+] as const;
+
 function historicalSnapshot(current: Buffer, digest: string): Buffer {
-  const text = current.toString("utf8");
-  assert.equal(text.split(currentRecursive).length - 1, 1);
-  assert.equal(text.split(historicalRecursive).length - 1, 0);
-  const historical = Buffer.from(text.replace(currentRecursive, historicalRecursive));
+  let text = current.toString("utf8");
+  for (const [now, then] of successors) {
+    assert.equal(text.split(now).length - 1, 1);
+    assert.equal(text.split(then).length - 1, 0);
+    text = text.replace(now, then);
+  }
+  const historical = Buffer.from(text);
   assert.equal(createHash("sha256").update(historical).digest("hex"), digest);
-  assert.deepEqual(
-    Buffer.from(historical.toString("utf8").replace(historicalRecursive, currentRecursive)),
-    current,
-  );
+  let restored = historical.toString("utf8");
+  for (const [now, then] of [...successors].reverse()) restored = restored.replace(then, now);
+  assert.deepEqual(Buffer.from(restored), current);
   return historical;
 }
 

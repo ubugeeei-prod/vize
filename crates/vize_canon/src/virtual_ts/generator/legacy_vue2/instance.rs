@@ -54,22 +54,22 @@ pub(in crate::virtual_ts::generator) fn instance_suffix(
     if (has_root_el || has_refs) && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         return match (has_root_el, has_refs, has_exposed_type) {
             (true, false, true) => {
-                "} & Omit<$ComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & $ShallowUnwrapRef<Exposed>;\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & $ShallowUnwrapRef<Exposed>;\n"
             }
             (true, false, false) => {
-                "} & Omit<$ComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
             }
             (false, _, true) => {
-                "} & Omit<$ComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $ShallowUnwrapRef<Exposed>;\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $ShallowUnwrapRef<Exposed>;\n"
             }
             (false, _, false) => {
-                "} & Omit<$ComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
             }
             (true, true, true) => {
-                "} & Omit<$ComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $ShallowUnwrapRef<Exposed>;\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & $ShallowUnwrapRef<Exposed>;\n"
             }
             (true, true, false) => {
-                "} & Omit<$ComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+                "} & $MappedOmit<$ComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
             }
         };
     }

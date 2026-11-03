@@ -1,0 +1,4 @@
+import { defineComponent } from "vue";
+import Foo from "./Foo.vue";
+
+export const Bar = defineComponent({}) as typeof Foo;
