@@ -24,6 +24,8 @@ Vize の改善は、実際のアプリケーションや関連ツールで使い
 - [n13u](https://x.com/%5Fn13u%5F) と `#frontend_phpcon_do` チーム: Vize を使った Nuxt 製カンファレンスサイトの開発中の不具合報告から、本番環境での採用までの継続的な検証（[報告](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)、[記事](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)）。
 - yamanoku: アクセシビリティに関する意見と、Vue Fes Japan の登壇者サイトの移行での Vize の利用。v-tokyo Meetup #25 の LT メモに、その取り組みがまとめられています（[記事](https://scrapbox.io/yamanoku/%E3%81%A8%E3%81%82%E3%82%8B%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8Ckingnize%E3%81%95%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7%EF%BD%9ENuxt%E3%81%8B%E3%82%89vuerend_%26_Vize%E3%81%B8)）。
 - [sevenc-nanashi](https://github.com/sevenc-nanashi): [VOICEVOX](https://github.com/VOICEVOX/voicevox) エディタを使った、コンパイラの正確さを高めるための検証と不具合報告。VOICEVOX は Electron を使い、128 個の SFC に約 2.6 万行の Vue コードを持つアプリケーションです（[報告](https://github.com/ubugeeei-prod/vize/discussions/955)）。
+- [Q16solver](https://github.com/Q16solver): Nuxt モノレポの Vue ツールチェーン（tsrs と content mapper による型チェック、ライブラリのビルド、Nuxt アプリのビルド）の Vize への移行と、`vue-tsc` との差分の精密な報告。ジェネリックコンポーネントや動的コンポーネント、インラインのコールバック props、イベントの型、宣言ファイルの出力まで、どの報告も最小限の再現付きで届けてくださっています。
+- [naitokosuke](https://github.com/naitokosuke): コンパイラの SSR・Vapor 出力、リンタールール、Nuxt の SSR と本番ビルド、言語サーバー、VS Code 拡張、content mapper、Musea と、ツールチェーンのほぼ全域にわたる不具合報告。VS Code 拡張、インストールガイド、開発環境の修正も送ってくださいました。
 
 Vize を紹介し、情報を共有し、試してくださった皆様と、その活動に関わった方々にも感謝します。
 こうした声が、ツールチェーンの役立つ場面や問題点を知り、次に改善する機能を考える助けになっています。

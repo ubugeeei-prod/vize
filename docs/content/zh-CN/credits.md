@@ -22,6 +22,8 @@ Vize是基于实际应用者的实际反馈而形成的
 - [n13u](https://x.com/%5Fn13u%5F)及`#frontend_phpcon_do`团队，在用Vize构建基于Nuxt的会议网站时持续报告修复案例，并将验证过程推进到生产环境采用（[report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)， [write-up](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)）。
 - yamanoku，提供关于Vize的无障碍反馈，并用于Vue Fes Japan演讲者站点迁移，详见v-tokyo Meetup #25 LT笔记（[write-up](https://scrapbox.io/yamanoku/%E3%81%A8%E3%81%82%E3%82%8B%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8Ckingnize%E3%81%95%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7%EF%BD%9ENuxt%E3%81%8B%E3%82%89vuerend_%26_Vize%E3%81%B8)）。
 - [sevenc-nanashi](https://github.com/sevenc-nanashi) 用于使用 [VOICEVOX](https://github.com/VOICEVOX/voicevox) 编辑器——一个基于 Electron 的 Vue 应用，拥有 128 个 SFC 的 ~26k 行 Vue 代码——作为提升编译器精度和将生产应用空白转化为具体反馈的实际目标（[report](https://github.com/ubugeeei-prod/vize/discussions/955)）。
+- [Q16solver](https://github.com/Q16solver) 将一个 Nuxt monorepo 的 Vue 工具链迁移到 Vize（使用 tsrs 和 content mapper 进行类型检查、库构建以及 Nuxt 应用构建），并把每一处与 `vue-tsc` 的差异整理成精确且附带最小复现的报告，涵盖泛型组件、动态组件、内联回调 props、事件映射和声明输出。
+- [naitokosuke](https://github.com/naitokosuke) 报告了几乎覆盖整个工具链的问题——编译器的 SSR 与 Vapor 输出、linter 规则、Nuxt 的 SSR 与生产构建、语言服务器、VS Code 扩展、content mapper 和 Musea——并为 VS Code 扩展、安装指南和开发环境提交了修复。
 
 也感谢所有在社区中提及、分享、测试或推广Vize的人，以及
 对所有与这项工作相关的人。这些信号让我们更容易看到工具链的位置

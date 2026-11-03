@@ -243,6 +243,14 @@ Special thanks to:
   [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor (~26k lines of Vue across 128 SFCs) as a
   real-world target for improving compiler precision
   ([report](https://github.com/ubugeeei-prod/vize/discussions/955)).
+- [Q16solver](https://github.com/Q16solver) for moving a Nuxt monorepo's Vue tooling onto Vize
+  (type checking with tsrs and the content mapper, library builds, and the Nuxt app build) and
+  turning every gap against `vue-tsc` into a precise, minimal report covering generic and dynamic
+  components, inline callback props, event maps, and declaration emit.
+- [naitokosuke](https://github.com/naitokosuke) for reports spanning nearly the whole toolchain
+  (compiler SSR and Vapor output, linter rules, Nuxt builds, the language server, the VS Code
+  extension, the content mapper, and Musea) and for fixes to the VS Code extension, the install
+  guide, and the development shell.
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 Vize is a personal project by ubugeeei, licensed under the MIT License and maintained as a
