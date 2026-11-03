@@ -14,6 +14,8 @@ export interface TreeReading {
   /** Proportional set size: shared pages split between the processes mapping them. */
   pssBytes: number | null;
   processes: number;
+  /** Every live member, so a tree past its memory budget can be killed whole. */
+  pids: number[];
   /** Per process, at phase marks only: which member holds the memory and CPU. */
   members?: Array<{ name: string; cpuSeconds: number; rssBytes: number; pssBytes: number | null }>;
 }
@@ -102,6 +104,7 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
       rssBytes: members.reduce((sum, row) => sum + row.rssPages, 0) * PAGE_BYTES,
       pssBytes: pss,
       processes: members.length,
+      pids: members.map((member) => member.pid),
       ...(withMembers && {
         members: members.map((member) => ({
           name: member.name,
@@ -131,12 +134,15 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
     rssBytes: members.reduce((sum, row) => sum + row.rssKiB * 1024, 0),
     pssBytes: null,
     processes: members.length,
+    pids: members.map((member) => member.pid),
   };
 }
 
 /** Periodic readings while a session runs; `mark` adds an exact reading at a phase edge. */
 export class TreeSampler {
   readonly samples: Array<TreeReading & { atMs: number; mark?: string }> = [];
+  /** Called with every reading, periodic or marked. */
+  onReading: ((reading: TreeReading) => void) | undefined;
   private timer: NodeJS.Timeout | undefined;
   private readonly origin = performance.now();
   private readonly roots: () => number[];
@@ -163,6 +169,7 @@ export class TreeSampler {
   private read(mark?: string): TreeReading {
     const reading = readTree(this.roots(), true, mark != null);
     this.samples.push({ ...reading, atMs: performance.now() - this.origin, mark });
+    this.onReading?.(reading);
     return reading;
   }
 

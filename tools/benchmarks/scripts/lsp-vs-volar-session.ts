@@ -37,6 +37,11 @@ export interface SessionOptions {
   warmBudgetMs: number;
   sampleIntervalMs: number;
   idleMs: number;
+  /**
+   * The process tree's memory (PSS, else RSS) past which the session is killed
+   * and reported: a server must not take the measuring machine down with it.
+   */
+  memoryBudgetBytes: number | null;
 }
 
 export interface EditSample {
@@ -190,6 +195,29 @@ export async function runSession(
   round: number,
 ): Promise<SessionResult> {
   const sampler = new TreeSampler(() => editor.pids(), options.sampleIntervalMs);
+  const budget = options.memoryBudgetBytes;
+  let overBudget: Error | null = null;
+  let abort: (error: Error) => void = () => {};
+  const aborted = new Promise<never>((_, reject) => (abort = reject));
+  aborted.catch(() => {});
+  sampler.onReading = (reading) => {
+    const bytes = reading.pssBytes ?? reading.rssBytes;
+    if (budget == null || bytes <= budget || overBudget) return;
+    const gib = (value: number) => (value / 1073741824).toFixed(1);
+    overBudget = new Error(
+      `process tree passed the ${gib(budget)} GiB memory budget (${gib(bytes)} GiB in ${reading.processes} processes) and was killed`,
+    );
+    for (const pid of reading.pids) {
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
+      }
+    }
+    abort(overBudget);
+  };
+  /** Every wait ends when the tree is killed for its memory. */
+  const bounded = <T>(promise: Promise<T>) => Promise.race([promise, aborted]);
   const failures: string[] = [];
   const edits: EditSample[] = [];
   const requests: RequestSample[] = [];
@@ -202,19 +230,20 @@ export async function runSession(
 
   let stopped = false;
   try {
-    const spawnedAt = now();
-    await within(editor.start(), options.coldTimeoutMs, `${editor.label} initialize`);
-    const initializeMs = now() - spawnedAt;
     sampler.start();
+    const spawnedAt = now();
+    await bounded(within(editor.start(), options.coldTimeoutMs, `${editor.label} initialize`));
+    const initializeMs = now() - spawnedAt;
     const openedAt = now();
     editor.open(doc);
-    const first = await editor.diagnostics(doc, scriptError, options.coldTimeoutMs);
+    const first = await bounded(editor.diagnostics(doc, scriptError, options.coldTimeoutMs));
     const openToDiagnosticsMs = now() - openedAt;
     const coldReading = sampler.mark("cold");
     if (!first.satisfied)
       failures.push(`cold: planted TS${SCRIPT_CODE} on line ${scriptLine + 1} never appeared`);
 
     const alive = () => {
+      if (overBudget) throw overBudget;
       const exited = editor.exited();
       if (exited) throw new Error(`${exited}\n${editor.stderr().slice(-4000)}`);
     };
@@ -238,10 +267,12 @@ export async function runSession(
       editor.change(doc, doc.replace(from, to));
       const expectError = phase === "break";
       const visible = probe === "script" ? scriptError : templateError;
-      const result = await editor.diagnostics(
-        doc,
-        (diagnostics) => visible(diagnostics) === expectError,
-        options.diagnosticsTimeoutMs,
+      const result = await bounded(
+        editor.diagnostics(
+          doc,
+          (diagnostics) => visible(diagnostics) === expectError,
+          options.diagnosticsTimeoutMs,
+        ),
       );
       const ms = now() - started;
       const cpuSeconds = sampler.mark(`${probe}-${phase}-done`).cpuSeconds - before;
@@ -274,10 +305,12 @@ export async function runSession(
                     : request.kind === "rename"
                       ? editor.rename(doc, position, request.newName)
                       : editor.semanticTokens(doc);
-          const answer = await within<string | string[] | Location[] | number>(
-            call,
-            options.requestTimeoutMs,
-            `${request.kind} ${request.name}`,
+          const answer = await bounded(
+            within<string | string[] | Location[] | number>(
+              call,
+              options.requestTimeoutMs,
+              `${request.kind} ${request.name}`,
+            ),
           );
           const ms = now() - started;
           const verdict = judge(request, answer, workspace);
@@ -329,7 +362,8 @@ export async function runSession(
     }
     const warmEnd = sampler.mark("warm-end");
     const warmWallMs = now() - warmStartedAt;
-    await new Promise((resolve) => setTimeout(resolve, options.idleMs));
+    await bounded(new Promise((resolve) => setTimeout(resolve, options.idleMs)));
+    alive();
     const idleEnd = sampler.mark("idle-end");
     sampler.stop();
     stopped = true;

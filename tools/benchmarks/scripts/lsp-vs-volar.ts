@@ -98,6 +98,7 @@ async function main() {
       "idle-ms": { type: "string" },
       "sample-ms": { type: "string" },
       "warm-budget-s": { type: "string" },
+      "memory-budget-gib": { type: "string" },
       meta: { type: "string", multiple: true },
       out: { type: "string" },
       logs: { type: "string" },
@@ -172,6 +173,10 @@ async function main() {
     warmBudgetMs: positiveInteger(values["warm-budget-s"], 1_200, "--warm-budget-s") * 1000,
     sampleIntervalMs: positiveInteger(values["sample-ms"], 100, "--sample-ms"),
     idleMs: positiveInteger(values["idle-ms"], 5_000, "--idle-ms"),
+    memoryBudgetBytes:
+      values["memory-budget-gib"] == null
+        ? null
+        : positiveInteger(values["memory-budget-gib"], 0, "--memory-budget-gib") * 1073741824,
   };
   const rounds = positiveInteger(values.rounds, 3, "--rounds");
   const warmups = positiveInteger(values.warmups, 1, "--warmups");
@@ -261,8 +266,10 @@ async function main() {
   try {
     for (const fixture of prepared) {
       for (let warmup = 0; warmup < warmups; warmup += 1) {
-        for (const factory of factories)
+        for (const factory of factories) {
           await once(fixture, factory, 0, { ...options, cycles: 1, idleMs: 0 });
+          write();
+        }
       }
     }
     // Rounds interleave fixtures too, so drift over a long job cannot pose as a size effect.
