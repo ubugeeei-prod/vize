@@ -10,7 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
 import { parse } from "yaml";
@@ -101,8 +101,13 @@ await test("Musea selection preserves its Git inputs without materializing produ
   git(origin, "add", ".");
   git(origin, "commit", "-qm", "unrelated documentation input");
   const head = git(origin, "rev-parse", "HEAD");
+  const browserOnly = "tools/support/release/public_acceptance/browser_observation.ts";
+  put(origin, browserOnly, "browser-only integration input\n");
+  git(origin, "add", ".");
+  git(origin, "commit", "-qm", "one browser integration changes");
+  const browserHead = git(origin, "rev-parse", "HEAD");
 
-  function checkout(name: string, configured: boolean) {
+  function checkout(name: string, configured: boolean, revision = head) {
     const cwd = join(scratch, name);
     mkdirSync(cwd);
     git(cwd, "init", "-q");
@@ -117,7 +122,7 @@ await test("Musea selection preserves its Git inputs without materializing produ
       "--depth=1",
       ...(sparse ? ["--filter=blob:none"] : []),
       "origin",
-      head,
+      revision,
     );
     if (sparse) {
       assert.equal(inputs["sparse-checkout-cone-mode"], false);
@@ -143,7 +148,7 @@ await test("Musea selection preserves its Git inputs without materializing produ
   };
   assert.equal(present(selected, base), false, "the actual command must fetch the missing base");
   function execute(cwd: string, event: string, comparison = base, target = head) {
-    const output = join(scratch, `${cwd === full ? "full" : "selected"}-outputs`);
+    const output = join(scratch, `${basename(cwd)}-outputs`);
     rmSync(output, { force: true });
     const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", command], {
       cwd,
@@ -188,6 +193,24 @@ await test("Musea selection preserves its Git inputs without materializing produ
     });
     assert.equal(actual.outputs, reference.outputs);
     assert.equal(actual.stdout, reference.stdout);
+  });
+  await t.test("a browser-only change leaves Nuxt and native Musea unselected", () => {
+    const browserFull = checkout("browser-full", false, browserHead);
+    const browserSelected = checkout("browser-selected", true, browserHead);
+    const actual = execute(browserSelected, "pull_request", head, browserHead);
+    const reference = execute(browserFull, "pull_request", head, browserHead);
+    assert.equal(actual.code, 0, actual.stderr);
+    assert.equal(reference.code, 0, reference.stderr);
+    assertOutputs(actual.outputs, {
+      nuxt: "false",
+      "musea-native": "false",
+      "musea-browser": "true",
+    });
+    assert.equal(actual.outputs, reference.outputs);
+    assert.equal(actual.stdout, reference.stdout);
+    assert.deepEqual(files(browserSelected), runtime);
+    assert.equal(present(browserFull, `${browserHead}:${browserOnly}`), true);
+    assert.equal(present(browserSelected, `${browserHead}:${browserOnly}`), false);
   });
   for (const [name, event, comparison, target] of [
     ["zero base", "push", "0".repeat(40), head],
