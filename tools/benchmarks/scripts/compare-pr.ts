@@ -13,6 +13,7 @@ import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 
 import { laneEnvironment, laneThresholdPercent, makeTasks } from "./compare-pr-lanes.ts";
+import { withEmptyUserCache } from "./empty-user-cache.ts";
 import type { BenchmarkLane } from "./compare-pr-lanes.ts";
 import {
   confirmRegressions,
@@ -117,6 +118,17 @@ function pathWithNodeBins(cwd: string): string {
 }
 
 function runCommand(binary: string, commandArgs: string[], options: MeasureOptions): number {
+  // Every lane starts from an empty user cache: `vize check` would otherwise
+  // replay the previous run's diagnostics for base and head alike.
+  return withEmptyUserCache((cache) => runCommandIn(binary, commandArgs, options, cache));
+}
+
+function runCommandIn(
+  binary: string,
+  commandArgs: string[],
+  options: MeasureOptions,
+  cache: { XDG_CACHE_HOME: string },
+): number {
   const start = performance.now();
   const result = spawnSync(binary, commandArgs, {
     cwd: options.cwd,
@@ -125,6 +137,7 @@ function runCommand(binary: string, commandArgs: string[], options: MeasureOptio
       NO_COLOR: "1",
       PATH: options.path,
       VIZE_BENCH: "1",
+      ...cache,
     }),
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024,

@@ -22,6 +22,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
+import { withEmptyUserCache } from "./empty-user-cache.ts";
+
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(join(scriptsDir, "package.json"));
 
@@ -247,7 +249,14 @@ function seconds(text: string): number {
 }
 
 function runCheck(bin: string, cwd: string): Record<Phase | "total", number> {
-  const result = spawnSync(bin, ["check", "-q", "src"], { cwd, encoding: "utf8" });
+  // A reused cache would replay the previous run's diagnostics (empty-user-cache.ts).
+  const result = withEmptyUserCache((cache) =>
+    spawnSync(bin, ["check", "-q", "src"], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, ...cache },
+    }),
+  );
   const output = `${result.stdout}\n${result.stderr}`;
   const line = /Type checked \d+ files in ([\d.]+\w+) \(([^)]*)\)/.exec(output);
   if (!line) throw new Error(`no timing line from ${bin}:\n${output.slice(-2000)}`);

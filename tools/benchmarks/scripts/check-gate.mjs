@@ -34,6 +34,7 @@ import {
   prepareMinimalPlants,
 } from "./check-gate-plants.mjs";
 import { assertBinariesUnchanged, hashInPlace, pinExecutable } from "./benchmark-binary.mjs";
+import { withEmptyUserCache } from "./empty-user-cache.ts";
 import {
   assertDiagnosticParity,
   evaluateBudget,
@@ -81,10 +82,13 @@ function runCommand(binary, commandArgs, options = {}) {
 
 function runVizeCheck(vizeBin, corsaPath, cwd, extraArgs = [], env = {}) {
   const args = ["check", ".", "--quiet", "--format", "json", "--tsconfig", "tsconfig.json"];
-  const result = runCommand(vizeBin, [...args, "--corsa-path", corsaPath, ...extraArgs], {
-    cwd,
-    env,
-  });
+  // A reused cache would replay the previous run's diagnostics (empty-user-cache.ts).
+  const result = withEmptyUserCache((cache) =>
+    runCommand(vizeBin, [...args, "--corsa-path", corsaPath, ...extraArgs], {
+      cwd,
+      env: { ...env, ...cache },
+    }),
+  );
   let report = null;
   try {
     report = JSON.parse(result.stdout);
