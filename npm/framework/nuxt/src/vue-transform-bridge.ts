@@ -6,7 +6,7 @@ type ViteTransformFunction = (
   id: string,
   ...args: unknown[]
 ) => unknown;
-type ViteTransformObject = { handler?: ViteTransformFunction };
+type ViteTransformObject = { filter?: unknown; handler?: ViteTransformFunction };
 
 type VitePluginWithTransform = {
   name?: string;
@@ -26,6 +26,9 @@ const NUXT_VUE_TYPE_GATED_TRANSFORMS = new Set([
   "nuxt:prehydrate-transform",
 ]);
 
+/** The id Vize gives a compiled SFC module (`Foo.vue?vue&vize`). */
+export const VIZE_VUE_MODULE_ID_RE = /\.vue\?vue&vize(?:-ssr)?(?:&|$)/;
+
 /** Give Nuxt's `isVue(type)` gate a script identity while the plugin runs. */
 export function toNuxtVueTransformId(id: string): string {
   if (!isVizeGeneratedVueModuleId(id)) return id;
@@ -34,6 +37,38 @@ export function toNuxtVueTransformId(id: string): string {
   const hasVueMarker = /[?&]vue(?:[=&]|$)/.test(id);
   const suffix = `${hasQuery ? "&" : "?"}${hasVueMarker ? "" : "vue&"}type=script`;
   return id + suffix;
+}
+
+type FilterPattern = string | RegExp;
+
+function isFilterPatternList(value: unknown): value is FilterPattern | FilterPattern[] {
+  return typeof value === "string" || value instanceof RegExp || Array.isArray(value);
+}
+
+/**
+ * Widen an object hook's `filter.id` include so the host still calls the handler
+ * for Vize modules (Nuxt 4+ moved its `isVue` gates into filters). Excludes,
+ * code and module type filters stay as the host wrote them. Returns a new
+ * filter and leaves the host's objects untouched.
+ */
+export function admitVizeModulesInHookFilter(filter: unknown): unknown {
+  // Composable (array) filters have no stable shape to extend.
+  if (!filter || typeof filter !== "object" || Array.isArray(filter)) return filter;
+  const id = (filter as { id?: unknown }).id;
+
+  if (isFilterPatternList(id)) {
+    const include = Array.isArray(id) ? id : [id];
+    // An empty include admits every id already.
+    if (include.length === 0) return filter;
+    return { ...filter, id: [...include, VIZE_VUE_MODULE_ID_RE] };
+  }
+
+  if (!id || typeof id !== "object") return filter;
+  const { include } = id as { include?: unknown };
+  if (!isFilterPatternList(include)) return filter;
+  const patterns = Array.isArray(include) ? include : [include];
+  if (patterns.length === 0) return filter;
+  return { ...filter, id: { ...id, include: [...patterns, VIZE_VUE_MODULE_ID_RE] } };
 }
 
 /**
@@ -64,6 +99,10 @@ export function patchNuxtVueTypeGatedTransform(plugin: VitePluginWithTransform |
   const transform = plugin.transform as ViteTransformObject | undefined;
   if (!transform || typeof transform.handler !== "function") return;
 
+  // The host checks the filter before the handler, so the id rewrite alone never runs.
+  if (transform.filter !== undefined) {
+    transform.filter = admitVizeModulesInHookFilter(transform.filter);
+  }
   const original = transform.handler;
   transform.handler = function (this: unknown, code: string, id: string, ...args: unknown[]) {
     return original.call(this, code, toNuxtVueTransformId(id), ...args);
