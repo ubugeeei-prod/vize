@@ -6,6 +6,7 @@ import "./compiler-ssr-style-dependencies.test.ts";
 import "./compiler-jsx.test.ts";
 import "./compiler-src-imports.test.ts";
 import "./style-src-package.test.ts";
+import "./style-src-relative.test.ts";
 import "./compiler-pug-includes.test.ts";
 import "./compiler-pug-includes-hmr.test.ts";
 import "./compiler-custom-elements.test.ts";

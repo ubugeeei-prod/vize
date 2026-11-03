@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 
 const STYLE_MARKER = ".__vize_style_";
@@ -30,8 +31,38 @@ function normalizeInlineStyleModifiers(id: string): string {
   return `${id.slice(0, appended)}&inline&used`;
 }
 
+/**
+ * A `<style src>` block's module: the src file itself, with a style query
+ * whose `vize-file` names the owning SFC (see createStyleImportUrl).
+ */
+export function isStyleSrcModuleId(id: string): boolean {
+  const start = id.indexOf("?");
+  if (start < 0) return false;
+  const file = id.slice(0, start);
+  if (file.includes(STYLE_MARKER) || file.endsWith(".vue")) return false;
+  const params = new URLSearchParams(id.slice(start + 1));
+  return params.has("vue") && params.get("type") === "style" && params.has("vize-file");
+}
+
+/**
+ * The src file's own path for a `<style src>` module requested root-relative
+ * (a production import), relative to the root (Nuxt's inline style entries)
+ * or through `/@fs`.
+ */
+export function resolveStyleSrcModuleId(id: string, root: string): string {
+  const start = id.indexOf("?");
+  let file = id.slice(0, start);
+  if (file.startsWith("/@fs/")) file = file.slice("/@fs".length);
+  const physical =
+    path.isAbsolute(file) && fs.existsSync(file)
+      ? file
+      : path.resolve(root, file.replace(/^\//, ""));
+  return `${physical.split(path.sep).join("/")}${id.slice(start)}`;
+}
+
 /** Keep the CSS extension in the path, outside Vue/Nuxt's query metadata. */
 export function createStyleVirtualId(id: string): string {
+  if (isStyleSrcModuleId(id)) return id;
   id = normalizeInlineStyleModifiers(id);
   const start = id.indexOf("?");
   const filename = id.slice(0, start);
@@ -54,6 +85,8 @@ export function createStyleVirtualId(id: string): string {
 
 /** Give Vite's CSS resolvers a physical origin without changing emitted imports. */
 export function resolveStyleVirtualId(id: string, root: string): string {
+  // A `<style src>` module resolves to its src file.
+  if (isStyleSrcModuleId(id)) return resolveStyleSrcModuleId(id, root);
   const styleId = createStyleVirtualId(id);
   const queryStart = styleId.indexOf("?");
   const marker = styleId.slice(0, queryStart).lastIndexOf(STYLE_MARKER);
@@ -75,8 +108,10 @@ export function normalizeStyleVirtualId(id: string): string {
   const query = withoutPrefix.slice(start + 1);
   const params = new URLSearchParams(query);
   if (!params.has("vue")) return id;
+  // `vize-file` names the owning SFC, for a generated style path and for a
+  // `<style src>` module, whose path is the src file.
   const source = params.get("vize-file");
-  if (source && withoutPrefix.slice(0, start).includes(STYLE_MARKER)) {
+  if (source) {
     return `${source}?${query}`;
   }
 

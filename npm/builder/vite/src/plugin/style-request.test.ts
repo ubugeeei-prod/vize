@@ -176,7 +176,10 @@ void test("Nuxt repeated inline style resolution loads the original scoped SFC b
       assert.equal(params.get("module"), index === 1 ? "theme" : null);
       assert.equal(
         imported.slice(0, imported.indexOf("?")),
-        `${filename}.__vize_style_${index}${index === 1 ? ".module" : ""}.${expectedLang}`,
+        // A `<style src>` module is the src file itself (#11522).
+        index === 3
+          ? path.join(root, "external.css")
+          : `${filename}.__vize_style_${index}${index === 1 ? ".module" : ""}.${expectedLang}`,
       );
       assert.equal(
         /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/.test(imported),

@@ -41,14 +41,18 @@ export function formatCompileErrorMessage(
   return `[vize] Compilation failed in ${filePath}:\n${details}`;
 }
 
-function normalizeStyleBlocks(styles: NativeStyleBlockInfo[] | undefined): StyleBlockInfo[] {
+function normalizeStyleBlocks(
+  styles: NativeStyleBlockInfo[] | undefined,
+  styleSrcs: ReadonlyMap<number, string> | undefined,
+): StyleBlockInfo[] {
   if (!styles) {
     return [];
   }
 
+  // An inlined `<style src>` block keeps the file it came from (#11522).
   return styles.map((block) => ({
     content: block.content,
-    src: block.src ?? null,
+    src: styleSrcs?.get(block.index) ?? block.src ?? null,
     lang: block.lang ?? null,
     scoped: block.scoped,
     module: block.module ? (block.moduleName ?? true) : false,
@@ -97,7 +101,7 @@ export function compileFile(
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
-    styles: normalizeStyleBlocks(result.styles),
+    styles: normalizeStyleBlocks(result.styles, resolved.styleSrcs),
     // `src` blocks, then what the compile itself read (pug includes).
     dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
   };
@@ -187,6 +191,7 @@ export function compileBatch(
   options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
   const dependenciesByPath = new Map<string, string[]>();
+  const styleSrcsByPath = new Map<string, Map<number, string>>();
   const resolvedFiles = files.map((file) => {
     const resolved = inlineSfcSrcBlocks(
       native.parseSfc,
@@ -195,6 +200,7 @@ export function compileBatch(
       options.srcResolutions?.get(file.path),
     );
     dependenciesByPath.set(file.path, resolved.dependencies);
+    styleSrcsByPath.set(file.path, resolved.styleSrcs);
     return {
       path: file.path,
       source: resolved.source,
@@ -256,7 +262,7 @@ export function compileBatch(
         styleHash: fileResult.styleHash,
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
-        styles: normalizeStyleBlocks(fileResult.styles),
+        styles: normalizeStyleBlocks(fileResult.styles, styleSrcsByPath.get(fileResult.path)),
         dependencies: [
           ...(dependenciesByPath.get(fileResult.path) ?? []),
           ...(fileResult.dependencies ?? []),

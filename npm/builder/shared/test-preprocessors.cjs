@@ -71,6 +71,47 @@ function indentedToBraces(source) {
   return output + "}\n".repeat(stack.length);
 }
 
+/**
+ * `@use "./file" as ns;`, resolved like Sass from the importing file's `url`
+ * (`_file.scss` or `file.scss`): its `$name: value;` variables replace
+ * `ns.$name`. A file that is not there stops compilation, as in Sass.
+ */
+function inlineUses(source, url) {
+  const namespaces = new Map();
+  const loadedUrls = [];
+  const body = source.replace(
+    /@use\s+["']([^"']+)["']\s+as\s+([\w-]+)\s*;/g,
+    (match, request, namespace, offset) => {
+      const target = url ? new URL(request, url) : null;
+      const candidates = target
+        ? [".scss", ""].flatMap((ext) => {
+            const file = `${target.pathname}${ext}`;
+            return [path.join(path.dirname(file), `_${path.basename(file)}`), file];
+          })
+        : [];
+      const found = candidates.find((file) => fs.existsSync(file));
+      if (!found) {
+        const line = source.slice(0, offset).split("\n").length;
+        throw Object.assign(new Error("Can't find stylesheet to import."), { line, column: 1 });
+      }
+      loadedUrls.push(new URL(`file://${found}`));
+      const variables = new Map();
+      for (const [, name, value] of fs
+        .readFileSync(found, "utf8")
+        .matchAll(/\$([\w-]+)\s*:\s*([^;]+);/g)) {
+        variables.set(name, value.trim());
+      }
+      namespaces.set(namespace, variables);
+      return "";
+    },
+  );
+  const css = body.replace(
+    /([\w-]+)\.\$([\w-]+)/g,
+    (match, namespace, name) => namespaces.get(namespace)?.get(name) ?? match,
+  );
+  return { css, loadedUrls };
+}
+
 /** `@error "message"` stops compilation, like Sass; the error carries a 1-based line and column. */
 function failOnDirective(source) {
   source.split("\n").forEach((line, index) => {
@@ -94,10 +135,11 @@ function compile(source, indented = false) {
 }
 
 const PACKAGES = {
-  sass: `const { compile } = require(STAND_IN);
+  sass: `const { compile, inlineUses } = require(STAND_IN);
 const run = (source, options = {}) => {
   try {
-    return { css: compile(source, options.syntax === "indented"), loadedUrls: [] };
+    const used = inlineUses(source, options.url);
+    return { css: compile(used.css, options.syntax === "indented"), loadedUrls: used.loadedUrls };
   } catch (error) {
     throw Object.assign(new Error(error.message), {
       sassMessage: error.message,
@@ -163,4 +205,4 @@ function installStandIns(root) {
   }
 }
 
-module.exports = { compile, installStandIns };
+module.exports = { compile, inlineUses, installStandIns };
