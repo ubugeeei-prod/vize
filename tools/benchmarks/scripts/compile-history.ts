@@ -17,7 +17,7 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
@@ -25,7 +25,8 @@ import { isRecord } from "./script-types.ts";
 
 type Mode = "vue1t" | "loop1t" | "batch1t" | "batchmax";
 type Spec = { label: string; kind: "vue" | "native"; path: string; mode: Mode };
-type Sample = { wallMs: number; cpuMs: number };
+type Sample = { wallMs: number; cpuMs: number; nativeMs?: number };
+type Pass = [codes: string[], failed: number, nativeMs?: number];
 type ChildResult = {
   load: Sample;
   runs: Sample[];
@@ -63,7 +64,7 @@ function nativeFn(binding: unknown, name: string): (...args: unknown[]) => unkno
 }
 
 /** One measured pass; returns per-file code strings and the failure count. */
-function makePass(spec: Spec, module: unknown, files: SourceFile[]): () => [string[], number] {
+function makePass(spec: Spec, module: unknown, files: SourceFile[]): () => Pass {
   if (spec.kind === "vue") {
     const parse = nativeFn(module, "parse");
     const compileScript = nativeFn(module, "compileScript");
@@ -116,7 +117,11 @@ function makePass(spec: Spec, module: unknown, files: SourceFile[]): () => [stri
     const result = batch(inputs, options);
     const results = field(result, "results");
     if (!Array.isArray(results)) throw new Error("batch returned no results");
-    return [results.map((entry: unknown) => String(field(entry, "code"))), Number(field(result, "failedCount"))];
+    return [
+      results.map((entry: unknown) => String(field(entry, "code"))),
+      Number(field(result, "failedCount")),
+      Number(field(result, "timeMs")),
+    ];
   };
 }
 
@@ -129,12 +134,12 @@ function runChild(spec: Spec, input: string, runs: number, warmups: number): Chi
   const pass = makePass(spec, module, files);
   for (let i = 0; i < warmups; i++) pass();
   const samples: Sample[] = [];
-  let last: [string[], number] = [[], 0];
+  let last: Pass = [[], 0];
   for (let i = 0; i < runs; i++) {
     const start = performance.now();
     const cpu = process.cpuUsage();
     last = pass();
-    samples.push({ wallMs: performance.now() - start, cpuMs: cpuMsSince(cpu) });
+    samples.push({ wallMs: performance.now() - start, cpuMs: cpuMsSince(cpu), nativeMs: last[2] });
   }
   const [codes, failed] = last;
   const hash = createHash("sha256");
@@ -216,11 +221,11 @@ function main(): void {
   const modes = (one("modes", "loop1t,batch1t,batchmax") ?? "").split(",").filter(Boolean);
   const specs: Spec[] = [];
   const vue = one("vue");
-  if (vue) specs.push({ label: "@vue/compiler-sfc", kind: "vue", path: vue, mode: "vue1t" });
+  if (vue) specs.push({ label: "@vue/compiler-sfc", kind: "vue", path: resolve(vue), mode: "vue1t" });
   for (const entry of args.get("native") ?? []) {
     const at = entry.indexOf("=");
     const label = entry.slice(0, at);
-    const path = entry.slice(at + 1);
+    const path = resolve(entry.slice(at + 1));
     for (const mode of modes) {
       if (mode === "loop1t" || mode === "batch1t" || mode === "batchmax") specs.push({ label, kind: "native", path, mode });
     }
@@ -247,6 +252,7 @@ function main(): void {
       path: spec.path,
       wallMs: median(samples.map((sample) => sample.wallMs)),
       cpuMs: median(samples.map((sample) => sample.cpuMs)),
+      nativeMs: median(samples.map((sample) => sample.nativeMs ?? NaN)),
       loadWallMs: median(results.map((result) => result.load.wallMs)),
       loadCpuMs: median(results.map((result) => result.load.cpuMs)),
       maxRssMb: Math.max(...results.map((result) => result.maxRssMb)),
@@ -265,15 +271,16 @@ function main(): void {
     `Runner: ${os.cpus()[0]?.model ?? "unknown"} x${os.availableParallelism()}, ${process.version}. ` +
       `Corpus: ${rows[0]?.files ?? 0} files from \`${input}\`. ${rounds} rounds x ${runs} runs (+${warmups} warmups), fresh process per round.`,
     "",
-    "Wall and CPU are medians per pass. CPU = user+sys over all threads. Ratios divide @vue/compiler-sfc (1T) by the row.",
+    "Wall and CPU are medians per pass. CPU = user+sys over all threads. Ratios divide @vue/compiler-sfc (1T) by the row. In native = the batch's own `timeMs` (excludes JS<->native conversion).",
     "",
-    "| Build | Mode | Wall | CPU | CPU/Wall | Wall ratio | CPU ratio | Load wall | Load CPU | Peak RSS | Failed | Output bytes | Output SHA-256 |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+    "| Build | Mode | Wall | In native | CPU | CPU/Wall | Wall ratio | CPU ratio | Load wall | Load CPU | Peak RSS | Failed | Output bytes | Output SHA-256 |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ...rows.map((row) =>
       [
         row.label,
         row.mode,
         `${fmt(row.wallMs)} ms`,
+        Number.isNaN(row.nativeMs) ? "" : `${fmt(row.nativeMs)} ms`,
         `${fmt(row.cpuMs)} ms`,
         fmt(row.cpuMs / row.wallMs, 2),
         vueRow ? `${fmt(vueRow.wallMs / row.wallMs)}x` : "n/a",
