@@ -7,6 +7,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { history, renamePath, rewriteText } from "../../support/levels/rename-program-codename.ts";
+
 export type Tier = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type Status = "pass" | "fail" | "unknown";
 
@@ -62,27 +64,19 @@ export const codenames = [
   "davinci",
 ] as const;
 
-const codenamePattern = new RegExp(codenames.join("|"), "gi");
-// Captured output of a past run is evidence, not a name the code produces.
-const capturePattern =
-  /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
-
+// The program name is ruled by its rename script (pinned links, kept-docs prose); the level
+// codenames by name alone.
+const program = "davinci";
+const levelPattern = new RegExp(codenames.filter((name) => name !== program).join("|"), "gi");
 // The gate's definition must spell the names it bans.
 const toolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const gateFiles = new Set([
+export const gateFiles: ReadonlySet<string> = new Set([
   path
     .relative(toolRoot, fileURLToPath(import.meta.url))
     .split(path.sep)
     .join("/"),
   "tools/support/levels/rename-program-codename.ts",
 ]);
-
-const exemptPath = (file: string) =>
-  file.startsWith("docs/davinci/") || gateFiles.has(file) || capturePattern.test(file);
-
-// Other docs may keep the level codenames as aliases, but not the program name.
-const counts = (file: string, name: string) =>
-  !file.startsWith("docs/") || name.toLowerCase() === "davinci";
 
 export interface CodenameReport {
   readonly paths: number;
@@ -98,29 +92,32 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
   };
   let paths = 0,
     lines = 0;
-  const matches = (file: string, text: string) =>
-    (text.match(codenamePattern) ?? []).filter((name) => counts(file, name));
   for (const file of repo.paths) {
-    if (exemptPath(file)) continue;
-    const named = matches(file, file);
+    if (gateFiles.has(file) || history.test(file)) continue;
+    // Docs may keep the level codenames as aliases.
+    const levels = !file.startsWith("docs/");
+    const named = [
+      ...(levels ? (file.match(levelPattern) ?? []) : []),
+      ...(renamePath(file) === file ? [] : [program]),
+    ];
     if (named.length) {
       paths++;
       named.forEach(hit);
     }
     const text = repo.read(file);
     if (text === null) continue;
-    for (const line of text.split("\n")) {
-      // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form for level
-      // codenames; the program name has none.
-      const alias = /codename/i.test(line);
-      const found = matches(file, line).filter(
-        (name) => !alias || name.toLowerCase() === "davinci",
-      );
+    const before = text.split("\n");
+    const after = rewriteText(file, text).split("\n");
+    before.forEach((line, index) => {
+      // `//! L3 - reactivity IR (codename: Impeto)` is the alias form for level codenames.
+      const found: string[] =
+        levels && !/codename/i.test(line) ? [...(line.match(levelPattern) ?? [])] : [];
+      if (after[index] !== line) found.push(program);
       if (found.length) {
         lines++;
         found.forEach(hit);
       }
-    }
+    });
   }
   return { paths, lines, byName };
 };
