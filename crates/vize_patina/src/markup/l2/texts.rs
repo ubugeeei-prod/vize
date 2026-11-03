@@ -97,7 +97,7 @@ mod tests {
         let source = "<p>Hello {{ name }}, you have {{ count }}</p><p>{{ only }}</p>\
                       <div>{{ a }}-{{ b }}</div>";
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = L2Template::lower(&allocator, source).unwrap();
         let markup = lowered.markup();
         let mut compounds = 0;
         let mut plain = 0;

@@ -95,6 +95,7 @@ const view = <button style="color:red">go</button>;
 
 mod battery;
 mod content_model;
+mod levels;
 mod stylesheet;
 mod text_order;
 
@@ -131,7 +132,7 @@ impl crate::rule::Rule for FacadeOnly {
 }
 
 #[test]
-fn every_admitted_rule_reaches_only_the_l2_facade() {
+fn every_admitted_rule_reaches_only_the_facade() {
     let mut all = crate::rule::RuleRegistry::with_all();
     all.register_opt_in_rules();
     for name in super::RULES {

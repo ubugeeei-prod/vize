@@ -5,6 +5,7 @@
 //! the chains [`super::relief_scopes`] synthesizes over a raw template parse.
 
 use super::element::MarkupElement;
+use super::l1::children::L1Chain;
 use super::l2::children::if_range;
 use super::l2::walk::{L2Step, scope_region};
 use super::l2::{L2ElementOp, L2Markup};
@@ -23,6 +24,7 @@ enum MarkupConditionalInner<'a> {
         op: &'a IfOp<'a>,
         doc: &'a L2Markup<'a>,
     },
+    L1(L1Chain<'a>),
 }
 
 /// A conditional scope: a Vue `v-if` / `v-else-if` / `v-else` chain, a
@@ -51,6 +53,12 @@ impl<'a> MarkupConditional<'a> {
         }
     }
 
+    pub(super) const fn from_l1(chain: L1Chain<'a>) -> Self {
+        Self {
+            inner: MarkupConditionalInner::L1(chain),
+        }
+    }
+
     /// Number of branches in the chain (`v-if` + each `v-else-if` + optional
     /// `v-else`).
     pub fn branch_count(&self) -> usize {
@@ -58,6 +66,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::Relief(node) => node.branches.len(),
             MarkupConditionalInner::ReliefChain(chain) => chain.branch_count(),
             MarkupConditionalInner::L2 { op, .. } => op.branches.len(),
+            MarkupConditionalInner::L1(chain) => chain.branch_count(),
         }
     }
 
@@ -72,6 +81,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::L2 { op, .. } => {
                 op.branches.iter().any(|branch| branch.condition.is_none())
             }
+            MarkupConditionalInner::L1(chain) => chain.has_else(),
         }
     }
 
@@ -81,6 +91,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::Relief(node) => loc_to_range(&node.loc),
             MarkupConditionalInner::ReliefChain(chain) => chain.range(),
             MarkupConditionalInner::L2 { op, doc } => if_range(doc, op),
+            MarkupConditionalInner::L1(chain) => chain.range(),
         }
     }
 }
@@ -99,6 +110,11 @@ enum MarkupListInner<'a> {
     OriginalL2 {
         op: &'a OriginalForOp<'a>,
         doc: &'a L2Markup<'a>,
+    },
+    /// An L1 element and the `v-for` it builds a loop from.
+    L1 {
+        element: MarkupElement<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
     },
 }
 
@@ -141,6 +157,15 @@ impl<'a> MarkupList<'a> {
         }
     }
 
+    pub(super) const fn from_l1(
+        element: MarkupElement<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
+    ) -> Self {
+        Self {
+            inner: MarkupListInner::L1 { element, attr },
+        }
+    }
+
     /// The source iterable expression text (`items` in `item in items`).
     pub fn source_expression(&self) -> Option<&'a str> {
         match self.inner {
@@ -151,6 +176,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.source),
             // The region-only facade does not borrow the original File head.
             MarkupListInner::OriginalL2 { .. } => None,
+            MarkupListInner::L1 { attr, .. } => split_value(attr).and_then(|(_, source)| source),
         }
     }
 
@@ -163,6 +189,7 @@ impl<'a> MarkupList<'a> {
             }
             MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.value),
             MarkupListInner::OriginalL2 { .. } => None,
+            MarkupListInner::L1 { attr, .. } => split_value(attr).and_then(|(value, _)| value),
         }
     }
 
@@ -186,6 +213,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::OriginalL2 { op, doc } => {
                 walk_list_elements(doc, op.span, &op.region.ops, visitor);
             }
+            MarkupListInner::L1 { element, .. } => visitor(element),
         }
     }
 
@@ -196,6 +224,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { element, .. } => loc_to_range(&element.loc),
             MarkupListInner::L2 { op, doc } => doc.open_tag_range(op.span),
             MarkupListInner::OriginalL2 { op, doc } => doc.open_tag_range(op.span),
+            MarkupListInner::L1 { element, .. } => element.range(),
         }
     }
 
@@ -203,9 +232,9 @@ impl<'a> MarkupList<'a> {
     /// Transformed Relief and JSX scopes have no directive on their carrier.
     pub fn has_authored_directive(&self) -> bool {
         match self.inner {
-            MarkupListInner::ReliefDirective { .. } => true,
-            MarkupListInner::L2 { doc, .. } => doc.surface.is_some(),
-            MarkupListInner::OriginalL2 { doc, .. } => doc.surface.is_some(),
+            MarkupListInner::ReliefDirective { .. } | MarkupListInner::L1 { .. } => true,
+            MarkupListInner::L2 { doc, .. } => doc.l1.is_some(),
+            MarkupListInner::OriginalL2 { doc, .. } => doc.l1.is_some(),
             MarkupListInner::Relief(_) => false,
         }
     }
@@ -240,6 +269,17 @@ fn split_directive<'a>(directive: &'a DirectiveNode<'a>) -> Option<(Option<&'a s
     Some(source.trim())
         .filter(|text| !text.is_empty())
         .map(|source| (alias, source))
+}
+
+/// An L1 loop's value alias and source, split with the lowering's own
+/// grammar from the value it builds the loop from.
+fn split_value<'a>(
+    attr: &'a vize_l1::markup::Attribute<'a>,
+) -> Option<(Option<&'a str>, Option<&'a str>)> {
+    let (alias, source) =
+        vize_l1_to_l2::lower::split_v_for_value(vize_l1_to_l2::lower::v_for_value(attr)?)?;
+    let admitted = |text: &'a str| Some(text.trim()).filter(|text| !text.is_empty());
+    Some((alias.and_then(admitted), admitted(source)))
 }
 
 fn simple_text<'a>(expression: Option<&'a ExpressionNode<'a>>) -> Option<&'a str> {

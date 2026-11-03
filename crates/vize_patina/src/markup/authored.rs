@@ -6,29 +6,24 @@
 
 use super::element::queries::is_lint_component;
 use super::element::{MarkupElement, MarkupElementInner};
-use super::l2::L2Markup;
+use super::l1::L1Markup;
 use super::l2::binding::{is_consumed_spelling, is_v_pre};
 use super::l2::surface::{SurfaceDirective, offset_in, token_range};
 use super::{MarkupAttribute, MarkupElementKind, MarkupNode, MarkupText};
 use crate::ir::ByteRange;
 use vize_l1::markup::{Attribute, Element, SurfaceChild};
-use vize_relief::Namespace;
+use vize_l1_to_l2::lower::{children_ns, enter_ns};
+use vize_l2::op::Namespace;
 
 fn wrap<'a>(
     element: &'a Element<'a>,
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     inherited: bool,
     parent_ns: Namespace,
 ) -> (MarkupElement<'a>, bool, Namespace) {
     let opens_v_pre = !inherited && element.open.attrs.iter().any(is_v_pre);
     let frozen = inherited || opens_v_pre;
-    let ns = if vize_l0::is_svg_tag(element.tag()) {
-        Namespace::Svg
-    } else if vize_l0::is_math_ml_tag(element.tag()) {
-        Namespace::MathMl
-    } else {
-        parent_ns
-    };
+    let ns = enter_ns(parent_ns, element.tag());
     let node = MarkupElement::from_inner(MarkupElementInner::Authored {
         element,
         doc,
@@ -39,21 +34,9 @@ fn wrap<'a>(
     (node, frozen, ns)
 }
 
-fn children_ns(ns: Namespace, tag: &str) -> Namespace {
-    match ns {
-        Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
-        Namespace::MathMl
-            if matches!(tag, "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext") =>
-        {
-            Namespace::Html
-        }
-        _ => ns,
-    }
-}
-
 pub(super) fn walk_tree<'a>(
     children: &'a [SurfaceChild<'a>],
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     frozen: bool,
     enter: &mut impl FnMut(MarkupElement<'a>),
     exit: &mut impl FnMut(MarkupElement<'a>),
@@ -63,7 +46,7 @@ pub(super) fn walk_tree<'a>(
 
 fn walk_elements<'a>(
     children: &'a [SurfaceChild<'a>],
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     frozen: bool,
     ns: Namespace,
     enter: &mut impl FnMut(MarkupElement<'a>),
@@ -107,36 +90,44 @@ pub(super) fn kind(element: &Element<'_>, frozen: bool, opens_v_pre: bool) -> Ma
     }
 }
 
-pub(super) fn range(element: &Element<'_>, doc: &L2Markup<'_>) -> ByteRange {
+pub(super) fn range(element: &Element<'_>, doc: &L1Markup<'_>) -> ByteRange {
     let start = offset_in(doc.source, element.open.lt_name.text);
     let end = token_range(doc.source, &element.open.gt).end;
     ByteRange::new(start, end)
 }
 
-pub(super) fn is_directive(attr: &Attribute<'_>) -> bool {
-    SurfaceDirective::parse(attr.name.text).is_some() && !is_consumed_spelling(attr)
+/// The spelling of a directive the element keeps (not consumed into a scope).
+pub(super) fn directive<'a>(attr: &Attribute<'a>) -> Option<SurfaceDirective<'a>> {
+    SurfaceDirective::parse(attr.name.text).filter(|_| !is_consumed_spelling(attr))
 }
 
-pub(super) fn consumed(attr: &Attribute<'_>, frozen: bool, opens_v_pre: bool) -> bool {
-    // Frozen structural spellings are plain attrs and do not become scopes.
+/// An attribute the element keeps as a binding, with its directive
+/// spelling (none when frozen); `None` when the facade consumes it.
+pub(super) fn kept<'a>(
+    attr: &Attribute<'a>,
+    frozen: bool,
+    opens_v_pre: bool,
+) -> Option<Option<SurfaceDirective<'a>>> {
     if frozen {
-        opens_v_pre && is_v_pre(attr)
+        // Frozen structural spellings are plain attrs and do not become scopes.
+        (!(opens_v_pre && is_v_pre(attr))).then_some(None)
     } else {
-        is_consumed_spelling(attr)
+        let directive = SurfaceDirective::parse(attr.name.text);
+        let consumed = is_v_pre(attr) || directive.is_some_and(|spelling| spelling.is_structural());
+        (!consumed).then_some(directive)
     }
 }
 
 pub(super) fn walk_attributes<'a>(
     element: &'a Element<'a>,
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     frozen: bool,
     opens_v_pre: bool,
     visitor: &mut impl FnMut(MarkupAttribute<'a>),
 ) {
     for attr in &element.open.attrs {
-        if !consumed(attr, frozen, opens_v_pre)
-            && (frozen || SurfaceDirective::parse(attr.name.text).is_none())
-        {
+        // A kept attribute is static when frozen or when it spells no directive.
+        if kept(attr, frozen, opens_v_pre).is_some_and(|directive| frozen || directive.is_none()) {
             let name = frozen_name(attr, doc, opens_v_pre);
             visitor(MarkupAttribute::from_authored(attr, doc, name));
         }
@@ -145,7 +136,7 @@ pub(super) fn walk_attributes<'a>(
 
 pub(super) fn walk_children<'a>(
     element: &'a Element<'a>,
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     frozen: bool,
     ns: Namespace,
     visitor: &mut impl FnMut(MarkupNode<'a>),
@@ -157,7 +148,7 @@ pub(super) fn walk_children<'a>(
                 MarkupNode::Element(wrap(element, doc, frozen, child_ns).0)
             }
             SurfaceChild::Text(token) => MarkupNode::Text(MarkupText::from_static(
-                doc.static_part_text(token.text),
+                doc.decode_text(token.text),
                 token_range(doc.source, token),
             )),
             SurfaceChild::Interpolation(node) => {
@@ -173,8 +164,7 @@ pub(super) fn walk_children<'a>(
             }
             SurfaceChild::Comment(token) => MarkupNode::Comment(token_range(doc.source, token)),
             SurfaceChild::Cdata(token) if ns != Namespace::Html => {
-                let text = token.text.strip_prefix("<![CDATA[").unwrap_or(token.text);
-                let text = text.strip_suffix("]]>").unwrap_or(text);
+                let text = vize_l1_to_l2::lower::cdata_text(token.text);
                 let start = offset_in(doc.source, text);
                 MarkupNode::Text(MarkupText::from_static(
                     text,
@@ -195,7 +185,7 @@ pub(super) fn walk_children<'a>(
 /// Descendant spellings keep their authored names unchanged.
 pub(super) fn frozen_name<'a>(
     attr: &'a Attribute<'a>,
-    doc: &'a L2Markup<'a>,
+    doc: &'a L1Markup<'a>,
     opens_v_pre: bool,
 ) -> &'a str {
     if opens_v_pre {

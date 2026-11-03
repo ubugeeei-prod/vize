@@ -1,12 +1,14 @@
 //! SFC markup rules whose diagnostics match the Relief visitor (P4-7b).
 //!
-//! The admitted rules share one L2 lowering and one traversal. All other
-//! template rules stay on the Relief visitor until their parity is proven.
+//! The admitted rules share one L1 parse and one traversal per declared
+//! level: rules that declare L1 walk the L1 document, and the L2 lowering
+//! is built only when an enabled rule declares L2. All other template rules
+//! stay on the Relief visitor until their parity is proven.
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
-use crate::markup::{L2Template, MarkupContext, MarkupDocument};
+use crate::markup::{L1Markup, L2Template, MarkupContext, MarkupDocument, MarkupLevel};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
 use vize_l0::{Allocator, profile};
@@ -104,24 +106,52 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
             *slot = false;
         }
     }
-    let lowered = profile!(
-        "patina.sfc.facade.lower",
-        L2Template::lower(input.allocator, input.source)
-    );
-    let markup = lowered.markup();
-    let markup = crate::markup::reborrow_markup(&markup);
-    let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
-    if let Some(analysis) = input.analysis {
-        document = document.with_analysis(analysis);
-    }
-    let document_rule = selected
+    let Some(l1) = profile!(
+        "patina.sfc.facade.parse",
+        L1Markup::parse(input.allocator, input.source)
+    ) else {
+        // A source past `u32` offsets parses to one unexpected hole, so no
+        // markup rule has a node to see.
+        let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);
+        profile!("patina.template.visit", visitor.visit_root(input.root));
+        return;
+    };
+    let (surface_rules, lowered_rules): (Vec<_>, Vec<_>) = selected
         .iter()
-        .find(|(_, name, _)| *name == TEMPLATE_DOCUMENT_RULE);
+        .copied()
+        .partition(|(_, _, rule)| rule.level() == MarkupLevel::L1);
+    let lowered = (!lowered_rules.is_empty()).then(|| {
+        profile!(
+            "patina.sfc.facade.lower",
+            L2Template::from_l1(input.allocator, l1)
+        )
+    });
+    let lowered_markup = lowered.as_ref().map(L2Template::markup);
+    let with_analysis = |document: MarkupDocument<'a>| match input.analysis {
+        Some(analysis) => document.with_analysis(analysis),
+        None => document,
+    };
+    let surface = with_analysis(MarkupDocument::from_l1(l1, TemplateSyntax::Vue));
+    let lowered_document = lowered_markup.as_ref().map(|markup| {
+        let markup = crate::markup::reborrow_markup(markup);
+        with_analysis(MarkupDocument::from_l2(markup, TemplateSyntax::Vue))
+    });
+    let is_document_rule = |(_, name, _): &&(usize, &str, _)| *name == TEMPLATE_DOCUMENT_RULE;
+    let document_rule = surface_rules
+        .iter()
+        .find(is_document_rule)
+        .map(|selected| (selected, surface))
+        .or_else(|| {
+            lowered_rules
+                .iter()
+                .find(is_document_rule)
+                .zip(lowered_document)
+        });
     {
         let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);
         profile!("patina.template.visit", {
             visitor.visit_root_with_template_hook(input.root, &mut |index, ctx| {
-                let Some((selected_index, _, rule)) = document_rule else {
+                let Some(((selected_index, _, rule), document)) = document_rule else {
                     return false;
                 };
                 if index != *selected_index {
@@ -134,8 +164,12 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         });
     }
     profile!("patina.sfc.facade.visit", {
-        let mut markup_ctx = MarkupContext::new(ctx, &document);
-        document.visit_with(&batch::Rules(&selected), &mut markup_ctx);
+        let mut markup_ctx = MarkupContext::new(ctx, &surface);
+        surface.visit_with(&batch::Rules(&surface_rules), &mut markup_ctx);
+        if let Some(document) = lowered_document {
+            let mut markup_ctx = MarkupContext::new(ctx, &document);
+            document.visit_with(&batch::Rules(&lowered_rules), &mut markup_ctx);
+        }
     });
 }
 

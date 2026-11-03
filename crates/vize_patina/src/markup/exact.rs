@@ -31,6 +31,7 @@ impl<'a> MarkupElement<'a> {
             }
             MarkupElementInner::JsxFragment { .. } => false,
             MarkupElementInner::Authored { .. }
+            | MarkupElementInner::Surface { .. }
             | MarkupElementInner::L2 { .. }
             | MarkupElementInner::L2Carrier { .. } => self.tag() == expected,
         }
@@ -128,8 +129,11 @@ impl<'a> MarkupBinding<'a> {
                 }
             }
             MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => match super::binding::surface_directive(attr, static_name) {
+                attr,
+                static_name,
+                directive,
+                ..
+            } => match directive {
                 None => mode.matches(static_name.unwrap_or(attr.name.text), true, expected),
                 Some(directive) => match kind_of_directive(directive.name) {
                     MarkupBindingKind::Custom => mode.matches(directive.name, true, expected),

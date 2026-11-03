@@ -3,6 +3,7 @@
 use super::jsx_names::{
     jsx_attribute_name, jsx_attribute_ref, jsx_static_value, jsx_value_is_dynamic,
 };
+use super::l1::L1Markup;
 use super::l2::L2Markup;
 use super::l2::surface::{attr_span, attr_value};
 use super::{l2_range, loc_to_range, span_to_range};
@@ -25,7 +26,7 @@ enum MarkupAttributeInner<'a> {
     },
     Surface {
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
         name: &'a str,
     },
 }
@@ -59,7 +60,7 @@ impl<'a> MarkupAttribute<'a> {
 
     pub(super) const fn from_surface(
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
     ) -> Self {
         Self::from_inner(MarkupAttributeInner::Surface {
             attr,
@@ -70,7 +71,7 @@ impl<'a> MarkupAttribute<'a> {
 
     pub(super) const fn from_authored(
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
         name: &'a str,
     ) -> Self {
         Self::from_inner(MarkupAttributeInner::Surface { attr, doc, name })

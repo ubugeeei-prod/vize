@@ -97,7 +97,7 @@ fn walk_chain<'a>(
     visitor: &mut dyn FnMut(MarkupNode<'a>),
 ) {
     let (siblings, in_pre) = doc
-        .surface
+        .surface()
         .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
         .unwrap_or((&[], false));
     let source = doc.source;
@@ -157,7 +157,7 @@ pub(in crate::markup) fn walk_kept_gaps<'a>(
         return;
     };
     let Some((siblings, in_pre)) = doc
-        .surface
+        .surface()
         .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
     else {
         return;

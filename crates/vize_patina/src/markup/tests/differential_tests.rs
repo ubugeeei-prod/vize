@@ -93,7 +93,7 @@ mod differential_battery {
             }
             let allocator = vize_l0::Allocator::new();
             let (root, _) = vize_armature::Parser::new(&allocator, source).parse();
-            let lowered = crate::markup::L2Template::lower(&allocator, source);
+            let lowered = crate::markup::L2Template::lower(&allocator, source).unwrap();
             let markup = lowered.markup();
             let relief = crate::markup::MarkupDocument::new(&root, crate::ir::TemplateSyntax::Vue);
             let l2 =

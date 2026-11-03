@@ -12,10 +12,11 @@
 //! uses one span index of the text side table's page-order ids, built when
 //! the view is built, so a walk does not scan that table per interpolation.
 
+use super::l1::L1Markup;
 use vize_atelier_jsx::l2::JsxL2Root;
 use vize_l0::Allocator;
 use vize_l0::side_table::SideTable;
-use vize_l1::markup::{SurfaceError, SurfaceTree};
+use vize_l1::markup::SurfaceTree;
 use vize_l1_to_l2::lower::TextParts;
 use vize_l1_to_l2::{Lowered, lower_preserving_comments};
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Op, Region, SlotOp};
@@ -49,13 +50,13 @@ pub struct L2Markup<'a> {
     /// The artifact's compile arena, where a merged run's entity-bearing static
     /// part is decoded on demand (the one L2 decoder, never a second reading).
     allocator: Option<&'a Allocator>,
-    pub(super) authored: Option<&'a SurfaceTree<'a>>,
-    pub(super) surface: Option<&'a SurfaceTree<'a>>,
+    /// The L1 parse a template was lowered from.
+    pub(super) l1: Option<&'a L1Markup<'a>>,
 }
 
 impl<'a> L2Markup<'a> {
-    /// View a lowered Vue template and the L1 tree it was lowered from.
-    pub fn from_lowered(lowered: &'a Lowered<'a>, surface: &'a SurfaceTree<'a>) -> Self {
+    /// View a lowered Vue template and the L1 parse it was lowered from.
+    pub fn from_lowered(lowered: &'a Lowered<'a>, l1: &'a L1Markup<'a>) -> Self {
         Self {
             root: &lowered.root,
             source: lowered.source,
@@ -64,8 +65,7 @@ impl<'a> L2Markup<'a> {
             texts: Some(&lowered.texts),
             text_index: texts::index(lowered.allocator, &lowered.texts),
             allocator: Some(lowered.allocator),
-            surface: Some(surface),
-            authored: None,
+            l1: Some(l1),
         }
     }
 
@@ -79,9 +79,13 @@ impl<'a> L2Markup<'a> {
             texts: None,
             text_index: texts::EMPTY,
             allocator: None,
-            surface: None,
-            authored: None,
+            l1: None,
         }
+    }
+
+    /// The repaired L1 tree a template was lowered from.
+    pub(super) fn surface(&self) -> Option<&'a SurfaceTree<'a>> {
+        self.l1.map(|l1| l1.tree)
     }
 
     /// Whether the artifact was lowered from a Vue template.
@@ -107,10 +111,8 @@ impl<'a> L2Markup<'a> {
     /// entity-decoded with the L2 decoder when it carries an entity.
     pub(super) fn static_part_text(&self, text: &'a str) -> &'a str {
         match self.allocator {
-            Some(allocator) if text.contains('&') => {
-                allocator.alloc_str(vize_l1_to_l2::emit::decode_html_entities(text).as_str())
-            }
-            _ => text,
+            Some(allocator) => super::l1::decode_text(allocator, text),
+            None => text,
         }
     }
 
@@ -118,16 +120,8 @@ impl<'a> L2Markup<'a> {
     /// it: entity-decoded with the tokenizer's attribute-context rules.
     pub(super) fn decode_attribute(&self, value: &'a str) -> &'a str {
         match self.allocator {
-            Some(allocator) if value.contains('&') => allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(value).as_str()),
-            _ => value,
-        }
-    }
-
-    pub(super) fn frozen_attribute_name(&self, name: &'a str) -> &'a str {
-        match self.allocator {
-            Some(allocator) => vize_l1_to_l2::lower::frozen_attribute_name(allocator, name),
-            None => name,
+            Some(allocator) => super::l1::decode_attribute(allocator, value),
+            None => value,
         }
     }
 
@@ -137,7 +131,7 @@ impl<'a> L2Markup<'a> {
     /// which is the lowered root's own location.
     pub(super) fn open_tag_range(&self, span: vize_l0::Span) -> crate::ir::ByteRange {
         let Some(element) = self
-            .surface
+            .surface()
             .and_then(|tree| surface::element_at(tree, span.start))
         else {
             return super::l2_range(span);
@@ -154,7 +148,7 @@ impl<'a> L2Markup<'a> {
         span: vize_l0::Span,
         last_carrier: vize_l0::Span,
     ) -> crate::ir::ByteRange {
-        if self.surface.is_none() {
+        if self.l1.is_none() {
             return super::l2_range(span);
         }
         crate::ir::ByteRange::new(span.start, self.open_tag_range(last_carrier).end)
@@ -183,43 +177,40 @@ impl<'a> L2Markup<'a> {
         {
             return None;
         }
-        surface::element_at(self.surface?, span.start)
+        surface::element_at(self.surface()?, span.start)
     }
 }
 
-/// An owned L1 parse plus its comment-preserving L2 lowering, for callers that
-/// start from template source.
+/// An L1 parse plus its comment-preserving L2 lowering.
 pub struct L2Template<'a> {
-    tree: SurfaceTree<'a>,
-    authored: Option<SurfaceTree<'a>>,
-    errors: vize_l0::Vec<'a, SurfaceError>,
+    l1: &'a L1Markup<'a>,
     lowered: Lowered<'a>,
 }
 
 impl<'a> L2Template<'a> {
-    /// Parse `source` into L1 and lower it into L2, keeping authored comments
-    /// as `ui.comment` ops (the child list the lint parser sees).
-    pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {
-        let (tree, authored, errors) = vize_l1::markup::parse_with_authored(allocator, source);
-        let lowered = lower_preserving_comments(allocator, &tree, &errors);
-        Self {
-            tree,
-            authored,
-            errors,
-            lowered,
-        }
+    /// Parse `source` into L1 and lower it into L2 (see [`Self::from_l1`]).
+    pub fn lower(allocator: &'a Allocator, source: &'a str) -> Option<Self> {
+        Some(Self::from_l1(
+            allocator,
+            L1Markup::parse(allocator, source)?,
+        ))
+    }
+
+    /// Lower an L1 parse into L2, keeping authored comments as `ui.comment`
+    /// ops (the child list the lint parser sees).
+    pub fn from_l1(allocator: &'a Allocator, l1: &'a L1Markup<'a>) -> Self {
+        let lowered = lower_preserving_comments(allocator, l1.tree, l1.errors);
+        Self { l1, lowered }
     }
 
     /// The borrowed facade view of this artifact.
     pub fn markup(&self) -> L2Markup<'_> {
-        let mut markup = L2Markup::from_lowered(&self.lowered, &self.tree);
-        markup.authored = self.authored.as_ref().or(Some(&self.tree));
-        markup
+        L2Markup::from_lowered(&self.lowered, self.l1)
     }
 
-    /// The tokenizer errors the L1 parse reported.
-    pub fn surface_errors(&self) -> &[SurfaceError] {
-        &self.errors
+    /// The L1 parse the artifact was lowered from.
+    pub fn l1(&self) -> &'a L1Markup<'a> {
+        self.l1
     }
 
     /// The lowered artifact.
@@ -228,8 +219,8 @@ impl<'a> L2Template<'a> {
     }
 
     /// The L1 surface tree the artifact was lowered from.
-    pub fn surface(&self) -> &SurfaceTree<'a> {
-        &self.tree
+    pub fn surface(&self) -> &'a SurfaceTree<'a> {
+        self.l1.tree
     }
 }
 

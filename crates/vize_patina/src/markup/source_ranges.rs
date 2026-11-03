@@ -43,6 +43,12 @@ impl MarkupElement<'_> {
                 doc,
                 frozen,
                 ..
+            }
+            | MarkupElementInner::Surface {
+                element,
+                doc,
+                frozen,
+                ..
             } => {
                 if !frozen {
                     for attr in &element.open.attrs {
@@ -103,7 +109,7 @@ impl MarkupElement<'_> {
                 doc,
                 op,
             } => {
-                let opening_v_pre = opens_v_pre(doc, element, op.attributes());
+                let opening_v_pre = opens_v_pre(doc.source, element, op.attributes());
                 for attr in &element.open.attrs {
                     // Opening semantic pre is consumed; inherited pre stays literal.
                     if !opening_v_pre || !is_v_pre(attr) {
@@ -112,6 +118,12 @@ impl MarkupElement<'_> {
                 }
             }
             MarkupElementInner::Authored {
+                element,
+                doc,
+                opens_v_pre,
+                ..
+            }
+            | MarkupElementInner::Surface {
                 element,
                 doc,
                 opens_v_pre,

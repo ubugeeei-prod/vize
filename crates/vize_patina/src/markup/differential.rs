@@ -7,7 +7,8 @@
 //! [`TraceRecorder`] drives both. The traces are compared line for line with
 //! exact string equality: every hook, span, name, value, modifier, child view
 //! and ancestry the facade can answer. A divergence is an investigated bug,
-//! never averaged.
+//! never averaged. A Vue template is also projected through the L1 backend
+//! and compared with its L2 trace ([`compare_surface`]).
 //!
 //! Compiled for `cfg(test)` (the plain-suite witness) and under the
 //! `legacy-differential` feature (the corpus-runnable entry,
@@ -29,16 +30,18 @@ mod probe;
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
-use crate::markup::{L2Markup, L2Template, MarkupContext, MarkupDocument};
+use crate::markup::{L1Markup, L2Markup, L2Template, MarkupContext, MarkupDocument};
 use vize_atelier_jsx::JsxLang;
 use vize_l0::{Allocator, String};
 
 /// The first line at which two projections' traces disagree.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Divergence {
+    /// The projection compared against L2: `relief` or `l1`.
+    pub reference: &'static str,
     /// Zero-based trace line.
     pub line: usize,
-    /// The Relief projection's line (`None` past its end).
+    /// The reference projection's line (`None` past its end).
     pub relief: Option<String>,
     /// The L2 projection's line (`None` past its end).
     pub l2: Option<String>,
@@ -70,18 +73,66 @@ pub fn trace_document(document: &MarkupDocument<'_>, source: &str) -> std::vec::
 
 /// Compare two traces exactly; `Ok` carries the number of lines compared.
 pub fn compare_traces(relief: &[String], l2: &[String]) -> Result<usize, Divergence> {
-    let len = relief.len().max(l2.len());
+    compare_reference("relief", relief, l2)
+}
+
+fn compare_reference(
+    reference: &'static str,
+    left: &[String],
+    l2: &[String],
+) -> Result<usize, Divergence> {
+    let len = left.len().max(l2.len());
     for line in 0..len {
-        let (left, right) = (relief.get(line), l2.get(line));
-        if left != right {
+        let (reference_line, l2_line) = (left.get(line), l2.get(line));
+        if reference_line != l2_line {
             return Err(Divergence {
+                reference,
                 line,
-                relief: left.cloned(),
-                l2: right.cloned(),
+                relief: reference_line.cloned(),
+                l2: l2_line.cloned(),
             });
         }
     }
     Ok(len)
+}
+
+/// What one L1/L2 template comparison covered.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SurfaceComparison {
+    /// Trace lines compared, all equal.
+    Compared(usize),
+    /// L2 inserted implicit `tbody` / `tr` table owners, which L1 keeps
+    /// as authored; not compared.
+    TableOwners,
+}
+
+/// Project a Vue template through L1 and through L1→L2, and compare.
+pub fn compare_surface(source: &str) -> Result<SurfaceComparison, Divergence> {
+    let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
+    let Some(l1) = L1Markup::parse(&allocator, source) else {
+        return Err(unprojected("l1"));
+    };
+    let lowered = L2Template::from_l1(&allocator, l1);
+    let markup = lowered.markup();
+    let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
+    let mut owners = false;
+    document.walk_elements(&mut |element| owners |= element.is_synthesized_owner());
+    if owners {
+        return Ok(SurfaceComparison::TableOwners);
+    }
+    let l2 = trace_document(&document, source);
+    let surface = trace_document(&MarkupDocument::from_l1(l1, TemplateSyntax::Vue), source);
+    compare_reference("l1", &surface, &l2).map(SurfaceComparison::Compared)
+}
+
+/// A source no projection can measure (past `u32` offsets).
+fn unprojected(reference: &'static str) -> Divergence {
+    Divergence {
+        reference,
+        line: 0,
+        relief: None,
+        l2: None,
+    }
 }
 
 /// What one template comparison covered.
@@ -109,7 +160,9 @@ pub fn compare_template(source: &str) -> Result<TemplateComparison, Divergence> 
         ..vize_relief::ParserOptions::default()
     };
     let (root, _errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
-    let lowered = L2Template::lower(&allocator, source);
+    let Some(lowered) = L2Template::lower(&allocator, source) else {
+        return Err(unprojected("relief"));
+    };
     if nesting::is_restructured(&root, lowered.surface()) {
         return Ok(TemplateComparison::Restructured);
     }

@@ -81,7 +81,7 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     }
 
     let allocator = Allocator::new();
-    let lowered = L2Template::lower(&allocator, GALLERY);
+    let lowered = L2Template::lower(&allocator, GALLERY).unwrap();
     assert!(lowered.lowered().diagnostics.is_empty());
     let markup = lowered.markup();
     let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
@@ -130,7 +130,7 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
         "<div class=\"a\u{a0}a\">Text</div>",
     ] {
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = L2Template::lower(&allocator, source).unwrap();
         assert!(lowered.lowered().diagnostics.is_empty());
         let markup = lowered.markup();
         let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);

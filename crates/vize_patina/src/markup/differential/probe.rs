@@ -121,7 +121,7 @@ fn probe_sfc_facade_candidates() {
         }
         let allocator = Allocator::with_capacity(source.len().saturating_mul(4).max(1024));
         let (root, _) = Parser::new(&allocator, source).parse();
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = L2Template::lower(&allocator, source).unwrap();
         let markup = lowered.markup();
         let markup = crate::markup::reborrow_markup(&markup);
         let document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);

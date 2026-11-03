@@ -10,11 +10,14 @@
 //! `cond && <x/>` rather than as directives.
 //!
 //! This module lifts the rule API onto a small, typed, **borrow-based** facade
-//! projected from three backends without materializing a synthetic AST:
+//! projected from four backends without materializing a synthetic AST:
 //!
+//! - **L1 (surface)** — a Vue template's L1 parse ([`L1Markup`]), read with
+//!   the lowering's own text, chain and structure decisions. SFC rules that
+//!   declare [`MarkupLevel::L1`] read this backend.
 //! - **L2 (Disegno)** — the Davinci semantic IR ([`L2Markup`]): SFC templates
-//!   through the L1→L2 lowering, JSX/TSX through the P2-16 L2 projection. This
-//!   is the backend the lint lanes converge on (Davinci P4-7).
+//!   through the L1→L2 lowering, for rules that declare [`MarkupLevel::L2`],
+//!   and JSX/TSX through the P2-16 L2 projection.
 //! - **Relief** — a `vize_relief` template root (a raw template parse, or a
 //!   JSX root lowered to Relief).
 //! - **OXC** — a JSX/TSX program read straight from the OXC AST.
@@ -79,6 +82,7 @@ mod exact;
 mod jsx_child;
 mod jsx_names;
 mod jsx_roots;
+mod l1;
 mod l2;
 mod node;
 mod relief_children;
@@ -96,9 +100,10 @@ pub use binding::{MarkupBinding, MarkupBindingKind};
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
 pub use element::MarkupElement;
+pub use l1::L1Markup;
 pub use l2::{L2Markup, L2Template};
 pub use node::{MarkupNode, MarkupText};
-pub use rule::MarkupRule;
+pub use rule::{MarkupLevel, MarkupRule};
 pub use scope::{MarkupConditional, MarkupList};
 pub use visitor::MarkupDocumentVisitor;
 
@@ -122,6 +127,7 @@ enum MarkupDocumentInner<'a> {
         program: &'a Program<'a>,
         offset: u32,
     },
+    L1(&'a L1Markup<'a>),
     L2(&'a L2Markup<'a>),
 }
 
@@ -151,6 +157,17 @@ impl<'a> MarkupDocument<'a> {
     pub const fn from_jsx(program: &'a Program<'a>, syntax: TemplateSyntax, offset: u32) -> Self {
         Self {
             inner: MarkupDocumentInner::Jsx { program, offset },
+            syntax,
+            analysis: None,
+        }
+    }
+
+    /// Create a markup document viewing a Vue template's L1 parse.
+    ///
+    /// The document holds no L2 artifact: rules that read it reach only L1.
+    pub const fn from_l1(markup: &'a L1Markup<'a>, syntax: TemplateSyntax) -> Self {
+        Self {
+            inner: MarkupDocumentInner::L1(markup),
             syntax,
             analysis: None,
         }
@@ -188,7 +205,7 @@ impl<'a> MarkupDocument<'a> {
     /// sense.
     pub const fn is_template(&self) -> bool {
         match self.inner {
-            MarkupDocumentInner::Relief(_) => true,
+            MarkupDocumentInner::Relief(_) | MarkupDocumentInner::L1(_) => true,
             MarkupDocumentInner::Jsx { .. } => false,
             MarkupDocumentInner::L2(markup) => markup.is_template(),
         }
@@ -199,9 +216,13 @@ impl<'a> MarkupDocument<'a> {
         !self.is_template()
     }
 
-    /// Whether this document views an L2 artifact.
-    pub const fn is_l2(&self) -> bool {
-        matches!(self.inner, MarkupDocumentInner::L2(_))
+    /// The L2 artifact this document views: present only on a document built
+    /// for rules that declare [`MarkupLevel::L2`](crate::markup::MarkupLevel).
+    pub const fn lowered(&self) -> Option<&'a L2Markup<'a>> {
+        match self.inner {
+            MarkupDocumentInner::L2(markup) => Some(markup),
+            _ => None,
+        }
     }
 
     /// Template syntax used by this document.
@@ -227,6 +248,13 @@ impl<'a> MarkupDocument<'a> {
             MarkupDocumentInner::Jsx { program, offset } => {
                 jsx_roots::walk_jsx_program(program, offset, enter, exit)
             }
+            MarkupDocumentInner::L1(markup) => l1::children::walk_tree(
+                markup,
+                markup.root_list(),
+                &markup.tree.children,
+                enter,
+                exit,
+            ),
             MarkupDocumentInner::L2(markup) => l2::walk::walk_tree(markup, enter, exit),
         }
     }
@@ -242,12 +270,14 @@ impl<'a> MarkupDocument<'a> {
         enter: &mut impl FnMut(MarkupElement<'a>),
         exit: &mut impl FnMut(MarkupElement<'a>),
     ) {
-        if let MarkupDocumentInner::L2(doc) = self.inner
-            && let Some(tree) = doc.authored
-        {
-            authored::walk_tree(&tree.children, doc, false, enter, exit);
-        } else {
-            self.walk_tree(enter, exit);
+        let l1 = match self.inner {
+            MarkupDocumentInner::L1(doc) => Some(doc),
+            MarkupDocumentInner::L2(doc) => doc.l1,
+            MarkupDocumentInner::Relief(_) | MarkupDocumentInner::Jsx { .. } => None,
+        };
+        match l1 {
+            Some(doc) => authored::walk_tree(&doc.authored.children, doc, false, enter, exit),
+            None => self.walk_tree(enter, exit),
         }
     }
 

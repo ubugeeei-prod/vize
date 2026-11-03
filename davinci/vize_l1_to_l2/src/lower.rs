@@ -63,24 +63,32 @@ mod text;
 mod vfor;
 mod vtext;
 
+pub use bindop::{BindValue, bind_value};
 pub use caps::LegacyCaps;
-pub use element::frozen_attribute_name;
+pub use element::identity::{children_ns, enter_ns};
+pub use element::{BranchKind, Structure, frozen_attribute_name, structure};
 pub use features::{LoweringFeatures, OpFamily};
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
 #[doc(hidden)]
 pub use frozen::lower_with_frozen_element_spans;
 pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
+pub use leaf::cdata_text;
 
 // The one-scanner rule (#4365): the L2 passes re-derive binding names
 // with exactly the enumeration the lowering used, never a second one.
 pub use css::{lower_style_block, lower_style_block_in};
 pub(crate) use expr::simple_identifier;
-pub use forop::{ForName, ForParts};
-pub use structural::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
+pub use forop::{ForName, ForParts, v_for_value};
+pub use structural::{
+    ForWrapper, IfChain, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys, if_chain,
+};
 pub use vfor::split_v_for_value;
 // The one-rebuild rule (the same discipline): compound text facts and
 // their opaque display spelling share one construction rule.
-pub use text::{TextPart, TextParts, branch_gap_text, branch_gap_text_at, rebuild_source};
+pub use text::{
+    RunShape, TextAction, TextLane, TextPart, TextParts, TextRun, TextSource, branch_gap_text,
+    branch_gap_text_at, rebuild_source,
+};
 pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
 /// The L2 artifact one lowering produces: the op tree plus the three

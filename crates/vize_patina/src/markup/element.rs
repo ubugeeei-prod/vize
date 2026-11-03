@@ -1,6 +1,7 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
+use super::l1::L1Markup;
 use super::l2::surface::element_at;
 use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
@@ -22,10 +23,22 @@ pub(super) enum MarkupElementInner<'a> {
     /// unwrapped L2 template carrier: its kind follows the actual tag/attrs.
     Authored {
         element: &'a vize_l1::markup::Element<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
         frozen: bool,
         opens_v_pre: bool,
-        ns: vize_relief::Namespace,
+        ns: vize_l2::op::Namespace,
+    },
+    /// The L1 backend's element: authored attributes, children read the way
+    /// the lowering reads them (`lane` and `children_frozen` are its
+    /// children's text rules and `v-pre` state).
+    Surface {
+        element: &'a vize_l1::markup::Element<'a>,
+        doc: &'a L1Markup<'a>,
+        frozen: bool,
+        opens_v_pre: bool,
+        ns: vize_l2::op::Namespace,
+        lane: vize_l1_to_l2::lower::TextLane,
+        children_frozen: bool,
     },
     JsxElement {
         node: *const JSXElement<'a>,
@@ -83,7 +96,7 @@ impl<'a> MarkupElement<'a> {
     /// artifact carries a surface tree.
     pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
         let surface = doc
-            .surface
+            .surface()
             .filter(|_| !op.is_synthesized(doc))
             .and_then(|tree| element_at(tree, op.span().start));
         Self::from_inner(MarkupElementInner::L2 { op, doc, surface })
@@ -108,7 +121,8 @@ impl<'a> MarkupElement<'a> {
     pub fn tag(&self) -> &str {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag,
-            MarkupElementInner::Authored { element, .. } => element.tag(),
+            MarkupElementInner::Authored { element, .. }
+            | MarkupElementInner::Surface { element, .. } => element.tag(),
             MarkupElementInner::JsxElement { node, .. } => {
                 jsx_element_name(&jsx_element_ref(node).opening_element.name)
             }
@@ -127,6 +141,12 @@ impl<'a> MarkupElement<'a> {
     pub fn kind(&self) -> MarkupElementKind {
         match self.inner {
             MarkupElementInner::Authored {
+                element,
+                frozen,
+                opens_v_pre,
+                ..
+            }
+            | MarkupElementInner::Surface {
                 element,
                 frozen,
                 opens_v_pre,
@@ -176,6 +196,12 @@ impl<'a> MarkupElement<'a> {
         }
     }
 
+    /// Whether this is an implicit table owner L2 inserted.
+    #[cfg(any(test, feature = "legacy-differential"))]
+    pub(in crate::markup) fn is_synthesized_owner(&self) -> bool {
+        matches!(self.inner, MarkupElementInner::L2 { op, doc, .. } if op.is_synthesized(doc))
+    }
+
     /// Whether this node is a framework component.
     pub fn is_component(&self) -> bool {
         matches!(self.kind(), MarkupElementKind::Component)
@@ -185,7 +211,8 @@ impl<'a> MarkupElement<'a> {
     pub fn range(&self) -> ByteRange {
         match self.inner {
             MarkupElementInner::Relief(node) => relief_scopes::carrier_range(node),
-            MarkupElementInner::Authored { element, doc, .. } => {
+            MarkupElementInner::Authored { element, doc, .. }
+            | MarkupElementInner::Surface { element, doc, .. } => {
                 super::authored::range(element, doc)
             }
             MarkupElementInner::JsxElement { node, offset } => {
@@ -249,6 +276,19 @@ impl<'a> MarkupElement<'a> {
                 ns,
                 ..
             } => super::authored::walk_children(element, doc, frozen, ns, visitor),
+            MarkupElementInner::Surface {
+                element,
+                doc,
+                ns,
+                lane,
+                children_frozen,
+                ..
+            } => {
+                let list = super::l1::children::children_list(element, ns, lane, children_frozen);
+                super::l1::children::walk(doc, list, &element.children, &mut |item| {
+                    item.walk_nodes(visitor)
+                });
+            }
             MarkupElementInner::Relief(node) => {
                 for child in &node.children {
                     visitor(MarkupNode::from_relief_child(child));

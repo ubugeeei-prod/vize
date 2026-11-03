@@ -80,6 +80,7 @@ impl<'a> MarkupElement<'a> {
             }),
             MarkupElementInner::JsxFragment { .. } => {}
             MarkupElementInner::Authored { .. }
+            | MarkupElementInner::Surface { .. }
             | MarkupElementInner::Relief(_)
             | MarkupElementInner::L2 { .. }
             | MarkupElementInner::L2Carrier { .. } => self.walk_directives(&mut |directive| {
@@ -125,7 +126,7 @@ pub(super) fn l2_template_is_special(
         Some(element) => {
             // The retained parser classifies the opening boundary before
             // freezing its attributes. Inherited raw headers are already plain.
-            let opening_v_pre = opens_v_pre(doc, element, op.attributes());
+            let opening_v_pre = opens_v_pre(doc.source, element, op.attributes());
             element.open.attrs.iter().any(|attr| {
                 SurfaceDirective::parse(attr.name.text)
                     .is_some_and(|directive| directive.is_structural() || directive.name == "slot")

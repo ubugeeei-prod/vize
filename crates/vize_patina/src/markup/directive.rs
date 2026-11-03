@@ -2,7 +2,7 @@
 
 use super::binding::MarkupBindingKind;
 use super::jsx_names::{jsx_attribute_arg_name, jsx_attribute_directive_kind, jsx_attribute_ref};
-use super::l2::L2Markup;
+use super::l1::L1Markup;
 use super::l2::binding::kind_of_directive;
 use super::l2::bound::L2Bound;
 use super::l2::surface::{SurfaceDirective, attr_span};
@@ -21,7 +21,8 @@ enum MarkupDirectiveInner<'a> {
     L2(L2Bound<'a>),
     Surface {
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
+        directive: SurfaceDirective<'a>,
     },
 }
 
@@ -52,15 +53,16 @@ impl<'a> MarkupDirective<'a> {
 
     pub(super) const fn from_surface(
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
+        directive: SurfaceDirective<'a>,
     ) -> Self {
         Self {
-            inner: MarkupDirectiveInner::Surface { attr, doc },
+            inner: MarkupDirectiveInner::Surface {
+                attr,
+                doc,
+                directive,
+            },
         }
-    }
-
-    fn surface(attr: &'a vize_l1::markup::Attribute<'a>) -> Option<SurfaceDirective<'a>> {
-        SurfaceDirective::parse(attr.name.text)
     }
 
     /// Normalized directive name without the `v-` prefix (`bind`, `on`,
@@ -76,9 +78,7 @@ impl<'a> MarkupDirective<'a> {
                 }
             }
             MarkupDirectiveInner::L2(binding) => binding.name(),
-            MarkupDirectiveInner::Surface { attr, .. } => {
-                Self::surface(attr).map_or("", |directive| directive.name)
-            }
+            MarkupDirectiveInner::Surface { directive, .. } => directive.name,
         }
     }
 
@@ -112,9 +112,7 @@ impl<'a> MarkupDirective<'a> {
                 jsx_attribute_arg_name(jsx_attribute_ref(node))
             }
             MarkupDirectiveInner::L2(binding) => binding.arg().map(|(arg, _)| arg),
-            MarkupDirectiveInner::Surface { attr, .. } => {
-                Self::surface(attr).and_then(|directive| directive.arg)
-            }
+            MarkupDirectiveInner::Surface { directive, .. } => directive.arg,
         }
     }
 
@@ -135,11 +133,7 @@ impl<'a> MarkupDirective<'a> {
                 }
             }
             MarkupDirectiveInner::L2(binding) => binding.walk_modifiers(visitor),
-            MarkupDirectiveInner::Surface { attr, .. } => {
-                if let Some(directive) = Self::surface(attr) {
-                    directive.walk_modifiers(visitor);
-                }
-            }
+            MarkupDirectiveInner::Surface { directive, .. } => directive.walk_modifiers(visitor),
             MarkupDirectiveInner::Jsx { .. } => {}
         }
     }
@@ -163,7 +157,7 @@ impl<'a> MarkupDirective<'a> {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
             MarkupDirectiveInner::L2(binding) => l2_range(binding.span()),
-            MarkupDirectiveInner::Surface { attr, doc } => l2_range(attr_span(doc.source, attr)),
+            MarkupDirectiveInner::Surface { attr, doc, .. } => l2_range(attr_span(doc.source, attr)),
         }
     }
 

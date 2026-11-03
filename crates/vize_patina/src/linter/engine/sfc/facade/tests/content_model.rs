@@ -54,7 +54,8 @@ impl MarkupRule for DocumentOnly {
         "vue/permitted-contents"
     }
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
-        assert!(document.is_l2());
+        // An L1 rule is handed a document with no L2 artifact to reach.
+        assert!(document.lowered().is_none());
         PermittedContents.enter_document(ctx, document);
     }
 }
@@ -75,7 +76,7 @@ impl Rule for DocumentOnly {
 }
 
 #[test]
-fn permitted_contents_runs_only_from_the_l2_document_hook() {
+fn permitted_contents_runs_only_from_the_l1_document_hook() {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(DocumentOnly));
     let result = Linter::with_registry(registry).lint_sfc(

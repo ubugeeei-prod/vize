@@ -144,13 +144,18 @@ fn comment_content(text: &str) -> &str {
 
 /// A CDATA section's content is text (the foreign-namespace reading);
 /// the framing is dropped with the record naming the rule.
+/// A CDATA section's text, without its framing.
+pub fn cdata_text(text: &str) -> &str {
+    let inner = text.strip_prefix("<![CDATA[").unwrap_or(text);
+    inner.strip_suffix("]]>").unwrap_or(inner)
+}
+
 fn lower_cdata<'a>(
     cx: &mut Cx<'a, impl ProvenanceSink>,
     token: &Token<'a>,
     out: &mut Vec<'a, Op<'a>>,
 ) {
-    let inner = token.text.strip_prefix("<![CDATA[").unwrap_or(token.text);
-    let inner = inner.strip_suffix("]]>").unwrap_or(inner);
+    let inner = cdata_text(token.text);
     let node = cx.mint_op();
     let span = cx.span_of(inner);
     cx.record(

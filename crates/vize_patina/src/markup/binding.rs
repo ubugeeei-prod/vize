@@ -4,6 +4,7 @@ use super::jsx_names::{
     jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name, jsx_attribute_ref,
     jsx_static_value, jsx_value_is_dynamic,
 };
+use super::l1::L1Markup;
 use super::l2::L2Markup;
 use super::l2::binding::{L2Item, kind_of_directive, surface_expression};
 use super::l2::bound::L2Bound;
@@ -60,8 +61,10 @@ pub(super) enum MarkupBindingInner<'a> {
     L2Binding(L2Bound<'a>),
     Surface {
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
         static_name: Option<&'a str>,
+        /// The directive spelling, read once when the view is made.
+        directive: Option<SurfaceDirective<'a>>,
     },
 }
 
@@ -99,7 +102,7 @@ impl<'a> MarkupBinding<'a> {
         Self::from_inner(MarkupBindingInner::Jsx { node, offset })
     }
 
-    pub(super) const fn from_l2_item(item: L2Item<'a>) -> Self {
+    pub(super) fn from_l2_item(item: L2Item<'a>) -> Self {
         Self::from_inner(match item {
             L2Item::Attribute { attribute, doc } => {
                 MarkupBindingInner::L2Attribute { attribute, doc }
@@ -109,19 +112,24 @@ impl<'a> MarkupBinding<'a> {
                 attr,
                 doc,
                 static_name: None,
+                directive: surface_directive(attr, None),
             },
         })
     }
 
-    pub(super) const fn from_surface(
+    /// A surface binding whose `directive` spelling the caller already read
+    /// (none for a frozen attribute, which `static_name` renames).
+    pub(super) const fn from_surface_spelling(
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
         static_name: Option<&'a str>,
+        directive: Option<SurfaceDirective<'a>>,
     ) -> Self {
         Self::from_inner(MarkupBindingInner::Surface {
             attr,
             doc,
             static_name,
+            directive,
         })
     }
 
@@ -136,9 +144,7 @@ impl<'a> MarkupBinding<'a> {
                 jsx_attribute_binding_kind(jsx_attribute_ref(node))
             }
             MarkupBindingInner::L2Binding(binding) => kind_of_directive(binding.name()),
-            MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => surface_directive(attr, static_name)
+            MarkupBindingInner::Surface { directive, .. } => directive
                 .map_or(MarkupBindingKind::Attribute, |directive| {
                     kind_of_directive(directive.name)
                 }),
@@ -178,8 +184,11 @@ impl<'a> MarkupBinding<'a> {
                 }
             }
             MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => match surface_directive(attr, static_name) {
+                attr,
+                static_name,
+                directive,
+                ..
+            } => match directive {
                 None => static_name.or(Some(attr.name.text)),
                 Some(directive) => match kind_of_directive(directive.name) {
                     MarkupBindingKind::Custom => Some(directive.name),
@@ -215,9 +224,7 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::Jsx { node, .. } => {
                 jsx_value_is_dynamic(jsx_attribute_ref(node).value.as_ref())
             }
-            MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => surface_directive(attr, static_name).is_some(),
+            MarkupBindingInner::Surface { directive, .. } => directive.is_some(),
         }
     }
 
@@ -236,8 +243,9 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::Surface {
                 attr,
                 doc,
-                static_name,
-            } => surface_directive(attr, static_name)
+                directive,
+                ..
+            } => directive
                 .is_none()
                 .then(|| attr_value(attr))
                 .flatten()
@@ -261,9 +269,13 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::ReliefDirective(node) => relief_expression(node),
             MarkupBindingInner::L2Binding(binding) => binding.expression(),
             MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => surface_directive(attr, static_name)
-                .and_then(|directive| surface_expression(attr, &directive)),
+                attr,
+                doc,
+                directive,
+                ..
+            } => {
+                directive.and_then(|directive| surface_expression(doc.allocator, attr, &directive))
+            }
         }
     }
 
@@ -278,10 +290,8 @@ impl<'a> MarkupBinding<'a> {
                 }
             }
             MarkupBindingInner::L2Binding(binding) => binding.walk_modifiers(visitor),
-            MarkupBindingInner::Surface {
-                attr, static_name, ..
-            } => {
-                if let Some(directive) = surface_directive(attr, static_name) {
+            MarkupBindingInner::Surface { directive, .. } => {
+                if let Some(directive) = directive {
                     directive.walk_modifiers(visitor);
                 }
             }

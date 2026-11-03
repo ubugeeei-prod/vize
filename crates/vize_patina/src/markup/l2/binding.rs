@@ -5,6 +5,7 @@ use super::L2Markup;
 use super::bound::L2Bound;
 use super::surface::{SurfaceDirective, attr_span, attr_value};
 use crate::markup::MarkupBindingKind;
+use crate::markup::l1::L1Markup;
 use vize_l0::Span;
 use vize_l2::op::{Attribute, BindingOp};
 
@@ -19,7 +20,7 @@ pub(in crate::markup) fn is_v_pre(attr: &vize_l1::markup::Attribute<'_>) -> bool
 /// A missing opening pre distinguishes this boundary from an inherited raw
 /// attribute. The retained parser drops all semantic pre spellings here.
 pub(in crate::markup) fn opens_v_pre(
-    doc: &L2Markup<'_>,
+    source: &str,
     element: &vize_l1::markup::Element<'_>,
     attributes: &[Attribute<'_>],
 ) -> bool {
@@ -29,7 +30,7 @@ pub(in crate::markup) fn opens_v_pre(
         .iter()
         .find(|attr| is_v_pre(attr))
         .is_some_and(|attr| {
-            let span = attr_span(doc.source, attr);
+            let span = attr_span(source, attr);
             !attributes.iter().any(|kept| kept.span == span)
         })
 }
@@ -50,7 +51,7 @@ pub(in crate::markup) enum L2Item<'a> {
     /// consumes them into scopes.
     Surface {
         attr: &'a vize_l1::markup::Attribute<'a>,
-        doc: &'a L2Markup<'a>,
+        doc: &'a L1Markup<'a>,
     },
 }
 
@@ -87,11 +88,11 @@ pub(in crate::markup) fn walk_items<'a>(
     doc: &'a L2Markup<'a>,
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
-    surface: Option<&'a vize_l1::markup::Element<'a>>,
+    surface: Option<(&'a vize_l1::markup::Element<'a>, &'a L1Markup<'a>)>,
     visitor: &mut dyn FnMut(L2Item<'a>),
 ) {
-    if let Some(element) = surface {
-        let opening_v_pre = opens_v_pre(doc, element, attributes);
+    if let Some((element, l1)) = surface {
+        let opening_v_pre = opens_v_pre(doc.source, element, attributes);
         for attr in &element.open.attrs {
             if opening_v_pre && is_v_pre(attr) {
                 continue;
@@ -105,7 +106,7 @@ pub(in crate::markup) fn walk_items<'a>(
                     surface: Some(attr),
                 }));
             } else if !is_consumed_spelling(attr) {
-                visitor(L2Item::Surface { attr, doc });
+                visitor(L2Item::Surface { attr, doc: l1 });
             }
         }
         return;
@@ -181,21 +182,24 @@ pub(in crate::markup) fn kind_of_directive(name: &str) -> MarkupBindingKind {
 
 /// The trimmed authored value of a surface directive, when non-blank.
 ///
-/// A valueless `v-bind` with a static argument reads the parser's same-name
-/// expansion (`:name` ⇒ `name`). L2 only consumes such a spelling where the
-/// argument is a plain identifier (a `<slot :name>` outlet's name), so the
-/// camelized form is the argument slice itself.
+/// A `v-bind` reads the lowering's own value rule, so a valueless static
+/// argument is the same-name expansion (`:foo-bar` ⇒ `fooBar`).
 pub(in crate::markup) fn surface_expression<'a>(
+    allocator: &'a vize_l0::Allocator,
     attr: &'a vize_l1::markup::Attribute<'a>,
     directive: &SurfaceDirective<'a>,
 ) -> Option<&'a str> {
-    match attr_value(attr) {
-        Some(value) => Some(value.trim()).filter(|text| !text.is_empty()),
-        None if directive.name == "bind" && directive.arg_static => directive
-            .arg
-            .filter(|arg| !arg.contains('-') && attr.eq.is_none()),
-        None => None,
+    if directive.name == "bind" {
+        let static_arg = directive.arg.filter(|_| directive.arg_static);
+        return match vize_l1_to_l2::lower::bind_value(allocator, attr_value(attr), static_arg) {
+            vize_l1_to_l2::lower::BindValue::None => None,
+            vize_l1_to_l2::lower::BindValue::Authored(text) => Some(text.trim()),
+            vize_l1_to_l2::lower::BindValue::SameName { text, .. } => Some(text),
+        };
     }
+    attr_value(attr)
+        .map(str::trim)
+        .filter(|text| !text.is_empty())
 }
 
 #[cfg(test)]
@@ -234,7 +238,7 @@ mod tests {
             ),
         ];
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, "");
+        let lowered = L2Template::lower(&allocator, "").unwrap();
         let document = lowered.markup();
         for &(attribute_spans, binding_spans, expected) in cases {
             let attributes: std::vec::Vec<_> = attribute_spans

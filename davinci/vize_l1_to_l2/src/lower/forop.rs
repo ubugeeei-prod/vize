@@ -16,7 +16,7 @@ use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 pub use vize_l2::analysis::for_facts::{ForName, ForParts};
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::element::{Analyzed, attr_text, element_core};
+use super::element::{Analyzed, attr_text, element_core, template_unwraps};
 use super::expr::{desc, expr_at, opaque_at, trimmed};
 use super::structural::{
     ForWrapper, capture_wrapper_attrs, capture_wrapper_key, lower_children,
@@ -29,6 +29,11 @@ use bindings::AliasGoal;
 
 #[cfg(test)]
 mod tests;
+
+/// A `v-for` value the lowering builds a loop from: present and not blank.
+pub fn v_for_value<'a>(attr: &vize_l1::markup::Attribute<'a>) -> Option<&'a str> {
+    attr_text(attr).filter(|raw| !raw.trim().is_empty())
+}
 
 /// Build the `ui.for` for an element's `v-for` — or, when the directive
 /// carries no expression at all, the kept fragment without it.
@@ -46,8 +51,7 @@ pub(crate) fn lower_for<'a>(
     else {
         return element_core(cx, element, analyzed, ns);
     };
-    let raw = attr_text(attr).filter(|raw| !raw.trim().is_empty());
-    let Some(raw) = raw else {
+    let Some(raw) = v_for_value(attr) else {
         cx.error(
             attr_span(cx, attr),
             String::from("v-for is missing expression."),
@@ -164,7 +168,7 @@ pub(crate) fn lower_for<'a>(
     };
 
     let region = Region {
-        ops: if element.tag() == "template" && !analyzed.has_slot_spelling() {
+        ops: if template_unwraps(element, analyzed.has_slot_spelling()) {
             cx.report_missing_close(element);
             let captured = capture_wrapper_key(cx, element, analyzed);
             let (skip, key) = match captured {

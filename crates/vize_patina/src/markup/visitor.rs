@@ -2,6 +2,8 @@
 
 use super::element::{MarkupElement, MarkupElementInner};
 use super::jsx_names::{jsx_element_ref, jsx_fragment_ref};
+use super::l1::L1Markup;
+use super::l1::children::{self as l1_children, Item, ListCx};
 use super::l2::walk::{L2Step, scope_region};
 use super::l2::{L2ElementOp, L2Markup, children};
 use super::loc_to_range;
@@ -51,6 +53,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 MarkupDocumentInner::Relief(root) => self.visit_relief_children(&root.children),
                 MarkupDocumentInner::Jsx { program, offset } => {
                     self.visit_jsx_program(program, offset)
+                }
+                MarkupDocumentInner::L1(markup) => {
+                    self.visit_l1_list(markup, markup.root_list(), &markup.tree.children);
                 }
                 MarkupDocumentInner::L2(markup) => self.visit_l2_region(markup, &markup.root.ops),
             }
@@ -120,6 +125,38 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             self.list(MarkupList::from_relief_directive(element, directive));
         }
         self.visit_element(MarkupElement::new(element));
+    }
+
+    /// An L1 child list, read the way the lowering reads it.
+    fn visit_l1_list(
+        &mut self,
+        doc: &'a L1Markup<'a>,
+        list: ListCx,
+        children: &'a [vize_l1::markup::SurfaceChild<'a>],
+    ) {
+        l1_children::walk(doc, list, children, &mut |item| match item {
+            Item::Element(element, vfor) => self.visit_l1_listed(element, vfor),
+            Item::Chain(chain) => {
+                self.conditional(MarkupConditional::from_l1(chain));
+                chain.walk_branches(&mut |element, vfor| self.visit_l1_listed(element, vfor));
+                chain.walk_kept_gaps(&mut |text| self.text(text));
+            }
+            Item::Text(text) => self.text(text),
+            Item::Interpolation(at) => self.interpolation(at),
+            Item::Comment(_) => {}
+        });
+    }
+
+    /// An L1 element, inside its `v-for` list scope when it builds one.
+    fn visit_l1_listed(
+        &mut self,
+        element: MarkupElement<'a>,
+        vfor: Option<&'a vize_l1::markup::Attribute<'a>>,
+    ) {
+        if let Some(attr) = vfor {
+            self.list(MarkupList::from_l1(element, attr));
+        }
+        self.visit_element(element);
     }
 
     /// An L2 region, in page order.
@@ -192,6 +229,19 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     MarkupNode::Interpolation(range) => self.interpolation(range),
                     _ => {}
                 })
+            }
+            MarkupElementInner::Surface {
+                element: surface,
+                doc,
+                ns,
+                lane,
+                children_frozen,
+                ..
+            } => {
+                let list = l1_children::children_list(surface, ns, lane, children_frozen);
+                vize_l0::ensure_sufficient_stack(|| {
+                    self.visit_l1_list(doc, list, &surface.children);
+                });
             }
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {

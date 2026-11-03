@@ -14,7 +14,10 @@
 //! - [`JSX`]: JSX/TSX modules whose lowered roots the P2-16 projection admits
 //!   (and some it refuses, counted).
 
-use super::{JsxComparison, TemplateComparison, compare_jsx, compare_template};
+use super::{
+    JsxComparison, SurfaceComparison, TemplateComparison, compare_jsx, compare_surface,
+    compare_template,
+};
 use std::path::Path;
 use vize_atelier_jsx::JsxLang;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -254,6 +257,10 @@ pub struct BatteryCensus {
     pub restructured: usize,
     /// JSX modules, roots, refused roots, and trace lines.
     pub jsx: JsxComparison,
+    /// L1 and L2 trace lines compared over the same template planes.
+    pub surface_lines: usize,
+    /// Templates where L2 inserted implicit table owners L1 does not.
+    pub table_owners: usize,
 }
 
 /// The committed census. Re-pinned deliberately, in both lanes at once.
@@ -366,6 +373,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         refused: 1,
         lines: 118,
     },
+    surface_lines: 6530,
+    table_owners: 8,
 };
 
 fn matrix_dir() -> std::path::PathBuf {
@@ -379,12 +388,20 @@ fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {
     }
 }
 
+fn tally_surface(census: &mut BatteryCensus, comparison: SurfaceComparison) {
+    match comparison {
+        SurfaceComparison::Compared(lines) => census.surface_lines += lines,
+        SurfaceComparison::TableOwners => census.table_owners += 1,
+    }
+}
+
 /// Run the whole battery, failing with the exact divergence on the first
 /// disagreement.
 pub fn run_battery() -> Result<BatteryCensus, vize_l0::String> {
     let mut census = BatteryCensus::default();
     for (name, source) in TEMPLATES {
         tally(&mut census, expect_same(name, compare_template(source))?);
+        tally_surface(&mut census, expect_same(name, compare_surface(source))?);
         census.templates += 1;
     }
     let fixtures = super::rule_fixtures::scan_rule_fixtures();
@@ -392,6 +409,7 @@ pub fn run_battery() -> Result<BatteryCensus, vize_l0::String> {
     census.rule_fixture_skipped = fixtures.skipped;
     for (name, source) in fixtures.templates {
         tally(&mut census, expect_same(&name, compare_template(&source))?);
+        tally_surface(&mut census, expect_same(&name, compare_surface(&source))?);
         census.rule_fixtures += 1;
     }
     let entries = std::fs::read_dir(matrix_dir())
@@ -419,6 +437,10 @@ pub fn run_battery() -> Result<BatteryCensus, vize_l0::String> {
             &mut census,
             expect_same(&name, compare_template(&template.content))?,
         );
+        tally_surface(
+            &mut census,
+            expect_same(&name, compare_surface(&template.content))?,
+        );
         census.matrix += 1;
     }
     for (name, lang, source) in JSX {
@@ -433,8 +455,9 @@ pub fn run_battery() -> Result<BatteryCensus, vize_l0::String> {
 fn expect_same<T>(name: &str, result: Result<T, super::Divergence>) -> Result<T, vize_l0::String> {
     result.map_err(|divergence| {
         vize_l0::cstr!(
-            "{name}: markup facade diverged at trace line {}\n  relief: {:?}\n  s2:     {:?}",
+            "{name}: markup facade diverged at trace line {}\n  {}: {:?}\n  s2:     {:?}",
             divergence.line,
+            divergence.reference,
             divergence.relief,
             divergence.l2
         )

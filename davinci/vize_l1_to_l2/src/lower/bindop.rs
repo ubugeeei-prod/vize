@@ -18,7 +18,7 @@
 //! lowering emits none either: a bare `@click` is a bare listener, a
 //! bare `v-bind` an empty spread, both kept as authored.
 
-use vize_l0::{Box, String, Vec, cstr};
+use vize_l0::{Allocator, Box, String, Vec, cstr};
 use vize_l1::markup::Attribute;
 
 use vize_l2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
@@ -31,6 +31,44 @@ use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at};
 
 /// The provenance rule of the same-name expansion.
 pub(crate) const RULE_SAME_NAME: &str = "normalize.bind.same-name";
+
+/// What a `v-bind` value position reads.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BindValue<'a> {
+    /// No expression: an authored-blank value, or no value and no static
+    /// argument to expand.
+    None,
+    /// The authored value text.
+    Authored(&'a str),
+    /// The same-name shorthand: the camelized static `arg` as `text`.
+    SameName { text: &'a str, arg: &'a str },
+}
+
+/// The value a `v-bind` binds, from its authored value text and its static
+/// argument. An authored-blank value (`:x=""`) materializes no expression
+/// in the shipped parser (and blocks the same-name expansion, which
+/// requires no value position at all) — mirrored exactly, caught by the
+/// corpus lane on the first run (directus `@contextmenu.stop=""`).
+pub fn bind_value<'a>(
+    allocator: &'a Allocator,
+    value: Option<&'a str>,
+    static_arg: Option<&'a str>,
+) -> BindValue<'a> {
+    match (value, static_arg) {
+        (Some(text), _) if text.trim().is_empty() => BindValue::None,
+        (Some(text), _) => BindValue::Authored(text),
+        (None, Some(arg)) => {
+            let camel = vize_l0::camelize(arg);
+            let text: &'a str = if camel.as_str() == arg {
+                arg
+            } else {
+                allocator.alloc_str(camel.as_str())
+            };
+            BindValue::SameName { text, arg }
+        }
+        (None, None) => BindValue::None,
+    }
+}
 
 /// The op's name position from the directive's argument.
 fn lower_name<'a>(
@@ -73,37 +111,27 @@ pub(crate) fn lower_bind<'a>(
         modifiers.push(modifier);
     }
 
-    let value = match attr_text(attr) {
-        // An authored-blank value (`:x=""`) materializes no expression
-        // in the shipped parser (and blocks the same-name expansion,
-        // which requires no value position at all) — mirrored exactly,
-        // caught by the corpus lane on the first run (directus
-        // `@contextmenu.stop=""`).
-        Some(text) if text.trim().is_empty() => None,
-        Some(text) => Some(filter_expr_at(cx, text)),
-        None => match directive.arg {
-            // Same-name shorthand: static argument, no authored value.
-            // The synthesized text is not a source slice, so the
-            // expression is admitted at the argument's own span.
-            Some(Arg::Static(arg_text)) => {
-                let camel = vize_l0::camelize(arg_text);
-                let text: &'a str = if camel.as_str() == arg_text {
-                    arg_text
-                } else {
-                    cx.allocator.alloc_str(camel.as_str())
-                };
-                let expr = super::expr::expression_in(cx, text, cx.span_of(arg_text));
-                cx.record(
-                    RULE_SAME_NAME,
-                    node,
-                    attr_slice(cx, attr),
-                    || cstr!("{text}"),
-                    span,
-                );
-                Some(expr)
-            }
-            _ => None,
-        },
+    let static_arg = match directive.arg {
+        Some(Arg::Static(text)) => Some(text),
+        _ => None,
+    };
+    let value = match bind_value(cx.allocator, attr_text(attr), static_arg) {
+        BindValue::None => None,
+        BindValue::Authored(text) => Some(filter_expr_at(cx, text)),
+        // Same-name shorthand: static argument, no authored value.
+        // The synthesized text is not a source slice, so the
+        // expression is admitted at the argument's own span.
+        BindValue::SameName { text, arg } => {
+            let expr = super::expr::expression_in(cx, text, cx.span_of(arg));
+            cx.record(
+                RULE_SAME_NAME,
+                node,
+                attr_slice(cx, attr),
+                || cstr!("{text}"),
+                span,
+            );
+            Some(expr)
+        }
     };
 
     // Vue 2's bounded `.sync` subset: static name, a value, the

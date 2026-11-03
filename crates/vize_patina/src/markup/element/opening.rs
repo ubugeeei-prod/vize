@@ -3,6 +3,7 @@
 use super::{MarkupElement, MarkupElementInner};
 use crate::markup::jsx_names::{jsx_attribute_directive_kind, jsx_element_ref};
 use crate::markup::l2::binding::{L2Item, walk_items};
+use crate::markup::l2::surface::SurfaceDirective;
 use crate::markup::{MarkupAttribute, MarkupBinding, MarkupDirective, relief_scopes};
 use oxc_ast::ast::JSXAttributeItem;
 use vize_relief::PropNode;
@@ -12,6 +13,13 @@ impl<'a> MarkupElement<'a> {
     pub fn walk_attributes(&self, visitor: &mut impl FnMut(MarkupAttribute<'a>)) {
         match self.inner {
             MarkupElementInner::Authored {
+                element,
+                doc,
+                frozen,
+                opens_v_pre,
+                ..
+            }
+            | MarkupElementInner::Surface {
                 element,
                 doc,
                 frozen,
@@ -64,11 +72,17 @@ impl<'a> MarkupElement<'a> {
                 doc,
                 frozen,
                 ..
+            }
+            | MarkupElementInner::Surface {
+                element,
+                doc,
+                frozen,
+                ..
             } => {
                 if !frozen {
                     for attr in &element.open.attrs {
-                        if super::super::authored::is_directive(attr) {
-                            visitor(MarkupDirective::from_surface(attr, doc));
+                        if let Some(directive) = super::super::authored::directive(attr) {
+                            visitor(MarkupDirective::from_surface(attr, doc, directive));
                         }
                     }
                 }
@@ -95,10 +109,12 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
                 .walk_l2_items(&mut |item| match item {
                     L2Item::Binding(binding) => visitor(MarkupDirective::from_l2(binding)),
-                    L2Item::Surface { attr, doc } if item.is_directive() => {
-                        visitor(MarkupDirective::from_surface(attr, doc));
+                    L2Item::Surface { attr, doc } => {
+                        if let Some(directive) = SurfaceDirective::parse(attr.name.text) {
+                            visitor(MarkupDirective::from_surface(attr, doc, directive));
+                        }
                     }
-                    L2Item::Attribute { .. } | L2Item::Surface { .. } => {}
+                    L2Item::Attribute { .. } => {}
                 }),
         }
     }
@@ -118,12 +134,22 @@ impl<'a> MarkupElement<'a> {
                 frozen,
                 opens_v_pre,
                 ..
+            }
+            | MarkupElementInner::Surface {
+                element,
+                doc,
+                frozen,
+                opens_v_pre,
+                ..
             } => {
                 for attr in &element.open.attrs {
-                    if !super::super::authored::consumed(attr, frozen, opens_v_pre) {
+                    if let Some(directive) = super::super::authored::kept(attr, frozen, opens_v_pre)
+                    {
                         let name = frozen
                             .then(|| super::super::authored::frozen_name(attr, doc, opens_v_pre));
-                        visitor(MarkupBinding::from_surface(attr, doc, name));
+                        visitor(MarkupBinding::from_surface_spelling(
+                            attr, doc, name, directive,
+                        ));
                     }
                 }
             }
@@ -159,12 +185,15 @@ impl<'a> MarkupElement<'a> {
     pub(in crate::markup) fn walk_l2_items(&self, visitor: &mut impl FnMut(L2Item<'a>)) {
         match self.inner {
             MarkupElementInner::L2 { op, doc, surface } => {
+                let surface = surface.zip(doc.l1);
                 walk_items(doc, op.attributes(), op.bindings(), surface, visitor);
             }
             MarkupElementInner::L2Carrier { element, doc, .. } => {
-                walk_items(doc, &[], &[], Some(element), visitor);
+                let surface = doc.l1.map(|l1| (element, l1));
+                walk_items(doc, &[], &[], surface, visitor);
             }
             MarkupElementInner::Authored { .. }
+            | MarkupElementInner::Surface { .. }
             | MarkupElementInner::Relief(_)
             | MarkupElementInner::JsxElement { .. }
             | MarkupElementInner::JsxFragment { .. } => {}
