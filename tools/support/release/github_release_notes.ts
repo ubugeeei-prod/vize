@@ -5,6 +5,7 @@ import { closeSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync }
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cratePublicationNote } from "./release/crate_publication.ts";
 
 export interface PublishedRelease {
   tag_name: string;
@@ -368,6 +369,12 @@ function main(): void {
       rmSync(directory, { recursive: true, force: true });
     }
   };
+  // Before any API call: an unknown crate decision must not publish ambiguous notes.
+  const crates = cratePublicationNote(
+    tag,
+    process.env.CRATES_PUBLICATION,
+    process.env.CRATES_PUBLICATION_REASON,
+  );
   const result = generateReleaseNotes(api, repository, tag, expectedSha);
   const scope = readFileSync(
     new URL("../../../.github/release-notes/drop-in-scope.md", import.meta.url),
@@ -380,7 +387,7 @@ function main(): void {
     // Credits are cosmetic: never block the GitHub Release on them.
     process.stdout.write(`::warning::Skipped co-author credits: ${String(error)}\n`);
   }
-  const sections = [scope.trim(), result.body.trim(), credits.trim()].filter(Boolean);
+  const sections = [scope.trim(), crates, result.body.trim(), credits.trim()].filter(Boolean);
   writeFileSync(output, `${sections.join("\n\n")}\n`);
   process.stdout.write(`Release notes: ${result.previousTag}...${tag} @ ${expectedSha}\n`);
 }

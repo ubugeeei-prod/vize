@@ -46,17 +46,7 @@ async function github(pathname: string): Promise<unknown> {
     new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)),
   ) as unknown;
 }
-export function rollingQuotaDecision(report: CrateQuotaReport) {
-  if (report.kind === "allowed") return null;
-  return {
-    release: false,
-    reason:
-      report.kind === "unavailable"
-        ? "rolling crate quota could not be established"
-        : `rolling crate publication budget exhausted; next eligible ${report.nextEligibleAt}`,
-  };
-}
-/** Used by cadence, pre-stamp admission, and the fresh post-build publication barrier. */
+/** Used by the pre-stamp forecast, the post-build admission and the pre-write crate guard. */
 export async function releaseQuota(
   version: string,
   publication = false,

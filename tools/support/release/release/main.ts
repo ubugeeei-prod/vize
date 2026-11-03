@@ -7,7 +7,12 @@ import { cadenceDecision, readCadenceInput, releaseRunning } from "./cadence.ts"
 import { publishedCrates } from "../publish_crates/main.ts";
 import { queryCrateVersion, type CrateVersionState } from "../publish_crates/registry.ts";
 import { stampVersion } from "./stamp.ts";
-import { releaseQuota, rollingQuotaDecision } from "./quota_entry.ts";
+import { releaseQuota } from "./quota_entry.ts";
+import {
+  cratePublicationDecision,
+  quotaCommandStatus,
+  recordCratePublication,
+} from "./crate_publication.ts";
 import {
   highestReleaseVersion,
   isUnclaimedVersion,
@@ -21,8 +26,8 @@ const USAGE = `Usage:
   main.ts stamp <version>    stamp <version> into the working tree
   main.ts cut [version]      CI only: stamp, commit and push a release candidate ref
   main.ts cadence            CI only: decide whether a scheduled run releases
-  main.ts quota <version>    CI only: fresh publication admission
-  main.ts quota-prepare <version> CI only: refuse a cut without fresh admission
+  main.ts quota <version>    CI only: refuse a crate write without fresh admission
+  main.ts quota-publication <version> CI only: fresh admission; publish or defer crates
   main.ts quota-dry-run <version> CI only: read public quota without publishing
 `;
 
@@ -175,13 +180,12 @@ export const candidateRef = (source: string) => `refs/release-candidates/${sourc
 /**
  * Stamps and commits the release version and pushes the commit to a candidate
  * ref. The tag is only pushed once every artifact is built, so a failed build
- * burns no version and the next run retries the same number.
+ * burns no version and the next run retries the same number. The crate quota
+ * never refuses a cut: a refused budget defers only crates.io (npm-first).
  */
 async function cut(current: string, requested: string | undefined): Promise<number> {
   const version = await resolveVersion(current, requested);
   if (version === null) return 1;
-  const quotaDecision = rollingQuotaDecision(await releaseQuota(version));
-  if (quotaDecision !== null) return fail(quotaDecision.reason + "\n");
   const tag = `v${version}`;
   const source = (await collectStdout("git", ["rev-parse", "HEAD"])).stdout.trim();
   const ref = candidateRef(source);
@@ -247,10 +251,8 @@ async function cadence(): Promise<number> {
       { release: false, reason: "next release version unavailable" },
       input.greenSha,
     );
-  const quotaDecision = rollingQuotaDecision(
-    await releaseQuota(version, false, input.greenSha ?? undefined),
-  );
-  return finishCadence(quotaDecision ?? decision, input.greenSha);
+  // The crate quota never holds a release: the Release run defers crates.io alone.
+  return finishCadence(decision, input.greenSha);
 }
 
 export async function release(args: readonly string[]): Promise<number> {
@@ -268,17 +270,13 @@ export async function release(args: readonly string[]): Promise<number> {
     case "cadence":
       return cadence();
     case "quota":
-    case "quota-dry-run":
-    case "quota-prepare": {
+    case "quota-publication":
+    case "quota-dry-run": {
       if (nonEmptyEnv("GITHUB_ACTIONS") !== "true" || value === undefined) return fail(USAGE);
-      const report = await releaseQuota(value, command === "quota");
-      return command === "quota-dry-run"
-        ? report.kind === "unavailable"
-          ? 1
-          : 0
-        : report.kind === "allowed"
-          ? 0
-          : 1;
+      const report = await releaseQuota(value, command !== "quota-dry-run");
+      if (command === "quota-publication")
+        recordCratePublication(value, cratePublicationDecision(report));
+      return quotaCommandStatus(command, report.kind);
     }
     case "stamp":
       if (value === undefined) return fail(USAGE);

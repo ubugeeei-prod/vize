@@ -20,6 +20,7 @@ import {
   publishedIntegrationIdentity,
   publishedIntegrationFixture,
   unprovedIntegrationMutations,
+  writeFakeGh,
 } from "./release-notes-fixtures.ts";
 
 type Job = {
@@ -343,16 +344,12 @@ test("the real command preserves generated notes and evergreen scope and refuses
         },
       ],
     };
-    const gh = join(root, "gh");
-    writeFileSync(
-      gh,
-      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(process.argv[3] === 'graphql' ? ${JSON.stringify(metadataPage([release("v0.458.0"), release("v0.457.0")]))} : body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
-      { mode: 0o755 },
-    );
+    writeFakeGh(root, generated, commits);
     const thanks = "## Thanks\n\nReported and co-authored by @reporter (#1).\n";
     const output = join(root, "notes.md");
     const env = {
       ...process.env,
+      CRATES_PUBLICATION: "publish",
       GITHUB_REPOSITORY: "owner/repo",
       PATH: `${root}:${process.env.PATH ?? ""}`,
     };

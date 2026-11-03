@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { PublishedRelease } from "../../../tools/support/release/github_release_notes.ts";
 
 const repository = "owner/repo";
@@ -38,6 +40,16 @@ export const metadataPage = (
     },
   },
 });
+
+/** A `gh` on PATH that logs every call to api.jsonl and answers the notes command's reads. */
+export function writeFakeGh(root: string, generated: string, commits: unknown): void {
+  const releases = [release("v0.458.0"), release("v0.457.0")];
+  writeFileSync(
+    join(root, "gh"),
+    `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(process.argv[3] === 'graphql' ? ${JSON.stringify(metadataPage(releases))} : body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify(releases)}));\n`,
+    { mode: 0o755 },
+  );
+}
 
 export const publishedIntegrationFixture = () => ({
   reference: { ref: `refs/tags/${tag}`, object: { type: "tag", sha: object } },
