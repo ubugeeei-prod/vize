@@ -87,12 +87,25 @@ test("the component-export population names the type and maps the export to the 
       packet.label,
     );
     // Mappings: one navigation-target row maps the exported name to the SFC's start.
-    const name = Buffer.from(current.text).indexOf("declare const Globals: typeof __vize_component__;");
-    const added: Row = [name + "declare const ".length, "Globals".length, 0, 0, 1, NAVIGATION_TARGET];
-    assert.ok(old.mappings.every((row) => row[0] + row[1] <= Buffer.byteLength(old.text.slice(0, at))));
+    const name = Buffer.from(current.text).indexOf(
+      "declare const Globals: typeof __vize_component__;",
+    );
+    const added: Row = [
+      name + "declare const ".length,
+      "Globals".length,
+      0,
+      0,
+      1,
+      NAVIGATION_TARGET,
+    ];
+    assert.ok(
+      old.mappings.every((row) => row[0] + row[1] <= Buffer.byteLength(old.text.slice(0, at))),
+    );
     assert.deepEqual(current.mappings, [...old.mappings, added], packet.label);
     // Directives: explicit rows stay; ignores follow the one newly mapped name.
-    const explicit = (current.diagnosticDirectives?.directives ?? []).filter((row) => !isIgnore(row));
+    const explicit = (current.diagnosticDirectives?.directives ?? []).filter(
+      (row) => !isIgnore(row),
+    );
     assert.deepEqual(
       explicit,
       (old.diagnosticDirectives?.directives ?? []).filter((row) => !isIgnore(row)),
