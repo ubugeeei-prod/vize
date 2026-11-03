@@ -96,7 +96,7 @@ fn every_check_option_changes_the_mapper_projection() {
             ignored.push(key);
         }
     }
-    assert!(ignored.is_empty(), "the mapper ignores {ignored:?}");
+    assert_eq!(ignored, Vec::<&str>::new(), "options the mapper ignores");
 }
 
 #[test]

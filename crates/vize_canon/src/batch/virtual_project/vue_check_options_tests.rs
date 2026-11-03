@@ -67,25 +67,23 @@ fn check_options_are_read_only_by_the_shared_resolver() {
         "content_mapper_config.rs",
     ] {
         let source = read(host);
-        for key in CHECK_OPTION_KEYS {
-            assert!(
-                !source.contains(&*vize_carton::cstr!("\"{key}\"")),
-                "{host} reads {key} outside vue_check_options::resolve"
-            );
-        }
+        let leaked: Vec<&str> = CHECK_OPTION_KEYS
+            .into_iter()
+            .filter(|key| source.contains(&*vize_carton::cstr!("\"{key}\"")))
+            .collect();
+        assert_eq!(
+            leaked,
+            Vec::<&str>::new(),
+            "{host} reads check keys outside vue_check_options::resolve"
+        );
     }
     let resolver = read("vue_check_options.rs");
     let body = resolver.split_once("pub(super) fn resolve(").unwrap().1;
-    for read_key in body.split('"').skip(1).step_by(2) {
-        assert!(
-            CHECK_OPTION_KEYS.contains(&read_key),
-            "vue_check_options::resolve reads unlisted {read_key}"
-        );
-    }
-    for key in CHECK_OPTION_KEYS {
-        assert!(
-            body.contains(&*vize_carton::cstr!("\"{key}\"")),
-            "{key} is listed but never read"
-        );
-    }
+    // Every quoted literal in the resolver body is a key it reads.
+    let mut reads: Vec<&str> = body.split('"').skip(1).step_by(2).collect();
+    reads.sort_unstable();
+    reads.dedup();
+    let mut listed = CHECK_OPTION_KEYS.to_vec();
+    listed.sort_unstable();
+    assert_eq!(reads, listed, "resolve reads exactly the listed keys");
 }
