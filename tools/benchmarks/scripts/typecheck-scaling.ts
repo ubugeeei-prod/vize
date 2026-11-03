@@ -202,13 +202,14 @@ function runOnce(
       const scripts = existsSync(assets)
         ? readdirSync(assets).filter((file) => file.endsWith(".js"))
         : [];
+      // A client build with no SSR still ships the node-server entry, and every route is its own chunk.
       if (
         run.output.status !== 0 ||
-        !existsSync(join(cwd, ".output", "public", "index.html")) ||
-        scripts.length === 0
+        !existsSync(join(cwd, ".output", "server", "index.mjs")) ||
+        scripts.length < corpus.features
       ) {
         throw new Error(
-          `nuxt build exited ${run.output.status} with ${scripts.length} client scripts\n${run.output.stderr.slice(-3000)}`,
+          `nuxt build exited ${run.output.status} with ${scripts.length} client scripts for ${corpus.features} routes\n${run.output.stderr.slice(-3000)}`,
         );
       }
       return {
