@@ -172,11 +172,17 @@ fn combined_reserved_rewrites_map_both_keys_to_authored_bytes() {
             );
         }
         for receiver_start in [7, 26] {
-            assert!(mappings.iter().all(|mapping| {
-                !mapping
-                    .gen_range
-                    .contains(&(generated_start + receiver_start + extra_byte))
-            }));
+            let mapped_rows = mappings
+                .iter()
+                .enumerate()
+                .filter_map(|(index, mapping)| {
+                    mapping
+                        .gen_range
+                        .contains(&(generated_start + receiver_start + extra_byte))
+                        .then_some(index)
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(mapped_rows, Vec::<usize>::new());
         }
         let mut diagnostics = Vec::new();
         bindings.append_instance_diagnostic_prefixes(&mut diagnostics);
