@@ -446,10 +446,10 @@ test("the unmapped-ignore population changes only directive tables", () => {
   type Row = [number, number, number, number, number, number];
   for (const [index, packet] of golden.packets.entries()) {
     const old = previous.packets[index]!.result;
-    const { diagnosticDirectives: current, ...rest } = packet.result as {
+    const { diagnosticDirectives: current, ...rest } = packet.result as unknown as {
       diagnosticDirectives: { directives: Row[] };
     } & Record<string, unknown>;
-    const { diagnosticDirectives: before, ...oldRest } = old as {
+    const { diagnosticDirectives: before, ...oldRest } = old as unknown as {
       diagnosticDirectives?: { directives: Row[] };
     } & Record<string, unknown>;
     assert.equal(JSON.stringify(rest), JSON.stringify(oldRest), packet.label);
