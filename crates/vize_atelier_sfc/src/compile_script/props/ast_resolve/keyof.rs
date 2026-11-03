@@ -13,15 +13,23 @@ pub(super) fn runtime_type(
     interfaces: Option<&FxHashMap<String, String>>,
     type_aliases: Option<&FxHashMap<String, String>>,
 ) -> String {
-    if let TSType::TSTypeReference(type_ref) = operand
-        && let Some(name) = simple_type_name(&type_ref.type_name)
-        && !interfaces.is_some_and(|interfaces| interfaces.contains_key(name))
-        && !type_aliases.is_some_and(|aliases| aliases.contains_key(name))
-        && !is_builtin_operand(name)
-    {
-        return "null".to_compact_string();
+    match operand {
+        TSType::TSParenthesizedType(paren) => {
+            runtime_type(&paren.type_annotation, interfaces, type_aliases)
+        }
+        // A qualified name (`Types.External`) is never a local declaration.
+        TSType::TSTypeReference(type_ref) => match simple_type_name(&type_ref.type_name) {
+            Some(name)
+                if interfaces.is_some_and(|interfaces| interfaces.contains_key(name))
+                    || type_aliases.is_some_and(|aliases| aliases.contains_key(name))
+                    || is_builtin_operand(name) =>
+            {
+                "String".to_compact_string()
+            }
+            _ => "null".to_compact_string(),
+        },
+        _ => "String".to_compact_string(),
     }
-    "String".to_compact_string()
 }
 
 /// Built-ins Vue's `inferRuntimeType` resolves under `keyof`.
