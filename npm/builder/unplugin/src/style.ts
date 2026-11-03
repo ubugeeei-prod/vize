@@ -64,6 +64,11 @@ const CSS_MODULE_LOCALS_HELPER = `const ${CSS_MODULE_LOCALS} = (ns) =>
     ? ns.default
     : Object.fromEntries(Object.entries(ns).filter(([key]) => key !== "default")));`;
 
+/** Only an external `<style src>` is left uninlined; it stays an import of that module. */
+function externalStyleImport(src: string): string {
+  return `import ${JSON.stringify(src)};`;
+}
+
 export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
@@ -111,6 +116,10 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     const cssModuleImports: string[] = [];
 
     for (const block of compiled.styles) {
+      if (block.src) {
+        styleImports.push(externalStyleImport(block.src));
+        continue;
+      }
       const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
       const styleFile = styleRequest?.(block, scoped);
       const styleId = styleFile ?? styleRequestId(filePath, block, scoped, hostCss);
@@ -162,6 +171,10 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     if (compiled.css) {
       output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
     }
+    const imports = compiled.styles.flatMap((block) =>
+      block.src ? [externalStyleImport(block.src)] : [],
+    );
+    if (imports.length > 0) output = `${imports.join("\n")}\n${output}`;
   }
 
   if (!isProduction && isDev && hasExportDefault && supportsTemplateOnlyHmr(output)) {

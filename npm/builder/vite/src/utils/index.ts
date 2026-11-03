@@ -244,7 +244,15 @@ export function generateOutputWithMap(
       if (block.scoped) params.set("scoped", `data-v-${compiled.scopeId}`);
       params.set("lang", lang);
 
-      if (customElement) {
+      if (block.external) {
+        // An external `<style src>` stays an import of that module.
+        if (customElement) {
+          throw new Error(
+            `<style src="${block.src}"> resolved to an external module, so it cannot be inlined into a custom element`,
+          );
+        }
+        styleImports.push(`import ${JSON.stringify(block.src)};`);
+      } else if (customElement) {
         if (isCssModule(block)) {
           throw new Error("<style module> is not supported in custom element mode");
         }

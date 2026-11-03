@@ -17,7 +17,7 @@ import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
-import { prepareSfcSrcRequests, viteHostResolve } from "./src-requests.ts";
+import { prepareSfcSrcRequests } from "./src-requests.ts";
 import { oxContentModuleToSfc } from "./markdown.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
@@ -187,9 +187,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
           const extractCss = shouldExtractCssForRequest(state, isSsr);
           await prepareSfcSrcRequests(
             state,
-            viteHostResolve((request, importer) =>
-              this.resolve(request, importer, { skipSelf: true }),
-            ),
+            (request, importer) => this.resolve(request, importer, { skipSelf: true }),
             id,
             source,
           );

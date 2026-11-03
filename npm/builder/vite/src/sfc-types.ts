@@ -43,6 +43,8 @@ export interface NativeStyleBlockInfo {
   content: string;
   /** External source path from `<style src>`, when present */
   src?: string | null;
+  /** `src` is a module the bundler keeps external, imported as is */
+  external?: boolean;
   /** Language of the style block (e.g., "css", "scss", "less", "sass", "stylus") */
   lang?: string | null;
   /** Whether the style block has the scoped attribute */

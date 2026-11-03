@@ -1,24 +1,13 @@
 import fs from "node:fs";
 import { classifyVitePluginRequest, parseSfc } from "@vizejs/native";
-import { listSfcSrcRequests, resolveSfcSrcRequests } from "../../../shared/sfc-src.ts";
+import {
+  listSfcSrcRequests,
+  resolveSfcSrcRequests,
+  type HostResolve,
+} from "../../../shared/sfc-src.ts";
 import { fromPluginVisibleVirtualId } from "../virtual.ts";
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import type { VizePluginState } from "./state.ts";
-
-export type HostResolve = (request: string, importer: string) => Promise<string | null | undefined>;
-
-type ResolvedIdLike = { id: string; external?: boolean | string } | null | undefined;
-
-/** Vite's own resolver (aliases, packages, every `resolveId` plugin). */
-export function viteHostResolve(
-  resolve: (request: string, importer: string) => Promise<ResolvedIdLike>,
-): HostResolve {
-  return async (request, importer) => {
-    const result = await resolve(request, importer);
-    // An external module is not bundled, so there is no file to inline.
-    return result && !result.external ? result.id : null;
-  };
-}
 
 /**
  * Resolve one SFC's `src` module requests before the synchronous compile reads

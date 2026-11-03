@@ -1,7 +1,13 @@
 // What the host bundler offers the plugin: its CSS pipeline and its resolver.
 import path from "node:path";
 import { parseSfc } from "@vizejs/native";
-import { listSfcSrcRequests, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
+import {
+  listSfcSrcRequests,
+  resolveSfcSrcRequests,
+  type HostResolution,
+  type HostResolve,
+  type SfcSrcResolution,
+} from "../../shared/sfc-src.ts";
 import { isVueStyleRequest } from "./request.ts";
 import type { HostCss } from "./types.ts";
 
@@ -40,12 +46,11 @@ export function isStylePipelineError(error: HostBuildError): boolean {
   );
 }
 
-type HostResolve = (request: string, importer: string) => Promise<string | null | undefined>;
 type RollupLikeResolve = (
   source: string,
   importer: string,
   options: { skipSelf: boolean },
-) => Promise<{ id: string; external?: boolean | string } | null | undefined>;
+) => Promise<HostResolution>;
 type LoaderResolve = (context: string, request: string) => Promise<string>;
 type EsbuildResolve = (
   path: string,
@@ -57,11 +62,7 @@ function hostResolver(context: unknown): HostResolve | null {
   const ctx = context as { resolve?: RollupLikeResolve; getNativeBuildContext?: () => unknown };
   if (typeof ctx.resolve === "function") {
     const resolve = ctx.resolve;
-    return async (request, importer) => {
-      const result = await resolve.call(context, request, importer, { skipSelf: true });
-      // An external module is not bundled, so there is no file to inline.
-      return result && !result.external ? result.id : null;
-    };
+    return (request, importer) => resolve.call(context, request, importer, { skipSelf: true });
   }
   const native = ctx.getNativeBuildContext?.() as
     | { framework: string; loaderContext?: { getResolve: () => LoaderResolve } }
@@ -69,7 +70,11 @@ function hostResolver(context: unknown): HostResolve | null {
     | undefined;
   if (native && "loaderContext" in native && native.loaderContext) {
     const resolve = native.loaderContext.getResolve();
-    return (request, importer) => resolve(path.dirname(importer), request).catch(() => null);
+    return (request, importer) =>
+      resolve(path.dirname(importer), request).then(
+        (id) => ({ id }),
+        () => null,
+      );
   }
   if (native && "build" in native) {
     const { build } = native;
@@ -79,7 +84,7 @@ function hostResolver(context: unknown): HostResolve | null {
         resolveDir: path.dirname(importer),
         importer,
       });
-      return result.errors.length > 0 || result.external ? null : result.path;
+      return result.errors.length > 0 ? null : { id: result.path, external: result.external };
     };
   }
   return null;
@@ -90,7 +95,7 @@ export async function resolveSrcRequests(
   context: unknown,
   importer: string,
   source: string,
-): Promise<Map<string, string> | undefined> {
+): Promise<Map<string, SfcSrcResolution> | undefined> {
   const requests = listSfcSrcRequests(parseSfc, importer, source);
   const resolve = requests.length > 0 ? hostResolver(context) : null;
   return resolve ? resolveSfcSrcRequests(importer, requests, resolve) : undefined;

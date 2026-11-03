@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import * as native from "@vizejs/native";
 import { prependMappedJsxCode } from "../../shared/source-map.ts";
-import { inlineSfcSrcBlocks } from "../../shared/sfc-src.ts";
+import {
+  assertSfcStyleSrcImports,
+  inlineSfcSrcBlocks,
+  type InlinedSfcSource,
+} from "../../shared/sfc-src.ts";
 import type {
   CompiledModule,
   BatchFileInput,
@@ -43,16 +47,18 @@ export function formatCompileErrorMessage(
 
 function normalizeStyleBlocks(
   styles: NativeStyleBlockInfo[] | undefined,
-  styleSrcs: ReadonlyMap<number, string> | undefined,
+  inlined: InlinedSfcSource | undefined,
 ): StyleBlockInfo[] {
   if (!styles) {
     return [];
   }
 
-  // An inlined `<style src>` block keeps the file it came from (#11522).
+  // An inlined `<style src>` block keeps the file it came from (#11522), and an
+  // external one its request, for the output to import (#11494).
   return styles.map((block) => ({
     content: block.content,
-    src: styleSrcs?.get(block.index) ?? block.src ?? null,
+    src: inlined?.styleSrcs.get(block.index) ?? block.src ?? null,
+    ...(block.src != null && inlined?.imports.includes(block.src) ? { external: true } : {}),
     lang: block.lang ?? null,
     scoped: block.scoped,
     module: block.module ? (block.moduleName ?? true) : false,
@@ -81,6 +87,7 @@ export function compileFile(
   if (result.errors.length > 0) {
     throw new VizeSfcCompileError(filePath, result.errors);
   }
+  assertSfcStyleSrcImports(filePath, result.styles ?? [], resolved.imports);
 
   if (result.warnings.length > 0 && (diagnostics?.logWarnings ?? true)) {
     result.warnings.forEach((warning) => {
@@ -101,7 +108,7 @@ export function compileFile(
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
-    styles: normalizeStyleBlocks(result.styles, resolved.styleSrcs),
+    styles: normalizeStyleBlocks(result.styles, resolved),
     // `src` blocks, then what the compile itself read (pug includes).
     dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
   };
@@ -190,8 +197,7 @@ export function compileBatch(
   cache: Map<string, CompiledModule>,
   options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
-  const dependenciesByPath = new Map<string, string[]>();
-  const styleSrcsByPath = new Map<string, Map<number, string>>();
+  const inlinedByPath = new Map<string, InlinedSfcSource>();
   const resolvedFiles = files.map((file) => {
     const resolved = inlineSfcSrcBlocks(
       native.parseSfc,
@@ -199,8 +205,7 @@ export function compileBatch(
       file.source,
       options.srcResolutions?.get(file.path),
     );
-    dependenciesByPath.set(file.path, resolved.dependencies);
-    styleSrcsByPath.set(file.path, resolved.styleSrcs);
+    inlinedByPath.set(file.path, resolved);
     return {
       path: file.path,
       source: resolved.source,
@@ -249,6 +254,12 @@ export function compileBatch(
     delete fileResult.moduleShape;
   }
 
+  for (const fileResult of result.results) {
+    if (fileResult.errors.length > 0) continue;
+    const imports = inlinedByPath.get(fileResult.path)?.imports;
+    assertSfcStyleSrcImports(fileResult.path, fileResult.styles ?? [], imports);
+  }
+
   // Update cache with results
   for (const fileResult of result.results) {
     if (fileResult.errors.length === 0) {
@@ -262,9 +273,9 @@ export function compileBatch(
         styleHash: fileResult.styleHash,
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
-        styles: normalizeStyleBlocks(fileResult.styles, styleSrcsByPath.get(fileResult.path)),
+        styles: normalizeStyleBlocks(fileResult.styles, inlinedByPath.get(fileResult.path)),
         dependencies: [
-          ...(dependenciesByPath.get(fileResult.path) ?? []),
+          ...(inlinedByPath.get(fileResult.path)?.dependencies ?? []),
           ...(fileResult.dependencies ?? []),
         ],
       });

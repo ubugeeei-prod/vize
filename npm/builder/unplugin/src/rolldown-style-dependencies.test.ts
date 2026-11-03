@@ -71,6 +71,10 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS 
     /** `foo.css` moved to a package or an aliased directory (#11482). */
     cssAt?: string;
     alias?: boolean;
+    /** Listed in `dependencies`, which tsdown keeps external (#11494). */
+    external?: string;
+    /** The import the output keeps of the external module. */
+    externalImport?: RegExp;
   }> = [
     {
       id: "original-src",
@@ -103,6 +107,37 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS 
       scoped: true,
       cssAt: "styles/foo.css",
       alias: true,
+    },
+    {
+      id: "internal-package-plain-src",
+      source: replaceStyle('<style src="fake-css/foo.css"></style>'),
+      expectedError: null,
+      scoped: false,
+      cssAt: "node_modules/fake-css/foo.css",
+    },
+    {
+      id: "external-package-src",
+      source: replaceStyle('<style src="fake-css/foo.css"></style>'),
+      expectedError: null,
+      cssAt: "node_modules/fake-css/foo.css",
+      external: "fake-css",
+      externalImport: /import "fake-css\/foo\.css";/,
+    },
+    {
+      id: "external-package-script-src",
+      source: `<script src="fake-css/foo.js"></script>\n${replaceStyle("")}`,
+      expectedError: null,
+      cssAt: "node_modules/fake-css/foo.css",
+      external: "fake-css",
+      externalImport: /import \w+ from "fake-css\/foo\.js";/,
+    },
+    {
+      id: "external-package-scoped-src",
+      source: replaceStyle('<style scoped src="fake-css/foo.css"></style>'),
+      expectedError:
+        /<style scoped src="fake-css\/foo\.css"> resolved to an external module; a scoped style needs its contents/,
+      cssAt: "node_modules/fake-css/foo.css",
+      external: "fake-css",
     },
     {
       id: "missing-package-src",
@@ -144,6 +179,11 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS 
         fs.writeFileSync(target, file.content);
       }
       fs.writeFileSync(path.join(cwd, "src/Foo.vue"), item.source);
+      if (item.external) {
+        const manifest = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8"));
+        manifest.dependencies = { [item.external]: "*" };
+        fs.writeFileSync(path.join(cwd, "package.json"), JSON.stringify(manifest));
+      }
       if (item.cssAt) {
         fs.mkdirSync(path.dirname(path.join(cwd, item.cssAt)), { recursive: true });
         fs.renameSync(path.join(cwd, "src/foo.css"), path.join(cwd, item.cssAt));
@@ -189,6 +229,13 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS 
       if (actual.expectedError) {
         assert.notEqual(actual.status, 0, actual.id);
         assert.match(`${actual.stdout}${actual.stderr}`, actual.expectedError, actual.id);
+      } else if (actual.external) {
+        // Kept as an import of the external stylesheet, as @vitejs/plugin-vue does.
+        assert.equal(actual.status, 0, actual.stderr);
+        const emitted = actual.output.map((file) => file.content).join("\n");
+        assert.ok(actual.externalImport, actual.id);
+        assert.match(emitted, actual.externalImport, actual.id);
+        assert.doesNotMatch(emitted, /color:\s*red/, actual.id);
       } else {
         assert.equal(actual.status, 0, actual.stderr);
         // The host's CSS pipeline writes the stylesheet; nothing is injected.

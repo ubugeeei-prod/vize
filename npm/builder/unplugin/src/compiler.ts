@@ -12,8 +12,11 @@ import type {
   StyleBlockInfo,
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
-import { assertInlinedStyleSrc } from "./style-dependencies.ts";
-import { inlineSfcSrcBlocks, type SfcSrcResolutions } from "../../shared/sfc-src.ts";
+import {
+  assertSfcStyleSrcImports,
+  inlineSfcSrcBlocks,
+  type SfcSrcResolutions,
+} from "../../shared/sfc-src.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -55,12 +58,11 @@ export function compileVueModule(
   srcResolutions?: SfcSrcResolutions,
 ): { compiled: CompiledModule; warnings: string[]; dependencies: string[] } {
   // Hash the inlined source so an edited `src` file invalidates the cache.
-  const { source: inlined, dependencies } = inlineSfcSrcBlocks(
-    native.parseSfc,
-    filePath,
-    source,
-    srcResolutions,
-  );
+  const {
+    source: inlined,
+    dependencies,
+    imports,
+  } = inlineSfcSrcBlocks(native.parseSfc, filePath, source, srcResolutions);
   const sourceHash = buildSourceHash(inlined);
   const signature = buildSignature(options);
   const cached = cache.get(filePath);
@@ -99,7 +101,7 @@ export function compileVueModule(
     throw new Error(result.errors.join("\n"));
   }
 
-  assertInlinedStyleSrc(result.styles, filePath);
+  assertSfcStyleSrcImports(filePath, result.styles, imports);
 
   const compiled: CompiledModule = {
     code: result.code,
