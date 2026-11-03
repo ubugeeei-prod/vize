@@ -215,6 +215,39 @@ fn registered_import_need_is_exact_and_removed_on_replacement_or_delete() {
 }
 
 #[test]
+fn normalized_typescript_before_route_call_keeps_page_specialization() {
+    for identifier in ["useRoute", r"useR\u006fute"] {
+        for newline in ["\n", "\r\n"] {
+            let (_root, mut project) = fixture_project(
+                r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+            );
+            let path = project.project_root.join("Probe.vue");
+            let source = format!("<script setup lang=\"ts\">\nimport {{ {identifier} }} from 'vue-router';\n// 日本 😀\nconst identity = <T>(value: T) => value; const asserted = <number>1; const route = {identifier}(); const typedId: number = route.params.userId;\n</script>").replace('\n', newline);
+            project.register_vue_file(&path, &source).unwrap();
+            let file = project.find_by_original(&path).unwrap();
+            assert!(file.content.contains("const identity = <T,>"));
+            assert!(
+                file.content.contains(&format!("{identifier}<import('vue-router/auto-routes')._RouteNamesForFilePath<\"Probe.vue\">>()")),
+                "normalized setup must retain the configured route call: {}",
+                file.content,
+            );
+            let generated = file.content.find("const typedId").unwrap() + "const ".len();
+            let authored = source.find("const typedId").unwrap() + "const ".len();
+            for delta in [0, "typedId".len()] {
+                assert_eq!(
+                    file.source_map
+                        .get_original_position((generated + delta) as u32)
+                        .unwrap()
+                        .0,
+                    (authored + delta) as u32,
+                    "following diagnostic endpoints keep their authored bytes",
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn disabled_and_configured_but_unused_files_remain_byte_exact() {
     let (_left_root, mut left) = fixture_project("{}");
     let (_right_root, mut right) = fixture_project(

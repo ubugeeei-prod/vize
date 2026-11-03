@@ -190,7 +190,9 @@ pub(super) fn apply(
         let Some(end) = start.checked_add(authored.len()) else {
             continue;
         };
-        if output.code.get(start..end) != Some(authored) {
+        if output.code.get(start..end) != Some(authored)
+            || !owned_header(&output.mapping, physical, start, authored)
+        {
             continue;
         }
         let mut proposed = Vec::new();
@@ -393,8 +395,15 @@ fn mapped_token(mapping: &ProjectionMapping, authored: usize, token: Span) -> Op
             candidates.push(at..at.checked_add(source.len())?);
         }
         for sub in &row.sub_spans {
-            if sub.src_range == source && sub.gen_range.len() == source.len() {
-                candidates.push(sub.gen_range.clone());
+            if sub.gen_range.len() == sub.src_range.len()
+                && source.start >= sub.src_range.start
+                && source.end <= sub.src_range.end
+            {
+                let at = sub
+                    .gen_range
+                    .start
+                    .checked_add(source.start - sub.src_range.start)?;
+                candidates.push(at..at.checked_add(source.len())?);
             }
         }
     }
@@ -410,13 +419,73 @@ fn mapped_token(mapping: &ProjectionMapping, authored: usize, token: Span) -> Op
 fn safe_insertion(mapping: &ProjectionMapping, at: usize) -> bool {
     mapping.spans().iter().all(|row| {
         if row.gen_range.start < at && at < row.gen_range.end {
-            row.sub_spans.is_empty() && row.gen_range.len() == row.src_range.len()
+            if row.sub_spans.is_empty() {
+                row.gen_range.len() == row.src_range.len()
+            } else {
+                row.sub_spans.iter().any(|sub| {
+                    sub.gen_range.start <= at
+                        && at < sub.gen_range.end
+                        && sub.gen_range.len() == sub.src_range.len()
+                }) && row.sub_spans.iter().all(|sub| {
+                    !(sub.gen_range.start < at && at < sub.gen_range.end)
+                        || sub.gen_range.len() == sub.src_range.len()
+                })
+            }
         } else {
             row.sub_spans
                 .iter()
                 .all(|sub| !(sub.gen_range.start < at && at < sub.gen_range.end))
         }
     })
+}
+
+fn owned_header(
+    mapping: &ProjectionMapping,
+    authored_start: usize,
+    generated_start: usize,
+    source: &str,
+) -> bool {
+    let Some(start) = authored_start.checked_sub(mapping.authored_base()) else {
+        return false;
+    };
+    let end = start + source.len();
+    let mut owned = Vec::new();
+    let mut include = |authored: &Range<usize>, generated: &Range<usize>| {
+        let left = authored.start.max(start);
+        let right = authored.end.min(end);
+        if left < right
+            && authored.len() == generated.len()
+            && generated.start + left - authored.start == generated_start + left - start
+        {
+            owned.push(left - start..right - start);
+        }
+    };
+    for row in mapping.spans() {
+        if row.sub_spans.is_empty() {
+            include(&row.src_range, &row.gen_range);
+        } else {
+            for sub in &row.sub_spans {
+                include(&sub.src_range, &sub.gen_range);
+            }
+        }
+    }
+    owned.sort_by_key(|range| range.start);
+    let mut cursor = 0;
+    for range in owned {
+        if range.start > cursor
+            && !source
+                .get(cursor..range.start)
+                .is_some_and(|text| text.chars().all(char::is_whitespace))
+        {
+            return false;
+        }
+        cursor = cursor.max(range.end);
+    }
+    // Setup emission owns each copied line; its generated indentation and
+    // separators have no authored spans. Syntax still needs exact ownership.
+    source
+        .get(cursor..)
+        .is_some_and(|text| text.chars().all(char::is_whitespace))
 }
 
 #[cfg(test)]
