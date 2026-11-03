@@ -118,3 +118,65 @@ export function hasCompleteHostMatrix(
     isKnownHostRoster(additionalHostIds)
   );
 }
+
+export type DirectiveRow = [number, number, number, number, number, number];
+
+/**
+ * The rows `unmapped_ignores.rs` adds: unmapped gaps minus explicit intervals.
+ * With `parentheses` (#11657) a gap ends before a run of `(` opening a span.
+ */
+export function unmappedIgnoreRows(
+  result: { text: string; mappings: number[][] },
+  explicit: readonly DirectiveRow[],
+  parentheses: boolean,
+): DirectiveRow[] {
+  const text = Buffer.from(result.text);
+  const mapped = result.mappings
+    .filter((mapping) => mapping[1]! > 0)
+    .map((mapping) => [mapping[0]!, mapping[0]! + mapping[1]!] as const)
+    .sort((left, right) => left[0] - right[0]);
+  const gaps: Array<[number, number]> = [];
+  let cursor = 0;
+  for (const [start, end] of mapped) {
+    let gapEnd = start;
+    for (let at = start; parentheses && at > cursor; at -= 1) {
+      if (text[at - 1] === 0x28) gapEnd = at - 1;
+      else if (![0x20, 0x09, 0x0a, 0x0c, 0x0d].includes(text[at - 1]!)) break;
+    }
+    if (cursor < gapEnd) gaps.push([cursor, gapEnd]);
+    cursor = Math.max(cursor, end);
+  }
+  if (cursor < text.length) gaps.push([cursor, text.length]);
+  const covered = explicit
+    .filter((row) => row[2] < row[3])
+    .map((row) => [row[2], row[3]] as const)
+    .sort((left, right) => left[0] - right[0]);
+  const rows: DirectiveRow[] = [];
+  for (const [gapStart, gapEnd] of gaps) {
+    let start = gapStart;
+    for (const [coverStart, coverEnd] of covered) {
+      if (coverEnd <= start || coverStart >= gapEnd) continue;
+      if (start < coverStart) rows.push([0, 0, start, coverStart, 0, 0]);
+      start = Math.max(start, coverEnd);
+    }
+    if (start < gapEnd) rows.push([0, 0, start, gapEnd, 0, 0]);
+  }
+  return rows;
+}
+
+/** Maximal byte ranges the `before` ignore rows cover and the `after` rows do not. */
+export function releasedRanges(
+  before: readonly DirectiveRow[],
+  after: readonly DirectiveRow[],
+): Array<[number, number]> {
+  const bytes = (rows: readonly DirectiveRow[]) =>
+    new Set(rows.flatMap((row) => Array.from({ length: row[3] - row[2] }, (_, i) => row[2] + i)));
+  const kept = bytes(after);
+  const ranges: Array<[number, number]> = [];
+  for (const byte of [...bytes(before)].filter((byte) => !kept.has(byte)).sort((a, b) => a - b)) {
+    const last = ranges.at(-1);
+    if (last?.[1] === byte) last[1] = byte + 1;
+    else ranges.push([byte, byte + 1]);
+  }
+  return ranges;
+}

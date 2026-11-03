@@ -9,6 +9,8 @@ import {
   hasCompleteHostMatrix,
   hasCompletePacketQualification,
   selectPacketGoldens,
+  unmappedIgnoreRows,
+  type DirectiveRow as Row,
 } from "./support/content-mapper-instance-globals-packets-10617.ts";
 
 import { assertProfileComparatorNegatives } from "./support/content-mapper-instance-globals-profiles-10617.ts";
@@ -443,7 +445,6 @@ test("the unmapped-ignore population changes only directive tables", () => {
     golden.packets.map((packet) => `whole-packet/${packet.label}`),
   );
   assert.equal(provenance.wholeComparison.unchangedWholePackets, 0);
-  type Row = [number, number, number, number, number, number];
   for (const [index, packet] of golden.packets.entries()) {
     const old = previous.packets[index]!.result;
     const { diagnosticDirectives: current, ...rest } = packet.result as unknown as {
@@ -459,33 +460,7 @@ test("the unmapped-ignore population changes only directive tables", () => {
     );
     assert.equal(current.directives.length, explicit.length + added.length, packet.label);
     // Expected ignores: unmapped gaps of the virtual text minus explicit intervals.
-    const mapped = (packet.result.mappings as number[][])
-      .filter((mapping) => mapping[1]! > 0)
-      .map((mapping) => [mapping[0]!, mapping[0]! + mapping[1]!] as const)
-      .sort((left, right) => left[0] - right[0]);
-    const gaps: Array<[number, number]> = [];
-    let cursor = 0;
-    for (const [start, end] of mapped) {
-      if (cursor < start) gaps.push([cursor, start]);
-      cursor = Math.max(cursor, end);
-    }
-    const length = Buffer.byteLength(packet.result.text as string);
-    if (cursor < length) gaps.push([cursor, length]);
-    const covered = explicit
-      .filter((row) => row[2] < row[3])
-      .map((row) => [row[2], row[3]] as const)
-      .sort((left, right) => left[0] - right[0]);
-    const expected: Row[] = [];
-    for (const [gapStart, gapEnd] of gaps) {
-      let start = gapStart;
-      for (const [coverStart, coverEnd] of covered) {
-        if (coverEnd <= start || coverStart >= gapEnd) continue;
-        if (start < coverStart) expected.push([0, 0, start, coverStart, 0, 0]);
-        start = Math.max(start, coverEnd);
-      }
-      if (start < gapEnd) expected.push([0, 0, start, gapEnd, 0, 0]);
-    }
-    assert.deepEqual(added, expected, packet.label);
+    assert.deepEqual(added, unmappedIgnoreRows(packet.result, explicit, false), packet.label);
     assert.deepEqual(provenance.wholeComparison.changedResults[index].currentDirectives, current);
   }
 });

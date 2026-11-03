@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-8844827414c2.json`: all 80 whole transform results from [source Actions 41649841245](https://github.com/ubugeeei-prod/vize/actions/runs/41649841245/job/125970365705), actual merge producer `8844827414c2773fcd2a7505a226621178bea755` (PR head `ac3fb6ef5460dba0aa433c6053bdf097892cc6e4`). Its launch receipt binds the physical CLI it built.
+
+The original strict capture remains **unqualified**: 322 of 398 outcomes passed. Exactly 76 whole packets differ from the previous population, and only in `diagnosticDirectives`: opening-parenthesis runs before mapped spans are no longer ignored. An unmapped gap now ends before a run of `(` (with any whitespace between them) that opens a mapped span, because TypeScript anchors a parenthesized authored check at its first `(`. Each such ignore row ends earlier, at that first `(`; no byte becomes newly ignored. All 80 generated texts, mappings, diagnostics and explicit directive rows are unchanged, and the four `*-owned-attribute` packets are unchanged whole. Previous and current directive tables and the released byte ranges are retained per packet in `source-packets-current-8844827414c2-provenance.json`; whole-packet gap details are retained by digest.
+
+`complete: true` means the complete observed expected population. It gives no strict native, host-matrix or installed-public acceptance. The existing comparator still checks complete result objects, ordered mappings and opaque fields; every semantic, ownership, geometry and mutation outcome remains required. Historical packets, original inputs and qualification flags are preserved. No packet normalizer or diagnostic filter is added.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-03836b7ea580.json`: all 80 whole transform results from [source Actions 41553510751](https://github.com/ubugeeei-prod/vize/actions/runs/41553510751/job/125647594443), actual merge producer `03836b7ea580fedea8c01952992967326fc6d01b` (PR head `b5cdac72d8f8105f7fae14c2635c6f00851e7152`). Its launch receipt binds the physical CLI it built.
 
 The original strict capture remains **unqualified**: 318 of 398 outcomes passed. Exactly the 80 whole packets differ from the previous population, and only in `diagnosticDirectives`: like Vue's content mapper, the transform reply now ignores every virtual range no span maps, minus every explicit directive interval. All 80 generated texts, mappings, diagnostics, semantic links and explicit directive rows are unchanged; each added row is `[0, 0, start, end, ignore, 0]` over an unmapped gap. Previous and current directive tables are retained per packet in `source-packets-current-03836b7ea580-provenance.json`; whole-packet gap details are retained by digest.
