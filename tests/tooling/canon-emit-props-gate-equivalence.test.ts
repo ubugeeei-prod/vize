@@ -377,3 +377,28 @@ void test("the gate takes the cheap call exactly where the factory ignores the p
   }
   assert.deepEqual(diagnostics(lines.join("\n"), false), []);
 });
+
+void test("a gated result still feeds the listener args, so the call stays", () => {
+  // `_emit_args`/`_args` read `inferred` unless `unknown[] extends inferred`.
+  const lines = [
+    ...prelude,
+    helpers,
+    GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+  ];
+  const read = {
+    sfc: "[value: number]",
+    unmarked: "[value: boolean]",
+    specificUnion: "[value: number]",
+  };
+  const discarded = ["loose", "columns"];
+  for (const name of [...Object.keys(read), ...discarded]) {
+    lines.push(...usage(name, shapes[name]!, literals.find!, 0));
+    const inferred = `C_${name}_0_k0_gated`;
+    lines.push(
+      name in read
+        ? `type ${name}_read = Expect<Equal<${inferred}, ${read[name as keyof typeof read]}>>;`
+        : `type ${name}_discarded = Expect<unknown[] extends ${inferred} ? true : false>;`,
+    );
+  }
+  assert.deepEqual(diagnostics(lines.join("\n"), false), []);
+});
