@@ -7,14 +7,7 @@ import { createFilter } from "./filter.ts";
 import { compileJsxModule, compileVueModule } from "./compiler.ts";
 import { listSfcSrcBlocks } from "./src-blocks.ts";
 import { isRelativeSfcSrc, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
-import {
-  createVirtualStyleId,
-  isJsxFile,
-  isVirtualStyleId,
-  isVueFile,
-  isVueStyleRequest,
-  parseVueRequest,
-} from "./request.ts";
+import { isJsxFile, isVueFile, isVueStyleRequest, parseVueRequest } from "./request.ts";
 import { generateOutput } from "./style.ts";
 import {
   isPreprocessorLang,
@@ -287,24 +280,22 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       if (options.hostCompiler) {
         return null;
       }
-      if (isVueStyleRequest(id)) {
-        return createVirtualStyleId(id);
-      }
-      return null;
+      // Claim the request so the bundler does not look for it on disk.
+      return isVueStyleRequest(id) ? id : null;
     },
 
     loadInclude(id) {
       if (options.hostCompiler) {
         return false;
       }
-      return !webpackStyleFiles && isVirtualStyleId(id);
+      return !webpackStyleFiles && isVueStyleRequest(id);
     },
 
     async load(id) {
       if (options.hostCompiler) {
         return null;
       }
-      if (!isVirtualStyleId(id)) {
+      if (!isVueStyleRequest(id)) {
         return null;
       }
 
@@ -426,8 +417,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
 
     esbuild: {
       onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
-      // Style blocks resolve to `App.vue.__vize_style_<n>.<lang>?…` ids.
-      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\./,
+      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

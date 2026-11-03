@@ -1,11 +1,6 @@
-import { test } from "node:test";
-import {
-  createVirtualStyleId,
-  isVirtualStyleId,
-  isVueFile,
-  isVueStyleRequest,
-  parseVueRequest,
-} from "./request.ts";
+import { test, type TestContext } from "node:test";
+import { isVueFile, isVueStyleRequest, parseVueRequest, styleRequestId } from "./request.ts";
+import type { StyleBlockInfo } from "./types.ts";
 
 void test("isVueFile matches only ids ending in .vue (endsWith semantics)", (t) => {
   t.assert.equal(isVueFile("/a/App.vue"), true);
@@ -29,32 +24,12 @@ void test("isVueStyleRequest is true only for vue + type=style", (t) => {
   t.assert.equal(isVueStyleRequest("/a/App.vue?vue&type=template"), false);
 });
 
-void test("isVirtualStyleId detects the STYLE_MARKER substring", (t) => {
-  const vid = createVirtualStyleId("/a/App.vue?vue&type=style");
-  t.assert.equal(isVirtualStyleId(vid), true);
-  t.assert.equal(isVirtualStyleId("/a/App.vue"), false);
-});
-
 void test("parseVueRequest splits on the first ? only", (t) => {
   // Extra `?`, `=`, `&` after the first `?` stay inside the raw query string.
   const parsed = parseVueRequest("/a/App.vue?vue&type=style&a=b?c=d");
-  t.assert.equal(parsed.path, "/a/App.vue");
+  t.assert.equal(parsed.filename, "/a/App.vue");
   t.assert.equal(parsed.query.vue, true);
   t.assert.equal(parsed.query.type, "style");
-});
-
-void test("parseVueRequest lets vize-file override the path as filename", (t) => {
-  const parsed = parseVueRequest("/a/App.vue?vue&type=style&vize-file=/real/Comp.vue");
-  t.assert.equal(parsed.path, "/a/App.vue");
-  t.assert.equal(parsed.filename, "/real/Comp.vue");
-  // vizeFile query field mirrors the vize-file param.
-  t.assert.equal(parsed.query.vizeFile, "/real/Comp.vue");
-});
-
-void test("parseVueRequest filename falls back to path when vize-file absent", (t) => {
-  const parsed = parseVueRequest("/a/App.vue?vue");
-  t.assert.equal(parsed.filename, "/a/App.vue");
-  t.assert.equal(parsed.query.vizeFile, null);
 });
 
 void test("parseVueRequest module param: present-empty -> true, string -> value, absent -> false", (t) => {
@@ -76,73 +51,71 @@ void test("parseVueRequest index parsing covers numbers, NaN, and absence", (t) 
   t.assert.equal(parseVueRequest("/a/App.vue?vue").query.index, null);
 });
 
-void test("parseVueRequest leaves lang/type/scoped null when absent", (t) => {
+void test("parseVueRequest leaves type/scoped null when absent", (t) => {
   const q = parseVueRequest("/a/App.vue").query;
-  t.assert.equal(q.lang, null);
   t.assert.equal(q.type, null);
   t.assert.equal(q.scoped, null);
 });
 
-void test("createVirtualStyleId emits the marker, index and .module.<lang> suffix", (t) => {
-  const vid = createVirtualStyleId("/a/App.vue?vue&type=style&index=1&lang=scss&module");
-  t.assert.equal(vid.includes(".__vize_style_1"), true);
-  t.assert.equal(vid.includes(".module.scss?"), true);
-  t.assert.equal(vid.startsWith("/a/App.vue.__vize_style_1.module.scss"), true);
+function block(overrides: Partial<StyleBlockInfo>): StyleBlockInfo {
+  return {
+    content: "",
+    src: null,
+    lang: null,
+    scoped: false,
+    module: false,
+    index: 0,
+    ...overrides,
+  };
+}
+
+// Hosts classify a stylesheet by the extension that ends the id (Rolldown,
+// tsdown's CSS guard, rollup-plugin-postcss) and skip a stylesheet path that
+// carries a query (@tsdown/css), so the id ends in `.<lang>` on the SFC path.
+function assertHostShape(t: TestContext, id: string, ext: string) {
+  t.assert.equal(id.split("?", 1)[0], "/a/App.vue");
+  t.assert.equal(id.endsWith(`&lang.${ext}`), true, id);
+  t.assert.equal(isVueStyleRequest(id), true);
+}
+
+void test("styleRequestId names a plain block by its language", (t) => {
+  const id = styleRequestId("/a/App.vue", block({ lang: "less", index: 2 }), null);
+  t.assert.equal(id, "/a/App.vue?vue&type=style&index=2&lang.less");
+  assertHostShape(t, id, "less");
+  t.assert.equal(
+    styleRequestId("/a/App.vue", block({}), null),
+    "/a/App.vue?vue&type=style&index=0&lang.css",
+  );
 });
 
-void test("createVirtualStyleId names a scoped preprocessor block as CSS", (t) => {
+void test("styleRequestId names a scoped preprocessor block as CSS", (t) => {
   // load() preprocesses and then scopes it, so bundlers receive plain CSS.
-  const vid = createVirtualStyleId(
-    "/a/App.vue?vue&type=style&index=1&lang=scss&module&scoped=data-v-z",
+  const id = styleRequestId(
+    "/a/App.vue",
+    block({ lang: "scss", scoped: true, index: 1 }),
+    "data-v-z",
   );
-  t.assert.equal(vid.startsWith("/a/App.vue.__vize_style_1.module.css?"), true);
-  t.assert.equal(parseVueRequest(vid).query.lang, "scss");
+  t.assert.equal(id, "/a/App.vue?vue&type=style&index=1&scoped=data-v-z&lang.css");
+  assertHostShape(t, id, "css");
+  t.assert.equal(parseVueRequest(id).query.scoped, "data-v-z");
 });
 
-void test("createVirtualStyleId uses .<lang> (no module segment) when module is false", (t) => {
-  const vid = createVirtualStyleId("/a/App.vue?vue&type=style&lang=less");
-  t.assert.equal(vid.includes(".module."), false);
-  t.assert.equal(vid.includes(".__vize_style_0.less?"), true);
-  // No `module` param is emitted when module === false.
-  t.assert.equal(parseVueRequest(vid).query.module, false);
-});
+void test("styleRequestId marks CSS modules in the query and the extension", (t) => {
+  const unnamed = styleRequestId("/a/App.vue", block({ module: true, lang: "scss" }), null);
+  t.assert.equal(unnamed, "/a/App.vue?vue&type=style&index=0&module&lang.module.scss");
+  assertHostShape(t, unnamed, "module.scss");
+  t.assert.equal(parseVueRequest(unnamed).query.module, true);
 
-void test("createVirtualStyleId defaults index to 0 and lang to css", (t) => {
-  const vid = createVirtualStyleId("/a/App.vue?vue&type=style");
-  t.assert.equal(vid.includes(".__vize_style_0.css?"), true);
-  const back = parseVueRequest(vid);
-  t.assert.equal(back.query.index, 0);
-  t.assert.equal(back.query.lang, "css");
-});
-
-void test("createVirtualStyleId preserves scoped and a named module", (t) => {
-  const vid = createVirtualStyleId(
-    "/a/App.vue?vue&type=style&index=2&lang=css&module=myMod&scoped=data-v-q",
+  const named = styleRequestId("/a/App.vue", block({ module: "my mod", index: 3 }), "data-v-r");
+  t.assert.equal(
+    named,
+    "/a/App.vue?vue&type=style&index=3&scoped=data-v-r&module=my%20mod&lang.module.css",
   );
-  const back = parseVueRequest(vid);
-  t.assert.equal(back.query.scoped, "data-v-q");
-  // A string module value round-trips as module=<name>.
-  t.assert.equal(back.query.module, "myMod");
-  // Named module still produces the .module.<lang> suffix.
-  t.assert.equal(vid.includes(".module.css?"), true);
-});
-
-void test("createVirtualStyleId sets vize-file to the resolved filename", (t) => {
-  const vid = createVirtualStyleId("/a/App.vue?vue&type=style&vize-file=/real/Comp.vue");
-  const back = parseVueRequest(vid);
-  t.assert.equal(back.query.vizeFile, "/real/Comp.vue");
-  t.assert.equal(back.filename, "/real/Comp.vue");
-  t.assert.equal(vid.startsWith("/real/Comp.vue.__vize_style_"), true);
-});
-
-void test("createVirtualStyleId output round-trips through parseVueRequest", (t) => {
-  const vid = createVirtualStyleId(
-    "/a/App.vue?vue&type=style&index=3&lang=scss&module=mod&scoped=data-v-r",
-  );
-  const back = parseVueRequest(vid);
+  assertHostShape(t, named, "module.css");
+  const back = parseVueRequest(named);
+  t.assert.equal(back.filename, "/a/App.vue");
   t.assert.equal(back.query.vue, true);
   t.assert.equal(back.query.type, "style");
   t.assert.equal(back.query.index, 3);
-  t.assert.equal(back.query.lang, "scss");
-  t.assert.equal(back.filename, "/a/App.vue");
+  t.assert.equal(back.query.module, "my mod");
 });

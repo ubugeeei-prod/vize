@@ -1,7 +1,6 @@
 import path from "node:path";
 import { test } from "node:test";
 import { vizeUnplugin } from "./unplugin.ts";
-import { isVirtualStyleId } from "./request.ts";
 import { packageRoot } from "./test/helpers.ts";
 import type { VizeUnpluginOptions } from "./types.ts";
 
@@ -115,16 +114,16 @@ void test("watchChange is a no-op for a non-.vue id (no throw)", (t) => {
 void test("hostCompiler short-circuits every bundler hook (vueVersion: 2)", async (t) => {
   const plugin = rawPlugin({ vueVersion: 2, isProduction: true, root: packageRoot });
 
-  const styleRequest = "/p/App.vue?vue&type=style&index=0&lang=css";
+  const styleRequest = "/p/App.vue?vue&type=style&index=0&lang.css";
 
-  // resolveId returns null instead of a virtual style id.
+  // resolveId returns null instead of claiming the style request.
   t.assert.strictEqual(plugin.resolveId?.call(ctx as never, styleRequest as never), null);
 
   // loadInclude returns false for anything.
   t.assert.strictEqual(plugin.loadInclude?.call(ctx as never, styleRequest as never), false);
   t.assert.strictEqual(plugin.loadInclude?.call(ctx as never, "/p/App.vue" as never), false);
 
-  // load returns null even for what would otherwise be a virtual style id.
+  // load returns null even for what would otherwise be a style request.
   t.assert.strictEqual(await plugin.load?.call(ctx as never, styleRequest), null);
 
   // transformInclude returns false for a plain .vue id.
@@ -141,23 +140,17 @@ void test("hostCompiler short-circuits every bundler hook (vueVersion: 2)", asyn
 // resolveId / loadInclude with hostCompiler OFF
 // ---------------------------------------------------------------------------
 
-void test("resolveId maps a .vue style request to a virtual id string (hostCompiler off)", (t) => {
+void test("resolveId claims a .vue style request as its own id (hostCompiler off)", (t) => {
   const plugin = rawPlugin({ isProduction: true, root: packageRoot });
-  const resolved = plugin.resolveId?.call(
-    ctx as never,
-    "/p/App.vue?vue&type=style&index=0&lang=css" as never,
-  );
-  t.assert.strictEqual(typeof resolved, "string");
-  t.assert.strictEqual(isVirtualStyleId(resolved as string), true);
+  const request = "/p/App.vue?vue&type=style&index=0&lang.css";
+  t.assert.strictEqual(plugin.resolveId?.call(ctx as never, request as never), request);
+  t.assert.strictEqual(plugin.resolveId?.call(ctx as never, "/p/App.vue" as never), null);
 });
 
-void test("loadInclude is true for a virtual style id and false for a plain id (hostCompiler off)", (t) => {
+void test("loadInclude is true for a style request and false for a plain id (hostCompiler off)", (t) => {
   const plugin = rawPlugin({ isProduction: true, root: packageRoot });
-  const virtualId = plugin.resolveId?.call(
-    ctx as never,
-    "/p/App.vue?vue&type=style&index=0&lang=css" as never,
-  ) as string;
+  const request = "/p/App.vue?vue&type=style&index=0&lang.css";
 
-  t.assert.strictEqual(plugin.loadInclude?.call(ctx as never, virtualId as never), true);
+  t.assert.strictEqual(plugin.loadInclude?.call(ctx as never, request as never), true);
   t.assert.strictEqual(plugin.loadInclude?.call(ctx as never, "/p/App.vue" as never), false);
 });

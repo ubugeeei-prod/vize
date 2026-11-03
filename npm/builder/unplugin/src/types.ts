@@ -222,14 +222,11 @@ export interface ParsedVueRequestQuery {
   vue: boolean;
   type: string | null;
   index: number | null;
-  lang: string | null;
   module: boolean | string;
   scoped: string | null;
-  vizeFile: string | null;
 }
 
 export interface ParsedVueRequest {
   filename: string;
-  path: string;
   query: ParsedVueRequestQuery;
 }
