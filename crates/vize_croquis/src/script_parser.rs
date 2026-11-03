@@ -27,6 +27,7 @@ mod module_exports;
 mod module_reads;
 mod occurrences;
 mod parse;
+mod parse_plain;
 mod process;
 mod recovery;
 mod reexecution;
@@ -48,19 +49,23 @@ pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
 pub(crate) use module_reads::ModuleReadFacts;
-pub use parse::{
-    analyze_script_setup_program, parse_script, parse_script_setup,
-    parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
-    parse_script_with_options, parse_script_with_options_and_jsx,
-};
+#[cfg(test)]
+pub(crate) use parse::parse_script_setup_with_exports;
 pub(crate) use parse::{
-    analyze_script_setup_program_demand, parse_script_plain_with_exports,
-    parse_script_setup_with_exports,
+    analyze_repaired_script_setup, analyze_script_setup_program_demand, with_parsed_script_setup,
+};
+pub use parse::{
+    analyze_script_setup_program, parse_script_setup, parse_script_setup_with_generic,
+    parse_script_setup_with_generic_and_jsx,
 };
 #[cfg(test)]
 pub(crate) use parse::{parse_script_setup_for_unused, parse_script_setup_for_value_origins};
+pub(crate) use parse_plain::{analyze_repaired_script_plain, with_parsed_script_plain};
+pub use parse_plain::{parse_script, parse_script_with_options, parse_script_with_options_and_jsx};
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
-pub use recovery::parse_program_for_analysis;
+pub use recovery::{
+    parse_original_for_analysis, parse_program_for_analysis, recover_program_for_analysis,
+};
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
 pub(crate) use typeof_refs::{

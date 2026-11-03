@@ -1,5 +1,5 @@
-use super::SfcCroquisOptions;
 use super::script_demand::{CapturedScript, ModuleExportsScript, OrdinaryScript, ScriptDemand};
+use super::{SfcCroquisOptions, SfcScriptParses};
 use crate::types::SfcDescriptor;
 use vize_carton::profile;
 use vize_croquis::binding_occurrences::BindingOccurrences;
@@ -21,24 +21,27 @@ pub(super) fn apply_options_api_mode(
 
 pub(super) fn analyze_scripts(
     descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
 ) -> Croquis {
-    analyze_scripts_impl::<OrdinaryScript>(descriptor, options, options_api, legacy_vue2)
+    analyze_scripts_impl::<OrdinaryScript>(descriptor, scripts, options, options_api, legacy_vue2)
 }
 
 pub(super) fn analyze_scripts_with_occurrences(
     descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
 ) -> (Croquis, Option<BindingOccurrences>) {
-    analyze_scripts_impl::<CapturedScript>(descriptor, options, options_api, legacy_vue2)
+    analyze_scripts_impl::<CapturedScript>(descriptor, scripts, options, options_api, legacy_vue2)
 }
 
 pub(super) fn analyze_scripts_with_empty_module_exports(
     descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
@@ -46,11 +49,18 @@ pub(super) fn analyze_scripts_with_empty_module_exports(
     Croquis,
     Option<Vec<vize_croquis::script_parser::AuthoredModuleExport>>,
 ) {
-    analyze_scripts_impl::<ModuleExportsScript>(descriptor, options, options_api, legacy_vue2)
+    analyze_scripts_impl::<ModuleExportsScript>(
+        descriptor,
+        scripts,
+        options,
+        options_api,
+        legacy_vue2,
+    )
 }
 
 fn analyze_scripts_impl<D: ScriptDemand>(
     descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
@@ -66,10 +76,9 @@ fn analyze_scripts_impl<D: ScriptDemand>(
             let mut plain_drawer = apply_options_api_mode(plain_drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
-                plain_drawer.draw_script_plain_with_jsx(
-                    script.content.as_ref(),
-                    script_lang_is_jsx(script.lang.as_deref()),
-                )
+                if let Some(parsed) = scripts.script() {
+                    plain_drawer.draw_script_plain_parsed(script.content.as_ref(), parsed);
+                }
             );
             let plain = D::finish(plain_drawer);
             let setup_drawer = D::prepare(Drawer::with_options(drawer_options));
@@ -81,11 +90,13 @@ fn analyze_scripts_impl<D: ScriptDemand>(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                setup_drawer.draw_script_setup_with_generic_and_jsx(
-                    script_setup.content.as_ref(),
-                    generic,
-                    script_lang_is_jsx(script_setup.lang.as_deref()),
-                )
+                if let Some(parsed) = scripts.script_setup() {
+                    setup_drawer.draw_script_setup_parsed(
+                        script_setup.content.as_ref(),
+                        generic,
+                        parsed,
+                    );
+                }
             );
             let setup = D::finish(setup_drawer);
             let setup_offset = script.content.len() as u32 + 1;
@@ -101,11 +112,9 @@ fn analyze_scripts_impl<D: ScriptDemand>(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                drawer.draw_script_setup_with_generic_and_jsx(
-                    script_setup.content.as_ref(),
-                    generic,
-                    script_lang_is_jsx(script_setup.lang.as_deref()),
-                )
+                if let Some(parsed) = scripts.script_setup() {
+                    drawer.draw_script_setup_parsed(script_setup.content.as_ref(), generic, parsed);
+                }
             );
             D::finish(drawer)
         }
@@ -114,19 +123,14 @@ fn analyze_scripts_impl<D: ScriptDemand>(
             let mut drawer = apply_options_api_mode(drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
-                drawer.draw_script_plain_with_jsx(
-                    script.content.as_ref(),
-                    script_lang_is_jsx(script.lang.as_deref()),
-                )
+                if let Some(parsed) = scripts.script() {
+                    drawer.draw_script_plain_parsed(script.content.as_ref(), parsed);
+                }
             );
             D::finish(drawer)
         }
         (None, None) => D::empty(),
     }
-}
-
-fn script_lang_is_jsx(lang: Option<&str>) -> bool {
-    matches!(lang.map(str::trim), Some("tsx" | "jsx"))
 }
 
 fn demand_unused(drawer: Drawer, options: SfcCroquisOptions) -> Drawer {

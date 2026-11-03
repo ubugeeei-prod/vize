@@ -122,9 +122,12 @@ fn matrix(newline: &str, setup_first: bool, severity: &str, profile: bool) {
         let profile: Value =
             serde_json::from_slice(&fs::read(project.path().join("profile.json")).unwrap())
                 .unwrap();
+        // Each script block is parsed once for Croquis and the script rules.
+        // vue/require-component-registration still re-analyzes script setup.
         for (key, count) in [
-            ("croquis.script_plain.oxc_parse", CASES.len()),
-            ("croquis.script_setup.oxc_parse", 2 * CASES.len()),
+            ("atelier.sfc.script_parse", 2 * CASES.len()),
+            ("croquis.script_plain.oxc_parse", 0),
+            ("croquis.script_setup.oxc_parse", CASES.len()),
             ("croquis.script_plain.module_reads", CASES.len()),
         ] {
             let calls: u64 = profile["spans"]
@@ -136,7 +139,7 @@ fn matrix(newline: &str, setup_first: bool, severity: &str, profile: bool) {
                 .sum();
             assert_eq!(
                 calls, count as u64,
-                "{key}: original parse counts and one demanded module analysis"
+                "{key}: one parse per block and one demanded module analysis"
             );
         }
         assert_eq!(
@@ -147,7 +150,7 @@ fn matrix(newline: &str, setup_first: bool, severity: &str, profile: bool) {
 }
 
 #[test]
-fn sibling_script_import_reads_preserve_complete_cli_packets_and_existing_parse_counts() {
+fn sibling_script_import_reads_preserve_complete_cli_packets_and_parse_each_block_once() {
     for newline in ["\n", "\r\n"] {
         for setup_first in [false, true] {
             for severity in ["warn", "error"] {

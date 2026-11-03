@@ -7,7 +7,8 @@ use oxc_ast::ast::{
 use oxc_parser::ParserReturn;
 use vize_carton::{CompactString, FxHashMap};
 
-use super::parse::{parse_script_plain_with_exports, parse_script_setup_with_exports};
+use super::parse::parse_script_setup_with_exports;
+use super::parse_plain::parse_script_plain_with_exports;
 use super::{ScriptParseResult, ScriptParserOptions};
 
 /// One authored named export of a script block, with whether it only names a

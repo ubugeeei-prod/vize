@@ -318,3 +318,25 @@ fn test_non_vue_file() {
     let result = linter.lint_template(r#"<div>hello</div>"#, "test.html");
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn reads_each_script_block_in_its_lint_language() {
+    let linter = create_linter();
+    // A TSX block's render JSX parses, so its reserved name is reported.
+    let result = linter.lint_sfc(
+        r#"<script lang="tsx">export default { name: 'button', render() { return <div /> } }</script>"#,
+        "Render.vue",
+    );
+    assert_eq!(result.error_count, 1);
+    // A TypeScript block keeps angle-bracket assertions.
+    let result = linter.lint_sfc(
+        r#"<script lang="ts">const name = <string>'button'; export default { name: 'button' }</script>"#,
+        "Cast.vue",
+    );
+    assert_eq!(result.error_count, 1);
+    let result = linter.lint_sfc(
+        r#"<script setup lang="ts">defineOptions({ name: 'MyPanel' })</script>"#,
+        "MyPanel.vue",
+    );
+    assert_eq!(result.error_count, 0);
+}

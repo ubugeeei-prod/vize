@@ -35,9 +35,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::script::script_source_type;
-use oxc_allocator::Allocator as OxcAllocator;
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use vize_croquis::builtins::is_builtin_component;
 use vize_l0::String;
 use vize_l0::{is_html_tag, is_svg_tag};
@@ -97,7 +95,8 @@ impl Rule for NoReservedComponentNames {
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let findings = {
-            let Some(descriptor) = ctx.sfc_descriptor() else {
+            let (Some(descriptor), Some(scripts)) = (ctx.sfc_descriptor(), ctx.sfc_scripts())
+            else {
                 return;
             };
             let mut findings = Vec::new();
@@ -106,6 +105,7 @@ impl Rule for NoReservedComponentNames {
                 self.collect_script_block_findings(
                     script.content.as_ref(),
                     script.loc.start,
+                    || scripts.script(),
                     &mut findings,
                 );
             }
@@ -113,6 +113,7 @@ impl Rule for NoReservedComponentNames {
                 self.collect_script_setup_block_findings(
                     script_setup.content.as_ref(),
                     script_setup.loc.start,
+                    || scripts.script_setup(),
                     &mut findings,
                 );
             }
@@ -137,10 +138,11 @@ impl Rule for NoReservedComponentNames {
 }
 
 impl NoReservedComponentNames {
-    fn collect_script_block_findings(
+    fn collect_script_block_findings<'p>(
         &self,
         source: &str,
         offset: usize,
+        parse: impl FnOnce() -> Option<&'p ParserReturn<'p>>,
         findings: &mut Vec<ComponentNameFinding>,
     ) {
         // A finding here requires a default-exported component options object
@@ -157,11 +159,11 @@ impl NoReservedComponentNames {
             return;
         }
 
-        let allocator = OxcAllocator::default();
-        let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-        if parsed.panicked || !parsed.diagnostics.is_empty() {
+        let Some(parsed) =
+            parse().filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+        else {
             return;
-        }
+        };
 
         if let Some(options) = find_component_options(&parsed.program) {
             if let Some(name) = options_name(options) {
@@ -194,10 +196,11 @@ impl NoReservedComponentNames {
         }
     }
 
-    fn collect_script_setup_block_findings(
+    fn collect_script_setup_block_findings<'p>(
         &self,
         source: &str,
         offset: usize,
+        parse: impl FnOnce() -> Option<&'p ParserReturn<'p>>,
         findings: &mut Vec<ComponentNameFinding>,
     ) {
         // The only `<script setup>` source of an explicit component name is
@@ -207,11 +210,11 @@ impl NoReservedComponentNames {
             return;
         }
 
-        let allocator = OxcAllocator::default();
-        let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-        if parsed.panicked || !parsed.diagnostics.is_empty() {
+        let Some(parsed) =
+            parse().filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+        else {
             return;
-        }
+        };
 
         if let Some(name) = define_options_name(&parsed.program) {
             self.collect_static_name_finding(

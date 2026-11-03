@@ -68,6 +68,8 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
 ) -> PreparedSfc {
     let allocator =
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
+    let script_allocator = oxc_allocator::Allocator::default();
+    let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
         let parser = TemplateParser::new(&allocator, &template.content);
@@ -110,7 +112,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     };
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint_with_reuse(
-            descriptor,
+            &scripts,
             template_ast
                 .as_ref()
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
@@ -130,19 +132,22 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     {
         let (lint_result, scripts) = profile!(
             "patina.type_aware.template_rules",
-            linter.lint_sfc_template_root(SfcTemplateLintInput {
-                filename,
-                template,
-                allocator: &allocator,
-                root,
-                descriptor: Some(descriptor),
-                analysis: if *has_fatal {
-                    TemplateAnalysis::Disabled
-                } else {
-                    TemplateAnalysis::Precomputed(&analysis)
+            linter.lint_sfc_template_root(
+                SfcTemplateLintInput {
+                    filename,
+                    template,
+                    allocator: &allocator,
+                    root,
+                    descriptor,
+                    analysis: if *has_fatal {
+                        TemplateAnalysis::Disabled
+                    } else {
+                        TemplateAnalysis::Precomputed(&analysis)
+                    },
+                    template_syntax: template_syntax.as_ref(),
                 },
-                template_syntax: template_syntax.as_ref(),
-            })
+                &scripts,
+            )
         );
         let mut parse_result =
             Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
@@ -162,6 +167,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         super::super::script_rules::append_builtin_script_diagnostics(
             linter,
             descriptor,
+            &scripts,
             &mut result,
             None,
             None,
