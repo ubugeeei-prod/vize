@@ -76,30 +76,47 @@ fn compiled_assignment_writes_keep_their_binding_owner() {
             "inline-ref",
             "<script setup>import { ref } from 'vue'; const Child = ref(0); const value = {};</script>",
             true,
-            "Child.value",
-            "_ctx.Child",
+            [
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/inline-ref-dom.expected.txt"
+                ),
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/inline-ref-vapor.expected.txt"
+                ),
+            ],
         ),
         (
             "separate-prop",
             "<script>export default { props: ['Child'], data: () => ({ value: {} }) }</script>",
             false,
-            "$props.Child",
-            "$props.Child",
+            [
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/separate-prop-dom.expected.txt"
+                ),
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/separate-prop-vapor.expected.txt"
+                ),
+            ],
         ),
         (
             "separate-data",
             "<script>export default { data: () => ({ Child: 0, value: {} }) }</script>",
             false,
-            "$data.Child",
-            "_ctx.Child",
+            [
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/separate-data-dom.expected.txt"
+                ),
+                include_str!(
+                    "../../../tests/_fixtures/differential/compiler/template-assignment-pattern-11707/binding-owners/separate-data-vapor.expected.txt"
+                ),
+            ],
         ),
     ];
-    let mut failures = Vec::new();
-    for (name, script, inline, dom_target, vapor_target) in cases {
+    for (name, script, inline, expected) in cases {
         let source =
             cstr!("{script}<template><Control @click=\"({{ Child }} = value)\" /></template>");
         let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("SFC");
-        for vapor in [false, true] {
+        for (vapor, expected) in [false, true].into_iter().zip(expected) {
             let result = compile_sfc_for_adapter(
                 &descriptor,
                 SfcCompileOptions {
@@ -121,27 +138,9 @@ fn compiled_assignment_writes_keep_their_binding_owner() {
             )
             .expect("compile");
             assert!(result.errors.is_empty(), "{name}, vapor={vapor}: {source}");
-            // Vapor passes proxyRefs(setupState) as the render context rather
-            // than closing over the raw setup ref as the DOM inline lane does.
-            if name == "inline-ref" && vapor {
-                assert!(
-                    result
-                        .code
-                        .contains("const __ctx = _proxyRefs(__returned__)")
-                );
-                assert!(result.code.contains("return __vaporRender(__ctx,"));
-            }
-            let target = if vapor { vapor_target } else { dom_target };
-            let expected = cstr!("Child: {target}");
-            if !result.code.contains(expected.as_str()) {
-                failures.push(cstr!(
-                    "{name}, vapor={vapor}: expected {expected}\n{}",
-                    result.code
-                ));
-            }
+            assert_eq!(result.code.as_str(), expected, "{name}, vapor={vapor}");
         }
     }
-    assert_eq!(failures, Vec::<String>::new());
 }
 
 #[test]
