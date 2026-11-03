@@ -99,31 +99,36 @@ pub(super) fn module_specifier(depth: usize) -> String {
 mod tests {
     use super::*;
 
-    #[test]
-    fn declaration_extra_keys_yield_to_the_vue_tsc_props_fallback() {
+    fn extra_keys_aliases(source: &str) -> Vec<&str> {
         let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, module(), SourceType::d_ts()).parse();
-        assert!(!parsed.panicked && parsed.diagnostics.is_empty());
-        let aliases: Vec<_> = parsed
+        let parsed = Parser::new(&allocator, source, SourceType::d_ts()).parse();
+        parsed
             .program
             .body
             .iter()
             .filter_map(|statement| match statement {
                 Statement::TSTypeAliasDeclaration(alias) if alias.id.name == EXTRA_KEYS_ALIAS => {
-                    module().get(alias.span.start as usize..alias.span.end as usize)
+                    source.get(alias.span.start as usize..alias.span.end as usize)
                 }
                 _ => None,
             })
-            .collect();
-        assert_eq!(aliases.len(), 1);
-        assert!(aliases[0].contains(EXTRA_KEYS_WITH_FALLBACK));
+            .collect()
+    }
+
+    #[test]
+    fn declaration_extra_keys_yield_to_the_vue_tsc_props_fallback() {
+        let original = extra_keys_aliases(DECLARATION_HELPERS_DTS);
+        assert_eq!(original.len(), 1);
+        let expected = original[0].replacen(EXTRA_KEYS_DEFAULT, EXTRA_KEYS_WITH_FALLBACK, 1);
+        assert_ne!(original[0], expected.as_str());
+        assert_eq!(extra_keys_aliases(module()), vec![expected.as_str()]);
         // Every other byte stays identical to the mapper's helpers.
         let exports = helpers().0.join(", ");
-        let expected =
+        let shared =
             vize_carton::cstr!("{DECLARATION_HELPERS_DTS}\nexport type {{ {exports} }};\n");
         assert_eq!(
             module().replacen(EXTRA_KEYS_WITH_FALLBACK, EXTRA_KEYS_DEFAULT, 1),
-            expected.as_str()
+            shared.as_str()
         );
     }
 
