@@ -190,6 +190,17 @@ impl<'b> TransformExpressions<'b> {
             .map_err(|_| TransformRefusal::InvalidExpression)
     }
 
+    /// A parameter list (slot props) as render code spells it: type-erased
+    /// under `is_ts`, the authored text otherwise.
+    #[must_use]
+    pub fn params(&self, params: &str) -> String {
+        self.scope
+            .is_ts()
+            .then(|| prefix::erase_typescript_params(params))
+            .flatten()
+            .unwrap_or_else(|| String::from(params))
+    }
+
     /// Whether processed handler text is a function or a callable reference.
     #[must_use]
     pub fn handler_is_callable(text: &str) -> bool {

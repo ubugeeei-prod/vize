@@ -57,3 +57,5 @@ crates/vize_atelier_vapor/tests/nested_delegate_events.rs	@click.delegate
 crates/vize_atelier_vapor/tests/nested_delegate_events.rs	@keydown.delegate
 crates/vize_atelier_vapor/tests/nested_delegate_events.rs	@click.delegate
 crates/vize_atelier_vapor/tests/nested_delegate_events.rs	@keydown.delegate
+crates/vize_atelier_vapor/tests/typescript_erasure.rs	@click.stop
+crates/vize_atelier_vapor/tests/typescript_erasure.rs	@keyup.enter

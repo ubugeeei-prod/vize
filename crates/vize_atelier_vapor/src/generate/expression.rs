@@ -36,7 +36,14 @@ pub(super) fn resolve_expression(ctx: &GenerateContext<'_>, expr: &str) -> Strin
     trimmed.to_compact_string()
 }
 
+/// The lane's one type-erasure boundary: literal, simple-path and retained
+/// (JS-module-proven) expressions never reach here, every other authored
+/// text, or a callback wrapping it, does.
 pub(super) fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
+    let erased = ctx
+        .is_ts
+        .then(|| vize_atelier_core::steps::erase_typescript(expr, false));
+    let expr = erased.as_deref().unwrap_or(expr);
     let allocator = vize_atelier_core::expr_parse_probe::parse_arena();
     let source_type = SourceType::default()
         .with_module(true)

@@ -9,9 +9,9 @@ const t0 = _template("<button>Go</button>")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
   const _component_Child = _ctx.Child
-  const n0 = _createComponentWithFallback(_component_Child, { onKeydown: () => ((event: _ctx.KeyboardEvent) => _ctx.emit('key', event.key)) }, null, false)
+  const n0 = _createComponentWithFallback(_component_Child, { onKeydown: () => ((event) => _ctx.emit("key", event.key)) }, null, false)
   const n1 = t0()
-  _on(n1, "click", (event: _ctx.MouseEvent) => _ctx.emit('key', event.type))
+  _on(n1, "click", (event) => _ctx.emit("key", event.type))
   return [n0, n1]
 }
 const __vaporRender = render
