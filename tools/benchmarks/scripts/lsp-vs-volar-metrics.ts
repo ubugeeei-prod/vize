@@ -14,12 +14,14 @@ export interface TreeReading {
   /** Proportional set size: shared pages split between the processes mapping them. */
   pssBytes: number | null;
   processes: number;
+  /** Per process, at phase marks only: which member holds the memory and CPU. */
+  members?: Array<{ name: string; cpuSeconds: number; rssBytes: number; pssBytes: number | null }>;
 }
 
 const CLOCK_TICKS = 100;
 const PAGE_BYTES = 4096;
 
-type ProcRow = { pid: number; ppid: number; cpuTicks: number; rssPages: number };
+type ProcRow = { pid: number; ppid: number; name: string; cpuTicks: number; rssPages: number };
 
 function procRows(): ProcRow[] {
   const rows: ProcRow[] = [];
@@ -36,6 +38,7 @@ function procRows(): ProcRow[] {
     rows.push({
       pid: Number(entry),
       ppid: Number(fields[1]),
+      name: stat.slice(stat.indexOf("(") + 1, stat.lastIndexOf(")")),
       // utime stime cutime cstime: fields 14-17 of stat(5), 11-14 after comm.
       cpuTicks: Number(fields[11]) + Number(fields[12]) + Number(fields[13]) + Number(fields[14]),
       rssPages: Number(fields[21]),
@@ -83,21 +86,30 @@ export function psTimeSeconds(text: string): number {
   return Number(days) * 86400 + parts[0] * 3600 + parts[1] * 60 + parts[2];
 }
 
-export function readTree(roots: number[], withPss = true): TreeReading {
+export function readTree(roots: number[], withPss = true, withMembers = false): TreeReading {
   if (process.platform === "linux") {
     const members = descendants(procRows(), roots);
-    let pss: number | null = withPss ? 0 : null;
-    if (withPss) {
-      for (const member of members) {
-        const value = pssBytes(member.pid);
-        pss = value == null || pss == null ? null : pss + value;
-      }
-    }
+    const pssByPid = new Map(
+      members.map((member) => [member.pid, withPss ? pssBytes(member.pid) : null]),
+    );
+    const values = [...pssByPid.values()];
+    const pss =
+      withPss && values.every((value) => value != null)
+        ? values.reduce((sum, value) => sum! + value!, 0)
+        : null;
     return {
       cpuSeconds: members.reduce((sum, row) => sum + row.cpuTicks, 0) / CLOCK_TICKS,
       rssBytes: members.reduce((sum, row) => sum + row.rssPages, 0) * PAGE_BYTES,
       pssBytes: pss,
       processes: members.length,
+      ...(withMembers && {
+        members: members.map((member) => ({
+          name: member.name,
+          cpuSeconds: member.cpuTicks / CLOCK_TICKS,
+          rssBytes: member.rssPages * PAGE_BYTES,
+          pssBytes: pssByPid.get(member.pid) ?? null,
+        })),
+      }),
     };
   }
   const ps = spawnSync("ps", ["-Ao", "pid=,ppid=,rss=,time="], { encoding: "utf8" });
@@ -149,7 +161,7 @@ export class TreeSampler {
   }
 
   private read(mark?: string): TreeReading {
-    const reading = readTree(this.roots());
+    const reading = readTree(this.roots(), true, mark != null);
     this.samples.push({ ...reading, atMs: performance.now() - this.origin, mark });
     return reading;
   }

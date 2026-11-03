@@ -30,6 +30,10 @@ on:
         description: Cores the benchmark may use
         required: true
         default: "8"
+      vize_env:
+        description: Optional space-separated KEY=VALUE pairs for every vize row (diagnosis runs, e.g. VIZE_TRACE_EDITOR_PREPARATION=1)
+        required: false
+        default: ""
   # Changes to the benchmark itself measure once before they merge.
   pull_request:
     paths:
@@ -51,6 +55,7 @@ env:
   ROUNDS: ${{ inputs.rounds || '3' }}
   CYCLES: ${{ inputs.cycles || '5' }}
   CPUS: ${{ inputs.cpus || '8' }}
+  VIZE_ENV: ${{ inputs.vize_env || '' }}
 
 jobs:
   plan:
@@ -130,6 +135,10 @@ jobs:
           if [ -n "$COMPARE_REF" ]; then
             args+=(--vize "compare=$RUNNER_TEMP/vize-compare" --meta "compare=$COMPARE_REF")
           fi
+          for assignment in $VIZE_ENV; do
+            args+=(--vize-env "head:$assignment" --meta "env=$assignment")
+            if [ -n "$COMPARE_REF" ]; then args+=(--vize-env "compare:$assignment"); fi
+          done
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \

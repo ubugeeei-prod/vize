@@ -35,6 +35,8 @@ export interface EditorSummary {
     peakPssMiB: number | null;
     endPssMiB: number | null;
     idleCpuSeconds: number | null;
+    /** First session's processes after idle, largest first: `name memory`. */
+    endMembers: string;
   };
   diagnostics: { script: Latency; template: Latency; repair: Latency };
   requests: Record<RequestKind, Latency>;
@@ -85,6 +87,11 @@ export function summarize(sessions: SessionResult[]): EditorSummary[] {
         peakPssMiB: med(mine.map((session) => mib(session.warm.peakPssBytes))),
         endPssMiB: med(mine.map((session) => mib(session.idle.end.pssBytes))),
         idleCpuSeconds: med(mine.map((session) => session.idle.cpuSeconds)),
+        endMembers: (mine[0].idle.end.members ?? [])
+          .map((member) => ({ name: member.name, bytes: member.pssBytes ?? member.rssBytes }))
+          .sort((left, right) => right.bytes - left.bytes)
+          .map((member) => `${member.name} ${Math.round(member.bytes / 1048576)}`)
+          .join(", "),
       },
       diagnostics: {
         script: latency(edits.filter((edit) => edit.probe === "script" && edit.phase === "break")),
@@ -163,6 +170,7 @@ export function markdown(
         ["peak PSS MiB", ...column((s) => fixed(s.warm.peakPssMiB))],
         ["PSS after idle MiB", ...column((s) => fixed(s.warm.endPssMiB))],
         ["idle CPU s", ...column((s) => fixed(s.warm.idleCpuSeconds, 2))],
+        ["MiB by process after idle", ...column((s) => s.warm.endMembers || "–")],
       ],
     ),
     "",
