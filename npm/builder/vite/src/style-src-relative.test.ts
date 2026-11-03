@@ -10,11 +10,11 @@ import { test } from "node:test";
 import { build, type Rollup } from "vite";
 import { vize } from "./index.ts";
 
-// sass is pinned for the sibling parcel package; reuse it rather than adding a
-// devDependency here.
-const sass = path.dirname(
-  createRequire(path.join(import.meta.dirname, "../../parcel/package.json")).resolve("sass"),
-);
+const require = createRequire(import.meta.url);
+// A sass stand-in that resolves `@use` from the importing file's `url`, as Sass does.
+const { installStandIns } = require("../../shared/test-preprocessors.cjs") as {
+  installStandIns: (root: string) => void;
+};
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg"/>\n';
 const DATA_URI =
@@ -34,8 +34,7 @@ function project(t: { after: (fn: () => void) => void }, files: Record<string, s
     fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     fs.writeFileSync(path.join(root, file), content);
   }
-  fs.mkdirSync(path.join(root, "node_modules"));
-  fs.symlinkSync(sass, path.join(root, "node_modules", "sass"), "dir");
+  installStandIns(root);
   return root;
 }
 

@@ -85,6 +85,8 @@ export function createStyleVirtualId(id: string): string {
 
 /** Give Vite's CSS resolvers a physical origin without changing emitted imports. */
 export function resolveStyleVirtualId(id: string, root: string): string {
+  // A `<style src>` module resolves to its src file.
+  if (isStyleSrcModuleId(id)) return resolveStyleSrcModuleId(id, root);
   const styleId = createStyleVirtualId(id);
   const queryStart = styleId.indexOf("?");
   const marker = styleId.slice(0, queryStart).lastIndexOf(STYLE_MARKER);
