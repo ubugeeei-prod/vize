@@ -60,29 +60,15 @@ class Box implements Contract { declare tag: TypeK; value = initL }
 enum Kind { A = external.value }
 "#,
     );
-    for name in [
+    // Exact oracle: every TypeA..TypeK, BaseShape, ThisType and Contract name
+    // appears only in type positions and must be absent.
+    let expected: vize_carton::FxHashSet<vize_carton::String> = [
         "valueA", "useB", "valueC", "callI", "arg", "initL", "external",
-    ] {
-        assert!(refs.contains(name), "{name} missing from {refs:?}");
-    }
-    for name in [
-        "TypeA",
-        "TypeB",
-        "TypeC",
-        "TypeD",
-        "TypeE",
-        "BaseShape",
-        "TypeF",
-        "TypeG",
-        "TypeH",
-        "ThisType",
-        "TypeI",
-        "TypeJ",
-        "Contract",
-        "TypeK",
-    ] {
-        assert!(!refs.contains(name), "{name} is type-only in {refs:?}");
-    }
+    ]
+    .into_iter()
+    .map(Into::into)
+    .collect();
+    assert_eq!(refs, expected);
 }
 
 #[test]
