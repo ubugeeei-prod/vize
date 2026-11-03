@@ -101,11 +101,12 @@ function makePass(spec: Spec, module: unknown, files: SourceFile[]): () => Pass 
   }
   if (spec.mode === "loop1t") {
     const compileSfc = nativeFn(module, "compileSfc");
+    const extra: unknown = JSON.parse(process.env.COMPILE_BENCH_SFC_OPTIONS ?? "{}");
     return () => {
       const codes: string[] = [];
       let failed = 0;
       for (const { filename, source } of files) {
-        const result = compileSfc(source, { filename });
+        const result = compileSfc(source, { ...(isRecord(extra) ? extra : {}), filename });
         const errors = field(result, "errors");
         if (Array.isArray(errors) && errors.length > 0) failed++;
         codes.push(String(field(result, "code")));

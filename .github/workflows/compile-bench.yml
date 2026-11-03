@@ -41,7 +41,7 @@ env:
   COMPILE_BENCH_PROFILE_VERSIONS: ${{ inputs.profile_versions || '0.424.10 0.661.0' }}
   COMPILE_BENCH_BASE: ${{ inputs.base || '' }}
   # Crates the verify job tests and lints.
-  COMPILE_BENCH_VERIFY: "-p vize_atelier_sfc"
+  COMPILE_BENCH_VERIFY: "-p vize_atelier_sfc -p vize_atelier_vapor -p vize_atelier_ssr -p vize_l1_to_l2"
 
 jobs:
   published:
@@ -343,6 +343,26 @@ jobs:
             }
             if (!ok) process.exit(1);
           '
+
+      # The timed corpus compiles DOM client output only; hash Vapor and SSR too.
+      - name: Require identical Vapor and SSR output
+        run: |
+          set -euo pipefail
+          input="$PWD/tools/benchmarks/scripts/__in__"
+          { echo; echo "Vapor/SSR loop1t output (one pass)"; echo; echo "| Options | Side | Files | Failed | All | JS-source | TS-source |"; echo "| --- | --- | ---: | ---: | --- | --- | --- |"; } >> compile-compare.md
+          ok=true
+          for opts in '{"vapor":true}' '{"vapor":true,"isProd":true}' '{"ssr":true}' '{"ssr":true,"isProd":true}' '{"ssr":true,"vapor":true}'; do
+            for side in base head; do
+              spec=$(printf '{"label":"%s","kind":"native","path":"%s","mode":"loop1t"}' "$side" "$RUNNER_TEMP/$side.node")
+              COMPILE_BENCH_SFC_OPTIONS="$opts" node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 1 --warmups 0 > "hash-$side.json"
+              node -e 'const [f, opts, side] = process.argv.slice(1); const r = JSON.parse(require("fs").readFileSync(f, "utf8")); console.log(`| \`${opts}\` | ${side} | ${r.files} | ${r.failed} | ${r.outputSha256.slice(0, 16)} | ${r.outputSha256Js.slice(0, 12)} | ${r.outputSha256Ts.slice(0, 12)} |`)' "hash-$side.json" "$opts" "$side" >> compile-compare.md
+            done
+            if ! node -e 'const [a, b] = process.argv.slice(1).map((f) => JSON.parse(require("fs").readFileSync(f, "utf8"))); process.exit(a.outputSha256 === b.outputSha256 && a.failed === b.failed ? 0 : 1)' hash-base.json hash-head.json; then
+              echo "::error::$opts output differs between base and head"; ok=false
+            fi
+          done
+          cat compile-compare.md
+          $ok
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
