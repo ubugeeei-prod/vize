@@ -343,15 +343,28 @@ fn apply_replacements(
             });
             source_cursor = replacement.source.end;
             continue;
-        } else if replacement.shorthand {
-            append!(code, "{name}: {receiver}[\"{name}\"]");
-        } else {
-            append!(code, "{receiver}[\"{name}\"]");
         }
-        segments.push(SpreadRewriteSegment {
-            generated: generated_start..code.len(),
+        if replacement.shorthand {
+            code.push_str(name);
+            segments.push(SpreadRewriteSegment {
+                generated: generated_start..code.len(),
+                source: replacement.source.clone(),
+            });
+            code.push_str(": ");
+        }
+        let receiver_start = code.len();
+        append!(code, "{receiver}[\"");
+        let key_start = code.len();
+        diagnostic_prefixes.push(SpreadRewriteSegment {
+            generated: receiver_start..key_start,
             source: replacement.source.clone(),
         });
+        code.push_str(name);
+        segments.push(SpreadRewriteSegment {
+            generated: key_start..code.len(),
+            source: replacement.source.clone(),
+        });
+        code.push_str("\"]");
         source_cursor = replacement.source.end;
     }
     push_source_segment(
@@ -448,5 +461,36 @@ mod tests {
             generated_missing - segment.generated.start,
             source_missing - segment.source.start,
         );
+    }
+
+    #[test]
+    fn reserved_property_navigation_maps_only_authored_bytes() {
+        for (expression, expected) in [
+            ("from", vec![(7..11, 0..4)]),
+            (
+                "{ from }",
+                vec![(0..2, 0..2), (2..6, 2..6), (15..19, 2..6), (21..23, 6..8)],
+            ),
+            (
+                "`雪 ${from}`",
+                vec![(0..7, 0..7), (14..18, 7..11), (20..22, 11..13)],
+            ),
+        ] {
+            let rewritten = rewrite(expression, &props(&["from"]))
+                .expect("reserved reads must keep their symbol identity");
+            let actual = rewritten
+                .segments
+                .iter()
+                .map(|segment| (segment.generated.clone(), segment.source.clone()))
+                .collect::<Vec<_>>();
+            assert_eq!(actual, expected, "{expression}");
+            for segment in &rewritten.segments {
+                assert_eq!(
+                    rewritten.code.get(segment.generated.clone()),
+                    expression.get(segment.source.clone()),
+                    "{expression}"
+                );
+            }
+        }
     }
 }

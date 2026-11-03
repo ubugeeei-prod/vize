@@ -12114,6 +12114,40 @@
       }
     },
     {
+      "id": "typechecker/regression/composed-reserved-binding-spans-11768",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "composed-reserved-binding-spans-11768/Probe.vue.txt",
+          "sha256": "218d81df70acceb09229b8d60a19c31348b5851f142abbc81c25b2e6b6c5730c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "composed-reserved-binding-spans-11768/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reserved_template_substitutions::composed_reserved_keys_preserve_authored_argument_diagnostics; physically consumes this mixed static/from input with UTF8 text, LF/CRLF, exact TS2345 Probe.vue(5,41) wrong-from and wrong-static controls and repair. Input-only registration; no native admission or successful host claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/content-mapper-declaration-fallthrough-11591",
       "state": "active",
       "targets": [

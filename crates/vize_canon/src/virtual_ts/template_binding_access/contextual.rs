@@ -14,6 +14,9 @@ impl TemplateBindingAccess<'_> {
             ),
             lexical: Cow::Borrowed(self.lexical.as_ref()),
             instance: None,
+            diagnostic_prefixes: super::DiagnosticPrefixes::Borrowed(
+                self.diagnostic_prefixes.get(),
+            ),
             scope_id: self.scope_id,
         }
     }

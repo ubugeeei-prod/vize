@@ -8,6 +8,8 @@ use super::{helpers::is_reserved_identifier, props::collect_template_prop_names}
 
 mod authored_calls;
 mod contextual;
+mod diagnostic_prefixes;
+use diagnostic_prefixes::DiagnosticPrefixes;
 #[cfg(test)]
 mod script_binding_names_tests;
 use std::{
@@ -18,7 +20,7 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 use vize_croquis::{BindingType, Croquis, ScopeData, ScopeId};
 
 use super::expressions::{BindingRewrite, PreparedInstanceRewrite, prepare_instance_rewrite};
-use super::types::{VirtualTsOptions, VizeMapping};
+use super::types::VirtualTsOptions;
 
 #[derive(Clone, Copy, Debug)]
 enum Receiver {
@@ -55,8 +57,6 @@ struct InstanceAccess<'a> {
     /// Chosen from actual normalized semantic facts before any emission.
     receiver: String,
     cache: RefCell<RewriteCache>,
-    /// Actual generated positions belong to emission, independently of the pure cache.
-    diagnostic_prefixes: RefCell<Vec<VizeMapping>>,
 }
 
 #[derive(Debug)]
@@ -81,6 +81,7 @@ pub(crate) struct TemplateBindingAccess<'a> {
     /// They stay out of the property-receiver projection.
     lexical: Cow<'a, FxHashSet<String>>,
     instance: Option<InstanceStorage<'a>>,
+    diagnostic_prefixes: DiagnosticPrefixes<'a>,
     scope_id: ScopeId,
 }
 
@@ -90,6 +91,7 @@ impl Default for TemplateBindingAccess<'_> {
             names: Cow::Owned(FxHashMap::default()),
             lexical: Cow::Owned(FxHashSet::default()),
             instance: None,
+            diagnostic_prefixes: DiagnosticPrefixes::default(),
             scope_id: ScopeId::ROOT,
         }
     }
@@ -162,7 +164,6 @@ impl<'a> TemplateBindingAccess<'a> {
                 infer_dollar_el,
                 receiver: String::from("__ctx"),
                 cache: RefCell::default(),
-                diagnostic_prefixes: RefCell::default(),
             }));
             self.prepare_instance_context();
         }
@@ -355,6 +356,7 @@ impl<'a> TemplateBindingAccess<'a> {
                 .instance
                 .as_ref()
                 .map(|instance| InstanceStorage::Borrowed(instance.get())),
+            diagnostic_prefixes: DiagnosticPrefixes::Borrowed(self.diagnostic_prefixes.get()),
             scope_id,
         }
     }
@@ -446,24 +448,6 @@ impl<'a> TemplateBindingAccess<'a> {
             }
         })
         .ok()
-    }
-
-    pub(crate) fn record_instance_diagnostic_prefix(&self, mapping: VizeMapping) {
-        if let Some(instance) = &self.instance {
-            instance
-                .get()
-                .diagnostic_prefixes
-                .borrow_mut()
-                .push(mapping);
-            vize_carton::profiler::global_profiler()
-                .record_counter("canon.instance_global_rewrite.diagnostic_prefixes", 1);
-        }
-    }
-
-    pub(crate) fn append_instance_diagnostic_prefixes(&self, output: &mut Vec<VizeMapping>) {
-        if let Some(instance) = &self.instance {
-            output.append(&mut instance.get().diagnostic_prefixes.borrow_mut());
-        }
     }
 
     pub(crate) fn is_empty(&self) -> bool {
