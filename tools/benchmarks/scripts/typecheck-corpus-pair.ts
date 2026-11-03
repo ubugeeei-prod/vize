@@ -426,14 +426,15 @@ function main(): void {
   };
   if (values.batch) {
     const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
+    const headBuild = resolve(values.head);
     const diffs = CORPORA.map((corpus) => {
       const project = projects(corpus, "head");
       const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
       if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
-      const one = runBatchCheck(resolve(values.head), project, corsa);
+      const one = runBatchCheck(headBuild, project, corsa);
       // vize check pins one Corsa checker for determinism (#3905); measure what width changes.
       const checkers = 8;
-      const wide = runBatchCheck(resolve(values.head), project, corsa, {
+      const wide = runBatchCheck(headBuild, project, corsa, {
         VIZE_CHECKERS: String(checkers),
       });
       const widened = diffBatchMapper(corpus.id, wide, one);

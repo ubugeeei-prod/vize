@@ -47,8 +47,9 @@ export function runBatchCheck(
     },
   );
   if (result.error) throw result.error;
-  return (normalizeTypecheckResult(result, projectDir, "json") as { diagnostics: Diagnostic[] })
-    .diagnostics;
+  // The normalizer is untyped JS; its rows are the 6-tuples `Diagnostic` names.
+  const { diagnostics } = normalizeTypecheckResult(result, projectDir, "json");
+  return diagnostics as unknown as Diagnostic[];
 }
 
 export type BatchMapperDiff = {
