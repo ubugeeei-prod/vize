@@ -381,6 +381,13 @@ pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescript
     if opening.name != "template" || opening.self_closing || !canonical_attrs {
         return None;
     }
+    // Only whitespace may follow the closing tag, which holds no other `<`:
+    // refuse a later block from the end before scanning the whole template.
+    let end = source.trim_ascii_end().len();
+    let last_tag = memchr::memrchr(b'<', source.as_bytes().get(..end)?)?;
+    if super::scan::close_at(source.as_bytes(), last_tag, "template")?.end() != end {
+        return None;
+    }
     let content_start = opening.end;
     let (content_end, closing, uncertain) = super::scan::find_template_close(source, content_start);
     let closing = closing?;

@@ -231,7 +231,7 @@ pub(super) fn find_close(bytes: &[u8], from: usize, name: &str) -> Option<Matche
     None
 }
 
-fn close_at(bytes: &[u8], at: usize, name: &str) -> Option<MatchedClose> {
+pub(super) fn close_at(bytes: &[u8], at: usize, name: &str) -> Option<MatchedClose> {
     if bytes.get(at..at + 2) != Some(b"</") {
         return None;
     }
