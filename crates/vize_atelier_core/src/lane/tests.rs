@@ -4,7 +4,7 @@ use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::parse;
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, FxHashMap, Span, cstr};
 
 #[test]
 fn test_transform_simple_element() {
@@ -351,7 +351,7 @@ fn test_codegen_v_if() {
 #[test]
 fn compat_lane_erases_typescript_the_scan_misses() {
     use crate::options::{BindingMetadata, BindingType, CodegenMode};
-    let mut bindings = vize_l0::FxHashMap::default();
+    let mut bindings = FxHashMap::default();
     for (name, kind) in [
         ("count", BindingType::SetupRef),
         ("list", BindingType::SetupConst),
@@ -362,7 +362,7 @@ fn compat_lane_erases_typescript_the_scan_misses() {
     }
     let metadata = BindingMetadata {
         bindings,
-        props_aliases: vize_l0::FxHashMap::default(),
+        props_aliases: FxHashMap::default(),
         is_script_setup: true,
     };
     let battery = [
@@ -401,7 +401,7 @@ fn compat_lane_erases_typescript_the_scan_misses() {
                     ..Default::default()
                 },
             );
-            let code = vize_l0::cstr!("{}\n{}", result.preamble, result.code);
+            let code = cstr!("{}\n{}", result.preamble, result.code);
             let parsed_allocator = oxc_allocator::Allocator::default();
             let diagnostics = oxc_parser::Parser::new(
                 &parsed_allocator,
