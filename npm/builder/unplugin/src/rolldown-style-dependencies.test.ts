@@ -36,7 +36,7 @@ function filesUnder(
   });
 }
 
-void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses imports", (t) => {
+void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS file", (t) => {
   const requireFromWorkspace = createRequire(path.join(workspaceRoot, "package.json"));
   const tsdown = requireFromWorkspace.resolve("tsdown");
   const cli = requireFromWorkspace.resolve("tsdown/run");
@@ -65,6 +65,8 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
     id: string;
     source: string;
     expectedError: RegExp | null;
+    /** Defaults to the block's red rule. */
+    expectedCss?: RegExp;
     scoped?: boolean;
     /** `foo.css` moved to a package or an aliased directory (#11482). */
     cssAt?: string;
@@ -108,6 +110,8 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
       expectedError: /<style src="missing-css\/foo\.css"> not found/,
     },
     {
+      // @tsdown/css passes the @import of a virtual stylesheet through, as it
+      // does for unplugin-vue's.
       id: "inline-import",
       source: input.content
         .toString("utf8")
@@ -115,7 +119,8 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
           '<style scoped src="./foo.css"></style>',
           '<style scoped>@import "./foo.css";</style>',
         ),
-      expectedError: /CSS @import in <style> is not supported by @vizejs\/unplugin/,
+      expectedError: null,
+      expectedCss: /^@import "\.\/foo\.css";/,
     },
     {
       id: "inline-scoped",
@@ -186,10 +191,18 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
         assert.match(`${actual.stdout}${actual.stderr}`, actual.expectedError, actual.id);
       } else {
         assert.equal(actual.status, 0, actual.stderr);
-        const emitted = actual.output.map((file) => file.content).join("\n");
-        assert.match(emitted, /color:\s*red/, actual.id);
-        assert.match(emitted, /document\.createElement\("style"\)/, actual.id);
-        assert.equal(/\.foo\[data-v-[0-9a-f]{8}\]/.test(emitted), actual.scoped, actual.id);
+        // The host's CSS pipeline writes the stylesheet; nothing is injected.
+        assert.deepEqual(
+          actual.output.map((file) => file.path),
+          ["index.mjs", "style.css"],
+          actual.id,
+        );
+        const [js, css] = actual.output.map((file) => file.content);
+        assert.doesNotMatch(js, /document\.createElement\("style"\)/, actual.id);
+        assert.match(css, actual.expectedCss ?? /color:\s*red/, actual.id);
+        if (!actual.expectedCss) {
+          assert.equal(/\.foo\[data-v-[0-9a-f]{8}\]/.test(css), actual.scoped, actual.id);
+        }
       }
     }
   } finally {

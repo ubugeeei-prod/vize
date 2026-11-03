@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { compileVueModule } from "./compiler.ts";
-import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
-import { generateOutput } from "./style.ts";
+import { assertInlinedStyleSrc } from "./style-dependencies.ts";
+import { generateOutput, toStyleBlockInfo } from "./style.ts";
 import { normalizeOptions } from "./unplugin.ts";
 import type { CachedCompiledModule, StyleBlockNapi } from "./types.ts";
 
@@ -14,6 +14,24 @@ function block(content: string, extra: Partial<StyleBlockNapi> = {}): StyleBlock
 }
 
 void test("external style dependency guards preserve lexical and delegated CSS boundaries", (t) => {
+  // Injection runs only when no block needs a host CSS pipeline (see generateOutput).
+  const check = (style: StyleBlockNapi) => {
+    assertInlinedStyleSrc([style], "/project/Foo.vue");
+    const info = toStyleBlockInfo(style);
+    const compiled = {
+      code: "export default {}",
+      css: style.content,
+      scopeId: "x",
+      hasScoped: false,
+      styles: [info],
+    };
+    generateOutput(compiled, {
+      isProduction: true,
+      isDev: false,
+      cssPipeline: false,
+      filePath: "/project/Foo.vue",
+    });
+  };
   const cases = [
     { id: "scoped-src", style: block("", { scoped: true, src: "./foo.css" }), error: "src" },
     { id: "plain-src", style: block("", { src: "./foo.css" }), error: "src" },
@@ -37,7 +55,7 @@ void test("external style dependency guards preserve lexical and delegated CSS b
   ] as const;
   const outcomes = cases.map((item) => {
     try {
-      assertSupportedStyleDependencies([item.style], "/project/Foo.vue");
+      check(item.style);
       return { ...item, outcome: { state: "returned" } };
     } catch (error) {
       return {
@@ -60,14 +78,16 @@ void test("external style dependency guards preserve lexical and delegated CSS b
       assert.equal(actual.outcome.state, "threw", actual.id);
       assert.match(
         JSON.stringify(actual.outcome),
-        actual.error === "src" ? /<style src=/ : /CSS @import/,
+        actual.error === "src"
+          ? /<style src=/
+          : /CSS @import in <style> needs a bundler CSS pipeline/,
       );
       assert.match(JSON.stringify(actual.outcome), /@vizejs\/vite-plugin/);
     }
   }
 });
 
-void test("#11456 compilation inlines style src, keeps inline output and refuses imports before caching", (t) => {
+void test("#11456 compilation inlines style src; only injected output refuses imports", (t) => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-style-src-")));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.writeFileSync(path.join(root, "foo.css"), ".foo {\n  color: red;\n}\n");
@@ -77,6 +97,7 @@ void test("#11456 compilation inlines style src, keeps inline output and refuses
     { id: string; source: string } & (
       | { expected: { scoped: boolean; dependencies: string[] } }
       | { error: RegExp }
+      | { injectError: RegExp }
     )
   > = [
     {
@@ -104,7 +125,7 @@ void test("#11456 compilation inlines style src, keeps inline output and refuses
     {
       id: "inline-import",
       source: '<template><button /></template><style scoped>@import "./foo.css";</style>',
-      error: /CSS @import in <style> is not supported/,
+      injectError: /CSS @import in <style> needs a bundler CSS pipeline/,
     },
     {
       id: "script-literal",
@@ -130,11 +151,22 @@ void test("#11456 compilation inlines style src, keeps inline output and refuses
     try {
       const first = compileVueModule(filePath, item.source, options, cache);
       const second = compileVueModule(filePath, item.source, options, cache);
-      const output = generateOutput(first.compiled, { isProduction: true, isDev: false, filePath });
+      const output = (cssPipeline: boolean) => {
+        try {
+          return generateOutput(first.compiled, {
+            isProduction: true,
+            isDev: false,
+            cssPipeline,
+            filePath,
+          });
+        } catch (error) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      };
       return { item, first, second, output, cacheSize: cache.size, message: null };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return { item, first: null, second: null, output: "", cacheSize: cache.size, message };
+      return { item, first: null, second: null, output: () => "", cacheSize: cache.size, message };
     }
   });
   t.diagnostic(
@@ -156,6 +188,12 @@ void test("#11456 compilation inlines style src, keeps inline output and refuses
     }
     assert.equal(message, null, item.id);
     assert.ok(first && second, item.id);
+    // A pipeline host imports every block; the host resolves its @import.
+    assert.match(output(true), /^import "[^"]+\/Foo\.vue\?vue&type=style&index=0&/, item.id);
+    if ("injectError" in item) {
+      assert.match(output(false), item.injectError, item.id);
+      continue;
+    }
     assert.equal(second.compiled, first.compiled, item.id);
     assert.deepEqual(first.dependencies, item.expected.dependencies, item.id);
     assert.deepEqual(second.dependencies, item.expected.dependencies, item.id);
@@ -163,7 +201,7 @@ void test("#11456 compilation inlines style src, keeps inline output and refuses
       first.compiled.styles.every((style) => style.src === null),
       item.id,
     );
-    assert.match(output, /__vize_css__/, item.id);
+    assert.match(output(false), /__vize_css__/, item.id);
     assert.match(first.compiled.css ?? "", /color:\s*red/, item.id);
     assert.equal(/\.foo\[data-v-/.test(first.compiled.css ?? ""), item.expected.scoped, item.id);
   }

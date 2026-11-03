@@ -12,6 +12,7 @@ void test("esbuild bundles a basic SFC", async (t) => {
     write: false,
     format: "esm",
     platform: "browser",
+    outdir: "out",
     external: ["vue"],
     plugins: [vize({ isProduction: true })],
   });
@@ -21,7 +22,30 @@ void test("esbuild bundles a basic SFC", async (t) => {
   );
   t.assert.ok(jsAsset, "expected a JavaScript output file");
   t.assert.match(jsAsset.text, /Hello from Vize unplugin/);
+  t.assert.doesNotMatch(jsAsset.text, /document\.createElement\("style"\)/);
+  const css = result.outputFiles.find((file) => file.path.endsWith(".css"))?.text ?? "";
+  t.assert.match(css, /\.root\[data-v-[0-9a-f]{8}\] \{\n  color: tomato;/);
   t.assert.snapshot(normalizeSnapshot(jsAsset.text));
+});
+
+void test("esbuild without bundle injects plain CSS, which nothing would import", async (t) => {
+  const result = await build({
+    entryPoints: [resolveFixturePath("basic", "App.vue")],
+    bundle: false,
+    write: false,
+    format: "esm",
+    outdir: "out",
+    plugins: [vize({ isProduction: true })],
+  });
+
+  t.assert.deepEqual(
+    result.outputFiles.map((file) => file.path.endsWith(".css")),
+    [false],
+  );
+  const js = result.outputFiles[0].text;
+  t.assert.match(js, /document\.createElement\("style"\)/);
+  t.assert.match(js, /\.root\[data-v-[0-9a-f]{8}\]\{\\n  color: tomato;/);
+  t.assert.doesNotMatch(js, /type=style/);
 });
 
 void test("esbuild loads delegated style blocks: preprocessed, then scoped", async (t) => {

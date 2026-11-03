@@ -9,7 +9,7 @@ import type {
   SfcCompileResultNapi,
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
-import { assertSupportedStyleDependencies } from "./style-dependencies.ts";
+import { assertInlinedStyleSrc } from "./style-dependencies.ts";
 import { inlineSfcSrcBlocks } from "./src-blocks.ts";
 import type { SfcSrcResolutions } from "../../shared/sfc-src.ts";
 
@@ -92,7 +92,7 @@ export function compileVueModule(
     throw new Error(result.errors.join("\n"));
   }
 
-  assertSupportedStyleDependencies(result.styles, filePath);
+  assertInlinedStyleSrc(result.styles, filePath);
 
   const compiled: CompiledModule = {
     code: result.code,
