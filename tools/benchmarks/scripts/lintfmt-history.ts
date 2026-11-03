@@ -11,11 +11,12 @@
  *
  * Config setups: `vite` is the generated corpus (vite.config.mjs); `json` swaps
  * it for the equivalent vize.config.json that builds before the vite.config
- * migration read. A setup a build rejects (non-zero identity exit other than
+ * migration read. `none` passes --no-config (lint: --preset ecosystem), which
+ * isolates config loading. A setup a build rejects (non-zero identity exit other than
  * lint's 1) is reported and skipped.
  *
  *   node lintfmt-history.ts --corpus DIR --work DIR --bin label=/path/vize ... \
- *     [--setups vite,json] [--tasks lint,fmt] [--threads 1t,max] [--runs 3] \
+ *     [--setups vite,json,none] [--tasks lint,fmt] [--threads 1t,max] [--runs 3] \
  *     [--warmups 1] [--rounds 2] [--perf /path/perf] [--valgrind] \
  *     [--out summary.md] [--json results.json]
  */
@@ -40,7 +41,7 @@ import { isRecord } from "./script-types.ts";
 
 type Task = "lint" | "fmt";
 type Threads = "1t" | "max";
-type Setup = "vite" | "json";
+type Setup = "vite" | "json" | "none";
 type Bin = { label: string; path: string };
 type Spec = { bin: Bin; setup: Setup; task: Task; threads: Threads };
 type Sample = { wallMs: number; cpuMs: number; taskClockMs: number; maxRssKb: number };
@@ -77,8 +78,8 @@ function median(values: number[]): number {
 function copyDir(from: string, to: string, keep: (name: string) => boolean): void {
   rmSync(to, { recursive: true, force: true });
   mkdirSync(to, { recursive: true });
-  for (const name of readdirSync(from)) {
-    if (keep(name)) copyFileSync(join(from, name), join(to, name));
+  for (const entry of readdirSync(from, { withFileTypes: true })) {
+    if (entry.isFile() && keep(entry.name)) copyFileSync(join(from, entry.name), join(to, entry.name));
   }
 }
 
@@ -100,6 +101,7 @@ class Bench {
   readonly vueFiles: string[];
   readonly jsonConfig: string;
   private fmtRun = 0;
+  private loggedStat = false;
 
   constructor(corpus: string, work: string, perf: string | undefined, jsonConfig: string) {
     this.corpus = corpus;
@@ -110,22 +112,24 @@ class Bench {
     const jsonDir = `${corpus.replace(/\/$/, "")}-json`;
     copyDir(corpus, jsonDir, (name) => name !== "vite.config.mjs");
     writeFileSync(join(jsonDir, "vize.config.json"), jsonConfig);
-    this.lintDirs = { vite: corpus, json: jsonDir };
+    this.lintDirs = { vite: corpus, json: jsonDir, none: corpus };
   }
 
   /** A fresh unformatted copy, as the README's prepareFormatDir makes. */
   fmtDir(setup: Setup): string {
     const dir = join(this.work, `fmt-${setup}-${String(++this.fmtRun).padStart(4, "0")}`);
-    copyDir(this.corpus, dir, (name) => name.endsWith(".vue") || (setup === "vite" && name === "vite.config.mjs"));
+    copyDir(this.corpus, dir, (name) => name.endsWith(".vue") || (setup !== "json" && name === "vite.config.mjs"));
     if (setup === "json") writeFileSync(join(dir, "vize.config.json"), this.jsonConfig);
     return dir;
   }
 
   command(spec: Pick<Spec, "task" | "setup">, quiet = true): { args: string[]; cwd: string } {
+    const none = spec.setup === "none";
     if (spec.task === "lint") {
-      return { args: quiet ? ["lint", ".", "--quiet"] : ["lint", "."], cwd: this.lintDirs[spec.setup] };
+      const args = ["lint", ".", ...(quiet ? ["--quiet"] : []), ...(none ? ["--no-config", "--preset", "ecosystem"] : [])];
+      return { args, cwd: this.lintDirs[spec.setup] };
     }
-    return { args: ["fmt", "--write", "*.vue"], cwd: this.fmtDir(spec.setup) };
+    return { args: ["fmt", "--write", ...(none ? ["--no-config"] : []), "*.vue"], cwd: this.fmtDir(spec.setup) };
   }
 
   env(threads: Threads, extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
@@ -155,8 +159,11 @@ class Bench {
     const [user, sys, rss] = readFileSync(timeFile, "utf8").trim().split("\n").at(-1)?.split(" ").map(Number) ?? [];
     let taskClockMs = NaN;
     if (this.perf) {
-      const line = readFileSync(statFile, "utf8").split("\n").find((row) => row.includes("task-clock"));
-      taskClockMs = Number(line?.split(",")[0]);
+      const cells = readFileSync(statFile, "utf8").split("\n").find((row) => row.includes("task-clock"))?.split(",") ?? [];
+      const unit = ({ msec: 1, us: 1e-3, ns: 1e-6 } as Record<string, number>)[cells[1] ?? ""] ?? NaN;
+      taskClockMs = Number(cells[0]) * unit;
+      if (!this.loggedStat) console.error(`perf stat row: ${cells.join(",")}`);
+      this.loggedStat = true;
     }
     return {
       wallMs,
@@ -253,7 +260,7 @@ async function main(): Promise<void> {
   const runs = Number(one("runs", "3"));
   const warmups = Number(one("warmups", "1"));
   const rounds = Number(one("rounds", "2"));
-  const setups = list("setups", "vite,json").filter((s): s is Setup => s === "vite" || s === "json");
+  const setups = list("setups", "vite,json,none").filter((s): s is Setup => s === "vite" || s === "json" || s === "none");
   const tasks = list("tasks", "lint,fmt").filter((t): t is Task => t === "lint" || t === "fmt");
   const threads = list("threads", "1t,max").filter((t): t is Threads => t === "1t" || t === "max");
   const valgrind = one("valgrind") === "true";
