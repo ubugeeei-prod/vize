@@ -35,4 +35,4 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Check original source pairs and complete language project registration
-        run: node --test tests/tooling/language-project-fixtures.test.ts tests/tooling/language-project-registration.test.ts
+        run: node --test tests/tooling/language-project-fixtures.test.ts tests/tooling/language-project-registration.test.ts tests/tooling/language-project-classification-successor.test.ts

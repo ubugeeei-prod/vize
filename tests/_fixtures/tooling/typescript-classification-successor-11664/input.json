@@ -1,0 +1,456 @@
+{
+  "schema": "vize.typescriptClassificationFixture.v1",
+  "issue": 11664,
+  "typescript": "6.0.3",
+  "contract": "whole-encoded-classification-packets-v1",
+  "cases": [
+    {
+      "id": "lf-before-edit",
+      "file": "/src/分類.vue",
+      "source": "<script setup lang=\"ts\">\n// 😀 日本語\nclass Person { value = 1; }\nconst person = new Person();\nperson.value;\n</script>",
+      "projection": {
+        "text": "declare const generatedHelper: number;\nclass Person { value = 1; }\nconst person = new Person();\nperson.value;\ngeneratedHelper;",
+        "extension": ".tsx",
+        "mappings": [[39,71,43,71,0,8192]],
+        "diagnostics": []
+      },
+      "requests": [
+        {
+          "method": "getEncodedSyntacticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 115
+          },
+          "generatedRange": {
+            "start": 39,
+            "length": 71
+          },
+          "raw": {
+            "spans": [
+              39, 5, 3,
+              45, 6, 11,
+              52, 1, 10,
+              54, 5, 2,
+              60, 1, 5,
+              62, 1, 4,
+              63, 1, 10,
+              65, 1, 10,
+              67, 5, 3,
+              73, 6, 2,
+              80, 1, 5,
+              82, 3, 3,
+              86, 6, 2,
+              92, 1, 10,
+              93, 1, 10,
+              94, 1, 10,
+              96, 6, 2,
+              102, 1, 10,
+              103, 5, 2,
+              108, 1, 10,
+              110, 15, 2,
+              125, 1, 10
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              35, 5, 3,
+              41, 6, 11,
+              48, 1, 10,
+              50, 5, 2,
+              56, 1, 5,
+              58, 1, 4,
+              59, 1, 10,
+              61, 1, 10,
+              63, 5, 3,
+              69, 6, 2,
+              76, 1, 5,
+              78, 3, 3,
+              82, 6, 2,
+              88, 1, 10,
+              89, 1, 10,
+              90, 1, 10,
+              92, 6, 2,
+              98, 1, 10,
+              99, 5, 2,
+              104, 1, 10
+            ],
+            "endOfLineState": 0
+          }
+        },
+        {
+          "method": "getEncodedSemanticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 115
+          },
+          "generatedRange": {
+            "start": 39,
+            "length": 71
+          },
+          "raw": {
+            "spans": [
+              45, 6, 257,
+              54, 5, 2561,
+              73, 6, 2057,
+              86, 6, 256,
+              96, 6, 2056,
+              103, 5, 2560,
+              110, 15, 2056
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              41, 6, 257,
+              50, 5, 2561,
+              69, 6, 2057,
+              82, 6, 256,
+              92, 6, 2056,
+              99, 5, 2560
+            ],
+            "endOfLineState": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "lf-after-edit",
+      "file": "/src/分類.vue",
+      "source": "\n<script setup lang=\"ts\">\n// 😀 日本語\nclass Person { value = 12; }\nconst person = new Person();\nperson.value;\n</script>",
+      "projection": {
+        "text": "\ndeclare const generatedHelper: number;\nclass Person { value = 12; }\nconst person = new Person();\nperson.value;\ngeneratedHelper;",
+        "extension": ".tsx",
+        "mappings": [[40,72,44,72,0,8192]],
+        "diagnostics": []
+      },
+      "requests": [
+        {
+          "method": "getEncodedSyntacticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 117
+          },
+          "generatedRange": {
+            "start": 40,
+            "length": 72
+          },
+          "raw": {
+            "spans": [
+              40, 5, 3,
+              46, 6, 11,
+              53, 1, 10,
+              55, 5, 2,
+              61, 1, 5,
+              63, 2, 4,
+              65, 1, 10,
+              67, 1, 10,
+              69, 5, 3,
+              75, 6, 2,
+              82, 1, 5,
+              84, 3, 3,
+              88, 6, 2,
+              94, 1, 10,
+              95, 1, 10,
+              96, 1, 10,
+              98, 6, 2,
+              104, 1, 10,
+              105, 5, 2,
+              110, 1, 10,
+              112, 15, 2,
+              127, 1, 10
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              36, 5, 3,
+              42, 6, 11,
+              49, 1, 10,
+              51, 5, 2,
+              57, 1, 5,
+              59, 2, 4,
+              61, 1, 10,
+              63, 1, 10,
+              65, 5, 3,
+              71, 6, 2,
+              78, 1, 5,
+              80, 3, 3,
+              84, 6, 2,
+              90, 1, 10,
+              91, 1, 10,
+              92, 1, 10,
+              94, 6, 2,
+              100, 1, 10,
+              101, 5, 2,
+              106, 1, 10
+            ],
+            "endOfLineState": 0
+          }
+        },
+        {
+          "method": "getEncodedSemanticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 117
+          },
+          "generatedRange": {
+            "start": 40,
+            "length": 72
+          },
+          "raw": {
+            "spans": [
+              46, 6, 257,
+              55, 5, 2561,
+              75, 6, 2057,
+              88, 6, 256,
+              98, 6, 2056,
+              105, 5, 2560,
+              112, 15, 2056
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              42, 6, 257,
+              51, 5, 2561,
+              71, 6, 2057,
+              84, 6, 256,
+              94, 6, 2056,
+              101, 5, 2560
+            ],
+            "endOfLineState": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "crlf-before-edit",
+      "file": "/src/分類.vue",
+      "source": "<script setup lang=\"ts\">\r\n// 😀 日本語\r\nclass Person { value = 1; }\r\nconst person = new Person();\r\nperson.value;\r\n</script>",
+      "projection": {
+        "text": "declare const generatedHelper: number;\r\nclass Person { value = 1; }\r\nconst person = new Person();\r\nperson.value;\r\ngeneratedHelper;",
+        "extension": ".tsx",
+        "mappings": [[40,74,45,74,0,8192]],
+        "diagnostics": []
+      },
+      "requests": [
+        {
+          "method": "getEncodedSyntacticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 120
+          },
+          "generatedRange": {
+            "start": 40,
+            "length": 74
+          },
+          "raw": {
+            "spans": [
+              40, 5, 3,
+              46, 6, 11,
+              53, 1, 10,
+              55, 5, 2,
+              61, 1, 5,
+              63, 1, 4,
+              64, 1, 10,
+              66, 1, 10,
+              69, 5, 3,
+              75, 6, 2,
+              82, 1, 5,
+              84, 3, 3,
+              88, 6, 2,
+              94, 1, 10,
+              95, 1, 10,
+              96, 1, 10,
+              99, 6, 2,
+              105, 1, 10,
+              106, 5, 2,
+              111, 1, 10,
+              114, 15, 2,
+              129, 1, 10
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              37, 5, 3,
+              43, 6, 11,
+              50, 1, 10,
+              52, 5, 2,
+              58, 1, 5,
+              60, 1, 4,
+              61, 1, 10,
+              63, 1, 10,
+              66, 5, 3,
+              72, 6, 2,
+              79, 1, 5,
+              81, 3, 3,
+              85, 6, 2,
+              91, 1, 10,
+              92, 1, 10,
+              93, 1, 10,
+              96, 6, 2,
+              102, 1, 10,
+              103, 5, 2,
+              108, 1, 10
+            ],
+            "endOfLineState": 0
+          }
+        },
+        {
+          "method": "getEncodedSemanticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 120
+          },
+          "generatedRange": {
+            "start": 40,
+            "length": 74
+          },
+          "raw": {
+            "spans": [
+              46, 6, 257,
+              55, 5, 2561,
+              75, 6, 2057,
+              88, 6, 256,
+              99, 6, 2056,
+              106, 5, 2560,
+              114, 15, 2056
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              43, 6, 257,
+              52, 5, 2561,
+              72, 6, 2057,
+              85, 6, 256,
+              96, 6, 2056,
+              103, 5, 2560
+            ],
+            "endOfLineState": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "crlf-after-edit",
+      "file": "/src/分類.vue",
+      "source": "\r\n<script setup lang=\"ts\">\r\n// 😀 日本語\r\nclass Person { value = 12; }\r\nconst person = new Person();\r\nperson.value;\r\n</script>",
+      "projection": {
+        "text": "\r\ndeclare const generatedHelper: number;\r\nclass Person { value = 12; }\r\nconst person = new Person();\r\nperson.value;\r\ngeneratedHelper;",
+        "extension": ".tsx",
+        "mappings": [[42,75,47,75,0,8192]],
+        "diagnostics": []
+      },
+      "requests": [
+        {
+          "method": "getEncodedSyntacticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 123
+          },
+          "generatedRange": {
+            "start": 42,
+            "length": 75
+          },
+          "raw": {
+            "spans": [
+              42, 5, 3,
+              48, 6, 11,
+              55, 1, 10,
+              57, 5, 2,
+              63, 1, 5,
+              65, 2, 4,
+              67, 1, 10,
+              69, 1, 10,
+              72, 5, 3,
+              78, 6, 2,
+              85, 1, 5,
+              87, 3, 3,
+              91, 6, 2,
+              97, 1, 10,
+              98, 1, 10,
+              99, 1, 10,
+              102, 6, 2,
+              108, 1, 10,
+              109, 5, 2,
+              114, 1, 10,
+              117, 15, 2,
+              132, 1, 10
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              39, 5, 3,
+              45, 6, 11,
+              52, 1, 10,
+              54, 5, 2,
+              60, 1, 5,
+              62, 2, 4,
+              64, 1, 10,
+              66, 1, 10,
+              69, 5, 3,
+              75, 6, 2,
+              82, 1, 5,
+              84, 3, 3,
+              88, 6, 2,
+              94, 1, 10,
+              95, 1, 10,
+              96, 1, 10,
+              99, 6, 2,
+              105, 1, 10,
+              106, 5, 2,
+              111, 1, 10
+            ],
+            "endOfLineState": 0
+          }
+        },
+        {
+          "method": "getEncodedSemanticClassifications",
+          "format": "2020",
+          "authoredRange": {
+            "start": 0,
+            "length": 123
+          },
+          "generatedRange": {
+            "start": 42,
+            "length": 75
+          },
+          "raw": {
+            "spans": [
+              48, 6, 257,
+              57, 5, 2561,
+              78, 6, 2057,
+              91, 6, 256,
+              102, 6, 2056,
+              109, 5, 2560,
+              117, 15, 2056
+            ],
+            "endOfLineState": 0
+          },
+          "expected": {
+            "spans": [
+              45, 6, 257,
+              54, 5, 2561,
+              75, 6, 2057,
+              88, 6, 256,
+              99, 6, 2056,
+              106, 5, 2560
+            ],
+            "endOfLineState": 0
+          }
+        }
+      ]
+    }
+  ]
+}
