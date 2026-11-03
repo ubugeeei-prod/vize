@@ -93,7 +93,7 @@ pub struct CheckArgs {
     #[arg(long)]
     pub servers: Option<usize>,
 
-    /// Checker workers per Corsa CLI process (default: 1, or VIZE_CHECKERS)
+    /// Corsa checker workers (default: 1 per shard, 8 unsharded; or VIZE_CHECKERS)
     #[arg(long)]
     pub checkers: Option<std::num::NonZeroUsize>,
 
