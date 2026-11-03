@@ -215,3 +215,25 @@ void test("#11483 Babel bundles nothing, so it injects plain CSS and imports no 
   assert.match(generated, /document\.createElement\("style"\)/);
   assert.doesNotMatch(generated, /type=style/);
 });
+
+void test("#11521 Babel injects a CSS module block and rejects a preprocessor block", () => {
+  const plugin = vizeBabel({}, { isProduction: true, root: "/project" });
+  const generate = (source: string) => {
+    let generated = "";
+    plugin.parserOverride(source, { filename: "/project/src/Foo.vue" }, (code) => {
+      generated = code;
+      return null;
+    });
+    return generated;
+  };
+  const module = generate(cases.find((item) => item.id === "module")!.source);
+  assert.doesNotMatch(module, /type=style/);
+  const local = /"foo": "([\w-]+)"/.exec(module)?.[1];
+  assert.ok(local, module);
+  assert.match(module, new RegExp(`__vize_css__ = "\\.${local} \\{`));
+  // Negative control: Babel compiles no Sass, so the block is an error.
+  assert.throws(
+    () => generate(cases.find((item) => item.id === "scss")!.source),
+    /<style lang="scss"> needs a bundler CSS pipeline/,
+  );
+});

@@ -1,4 +1,5 @@
 import { parseCssAst } from "@vizejs/native";
+import { isPreprocessorLang } from "./style-scope.ts";
 import type { StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
 function hasImportRule(ast: unknown): boolean {
@@ -25,9 +26,17 @@ export function assertInlinedStyleSrc(styles: readonly StyleBlockNapi[], filenam
   }
 }
 
-/** CSS injected at run time is a string in the page, so nothing resolves its `@import`. */
+/**
+ * CSS injected at run time is a string in the page: nothing compiles a
+ * preprocessor block or resolves an `@import` there.
+ */
 export function assertInjectableCss(styles: readonly StyleBlockInfo[], filename: string): void {
   for (const style of styles) {
+    if (isPreprocessorLang(style.lang)) {
+      throw new Error(
+        `[vize] ${filename}: <style lang="${style.lang}"> needs a bundler CSS pipeline. @vizejs/unplugin injects CSS at run time under Babel and esbuild without \`bundle\`, where nothing compiles ${style.lang}. Bundle the build, write the block as CSS, or use @vizejs/vite-plugin.`,
+      );
+    }
     if (!style.content.includes("@")) {
       continue;
     }

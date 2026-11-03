@@ -119,3 +119,36 @@ void test("esbuild compiles an unscoped preprocessor block before its CSS loader
     /<style lang="scss"> needs sass or sass-embedded installed/,
   );
 });
+
+// #11521: esbuild without `bundle` never follows an import, so a block it
+// cannot inject must fail instead of leaving a dangling style import.
+void test("esbuild without bundle injects CSS modules and rejects preprocessor blocks", async (t) => {
+  const root = prepareOutputDir("esbuild-unbundled-blocks");
+  const app = path.join(root, "App.vue");
+  const options = {
+    entryPoints: [app],
+    bundle: false,
+    write: false,
+    format: "esm" as const,
+    outdir: path.join(root, "out"),
+    logLevel: "silent" as const,
+    plugins: [vize({ isProduction: true, root })],
+  };
+  fs.writeFileSync(
+    app,
+    '<template><p :class="$style.a">x</p></template>\n<style module>\n.a { color: green; }\n</style>\n',
+  );
+  const result = await build(options);
+  const js = result.outputFiles[0].text;
+  t.assert.doesNotMatch(js, /type=style/);
+  const local = /"a": "([\w-]+)"/.exec(js)?.[1];
+  t.assert.ok(local, js);
+  t.assert.match(js, new RegExp(`__vize_css__ = "\\.${local} \\{`));
+
+  // Negative control: nothing here compiles Sass, so the block is an error.
+  fs.writeFileSync(
+    app,
+    '<template><p class="a">x</p></template>\n<style lang="scss">\n$c: red;\n.a { color: $c; }\n</style>\n',
+  );
+  await t.assert.rejects(build(options), /<style lang="scss"> needs a bundler CSS pipeline/);
+});

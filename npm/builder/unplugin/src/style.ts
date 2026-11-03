@@ -1,20 +1,10 @@
 import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
 import { styleRequestId } from "./request.ts";
 import { assertInjectableCss } from "./style-dependencies.ts";
-import { isPreprocessorLang } from "./style-scope.ts";
 import type { CompiledModule, HostCss, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
-
-function needsPreprocessor(block: StyleBlockInfo): boolean {
-  return isPreprocessorLang(block.lang);
-}
 
 function isCssModule(block: StyleBlockInfo): boolean {
   return block.module !== false;
-}
-
-/** Blocks only a host CSS pipeline can serve. */
-export function hasDelegatedStyles(compiled: CompiledModule): boolean {
-  return compiled.styles.some((style) => needsPreprocessor(style) || isCssModule(style));
 }
 
 export function generateScopeId(
@@ -79,7 +69,7 @@ export interface GenerateOutputOptions {
   isDev: boolean;
   /**
    * A host that bundles stylesheets gets every block as a style module and
-   * writes the CSS; with `"none"`, plain CSS is injected at run time.
+   * writes the CSS; with `"none"`, the compiled CSS is injected at run time.
    */
   hostCss: HostCss;
   filePath: string;
@@ -116,7 +106,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     output += "\nexport default _sfc_main;";
   }
 
-  if (hostCss !== "none" || hasDelegatedStyles(compiled)) {
+  if (hostCss !== "none") {
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
 
@@ -165,9 +155,13 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         `${cssModuleSetup}\nexport default _sfc_main;`,
       );
     }
-  } else if (compiled.css) {
+  } else {
+    // The compiled CSS carries CSS Modules' local names, which the compiled
+    // `__cssModules` maps.
     assertInjectableCss(compiled.styles, filePath);
-    output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
+    if (compiled.css) {
+      output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
+    }
   }
 
   if (!isProduction && isDev && hasExportDefault && supportsTemplateOnlyHmr(output)) {
