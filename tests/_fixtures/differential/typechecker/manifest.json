@@ -12982,6 +12982,55 @@
       }
     },
     {
+      "id": "typechecker/regression/nested-dynamic-vfor-11728",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nested-dynamic-vfor-11728/Cell.vue.txt",
+          "sha256": "d9740fabf9530c9b86d280ec86f677270000587f1afa7592792a0605ef261a1c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Clean.vue.txt",
+          "sha256": "510e5867d7e892ce9fd22e3af9f55a45611eb2fa1d51adaebc339f3013706e8f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Errors.vue.txt",
+          "sha256": "dba4238d7b41e2fc6d6cf1f6b5eb7af403e777803f33b32cee4f02c9cb59e839",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Scoped.vue.txt",
+          "sha256": "c3d07640ff9d8abe6b63acd70583f27a709417a2a2203c503213d95752767a45",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/globals.d.ts.txt",
+          "sha256": "814e696cf0c4587af695430381379f439848ef1df0555fab331c1375fd996c6d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nested_dynamic_component_loops::nested_dynamic_component_loops_keep_lexical_values_and_wrong_payloads; #11728 authored table ancestry, nested component/for scope, colliding instance globals and TS2322 wrong-value negative control. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/package-import-redirects-11317",
       "state": "active",
       "targets": [

@@ -32,6 +32,8 @@ mod native_adapter_tests;
 mod pending_text;
 #[cfg(test)]
 mod svg_title_tests;
+#[cfg(test)]
+mod table_component_tests;
 mod template_syntax;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
