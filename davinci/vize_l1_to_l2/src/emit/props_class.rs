@@ -1,12 +1,23 @@
 //! Class prop value emission for static + dynamic class pairs.
 
 use vize_l2::expr::JsExpr;
-use vize_l2::op::BindOp;
+use vize_l2::op::{BindOp, DynamicName};
 
 use super::js::{escape_js_string, js_expr_source};
 use super::props_object::Piece;
 use super::props_value::authored_value_padding;
 use super::{EmitCx, EmitError};
+
+/// A lone JSX `class` is emitted as authored: `createVNode` normalizes only
+/// truthy non-strings, so falsy values must reach `patchClass` unchanged.
+pub(super) fn is_runtime_jsx_class(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
+    cx.jsx_class
+        && !super::props_object::pieces_have_static_attr(pieces, "class")
+        && pieces.iter().any(|piece| match piece {
+            Piece::Bind(bind) => matches!(bind.name, Some(DynamicName::Static("class"))),
+            _ => false,
+        })
+}
 
 pub(super) fn emit_class_value(
     cx: &mut EmitCx<'_>,

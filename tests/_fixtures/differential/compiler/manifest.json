@@ -971,6 +971,59 @@
       }
     },
     {
+      "id": "compiler/sfc/jsx-class-template-control-11516",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "jsx-class-template-control-11516",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "98c05ba3b34b159ef311c136d4b15f56edbc7b71a737384ae1ea418110364775"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-class-template-control-11516/module.expected.txt",
+        "sha256": "a7e57777a6f15e07f7b9faf07cf8716d30fa194979f330bce43fff74efe6ec21",
+        "source": "vize 0.474.0-dev ci-opt CLI built from main; canonical SSR argv; the same binary reproduces the pinned jsx-vdom-template-control-6890 and tsx-setup-jsx-bindings modules byte for byte."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Ordinary SFC template :class regression control only; no whole-product native SFC/SSR admission is claimed. JSX VDOM class values are independently executed by vue_jsx_vapor_compat_oracle."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "state": "active",
       "targets": ["ssr"],

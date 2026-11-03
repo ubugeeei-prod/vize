@@ -133,7 +133,9 @@ fn emit_owned_bind_props(
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
     // The shipped branch emitter writes the keyed object directly.
-    let normalize = !for_item && if_key.is_none() && has_dynamic_bind_name(bindings, if_key);
+    // Elements skip `createVNode`, so a JSX class is normalized here instead.
+    let normalize = (!for_item && if_key.is_none() && has_dynamic_bind_name(bindings, if_key))
+        || (is_plain_element && super::props_class::is_runtime_jsx_class(cx, &pieces));
     if normalize {
         cx.buf.use_normalize_props();
         cx.buf.push(Buf::normalize_props_alias());

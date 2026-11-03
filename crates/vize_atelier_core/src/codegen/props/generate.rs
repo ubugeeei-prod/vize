@@ -205,11 +205,10 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
         return;
     }
 
-    // Check if we need normalizeProps wrapper
-    // - dynamic v-model argument
-    // - dynamic v-bind key (:[attr])
-    // - dynamic v-on key (@[event])
-    let needs_normalize = scan.needs_normalize();
+    // normalizeProps wraps dynamic v-model args and v-bind/v-on keys, and a lone
+    // JSX class on an element, which skips `createVNode` normalization.
+    let jsx_class = ctx.jsx_class && ctx.props_is_plain_element && scan.has_lone_dynamic_class();
+    let needs_normalize = scan.needs_normalize() || jsx_class;
     if needs_normalize {
         ctx.use_helper(RuntimeHelper::NormalizeProps);
         ctx.push(ctx.helper(RuntimeHelper::NormalizeProps));

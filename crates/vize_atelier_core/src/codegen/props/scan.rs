@@ -185,6 +185,12 @@ impl<'props> PropsScan<'props> {
         self.has_dynamic_vmodel || self.has_dynamic_key
     }
 
+    /// A dynamic `class` with no static class merged into it.
+    #[inline]
+    pub(super) fn has_lone_dynamic_class(&self) -> bool {
+        self.has_dynamic_class && self.static_merge().class.is_none()
+    }
+
     #[inline]
     pub(super) fn skip_static_class(&self) -> bool {
         self.merge_props && self.static_class.is_some() && self.has_dynamic_class
