@@ -35,9 +35,19 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
         "<template lang='html'>",
         "<template lang=\"html\">",
     ] {
-        for first in tokens {
-            for second in tokens {
-                let source = format!(" \r\n{opening}{first}{second}</template>\t");
+        for (first, second, closing, tail) in tokens.iter().flat_map(|first| {
+            tokens.iter().flat_map(move |second| {
+                ["</template>", "</TEMPLATE \n>"]
+                    .into_iter()
+                    .flat_map(move |closing| {
+                        ["\t", "\n<script>x</script>\n", "<!-- c -->"]
+                            .into_iter()
+                            .map(move |tail| (first, second, closing, tail))
+                    })
+            })
+        }) {
+            {
+                let source = format!(" \r\n{opening}{first}{second}{closing}{tail}");
                 let original = observe(&arena, &source, options);
                 let fast = observe_template_only(&source);
                 let expected = original.admitted().ok().filter(|_| {
