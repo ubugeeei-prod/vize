@@ -187,6 +187,48 @@ test("multiple selection toggles independent options and emits readonly arrays",
   handle.unmount();
 });
 
+for (const selectionMode of ["single", "multiple"] as const) {
+  for (const key of ["Enter", " "]) {
+    test(`IME ${JSON.stringify(key)} preserves ${selectionMode} listbox selection`, async () => {
+      const handle = mountListbox({ ariaLabel: "Letters", selectionMode });
+      try {
+        const root = handle.getByRole("listbox", { name: "Letters" });
+        root.focus();
+        await handle.press(root, "ArrowDown");
+        const activeId = root.getAttribute("aria-activedescendant");
+        const event = new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          isComposing: true,
+          key,
+        });
+        root.dispatchEvent(event);
+        await nextTick();
+
+        assert.equal(event.defaultPrevented, false);
+        assert.equal(root.getAttribute("aria-activedescendant"), activeId);
+        assert.equal(
+          handle.getByRole("option", { name: "Bravo" }).getAttribute("aria-selected"),
+          "false",
+        );
+        assert.deepEqual(handle.recorded(), []);
+
+        await handle.press(root, key);
+        assert.equal(
+          handle.getByRole("option", { name: "Bravo" }).getAttribute("aria-selected"),
+          "true",
+        );
+        assert.deepEqual(
+          handle.recorded().map(({ event }) => event),
+          ["update:modelValue", "change"],
+        );
+      } finally {
+        handle.unmount();
+      }
+    });
+  }
+}
+
 test("controlled selection waits for the parent to accept the requested value", async () => {
   const handle = mountListbox({ ariaLabel: "Letters", modelValue: "alpha" });
   const alpha = handle.getByRole("option", { name: "Alpha" });
