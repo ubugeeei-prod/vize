@@ -363,6 +363,10 @@ jobs:
           cache: true
           run-install: false
 
+      # Runtime contract tests load vue, happy-dom and the Vapor runtime.
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
       # Snapshot fixtures are Pkl.
       - name: Install Pkl
         run: npm install --global @pkl-community/pkl@0.27.2
