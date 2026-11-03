@@ -10,6 +10,13 @@ use vize_carton::{CompactString, FxHashSet, String, append};
 
 use crate::virtual_ts::DECLARATION_HELPERS_DTS;
 
+// vue-tsc admits undeclared attributes through this global unless
+// `checkUnknownProps` is set. Emitted components follow the same switch, so
+// plain TS and strict consumers still reject extra keys.
+const EXTRA_KEYS_ALIAS: &str = "$ExtraInputKeys";
+const EXTRA_KEYS_DEFAULT: &str = "Exclude<keyof Authored, keyof Allowed>";
+const EXTRA_KEYS_WITH_FALLBACK: &str = "Exclude<keyof Authored, keyof Allowed | (typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P } ? keyof P : never)>";
+
 fn helpers() -> &'static (Vec<CompactString>, String) {
     static HELPERS: OnceLock<(Vec<CompactString>, String)> = OnceLock::new();
     HELPERS.get_or_init(|| {
@@ -27,8 +34,29 @@ fn helpers() -> &'static (Vec<CompactString>, String) {
                 _ => None,
             })
             .collect();
+        let extra_keys = parsed
+            .program
+            .body
+            .iter()
+            .find_map(|statement| match statement {
+                Statement::TSTypeAliasDeclaration(alias) if alias.id.name == EXTRA_KEYS_ALIAS => {
+                    Some(alias.span)
+                }
+                _ => None,
+            });
         let exports = names.join(", ");
         let mut module = String::from(DECLARATION_HELPERS_DTS);
+        if let Some(span) = extra_keys
+            && let Some(offset) = module
+                .get(span.start as usize..span.end as usize)
+                .and_then(|alias| alias.find(EXTRA_KEYS_DEFAULT))
+        {
+            let start = span.start as usize + offset;
+            module.replace_range(
+                start..start + EXTRA_KEYS_DEFAULT.len(),
+                EXTRA_KEYS_WITH_FALLBACK,
+            );
+        }
         append!(module, "\nexport type {{ {exports} }};\n");
         (names, module)
     })
@@ -70,6 +98,39 @@ pub(super) fn module_specifier(depth: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn extra_keys_aliases(source: &str) -> Vec<&str> {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, source, SourceType::d_ts()).parse();
+        parsed
+            .program
+            .body
+            .iter()
+            .filter_map(|statement| match statement {
+                Statement::TSTypeAliasDeclaration(alias) if alias.id.name == EXTRA_KEYS_ALIAS => {
+                    source.get(alias.span.start as usize..alias.span.end as usize)
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn declaration_extra_keys_yield_to_the_vue_tsc_props_fallback() {
+        let original = extra_keys_aliases(DECLARATION_HELPERS_DTS);
+        assert_eq!(original.len(), 1);
+        let expected = original[0].replacen(EXTRA_KEYS_DEFAULT, EXTRA_KEYS_WITH_FALLBACK, 1);
+        assert_ne!(original[0], expected.as_str());
+        assert_eq!(extra_keys_aliases(module()), vec![expected.as_str()]);
+        // Every other byte stays identical to the mapper's helpers.
+        let exports = helpers().0.join(", ");
+        let shared =
+            vize_carton::cstr!("{DECLARATION_HELPERS_DTS}\nexport type {{ {exports} }};\n");
+        assert_eq!(
+            module().replacen(EXTRA_KEYS_WITH_FALLBACK, EXTRA_KEYS_DEFAULT, 1),
+            shared.as_str()
+        );
+    }
 
     #[test]
     fn helpers_are_parseable_module_exports_and_imports_preserve_depth() {

@@ -12031,6 +12031,45 @@
       }
     },
     {
+      "id": "typechecker/regression/declaration-fallthrough-attrs-11454",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "declaration-fallthrough-attrs-11454/Foo.vue.txt",
+          "sha256": "a73feffd0639d2989d8ecfa6ce036bcbc662bc5e5ed48d988d1c42add5eda153",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "declaration-fallthrough-attrs-11454/Probe.vue.txt",
+          "sha256": "99facc25d3166b1661cf7eb0b8a2db530d292e605aaa4629ac6ba3b4b4db047b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "declaration-fallthrough-attrs-11454/tsconfig.json.txt",
+          "sha256": "c10e4f7c5118e66f3ab60b0c1c6027844daccfb2b7d1d0fb96734bea6bcdf297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; reported #11454 producer and vue-tsc consumer of the emitted declaration, with two-required, emit-only and attribute variants plus genuine wrong-prop, missing-prop, wrong-listener and checkUnknownProps controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-alias-dependent-scope-11450",
       "state": "active",
       "targets": [
