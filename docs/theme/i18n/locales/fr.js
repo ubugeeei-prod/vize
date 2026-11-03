@@ -46,6 +46,7 @@
       "/guide/wasm": "Bindings WASM",
       "/guide/static-analysis": "Analyse statique",
       "/guide/type-checking": "Vérification des types",
+      "/guide/type-checking-beyond-vue-tsc": "Au-delà de vue-tsc",
       "/guide/language-server": "Serveur de langage",
       "/guide/cross-file-complexity": "Complexité inter-fichiers",
       "/guide/analysis-diagnostics": "Diagnostics",

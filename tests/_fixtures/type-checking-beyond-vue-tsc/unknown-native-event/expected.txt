@@ -1,0 +1,4 @@
+src/Accordion.vue
+  error:8:41 [TS2345] Argument of type '(el: HTMLElement) => void' is not assignable to parameter of type '(_e: Event) => unknown'.
+    Types of parameters 'el' and '_e' are incompatible.
+    Type 'Event' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 318 more.

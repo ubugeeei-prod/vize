@@ -46,6 +46,7 @@
       "/guide/wasm": "WASM 绑定",
       "/guide/static-analysis": "静态分析",
       "/guide/type-checking": "类型检查",
+      "/guide/type-checking-beyond-vue-tsc": "超越 vue-tsc 的类型检查",
       "/guide/language-server": "语言服务器",
       "/guide/cross-file-complexity": "跨文件复杂度",
       "/guide/analysis-diagnostics": "诊断",

@@ -46,6 +46,7 @@
       "/guide/wasm": "Bindings WASM",
       "/guide/static-analysis": "Análise estática",
       "/guide/type-checking": "Verificação de tipos",
+      "/guide/type-checking-beyond-vue-tsc": "Além do vue-tsc",
       "/guide/language-server": "Servidor de linguagem",
       "/guide/cross-file-complexity": "Complexidade entre arquivos",
       "/guide/analysis-diagnostics": "Diagnósticos",

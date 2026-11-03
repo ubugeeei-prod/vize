@@ -47,6 +47,7 @@
       "/guide/wasm": "WASM bindings",
       "/guide/static-analysis": "Static analysis",
       "/guide/type-checking": "Type checking",
+      "/guide/type-checking-beyond-vue-tsc": "Beyond vue-tsc",
       "/guide/language-server": "Language server",
       "/guide/cross-file-complexity": "Cross-file complexity",
       "/guide/analysis-diagnostics": "Diagnostics",

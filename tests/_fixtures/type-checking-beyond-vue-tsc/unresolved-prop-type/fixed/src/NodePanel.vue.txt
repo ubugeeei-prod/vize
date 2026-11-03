@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { toRef } from "vue";
+import type { RunData } from "missing-run-data";
+
+interface PanelNode {
+  name: string;
+}
+
+const props = withDefaults(defineProps<{ node?: PanelNode | null; run?: RunData }>(), {
+  node: null,
+});
+const node = toRef(props, "node");
+</script>
+
+<template>
+  <span>{{ node?.name }}</span>
+</template>
