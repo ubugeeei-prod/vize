@@ -18,7 +18,7 @@ fn main() -> ExitCode {
     common::main_result(artifact_command::run_single(
         env::args().nth(1).as_deref(),
         "docs/davinci/plan/corpus-coverage.md",
-        "usage: rust-script tools/commands/davinci/corpus-coverage.rs --write | --check",
-        "rust-script tools/commands/davinci/corpus-coverage.rs --write",
+        "usage: rust-script tools/commands/levels/corpus-coverage.rs --write | --check",
+        "rust-script tools/commands/levels/corpus-coverage.rs --write",
     ))
 }

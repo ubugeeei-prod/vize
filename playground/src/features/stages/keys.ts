@@ -1,4 +1,4 @@
-// Presenter keys for the Davinci tab: `1`-`4` jump to a stage, `←`/`→` walk
+// Presenter keys for the Levels tab: `1`-`4` jump to a stage, `←`/`→` walk
 // the pass timeline. Keys typed into the editor or a form control are never
 // taken.
 

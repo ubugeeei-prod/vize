@@ -19,14 +19,14 @@ identifiers, script setup binding metadata, `cache_handlers`, `scope_id` and
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_option_families.rs` compares the S2
+`crates/vize_atelier_dom/tests/level_s2_option_families.rs` compares the S2
 DOM emitter against the shipped DOM lane byte-for-byte for the model and outlet
 family batteries under the combined production options.
 
 The focused gate is:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_option_families
+cargo test -p vize_atelier_dom --test level_s2_option_families
 ```
 
 This installment does not tick P2-11. The production-lane switch remains open,

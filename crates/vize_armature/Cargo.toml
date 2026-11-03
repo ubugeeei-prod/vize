@@ -34,11 +34,11 @@ htmlize = { workspace = true }
 [dev-dependencies]
 insta = { workspace = true }
 criterion = { workspace = true }
-davinci_harness = { workspace = true }
-davinci_test_support = { workspace = true }
+level_harness = { workspace = true }
+level_test_support = { workspace = true }
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]

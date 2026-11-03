@@ -1,6 +1,6 @@
 name: Editor conformance
 
-# TS-45 (Davinci P5-12): one LSP scenario with exact expectations, played
+# TS-45 (Levels P5-12): one LSP scenario with exact expectations, played
 # through Neovim, Helix, Zed and VS Code against the real `vize lsp`, judged
 # from each client's recorded JSON-RPC transcript. Client pins match the
 # editor-host-smoke action (`tests/tooling/editor-conformance.test.ts`

@@ -27,7 +27,7 @@
 // chain (0 when the whole chain is faithful).
 //
 // Usage:
-//   node tools/support/compat/davinci/html-content-model-oracle.ts --engine chromium|parse5 [--module <path>]
+//   node tools/support/compat/levels/html-content-model-oracle.ts --engine chromium|parse5 [--module <path>]
 
 import { readFileSync } from "node:fs";
 import path from "node:path";

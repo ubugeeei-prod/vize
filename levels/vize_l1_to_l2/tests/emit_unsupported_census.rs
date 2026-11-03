@@ -218,7 +218,7 @@ fn committed_fixture_refusal_census_is_pinned() {
 
 #[test]
 fn optional_hydrated_corpus_census_is_deterministic() {
-    let Some(root) = std::env::var_os("VIZE_DAVINCI_UNSUPPORTED_CENSUS_CORPUS") else {
+    let Some(root) = std::env::var_os("VIZE_LEVEL_UNSUPPORTED_CENSUS_CORPUS") else {
         return;
     };
     let root = PathBuf::from(root);

@@ -169101,42 +169101,42 @@
     "members": [
       {
         "member": "native-original-input-model-vapor-capture.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-capture.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-capture.json",
         "bytes": 51171,
         "crc32": 1406350280,
         "sha256": "27720e133c311ebcd1fb615ad2909d09ea354c21221205faa55cbe00fee8d7ff"
       },
       {
         "member": "native-original-input-model-vapor-capture.json.statuses.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-capture.json.statuses.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-capture.json.statuses.json",
         "bytes": 51,
         "crc32": 1177926977,
         "sha256": "f0a1a217e22a3a8c2072e74e113d6ba010368b4073ea64080afb1cabaa37b15b"
       },
       {
         "member": "native-original-input-model-vapor-primary.development.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-primary.development.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-primary.development.json",
         "bytes": 1739881,
         "crc32": 3179634751,
         "sha256": "77023c6f5774e494cc1b41cc595e7256500cd52661d988f448abd2bad08ffbaa"
       },
       {
         "member": "native-original-input-model-vapor-primary.production.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-primary.production.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-primary.production.json",
         "bytes": 1739838,
         "crc32": 1340696579,
         "sha256": "b0315e720c4c137a26ae5a10d21524f1ac2ffecf284bf58fe97356e3209f4860"
       },
       {
         "member": "native-original-input-model-vapor-runtime.development.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-runtime.development.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-runtime.development.json",
         "bytes": 2171371,
         "crc32": 432829610,
         "sha256": "44f51aef4ed90135ca923fa5e0ded5529472a1cd017841d2a6a79f173a532e27"
       },
       {
         "member": "native-original-input-model-vapor-runtime.production.json",
-        "path": "/private/tmp/vize-overnight-20261031/davinci/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-runtime.production.json",
+        "path": "/private/tmp/vize-overnight-20261031/levels/native-vapor-input-model-20261101/ci-11281-357/vapor-six/native-original-input-model-vapor-runtime.production.json",
         "bytes": 2168985,
         "crc32": 2565132421,
         "sha256": "907b0a611ee99925aabdebec5732fec6d69cc97d4a79833ee616a97bca4ce39e"
@@ -169162,6 +169162,6 @@
     "originWholeCheckGreen": false,
     "originalFailure": "two NEW hygiene test oracle errors: legitimate module import and same-named setup let are distinct symbols; __props has an earlier Source refusal; plus contains assertions rejected by the unchanged assurance policy",
     "freshStrictNormalActionsStillRequired": true,
-    "limits": "Seven original primitive mutable input Models, explicit selected Vapor target, actual 3.6.0-rc.9 DOM and diagnostic lexical getter/setter actions. No public setup/force-update, automatic plain-let reactivity, hydration, upstream raw-map equality, general/default/public Vapor or whole Davinci admission."
+    "limits": "Seven original primitive mutable input Models, explicit selected Vapor target, actual 3.6.0-rc.9 DOM and diagnostic lexical getter/setter actions. No public setup/force-update, automatic plain-let reactivity, hydration, upstream raw-map equality, general/default/public Vapor or whole Levels admission."
   }
 }

@@ -1,8 +1,8 @@
 #![no_main]
 
-// L1 → L2 lowering fuzz target (Davinci P2-8, TS-20).
+// L1 → L2 lowering fuzz target (Levels P2-8, TS-20).
 //
-// Drives the full Davinci template front half with arbitrary UTF-8:
+// Drives the full Levels template front half with arbitrary UTF-8:
 // `vize_l1::markup::parse` (the lossless L1 surface tree, total over
 // malformed input by the typed-hole policy) followed by
 // `vize_l1_to_l2::lower` (the total L1→L2 lowering — L2 ops or

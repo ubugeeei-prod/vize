@@ -1,10 +1,10 @@
-2026-10-07T11:12:17.1245534Z ##[group]Run rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
-2026-10-07T11:12:17.1245944Z [36;1mrust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run[0m
+2026-10-07T11:12:17.1245534Z ##[group]Run rust-script tools/commands/fixtures/level-dom-corpus-workflow.rs run
+2026-10-07T11:12:17.1245944Z [36;1mrust-script tools/commands/fixtures/level-dom-corpus-workflow.rs run[0m
 2026-10-07T11:12:17.1264232Z shell: /usr/bin/bash -e {0}
 2026-10-07T11:12:17.1264368Z env:
 2026-10-07T11:12:17.1264476Z   CARGO_TERM_COLOR: always
 2026-10-07T11:12:17.1264637Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-2026-10-07T11:12:17.1264786Z   VIZE_DAVINCI_DOM_CORPUS_MODE: enforce
+2026-10-07T11:12:17.1264786Z   VIZE_LEVEL_DOM_CORPUS_MODE: enforce
 2026-10-07T11:12:17.1264928Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 244
 2026-10-07T11:12:17.1265069Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 353
 2026-10-07T11:12:17.1265208Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
@@ -151,7 +151,7 @@
 2026-10-07T11:12:20.2453513Z [1m[92m   Compiling[0m oxc-miette-derive v3.0.1
 2026-10-07T11:12:20.2453875Z [1m[92m   Compiling[0m phf_macros v0.14.0
 2026-10-07T11:12:20.2454177Z [1m[92m   Compiling[0m phf_macros v0.13.1
-2026-10-07T11:12:20.2454651Z [1m[92m   Compiling[0m vize_l0_derive v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+2026-10-07T11:12:20.2454651Z [1m[92m   Compiling[0m vize_l0_derive v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l0_derive)
 2026-10-07T11:12:20.2454959Z [1m[92m   Compiling[0m cssparser-macros v0.7.0
 2026-10-07T11:12:20.2455150Z [1m[92m   Compiling[0m zerocopy-derive v0.8.48
 2026-10-07T11:12:20.2726120Z [1m[92m   Compiling[0m cobs v0.3.0
@@ -174,7 +174,7 @@
 2026-10-07T11:12:21.8073597Z [1m[92m   Compiling[0m oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:21.8646160Z [1m[92m   Compiling[0m oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:21.8647035Z [1m[92m   Compiling[0m oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-07T11:12:22.0845633Z [1m[92m   Compiling[0m vize_l0 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l0)
+2026-10-07T11:12:22.0845633Z [1m[92m   Compiling[0m vize_l0 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l0)
 2026-10-07T11:12:22.0846114Z [1m[92m   Compiling[0m oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:22.1358112Z [1m[92m   Compiling[0m half v2.7.1
 2026-10-07T11:12:22.1766307Z [1m[92m   Compiling[0m oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
@@ -182,8 +182,8 @@
 2026-10-07T11:12:22.2806461Z [1m[92m   Compiling[0m ciborium v0.2.2
 2026-10-07T11:12:22.4586345Z [1m[92m   Compiling[0m criterion v0.8.2
 2026-10-07T11:12:23.3904160Z [1m[92m   Compiling[0m vize_carton v0.435.0 (/home/runner/_work/vize/vize/crates/vize_carton)
-2026-10-07T11:12:23.3904603Z [1m[92m   Compiling[0m davinci_test_support v0.435.0 (/home/runner/_work/vize/vize/tests/davinci_test_support)
-2026-10-07T11:12:23.4995603Z [1m[92m   Compiling[0m davinci_harness v0.435.0 (/home/runner/_work/vize/vize/tools/benchmarks/crates/davinci_harness)
+2026-10-07T11:12:23.3904603Z [1m[92m   Compiling[0m level_test_support v0.435.0 (/home/runner/_work/vize/vize/tests/level_test_support)
+2026-10-07T11:12:23.4995603Z [1m[92m   Compiling[0m level_harness v0.435.0 (/home/runner/_work/vize/vize/tools/benchmarks/crates/level_harness)
 2026-10-07T11:12:24.1083890Z [1m[92m   Compiling[0m oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:24.1084521Z [1m[92m   Compiling[0m oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:24.4935159Z [1m[92m   Compiling[0m vize_oxc_parser v0.435.0 (/home/runner/_work/vize/vize/vendor/oxc_parser)
@@ -191,32 +191,32 @@
 2026-10-07T11:12:24.4936671Z [1m[92m   Compiling[0m vize_relief v0.435.0 (/home/runner/_work/vize/vize/crates/vize_relief)
 2026-10-07T11:12:24.8676690Z [1m[92m   Compiling[0m oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-07T11:12:24.8677178Z [1m[92m   Compiling[0m oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-07T11:12:25.4234808Z [1m[92m   Compiling[0m vize_l1 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1)
+2026-10-07T11:12:25.4234808Z [1m[92m   Compiling[0m vize_l1 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l1)
 2026-10-07T11:12:25.7389527Z [1m[92m   Compiling[0m oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-07T11:12:26.2535898Z [1m[92m   Compiling[0m vize_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2)
+2026-10-07T11:12:26.2535898Z [1m[92m   Compiling[0m vize_l2 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l2)
 2026-10-07T11:12:26.2536512Z [1m[92m   Compiling[0m vize_armature v0.435.0 (/home/runner/_work/vize/vize/crates/vize_armature)
-2026-10-07T11:12:27.2348471Z [1m[92m   Compiling[0m vize_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l3)
-2026-10-07T11:12:27.8466938Z [1m[92m   Compiling[0m vize_l1_to_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+2026-10-07T11:12:27.2348471Z [1m[92m   Compiling[0m vize_l3 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l3)
+2026-10-07T11:12:27.8466938Z [1m[92m   Compiling[0m vize_l1_to_l2 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l1_to_l2)
 2026-10-07T11:12:27.8467333Z [1m[92m   Compiling[0m vize_croquis v0.435.0 (/home/runner/_work/vize/vize/crates/vize_croquis)
-2026-10-07T11:12:27.8467677Z [1m[92m   Compiling[0m vize_l2_to_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
-2026-10-07T11:12:29.4118839Z [1m[92m   Compiling[0m vize_l4 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l4)
+2026-10-07T11:12:27.8467677Z [1m[92m   Compiling[0m vize_l2_to_l3 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l2_to_l3)
+2026-10-07T11:12:29.4118839Z [1m[92m   Compiling[0m vize_l4 v0.435.0 (/home/runner/_work/vize/vize/levels/vize_l4)
 2026-10-07T11:12:30.1124715Z [1m[92m   Compiling[0m vize_atelier_core v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
 2026-10-07T11:12:31.0178509Z [1m[92m   Compiling[0m vize_atelier_dom v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
 2026-10-07T11:12:31.0178914Z [1m[92m   Compiling[0m vize_atelier_vapor v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
 2026-10-07T11:12:31.0179294Z [1m[92m   Compiling[0m vize_atelier_ssr v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
 2026-10-07T11:12:31.9374282Z [1m[92m   Compiling[0m vize_atelier_sfc v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
 2026-10-07T11:12:34.5875711Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 17.43s
-2026-10-07T11:12:34.5995283Z [1m[92m     Running[0m tests/davinci_dom_corpus.rs (target/debug/deps/davinci_dom_corpus-f482983927354a4b)
+2026-10-07T11:12:34.5995283Z [1m[92m     Running[0m tests/level_dom_corpus.rs (target/debug/deps/level_dom_corpus-f482983927354a4b)
 2026-10-07T11:12:34.6012312Z 
 2026-10-07T11:12:34.6012442Z running 4 tests
 2026-10-07T11:12:34.6014070Z test canonical_invalid_fixture_allowlist_is_exact ... ok
 2026-10-07T11:12:34.6017937Z test unrelated_invalid_end_tag_still_blocks_old_lane_comparison ... ok
 2026-10-07T11:12:34.6028834Z test nested_anchor_and_button_recoveries_are_compared_not_skipped ... ok
-2026-10-07T11:12:35.5082379Z davinci-differential corpus scope: root=/home/runner/_work/vize/vize/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
-2026-10-07T11:13:09.8913698Z davinci DOM corpus sweep: files=42998 unreadable=0 parsed=42998 templates=42625 compared=42609 patch_fact_entries=390838 old_error_skips=16 s2_refusals=0 divergences=0
-2026-10-07T11:13:09.8914255Z davinci DOM corpus refusal reasons: {}
-2026-10-07T11:13:09.8914671Z davinci DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 20, "MissingEndTag": 10, "MissingWhitespaceBetweenAttributes": 4, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
-2026-10-07T11:13:09.8915069Z davinci DOM corpus refusal samples: {}
+2026-10-07T11:12:35.5082379Z level-differential corpus scope: root=/home/runner/_work/vize/vize/tests/level_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
+2026-10-07T11:13:09.8913698Z levels DOM corpus sweep: files=42998 unreadable=0 parsed=42998 templates=42625 compared=42609 patch_fact_entries=390838 old_error_skips=16 s2_refusals=0 divergences=0
+2026-10-07T11:13:09.8914255Z levels DOM corpus refusal reasons: {}
+2026-10-07T11:13:09.8914671Z levels DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 20, "MissingEndTag": 10, "MissingWhitespaceBetweenAttributes": 4, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
+2026-10-07T11:13:09.8915069Z levels DOM corpus refusal samples: {}
 2026-10-07T11:13:09.8949089Z test dom_emit_agrees_on_sfc_templates ... ok
 2026-10-07T11:13:09.8949285Z 
 2026-10-07T11:13:09.8949455Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.29s

@@ -6,7 +6,7 @@ on:
       - npm/builder/parcel/**
       - npm/native/**
       - crates/**
-      - davinci/**
+      - levels/**
       - Cargo.toml
       - Cargo.lock
       - tools/support/compat/parcel/**

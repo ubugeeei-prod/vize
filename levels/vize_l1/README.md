@@ -1,6 +1,6 @@
 # vize_l1
 
-`vize_l1` is Davinci's lossless Vue-template surface tree. Parsing and
+`vize_l1` is Levels's lossless Vue-template surface tree. Parsing and
 rendering preserve exact source bytes, including malformed input.
 
 Support and deprecation guarantees are defined in the

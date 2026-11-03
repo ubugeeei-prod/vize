@@ -55,7 +55,7 @@ test("docs-only dependency policy changes still run a mandatory metadata gate", 
   );
   assert.match(
     implementation.steps?.map((step) => step.run ?? "").join("\n") ?? "",
-    /node tools\/support\/compat\/davinci\/level-dependencies\.ts --base/,
+    /node tools\/support\/compat\/levels\/level-dependencies\.ts --base/,
   );
   assert.ok(workflow.jobs?.["test-report"]?.needs?.includes("level-dependency-direction"));
 });
@@ -73,8 +73,8 @@ test("dependency checks start without a package-manager bootstrap inside their f
   assert.equal(setup.with?.cache, undefined);
   assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
   for (const command of [
-    "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.ts",
-    'node tools/support/compat/davinci/level-dependencies.ts --base "$DEPENDENCY_BASE"',
+    "node --test tests/tooling/level-dependencies.test.mjs tests/tooling/level-directory-dependencies.test.ts",
+    'node tools/support/compat/levels/level-dependencies.ts --base "$DEPENDENCY_BASE"',
   ]) {
     assert.ok(steps.findIndex((step) => step.run === command) > setupIndex);
   }

@@ -15,7 +15,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const seedTool = path.join(root, "tools/commands/davinci/seed-defects.rs");
+const seedTool = path.join(root, "tools/commands/levels/seed-defects.rs");
 const tablePath = path.join(root, "crates/vize_patina/src/rule_contracts/table.rs");
 const ledgerPath = path.join(root, "docs/davinci/plan/ledger-fn.md");
 const ROW =
@@ -50,7 +50,7 @@ process.on("exit", () => {
 });
 
 function tempDir(label: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `davinci-exact-${label}-`));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `level-exact-${label}-`));
   temps.push(dir);
   return dir;
 }
@@ -100,14 +100,14 @@ function scopeOf(stdout: string): Record<string, number> {
 
 function snippetRules(): string[] {
   const source = fs.readFileSync(
-    path.join(root, "tools/commands/davinci/seed_exact_snippets.rs"),
+    path.join(root, "tools/commands/levels/seed_exact_snippets.rs"),
     "utf8",
   );
   return [...source.matchAll(/snippet\(\s*"([^"]+)",\s*"([^"]+)"/g)].map((match) => match[2]);
 }
 
 function nestingClassIds(): string[] {
-  const source = fs.readFileSync(path.join(root, "tools/commands/davinci/seed_html.rs"), "utf8");
+  const source = fs.readFileSync(path.join(root, "tools/commands/levels/seed_html.rs"), "utf8");
   const body = source.slice(
     source.indexOf("pub const NESTING:"),
     source.indexOf("pub struct Expected"),

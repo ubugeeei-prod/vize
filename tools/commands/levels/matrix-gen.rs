@@ -29,7 +29,7 @@ const DIMENSIONS: &[&str] = &[
     "binding_source",
     "block_combination",
 ];
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/matrix-gen.rs [--write | --check] [--out-dir <dir>]\n\nGenerates construct-matrix fixture stubs from docs/davinci/plan/taxonomy.toml.\nDefault is a dry run that prints the would-be fixture count.";
+const USAGE: &str = "Usage: rust-script tools/commands/levels/matrix-gen.rs [--write | --check] [--out-dir <dir>]\n\nGenerates construct-matrix fixture stubs from docs/davinci/plan/taxonomy.toml.\nDefault is a dry run that prints the would-be fixture count.";
 
 #[derive(Clone, Debug)]
 struct Args {
@@ -81,7 +81,7 @@ fn run() -> Result<u8, (u8, String)> {
     let stubs = generate_stubs(&taxonomy);
     let out_dir = args
         .out_dir
-        .unwrap_or_else(|| root.join("tests/fixtures/davinci-matrix"));
+        .unwrap_or_else(|| root.join("tests/fixtures/level-matrix"));
     describe(&taxonomy);
     let plane = format!(
         "{} element kinds x {} directives",
@@ -301,7 +301,7 @@ fn generate_stubs(taxonomy: &Taxonomy) -> BTreeMap<String, String> {
             let name = format!("{}--{}.vue", kind.id, directive.id);
             let mut lines = vec![
                 "<!--".to_string(),
-                "  generated-by: tools/commands/davinci/matrix-gen.rs (P0-12 skeleton) \u{2014} do not edit"
+                "  generated-by: tools/commands/levels/matrix-gen.rs (P0-12 skeleton) \u{2014} do not edit"
                     .to_string(),
                 format!("  construct: element_kind={} directive={}", kind.id, directive.id),
                 "-->".to_string(),

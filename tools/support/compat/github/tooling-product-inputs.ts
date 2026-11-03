@@ -53,7 +53,7 @@ const readsNativeProducer = (reference: string): boolean => {
 };
 const changesCliProducer = (file: string): boolean =>
   /^(?:Cargo\.(?:toml|lock)|rust-toolchain\.toml)$/u.test(file) ||
-  /^(?:\.cargo|\.github|davinci|vendor)\//u.test(file) ||
+  /^(?:\.cargo|\.github|levels|vendor)\//u.test(file) ||
   /^crates\/(?!vize_vitrine(?:\/|$))/u.test(file) ||
   /^npm\/cli(?:\/|$)/u.test(file) ||
   /^tests\/fixtures\/typechecker\/undeclared-instance-globals-10617(?:\/|$)/u.test(file) ||

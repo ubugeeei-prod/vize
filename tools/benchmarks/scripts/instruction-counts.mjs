@@ -126,7 +126,7 @@ function collect(out, registry, formatter, sfc) {
     "--profile",
     "ci-opt",
     "--features",
-    "davinci_harness/instruction-counts",
+    "level_harness/instruction-counts",
     "--message-format=json",
   ];
   for (const pkg of new Set(selectedSuites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
@@ -138,7 +138,7 @@ function collect(out, registry, formatter, sfc) {
     // Bootstrap cross-job proof must not reuse the same benchmark binaries.
     // Clear only the harness package; Cargo rebuilds its benchmark dependents
     // while retaining unrelated optimized dependencies in the sticky cache.
-    command("cargo", [`+${toolchain}`, "clean", "--profile", "ci-opt", "-p", "davinci_harness"]);
+    command("cargo", [`+${toolchain}`, "clean", "--profile", "ci-opt", "-p", "level_harness"]);
   }
   const build = command("cargo", cargoArgs, { env: buildEnv });
   const artifacts = build
@@ -151,10 +151,10 @@ function collect(out, registry, formatter, sfc) {
     );
   const binaries = selectedSuites.map(([pkg, bench]) => {
     const directory =
-      pkg === "davinci_harness"
+      pkg === "level_harness"
         ? "tools/benchmarks/crates"
-        : fs.existsSync(path.join(root, "davinci", pkg))
-          ? "davinci"
+        : fs.existsSync(path.join(root, "levels", pkg))
+          ? "levels"
           : "crates";
     const source = path.join(root, directory, pkg, "benches", `${bench}.rs`);
     const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);

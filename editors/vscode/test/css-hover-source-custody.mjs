@@ -29,11 +29,11 @@ const reviewedVsixPaths = [
 const historicalBuildPaths = ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".cargo"];
 const reviewedBuildPaths = [
   ...historicalBuildPaths,
-  "davinci",
+  "levels",
   "vendor",
   "assets",
   "tools/benchmarks/crates",
-  "tests/davinci_test_support",
+  "tests/level_test_support",
   "tests/vize_test_runner",
   "npm/cli/schemas/vize.config.schema.json",
   "docs/davinci/plan/budgets.toml",

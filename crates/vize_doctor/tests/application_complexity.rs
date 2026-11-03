@@ -1,5 +1,5 @@
 #![cfg(feature = "application-analysis")]
-//! The template-complexity hotspot finding (Davinci P4-9b): a component
+//! The template-complexity hotspot finding (Levels P4-9b): a component
 //! whose rendered template complexity exceeds the corpus p95 gets one
 //! notice, with its own and rendered scores, its largest contributors and
 //! every file of its render tree as invalidation inputs.

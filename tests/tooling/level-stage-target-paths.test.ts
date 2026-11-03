@@ -62,7 +62,7 @@ test("the renamed DOM filter target retains its legacy oracle feature gate", () 
   assert.ok(target);
   assert.equal(path.basename(target.src_path), "l2_filters.rs");
   assert.deepEqual(target["required-features"], ["legacy"]);
-  assert.ok(!pkg.targets.some((target) => target.name === "davinci_l2_filters"));
+  assert.ok(!pkg.targets.some((target) => target.name === "level_l2_filters"));
 });
 
 test("real Cargo metadata cannot conceal a dangling explicit target from the guard", () => {

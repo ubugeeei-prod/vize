@@ -48,12 +48,12 @@ impl Default for TimingObserver {
 }
 
 impl TimingObserver {
-    /// The default davinci key walks record under. A host that times walks
+    /// The default levels key walks record under. A host that times walks
     /// with its own clock (the stage view in the browser) records under the same
     /// key, so a profile reader has one spelling for "a walk".
-    pub const WALK_KEY: &'static str = "davinci.pass.walk";
+    pub const WALK_KEY: &'static str = "levels.pass.walk";
 
-    /// A timing observer recording under the default davinci key.
+    /// A timing observer recording under the default levels key.
     #[must_use]
     pub const fn new() -> Self {
         Self::with_key(Self::WALK_KEY)

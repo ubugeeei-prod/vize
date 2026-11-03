@@ -25,7 +25,7 @@ pub(super) fn expression_identifier(
 /// identifier or a static member chain.
 ///
 /// Nodes carrying the parse-once retained AST (P1-5) are shape-checked
-/// directly and the legacy throwaway parse dies for them (Davinci P1-6);
+/// directly and the legacy throwaway parse dies for them (Levels P1-6);
 /// nodes without one (invalid or incomplete text, compound expressions) keep
 /// the legacy parse. Under `cfg(any(test, feature = "legacy-differential"))`
 /// every retained check is dual-run against the legacy parse and divergence
@@ -43,7 +43,7 @@ fn component_reference_expression(
         let legacy = parse_component_reference_expression(source);
         assert_eq!(
             result, legacy,
-            "davinci-differential (P1-6): retained-AST component-reference check diverged from the legacy parse for expression {source:?}"
+            "level-differential (P1-6): retained-AST component-reference check diverged from the legacy parse for expression {source:?}"
         );
         crate::drawer::differential::record_component_reference_comparison();
     }

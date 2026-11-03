@@ -44,16 +44,16 @@ for the static/dynamic partition facts P3-3 exports beside the program. The
 facts are their own artifact (SSR reads them without L3), so they are not a
 column of the graph-only `[l3-dump-v2]`; the page lives in the conversion crate
 that owns `PartitionKind`, which is why `vize_l2_to_l3` depends on the tier-1
-`vize_davinci` Folio contract.
+`vize_level` Folio contract.
 
 | section                    | entry grammar                                      |
 | -------------------------- | -------------------------------------------------- |
 | `[s3-partition-folio.ops]` | `op=<n> kind=<static\|dynamic> span=<start>:<end>` |
 
 One record per canonical L3 op, in export order. The TS-17 L2-to-L3 snapshots
-(`davinci/vize_l2_to_l3/tests/l3_snapshots.rs`) print this page instead of the
+(`levels/vize_l2_to_l3/tests/l3_snapshots.rs`) print this page instead of the
 former test-local `[s3-partition-facts]` helper, and
-`davinci/vize_l2_to_l3/tests/partition_folio.rs` pins the TS-16 round-trip laws
+`levels/vize_l2_to_l3/tests/partition_folio.rs` pins the TS-16 round-trip laws
 and the exact rejections. The Spolvero stage ladder feeds it as the
 `s3-partition` page.
 

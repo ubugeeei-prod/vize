@@ -22,7 +22,7 @@
   "acceptance": "record-only: broader workload than the separately enforced nine-file TS-44 baseline",
   "command": [
     "/home/runner/_work/vize/vize/node_modules/.pnpm/node@runtime+24.14.0/node_modules/node/bin/node",
-    "/home/runner/_work/vize/vize/tools/support/compat/davinci/lsp-resources.mjs",
+    "/home/runner/_work/vize/vize/tools/support/compat/levels/lsp-resources.mjs",
     "--server",
     "target/ci-opt/vize",
     "--files",

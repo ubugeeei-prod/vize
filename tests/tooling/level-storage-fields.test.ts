@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { scanStorage } from "./davinci-storage-scan.ts";
+import { scanStorage } from "./level-storage-scan.ts";
 
 test("test-only named fields preserve every neighboring production storage site", () => {
   const fields = [

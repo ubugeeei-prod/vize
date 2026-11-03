@@ -10,7 +10,7 @@
 //! edition = "2024"
 //! ```
 
-use vize_tool_support::common as common;
+use vize_tool_support::common;
 
 use regex::Regex;
 use serde::Serialize;
@@ -25,7 +25,7 @@ use std::{
     thread,
 };
 
-const ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus";
+const ARTIFACT_DIR: &str = "real-project-level-dom-corpus";
 const CORPUS_ROOT: &str = "tests/_fixtures/_git";
 const EXPECTED_GITLINKS: usize = 149;
 const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 150;
@@ -52,7 +52,7 @@ fn run() -> Result<u8, String> {
         }
         [command] if command == "dehydrate" => dehydrate_corpus(ARTIFACT_DIR),
         _ => Err(
-            "usage: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate|run|finalize|finalize-and-dehydrate|dehydrate"
+            "usage: rust-script tools/commands/fixtures/level-dom-corpus-workflow.rs hydrate|run|finalize|finalize-and-dehydrate|dehydrate"
                 .to_string(),
         ),
     }
@@ -89,7 +89,7 @@ fn hydrate_corpus(artifact: &str) -> Result<u8, String> {
     .collect::<Vec<_>>();
     bulk_args.extend(fixture_paths.iter().cloned());
     if run_git(&bulk_args).is_err() {
-        eprintln!("::warning title=Davinci corpus hydrate serial fallback::bulk shallow failed");
+        eprintln!("::warning title=Levels corpus hydrate serial fallback::bulk shallow failed");
         for fixture_path in &fixture_paths {
             hydrate_fixture_serially(fixture_path)?;
         }
@@ -118,7 +118,7 @@ fn hydrate_fixture_serially(fixture_path: &str) -> Result<(), String> {
         return Ok(());
     }
     eprintln!(
-        "::warning title=Davinci corpus hydrate full fallback::{fixture_path}: shallow failed"
+        "::warning title=Levels corpus hydrate full fallback::{fixture_path}: shallow failed"
     );
     run_git(
         &[
@@ -167,7 +167,7 @@ fn finalize_and_dehydrate_corpus(artifact: &str) -> Result<u8, String> {
         (Err(error), Ok(_)) => Err(error),
         (Ok(_), Err(error)) => Err(error),
         (Err(finalize_error), Err(dehydrate_error)) => Err(format!(
-            "{finalize_error}\nfailed to dehydrate Davinci DOM corpus fixtures: {dehydrate_error}"
+            "{finalize_error}\nfailed to dehydrate Levels DOM corpus fixtures: {dehydrate_error}"
         )),
     }
 }
@@ -187,16 +187,16 @@ fn run_corpus() -> Result<u8, String> {
             "--features",
             "legacy-differential",
             "--test",
-            "davinci_dom_corpus",
+            "level_dom_corpus",
             "--",
             "--nocapture",
         ])
-        .env("VIZE_DAVINCI_DIFFERENTIAL_CORPUS", CORPUS_ROOT)
+        .env("VIZE_LEVEL_DIFFERENTIAL_CORPUS", CORPUS_ROOT)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .map_err(|error| format!("failed to run davinci DOM corpus: {error}"))?;
+        .map_err(|error| format!("failed to run levels DOM corpus: {error}"))?;
 
     let stdout = child.stdout.take().unwrap();
     let stderr = child.stderr.take().unwrap();
@@ -206,7 +206,7 @@ fn run_corpus() -> Result<u8, String> {
     let err_thread = thread::spawn(move || copy_stream(stderr, std::io::stderr(), err_log));
     let status = child
         .wait()
-        .map_err(|error| format!("failed to wait for davinci DOM corpus: {error}"))?;
+        .map_err(|error| format!("failed to wait for levels DOM corpus: {error}"))?;
     out_thread
         .join()
         .map_err(|_| "failed to join stdout thread".to_string())??;
@@ -218,9 +218,9 @@ fn run_corpus() -> Result<u8, String> {
 
 fn finalize_corpus(artifact: &str) -> Result<u8, String> {
     fs::create_dir_all(artifact).map_err(|error| format!("cannot create {artifact}: {error}"))?;
-    let mode = env::var("VIZE_DAVINCI_DOM_CORPUS_MODE").unwrap_or_else(|_| "enforce".to_string());
+    let mode = env::var("VIZE_LEVEL_DOM_CORPUS_MODE").unwrap_or_else(|_| "enforce".to_string());
     let outcome =
-        env::var("VIZE_DAVINCI_DOM_CORPUS_OUTCOME").unwrap_or_else(|_| "failure".to_string());
+        env::var("VIZE_LEVEL_DOM_CORPUS_OUTCOME").unwrap_or_else(|_| "failure".to_string());
     let validation = validate_corpus_evidence(artifact);
     let mut verdict = verdict_for(&outcome, &mode);
     if outcome == "success" && !validation.failures.is_empty() {
@@ -242,9 +242,9 @@ fn finalize_corpus(artifact: &str) -> Result<u8, String> {
     append_corpus_summary(artifact, &mode, &outcome, &verdict)?;
     if verdict != "success" {
         for failure in &validation.failures {
-            eprintln!("::error title=Invalid Davinci L2 DOM corpus evidence::{failure}");
+            eprintln!("::error title=Invalid Levels L2 DOM corpus evidence::{failure}");
         }
-        eprintln!("::error title=Davinci L2 DOM corpus failed::mode={mode} verdict={verdict}");
+        eprintln!("::error title=Levels L2 DOM corpus failed::mode={mode} verdict={verdict}");
         return Ok(1);
     }
     Ok(0)
@@ -436,9 +436,9 @@ fn corpus_evidence_lines(log_text: &str) -> Vec<String> {
         .lines()
         .filter(|line| {
             let line = strip_ansi(line);
-            line.contains("davinci-differential corpus scope")
-                || line.contains("davinci DOM corpus sweep")
-                || line.contains("davinci DOM corpus old-lane error reasons")
+            line.contains("level-differential corpus scope")
+                || line.contains("levels DOM corpus sweep")
+                || line.contains("levels DOM corpus old-lane error reasons")
         })
         .map(str::to_string)
         .collect()
@@ -520,7 +520,7 @@ fn append_corpus_summary(
     common::append_text(
         summary_path,
         &format!(
-            "## Davinci L2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- patch-fact entries: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
+            "## Levels L2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- patch-fact entries: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
             validation.manifest_dom_output_comparisons,
             validation.selected_gitlinks,
             validation.submodule_status_rows,

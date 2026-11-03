@@ -4,7 +4,7 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 test("the shipping-profile supplement preserves the scheduled ci-opt campaign", () => {
-  const main = parse(readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"));
+  const main = parse(readRepoFile(".github", "workflows", "level-resource-budgets.yml"));
   const release = parse(readRepoFile(".github", "workflows", "lsp-release-resources.yml"));
   assert.equal(main.on.workflow_dispatch.inputs.include_release.default, false);
   assert.equal(

@@ -18,7 +18,7 @@ use std::process::{Command, Output};
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/davinci_reduce")
+        .join("tests/fixtures/level_reduce")
         .join(name)
 }
 
@@ -34,12 +34,12 @@ fn text(bytes: &[u8]) -> &str {
 }
 
 fn temp_out(name: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("davinci-reduce");
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("level-reduce");
     std::fs::create_dir_all(&dir).expect("temp dir creates");
     dir.join(name)
 }
 
-const FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
+const FAILURE: &str = "template.transform: injected levels panic in pass `transform`";
 
 #[test]
 fn the_seeded_crash_reduces_below_a_fifth_and_still_reproduces() {
@@ -114,7 +114,7 @@ fn sorted_entries(dir: &Path) -> Vec<std::string::String> {
     names
 }
 
-/// Build one file under `--davinci-inject-panic seeded-crash:transform:seed-crash`.
+/// Build one file under `--level-inject-panic seeded-crash:transform:seed-crash`.
 fn seeded_build(test_name: &str, source: &str) -> (PathBuf, Output) {
     let root = temp_out(test_name);
     let _ = std::fs::remove_dir_all(&root);
@@ -127,7 +127,7 @@ fn seeded_build(test_name: &str, source: &str) -> (PathBuf, Output) {
             "src",
             "--output",
             "dist",
-            "--davinci-inject-panic",
+            "--level-inject-panic",
             "seeded-crash:transform:seed-crash",
         ])
         .output()

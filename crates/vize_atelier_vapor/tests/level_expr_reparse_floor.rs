@@ -10,11 +10,11 @@
 //!
 //! The probe is process-global and monotone, so this file holds a single
 //! `#[test]` (its own binary — no concurrent recorder), mirroring
-//! `vize_armature/tests/davinci_expr_parses.rs`. Integration binaries
+//! `vize_armature/tests/level_expr_parses.rs`. Integration binaries
 //! compile the library without `cfg(test)`, so the P1-7 differential
 //! comparators are disarmed here and the deltas are the production floor.
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{expr_parse_probe, walk_probe::WalkCounts};
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,

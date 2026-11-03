@@ -99,7 +99,7 @@ export function publicAuthority(input: string, callerBytes: Buffer, output: stri
   });
   assert.match(caller.run.id, /^[1-9][0-9]*$/u);
   assert.equal(caller.run.attempt, "1");
-  assert.equal(process.env.GITHUB_WORKFLOW, "Davinci Canon distinct-host scaling");
+  assert.equal(process.env.GITHUB_WORKFLOW, "Levels Canon distinct-host scaling");
   git(root, ["merge-base", "--is-ancestor", caller.fixMerge.sha, caller.sourceCut.sha]);
   assert.deepEqual(Object.keys(caller.records), records);
   for (const name of records) assert.equal(saved[name].sha256, caller.records[name], name);

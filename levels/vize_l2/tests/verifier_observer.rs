@@ -7,7 +7,7 @@
 //! downcast to the panic payload's concrete type — `std::string::String`
 //! is what `panic!` formats into, so the house string-type lint is
 //! file-allowed here for exactly that downcast, the
-//! `davinci_profile_export.rs` precedent.
+//! `level_profile_export.rs` precedent.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 

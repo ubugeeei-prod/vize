@@ -1,4 +1,4 @@
-//! Build-profile accounting for the selected Davinci plan.
+//! Build-profile accounting for the selected Levels plan.
 
 use vize_l0::pass::{BudgetObserver, Pipeline, run_pipeline};
 
@@ -18,7 +18,7 @@ pub(crate) fn plan_budget(plan: &Pipeline) -> BudgetObserver {
 #[cfg(test)]
 mod tests {
     use super::plan_budget;
-    use crate::commands::davinci_ice::compile_plan;
+    use crate::commands::level_ice::compile_plan;
     use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
     #[test]

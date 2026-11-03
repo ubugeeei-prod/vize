@@ -2,7 +2,7 @@
 
 Decision: add `compile_native_sfc` to the existing `vize_atelier_sfc` product
 as an explicit native entry. The product adapter stays in `crates/`; its
-normal dependencies point to the real levels in `davinci/`. The L4 backend
+normal dependencies point to the real levels in `levels/`. The L4 backend
 retains no container policy or parser. Paired comments belong to #6880 and
 #6838 in the same delivered change.
 

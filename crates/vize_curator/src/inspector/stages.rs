@@ -1,4 +1,4 @@
-//! Stage feed construction for the inspector (Davinci P2-18).
+//! Stage feed construction for the inspector (Levels P2-18).
 //!
 //! The inspector's stage pages, in the feed shape this inspector owns
 //! (`folio::feed::StageFeed`, committed schema
@@ -21,7 +21,7 @@
 //!   per executed transform pass, and the L3 (Impeto)
 //!   graph, partition-fact and value pages - all from one L1 parse through
 //!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
-//!   playground's Davinci view) carries it. The inspector payload keeps its
+//!   playground's Levels view) carries it. The inspector payload keeps its
 //!   L1-only pages: it rides inside share URLs (the P2-18 growth note), and
 //!   the playground recomputes the ladder from the same sources.
 //! - **Remarks** (P3-13): every inline HTML template's optimization remarks

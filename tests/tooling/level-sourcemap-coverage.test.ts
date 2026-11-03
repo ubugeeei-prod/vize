@@ -1,6 +1,6 @@
-// Davinci TS-31 source-map coverage gate (plan/phase-3.md P3-9).
+// Levels TS-31 source-map coverage gate (plan/phase-3.md P3-9).
 //
-// `cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap` measures the
+// `cargo test -p vize_atelier_sfc --test level_ts31_sourcemap` measures the
 // TS-31 fixture battery and keeps `docs/davinci/plan/ts31-sourcemap-coverage.json`
 // equal to the measurement. This gate compares that report with the pinned
 // `[sourcemap]` budgets: every row either meets its budget or is listed, with
@@ -14,7 +14,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 
 type Budget = {
   backend: string;
@@ -100,7 +100,7 @@ function shortfallLedger(): Map<string, Shortfall> {
 
 test("TS-31 report carries exactly one row per pinned budget", () => {
   assert.equal(report.suite, "TS-31");
-  assert.equal(report.command, "cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap");
+  assert.equal(report.command, "cargo test -p vize_atelier_sfc --test level_ts31_sourcemap");
   const budgetKeys = Object.values(budgets).map(rowKey).sort();
   assert.deepEqual(Object.keys(report.rows).sort(), budgetKeys);
 });

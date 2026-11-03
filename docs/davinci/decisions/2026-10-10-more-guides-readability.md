@@ -60,7 +60,7 @@ a usable starting example. The first slice revises 11 topics in English and Japa
 existing reference anchors, including the Japanese CLI `check` entry used by Content Mapper.
 
 The architecture diagrams describe the existing product pipeline in `crates/`; the experimental
-level pipeline is explicitly identified as `davinci/`. The source guide records both directories.
+level pipeline is explicitly identified as `levels/`. The source guide records both directories.
 
 Japanese review markers describe the bounded review scope. They preserve authored corrections
 during translation regeneration; they do not mean the retained body has been reviewed in full.

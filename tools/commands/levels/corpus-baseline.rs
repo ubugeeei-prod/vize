@@ -18,7 +18,7 @@ use std::{
 };
 
 use vize_tool_support::common;
-mod davinci_corpus;
+mod level_corpus;
 
 #[derive(Debug)]
 struct Args {
@@ -38,25 +38,25 @@ fn main() -> ExitCode {
 fn run() -> Result<(), String> {
     let root = common::repo_root()?;
     let args = parse_args(env::args().skip(1).collect())?;
-    let manifest = davinci_corpus::load_manifest(&root)?;
-    let vize_bin = davinci_corpus::resolve_vize_bin(&root, args.vize_bin)?;
+    let manifest = level_corpus::load_manifest(&root)?;
+    let vize_bin = level_corpus::resolve_vize_bin(&root, args.vize_bin)?;
     let out_path = args
         .out
-        .unwrap_or_else(|| root.join(davinci_corpus::BASELINE_REL));
+        .unwrap_or_else(|| root.join(level_corpus::BASELINE_REL));
     let out_path = if out_path.is_absolute() {
         out_path
     } else {
         root.join(out_path)
     };
-    let scratch_dir = davinci_corpus::scratch_root(&root, &format!("baseline-{}", process_slug()));
+    let scratch_dir = level_corpus::scratch_root(&root, &format!("baseline-{}", process_slug()));
 
     if args.clean_fixtures {
-        let removed = davinci_corpus::clean_fixtures(&root)?;
+        let removed = level_corpus::clean_fixtures(&root)?;
         println!("corpus-baseline: cleaned {removed} materialized node_modules from the fixtures");
     }
-    davinci_corpus::assert_fixtures_pristine(&root, args.allow_dirty_fixtures)?;
+    level_corpus::assert_fixtures_pristine(&root, args.allow_dirty_fixtures)?;
 
-    let surfaces = davinci_corpus::surface_filter(&Vec::new())?;
+    let surfaces = level_corpus::surface_filter(&Vec::new())?;
     println!(
         "corpus-baseline: {} projects x {} surfaces, {} parallel shards",
         manifest["projects"].as_array().map_or(0, Vec::len),
@@ -64,7 +64,7 @@ fn run() -> Result<(), String> {
         args.shards
     );
     let started = Instant::now();
-    let shard_dirs = match davinci_corpus::run_matrix(
+    let shard_dirs = match level_corpus::run_matrix(
         &root,
         args.shards,
         &vize_bin,
@@ -81,10 +81,10 @@ fn run() -> Result<(), String> {
             return Err(error);
         }
     };
-    let rows = davinci_corpus::reduce_shards(&root, &shard_dirs, &surfaces)?;
-    let artifact = davinci_corpus::build_artifact(&rows, &manifest)?;
+    let rows = level_corpus::reduce_shards(&root, &shard_dirs, &surfaces)?;
+    let artifact = level_corpus::build_artifact(&rows, &manifest)?;
     let scope_failures =
-        davinci_corpus::verify_scope(&artifact, &manifest, &surfaces, "generated artifact")?;
+        level_corpus::verify_scope(&artifact, &manifest, &surfaces, "generated artifact")?;
     if !scope_failures.is_empty() {
         println!(
             "raw shard reports kept for debugging: {}",
@@ -97,7 +97,7 @@ fn run() -> Result<(), String> {
     }
     common::write_json_pretty(&out_path, &artifact)?;
     if !args.keep_raw {
-        davinci_corpus::cleanup_scratch(&scratch_dir)?;
+        level_corpus::cleanup_scratch(&scratch_dir)?;
     } else {
         println!(
             "raw shard reports kept: {}",
@@ -106,12 +106,12 @@ fn run() -> Result<(), String> {
     }
 
     let elapsed_seconds = started.elapsed().as_secs();
-    let out_label = if out_path == root.join(davinci_corpus::BASELINE_REL) {
-        davinci_corpus::BASELINE_REL.to_string()
+    let out_label = if out_path == root.join(level_corpus::BASELINE_REL) {
+        level_corpus::BASELINE_REL.to_string()
     } else {
         common::relative_path(&root, &out_path)
     };
-    let expected_comparisons = davinci_corpus::expected_comparison_count(&manifest, &surfaces)?;
+    let expected_comparisons = level_corpus::expected_comparison_count(&manifest, &surfaces)?;
     let scope = &artifact["scope"];
     println!(
         "wrote {out_label}: {}/{} comparisons ({} projects x {} surfaces, {} files) in {}s",
@@ -146,12 +146,12 @@ fn parse_args(argv: Vec<String>) -> Result<Args, String> {
         };
         match arg.as_str() {
             "--shards" => {
-                args.shards = davinci_corpus::positive_integer(&value(&mut index)?, arg)? as usize
+                args.shards = level_corpus::positive_integer(&value(&mut index)?, arg)? as usize
             }
             "--vize-bin" => args.vize_bin = Some(PathBuf::from(value(&mut index)?)),
             "--out" => args.out = Some(PathBuf::from(value(&mut index)?)),
             "--timeout-ms" => {
-                args.timeout_ms = Some(davinci_corpus::positive_integer(&value(&mut index)?, arg)?)
+                args.timeout_ms = Some(level_corpus::positive_integer(&value(&mut index)?, arg)?)
             }
             "--keep-raw" => args.keep_raw = true,
             "--clean-fixtures" => args.clean_fixtures = true,
@@ -169,7 +169,7 @@ fn parse_args(argv: Vec<String>) -> Result<Args, String> {
 
 fn print_help() {
     println!(
-        "usage: rust-script tools/commands/davinci/corpus-baseline.rs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]"
+        "usage: rust-script tools/commands/levels/corpus-baseline.rs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]"
     );
 }
 

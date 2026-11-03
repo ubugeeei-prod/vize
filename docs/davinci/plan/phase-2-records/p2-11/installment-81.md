@@ -11,9 +11,9 @@ ordering and `v-for` child hoists.
 
 The durable witnesses are:
 
-- [`davinci_s2_v_pre.rs`](../../../../../crates/vize_atelier_dom/tests/l2_v_pre.rs)
+- [`level_s2_v_pre.rs`](../../../../../crates/vize_atelier_dom/tests/l2_v_pre.rs)
   - pins inert text inside `v-pre`.
-- [`lowering_elements.rs`](../../../../../davinci/vize_l1_to_l2/tests/lowering_elements.rs)
+- [`lowering_elements.rs`](../../../../../levels/vize_l1_to_l2/tests/lowering_elements.rs)
   - covers namespace and template-if lowering.
 
 This installment does not tick P2-11. The production-lane switch remains open.

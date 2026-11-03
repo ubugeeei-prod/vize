@@ -3,7 +3,7 @@
   "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
   "sourceTree": "6140f34b3e3479b6ab02be574b36078467ce5af7",
   "worktree": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-next-semantic-gap-8142-20261008",
-  "productionCustody": "All10178 indexed crates/davinci/manifest/lock/toolchain/config entries verified against HEAD Git blobs; actual SHA256 inventory matched before and after private build. Tracked production/PR/corpus diff is clean.",
+  "productionCustody": "All10178 indexed crates/levels/manifest/lock/toolchain/config entries verified against HEAD Git blobs; actual SHA256 inventory matched before and after private build. Tracked production/PR/corpus diff is clean.",
   "driver": {
     "originalPath": "crates/vize_patina/examples/n8n_source_research_47c6.rs",
     "retainedPath": "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/n8n_source_research_47c6.rs",

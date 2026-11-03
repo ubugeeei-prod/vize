@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       evidence_run_id:
-        description: Successful exact-SHA Real Project Matrix run with davinci-deletion-evidence
+        description: Successful exact-SHA Real Project Matrix run with level-deletion-evidence
         required: false
         type: string
 
@@ -35,9 +35,9 @@ jobs:
           jq -e --arg sha "$GITHUB_SHA" \
             '.head_sha == $sha and .conclusion == "success" and .path == ".github/workflows/real-project-matrix.yml" and (.event == "schedule" or .event == "workflow_dispatch")' \
             "$RUNNER_TEMP/evidence-run.json"
-          gh run download "$EVIDENCE_RUN_ID" --name davinci-deletion-evidence \
-            --dir "$RUNNER_TEMP/davinci-deletion-evidence"
+          gh run download "$EVIDENCE_RUN_ID" --name level-deletion-evidence \
+            --dir "$RUNNER_TEMP/level-deletion-evidence"
       - name: Check deletion readiness
         env:
           GH_TOKEN: ${{ github.token }}
-        run: vp node tests/differential/check-deletion-readiness.mjs "$RUNNER_TEMP/davinci-deletion-evidence"
+        run: vp node tests/differential/check-deletion-readiness.mjs "$RUNNER_TEMP/level-deletion-evidence"

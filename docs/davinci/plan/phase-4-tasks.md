@@ -9,24 +9,24 @@
 
 **Lane:** A
 
-**Deliverable:** `vize_davinci::fact`, the one typed query surface of charter #5/#8: fact groups as const data, static demand declarations per consumer, a `FactManager` that computes exactly the demanded union, and the debug-build undeclared-access detector with the stratification check. The crate stays `#![no_std]` + `alloc`.
+**Deliverable:** `vize_level::fact`, the one typed query surface of charter #5/#8: fact groups as const data, static demand declarations per consumer, a `FactManager` that computes exactly the demanded union, and the debug-build undeclared-access detector with the stratification check. The crate stays `#![no_std]` + `alloc`.
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
+- [x] `levels/vize_level/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
 - [x] `Demand(u64)` built in `const` context (`Demand::NONE.with(G::ID)`); each consumer declares `const DEMAND: Demand`
 - [x] Stratification as a `const fn` over the registered group descriptors: a group may depend only on strictly lower strata, so a demand cycle is unrepresentable (the Swift anti-lesson); violations are compile errors proved by `compile_fail` doctests
 - [x] `FactManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
 - [x] Debug detector: under `debug_assertions` a `FactView` carries its consumer's `Demand`; an undeclared access returns `FactError::Undeclared { consumer, group }` and bumps a counter; the release shape is a zero-sized type, const-asserted
-- [x] Register the TS-35 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test fact_demand`
+- [x] Register the TS-35 command in [test-suites.md](./test-suites.md): `cargo test -p vize_level --test fact_demand`
 
-**Acceptance:** `cargo test -p vize_davinci --test fact_demand --test fact_manager` green; `cargo test -p vize_davinci --doc` runs the two stratification `compile_fail` doctests; an undeclared access is asserted equal to the exact `FactError` value; the once-per-artifact counter is pinned; TS-24 (`--target wasm32-wasip2`, with and without default features) green; TS-1, TS-13; TS-11 empty (nothing consumes the API yet).
+**Acceptance:** `cargo test -p vize_level --test fact_demand --test fact_manager` green; `cargo test -p vize_level --doc` runs the two stratification `compile_fail` doctests; an undeclared access is asserted equal to the exact `FactError` value; the once-per-artifact counter is pinned; TS-24 (`--target wasm32-wasip2`, with and without default features) green; TS-1, TS-13; TS-11 empty (nothing consumes the API yet).
 
 **Deps:** none (phase-2 exit).
 
 **Non-goals:** migrating a tracker (P4-3a…P4-3f); α/β serialization (P4-2); pass-manager invalidation (P4-1b); salsa or cross-compile caching (phase 5).
 
-**Landed 2026-09-22:** `vize_davinci::fact` with the TS-35 lane, both stratification `compile_fail` doctests and the pinned once-per-artifact counter — see the [P4-1a record](./phase-4-records/p4-1a.md).
+**Landed 2026-09-22:** `vize_level::fact` with the TS-35 lane, both stratification `compile_fail` doctests and the pinned once-per-artifact counter — see the [P4-1a record](./phase-4-records/p4-1a.md).
 
 ## P4-1b — Fact preservation and recompute mode
 
@@ -38,11 +38,11 @@
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
+- [x] `levels/vize_level/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
 - [x] `FactVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
 - [x] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `FactError::StalePreserved { pass, group }`
 
-**Acceptance:** `cargo test -p vize_davinci --test fact_preserve` green including the lying-pass fixture; bench pair `davinci_fact_query_observed` / `davinci_fact_query_unobserved` registered in `budgets.toml [bench]` with measured, identical `allocs` (TS-10 — the P2-3 zero-cost shape); TS-22 walk counts unchanged; TS-1, TS-13.
+**Acceptance:** `cargo test -p vize_level --test fact_preserve` green including the lying-pass fixture; bench pair `level_fact_query_observed` / `level_fact_query_unobserved` registered in `budgets.toml [bench]` with measured, identical `allocs` (TS-10 — the P2-3 zero-cost shape); TS-22 walk counts unchanged; TS-1, TS-13.
 
 **Deps:** P4-1a.
 
@@ -60,11 +60,11 @@
 
 **Steps:**
 
-- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `davinci/vize_davinci/src/fact/alpha.rs`
+- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `levels/vize_level/src/fact/alpha.rs`
 - [x] α values are owned and `'static`-asserted (the P1-11 arena/cache contract); each α page prints `schema_version` (the P2-17 rule)
 - [x] `docs/davinci/plan/fact-alpha-schemas.md` documents every α group's key, value and version; a Rust test reads it via `include_str!` and fails on an undocumented group
 
-**Acceptance:** `cargo test -p vize_davinci --test fact_alpha` — `import(export(t)) == t` exactly for every group registered at merge time, TS-16 `Full`-mode byte round trip per α page, the schema-doc test proven to fail on an injected undocumented group; TS-24; TS-1, TS-13.
+**Acceptance:** `cargo test -p vize_level --test fact_alpha` — `import(export(t)) == t` exactly for every group registered at merge time, TS-16 `Full`-mode byte round trip per α page, the schema-doc test proven to fail on an injected undocumented group; TS-24; TS-1, TS-13.
 
 **Deps:** P4-1a.
 
@@ -82,10 +82,10 @@
 
 **Steps:**
 
-- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; L2 `NodeId` re-keying waits for L2 to carry script scope)
-- [x] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_DAVINCI_FACT_CORPUS`, the two test-scripts submodules, skips counted)
+- [x] `vize_croquis` gains a `vize_level` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; L2 `NodeId` re-keying waits for L2 to carry script scope)
+- [x] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_LEVEL_FACT_CORPUS`, the two test-scripts submodules, skips counted)
 - [ ] Switch readers to `get::<Bindings>()` / `get::<UndefinedRefs>()` **except** `crates/vize_canon/src/virtual_ts/**` and `crates/vize_maestro/src/virtual_code/**` (lane C deletes those readers in P4-5c) **and the legacy compile lane** (`vize_atelier_core/src/lane/`, `vize_atelier_jsx`, the `vize_atelier_sfc` compiler), which reads the analysis it builds in the same pipeline as a fused attribute (semantic-engine.md #2): a demand there costs a table build per compile — measured 0.02–1.02 % of an SFC compile on the P0-2 ladder, a regression charter #22 refuses — and the lane retires with the legacy transform lane (charter #26); the struct fields stay as producer storage until then _(scope amended 2026-09-22, see the record)_. The DOM reader `vize_atelier_dom/src/compile/croquis_facts.rs` demands `Bindings` (`dom/croquis-projection`). The legacy compile lane stays fused.
-- [x] Regenerate [croquis-consumption.md](./croquis-consumption.md) (`node tools/support/compat/davinci/croquis-consumers.ts --write`)
+- [x] Regenerate [croquis-consumption.md](./croquis-consumption.md) (`node tools/support/compat/levels/croquis-consumers.ts --write`)
 
 **Acceptance:** TS-34 exact agreement with scope proof (a zero-comparison run fails); TS-35 zero undeclared accesses in `cargo test --workspace` (debug); the regenerated matrix shows the two fields read only from lane-C paths, the legacy compile lane and producer-side writes, each remaining file classified in the record (amended with the step above); TS-9 lint/check fixtures, TS-40 digests and TS-11 compile/check/lint surfaces unchanged; TS-12 green.
 
@@ -128,9 +128,9 @@
 **Steps:**
 
 - [x] Group + TS-34 spec; the rule lives in lane B's own directory `crates/vize_patina/src/rules/facts/` and is registered through the opt-in fact rule registry. Descriptor demand plumbing supplies the authoritative relation.
-- [x] Revisit the `__davinci_seeded_unused` seed name per the ledger caveat: `davinciSeededUnused` exercises the rule while underscore prefixes retain their convention.
+- [x] Revisit the `__level_seeded_unused` seed name per the ledger caveat: `levelSeededUnused` exercises the rule while underscore prefixes retain their convention.
 
-**Acceptance:** `rust-script tools/commands/davinci/seed-defects.rs --assert` reports class (b) recall 130/130 on the shard, 90/90 on the matrix stubs and 4/4 on the miniature set; `tests/_fixtures/davinci-fpfn/expected/assert-report.json` updated in the same PR; [ledger-fn.md](./ledger-fn.md) FN-2 flipped to `fixed`; TS-38 no new FP candidate on the shard; TS-35.
+**Acceptance:** `rust-script tools/commands/levels/seed-defects.rs --assert` reports class (b) recall 130/130 on the shard, 90/90 on the matrix stubs and 4/4 on the miniature set; `tests/_fixtures/level-fpfn/expected/assert-report.json` updated in the same PR; [ledger-fn.md](./ledger-fn.md) FN-2 flipped to `fixed`; TS-38 no new FP candidate on the shard; TS-35.
 
 **Deps:** P4-1a, P4-3a, P4-6a.
 
@@ -257,7 +257,7 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 
 **Landed 2026-09-22:** `ProjectionMapping` with per-row `ProjectionMeta` (Canon's `source_map` module and Maestro's virtual-code source map deleted, `SfcSourceMap` a thin view, TS-40 byte-identical) and `vize_canon::projection::assemble_diagnostics`, the one post-pass both `vize check` and the Maestro session call per authored file, pinned by a real-Corsa fixture that drives one SFC through both entry points; every rule that ran on one surface only now runs on both — see the [P4-5a record](./phase-4-records/p4-5a.md) for the convergence ledger and the fourth mapping model P4-5c deletes.
 
-**Acceptance:** TS-40 digests byte-identical (`node --test tests/tooling/davinci-ts40-projection.test.ts tests/tooling/lsp-davinci-ts40-projection-diagnostics.test.ts`); `grep -rn "virtual_code::source_map::SourceMap" crates` empty; TS-7 LSP smoke; TS-9 check fixtures unchanged; TS-1, TS-13.
+**Acceptance:** TS-40 digests byte-identical (`node --test tests/tooling/level-ts40-projection.test.ts tests/tooling/lsp-level-ts40-projection-diagnostics.test.ts`); `grep -rn "virtual_code::source_map::SourceMap" crates` empty; TS-7 LSP smoke; TS-9 check fixtures unchanged; TS-1, TS-13.
 
 **Deps:** none (phase-2 exit).
 
@@ -274,7 +274,7 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 **Steps:**
 
 - [ ] Expressions project through P2-5b's `ExprDialect` capability; `ExprRef::Opaque` follows its pessimal laws and is counted per class
-- [ ] Differential comparator `crates/vize_canon/tests/davinci_projection_differential/main.rs` behind `davinci-differential`: `vize check` diagnostic sets and authored-anchor resolution compared exactly; generated text is free
+- [ ] Differential comparator `crates/vize_canon/tests/level_projection_differential/main.rs` behind `level-differential`: `vize check` diagnostic sets and authored-anchor resolution compared exactly; generated text is free
 - [ ] Corpus-runnable entry with its command recorded; plain-suite coverage witness pins the comparison count
 
 **Acceptance:** TS-25 zero divergence over the TS-40 matrix and the `vize check` corpus with scope proof; TS-24 unaffected; TS-1, TS-13.

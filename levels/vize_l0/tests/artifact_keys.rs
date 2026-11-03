@@ -1,4 +1,4 @@
-//! TS-43 — stage artifact key stability (Davinci P5-1a).
+//! TS-43 — stage artifact key stability (Levels P5-1a).
 //!
 //! Every block of an SFC is keyed at each stage that has an artifact for
 //! it: L0 for every block, the L1 surface page and the L2 page for the
@@ -6,7 +6,7 @@
 //!
 //! 1. **Golden keys, two platforms.** `fixtures/keys/base-l2-recipe4.keys` is the full
 //!    key listing of `fixtures/keys/base.vue`. The Linux and macOS lanes of
-//!    `.github/workflows/davinci-incremental.yml` both print the listing and
+//!    `.github/workflows/level-incremental.yml` both print the listing and
 //!    compare it with the golden, so a platform-dependent byte anywhere in a
 //!    recipe fails on one of them.
 //! 2. **Edit locality.** Each edit case names exactly the `(block, stage)`
@@ -21,7 +21,7 @@
 //! the stage's `vize_l0::key::schema` version in the same change):
 //!
 //! ```text
-//! UPDATE_KEY_GOLDENS=1 cargo test -p vize_davinci --test artifact_keys
+//! UPDATE_KEY_GOLDENS=1 cargo test -p vize_level --test artifact_keys
 //! ```
 
 #![expect(

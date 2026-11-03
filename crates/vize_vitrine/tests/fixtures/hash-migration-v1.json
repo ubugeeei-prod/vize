@@ -12,7 +12,7 @@
   },
   "productionBaseRevision": "3bf16a50e0e8ad9aa5e6cafb2151e5340bc5e3c4",
   "captureReceipt": {
-    "path": "crates/vize_davinci/tests/fixtures/keys/capture-v2/receipt.json",
+    "path": "crates/vize_level/tests/fixtures/keys/capture-v2/receipt.json",
     "sha256": "d5c6553cac4348910bb7de07d26848cad6deed2346ab7ba4396d11884ac5903d"
   },
   "transformBuildStamp": "7298647ee8164adf6a9b6c128167cd060f18b77f:f2a06b7a91f26135ab4851fa046c2d26e3593918cd3fde4af0699af607189d10"

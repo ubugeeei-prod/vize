@@ -13,11 +13,11 @@ use std::{
 use vize_tool_support::common;
 mod corpus_paths;
 
-pub const SCHEMA: &str = "vize.davinciCorpusBaseline";
+pub const SCHEMA: &str = "vize.levelCorpusBaseline";
 pub const SCHEMA_VERSION: u64 = 1;
-pub const UNSTABLE_SCHEMA: &str = "vize.davinciCorpusUnstableRows";
+pub const UNSTABLE_SCHEMA: &str = "vize.levelCorpusUnstableRows";
 pub const REGISTRY_REL: &str = "tests/_fixtures/vue-ecosystem-fixtures.json";
-pub const BASELINE_REL: &str = "tests/_fixtures/davinci-baseline.json";
+pub const BASELINE_REL: &str = "tests/_fixtures/level-baseline.json";
 pub const NOTES_REL: &str = "docs/davinci/plan/corpus-baseline-notes.md";
 pub const UNSTABLE_REL: &str = "docs/davinci/plan/corpus-baseline-unstable.json";
 pub const SURFACES: &[&str] = &["compiler", "formatter", "linter", "typechecker"];
@@ -487,7 +487,7 @@ pub fn cleanup_scratch(path: &Path) -> Result<(), String> {
 }
 
 pub fn scratch_root(root: &Path, label: &str) -> PathBuf {
-    root.join(".vize/davinci-corpus").join(label)
+    root.join(".vize/level-corpus").join(label)
 }
 
 pub fn resolve_vize_bin(root: &Path, vize_bin: Option<PathBuf>) -> Result<PathBuf, String> {

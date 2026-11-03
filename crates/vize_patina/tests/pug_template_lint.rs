@@ -4,7 +4,7 @@
     reason = "fixture files and signatures are std strings"
 )]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
-//! Davinci P4-12c — `<template lang="pug">` lints through its derived Vue
+//! Levels P4-12c — `<template lang="pug">` lints through its derived Vue
 //! template. Differential: a pug SFC reports exactly the diagnostics
 //! (rule, severity, message) of the same SFC with its template replaced by
 //! the pinned pug's HTML rendering, and every range lands on the authored
@@ -118,7 +118,7 @@ fn attribute_order_judges_the_authored_order_not_pugs_class_hoisting() {
 #[test]
 fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
     let root =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug/matrix");
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-pug/matrix");
     let mut paths: Vec<_> = std::fs::read_dir(&root)
         .expect("fixtures")
         .map(|entry| entry.expect("entry").path())
@@ -161,7 +161,7 @@ fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
 #[test]
 fn refused_pug_and_jade_report_the_shared_lowering_errors_at_authored_bytes() {
     let root =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug/refused");
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-pug/refused");
     let mut paths: Vec<_> = std::fs::read_dir(root)
         .unwrap()
         .map(|entry| entry.unwrap().path())

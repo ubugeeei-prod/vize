@@ -234,11 +234,8 @@ void test("synthetic fixture digests also track included source fixtures", () =>
 void test("level target, function and fixture path renames preserve exact input identity and caps", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "level-input-rename-"));
   try {
-    const source = path.join(temporary, "davinci_storage.rs");
-    fs.writeFileSync(
-      source,
-      'const VFOR_THREE_ALIASES: &str = r#"<li/>"#;\nfn davinci_storage() {}',
-    );
+    const source = path.join(temporary, "level_storage.rs");
+    fs.writeFileSync(source, 'const VFOR_THREE_ALIASES: &str = r#"<li/>"#;\nfn level_storage() {}');
     const before = fixtureDigest(temporary, "synthetic:v-for-three-aliases", source);
     const renamed = path.join(temporary, "l1_to_l2_storage.rs");
     fs.renameSync(source, renamed);
@@ -263,7 +260,7 @@ void test("the independent JSON schema preserves the gate's strict field contrac
     fs.readFileSync(
       path.join(
         root,
-        "tools/benchmarks/crates/davinci_harness/schema/instruction-measurement.schema.json",
+        "tools/benchmarks/crates/level_harness/schema/instruction-measurement.schema.json",
       ),
       "utf8",
     ),

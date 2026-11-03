@@ -2,7 +2,7 @@
 
 Issue: [#7951](https://github.com/ubugeeei-prod/vize/issues/7951).
 
-The metadata Check [38027451698, Rust shard 2](https://github.com/ubugeeei-prod/vize/actions/runs/38027451698/job/114142745936) ran 4,183 tests, with 4,182 passed and one failed: `object_positional_matrix_matches_reference_or_pinned_upstream_gap`. The original VDOM Node child returned SIGSEGV 11 and printed a complete ten-snapshot JSON trace, with empty printed stderr. The original status assertion at `davinci_mounted_behavior/runtime.rs:155` correctly rejected the child before comparing the oracle.
+The metadata Check [38027451698, Rust shard 2](https://github.com/ubugeeei-prod/vize/actions/runs/38027451698/job/114142745936) ran 4,183 tests, with 4,182 passed and one failed: `object_positional_matrix_matches_reference_or_pinned_upstream_gap`. The original VDOM Node child returned SIGSEGV 11 and printed a complete ten-snapshot JSON trace, with empty printed stderr. The original status assertion at `level_mounted_behavior/runtime.rs:155` correctly rejected the child before comparing the oracle.
 
 The worker checked out synthetic source `1d0f18e51a73f627922690bc4592689c927e080e`. Its whole tree equals frozen metadata `510d72772ebfc0348e0392e66e425481a790eccf` and release source `bf2cd911c268605588b2ceedbc011e36c79d113c`: `2a6355da2e5ddeb9024d2784d51a75709c0e6365`. The original raw failure log has SHA-256 `97c5a03a755528de4da1b4e3d1a48af57be4ef7254a2229c28a6a87877fc2ec7`.
 

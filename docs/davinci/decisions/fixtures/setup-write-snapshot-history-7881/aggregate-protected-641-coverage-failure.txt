@@ -17,7 +17,7 @@
 2026-10-05T22:03:33.1540717Z    Compiling oxc-miette-derive v3.0.1
 2026-10-05T22:03:33.1541397Z    Compiling phf_macros v0.14.0
 2026-10-05T22:03:33.1541912Z    Compiling phf_macros v0.13.1
-2026-10-05T22:03:33.1542793Z    Compiling vize_l0_derive v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+2026-10-05T22:03:33.1542793Z    Compiling vize_l0_derive v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l0_derive)
 2026-10-05T22:03:33.1543813Z    Compiling cssparser-macros v0.7.0
 2026-10-05T22:03:33.1544557Z    Compiling pklrust-derive v0.9.0
 2026-10-05T22:03:33.1545524Z    Compiling thiserror v2.0.20
@@ -49,7 +49,7 @@
 2026-10-05T22:03:33.1638612Z    Compiling oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-05T22:03:33.1640598Z    Compiling oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-05T22:03:33.1642754Z    Compiling oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-05T22:03:33.1644336Z    Compiling vize_l0 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l0)
+2026-10-05T22:03:33.1644336Z    Compiling vize_l0 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l0)
 2026-10-05T22:03:33.1646118Z    Compiling oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-05T22:03:33.1647802Z    Compiling oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-05T22:03:33.1649291Z    Compiling vize_carton v0.433.0 (/home/runner/_work/vize/vize/crates/vize_carton)
@@ -60,15 +60,15 @@
 2026-10-05T22:03:33.1659095Z    Compiling vize_relief v0.433.0 (/home/runner/_work/vize/vize/crates/vize_relief)
 2026-10-05T22:03:33.1660457Z    Compiling oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 2026-10-05T22:03:33.1661634Z    Compiling oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-05T22:03:33.1662632Z    Compiling vize_l1 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l1)
+2026-10-05T22:03:33.1662632Z    Compiling vize_l1 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l1)
 2026-10-05T22:03:33.1664941Z    Compiling oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-2026-10-05T22:03:33.1666026Z    Compiling vize_l2 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l2)
+2026-10-05T22:03:33.1666026Z    Compiling vize_l2 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l2)
 2026-10-05T22:03:33.1666728Z    Compiling vize_armature v0.433.0 (/home/runner/_work/vize/vize/crates/vize_armature)
-2026-10-05T22:03:33.1667348Z    Compiling vize_l3 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l3)
+2026-10-05T22:03:33.1667348Z    Compiling vize_l3 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l3)
 2026-10-05T22:03:33.1668116Z    Compiling vize_croquis v0.433.0 (/home/runner/_work/vize/vize/crates/vize_croquis)
-2026-10-05T22:03:33.1668832Z    Compiling vize_l1_to_l2 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
-2026-10-05T22:03:33.1669819Z    Compiling vize_l2_to_l3 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
-2026-10-05T22:03:33.1670950Z    Compiling vize_l4 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l4)
+2026-10-05T22:03:33.1668832Z    Compiling vize_l1_to_l2 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l1_to_l2)
+2026-10-05T22:03:33.1669819Z    Compiling vize_l2_to_l3 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l2_to_l3)
+2026-10-05T22:03:33.1670950Z    Compiling vize_l4 v0.433.0 (/home/runner/_work/vize/vize/levels/vize_l4)
 2026-10-05T22:03:33.1672452Z    Compiling vize_atelier_core v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
 2026-10-05T22:03:33.1673702Z    Compiling vize_atelier_dom v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
 2026-10-05T22:03:33.1674796Z    Compiling vize_atelier_ssr v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)

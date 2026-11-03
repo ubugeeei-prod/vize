@@ -1,5 +1,5 @@
 // Canon and L3 producer readers for the TS-53 catalog check. Split from
-// davinci-diagnostic-catalog-sources.ts so both files stay under the
+// level-diagnostic-catalog-sources.ts so both files stay under the
 // source-length budget.
 
 import {
@@ -8,7 +8,7 @@ import {
   locales,
   read,
   stringArms,
-} from "./davinci-diagnostic-catalog-sources.ts";
+} from "./level-diagnostic-catalog-sources.ts";
 
 export interface CanonCodes {
   variants: string[];
@@ -95,7 +95,7 @@ export function croquisProblems(codes: string[], entries: Array<[string, Entry]>
 
 /** `ViolationCode::as_str` arms: variant name to `L3V00N`. */
 export function parseL3Codes(): Map<string, string> {
-  const source = read("davinci", "vize_l3", "src", "verify", "violation.rs");
+  const source = read("levels", "vize_l3", "src", "verify", "violation.rs");
   return stringArms(block(source, "pub const fn as_str"), "Self");
 }
 

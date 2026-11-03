@@ -1,4 +1,4 @@
-//! Per-worker arena pool: one arena reused across files (Davinci P1-11).
+//! Per-worker arena pool: one arena reused across files (Levels P1-11).
 //!
 //! Batch compilation is file-parallel over rayon, and before this the arena
 //! was built and torn down per file — every compile started from an empty
@@ -10,7 +10,7 @@
 //!
 //! # Why thread-local
 //!
-//! Davinci's architecture note fixes the shape — "each rayon worker owns a
+//! Levels's architecture note fixes the shape — "each rayon worker owns a
 //! pooled arena, so arenas are never shared across threads or files" — and a
 //! `thread_local!` free list is exactly that with no coordination at all: no
 //! mutex on the acquire path (oxc's own `AllocatorPool` locks a shared stack),

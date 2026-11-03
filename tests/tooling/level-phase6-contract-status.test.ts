@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { readPlan, registerRecutChecks } from "./support/davinci-recut.ts";
+import { readPlan, registerRecutChecks } from "./support/level-recut.ts";
 
 registerRecutChecks({
   phase: 6,

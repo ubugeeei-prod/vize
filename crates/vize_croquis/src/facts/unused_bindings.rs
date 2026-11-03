@@ -26,7 +26,7 @@ impl FactGroup for UnusedBindings {
     const DEPENDS: Demand = Demand::NONE.with(Bindings::ID);
     #[expect(
         clippy::disallowed_types,
-        reason = "typed name witnesses round trip through the Davinci String key"
+        reason = "typed name witnesses round trip through the Levels String key"
     )]
     type Key = String;
     type Value = UnusedBindingFact;

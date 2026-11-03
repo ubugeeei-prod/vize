@@ -1,7 +1,7 @@
 //! vue/max-template-complexity
 //!
 //! Warn when a component's **own** template complexity exceeds the
-//! corpus-pinned thresholds (Davinci P4-9b): cyclomatic complexity above 11
+//! corpus-pinned thresholds (Levels P4-9b): cyclomatic complexity above 11
 //! or cognitive complexity above 16, the full-corpus p95 recorded in
 //! `docs/davinci/plan/complexity-metrics.md`.
 //!

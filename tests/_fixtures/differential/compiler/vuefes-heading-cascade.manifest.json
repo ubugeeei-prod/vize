@@ -46,7 +46,7 @@
         "legacy": "compiler-vuefes-ssr-style-dependencies-v1",
         "native": null,
         "reasons": {
-          "native": "This exercises the existing compiler through its freshly built native addon and public Vite adapter; no Davinci native-stage readiness or replacement claim."
+          "native": "This exercises the existing compiler through its freshly built native addon and public Vite adapter; no Levels native-stage readiness or replacement claim."
         }
       },
       "comparison": {

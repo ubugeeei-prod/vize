@@ -1,4 +1,4 @@
-//! The cross-file rules' declared fact demands (Davinci P4-3).
+//! The cross-file rules' declared fact demands (Levels P4-3).
 //!
 //! Every cross-file rule that reads a Croquis fact group names its demand
 //! here as const data, so the debug detector (TS-35) refuses any read

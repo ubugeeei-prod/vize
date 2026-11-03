@@ -11,7 +11,7 @@ export const watcherSuccessor = {
   after4CleanupPath: "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
   after4CleanupHash: "ee186464a4e16932f141f8f93816758ec36cf201753696de53d3ae269e7155ce",
   after4CleanupRuntime: "2e89f3fa5bdf415e5385163e0638a30e8e2d038beabdbad3260a24039891f9bd",
-  tomlPath: "tools/support/compat/davinci/toml-lite.ts",
+  tomlPath: "tools/support/compat/levels/toml-lite.ts",
   tomlHash: "312ebfba658b54cd2e89243c8f647891a6fc0023de19c241ceb4f205f4e11dfe",
   tomlRuntime: "27a053367aad9f63680f635b71f5b0b3430c6bc712152ed0d722bfb33d19ae63",
   ackFragmentPath: "tests/tooling/support/native-beta-dto/stable-watcher-ack-fragment.ts",

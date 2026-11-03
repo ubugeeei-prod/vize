@@ -14,7 +14,7 @@ export const LADDER_STEP_KEY = "stages.step";
  * The dotted key every pass-manager walk records under (the timing
  * observer's), attributed to the walk's lead pass.
  */
-export const LADDER_WALK_KEY = "davinci.pass.walk";
+export const LADDER_WALK_KEY = "levels.pass.walk";
 
 export interface ProfileWallNs {
   total: number;

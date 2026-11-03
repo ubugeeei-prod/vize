@@ -2,7 +2,7 @@ name: Vite+ Type Compatibility
 
 on:
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
     paths:
       - "npm/builder/vite/src/vite-plus.ts"
       - "npm/builder/vite/src/vite-plus/**"
@@ -13,7 +13,7 @@ on:
       - "pnpm-lock.yaml"
       - ".github/workflows/vite-plus-type-compat.yml"
   pull_request:
-    branches: [main, davinci]
+    branches: [main, levels]
     paths:
       - "npm/builder/vite/src/vite-plus.ts"
       - "npm/builder/vite/src/vite-plus/**"

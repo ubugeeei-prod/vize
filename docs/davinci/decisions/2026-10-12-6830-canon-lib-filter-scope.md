@@ -44,7 +44,7 @@ those same authority bytes and every incoming foundation clause.
 Walking the 55 current integration roots follows 52 authored module edges
 through 95 files and reproduces all 246 compiled case names, without missing
 or extra names. The guard additionally reads the currently feature-gated
-`davinci_projection_differential` target: conservative union becomes 56 roots,
+`level_projection_differential` target: conservative union becomes 56 roots,
 96 files and 248 cases. Counts describe these sources; future benign additions
 do not need to preserve these historical counts.
 

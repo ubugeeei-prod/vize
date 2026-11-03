@@ -1,6 +1,6 @@
 //! Dump trait laws on hand-written croquis folio texts.
 //!
-//! The mode-explicit contract under test (see `davinci/vize_l0/src/dump.rs`
+//! The mode-explicit contract under test (see `levels/vize_l0/src/dump.rs`
 //! and `docs/davinci/plan/folio-format.md`):
 //!
 //! - `Full`: `print(parse(t)) == t` for canonical text, `parse(print(v)) == v`

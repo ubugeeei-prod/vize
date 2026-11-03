@@ -306,7 +306,7 @@ pub(super) fn analyze_sfc_json_with_clock(
         },
         "diagnostics": diagnostics,
         // `vir` is deprecated in favor of the folio alias below; both carry
-        // the same croquis folio text for now (Davinci P0-10). Consumers
+        // the same croquis folio text for now (Levels P0-10). Consumers
         // should migrate to `folio.croquis`. Byte-identity of the two keys
         // is pinned by `wasm::tests_stage_feed` (P2-18); the stage pages live
         // in the sibling `stageFeed` member, not in this alias object.

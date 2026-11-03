@@ -76,9 +76,9 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 | `vize_armature` | アルファ版対応 | Vue テンプレートを解析するツール | `vize_armature::{parse, Parser, Tokenizer}` | `#[deprecated]` を付けて 1 minor release の間保持 |
 | `vize_croquis` | 互換性プレビュー | 意味解析・型情報を使うツールの開発者 | `vize_croquis::{Croquis, Drawer}` | `#[deprecated]` を付けて 1 minor release の間保持 |
 | `vize_croquis_cf` | 実験的 | プロジェクト全体の解析を評価する開発者 | `vize_croquis_cf::CrossFileAnalyzer` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
-| `vize_l0_derive` | 実験的 | Davinci のダンプ形式の開発者 | `vize_l0_derive::Dump` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
+| `vize_l0_derive` | 実験的 | Levels のダンプ形式の開発者 | `vize_l0_derive::Dump` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_doctor` | 実験的 | アプリの状態を解析するツールの開発者 | `vize_doctor::{DoctorFinding, FindingEvidence}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
-| `vize_l3` | 実験的 | Davinci のバックエンド実行計画の開発者 | `vize_l3::{dump::Page, op, verify}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
+| `vize_l3` | 実験的 | Levels のバックエンド実行計画の開発者 | `vize_l3::{dump::Page, op, verify}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l4` | 実験的 | ネイティブコード生成を評価する開発者 | `vize_l4::{targets::dom::emit_file, module::assemble}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_atelier_core` | アルファ版対応 | Vue コンパイラのバックエンド開発者 | `vize_atelier_core::{transform, generate}` | `#[deprecated]` を付けて 1 minor release の間保持 |
 | `vize_atelier_dom` | アルファ版対応 | VDOM コンパイラ・バンドラー統合 | `vize_atelier_dom::compile_template` | `#[deprecated]` を付けて 1 minor release の間保持 |
@@ -94,7 +94,7 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 | `vize_l1` | 実験的 | 情報を保持する Vue テンプレートツールの開発者 | `vize_l1::{parse, SurfaceTree}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l1_to_l2` | 実験的 | Vue の変換・コンパイラバックエンド開発者 | `vize_l1_to_l2::{lower, emit_dom}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l2` | 実験的 | 方言に依存しないコンパイラ IR の開発者 | `vize_l2::{dump::Page, op, verify}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
-| `vize_l0` | 実験的 | Davinci の各層・パスの開発者 | `vize_l0::{id::NodeId, side_table::SideTable}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
+| `vize_l0` | 実験的 | Levels の各層・パスの開発者 | `vize_l0::{id::NodeId, side_table::SideTable}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l2_to_l3` | 実験的 | L2 から L3 への変換・バックエンド開発者 | `vize_l2_to_l3::{lower, PartitionFacts}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 
 <!-- rust-crate-support:end -->

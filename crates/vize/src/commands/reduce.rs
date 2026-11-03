@@ -1,5 +1,5 @@
 //! `vize reduce` - shrink a failing SFC or crash repro to a minimal one that
-//! still fails the same way (Davinci P3-14, `folio-reduce`).
+//! still fails the same way (Levels P3-14, `folio-reduce`).
 //!
 //! llvm-reduce's model: a dumb deterministic driver ([`driver`]), an
 //! IR-aware deletion vocabulary ([`vocabulary`]: L1 subtrees, always
@@ -30,7 +30,7 @@ use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::RemarkKind;
 use vize_l0::{String, cstr};
 
-use super::davinci_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
+use super::level_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
 use driver::{ReduceError, reduce};
 use oracle::Check;
 
@@ -64,7 +64,7 @@ pub struct ReduceArgs {
     #[arg(long, value_name = "N")]
     pub walks_over: Option<u32>,
 
-    /// Keep inputs whose legacy and Davinci DOM outputs differ
+    /// Keep inputs whose legacy and Levels DOM outputs differ
     #[arg(long)]
     pub dom_divergence: bool,
 
@@ -185,7 +185,7 @@ pub fn run(args: ReduceArgs) {
         }
         (String::from(text.as_str()), None)
     };
-    davinci_ice::silence_panics();
+    level_ice::silence_panics();
     let outcome = reduce(artifact.as_str(), args.max_runs, &mut |candidate| {
         oracle::interesting(&checks, candidate)
     });

@@ -45,7 +45,7 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
   ];
   const publishableCrates = getMetadata()
     .packages.filter((pkg) =>
-      ["crates", "davinci", "vendor"].some((directory) =>
+      ["crates", "levels", "vendor"].some((directory) =>
         path.relative(repoRoot, pkg.manifest_path).startsWith(`${directory}${path.sep}`),
       ),
     )

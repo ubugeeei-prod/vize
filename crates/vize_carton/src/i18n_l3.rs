@@ -2,7 +2,7 @@
 //!
 //! Each code has `s3/<code>.message` and `s3/<code>.help` in en, ja and
 //! zh. The verifier still prints its call-site message; these entries name
-//! the invariant. `tests/tooling/davinci-diagnostic-catalog.test.ts` reads
+//! the invariant. `tests/tooling/level-diagnostic-catalog.test.ts` reads
 //! `as_str()` from source and fails when a code lacks either entry.
 
 use rustc_hash::FxHashMap;

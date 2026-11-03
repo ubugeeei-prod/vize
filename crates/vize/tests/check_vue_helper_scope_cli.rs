@@ -8,7 +8,7 @@
 #![expect(clippy::disallowed_methods, reason = "fixture IO uses std strings")]
 
 use crate::support::corsa_requirement;
-use davinci_test_support::vue_helper_fixture as fixture;
+use level_test_support::vue_helper_fixture as fixture;
 
 use serde_json::{Value, json};
 use std::{path::Path, process::Command};

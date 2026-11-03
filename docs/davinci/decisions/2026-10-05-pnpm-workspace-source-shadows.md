@@ -194,7 +194,7 @@ CLI executions (clean/repaired rows deduplicated); the successor adds execution
 ordinals, working directories and CLI PIDs to retain every individual process.
 
 The bounded baseline branch `test/pnpm-workspace-7834-baseline` now has source
-`800ccf6b163f89210dd96a0d29102d52d5989a61`, with complete crates/Davinci/lock
+`800ccf6b163f89210dd96a0d29102d52d5989a61`, with complete crates/Levels/lock
 trees identical to main `61c975f8889a002a1b53265d86d0985447ffab63` and only 18
 fixture/driver paths changed. Its full Check `37226838354` must demonstrate the
 original native failure using the same authored inputs and commands. An

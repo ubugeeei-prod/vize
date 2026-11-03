@@ -11,7 +11,7 @@
 //!
 //! The vocabulary is a closed enum rather than free-form keys so a catalog is
 //! total by construction: every [`Phrase`] has a [`Phrase::key`], and
-//! `tests/tooling/davinci-diagnostic-catalog.test.ts` fails when a key is
+//! `tests/tooling/level-diagnostic-catalog.test.ts` fails when a key is
 //! missing from any of en/ja/zh.
 
 use vize_l0::String;

@@ -5,7 +5,7 @@ export const profileHostImports: Record<string, string> = {
   "crates/vize_curator/src/inspector/stages/profile.rs": `use vize_carton::profile_export::{
     ProfileExportBudget, ProfileExportOptions, export_report_from_snapshots,
 };`,
-  "crates/vize_atelier_sfc/examples/davinci_production_perf/attribution.rs":
+  "crates/vize_atelier_sfc/examples/level_production_perf/attribution.rs":
     "use vize_carton::profile_export::{ProfileExportOptions, export_report};",
 };
 

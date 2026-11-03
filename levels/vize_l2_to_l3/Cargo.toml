@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L2-to-L3 - the Davinci Impeto lowering and shared partition facts"
+description = "L2-to-L3 - the Levels Impeto lowering and shared partition facts"
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
@@ -17,7 +17,7 @@ vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 
 [dev-dependencies]
-davinci_test_support = { workspace = true }
+level_test_support = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }

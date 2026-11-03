@@ -1,4 +1,4 @@
-//! L0 block splitting for Art files (Davinci P4-13).
+//! L0 block splitting for Art files (Levels P4-13).
 //!
 //! An `.art.vue` file is an SFC: `<art>` is a custom block beside the
 //! ordinary `<script>` / `<style>` blocks. The split is the shared SFC

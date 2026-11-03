@@ -3,8 +3,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/template-global-policy.yml
-      - davinci/vize_l0/src/template_globals.rs
-      - davinci/vize_l1_to_l2/src/emit/prefix/**
+      - levels/vize_l0/src/template_globals.rs
+      - levels/vize_l1_to_l2/src/emit/prefix/**
       - crates/vize_atelier_core/src/steps/expression/**
       - crates/vize_atelier_core/src/lane/context.rs
       - crates/vize_atelier_core/src/codegen/helpers/constant_expression.rs

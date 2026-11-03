@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
 
 const hostFiles = [
   "crates/vize/src/config.rs",
@@ -63,7 +63,7 @@ test("the config facade is allowed only at the existing CLI compatibility facade
   const facade = "pub use vize_carton::config::*;";
   assert.match(withoutHostRuntimeReferences(facade, hostFiles[1]), forbiddenCartonStorage);
   assert.match(
-    withoutHostRuntimeReferences(facade, "davinci/vize_l1/src/dialect/vue.rs"),
+    withoutHostRuntimeReferences(facade, "levels/vize_l1/src/dialect/vue.rs"),
     forbiddenCartonStorage,
   );
 });
@@ -90,7 +90,7 @@ test("project selection is allowed only at the two existing host callers", () =>
     assert.match(withoutHostRuntimeReferences(call, file), forbiddenCartonStorage);
   }
   assert.match(
-    withoutHostRuntimeReferences(call, "davinci/vize_l1/src/config.rs"),
+    withoutHostRuntimeReferences(call, "levels/vize_l1/src/config.rs"),
     forbiddenCartonStorage,
   );
   for (const file of hostFiles.slice(3, 5)) {
@@ -124,7 +124,7 @@ test("matcher imports allow only the existing scoped host symbols", () => {
   assert.match(
     withoutHostRuntimeReferences(
       "pub(crate) use vize_carton::config::matcher::GlobSequence;",
-      "davinci/vize_l1/src/config.rs",
+      "levels/vize_l1/src/config.rs",
     ),
     forbiddenCartonStorage,
   );
@@ -160,7 +160,7 @@ test("workspace ignore policy admits one exact successor at the same matcher hos
     assert.match(withoutHostRuntimeReferences(current, path), forbiddenCartonStorage);
   }
   assert.match(
-    withoutHostRuntimeReferences(current, "davinci/vize_l1/src/config.rs"),
+    withoutHostRuntimeReferences(current, "levels/vize_l1/src/config.rs"),
     forbiddenCartonStorage,
   );
 });
@@ -184,7 +184,7 @@ test("applied module context retains only its exact reviewed host ProjectModel i
       );
     }
   }
-  for (const foreign of [...hostFiles, "davinci/vize_l2/src/config.rs", `${file}.other`]) {
+  for (const foreign of [...hostFiles, "levels/vize_l2/src/config.rs", `${file}.other`]) {
     assert.match(withoutHostRuntimeReferences(declaration, foreign), forbiddenCartonStorage);
   }
 });
@@ -229,8 +229,8 @@ test("one private snapshot facade exposes only the seven reviewed Carton host AP
     "crates/vize_maestro/src/server/state/project_contexts.rs",
     "crates/vize_maestro/src/server/state/project_contexts/registry.rs",
     "crates/vize_maestro/src/server/state/project_contexts/references.rs",
-    "davinci/vize_l0/src/config.rs",
-    "davinci/vize_l1/src/config.rs",
+    "levels/vize_l0/src/config.rs",
+    "levels/vize_l1/src/config.rs",
     `${file}.other`,
   ];
   for (const consumer of consumers) {

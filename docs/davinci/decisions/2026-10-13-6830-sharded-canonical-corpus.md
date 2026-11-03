@@ -18,7 +18,7 @@ about 23 s per job. The time went to two places.
 - **Single-threaded sweeps.** Production reach compiles 39,063 files in four
   shapes in one loop (510 s). The SSR emitter and production sweep is another
   loop (318 s). Both clear and read the process-wide profiler
-  (`davinci/vize_l0/src/profiler/core.rs`) around every compile, so threads
+  (`levels/vize_l0/src/profiler/core.rs`) around every compile, so threads
   inside one process would mix counters.
 - **Fixed costs repeated in every observer job.** Hydration took 64 s, because
   the fixture object cache was only saved by trusted runs that never call this
@@ -28,13 +28,13 @@ about 23 s per job. The time went to two places.
 
 ## Process shards
 
-`davinci_test_support::corpus::resolve_env_shard` wraps the existing
-`resolve_env_sweep`. Without `VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD` it
+`level_test_support::corpus::resolve_env_shard` wraps the existing
+`resolve_env_sweep`. Without `VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD` it
 returns the complete sweep unchanged. With `index/count` it keeps the files
 whose position in the complete collected vector is congruent to `index`
 modulo `count`. It writes their logical paths, NUL-terminated, to
-`VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD_VECTOR` before sweeping, and reports
-`davinci-differential corpus shard: ... planned=<all> selected=<slice>`. The
+`VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD_VECTOR` before sweeping, and reports
+`level-differential corpus shard: ... planned=<all> selected=<slice>`. The
 production reach and SSR sweeps use it. The pug, DOM and other corpus lanes are
 unchanged.
 
@@ -140,7 +140,7 @@ The same audit found inputs the list had missed: the `vendor/` crates,
 or gitlink anywhere under `tests/_fixtures/` also selects the corpus, because
 the committed sweep follows links.
 
-`tests/tooling/davinci-canonical-corpus-selection-inputs.test.ts` keeps the
+`tests/tooling/level-canonical-corpus-selection-inputs.test.ts` keeps the
 list honest. It derives the read set instead of restating it, from:
 
 - the workflow call chain and its transitive local actions;

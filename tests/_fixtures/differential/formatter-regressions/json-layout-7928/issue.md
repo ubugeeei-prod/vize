@@ -18,4 +18,4 @@ indentation.
 Rust public API and CLI integration tests consume every case and assert whole
 output, fixed points or check/write/check behavior. Strict JSON controls also
 assert unchanged parsed values. This legacy formatter corpus does not establish
-native Davinci formatter support.
+native Levels formatter support.

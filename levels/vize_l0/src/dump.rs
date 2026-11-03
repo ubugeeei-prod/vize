@@ -1,4 +1,4 @@
-//! Dump - the textual dump format every Davinci stage speaks.
+//! Dump - the textual dump format every Levels stage speaks.
 //!
 //! A folio is a stage artifact rendered as text. The contract is defined by
 //! [`Dump`] together with the mode-explicit equality laws below; the

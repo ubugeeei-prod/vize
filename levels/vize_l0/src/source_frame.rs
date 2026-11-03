@@ -1,4 +1,4 @@
-//! Validated authored-source frames for Davinci spans.
+//! Validated authored-source frames for Levels spans.
 //!
 //! A [`Span`] is only meaningful against the source string it was measured
 //! from. SFC lowering parses each block as a slice, but the emitted L0 spans
@@ -20,7 +20,7 @@ pub enum SourceFrameError {
     BlockNotRootSlice,
 }
 
-/// The complete authored source a Davinci artifact is measured against.
+/// The complete authored source a Levels artifact is measured against.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SourceRoot<'a> {
     source: &'a str,

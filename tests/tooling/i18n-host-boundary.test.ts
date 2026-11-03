@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import { i18nHostImports } from "./support/davinci-i18n-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
+import { i18nHostImports } from "./support/level-i18n-host-imports.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const source = (file: string) => readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
@@ -49,7 +49,7 @@ test("each i18n import remains forbidden outside its reviewed source host", () =
   for (const declarations of Object.values(i18nHostImports)) {
     for (const declaration of declarations) {
       for (const file of [
-        "davinci/vize_l2/src/lint.rs",
+        "levels/vize_l2/src/lint.rs",
         "crates/vize_maestro/src/server/state/config.rs",
       ]) {
         assert.match(withoutHostRuntimeReferences(declaration, file), forbiddenStorage);
@@ -66,7 +66,7 @@ test("all Rust sources retire the L0 locale/global catalog while retaining its p
     .split("\0")
     .filter(Boolean);
   for (const file of files) assert.doesNotMatch(source(file), /\bvize_l0\s*::\s*i18n\b/u, file);
-  const compiler = source("davinci/vize_l0/src/compiler_error.rs");
+  const compiler = source("levels/vize_l0/src/compiler_error.rs");
   assert.doesNotMatch(compiler, /\b(?:Locale|translator)\b/u);
   assert.match(compiler, /messages\.lookup\(&key\)/u);
   assert.match(

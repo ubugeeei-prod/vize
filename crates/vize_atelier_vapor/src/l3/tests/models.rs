@@ -32,7 +32,7 @@ fn input_models_match_the_retained_lane() {
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane: retained,
+                        level_retained_lane: retained,
                         ..Default::default()
                     },
                 )
@@ -63,7 +63,7 @@ fn empty_textarea_models_match_the_retained_lane() {
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane: retained,
+                        level_retained_lane: retained,
                         ..Default::default()
                     },
                 )
@@ -104,7 +104,7 @@ fn component_models_match_the_retained_lane() {
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane: retained,
+                        level_retained_lane: retained,
                         ..Default::default()
                     },
                 )
@@ -238,7 +238,7 @@ fn retained_model_callbacks_preserve_preprocessed_and_local_event_scope() {
             r#"<MyComp v-model="items[$event]" />"#,
             VaporCompilerOptions {
                 prefix_identifiers,
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

@@ -1,4 +1,4 @@
-name: Davinci Lean
+name: Levels Lean
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: davinci-lean-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: level-lean-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-lean
+          key: level-lean
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -76,14 +76,14 @@ jobs:
       - name: Check Rust L3 graph and value fixture provenance
         run: cargo test -p vize_l2_to_l3 --test lean_reference_fixture
       - name: Run TS-28 compiled backend trace
-        run: cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace
+        run: cargo test -p vize_atelier_vapor --test level_l3_compiled_trace
       - name: Run TS-30 mounted backend behavior
-        run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
+        run: cargo test -p vize_atelier_vapor --test level_mounted_behavior
       - name: Run TS-33 upstream Vapor behavioral parity
-        run: cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity --test davinci_transition_parity
+        run: cargo test -p vize_atelier_vapor --test level_vapor_upstream_parity --test level_keep_alive_parity --test level_suspense_parity --test level_structural_slots_parity --test level_transition_parity
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium for the event contract
         working-directory: tests
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Run TS-30 event scope and delivery in Chromium
-        run: cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture
+        run: cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture

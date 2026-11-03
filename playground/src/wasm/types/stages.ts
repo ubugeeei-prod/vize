@@ -1,4 +1,4 @@
-// Stage feed (Davinci P2-18, C-2/C-5): the compiler's stage pages as one
+// Stage feed (Levels P2-18, C-2/C-5): the compiler's stage pages as one
 // schema-versioned document. The committed schema is
 // `docs/davinci/plan/stage-ladder-feed.schema.json`; this module is the
 // playground's consumer side of it and negotiates the version before reading

@@ -15,16 +15,16 @@ figure.
 ## The witness that produces the number
 
 ```sh
-VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-  cargo test -p vize_atelier_sfc --features davinci-differential \
-  --test davinci_differential -- --nocapture
+VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+  cargo test -p vize_atelier_sfc --features level-differential \
+  --test level_differential -- --nocapture
 ```
 
-The binary (`crates/vize_atelier_sfc/tests/davinci_differential.rs`)
+The binary (`crates/vize_atelier_sfc/tests/level_differential.rs`)
 prints, after the corpus sweep:
 
 ```text
-davinci-differential corpus prefixer split: admitted=… legacy_total=…
+level-differential corpus prefixer split: admitted=… legacy_total=…
   … admitted_pct=…
 ```
 
@@ -38,15 +38,15 @@ a new measurement.
 Without the env var (battery + P0-2 ladder only), 2026-08-24:
 
 ```sh
-cargo test -p vize_atelier_sfc --features davinci-differential \
-  --test davinci_differential -- --nocapture
+cargo test -p vize_atelier_sfc --features level-differential \
+  --test level_differential -- --nocapture
 ```
 
 Green. Stderr: `transform_rewrite_comparisons=1408` (the committed
 ladder pin). That is **not** the corpus residual.
 
 With the env var pointed at `tests/_fixtures/_git`, the same binary
-panicked at `davinci_differential.rs:241`:
+panicked at `level_differential.rs:241`:
 
 ```text
 corpus sweep found no .vue files under

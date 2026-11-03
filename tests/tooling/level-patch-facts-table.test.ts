@@ -1,4 +1,4 @@
-// Davinci patch-facts table contract (plan/phase-3.md P3-7).
+// Levels patch-facts table contract (plan/phase-3.md P3-7).
 //
 // P3-7 moves VDOM patch-flag decisions out of final call assembly. This keeps
 // the owner-keyed side table visible while the broad DOM parity suites pin the
@@ -11,12 +11,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const emitRoot = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit.rs");
-const runPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "run.rs");
-const patchPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "patch.rs");
+const emitRoot = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit.rs");
+const runPath = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit", "run.rs");
+const patchPath = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit", "patch.rs");
 const patchStoragePath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l1_to_l2",
   "src",
   "emit",
@@ -25,23 +25,16 @@ const patchStoragePath = path.join(
 );
 const patchTestsPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l1_to_l2",
   "src",
   "emit",
   "patch",
   "tests.rs",
 );
-const vnodePath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "vnode.rs");
-const componentPath = path.join(
-  repoRoot,
-  "davinci",
-  "vize_l1_to_l2",
-  "src",
-  "emit",
-  "component.rs",
-);
-const dispatchPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "dispatch.rs");
+const vnodePath = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit", "vnode.rs");
+const componentPath = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit", "component.rs");
+const dispatchPath = path.join(repoRoot, "levels", "vize_l1_to_l2", "src", "emit", "dispatch.rs");
 
 function read(filePath: string): string {
   return fs.readFileSync(filePath, "utf8");

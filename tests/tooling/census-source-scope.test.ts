@@ -10,9 +10,9 @@ import { fixture } from "./_helpers/rust-workspace-fixture.ts";
 
 void test("known census renderers and owned reports retain tooling without product source lanes", () => {
   const paths = [
-    "tools/support/compat/davinci/croquis-consumers.ts",
-    "tools/support/compat/davinci/lib/croquis-render.ts",
-    "tools/support/compat/davinci/lib/croquis-shards.ts",
+    "tools/support/compat/levels/croquis-consumers.ts",
+    "tools/support/compat/levels/lib/croquis-render.ts",
+    "tools/support/compat/levels/lib/croquis-shards.ts",
     "docs/davinci/plan/croquis-consumption.md",
     "docs/davinci/plan/croquis-consumption/vize.md",
     "docs/davinci/plan/croquis-consumption/vize_l0_derive.md",
@@ -30,7 +30,7 @@ void test("known census renderers and owned reports retain tooling without produ
 
 void test("mixed census changes retain every native, workflow and shared configuration lane", () => {
   for (const path of [
-    "davinci/vize_l1/src/lib.rs",
+    "levels/vize_l1/src/lib.rs",
     "crates/vize_atelier_sfc/src/native/setup.rs",
     "tests/expected/native/setup.snap",
     "tests/tooling/native-sfc-js-setup-reference.test.ts",
@@ -52,9 +52,9 @@ void test("mixed census changes retain every native, workflow and shared configu
 
 void test("unknown census helpers and authored contracts keep the full conservative source fallback", () => {
   for (const path of [
-    "tools/support/compat/davinci/lib/croquis-analysis.ts",
-    "tools/support/compat/davinci/lib/new-census-helper.mjs",
-    "tools/support/compat/davinci/croquis-consumers.rs",
+    "tools/support/compat/levels/lib/croquis-analysis.ts",
+    "tools/support/compat/levels/lib/new-census-helper.mjs",
+    "tools/support/compat/levels/croquis-consumers.rs",
     "docs/davinci/plan/croquis-consumption.schema.json",
     "docs/davinci/plan/croquis-consumption/contract.md",
     "docs/davinci/plan/croquis-consumption/vize_l1.json",
@@ -107,9 +107,9 @@ void test("census-only reports and exact Node renderers select no workspace Rust
   const plan = planAffectedRust(fixture(), [
     "docs/davinci/plan/croquis-consumption.md",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
-    "tools/support/compat/davinci/croquis-consumers.ts",
-    "tools/support/compat/davinci/lib/croquis-render.ts",
-    "tools/support/compat/davinci/lib/croquis-shards.ts",
+    "tools/support/compat/levels/croquis-consumers.ts",
+    "tools/support/compat/levels/lib/croquis-render.ts",
+    "tools/support/compat/levels/lib/croquis-shards.ts",
   ]);
   assert.equal(plan.scope, "none");
   assert.deepEqual(plan.packages, []);
@@ -122,7 +122,7 @@ void test("mixed census and Rust changes preserve every transitive actual consum
     planAffectedRust(fixture(), [
       path,
       "docs/davinci/plan/croquis-consumption/vize_l1.md",
-      "tools/support/compat/davinci/lib/croquis-render.ts",
+      "tools/support/compat/levels/lib/croquis-render.ts",
     ]),
     planAffectedRust(fixture(), [path]),
   );
@@ -142,7 +142,7 @@ void test("census stays metadata-only in queue while workflow changes and unknow
     "docs/davinci/plan/key-manifests.md",
     "docs/davinci/plan/croquis-consumption/contract.md",
     "docs/davinci/plan/croquis-consumption/vize_l1.json",
-    "tools/support/compat/davinci/lib/new-census-helper.mjs",
+    "tools/support/compat/levels/lib/new-census-helper.mjs",
   ]) {
     const plan = planAffectedRust(metadata, [census, path]);
     assert.equal(plan.scope, "workspace", path);

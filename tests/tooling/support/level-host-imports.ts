@@ -1,8 +1,8 @@
-import { withoutProfileHostImports } from "./davinci-profile-host-imports.ts";
-import { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";
-import { withoutSourceIoHostReferences } from "./davinci-source-io-host-imports.ts";
-import { withoutPathHostReferences } from "./davinci-path-host-imports.ts";
-import { withoutTimingHostImport } from "./davinci-timing-host-imports.ts";
+import { withoutProfileHostImports } from "./level-profile-host-imports.ts";
+import { withoutI18nHostImports } from "./level-i18n-host-imports.ts";
+import { withoutSourceIoHostReferences } from "./level-source-io-host-imports.ts";
+import { withoutPathHostReferences } from "./level-path-host-imports.ts";
+import { withoutTimingHostImport } from "./level-timing-host-imports.ts";
 
 /** Remove only reviewed legacy host APIs before checking L0 storage imports. */
 export function withoutHostRuntimeReferences(source: string, relativePath: string): string {

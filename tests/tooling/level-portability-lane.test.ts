@@ -63,8 +63,8 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   );
   assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);
   assert.match(
-    workflowJobBody(workflow, "rust-davinci-allocations"),
-    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_emit_helper_rich_large --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
+    workflowJobBody(workflow, "rust-level-allocations"),
+    /cargo bench -p vize_l1_to_l2 --bench level_storage -- --quick && cargo bench -p vize_patina --bench level_markup -- --quick && rust-script tools\/commands\/levels\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_emit_helper_rich_large --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
   );
 });
 
@@ -75,14 +75,14 @@ test("the no_std claim stays on five stage libraries and excludes the std L0 fou
   // A library joining the claim must appear here, in both lane commands above,
   // and in no-std-boundary.md's ledger.
   for (const [packageName, crateDir] of portableStageCrates.slice(1)) {
-    const lib = readRepoFile("davinci", crateDir, "src", "lib.rs");
+    const lib = readRepoFile("levels", crateDir, "src", "lib.rs");
     assert.match(lib, /^#!\[no_std\]$/m, `${packageName} must keep #![no_std]`);
     assert.match(lib, /^extern crate alloc;$/m, `${packageName} must keep extern crate alloc`);
   }
 
   const workspace = readRepoFile("Cargo.toml");
-  assert.match(workspace, /^vize_l0 = \{ path = "davinci\/vize_l0", version = "=[^"]+" \}$/m);
-  const carton = readRepoFile("davinci", "vize_l0", "src", "lib.rs");
+  assert.match(workspace, /^vize_l0 = \{ path = "levels\/vize_l0", version = "=[^"]+" \}$/m);
+  const carton = readRepoFile("levels", "vize_l0", "src", "lib.rs");
   assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 
   const resolved = JSON.parse(
@@ -90,7 +90,7 @@ test("the no_std claim stays on five stage libraries and excludes the std L0 fou
       encoding: "utf8",
     }),
   ) as { packages: Array<{ name: string; targets: Array<{ kind: string[] }> }> };
-  assert.ok(resolved.packages.every((pkg) => pkg.name !== "vize_davinci"));
+  assert.ok(resolved.packages.every((pkg) => pkg.name !== "vize_level"));
   const substrate = resolved.packages.find((pkg) => pkg.name === "vize_l0");
   assert.ok(substrate, "the foundation must be present in Cargo metadata");
   assert.deepEqual(

@@ -40,7 +40,7 @@ fn inconsistent_accepted_payload_returns_no_render_or_map() {
             assert_eq!(result.error_messages.len(), 1);
             assert_eq!(
                 result.error_messages[0].as_str(),
-                "Davinci L3 emission rejected Vapor artifact: inconsistent checked payload"
+                "Levels L3 emission rejected Vapor artifact: inconsistent checked payload"
             );
         }
     }

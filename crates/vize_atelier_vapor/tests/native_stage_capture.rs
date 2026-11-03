@@ -104,7 +104,7 @@ fn retained_vapor_module_has_no_native_pages() {
     let (code, capture) = compile(
         "<div>hello</div>",
         VaporCompilerOptions {
-            davinci_retained_lane: true,
+            level_retained_lane: true,
             ..Default::default()
         },
     );

@@ -26,7 +26,7 @@ pub(crate) fn emit_accepted<'a>(
                 templates: Vec::new(),
                 map: None,
                 error_messages: vec![String::from(
-                    "Davinci L3 emission rejected Vapor artifact: inconsistent checked payload",
+                    "Levels L3 emission rejected Vapor artifact: inconsistent checked payload",
                 )],
                 warning_messages: Vec::new(),
             }

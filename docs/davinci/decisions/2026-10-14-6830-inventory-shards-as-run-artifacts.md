@@ -9,8 +9,8 @@ The per-crate shards of the consumer migration surface inventory
 of the Croquis consumption matrix
 (`docs/davinci/plan/croquis-consumption/<crate>.md`) are no longer committed.
 Both generators write them on every `--write` and `--check` under
-`artifacts/davinci-ledgers/`, and the source preflight uploads that directory
-in the `davinci-generated-ledgers` artifact it already publishes.
+`artifacts/level-ledgers/`, and the source preflight uploads that directory
+in the `level-generated-ledgers` artifact it already publishes.
 
 The two index pages stay committed and byte-compared. A shard committed under
 either plan directory is stale, and `--write` deletes it. The Croquis gate on
@@ -31,9 +31,9 @@ the product set, which change only when the inventory itself changes.
 
 ## Scope
 
-Readers who used the committed shards download the `davinci-generated-ledgers`
+Readers who used the committed shards download the `level-generated-ledgers`
 artifact of a run or run
-`rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write`
-(or `croquis-consumers.rs --write`) and read `artifacts/davinci-ledgers/`.
+`rust-script tools/commands/levels/consumer-migration-surfaces.rs --write`
+(or `croquis-consumers.rs --write`) and read `artifacts/level-ledgers/`.
 Earlier records that cite a committed shard path describe the tree at their
 own commit.

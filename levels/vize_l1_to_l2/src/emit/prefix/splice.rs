@@ -1,6 +1,6 @@
 //! Span-preserving emission for the identifier-prefix rewrite — the
 //! verbatim port of `vize_atelier_core::steps::expression::splice`
-//! (Davinci P1-9), whose three retired-loop behaviors are load-bearing
+//! (Levels P1-9), whose three retired-loop behaviors are load-bearing
 //! for byte parity: out-of-range edits drop, same-position edits emit in
 //! reversed construction order, and one edit emits `prefix` then
 //! `suffix`.

@@ -26,7 +26,7 @@ Canonical storage and shared foundation contracts live in `vize_l0`.
 
 ## Related Crates
 
-Legacy products may depend on `vize_carton`. Davinci levels use `vize_l0`
+Legacy products may depend on `vize_carton`. Levels levels use `vize_l0`
 directly and do not depend back on Carton.
 
 ## License

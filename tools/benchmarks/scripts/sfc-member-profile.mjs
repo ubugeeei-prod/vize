@@ -93,7 +93,7 @@ export function runProfile(base, head, output) {
     headSha,
     "--",
     "crates",
-    "davinci",
+    "levels",
     "vendor",
     "Cargo.toml",
     "Cargo.lock",
@@ -168,7 +168,7 @@ export function runProfile(base, head, output) {
         target,
         targetInitiallyEmpty: true,
         sourceTrees: Object.fromEntries(
-          ["crates", "davinci", "vendor", "npm/native"].map((entry) => [
+          ["crates", "levels", "vendor", "npm/native"].map((entry) => [
             entry,
             git(root, "rev-parse", `HEAD:${entry}`),
           ]),

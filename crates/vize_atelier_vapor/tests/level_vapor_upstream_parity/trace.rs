@@ -86,7 +86,7 @@ pub(super) fn assert_native_upstream_trace_with_targets(
         "{source}: TS-33 must exercise native L3"
     );
     let vize = trace(
-        "davinci-mounted-trace.mjs",
+        "level-mounted-trace.mjs",
         json!({
             "backend": "vapor",
             "code": compiled.code,
@@ -97,7 +97,7 @@ pub(super) fn assert_native_upstream_trace_with_targets(
         }),
     );
     let upstream = trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({"source": source, "context": context, "steps": steps, "externalTargets": external_targets}),
     );
     assert_eq!(vize, expected, "{source}: Vize native L3 trace");

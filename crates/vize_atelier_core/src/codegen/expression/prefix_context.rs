@@ -152,14 +152,14 @@ pub(super) fn prefix_node_in_scope(
                 .map(|expr| prefix_via_expr(&expr, 1, js.raw, ctx, implicit_event))
                 .unwrap_or_else(|_| {
                     panic!(
-                        "davinci-differential (P1-7): js_module_compatible admitted an expression the legacy JS-module parse rejects: {:?}",
+                        "level-differential (P1-7): js_module_compatible admitted an expression the legacy JS-module parse rejects: {:?}",
                         js.raw
                     )
                 });
             assert_eq!(
                 result.as_str(),
                 legacy.as_str(),
-                "davinci-differential (P1-7): retained codegen prefix walk diverged from the legacy re-parse for expression {:?}",
+                "level-differential (P1-7): retained codegen prefix walk diverged from the legacy re-parse for expression {:?}",
                 js.raw
             );
             crate::retained::differential::record_codegen_rewrite_comparison();

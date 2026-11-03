@@ -15,7 +15,7 @@ instead of requiring every surface to enforce.
 | `core-tools`             | enforced       | `core_tools_mode=enforce`             |
 | `syntax-highlighter`     | enforced       | always enforced                       |
 | `glyph`                  | enforced       | always enforced                       |
-| Davinci DOM corpus job   | enforced       | `davinci_dom_corpus_mode=enforce`     |
+| Davinci DOM corpus job   | enforced       | `level_dom_corpus_mode=enforce`       |
 | `lint-divergence`        | recorded       | `lint_divergence_mode=record-only`    |
 | `lsp`                    | recorded       | `lsp_mode=record-only`                |
 | `typecheck-divergence`   | skipped        | `typecheck_divergence_mode=skip`      |

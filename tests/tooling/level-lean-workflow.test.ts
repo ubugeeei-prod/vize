@@ -76,16 +76,16 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ["tests/formal/impeto", "lake exe impetoRef --check-folios"],
       [".", "cargo test -p vize_l3 --test lattice_reference_fixture"],
       [".", "cargo test -p vize_l2_to_l3 --test lean_reference_fixture"],
-      [".", "cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace"],
-      [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
+      [".", "cargo test -p vize_atelier_vapor --test level_l3_compiled_trace"],
+      [".", "cargo test -p vize_atelier_vapor --test level_mounted_behavior"],
       [
         ".",
-        "cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity --test davinci_transition_parity",
+        "cargo test -p vize_atelier_vapor --test level_vapor_upstream_parity --test level_keep_alive_parity --test level_suspense_parity --test level_structural_slots_parity --test level_transition_parity",
       ],
       ["tests", "vize-ci-apt-retry vp exec playwright install --with-deps chromium"],
       [
         ".",
-        "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture",
+        "cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture",
       ],
     ],
   );
@@ -97,11 +97,11 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
     "leanprover/lean4:v4.33.1",
   );
 
-  assertLeanWorkflow(parseYaml(readRepoFile(".github", "workflows", "davinci-lean.yml")));
+  assertLeanWorkflow(parseYaml(readRepoFile(".github", "workflows", "level-lean.yml")));
 });
 
 test("TS-28 rejects commented, moved and disabled workflow commands", () => {
-  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  const source = readRepoFile(".github", "workflows", "level-lean.yml");
   const command = "lake exe impetoRef --check-stateful-fixtures";
   const commented = source.replace(`run: ${command}`, `run: "true" # ${command}`);
   assert.throws(() => assertLeanWorkflow(parseYaml(commented)), assert.AssertionError);
@@ -120,15 +120,15 @@ test("TS-28 rejects commented, moved and disabled workflow commands", () => {
 });
 
 test("TS-30 Chromium contract cannot silently skip its ignored Rust test", () => {
-  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  const source = readRepoFile(".github", "workflows", "level-lean.yml");
   const command =
-    "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture";
+    "cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture";
   const skipped = source.replace(command, command.replace(" -- --ignored --nocapture", ""));
   assert.throws(() => assertLeanWorkflow(parseYaml(skipped)), assert.AssertionError);
 });
 
 test("TS-28 rejects failure-ignore settings at job and step scopes", () => {
-  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  const source = readRepoFile(".github", "workflows", "level-lean.yml");
   for (const scope of ["job", "step"] as const) {
     for (const value of [true, "${{ true }}", "${{ false }}", "false", null]) {
       const workflow: Workflow = parseYaml(source);
@@ -170,8 +170,8 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   );
   // The lattice laws left Lean: Kani verifies the shipped evaluator instead.
   const lattice =
-    readRepoFile("davinci", "vize_l3", "src", "lattice", "kani.rs") +
-    readRepoFile("davinci", "vize_l3", "src", "lattice", "classify_proofs.rs");
+    readRepoFile("levels", "vize_l3", "src", "lattice", "kani.rs") +
+    readRepoFile("levels", "vize_l3", "src", "lattice", "classify_proofs.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
     "the_effect_floor_is_the_join_of_the_rule_table",
@@ -189,12 +189,12 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     );
   }
   assert.match(
-    readRepoFile("davinci", "vize_l3", "tests", "lattice.rs"),
+    readRepoFile("levels", "vize_l3", "tests", "lattice.rs"),
     /^fn the_verdict_never_changes_the_class_and_only_proven_facts_fire\(\)/mu,
   );
   assert.match(
-    readRepoFile(".github", "workflows", "davinci-kani.yml"),
-    /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u,
+    readRepoFile(".github", "workflows", "level-kani.yml"),
+    /args: levels\/vize_l3\/src\/lattice\/kani\.rs /u,
   );
   const schedule = readRepoFile("tests", "formal", "impeto", "Impeto", "ScheduleLaws.lean");
   for (const name of [
@@ -223,10 +223,10 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     assert.match(incremental, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
   assert.match(
-    readRepoFile("davinci", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs"),
+    readRepoFile("levels", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs"),
     /^    mod schedule;$/mu,
   );
-  const bridge = readRepoFile("davinci", "vize_l3", "tests", "lattice_reference_fixture.rs");
+  const bridge = readRepoFile("levels", "vize_l3", "tests", "lattice_reference_fixture.rs");
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
   assert.match(bridge, /ReactivityPage::of\(&facts\)\.print_to_string\(DumpMode::Full\)/u);
 });

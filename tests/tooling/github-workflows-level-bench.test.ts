@@ -20,48 +20,48 @@ interface WorkflowJob {
   steps?: WorkflowStep[];
 }
 
-test("check workflow uploads Davinci allocation bench reports", () => {
+test("check workflow uploads Levels allocation bench reports", () => {
   const workflow = checkWorkflowJobSources();
   const action = readRepoFile(
     ".github",
     "actions",
-    "upload-davinci-compact-storage-bench-reports",
+    "upload-level-compact-storage-bench-reports",
     "action.yml",
   );
   const jobs = (parse(workflow) as { jobs?: Record<string, WorkflowJob> }).jobs ?? {};
   const actionSteps = (parse(action) as { runs?: { steps?: WorkflowStep[] } }).runs?.steps ?? [];
-  const steps = jobs["rust-davinci-allocations"]?.steps ?? [];
-  const gateIndex = steps.findIndex((step) => step.name === "Davinci allocation gate");
+  const steps = jobs["rust-level-allocations"]?.steps ?? [];
+  const gateIndex = steps.findIndex((step) => step.name === "Levels allocation gate");
 
   assert.notEqual(gateIndex, -1);
   assert.match(
     steps[gateIndex].run ?? "",
-    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick/,
+    /cargo bench -p vize_l1_to_l2 --bench level_storage -- --quick/,
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /cargo bench -p vize_patina --bench davinci_markup -- --quick/,
+    /cargo bench -p vize_patina --bench level_markup -- --quick/,
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_emit_helper_rich_large --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root --bench patina_s2_markup_one_root/,
+    /rust-script tools\/commands\/levels\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_emit_helper_rich_large --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root --bench patina_s2_markup_one_root/,
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /cargo bench -p vize_musea --bench davinci_art -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline$/,
+    /cargo bench -p vize_musea --bench level_art -- --quick && rust-script tools\/commands\/levels\/bench-compare\.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline$/,
   );
   assert.deepEqual(steps[gateIndex + 1], {
-    name: "Upload Davinci allocation bench reports",
+    name: "Upload Levels allocation bench reports",
     if: "${{ always() }}",
-    uses: "./.github/actions/upload-davinci-compact-storage-bench-reports",
+    uses: "./.github/actions/upload-level-compact-storage-bench-reports",
   });
   assert.deepEqual(actionSteps, [
     {
       name: "Upload reports",
       uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
       with: {
-        name: "davinci-allocation-bench-reports",
-        path: "tools/benchmarks/results/davinci/*.json",
+        name: "level-allocation-bench-reports",
+        path: "tools/benchmarks/results/levels/*.json",
         "if-no-files-found": "error",
         "retention-days": 14,
       },

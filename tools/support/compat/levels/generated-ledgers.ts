@@ -15,7 +15,7 @@ const generators: readonly (readonly [name: string, generator: string])[] = [
   ["sourcelocation-summary.md", "sourcelocation-inventory.ts"],
 ];
 const usage =
-  "usage: node tools/support/compat/davinci/generated-ledgers.ts --write | --check [--out-dir <dir>]";
+  "usage: node tools/support/compat/levels/generated-ledgers.ts --write | --check [--out-dir <dir>]";
 
 // The generators are independent read-only scans; run them together and emit
 // their aggregates in the declared order, stopping at the first failure as before.
@@ -30,7 +30,7 @@ function summarize(generator: string): Promise<Summary> {
   return new Promise((resolve) => {
     const child = spawn(
       process.execPath,
-      [path.join(repoRoot, "tools/support/compat/davinci", generator), "--summary"],
+      [path.join(repoRoot, "tools/support/compat/levels", generator), "--summary"],
       { cwd: repoRoot },
     );
     const stdout: Buffer[] = [];

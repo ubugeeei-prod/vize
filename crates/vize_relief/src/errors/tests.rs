@@ -1,5 +1,5 @@
 // Wrapped in an inline `#[cfg(test)] mod` (the repo convention for split
-// test files) so the Davinci assertion lint, which only scans inline
+// test files) so the Levels assertion lint, which only scans inline
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 #[cfg(test)]
 mod error_code_tests {

@@ -1,6 +1,6 @@
 //! Buffered text runs: build-then-freeze for decoded template text.
 //!
-//! A text node's `content` is an `&\'a str` (Davinci P1-10), so a run whose
+//! A text node's `content` is an `&\'a str` (Levels P1-10), so a run whose
 //! decoded bytes diverge from the source — an entity rewrote them — cannot be
 //! appended to in place. Recopying the run into the arena per entity would be
 //! quadratic, so the decoded bytes accumulate here and are frozen once, at the

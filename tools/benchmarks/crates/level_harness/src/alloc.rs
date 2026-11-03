@@ -1,4 +1,4 @@
-//! Allocation counting for Davinci benches.
+//! Allocation counting for Levels benches.
 //!
 //! [`CountingAllocator`] wraps a concrete allocator behind [`GlobalAlloc`] and
 //! keeps three process-global counters: allocation-like calls, live heap
@@ -8,7 +8,7 @@
 //!
 //! Relation to `vize_l0::profiler::ProfilingAllocator`: carton counts
 //! per-window allocation traffic for the profiler behind an opt-in flag and
-//! tracks no live/peak bytes. The Davinci budgets gate on peak footprint, so
+//! tracks no live/peak bytes. The Levels budgets gate on peak footprint, so
 //! this harness keeps its own always-on counter set; P0-11 aligns the two
 //! exporters. Counting costs a handful of relaxed atomic operations per
 //! allocation and applies identically to baseline and candidate runs, so

@@ -11,7 +11,7 @@
   "files": 561,
   "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
   "allocator": "mimalloc (same default as native CLI; allocation tracking disabled)",
-  "features": "native,davinci-production-bench; no retained-AST differential dual-run",
+  "features": "native,level-production-bench; no retained-AST differential dual-run",
   "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
   "window": "parse_sfc + compile_sfc_for_adapter + result destruction; source I/O excluded; profiler disabled; retained scope changes outside timing",
   "sampling": "one warmup batch per lane; 9 samples, 5 corpus passes each; lane order alternates each sample; all/accepted/fallback/diagnostic/no-template/parse-error/routed-Vapor cohorts reported separately",
@@ -30,7 +30,7 @@
   },
   "artifacts": [
     {
-      "name": "davinci-production-perf-1",
+      "name": "level-production-perf-1",
       "id": 12887639614,
       "size_in_bytes": 347901,
       "archive_sha256": "565467ce0bc12012fed84c8b5e502d0d48646f6d922d47dc6004ec907812c976",
@@ -41,7 +41,7 @@
       }
     },
     {
-      "name": "davinci-production-perf-2",
+      "name": "level-production-perf-2",
       "id": 12888012086,
       "size_in_bytes": 254460,
       "archive_sha256": "d16aba654027c0c3cc50998360d22c5dbce049f9a74f09855adfd9e33f816486",
@@ -51,7 +51,7 @@
       }
     },
     {
-      "name": "davinci-production-perf-3",
+      "name": "level-production-perf-3",
       "id": 12888232427,
       "size_in_bytes": 254498,
       "archive_sha256": "f4e984175df99a93b155b6da97f2f475cc96947ffd50fd1d8b9b7529ac53f9c0",
@@ -61,7 +61,7 @@
       }
     },
     {
-      "name": "davinci-production-summary",
+      "name": "level-production-summary",
       "id": 12888272210,
       "size_in_bytes": 1728,
       "archive_sha256": "60e58971f3a625440a27e646377f80001b143bb85cff1d9c5573245c849e25b6",

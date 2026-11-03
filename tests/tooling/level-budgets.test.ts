@@ -1,7 +1,7 @@
-// Davinci bench budget registry (plan/phase-0.md P0-4).
+// Levels bench budget registry (plan/phase-0.md P0-4).
 //
 // Two suites:
-//   1. Registry reconciliation — every bench id constructed in the davinci
+//   1. Registry reconciliation — every bench id constructed in the levels
 //      bench sources (cstr!-built or literal) has a `<id> = { … }` entry under
 //      [bench] in docs/davinci/plan/budgets.toml, and vice versa, with the
 //      offending id named on mismatch. Entries carry exactly the documented
@@ -12,7 +12,7 @@
 //      ratchet line (the documented-in-file variant of the P0-4 ratchet rule).
 //
 // The compare gate's stdout/exit oracles live in
-// tests/tooling/davinci-bench-compare.test.ts.
+// tests/tooling/level-bench-compare.test.ts.
 
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -20,7 +20,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const budgetsPath = path.join(repoRoot, "docs/davinci", "plan", "budgets.toml");
@@ -51,7 +51,7 @@ const EXPLICIT_STAGE_WINDOWS = new Set([
 
 function ladderNames(): string[] {
   const fixturesRs = fs.readFileSync(
-    path.join(repoRoot, "tools", "benchmarks", "crates", "davinci_harness", "src", "fixtures.rs"),
+    path.join(repoRoot, "tools", "benchmarks", "crates", "level_harness", "src", "fixtures.rs"),
     "utf8",
   );
   const start = fixturesRs.indexOf("pub const LADDER");
@@ -65,7 +65,7 @@ function ladderNames(): string[] {
 
 function benchSources(): { file: string; text: string }[] {
   const sources: { file: string; text: string }[] = [];
-  for (const root of ["crates", "davinci", path.join("tools", "benchmarks", "crates")]) {
+  for (const root of ["crates", "levels", path.join("tools", "benchmarks", "crates")]) {
     for (const pkg of fs.readdirSync(path.join(repoRoot, root))) {
       const benchesDir = path.join(repoRoot, root, pkg, "benches");
       if (!fs.existsSync(benchesDir)) continue;
@@ -77,7 +77,7 @@ function benchSources(): { file: string; text: string }[] {
       }
     }
   }
-  assert.ok(sources.length > 0, "no davinci bench sources found (bench_with_metrics users)");
+  assert.ok(sources.length > 0, "no levels bench sources found (bench_with_metrics users)");
   return sources;
 }
 
@@ -93,7 +93,7 @@ function argDomain(arg: string, source: { file: string; text: string }): string[
   }
   assert.fail(
     `${source.file}: cstr! argument \`${arg}\` is not understood by the bench-id ` +
-      "reconciler — extend tests/tooling/davinci-budgets.test.ts",
+      "reconciler — extend tests/tooling/level-budgets.test.ts",
   );
 }
 
@@ -132,7 +132,7 @@ function sourceBenchIds(): string[] {
   return ids.sort();
 }
 
-test("every davinci bench id has a budgets.toml entry, and vice versa", () => {
+test("every levels bench id has a budgets.toml entry, and vice versa", () => {
   const sourceIds = sourceBenchIds();
   const budgetIds = Object.keys(budgets.bench).sort();
   const missingFromBudgets = sourceIds.filter((id) => !budgetIds.includes(id));
@@ -179,7 +179,7 @@ test("every budget entry carries exactly the documented fields within the tolera
 });
 
 // Inline-table entry lines belonging to one `[section]` header, in file order.
-// Exported shape is duplicated in davinci-traversal-budgets.test.ts rather
+// Exported shape is duplicated in level-traversal-budgets.test.ts rather
 // than shared: these are node:test files, not a module graph.
 function inlineTableLines(section: string): string[] {
   const lines = budgetsText.split("\n");
@@ -242,7 +242,7 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
       "tools",
       "benchmarks",
       "results",
-      "davinci",
+      "levels",
       "baseline",
       `${id}.json`,
     );
@@ -265,7 +265,7 @@ test("P2-11 L2 DOM emit probe gates exact allocations", () => {
     "tools",
     "benchmarks",
     "results",
-    "davinci",
+    "levels",
     "baseline",
     `${id}.json`,
   );

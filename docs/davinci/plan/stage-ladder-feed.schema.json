@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/stage-ladder-feed.schema.json",
-  "title": "Davinci stage ladder feed",
+  "title": "Levels stage ladder feed",
   "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version the stage view negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producers: the inspector payload embeds it under `stageFeed`, and the wasm `analyzeSfc` result carries the full L1 -> L2 -> L3 stage ladder next to the croquis alias. Transport is deliberately unspecified here - that decision is P2-19.",
   "type": "object",
   "additionalProperties": false,
@@ -16,7 +16,7 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "Producing surface (for example `davinci-opt`, `inspector`, `analyze-sfc`)."
+      "description": "Producing surface (for example `level-opt`, `inspector`, `analyze-sfc`)."
     },
     "pages": {
       "type": "array",
@@ -34,7 +34,7 @@
             "type": "string",
             "minLength": 1,
             "pattern": "^[a-z][a-z0-9-]*$",
-            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-plan` (the transform plan's walks), `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `davinci-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
+            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-plan` (the transform plan's walks), `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `level-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
           },
           "pass": {
             "type": "string",

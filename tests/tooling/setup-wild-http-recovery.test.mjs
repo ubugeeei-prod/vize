@@ -100,9 +100,7 @@ void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(uses(js.jobs, local), []);
   assert.deepEqual(uses(js.jobs, upstream), Object.keys(js.jobs));
-  const canonical = parse(
-    fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
-  );
+  const canonical = parse(fs.readFileSync(".github/workflows/level-canonical-corpus.yml", "utf8"));
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
     steps.find((s) => s.uses === local),

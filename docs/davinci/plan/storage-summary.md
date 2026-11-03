@@ -3,19 +3,19 @@
 Storage totals by category, scope and owned-storage type are generated from the
 reviewed [per-file storage inventory](./storage-inventory.tsv). Full CI and
 release validation publish them as `storage-summary.md` in the
-`davinci-generated-ledgers` Actions artifact for the validated checkout.
+`level-generated-ledgers` Actions artifact for the validated checkout.
 Generated aggregate tables are not committed.
 
 Generate and verify the bundle locally with:
 
 ```sh
-node tools/support/compat/davinci/generated-ledgers.ts --write
-node tools/support/compat/davinci/generated-ledgers.ts --check
+node tools/support/compat/levels/generated-ledgers.ts --write
+node tools/support/compat/levels/generated-ledgers.ts --check
 ```
 
-Outputs live in the Git-ignored `artifacts/davinci-ledgers/` directory. To compare
+Outputs live in the Git-ignored `artifacts/level-ledgers/` directory. To compare
 an isolated individual report, pass `--out-dir <dir>` to
-`node tools/support/compat/davinci/storage-summary.ts --write` and `--check`.
+`node tools/support/compat/levels/storage-summary.ts --write` and `--check`.
 The check rejects absent output and any byte difference from the current TSV.
 
 The [storage boundary](./storage-boundary.md) remains the policy. Its reviewed

@@ -23,7 +23,7 @@ string contract for host JSON parsing and unknown keys under a module-scoped
 lint expectation. Its normal dependencies include `once_cell` and
 `rustc-hash`; L0 still needs both for its remaining portable/native consumers.
 Relief and Vitrine declare their actual Carton host dependency. Normal and
-build dependencies continue to point from `crates/` into `davinci/` only.
+build dependencies continue to point from `crates/` into `levels/` only.
 
 Replay uses `vp node tools/support/levels/move-i18n-host.ts moves`, then
 `integrate`, then `check`. Preflight validates module/test ownership, real

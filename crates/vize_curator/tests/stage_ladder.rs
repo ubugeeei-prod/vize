@@ -1,5 +1,5 @@
 //! TS-52 for the stage ladder (C-2/C-3/C-5): `ladder_pages` feeds
-//! every rung the Davinci pipeline has today - L1, the L2 lowering, the
+//! every rung the Levels pipeline has today - L1, the L2 lowering, the
 //! transform plan's walks, one page per executed transform pass, and the L3
 //! graph / partition / value pages - from the real stages. The feed validates against the committed schema, every
 //! page is pinned by exact equality, and the L2/L3 spans index the L1 page
@@ -13,7 +13,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_curator::inspector::{
     StagePage, ladder_pages, ladder_run, stage_feed_value, template_remarks,
 };

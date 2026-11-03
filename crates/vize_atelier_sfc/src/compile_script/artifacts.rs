@@ -109,7 +109,7 @@ pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
 }
 
 /// [`erase_artifact_macro_statements`] with the erased text's provenance in
-/// `content` (Davinci P3-9 source maps).
+/// `content` (Levels P3-9 source maps).
 pub(crate) fn erase_artifact_macro_statements_traced(
     content: &str,
     nuxt_page_meta: bool,

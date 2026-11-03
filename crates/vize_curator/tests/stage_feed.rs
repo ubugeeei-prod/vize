@@ -8,7 +8,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_curator::inspector::feed::{StageFeed, StageFeedSchemaMismatch};
 use vize_l0::dump::collector::Collector;
 use vize_l0::pass::{

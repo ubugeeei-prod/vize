@@ -284,7 +284,7 @@ fn collection_keeps_original_owners_and_never_reenters_expression_parsing() {
     assert!(
         before_counters
             .iter()
-            .any(|(name, samples, total)| *name == "davinci.expr.parses"
+            .any(|(name, samples, total)| *name == "levels.expr.parses"
                 && *samples > 0
                 && *samples == *total),
         "original expression producer must be observed"

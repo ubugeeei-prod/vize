@@ -7,7 +7,7 @@
 //! elaboration step records which rule produced what, from which syntax,
 //! with before/after pairs for macro expansion - **and partial results are
 //! kept when elaboration fails**, so hover works in broken code. The
-//! Davinci form: a [`ProvenanceRecord`] per lowering decision carrying
+//! Levels form: a [`ProvenanceRecord`] per lowering decision carrying
 //! `(rule name, produced node, before, after, span)`, in decision order.
 //!
 //! # The survival law

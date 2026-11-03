@@ -1,9 +1,9 @@
 name: Nuxt scoped style build
 on:
   pull_request:
-    branches: [main, davinci]
+    branches: [main, levels]
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
   merge_group:
     types: [checks_requested]
     branches: [main]

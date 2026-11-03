@@ -121,13 +121,13 @@ the commands that re-derive it, and the local measurements taken so far.
 ## Mechanical witnesses
 
 - `cargo test -p vize_atelier_vapor --lib`
-- `cargo test -p vize_atelier_vapor --test davinci_vapor_artifact --test davinci_walk_baseline --test davinci_expr_reparse_floor`
-- `cargo test -p vize_atelier_vapor --test davinci_mounted_behavior --test davinci_s3_compiled_trace`
-- `cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity`
-- `cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture` (Chromium)
+- `cargo test -p vize_atelier_vapor --test level_vapor_artifact --test level_walk_baseline --test level_expr_reparse_floor`
+- `cargo test -p vize_atelier_vapor --test level_mounted_behavior --test level_s3_compiled_trace`
+- `cargo test -p vize_atelier_vapor --test level_vapor_upstream_parity`
+- `cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture` (Chromium)
 - `cargo clippy -p vize_atelier_vapor --lib -- -D warnings`
 - `cargo run -p vize_test_runner --bin coverage` (published fixture parity)
-- `cargo bench -p vize_atelier_vapor --bench davinci -- vapor_native_pair` compares
+- `cargo bench -p vize_atelier_vapor --bench levels -- vapor_native_pair` compares
   the native/default and explicitly retained legacy routes on identical text,
   event, and control-flow fixtures. The same benchmark can be applied to a pinned base checkout to
   measure the former S3-attempt/fallback cost independently of the direct legacy
@@ -185,7 +185,7 @@ Dense ids in the generic verifier now resolve by index; a table that is not
 dense still scans, so every verdict is unchanged. `rebuild_source` reserves
 the exact length of a rebuilt compound text. Native admission and emission
 keep the payload and their tables in the output arena, and
-`davinci_vapor_native_budget` pins native allocation calls for the seven
+`level_vapor_native_budget` pins native allocation calls for the seven
 `vapor_native_pair` fixtures at 79, 84, 112, 121, 156, 114 and 174. The
 linear verifier lookups in the single-parse profile above are that earlier
 measurement, not the current dense path.

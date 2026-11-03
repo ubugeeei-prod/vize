@@ -4,7 +4,7 @@ import {
   createProcessHistory,
   ownedProcessTree,
   type ProcessEntry,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-sampler.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-sampler.ts";
 
 const entry = (
   pid: number,

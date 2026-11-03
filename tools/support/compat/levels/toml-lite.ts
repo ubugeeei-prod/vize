@@ -1,7 +1,7 @@
-// Minimal TOML-subset parser shared by the Davinci budget and benchmark tooling.
+// Minimal TOML-subset parser shared by the Levels budget and benchmark tooling.
 //
 // Node builtins only is a hard constraint for these tools, so this file
-// implements exactly the subset the committed Davinci TOML artifacts use
+// implements exactly the subset the committed Levels TOML artifacts use
 // (docs/davinci/plan/assertion-allowlist.toml, docs/davinci/plan/taxonomy.toml,
 // docs/davinci/plan/budgets.toml) and rejects everything else loudly instead
 // of guessing:

@@ -1,4 +1,4 @@
-//! The AST-driven prefix rewrite over retained expressions (Davinci P1-9,
+//! The AST-driven prefix rewrite over retained expressions (Levels P1-9,
 //! parse side landed in P1-7).
 //!
 //! For admitted inputs — the node's parse-once AST still describes the
@@ -62,7 +62,7 @@ pub(super) fn rewrite_retained(
     result
 }
 
-/// Davinci differential lane (P1-6 pattern): the AST-driven splice must
+/// Levels differential lane (P1-6 pattern): the AST-driven splice must
 /// reproduce the full legacy pipeline byte-for-byte — the wrapped re-parse
 /// AND the retired end-to-start `insert_str` string rewriter, kept verbatim
 /// below as the oracle so the corpus lane compares the new mechanism
@@ -97,7 +97,7 @@ fn assert_rewrite_agrees(
     .parse_expression()
     .unwrap_or_else(|_| {
         panic!(
-            "davinci-differential (P1-7): js_module_compatible admitted an \
+            "level-differential (P1-7): js_module_compatible admitted an \
                  expression the legacy JS-module parse rejects: {:?}",
             js.raw
         )
@@ -147,7 +147,7 @@ fn assert_rewrite_agrees(
             legacy_used_is_ref,
             legacy_has_identifiers
         ),
-        "davinci-differential (P1-9): the AST-driven splice diverged from the legacy string rewrite for expression {:?}",
+        "level-differential (P1-9): the AST-driven splice diverged from the legacy string rewrite for expression {:?}",
         js.raw
     );
     crate::retained::differential::record_transform_rewrite_comparison();

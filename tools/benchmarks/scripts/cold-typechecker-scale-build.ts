@@ -215,7 +215,7 @@ export function verifyColdScaleBuildPair(basePath: string, headPath: string, rep
       head.sourceSha,
       "--",
       "crates",
-      "davinci",
+      "levels",
       "vendor",
       "Cargo.toml",
       "Cargo.lock",

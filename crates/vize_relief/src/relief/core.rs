@@ -70,8 +70,8 @@ pub enum ConstantType {
 /// Source location span [start, end)
 ///
 /// The covered text is not stored; it is recovered on demand from the file's
-/// source string via `loc.span.slice(source_text)` (Davinci P1-3). Line and
-/// column are not stored either (Davinci P1-4): the retired `Position` type
+/// source string via `loc.span.slice(source_text)` (Levels P1-3). Line and
+/// column are not stored either (Levels P1-4): the retired `Position` type
 /// carried per-node `line`/`column` fields, but the parser never populated
 /// its newline table, so every stored value was the frozen `line: 1,
 /// column: offset + 1` shape. The few places that render line/column derive
@@ -318,6 +318,6 @@ impl RuntimeHelper {
 pub struct ImportItem<'a> {
     pub exp: vize_l0::Box<'a, super::SimpleExpressionNode<'a>>,
     /// Module specifier, arena-resident: an atom when it repeats across the
-    /// file's imports, an arena copy otherwise (Davinci P1-10).
+    /// file's imports, an arena copy otherwise (Levels P1-10).
     pub path: &'a str,
 }

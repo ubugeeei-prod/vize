@@ -5,7 +5,7 @@ Implementation starts from main `e23c2911648907ec78e51e9d13ad555af2432dd9`.
 
 The PR and merge-queue source planner runs the existing
 `check-level-inventories` composite action without changing its commands,
-followed by the original `davinci-module-layout.test.ts` control. Both run after
+followed by the original `level-module-layout.test.ts` control. Both run after
 the declared Node runtime and authenticated comparison-base fetch, before source
 selection, Rust toolchain setup and the existing four-lane source fanout.
 

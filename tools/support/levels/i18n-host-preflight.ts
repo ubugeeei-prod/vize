@@ -193,11 +193,11 @@ export function preflight(read: Reader, exists: Exists): string {
     ["Convert to L0 locale for i18n.", "Bind the host translation locale."],
   ])
     expectMigration(wasm, before, after, old, "wasm locale");
-  const reader = read("tests/tooling/davinci-diagnostic-catalog-sources.ts");
+  const reader = read("tests/tooling/level-diagnostic-catalog-sources.ts");
   for (const suffix of ["file)", '"i18n",'])
     expectMigration(
       reader,
-      `read("davinci", "vize_l0", "src", ${suffix}`,
+      `read("levels", "vize_l0", "src", ${suffix}`,
       `read("crates", "vize_carton", "src", ${suffix}`,
       old,
       "catalog source reader",

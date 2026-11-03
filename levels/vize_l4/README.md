@@ -1,6 +1,6 @@
 # vize_l4
 
-`vize_l4` is Davinci's L4 emission level. Every output target writes text
+`vize_l4` is Levels's L4 emission level. Every output target writes text
 directly into one append-only `write::Writer`: indentation, the used runtime
 helpers, and span links that compile away when the writer does not record.
 Preambles are joined after the body, so nothing is inserted mid-text.

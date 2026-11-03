@@ -1,10 +1,10 @@
-//! Davinci P4-7a corpus-runnable entry — the TS-25 markup lane.
+//! Levels P4-7a corpus-runnable entry — the TS-25 markup lane.
 //!
 //! Compiled only with the `legacy-differential` feature (`[[test]]
 //! required-features` in Cargo.toml). Runs the committed battery with its
 //! exact-pinned census (the same numbers the plain suite pins in
 //! `markup::tests::differential_tests`, so a feature-wiring regression fails
-//! loudly in both lanes), then, with `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`,
+//! loudly in both lanes), then, with `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`,
 //! sweeps every `.vue` file under `<dir>`: each SFC's `<template>` block is
 //! projected through Relief and through L1→L2 and the facade's full hook
 //! traces must be identical. Every file is readable and parses; it then
@@ -12,14 +12,14 @@
 //! file or an SFC parse error fails the sweep at that path — a parse error is
 //! not a missing template. None may diverge. The canonical fixture root fails
 //! closed unless its submodule inventory reconciles; other roots sweep in
-//! smoke scope with `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! smoke scope with `closure_evidence=false` (see `level_test_support::corpus`).
 //!
 //! Run:
 //!
 //! ```text
-//! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+//! VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_patina --features legacy-differential \
-//!     --test davinci_markup_differential -- --nocapture
+//!     --test level_markup_differential -- --nocapture
 //! ```
 
 use std::fs;
@@ -38,8 +38,8 @@ fn markup_facade_observes_one_document() {
     );
 
     // -- optional corpus sweep -----------------------------------------
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let files = &sweep.files;
@@ -86,7 +86,7 @@ fn markup_facade_observes_one_document() {
     assert!(compared > 0, "corpus sweep compared no template");
     // Unreadable files and SFC parse errors abort above, so both are zero here.
     eprintln!(
-        "davinci markup differential corpus sweep: scope={} closure_evidence={} files={} \
+        "levels markup differential corpus sweep: scope={} closure_evidence={} files={} \
          compared={} trace_lines={} restructured={} without_template={} unreadable=0 parse_errors=0",
         sweep.scope_label(),
         sweep.closure_evidence(),

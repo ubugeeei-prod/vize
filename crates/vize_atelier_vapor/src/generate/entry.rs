@@ -87,7 +87,7 @@ pub fn generate_vapor_with_options_and_experimentals(
 }
 
 /// Generate Vapor code, taking the authored anchors a map-requesting compile
-/// collected beyond the IR (Davinci P3-9). Without them, a requested map
+/// collected beyond the IR (Levels P3-9). Without them, a requested map
 /// still carries the render entry and every IR expression's anchors.
 pub(crate) fn generate_vapor_with_spans(
     ir: &RootIRNode<'_>,

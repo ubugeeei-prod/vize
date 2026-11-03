@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { captureLspResourceCorpus } from "../../tools/support/compat/davinci/lib/lsp-resource-corpus.ts";
+import { captureLspResourceCorpus } from "../../tools/support/compat/levels/lib/lsp-resource-corpus.ts";
 
 test("paired LSP inputs retain exact authored bytes and actual dependency identities", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-corpus-"));

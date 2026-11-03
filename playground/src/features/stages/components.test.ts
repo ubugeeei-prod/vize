@@ -15,7 +15,7 @@ const rungs: Rung[] = [
 describe("StageRail", () => {
   it("shows every stage with its facts and reports the chosen one", async () => {
     const wrapper = mount(StageRail, { props: { rungs, selected: "l2" } });
-    const stations = wrapper.findAll(".davinci-station");
+    const stations = wrapper.findAll(".level-station");
     expect(stations.map((station) => station.attributes("data-stage"))).toEqual([
       "l1",
       "l2",
@@ -29,7 +29,7 @@ describe("StageRail", () => {
       "L4EmitBackend + SFC module",
     ]);
     expect(stations[1].attributes("aria-pressed")).toBe("true");
-    expect(wrapper.findAll(".davinci-pounce")).toHaveLength(3);
+    expect(wrapper.findAll(".level-pounce")).toHaveLength(3);
     await stations[3].trigger("click");
     expect(wrapper.emitted("select")).toEqual([["l4"]]);
     wrapper.unmount();
@@ -72,8 +72,8 @@ describe("PassTimeline", () => {
 
   it("marks producers and changed passes and summarizes them", async () => {
     const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "l2/v-slot" } });
-    const buttons = wrapper.findAll(".davinci-step");
-    expect(buttons.map((button) => button.classes().filter((c) => c !== "davinci-step"))).toEqual([
+    const buttons = wrapper.findAll(".level-step");
+    expect(buttons.map((button) => button.classes().filter((c) => c !== "level-step"))).toEqual([
       ["rung-l2", "producer", "changed"],
       ["rung-l2", "current"],
       ["rung-l2", "changed"],
@@ -81,9 +81,7 @@ describe("PassTimeline", () => {
     expect(buttons[1].attributes("title")).toBe(
       "v-slot left the L2 folio unchanged (its product is facts)",
     );
-    expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
-      "1 of 2 passes changed the folio",
-    );
+    expect(wrapper.find(".level-timeline-summary").text()).toBe("1 of 2 passes changed the folio");
     await buttons[2].trigger("click");
     expect(wrapper.emitted("select")).toEqual([[steps[2]]]);
     wrapper.unmount();
@@ -100,8 +98,8 @@ describe("DumpView", () => {
     const wrapper = mount(DumpView, {
       props: { lines, kind: "disegno", selected: 5, linked: [4] },
     });
-    const rows = wrapper.findAll(".davinci-line");
-    expect(rows.map((row) => row.find(".davinci-code").text())).toEqual([
+    const rows = wrapper.findAll(".level-line");
+    expect(rows.map((row) => row.find(".level-code").text())).toEqual([
       "[l2-dump-v2]",
       "ops=2",
       "",
@@ -149,8 +147,8 @@ describe("DumpView", () => {
         ]),
       },
     });
-    const marks = wrapper.findAll(".davinci-mark");
-    expect(marks.map((mark) => mark.classes().filter((c) => c !== "davinci-mark"))).toEqual([
+    const marks = wrapper.findAll(".level-mark");
+    expect(marks.map((mark) => mark.classes().filter((c) => c !== "level-mark"))).toEqual([
       [],
       [],
       [],

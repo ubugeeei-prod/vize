@@ -15,7 +15,7 @@ covers the node. Object-spread `v-bind` keeps the same rule:
 dynamic-prop list.
 
 The durable witness is
-`crates/vize_atelier_dom/tests/davinci_s2_refs.rs`: eighteen
+`crates/vize_atelier_dom/tests/level_s2_refs.rs`: eighteen
 S2-vs-shipped DOM lane comparisons covering native refs, component refs,
 `v-for` refs, keyed `v-for` refs, and object-spread combinations. The
 comparison is byte-for-byte including helper usage, patch flags, and

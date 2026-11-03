@@ -1,4 +1,4 @@
-//! The prop facts composition prunes with (Davinci FP-3): which nodes a bare
+//! The prop facts composition prunes with (Levels FP-3): which nodes a bare
 //! `v-if` identifier guards, and which props each component usage passes.
 //!
 //! Recorded only for a composable skeleton ([`super::composable_skeleton`]);

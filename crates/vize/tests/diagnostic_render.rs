@@ -12,7 +12,7 @@
 //! snapshot directory must hold exactly the expected files: an orphan or a
 //! missing locale fails, which is what keeps "exact per locale" enumerable.
 //!
-//! Regenerate with `DAVINCI_RENDER_SNAPSHOTS=overwrite cargo test -p
+//! Regenerate with `LEVEL_RENDER_SNAPSHOTS=overwrite cargo test -p
 //! vize --test integration diagnostic_render -- --test-threads=1` (the inventory
 //! test reads the directory the overwrite writes), then review every changed
 //! line: the committed snapshot is the oracle, and a regenerated one is only
@@ -111,7 +111,7 @@ fn expected_snapshots() -> Vec<(String, String)> {
 #[test]
 fn every_case_renders_exactly_its_committed_snapshot_in_every_locale() {
     let dir = snapshot_dir();
-    let overwrite = std::env::var("DAVINCI_RENDER_SNAPSHOTS").as_deref() == Ok("overwrite");
+    let overwrite = std::env::var("LEVEL_RENDER_SNAPSHOTS").as_deref() == Ok("overwrite");
     if overwrite {
         std::fs::create_dir_all(&dir).expect("snapshot directory is creatable");
     }

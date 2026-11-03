@@ -11,7 +11,7 @@ and still need the same cache and patch-flag decision.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_merged_const_handler.rs` pins the
+`crates/vize_atelier_dom/tests/level_s2_merged_const_handler.rs` pins the
 merged-props cases against the shipped output. The changes in `emit::merge`
 and `emit::props` make the rule visible to both direct and merged event props.
 

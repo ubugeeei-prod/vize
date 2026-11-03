@@ -117,7 +117,7 @@ and the time inside both JS calls; cached calls report zero JS time.
   rewrite, full code/maps with hoisting on/off, original Unicode source,
   semantic entity values, page IDs through branches/loops/bindings, atomic
   refusal, deterministic audit, identity/input cache misses, invalid disk data.
-- `tests/tooling/davinci-plugin-transform.test.ts`: NAPI callback, selected code,
+- `tests/tooling/level-plugin-transform.test.ts`: NAPI callback, selected code,
   decoded map segments, same-process reuse/code miss and strict refusal.
 
 General AST rewrites, expression replacement, insertion/deletion, other targets,

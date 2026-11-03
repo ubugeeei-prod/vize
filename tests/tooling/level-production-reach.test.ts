@@ -12,7 +12,7 @@ import {
 // its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
 // and the plan record names every shape the Rust gate measures.
 const reachCommand =
-  "test --locked -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture";
+  "test --locked -p vize_atelier_sfc --features legacy-dom-differential --test level_production_reach -- --nocapture";
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 
 function reachSection(budgets: string): string {
@@ -39,7 +39,7 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
     "crates",
     "vize_atelier_sfc",
     "tests",
-    "davinci_production_reach",
+    "level_production_reach",
     "shapes.rs",
   );
 
@@ -56,7 +56,7 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   );
   assert.match(
     manifest,
-    /^\[\[test\]\]\nname = "davinci_production_reach"\nrequired-features = \["legacy-dom-differential"\]$/mu,
+    /^\[\[test\]\]\nname = "level_production_reach"\nrequired-features = \["legacy-dom-differential"\]$/mu,
   );
   assert.match(
     manifest,

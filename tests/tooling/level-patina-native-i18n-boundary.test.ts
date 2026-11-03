@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 
-import { withoutI18nHostImports } from "./support/davinci-i18n-host-imports.ts";
+import { withoutI18nHostImports } from "./support/level-i18n-host-imports.ts";
 
 const callers = [
   "crates/vize_patina/tests/native_syntax_img_alt.rs",
@@ -43,7 +43,7 @@ test("catalog test registration cannot authorize native production or foreign pa
     "crates/vize_patina/src/native.rs",
     "crates/vize_patina/src/native/img_alt.rs",
     "crates/vize_patina/tests/foreign.rs",
-    "davinci/vize_l1/src/lib.rs",
+    "levels/vize_l1/src/lib.rs",
   ]) {
     assert.equal(withoutI18nHostImports(declaration, file), declaration);
   }
@@ -66,7 +66,7 @@ test("the configured SFC reporter admits only its exact original catalog host im
     "crates/vize_patina/src/native/sfc/owner.rs",
     "crates/vize_patina/src/native/sfc/driver.rs",
     "crates/vize_patina/src/native/sfc/tests/support.rs",
-    "davinci/vize_l2/src/lib.rs",
+    "levels/vize_l2/src/lib.rs",
   ]) {
     assert.equal(withoutI18nHostImports(host, foreign), host);
   }
@@ -105,7 +105,7 @@ test("template-only SFC reporter and whole-output oracle keep exact catalog host
       "crates/vize_patina/src/native/sfc/template/owner.rs",
       "crates/vize_patina/src/native/sfc/template/driver.rs",
       "crates/vize_patina/tests/foreign.rs",
-      "davinci/vize_l2/src/lib.rs",
+      "levels/vize_l2/src/lib.rs",
     ]) {
       assert.equal(withoutI18nHostImports(host, foreign), host);
     }

@@ -117,4 +117,4 @@ windows across three identical runs with unchanged budgets and passing ratchets.
 The actual signed commit ends with the verified reporter Co-author footer
 `ubugeeei <71201308+ubugeeei@users.noreply.github.com>`. These facts close only
 #7828's unsupported-rule generation; publication remains coordinated separately.
-They do not complete Davinci/default products, every dialect or the 10x target.
+They do not complete Levels/default products, every dialect or the 10x target.

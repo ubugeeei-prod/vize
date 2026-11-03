@@ -25,7 +25,7 @@ the other source preflights, so it cannot be skipped by path selection:
 - a listed file that the comparison base does not contain fails the check, so
   the ledger cannot grow and a file cannot be moved instead of ported.
 
-The MoonBit dialect fixtures under `davinci/vize_dialect_moonbit/tests/` test
+The MoonBit dialect fixtures under `levels/vize_dialect_moonbit/tests/` test
 a product feature. They are the only `permanent` entry and are not tooling.
 
 ## Replayed one-shot scripts are deleted, not ported
@@ -33,7 +33,7 @@ a product feature. They are the only `permanent` entry and are not tooling.
 Seventeen Python scripts existed only to replay a finished move or rename:
 fourteen under `tools/support/levels/` with their `l0-runtime-moves.json`
 map, and `move-moonbit-lines.py`, `rename-guest-sdk.py` and
-`rename-incremental-tier.py` under `tools/commands/davinci/`. Nothing
+`rename-incremental-tier.py` under `tools/commands/levels/`. Nothing
 executes them. Their moves merged between 2026-09-28 and 2026-10-04, and the
 source paths they rewrite no longer exist on `main`, so a replay cannot run.
 

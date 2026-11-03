@@ -120,7 +120,7 @@ pub(super) fn is_static_object_or_array_literal_node(
                 );
                 assert_eq!(
                     result, legacy,
-                    "davinci-differential (P1-7): retained static-literal check diverged from the legacy re-parse for expression {content:?}"
+                    "level-differential (P1-7): retained static-literal check diverged from the legacy re-parse for expression {content:?}"
                 );
                 crate::retained::differential::record_shape_comparison();
             }

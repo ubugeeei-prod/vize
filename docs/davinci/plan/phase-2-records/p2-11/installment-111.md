@@ -14,14 +14,14 @@ surface.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_sfc_namespace_selector.rs` records the
+`crates/vize_atelier_dom/tests/level_s2_sfc_namespace_selector.rs` records the
 SFC namespace selector behavior, and the production selector tests keep the
 fallback boundary visible.
 
 Focused gates:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_sfc_namespace_selector --test davinci_s2_production_selector
+cargo test -p vize_atelier_dom --test level_s2_sfc_namespace_selector --test level_s2_production_selector
 cargo fmt --all -- --check
 git diff --check
 ```

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { hostCallers, hostImport } from "../../tools/support/levels/move-timing-observer-host.ts";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
 
 // The timing observer host move is complete. This keeps the host import
 // boundary; the move replay that pinned live observer bytes is retired.
@@ -22,6 +22,6 @@ test("only the two existing normal host imports are admitted", () => {
         /\bvize_carton\b/u,
       );
   }
-  for (const file of ["davinci/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
+  for (const file of ["levels/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
     assert.match(withoutHostRuntimeReferences(hostImport, file), /\bvize_carton\b/u);
 });

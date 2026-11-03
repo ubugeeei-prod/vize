@@ -24,7 +24,7 @@ body and its allocation behavior remain unchanged.
 | `emit/vif.rs`                    | 1/2 → 0/0; remove stale row  | 0/0                       |
 | `emit/vif/keys.rs`               | absent → 1/5                 | absent → 1/1 (`emit`)     |
 
-Paths above are relative to `davinci/vize_l1_to_l2/src/`.
+Paths above are relative to `levels/vize_l1_to_l2/src/`.
 These are source inventory measurements, not runtime allocation counts.
 The ordered key state was already present in the review base; these rows make
 its actual source identity and the helper relocation reviewable.

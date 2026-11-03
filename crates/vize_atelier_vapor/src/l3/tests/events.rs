@@ -24,13 +24,13 @@ fn computed_event_names_match_retained_generation() {
             "{source}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -101,13 +101,13 @@ fn computed_once_element_events_are_admitted() {
     let root_source = sources[0];
     let nested_source = sources[1];
     for prefix_identifiers in [false, true] {
-        let compile = |source, davinci_retained_lane| {
+        let compile = |source, level_retained_lane| {
             compile_vapor(
                 &allocator,
                 source,
                 VaporCompilerOptions {
                     prefix_identifiers,
-                    davinci_retained_lane,
+                    level_retained_lane,
                     ..Default::default()
                 },
             )

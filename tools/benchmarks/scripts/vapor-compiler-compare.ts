@@ -117,7 +117,7 @@ export function compareThreeLanes(
 
 export function renderComparison(result: ComparisonReport): string {
   const lines = [
-    "## Davinci Vapor vs retained vs official compiler-vapor (report-only)",
+    "## Levels Vapor vs retained vs official compiler-vapor (report-only)",
     "",
     `Vize commit: \`${result.headSha}\`; official \`@vue/compiler-vapor@${result.compilerVersion}\`; runner: \`${result.runner}\`.`,
     "",

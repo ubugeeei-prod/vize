@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
 import {
   profileHostImports,
   previousCuratorProfileImport,
-} from "./support/davinci-profile-host-imports.ts";
+} from "./support/level-profile-host-imports.ts";
 import { hashes } from "../../tools/support/levels/profile-export-host-contract.ts";
 
 // The profile-export host move is complete. These tests keep the host import
@@ -27,10 +27,7 @@ test("actual JSON hosts retain L0 storage and admit only their exact export symb
       "use vize_carton::profile_export::unreviewed_function;",
     ])
       assert.match(withoutHostRuntimeReferences(source + "\n" + extra, file), forbidden);
-    assert.match(
-      withoutHostRuntimeReferences(declaration, "davinci/vize_l2/src/lib.rs"),
-      forbidden,
-    );
+    assert.match(withoutHostRuntimeReferences(declaration, "levels/vize_l2/src/lib.rs"), forbidden);
   }
 });
 
@@ -48,14 +45,14 @@ test("every tracked Rust caller retires the L0 wire API and inherent export meth
       /\.export_report\s*\(|vize_l0\s*::\s*profiler\s*::\s*(?:ProfileExport|PROFILE_EXPORT_SCHEMA_VERSION|\{[^}]*\bProfileExport)/u,
       file,
     );
-  assert.doesNotMatch(read("davinci/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
+  assert.doesNotMatch(read("levels/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
 });
 
 test("both exact Curator input APIs remain limited to the original host path", () => {
   const file = hashes.snapshotCaller[0];
   for (const declaration of [profileHostImports[file], previousCuratorProfileImport]) {
     assert.doesNotMatch(withoutHostRuntimeReferences(declaration, file), forbidden);
-    for (const other of ["davinci/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
+    for (const other of ["levels/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
       assert.match(withoutHostRuntimeReferences(declaration, other), forbidden);
     for (const changed of [
       declaration.replace("export_report", "unreviewed_report"),

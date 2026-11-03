@@ -20,18 +20,18 @@ Run from `/Users/ubugeeei/Source/github.com/ubugeeei/vize--p2-9-corpus`
 after fast-forwarding the branch to `1a717a95949be4f59b0ad43d4b00241b905fcd7c`:
 
 ```sh
-VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-  cargo test -p vize_atelier_sfc --features davinci-differential \
-  --test davinci_differential -- --nocapture
+VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+  cargo test -p vize_atelier_sfc --features level-differential \
+  --test level_differential -- --nocapture
 ```
 
 ## Scope proof
 
 ```text
-davinci-differential corpus scope: root=/Users/ubugeeei/Source/github.com/ubugeeei/vize--p2-9-corpus/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146
-davinci-differential corpus sweep: files=41580 compiled=41580 transform_rewrite_comparisons=801305 codegen_rewrite_comparisons=1 vapor_resolve_comparisons=167578 shape_comparisons=152542
-davinci-differential corpus prefixer split: admitted=801305 legacy_total=106532 legacy_params=16123 legacy_unretained=82645 legacy_dialect_rejected=6874 legacy_ts_strip_rewrote=890 admitted_pct=88.27
-davinci-differential totals: transform_rewrite_comparisons=802713 codegen_rewrite_comparisons=1 vapor_resolve_comparisons=167642 shape_comparisons=152794
+level-differential corpus scope: root=/Users/ubugeeei/Source/github.com/ubugeeei/vize--p2-9-corpus/tests/level_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146
+level-differential corpus sweep: files=41580 compiled=41580 transform_rewrite_comparisons=801305 codegen_rewrite_comparisons=1 vapor_resolve_comparisons=167578 shape_comparisons=152542
+level-differential corpus prefixer split: admitted=801305 legacy_total=106532 legacy_params=16123 legacy_unretained=82645 legacy_dialect_rejected=6874 legacy_ts_strip_rewrote=890 admitted_pct=88.27
+level-differential totals: transform_rewrite_comparisons=802713 codegen_rewrite_comparisons=1 vapor_resolve_comparisons=167642 shape_comparisons=152794
 test differential_lane_agrees_and_reports ... ok
 test result: ok. 1 passed; 0 failed; finished in 343.44s
 ```

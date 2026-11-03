@@ -293,7 +293,7 @@
 [1m[92m   Compiling[0m oxc-miette-derive v3.0.1
 [1m[92m   Compiling[0m phf_macros v0.14.0
 [1m[92m   Compiling[0m phf_macros v0.13.1
-[1m[92m   Compiling[0m vize_l0_derive v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+[1m[92m   Compiling[0m vize_l0_derive v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l0_derive)
 [1m[92m   Compiling[0m cssparser-macros v0.7.0
 [1m[92m   Compiling[0m zerocopy-derive v0.8.48
 [1m[92m   Compiling[0m ar_archive_writer v0.5.3
@@ -321,14 +321,14 @@
 [1m[92m   Compiling[0m oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m half v2.7.1
 [1m[92m   Compiling[0m ciborium-ll v0.2.2
-[1m[92m   Compiling[0m vize_l0 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l0)
+[1m[92m   Compiling[0m vize_l0 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l0)
 [1m[92m   Compiling[0m oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m ciborium v0.2.2
 [1m[92m   Compiling[0m oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m criterion v0.8.2
 [1m[92m   Compiling[0m vize_carton v0.435.1 (/home/runner/_work/vize/vize/crates/vize_carton)
-[1m[92m   Compiling[0m davinci_test_support v0.435.1 (/home/runner/_work/vize/vize/tests/davinci_test_support)
-[1m[92m   Compiling[0m davinci_harness v0.435.1 (/home/runner/_work/vize/vize/tools/benchmarks/crates/davinci_harness)
+[1m[92m   Compiling[0m level_test_support v0.435.1 (/home/runner/_work/vize/vize/tests/level_test_support)
+[1m[92m   Compiling[0m level_harness v0.435.1 (/home/runner/_work/vize/vize/tools/benchmarks/crates/level_harness)
 [1m[92m   Compiling[0m oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m vize_oxc_parser v0.435.1 (/home/runner/_work/vize/vize/vendor/oxc_parser)
@@ -336,32 +336,32 @@
 [1m[92m   Compiling[0m vize_relief v0.435.1 (/home/runner/_work/vize/vize/crates/vize_relief)
 [1m[92m   Compiling[0m oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
 [1m[92m   Compiling[0m oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-[1m[92m   Compiling[0m vize_l1 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l1)
+[1m[92m   Compiling[0m vize_l1 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l1)
 [1m[92m   Compiling[0m oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
-[1m[92m   Compiling[0m vize_l2 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l2)
+[1m[92m   Compiling[0m vize_l2 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l2)
 [1m[92m   Compiling[0m vize_armature v0.435.1 (/home/runner/_work/vize/vize/crates/vize_armature)
-[1m[92m   Compiling[0m vize_l3 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l3)
-[1m[92m   Compiling[0m vize_l1_to_l2 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+[1m[92m   Compiling[0m vize_l3 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l3)
+[1m[92m   Compiling[0m vize_l1_to_l2 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l1_to_l2)
 [1m[92m   Compiling[0m vize_croquis v0.435.1 (/home/runner/_work/vize/vize/crates/vize_croquis)
-[1m[92m   Compiling[0m vize_l2_to_l3 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
-[1m[92m   Compiling[0m vize_l4 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l4)
+[1m[92m   Compiling[0m vize_l2_to_l3 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l2_to_l3)
+[1m[92m   Compiling[0m vize_l4 v0.435.1 (/home/runner/_work/vize/vize/levels/vize_l4)
 [1m[92m   Compiling[0m vize_atelier_core v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
 [1m[92m   Compiling[0m vize_atelier_dom v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
 [1m[92m   Compiling[0m vize_atelier_ssr v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
 [1m[92m   Compiling[0m vize_atelier_vapor v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
 [1m[92m   Compiling[0m vize_atelier_sfc v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
 [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 35.48s
-[1m[92m     Running[0m tests/davinci_dom_corpus.rs (target/debug/deps/davinci_dom_corpus-4114028d2c586560)
+[1m[92m     Running[0m tests/level_dom_corpus.rs (target/debug/deps/level_dom_corpus-4114028d2c586560)
 
 running 4 tests
 test canonical_invalid_fixture_allowlist_is_exact ... ok
 test unrelated_invalid_end_tag_still_blocks_old_lane_comparison ... ok
 test nested_anchor_and_button_recoveries_are_compared_not_skipped ... ok
-davinci-differential corpus scope: root=/home/runner/_work/vize/vize/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
-davinci DOM corpus sweep: files=37487 unreadable=0 parsed=37487 templates=37194 compared=37185 patch_fact_entries=349192 old_error_skips=9 s2_refusals=0 divergences=0
-davinci DOM corpus refusal reasons: {}
-davinci DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 16, "MissingEndTag": 10, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
-davinci DOM corpus refusal samples: {}
+level-differential corpus scope: root=/home/runner/_work/vize/vize/tests/level_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
+levels DOM corpus sweep: files=37487 unreadable=0 parsed=37487 templates=37194 compared=37185 patch_fact_entries=349192 old_error_skips=9 s2_refusals=0 divergences=0
+levels DOM corpus refusal reasons: {}
+levels DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 16, "MissingEndTag": 10, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
+levels DOM corpus refusal samples: {}
 test dom_emit_agrees_on_sfc_templates ... ok
 
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.85s

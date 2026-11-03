@@ -2,7 +2,7 @@
 //! TS-16 `Full`-mode byte round trip of every versioned α page, and the
 //! schema-doc check that fails on an undocumented group.
 //!
-//! `cargo test -p vize_davinci --test fact_alpha`
+//! `cargo test -p vize_level --test fact_alpha`
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 

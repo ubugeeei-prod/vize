@@ -1,4 +1,4 @@
-//! TS-42 driver (P5-9). `tools/commands/davinci/incremental-equivalence.rs`
+//! TS-42 driver (P5-9). `tools/commands/levels/incremental-equivalence.rs`
 //! runs this with the committed edit scripts and the corpus roots:
 //!
 //! ```text

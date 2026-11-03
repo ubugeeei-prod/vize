@@ -48,9 +48,9 @@ before publishing a cached result. Provider costs distinguish `cached` from
 `audited`; cached results have zero JS time.
 
 `providers/tests.rs` covers closure, refusals, auditing, batch visibility and keys.
-`tests/tooling/davinci-plugin-fact-providers.test.ts` exercises the actual SDK and
+`tests/tooling/level-plugin-fact-providers.test.ts` exercises the actual SDK and
 native host through a rule that reads a provided table and emits an anchored
 diagnostic, multi-provider dependencies, cache invalidation and refusal cases.
-`davinci-plugin-fact-provider-cache.test.ts` checks independent provider and rule
+`level-plugin-fact-provider-cache.test.ts` checks independent provider and rule
 reuse across Node processes and recovery from a corrupted provider table.
 The parent P6-7 record must include its complete Actions evidence before closing GA.

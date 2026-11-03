@@ -29,7 +29,7 @@ const opcodeContract = [
 const mnemonics = opcodeContract.map(([, , mnemonic]) => mnemonic);
 
 test("the active Rust and Lean graph readers bind the new explicit protocol", () => {
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/dump.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/dump.rs"), "utf8");
   const lean = fs.readFileSync(
     path.join(repoRoot, "tests/formal/impeto/Impeto/Folio.lean"),
     "utf8",
@@ -43,7 +43,7 @@ test("the active Rust and Lean graph readers bind the new explicit protocol", ()
 });
 
 test("the canonical printer and parser preserve all sixteen old tags and append only child-value tag sixteen", () => {
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/op/kind.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/op/kind.rs"), "utf8");
   const printed = [...rust.matchAll(/Self::([A-Za-z]+) => "(l3\.[^"]+)"/gu)].map((match) => [
     match[1],
     match[2],
@@ -68,7 +68,7 @@ test("the canonical printer and parser preserve all sixteen old tags and append 
 
 test("all active generated formal graph fixtures use the current protocol and known opcodes", () => {
   const fixtureRoot = path.join(repoRoot, "tests/formal/impeto/fixtures");
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/op/kind.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/op/kind.rs"), "utf8");
   const names = new Set(
     [...rust.matchAll(/Self::[A-Za-z]+ => "(l3\.[^"]+)"/gu)].map((match) => match[1]),
   );

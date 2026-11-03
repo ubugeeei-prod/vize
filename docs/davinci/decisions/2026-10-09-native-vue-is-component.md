@@ -80,7 +80,7 @@ The [corpus fixture](../../../tests/_fixtures/differential/compiler/vue-is-compo
 preserves the original template and finite props/slot, encoded-value and
 plain-native controls.
 
-`davinci/vize_l1_to_l2/tests/vue_is_component.rs` exercises actual public L2
+`levels/vize_l1_to_l2/tests/vue_is_component.rs` exercises actual public L2
 and native construction. It checks the original component/default slot,
 ordered props and dynamic binding, authored spans and consumed-selector
 provenance, once-decoded component names, native/plain/bound/case-sensitive

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { traceCompiledBackend } from "./support/davinci-runtime-trace.mjs";
+import { traceCompiledBackend } from "./support/level-runtime-trace.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const formalRoot = path.join(repoRoot, "tests", "formal", "impeto");
@@ -41,7 +41,7 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
 });
 
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
-  const bridge = readRepoFile("davinci", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs");
+  const bridge = readRepoFile("levels", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs");
   assert.match(bridge, /rust_lowered_fixtures_match_impeto_reference_inputs/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
@@ -88,7 +88,7 @@ test("TS-28 stateful reference and mounted backends share full observations and 
     "crates",
     "vize_atelier_vapor",
     "tests",
-    "davinci_mounted_behavior.rs",
+    "level_mounted_behavior.rs",
   );
   assert.match(mounted, /rust-lowered-static-dynamic\.scenario\.json/u);
   assert.match(mounted, /rust-lowered-static-dynamic\.behavior\.json/u);
@@ -143,17 +143,12 @@ test("TS-28 control and slot stateful observations share one authored template",
 });
 
 test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
-  const gate = readRepoFile(
-    "crates",
-    "vize_atelier_vapor",
-    "tests",
-    "davinci_l3_compiled_trace.rs",
-  );
+  const gate = readRepoFile("crates", "vize_atelier_vapor", "tests", "level_l3_compiled_trace.rs");
   assert.match(gate, /compiled_backend_runtime_traces_match_l3_reference_ladder/u);
   assert.match(gate, /runtime_backend_trace/u);
   assert.match(gate, /compile_template_with_options/u);
   assert.match(gate, /compile_vapor/u);
-  assert.match(gate, /davinci-runtime-trace\.mjs/u);
+  assert.match(gate, /level-runtime-trace\.mjs/u);
 
   assert.deepEqual(
     await traceCompiledBackend({
@@ -224,7 +219,7 @@ test("TS-28 command in the suite registry names the executable runner", () => {
     [
       "TS-28",
       "Lean reference differential",
-      "`cd tests/formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
+      "`cd tests/formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test level_l3_compiled_trace --test level_mounted_behavior`",
       "exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit",
       "P3-4",
     ],

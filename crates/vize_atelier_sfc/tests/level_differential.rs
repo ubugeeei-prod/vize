@@ -1,4 +1,4 @@
-//! Davinci P1-7 differential lane — corpus-runnable entry (atelier wave B).
+//! Levels P1-7 differential lane — corpus-runnable entry (atelier wave B).
 //!
 //! Compiled only with the `legacy-differential` feature (see
 //! `[[test]] required-features` in Cargo.toml), which arms the dual-run
@@ -13,7 +13,7 @@
 //!
 //! ```text
 //! cargo test -p vize_atelier_sfc --features legacy-differential \
-//!     --test davinci_differential -- --nocapture
+//!     --test level_differential -- --nocapture
 //! ```
 //!
 //! sweeps a committed expression battery plus the P0-2 fixture ladder —
@@ -24,12 +24,12 @@
 //! transform, so codegen-side prefixing never fires); its coverage witness
 //! is `vize_atelier_core`'s `retained::tests`, which drives that lane
 //! directly. Setting
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` additionally sweeps every
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` additionally sweeps every
 //! `.vue` file under `<dir>` (e.g. `tests/_fixtures/_git` for the hydrated
 //! ecosystem corpus) through the same three-lane dual-run compile and
 //! reports the totals. The canonical fixture root fails closed unless its
 //! submodule inventory reconciles; other roots sweep in smoke scope with
-//! `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! `closure_evidence=false` (see `level_test_support::corpus`).
 
 use std::fs;
 
@@ -166,7 +166,7 @@ fn differential_lane_body() {
     );
 
     // -- P0-2 fixture ladder, pinned counts -------------------------------
-    for fixture in &davinci_harness::fixtures::LADDER {
+    for fixture in &level_harness::fixtures::LADDER {
         compile_source_all_lanes(fixture.source);
     }
     let after_ladder = differential::stats();
@@ -199,7 +199,7 @@ fn differential_lane_body() {
     );
 
     // -- optional corpus sweep --------------------------------------------
-    if let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() {
+    if let Some(sweep) = level_test_support::corpus::resolve_env_sweep() {
         let files = &sweep.files;
         assert!(
             !files.is_empty(),
@@ -216,7 +216,7 @@ fn differential_lane_body() {
         }
         let end = differential::stats();
         eprintln!(
-            "davinci-differential corpus sweep: files={} compiled={} transform_rewrite_comparisons={} codegen_rewrite_comparisons={} vapor_resolve_comparisons={} shape_comparisons={}",
+            "level-differential corpus sweep: files={} compiled={} transform_rewrite_comparisons={} codegen_rewrite_comparisons={} vapor_resolve_comparisons={} shape_comparisons={}",
             files.len(),
             compiled,
             end.transform_rewrite_comparisons - after_ladder.transform_rewrite_comparisons,
@@ -236,7 +236,7 @@ fn differential_lane_body() {
             ts_strip_rewrote: end_legacy.ts_strip_rewrote - after_ladder_legacy.ts_strip_rewrote,
         };
         eprintln!(
-            "davinci-differential corpus prefixer split: admitted={} legacy_total={} legacy_params={} legacy_unretained={} legacy_dialect_rejected={} legacy_ts_strip_rewrote={} admitted_pct={:.2}",
+            "level-differential corpus prefixer split: admitted={} legacy_total={} legacy_params={} legacy_unretained={} legacy_dialect_rejected={} legacy_ts_strip_rewrote={} admitted_pct={:.2}",
             sweep_admitted,
             sweep_legacy.total(),
             sweep_legacy.params,
@@ -253,7 +253,7 @@ fn differential_lane_body() {
 
     let end = differential::stats();
     eprintln!(
-        "davinci-differential totals: transform_rewrite_comparisons={} codegen_rewrite_comparisons={} vapor_resolve_comparisons={} shape_comparisons={}",
+        "level-differential totals: transform_rewrite_comparisons={} codegen_rewrite_comparisons={} vapor_resolve_comparisons={} shape_comparisons={}",
         end.transform_rewrite_comparisons,
         end.codegen_rewrite_comparisons,
         end.vapor_resolve_comparisons,

@@ -18,7 +18,7 @@ across edits, and no pipeline stage or serialization is added.
 
 Production counters `atelier.template_reads.retained` and
 `atelier.template_reads.parses` count admitted walks and actual wrapped parse
-attempts. `davinci.expr.parses` still counts original expression nodes; it is
+attempts. `levels.expr.parses` still counts original expression nodes; it is
 not a repeated-parse counter.
 
 ## Verification and performance protocol

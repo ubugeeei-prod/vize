@@ -239,7 +239,7 @@ async function campaign(source, output) {
     fixtureSha256: hash(componentSource),
     artSha256: hash(artSource),
     sourceTrees: Object.fromEntries(
-      ["crates", "davinci", "vendor", "npm/native"].map((name) => [
+      ["crates", "levels", "vendor", "npm/native"].map((name) => [
         name,
         git(source, "rev-parse", "HEAD:" + name),
       ]),

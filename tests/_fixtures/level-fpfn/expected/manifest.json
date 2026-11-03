@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "tool": "tools/commands/davinci/seed-defects.rs",
+  "tool": "tools/commands/levels/seed-defects.rs",
   "source": {
     "kind": "fixtures",
-    "label": "tests/_fixtures/davinci-fpfn"
+    "label": "tests/_fixtures/level-fpfn"
   },
   "scope": {
     "filesCopied": 4,
@@ -41,7 +41,7 @@
       "expectedRule": "vue/no-undefined-refs",
       "identifier": {
         "original": "message",
-        "seeded": "message__davinci_seeded"
+        "seeded": "message__level_seeded"
       },
       "scriptRenameCount": 1,
       "expected": {
@@ -61,7 +61,7 @@
       "expectedRule": "vue/no-unused-setup-bindings",
       "identifier": {
         "original": null,
-        "seeded": "davinciSeededUnused"
+        "seeded": "levelSeededUnused"
       },
       "createdScriptSetupBlock": false,
       "expected": {
@@ -81,7 +81,7 @@
       "expectedRule": "vue/no-undefined-refs",
       "identifier": {
         "original": "count",
-        "seeded": "count__davinci_seeded"
+        "seeded": "count__level_seeded"
       },
       "scriptRenameCount": 2,
       "expected": {
@@ -101,7 +101,7 @@
       "expectedRule": "vue/no-unused-setup-bindings",
       "identifier": {
         "original": null,
-        "seeded": "davinciSeededUnused"
+        "seeded": "levelSeededUnused"
       },
       "createdScriptSetupBlock": false,
       "expected": {
@@ -121,7 +121,7 @@
       "expectedRule": "vue/no-unused-setup-bindings",
       "identifier": {
         "original": null,
-        "seeded": "davinciSeededUnused"
+        "seeded": "levelSeededUnused"
       },
       "createdScriptSetupBlock": true,
       "expected": {
@@ -141,7 +141,7 @@
       "expectedRule": "vue/no-undefined-refs",
       "identifier": {
         "original": "spacing",
-        "seeded": "spacing__davinci_seeded"
+        "seeded": "spacing__level_seeded"
       },
       "scriptRenameCount": 1,
       "expected": {
@@ -161,7 +161,7 @@
       "expectedRule": "vue/no-unused-setup-bindings",
       "identifier": {
         "original": null,
-        "seeded": "davinciSeededUnused"
+        "seeded": "levelSeededUnused"
       },
       "createdScriptSetupBlock": false,
       "expected": {

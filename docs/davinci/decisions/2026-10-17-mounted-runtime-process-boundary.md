@@ -31,7 +31,7 @@ the same two preparation phases. It retains its signature, environment default,
 mode defines and runtime module identity. DOM creation, Vue devtools attachment,
 mounting, updates, diagnostics and cleanup stay with the observer.
 
-The direct `davinci-mounted-trace.mjs` entry and `patterned-template-runtime.mjs`
+The direct `level-mounted-trace.mjs` entry and `patterned-template-runtime.mjs`
 explicitly forbid existing `.node` images and future `process.dlopen` calls.
 This is an active loader boundary, not an inference from an image census alone.
 The SSR patterned branch also arms it, although that branch does not build the
@@ -59,12 +59,12 @@ separate regression and describe builds, not how many scenarios a helper tests.
 
 | Entry/helper                             | Former builds per invocation | New producers/builds           | Other native preparation    |
 | ---------------------------------------- | ---------------------------- | ------------------------------ | --------------------------- |
-| Direct `davinci-mounted-trace` entry     | 1                            | 1                              | None; addon guard           |
+| Direct `level-mounted-trace` entry       | 1                            | 1                              | None; addon guard           |
 | `patterned-template-runtime`             | N non-SSR cases; 0 for SSR   | 1 for N > 0; 0 for SSR         | None; addon guard           |
-| `davinci-upstream-vapor-trace`           | 1                            | 1                              | None                        |
-| `davinci-directive-trace`                | 1                            | 1                              | None                        |
-| `davinci-suspense-trace`                 | 1                            | 1                              | None                        |
-| `davinci-transition-trace`               | 1                            | 1                              | None                        |
+| `level-upstream-vapor-trace`             | 1                            | 1                              | None                        |
+| `level-directive-trace`                  | 1                            | 1                              | None                        |
+| `level-suspense-trace`                   | 1                            | 1                              | None                        |
+| `level-transition-trace`                 | 1                            | 1                              | None                        |
 | `vapor-attribute-modifiers`              | 1                            | 1                              | None                        |
 | `vapor-setup-resolution`                 | 1                            | 1                              | None                        |
 | `vapor-sfc-runtime`                      | 1                            | 1                              | None                        |

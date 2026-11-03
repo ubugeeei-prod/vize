@@ -1,4 +1,4 @@
-//! Croquis products as fact groups (Davinci P4-3).
+//! Croquis products as fact groups (Levels P4-3).
 //!
 //! Each tracker product a consumer reads becomes a fact group on the
 //! [`vize_l0::fact`] query surface: the tracker code stays the

@@ -1,21 +1,21 @@
-//! Davinci P2-11 DOM corpus-runnable entry.
+//! Levels P2-11 DOM corpus-runnable entry.
 //!
 //! This is the P1-6/P1-7 lane shape applied to the L2 DOM emitter without
 //! switching the published compiler path: a committed SFC battery is compared
 //! byte-for-byte against the shipped DOM template emitter, and
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the same comparison to every
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widens the same comparison to every
 //! SFC template block under the fixture root. The canonical fixture root fails
 //! closed unless its gitlink inventory reconciles (see
-//! `davinci_test_support::corpus`).
+//! `level_test_support::corpus`).
 
 #![expect(
     clippy::disallowed_types,
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 
-use davinci_dom_corpus_support::{
+use level_dom_corpus_support::{
     Report, assert_clean_corpus, assert_empty, compare_sfc_template, compare_sweep,
     old_lane_skip_is_allowed,
 };
@@ -203,8 +203,8 @@ fn dom_emit_agrees_on_sfc_templates_body() {
         report.patch_fact_entries,
     );
 
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     assert!(
@@ -215,7 +215,7 @@ fn dom_emit_agrees_on_sfc_templates_body() {
 
     let corpus = compare_sweep(&sweep);
     eprintln!(
-        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={} diagnosed_compared={}",
+        "levels DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={} diagnosed_compared={}",
         corpus.files,
         corpus.unreadable_count,
         corpus.parsed,
@@ -228,15 +228,15 @@ fn dom_emit_agrees_on_sfc_templates_body() {
         corpus.diagnosed_compared,
     );
     eprintln!(
-        "davinci DOM corpus refusal reasons: {:?}",
+        "levels DOM corpus refusal reasons: {:?}",
         corpus.s2_refusal_reasons
     );
     eprintln!(
-        "davinci DOM corpus old-lane error reasons: {:?}",
+        "levels DOM corpus old-lane error reasons: {:?}",
         corpus.old_error_reasons
     );
     eprintln!(
-        "davinci DOM corpus refusal samples: {:?}",
+        "levels DOM corpus refusal samples: {:?}",
         corpus.s2_refusal_samples
     );
     assert!(

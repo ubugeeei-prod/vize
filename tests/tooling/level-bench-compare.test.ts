@@ -1,10 +1,10 @@
-// The davinci bench budget compare gate (plan/phase-0.md P0-4).
+// The levels bench budget compare gate (plan/phase-0.md P0-4).
 //
-// Exact stdout/stderr/exit oracles for tools/commands/davinci/bench-compare.rs over
-// the committed fixture pairs in tests/_fixtures/davinci-bench-compare/,
-// including the DAVINCI_BASELINE_REFRESH refusal path. The registry side of
+// Exact stdout/stderr/exit oracles for tools/commands/levels/bench-compare.rs over
+// the committed fixture pairs in tests/_fixtures/level-bench-compare/,
+// including the LEVEL_BASELINE_REFRESH refusal path. The registry side of
 // P0-4 (budgets.toml reconciliation and the ratchet header) lives in
-// tests/tooling/davinci-budgets.test.ts.
+// tests/tooling/level-budgets.test.ts.
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -15,8 +15,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
-const fixtureRel = "tests/_fixtures/davinci-bench-compare";
+const comparePath = path.join(repoRoot, "tools", "commands", "levels", "bench-compare.rs");
+const fixtureRel = "tests/_fixtures/level-bench-compare";
 const fixtureDir = path.join(repoRoot, fixtureRel);
 
 function runCompare(
@@ -24,8 +24,8 @@ function runCompare(
   options: { cwd?: string; refreshEnv?: string } = {},
 ): ReturnType<typeof spawnSync<string>> {
   const env = { ...process.env };
-  delete env.DAVINCI_BASELINE_REFRESH;
-  if (options.refreshEnv != null) env.DAVINCI_BASELINE_REFRESH = options.refreshEnv;
+  delete env.LEVEL_BASELINE_REFRESH;
+  if (options.refreshEnv != null) env.LEVEL_BASELINE_REFRESH = options.refreshEnv;
   return spawnSync("rust-script", [comparePath, ...args], {
     cwd: options.cwd ?? repoRoot,
     encoding: "utf8",
@@ -139,13 +139,13 @@ test("bench-compare fails closed when the baseline reports path is not a directo
   assert.equal(result.stdout, header("within-tolerance", overrides));
   assert.match(
     result.stderr,
-    /^bench-compare: baseline reports directory tests\/_fixtures\/davinci-bench-compare\/budgets\.toml cannot be read: /u,
+    /^bench-compare: baseline reports directory tests\/_fixtures\/level-bench-compare\/budgets\.toml cannot be read: /u,
   );
   assert.match(result.stderr, /ENOTDIR|not a directory/u);
 });
 
 function runMalformedReport(target: "current" | "baseline", mutate: (report: any) => void) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-bench-report-shape-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "level-bench-report-shape-"));
   const baseline = path.join(root, "baseline");
   const current = path.join(root, "current");
   const budgets = path.join(root, "budgets.toml");
@@ -213,7 +213,7 @@ test("bench-compare reports the wall side but gates allocs when the wall baselin
 });
 
 test("--bench selects the storage probe and gates its deterministic peak", () => {
-  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-storage-peak-"));
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "level-storage-peak-"));
   const budgetsPath = path.join(tmpRoot, "budgets.toml");
   const results = path.join(tmpRoot, "results");
   fs.mkdirSync(results);
@@ -287,10 +287,10 @@ test("the alloc gate bites before the reference runner records any wall baseline
 });
 
 const refusalMessage =
-  "bench-compare: refusing --update-baseline without DAVINCI_BASELINE_REFRESH=1.\n" +
+  "bench-compare: refusing --update-baseline without LEVEL_BASELINE_REFRESH=1.\n" +
   "The committed baseline is the reference every PR is gated against; refreshing it\n" +
   "must be a deliberate act on the reference runner, not a side effect. Re-run with\n" +
-  "DAVINCI_BASELINE_REFRESH=1 in the environment to proceed.\n";
+  "LEVEL_BASELINE_REFRESH=1 in the environment to proceed.\n";
 
 function baselineSnapshot(dir: string): Record<string, string> {
   const snapshot: Record<string, string> = {};
@@ -300,7 +300,7 @@ function baselineSnapshot(dir: string): Record<string, string> {
   return snapshot;
 }
 
-test("--update-baseline refuses without DAVINCI_BASELINE_REFRESH=1 and writes nothing", () => {
+test("--update-baseline refuses without LEVEL_BASELINE_REFRESH=1 and writes nothing", () => {
   const baselineDir = path.join(fixtureDir, "baseline");
   const before = baselineSnapshot(baselineDir);
   for (const refreshEnv of [undefined, "0"]) {
@@ -315,7 +315,7 @@ test("--update-baseline refuses without DAVINCI_BASELINE_REFRESH=1 and writes no
 });
 
 test("--update-baseline copies current over baseline when the refresh env var is set", () => {
-  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-bench-compare-"));
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "level-bench-compare-"));
   try {
     fs.cpSync(fixtureDir, tmpRoot, { recursive: true });
     const result = runCompare(

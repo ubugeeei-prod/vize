@@ -23,15 +23,15 @@ test("differential feature rename is complete in tracked source", () => {
   assert.match(output, /^0 files contain old selectors$/m);
 });
 
-const oldName = ["davinci", "differential"].join("-");
-const oldDom = ["davinci", "dom", "differential"].join("-");
+const oldName = ["levels", "differential"].join("-");
+const oldDom = ["levels", "dom", "differential"].join("-");
 const sfcPath = "crates/vize_atelier_sfc/Cargo.toml";
 const edges = [oldDom, `vize_atelier_ssr/${oldName}`];
 
 test("rewriting preserves both published benchmark edges and rewrites stray selectors", () => {
   const source = read(sfcPath) + `\nprobe = ["${oldDom}", "${oldName}"]\n`;
   const rewritten = rewrite(source, sfcPath);
-  const block = rewritten.match(/^davinci-production-bench = \[\n([\s\S]*?)^\]/m)?.[1];
+  const block = rewritten.match(/^level-production-bench = \[\n([\s\S]*?)^\]/m)?.[1];
   assert.ok(block);
   for (const edge of edges) assert.equal(block.split(`"${edge}"`).length - 1, 1);
   assert.match(rewritten, /^probe = \["legacy-dom-differential", "legacy-differential"\]$/m);
@@ -40,7 +40,7 @@ test("rewriting preserves both published benchmark edges and rewrites stray sele
 
 test("missing or duplicate benchmark blocks and published members fail before rewriting", () => {
   const source = read(sfcPath);
-  const block = source.match(/^davinci-production-bench = \[\n[\s\S]*?^\]/m)?.[0];
+  const block = source.match(/^level-production-bench = \[\n[\s\S]*?^\]/m)?.[0];
   assert.ok(block);
   for (const wrong of [source.replace(block, ""), source + `\n${block}\n`])
     assert.throws(() => rewrite(wrong, sfcPath), /exactly one published SFC benchmark block/);
@@ -140,10 +140,10 @@ test("locked Cargo metadata retains published and current SSR benchmark edges", 
   const sfc = metadata.packages.find((pkg: any) => pkg.name === "vize_atelier_sfc");
   const ssr = metadata.packages.find((pkg: any) => pkg.name === "vize_atelier_ssr");
   assert.ok(sfc && ssr);
-  assert.deepEqual(sfc.features["davinci-production-bench"], [
+  assert.deepEqual(sfc.features["level-production-bench"], [
     "legacy-dom-differential",
     oldDom,
-    "vize_atelier_vapor/davinci-benchmark",
+    "vize_atelier_vapor/level-benchmark",
     "vize_atelier_ssr/legacy-differential",
     `vize_atelier_ssr/${oldName}`,
   ]);
@@ -169,25 +169,22 @@ test("renamed features retain the same differential dependency wiring", () => {
   assert.ok(
     differentialSteps("lowering", ["vize_l1_to_l2"]).some(
       (step) =>
-        step.args.includes("legacy-differential") && step.args.includes("davinci_lowering_corpus"),
+        step.args.includes("legacy-differential") && step.args.includes("level_lowering_corpus"),
     ),
   );
   assert.ok(
     differentialSteps("sfc", ["vize_atelier_sfc"]).some(
       (step) =>
         step.args.includes("legacy-dom-differential") &&
-        step.args.includes("davinci_production_reach"),
+        step.args.includes("level_production_reach"),
     ),
   );
-  assert.match(
-    read("tests/davinci_test_support/src/corpus.rs"),
-    /davinci-differential corpus scope/u,
-  );
+  assert.match(read("tests/level_test_support/src/corpus.rs"), /level-differential corpus scope/u);
 });
 
 test("v0.429.1 Cargo feature names remain temporary aliases", () => {
-  const publishedDifferentialAlias = ["davinci", "differential"].join("-");
-  const publishedDomAlias = ["davinci", "dom", "differential"].join("-");
+  const publishedDifferentialAlias = ["levels", "differential"].join("-");
+  const publishedDomAlias = ["levels", "dom", "differential"].join("-");
   const manifests = [
     "vize_atelier_core",
     "vize_atelier_dom",
@@ -203,7 +200,7 @@ test("v0.429.1 Cargo feature names remain temporary aliases", () => {
   ];
   for (const name of manifests) {
     assert.match(
-      read(`${name.startsWith("vize_l") ? "davinci" : "crates"}/${name}/Cargo.toml`),
+      read(`${name.startsWith("vize_l") ? "levels" : "crates"}/${name}/Cargo.toml`),
       new RegExp(`^${publishedDifferentialAlias} = \\["legacy-differential"\\]$`, "m"),
       `${name} lost its published feature alias`,
     );

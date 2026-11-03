@@ -16,7 +16,7 @@ tooling once the release commands were ported to TypeScript (#8844).
   MoonBit list so new `.mbt` tooling files are still rejected.
 
 Scope: this retires MoonBit as a **tooling** language only. The MoonBit
-template dialect (`davinci/vize_dialect_moonbit`), its `level-moonbit.yml`
+template dialect (`levels/vize_dialect_moonbit`), its `level-moonbit.yml`
 lane and the `setup-moonbit` action that lane uses are product features
 (see #8921) and stay.
 

@@ -16,7 +16,7 @@
 
 use std::mem::needs_drop;
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{
     AttributeNode, CommentNode, DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode,
     InterpolationNode, PropNode, RootNode, SimpleExpressionNode, TemplateChildNode, TextNode,

@@ -196,7 +196,7 @@ impl<'a> NativeArtifact<'a> {
     /// Consuming the checked projection is the only production generation path
     /// for an accepted artifact. No source parsing or AST lowering occurs here.
     /// With `spans`, payload slices borrowed from `source` keep their authored
-    /// spans and the template and control-flow anchors are returned (Davinci
+    /// spans and the template and control-flow anchors are returned (Levels
     /// P3-9). `None` when emission found the payload inconsistent; the
     /// caller then rejects the compile without code.
     pub(super) fn into_ir_with_spans(

@@ -24,7 +24,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     "lint_divergence_mode",
     "lsp_mode",
     "typecheck_divergence_mode",
-    "davinci_dom_corpus_mode",
+    "level_dom_corpus_mode",
   ]);
   assert.deepEqual(dispatch.inputs?.project, {
     description: "Optional exact fixture ID for a scoped diagnostic; empty runs the full matrix",
@@ -73,8 +73,8 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     type: "choice",
     options: ["enforce", "record-only", "skip"],
   });
-  assert.deepEqual(dispatch.inputs?.davinci_dom_corpus_mode, {
-    description: "Davinci L2 DOM corpus gate handling",
+  assert.deepEqual(dispatch.inputs?.level_dom_corpus_mode, {
+    description: "Levels L2 DOM corpus gate handling",
     required: false,
     default: "enforce",
     type: "choice",
@@ -107,12 +107,12 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
     FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
   });
-  const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
+  const corpus = readCanonicalCorpusWorkflow().jobs?.["level-dom-corpus"];
   assert.ok(corpus);
-  const reducer = workflow.jobs?.["davinci-dom-divergence-reduction"];
+  const reducer = workflow.jobs?.["level-dom-divergence-reduction"];
   assert.ok(reducer);
   assert.equal(reducer.name, "reduce canonical DOM divergence");
-  assert.equal(reducer.needs, "davinci-dom-corpus");
+  assert.equal(reducer.needs, "level-dom-corpus");
   assert.deepEqual(reducer.permissions, { contents: "read", actions: "read" });
   assert.equal(reducer["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   const reducerSteps = reducer.steps ?? [];
@@ -132,10 +132,10 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     reductionUpload.with?.name,
     "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
   );
-  const promotion = workflow.jobs?.["davinci-dom-divergence-promotion"];
+  const promotion = workflow.jobs?.["level-dom-divergence-promotion"];
   assert.ok(promotion);
   assert.equal(promotion.name, "promote canonical DOM divergence fixture");
-  assert.equal(promotion.needs, "davinci-dom-divergence-reduction");
+  assert.equal(promotion.needs, "level-dom-divergence-reduction");
   assert.deepEqual(promotion.permissions, {
     actions: "read",
     contents: "write",
@@ -147,7 +147,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   );
   assert.deepEqual(promotionStep.env, { GH_TOKEN: "${{ github.token }}" });
   assert.match(promotionStep.run ?? "", /canonical-corpus-divergence-promotion\.mjs publish/);
-  const publisher = workflow.jobs?.["davinci-dom-divergence-issue"];
+  const publisher = workflow.jobs?.["level-dom-divergence-issue"];
   assert.ok(publisher);
   assert.equal(publisher.name, "file canonical DOM divergence");
   assert.equal(
@@ -155,9 +155,9 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
   assert.deepEqual(publisher.needs, [
-    "davinci-dom-corpus",
-    "davinci-dom-divergence-reduction",
-    "davinci-dom-divergence-promotion",
+    "level-dom-corpus",
+    "level-dom-divergence-reduction",
+    "level-dom-divergence-promotion",
   ]);
   assert.deepEqual(publisher.permissions, {
     contents: "read",
@@ -171,14 +171,14 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   assert.equal(download.uses, "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c");
   assert.deepEqual(download.with, {
     name: "canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
-    path: "real-project-davinci-dom-corpus",
+    path: "real-project-level-dom-corpus",
   });
   const issue = findStep(publisherSteps, "File canonical DOM divergence issue");
   assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
   assert.equal(issue.shell, "bash");
   assert.match(
     issue.run ?? "",
-    /if \[\[ -s real-project-davinci-dom-promotion\/promotion\.json \]\]/,
+    /if \[\[ -s real-project-level-dom-promotion\/promotion\.json \]\]/,
   );
   assert.match(issue.run ?? "", /canonical-corpus-divergence-issue\.mjs "\$\{args\[@\]\}"/);
   for (const checkout of [

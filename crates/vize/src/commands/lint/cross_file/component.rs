@@ -1,4 +1,4 @@
-//! `html/cross-component-nesting` (Davinci P4-11b): HTML nesting that only
+//! `html/cross-component-nesting` (Levels P4-11b): HTML nesting that only
 //! exists once components are composed — `<p><MyCard /></p>` where
 //! `MyCard`'s root is a `<div>`.
 //!

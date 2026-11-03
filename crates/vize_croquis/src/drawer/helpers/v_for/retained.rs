@@ -45,7 +45,7 @@ pub fn retain_v_for_binding_parameters_with_source<'a>(
         if !expression_is_safe_to_parse(raw) {
             return None;
         }
-        global_profiler().record_counter("davinci.expr.parses", 1);
+        global_profiler().record_counter("levels.expr.parses", 1);
         let parameters = oxc_parser::Parser::new(allocator.as_oxc(), raw, SourceType::ts())
             .parse_v_for_parameters()
             .ok()?;

@@ -1,5 +1,5 @@
 ---
-source: crates/vize/tests/davinci_ts40_projection_cli.rs
+source: crates/vize/tests/level_ts40_projection_cli.rs
 expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {

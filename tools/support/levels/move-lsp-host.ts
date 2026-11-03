@@ -7,13 +7,13 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const moves = [
-  ["davinci/vize_l0/src/lsp.rs", "crates/vize_carton/src/lsp.rs"],
+  ["levels/vize_l0/src/lsp.rs", "crates/vize_carton/src/lsp.rs"],
   [
-    "davinci/vize_l0/src/snapshots/vize_l0__lsp__tests__lsp_message_format.snap",
+    "levels/vize_l0/src/snapshots/vize_l0__lsp__tests__lsp_message_format.snap",
     "crates/vize_carton/src/snapshots/vize_carton__lsp__tests__lsp_message_format.snap",
   ],
   [
-    "davinci/vize_l0/tests/line_index_coordinate_identity.rs",
+    "levels/vize_l0/tests/line_index_coordinate_identity.rs",
     "crates/vize_carton/tests/line_index_coordinate_identity.rs",
   ],
 ] as const;
@@ -45,7 +45,7 @@ const phase = process.argv[2];
 if (!["moves", "integrate", "check"].includes(phase)) {
   throw new Error("Usage: vp node tools/support/levels/move-lsp-host.ts moves|integrate|check");
 }
-const index = read("davinci/vize_l0/src/line_index.rs");
+const index = read("levels/vize_l0/src/line_index.rs");
 if (!index.includes("pub use position::{Position, Range};") || index.includes("crate::lsp")) {
   throw new Error("Missing portable UTF-16 provider; do not move the host first");
 }
@@ -62,7 +62,7 @@ for (const [old, target] of moves) {
   }
 }
 if (phase === "integrate") {
-  update("davinci/vize_l0/src/lib.rs", (source) => source.replace("pub mod lsp;\n", ""));
+  update("levels/vize_l0/src/lib.rs", (source) => source.replace("pub mod lsp;\n", ""));
   update("crates/vize_carton/src/lib.rs", (source) =>
     source.includes(hostModule)
       ? source
@@ -91,7 +91,7 @@ if (phase === "integrate") {
   });
 }
 if (phase !== "moves") {
-  if (read("davinci/vize_l0/src/lib.rs").includes("pub mod lsp;")) {
+  if (read("levels/vize_l0/src/lib.rs").includes("pub mod lsp;")) {
     throw new Error("L0 still owns the host protocol");
   }
   if (!read("crates/vize_carton/src/lib.rs").includes(hostModule)) {

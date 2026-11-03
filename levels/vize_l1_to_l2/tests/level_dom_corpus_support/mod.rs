@@ -17,7 +17,7 @@ mod sfc_inputs;
 
 use std::{collections::BTreeMap, fs};
 
-use davinci_test_support::corpus::CorpusSweep;
+use level_test_support::corpus::CorpusSweep;
 use sfc_inputs::{binding_table, sfc_bindings, sfc_is_ts};
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_dom::errors::ErrorCode;

@@ -37,9 +37,9 @@ fn assert_parser_parity(source: &str, document: bool) {
 
 #[test]
 fn shared_lexer_adapter_preserves_parser_ast_and_diagnostics() {
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         assert_parser_parity(fixture.source, false);
     }

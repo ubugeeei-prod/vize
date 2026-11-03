@@ -75,35 +75,35 @@
 "tests/_fixtures/_projects/typecheck-vue-imports/src/MissingImport.vue"
 "tests/_fixtures/_projects/vue2-filter-build/src/LegacyFilters.vue"
 "tests/_fixtures/art-lsp-lint/Card.art.vue"
-"tests/_fixtures/davinci-fpfn/BaselineDrift.vue"
-"tests/_fixtures/davinci-fpfn/HelloCounter.vue"
-"tests/_fixtures/davinci-fpfn/PlainBadge.vue"
-"tests/_fixtures/davinci-fpfn/SuppressedSpaces.vue"
-"tests/_fixtures/davinci-html-nesting/Child.vue"
-"tests/_fixtures/davinci-html-nesting/Page.vue"
-"tests/_fixtures/davinci-html-nesting/Pug.vue"
-"tests/_fixtures/davinci-html-nesting/Static.vue"
-"tests/_fixtures/davinci-routes/demo-app/src/App.vue"
-"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue"
-"tests/_fixtures/davinci-routes/demo-app/src/views/HomeView.vue"
-"tests/_fixtures/davinci-routes/demo-app/src/views/UserPost.vue"
-"tests/_fixtures/davinci-routes/multi-router/AdminApp.vue"
-"tests/_fixtures/davinci-routes/multi-router/SiteApp.vue"
-"tests/_fixtures/davinci-routes/open-tree/App.vue"
-"tests/_fixtures/davinci-routes/open-tree/OrderLinks.vue"
-"tests/_fixtures/davinci-routes/shadowing/CustomLink.vue"
-"tests/_fixtures/davinci-ts40-projection/child-local-import.vue"
-"tests/_fixtures/davinci-ts40-projection/define-model.vue"
-"tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue"
-"tests/_fixtures/davinci-ts40-projection/generic-sfc.vue"
-"tests/_fixtures/davinci-ts40-projection/jsx-script.vue"
-"tests/_fixtures/davinci-ts40-projection/options-api-slots.vue"
-"tests/_fixtures/davinci-ts40-projection/parent-local-import.vue"
-"tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"
-"tests/_fixtures/davinci-ts40-projection/static-slot-name.vue"
-"tests/_fixtures/davinci-ts40-projection/tsx-script.vue"
-"tests/_fixtures/davinci-ts40-projection/utf8-crlf-props.vue"
-"tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue"
+"tests/_fixtures/level-fpfn/BaselineDrift.vue"
+"tests/_fixtures/level-fpfn/HelloCounter.vue"
+"tests/_fixtures/level-fpfn/PlainBadge.vue"
+"tests/_fixtures/level-fpfn/SuppressedSpaces.vue"
+"tests/_fixtures/level-html-nesting/Child.vue"
+"tests/_fixtures/level-html-nesting/Page.vue"
+"tests/_fixtures/level-html-nesting/Pug.vue"
+"tests/_fixtures/level-html-nesting/Static.vue"
+"tests/_fixtures/level-routes/demo-app/src/App.vue"
+"tests/_fixtures/level-routes/demo-app/src/components/UserCard.vue"
+"tests/_fixtures/level-routes/demo-app/src/views/HomeView.vue"
+"tests/_fixtures/level-routes/demo-app/src/views/UserPost.vue"
+"tests/_fixtures/level-routes/multi-router/AdminApp.vue"
+"tests/_fixtures/level-routes/multi-router/SiteApp.vue"
+"tests/_fixtures/level-routes/open-tree/App.vue"
+"tests/_fixtures/level-routes/open-tree/OrderLinks.vue"
+"tests/_fixtures/level-routes/shadowing/CustomLink.vue"
+"tests/_fixtures/level-ts40-projection/child-local-import.vue"
+"tests/_fixtures/level-ts40-projection/define-model.vue"
+"tests/_fixtures/level-ts40-projection/dual-scripts-emits.vue"
+"tests/_fixtures/level-ts40-projection/generic-sfc.vue"
+"tests/_fixtures/level-ts40-projection/jsx-script.vue"
+"tests/_fixtures/level-ts40-projection/options-api-slots.vue"
+"tests/_fixtures/level-ts40-projection/parent-local-import.vue"
+"tests/_fixtures/level-ts40-projection/parse-recovery.vue"
+"tests/_fixtures/level-ts40-projection/static-slot-name.vue"
+"tests/_fixtures/level-ts40-projection/tsx-script.vue"
+"tests/_fixtures/level-ts40-projection/utf8-crlf-props.vue"
+"tests/_fixtures/level-ts40-projection/vue2-native-event.vue"
 "tests/_fixtures/differential/compiler/expression-character-references/Entities.vue"
 "tests/_fixtures/differential/compiler/expression-character-references/PugEntities.vue"
 "tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue"
@@ -584,14 +584,14 @@
 "tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue" s3.extract-placements applied group @472:485 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
 "tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue" s3.extract-placements applied group @505:524 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=126
 "tests/_fixtures/_projects/typecheck-errors/src/WrongEventHandler.vue" s3.extract-placements missed cache @173:192 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-fpfn/HelloCounter.vue" s3.extract-placements missed cache @186:204 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @571:647 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @688:723 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
-"tests/_fixtures/davinci-routes/demo-app/src/views/UserPost.vue" s3.extract-placements missed cache @202:224 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @228:259 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @264:300 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
-"tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue" s3.extract-placements missed cache @177:207 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
-"tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue" s3.extract-placements missed cache @130:169 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-fpfn/HelloCounter.vue" s3.extract-placements missed cache @186:204 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @571:647 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @688:723 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/level-routes/demo-app/src/views/UserPost.vue" s3.extract-placements missed cache @202:224 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-ts40-projection/define-model.vue" s3.extract-placements missed cache @228:259 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-ts40-projection/define-model.vue" s3.extract-placements missed cache @264:300 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/level-ts40-projection/dual-scripts-emits.vue" s3.extract-placements missed cache @177:207 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/level-ts40-projection/vue2-native-event.vue" s3.extract-placements missed cache @130:169 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/differential/compiler/expression-character-references/Entities.vue" s3.extract-placements applied group @495:505 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
 "tests/_fixtures/differential/compiler/expression-character-references/Entities.vue" s3.extract-placements missed cache @522:552 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
 "tests/_fixtures/differential/compiler/expression-character-references/Entities.vue" s3.extract-placements missed cache @553:585 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125

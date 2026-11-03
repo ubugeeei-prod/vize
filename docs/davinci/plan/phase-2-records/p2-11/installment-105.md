@@ -18,14 +18,14 @@ caching enabled.
 ## Evidence
 
 `crates/vize_atelier_dom/tests/support/battery/dom.rs` owns the shared curated
-DOM battery. `crates/vize_atelier_dom/tests/davinci_s2_dom.rs` and
-`crates/vize_atelier_dom/tests/davinci_s2_option_matrix.rs` both consume it.
+DOM battery. `crates/vize_atelier_dom/tests/level_s2_dom.rs` and
+`crates/vize_atelier_dom/tests/level_s2_option_matrix.rs` both consume it.
 
 Focused gates:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_dom --test davinci_s2_option_matrix
-node --test tests/tooling/davinci-phase2-ledger.test.ts tests/tooling/source-file-lengths.test.ts
+cargo test -p vize_atelier_dom --test level_s2_dom --test level_s2_option_matrix
+node --test tests/tooling/level-phase2-ledger.test.ts tests/tooling/source-file-lengths.test.ts
 ```
 
 This installment does not tick P2-11. The production-lane switch remains open,

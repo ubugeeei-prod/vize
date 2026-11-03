@@ -75,7 +75,7 @@ export function planNativeRuntime(
           ),
         ) ||
         paths.some((path) =>
-          /^(?:davinci\/vize_l[0-4](?:_to_l[0-4])?\/src\/|tools\/support\/compat\/davinci\/selected-template|\.github\/actions\/test-native-selected-template)/.test(
+          /^(?:levels\/vize_l[0-4](?:_to_l[0-4])?\/src\/|tools\/support\/compat\/levels\/selected-template|\.github\/actions\/test-native-selected-template)/.test(
             path,
           ),
         ),

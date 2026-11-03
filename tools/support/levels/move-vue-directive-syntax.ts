@@ -5,8 +5,8 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
-const old = "davinci/vize_l1/src/markup/directive.rs";
-const current = "davinci/vize_l1/src/dialect/vue3/directive.rs";
+const old = "levels/vize_l1/src/markup/directive.rs";
+const current = "levels/vize_l1/src/dialect/vue3/directive.rs";
 
 function move(root: string): void {
   const source = path.join(root, old);
@@ -40,7 +40,7 @@ function check(root: string): void {
   }
   if (
     !fs
-      .readFileSync(path.join(root, "davinci/vize_l1/src/dialect/vue3.rs"), "utf8")
+      .readFileSync(path.join(root, "levels/vize_l1/src/dialect/vue3.rs"), "utf8")
       .includes("pub mod directive;")
   ) {
     throw new Error("Vue directive dialect module is not registered");

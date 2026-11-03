@@ -19,13 +19,13 @@ fn teleport_props_and_default_content_match_retained_generation() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )

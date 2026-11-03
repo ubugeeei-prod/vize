@@ -190,7 +190,7 @@ function integrate(root: string) {
   update(root, "crates/vize_carton/src/corsa_resolver/tests.rs", (s) =>
     s.replaceAll("error.to_string()", 'crate::cstr!("{error}")'),
   );
-  update(root, "davinci/vize_l0/src/lib.rs", (s) =>
+  update(root, "levels/vize_l0/src/lib.rs", (s) =>
     s.replace(
       /#\[cfg\(not\(target_arch = "wasm32"\)\)\]\npub mod corsa_(?:api_mode|resolver);\n/gu,
       "",
@@ -209,7 +209,7 @@ function integrate(root: string) {
         '    reason = "legacy host discovery retains its environment and path collections"\n)]\n' +
         "pub mod corsa_resolver;\n",
   );
-  update(root, "davinci/vize_l0/Cargo.toml", (s) =>
+  update(root, "levels/vize_l0/Cargo.toml", (s) =>
     s.replace(
       "[target.'cfg(not(target_arch = \"wasm32\"))'.dependencies]\nwhich = { workspace = true }\n\n",
       "",
@@ -253,7 +253,7 @@ function integrate(root: string) {
 
 export function replay(phase: Phase, root = ROOT) {
   const locations = FILES.map((relative) => [
-    path.join(root, "davinci/vize_l0/src", relative),
+    path.join(root, "levels/vize_l0/src", relative),
     path.join(root, "crates/vize_carton/src", relative),
   ]);
   for (const [old, destination] of locations) {

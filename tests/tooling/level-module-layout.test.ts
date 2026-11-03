@@ -10,15 +10,15 @@ const ordinaryModuleRoots = [
   "crates/vize_atelier_sfc",
   "crates/vize_atelier_vapor",
   "crates/vize_carton",
-  "davinci/vize_l0",
+  "levels/vize_l0",
   "crates/vize_croquis",
-  "davinci/vize_l3",
-  "davinci/vize_l2",
+  "levels/vize_l3",
+  "levels/vize_l2",
   "crates/vize_patina",
-  "davinci/vize_l1_to_l2",
-  "davinci/vize_l1",
-  "tools/benchmarks/crates/davinci_harness",
-  "tests/davinci_test_support",
+  "levels/vize_l1_to_l2",
+  "levels/vize_l1",
+  "tools/benchmarks/crates/level_harness",
+  "tests/level_test_support",
 ];
 
 function skipBlockComment(source: string, start: number): number {

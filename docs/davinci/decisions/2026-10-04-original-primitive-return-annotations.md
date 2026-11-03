@@ -33,14 +33,14 @@ prose-only dependency. Do not alter an already healthy queued prefix.
 
 | Actual source                                            | Existing authority and limit                                                                                                                                                                            |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `davinci/vize_l2/src/lang/js/file.rs`                    | `ProgramInput::checked` proves original admitted source, whole SourceBlock/profile/default parser options; FileProducer visits the Program once. Script and definition units are incomplete.            |
+| `levels/vize_l2/src/lang/js/file.rs`                     | `ProgramInput::checked` proves original admitted source, whole SourceBlock/profile/default parser options; FileProducer visits the Program once. Script and definition units are incomplete.            |
 | `lang/js/file/walk.rs`                                   | The actual original statement event rejects setup/ordinary eligibility for every function before its normal declaration event; existing body statements and references retain their real lexical scope. |
 | `lang/js/file/walk/functions.rs`                         | A genuine FunctionDeclaration supplies original return annotation, formal parameters, body and authored span. The old blanket return refusal is the only proposed production seam.                      |
 | `lang/js/file/walk/annotations.rs`                       | The existing private primitive match returns only bigint/boolean/null/number/string/symbol/undefined. #7756 exposes a private boolean check; it adds no annotation row.                                 |
-| `davinci/vize_l4/src/targets/ts.rs`                      | Completed whole-Module File projects its exact authored bytes plus the existing module suffix; original File/unit borrow and link sinks remain unchanged.                                               |
+| `levels/vize_l4/src/targets/ts.rs`                       | Completed whole-Module File projects its exact authored bytes plus the existing module suffix; original File/unit borrow and link sinks remain unchanged.                                               |
 | `crates/vize_canon/src/corsa_bridge/original_program.rs` | Existing explicit checker authenticates actual source path/bytes/configured root/project and independent full LSP report; no default or unsaved-buffer claim.                                           |
 
-Paths below `lang/js` are beneath `davinci/vize_l2/src/`.
+Paths below `lang/js` are beneath `levels/vize_l2/src/`.
 
 ## Bounded admission at the existing function event
 

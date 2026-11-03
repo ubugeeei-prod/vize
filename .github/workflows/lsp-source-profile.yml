@@ -7,18 +7,18 @@ on:
       - "crates/vize/src/commands/lsp.rs"
       - "crates/vize/tests/lsp_profile_cli.rs"
       - "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
-      - "tools/support/compat/davinci/lsp-resources.ts"
-      - "tools/support/compat/davinci/lib/lsp-profile-launch.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-cancellation.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-corsa-mirror.cjs"
-      - "tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-corpus.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-sampler.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-witness.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-workspace.ts"
+      - "tools/support/compat/levels/lsp-resources.ts"
+      - "tools/support/compat/levels/lib/lsp-profile-launch.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-cancellation.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-cancellation-run.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-corsa-gate.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-corsa-mirror.cjs"
+      - "tools/support/compat/levels/lib/lsp-resource-corsa-proxy.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-corpus.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-finalize.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-sampler.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-witness.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-workspace.ts"
       - "tools/support/json-value.ts"
       - "tests/tooling/lsp-resource-cancellation.test.ts"
       - "tests/tooling/lsp-resource-corsa-gate.test.ts"
@@ -82,14 +82,14 @@ jobs:
           -- --exact
       - name: Record the instrumented binary identity
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          vp exec node tools/support/compat/levels/lsp-build-identity.ts
           target/ci-opt/vize ci-opt "${RUNNER_TEMP}/source-build.jsonl"
           "${RUNNER_TEMP}/source-build-identity.json"
       - name: Collect the complete residency oracle and source profiles
         run: |
           set -euo pipefail
           for files in 100 500 2500; do
-            vp exec node tools/support/compat/davinci/lsp-resources.ts \
+            vp exec node tools/support/compat/levels/lsp-resources.ts \
               --server target/ci-opt/vize --files "$files" --warm-providers 16 --runs 1 --idle-seconds 10 \
               --build 'ci-opt with profiling allocator and source-operation counters; observation only' \
               --profile-json-dir "${RUNNER_TEMP}/source-${files}" \

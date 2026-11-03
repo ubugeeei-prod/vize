@@ -204,7 +204,7 @@ async function main() {
   mkdirSync(unitOutput, { recursive: true });
   const commandOutput = (command: string, args: string[]) =>
     execFileSync(command, args, { encoding: "utf8" }).trim();
-  const corpus = process.env.VIZE_DAVINCI_FACT_CORPUS;
+  const corpus = process.env.VIZE_LEVEL_FACT_CORPUS;
   assert.ok(corpus, "The pinned corpus must be hydrated");
   const identity = () => ({
     source: commandOutput("git", ["rev-parse", "HEAD"]),

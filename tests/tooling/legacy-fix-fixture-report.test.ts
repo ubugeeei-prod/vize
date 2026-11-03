@@ -56,7 +56,7 @@ void test("known legacy product source paths are mapped without counting tests o
       "crates/vize_patina/src/rules.rs",
       "crates/vize_canon/src/check.rs",
       "crates/vize_maestro/src/server.rs",
-      "davinci/vize_l1/src/lib.rs",
+      "levels/vize_l1/src/lib.rs",
       "crates/vize_glyph/tests/fix.rs",
     ]),
     ["compiler", "formatter", "linter", "lsp", "typechecker"],
@@ -222,7 +222,7 @@ void test("non-fix titles and native-only paths are not required to add inputs",
   assert.equal(
     analyzeLegacyFix({
       title: "fix(l2): correct lowering",
-      paths: ["davinci/vize_l1_to_l2/src/lower.rs"],
+      paths: ["levels/vize_l1_to_l2/src/lower.rs"],
       readFile: () => {
         throw new Error("should not read a manifest");
       },

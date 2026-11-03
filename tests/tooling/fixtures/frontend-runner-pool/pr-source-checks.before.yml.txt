@@ -157,12 +157,12 @@ jobs:
           tests/tooling/pinned-fixture-hydration.test.ts
           tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts
           tests/tooling/publish-npm-package*.test.ts
-          tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts
+          tests/tooling/level-canonical-corpus-kernel-prefix.test.ts
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan
     if: ${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}
-    uses: ./.github/workflows/davinci-canonical-corpus.yml
+    uses: ./.github/workflows/level-canonical-corpus.yml
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     permissions: { contents: read, actions: read }
@@ -343,7 +343,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: playground/src/wasm/vize_vitrine*
-          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'levels/**/*.rs', 'crates/**/Cargo.toml', 'levels/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
       - name: Install wasm-bindgen-cli
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2

@@ -11,7 +11,7 @@ test("Check validates pull requests against every stacked base branch", () => {
   assert.equal(workflow.on.pull_request?.["branches-ignore"], undefined);
   assert.equal(workflow.on.pull_request?.paths, undefined);
   assert.equal(workflow.on.pull_request?.["paths-ignore"], undefined);
-  assert.deepEqual(workflow.on.push.branches, ["main", "davinci"]);
+  assert.deepEqual(workflow.on.push.branches, ["main", "levels"]);
   assert.deepEqual(workflow.on.merge_group.branches, ["main"]);
 });
 

@@ -7,7 +7,7 @@
     clippy::indexing_slicing,
     reason = "complete authored and independently pinned compiler packets"
 )]
-use super::davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+use super::level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 

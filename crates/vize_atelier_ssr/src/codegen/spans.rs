@@ -1,4 +1,4 @@
-//! Span-carrying SSR emission (Davinci P3-9, L4).
+//! Span-carrying SSR emission (Levels P3-9, L4).
 //!
 //! SSR code is written in two ways: straight into the context's
 //! [`EmitDocument`] (control flow, component calls) and through

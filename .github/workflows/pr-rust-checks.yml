@@ -66,13 +66,13 @@ jobs:
         if: ${{ matrix.lane == 'contracts' }}
         run: >-
           node --test --test-concurrency=1
-          tests/tooling/davinci-assertion-lint.test.ts
-          tests/tooling/davinci-consumer-migration-surfaces.test.mjs
+          tests/tooling/level-assertion-lint.test.ts
+          tests/tooling/level-consumer-migration-surfaces.test.mjs
           tests/tooling/docs-reviewed-translations.test.ts
           tests/tooling/typecheck-divergence-report-timeout.test.ts
           tests/tooling/typecheck-divergence-mutation-oracle.test.ts
           tests/tooling/typecheck-fixture-custody.test.ts
-          tests/tooling/davinci-canonical-corpus-native-walk.test.mjs
+          tests/tooling/level-canonical-corpus-native-walk.test.mjs
           tests/tooling/typecheck-divergence-baseline-ambient.test.ts
           tests/tooling/typecheck-divergence-baseline-configuration.test.ts
           tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts

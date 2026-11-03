@@ -168,6 +168,6 @@ fn authored_source_copies_do_not_become_differential_corpus_inputs() {
         assert_eq!(std::fs::read(path).unwrap(), bytes);
     }
     let mut collected = Vec::new();
-    davinci_test_support::corpus::collect_vue_files(root.path(), &mut collected);
+    level_test_support::corpus::collect_vue_files(root.path(), &mut collected);
     assert_eq!(collected, vec![authored]);
 }

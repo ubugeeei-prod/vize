@@ -137,8 +137,8 @@ export function main(): void {
   assert(list(instrumented.artifact.features).includes("micro-profiling"));
   assert.notEqual(normal.library, instrumented.library);
   for (const { artifact } of [normal, instrumented]) {
-    assert.equal(artifact.manifest_path, path.join(root, "davinci/vize_l0/Cargo.toml"));
-    assert.equal(record(artifact.target).src_path, path.join(root, "davinci/vize_l0/src/lib.rs"));
+    assert.equal(artifact.manifest_path, path.join(root, "levels/vize_l0/Cargo.toml"));
+    assert.equal(record(artifact.target).src_path, path.join(root, "levels/vize_l0/src/lib.rs"));
   }
   const control = path.join(
     env("RUNNER_TEMP"),
@@ -146,7 +146,7 @@ export function main(): void {
   );
   assert(!fs.existsSync(control));
   run(["git", "worktree", "add", "--detach", control, head]);
-  const relative = "davinci/vize_l0/src/profiler/core.rs",
+  const relative = "levels/vize_l0/src/profiler/core.rs",
     core = path.join(control, relative);
   const original = fs.readFileSync(core, "utf8");
   const field =
@@ -188,7 +188,7 @@ export function main(): void {
   assert.equal(oldCode, 0);
   const old = libraryArtifact(oldLog);
   assert.deepEqual(old.artifact.features, instrumented.artifact.features);
-  assert.equal(old.artifact.manifest_path, path.join(control, "davinci/vize_l0/Cargo.toml"));
+  assert.equal(old.artifact.manifest_path, path.join(control, "levels/vize_l0/Cargo.toml"));
   const snippet = path.join(evidence, "guard-send-snippet.rs");
   fs.writeFileSync(
     snippet,

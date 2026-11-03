@@ -7,7 +7,7 @@ use crate::support;
 
 use std::fs;
 
-use davinci_test_support::surface_fixture as battery;
+use level_test_support::surface_fixture as battery;
 use support::{assert_folio_spans_resolve, with_lowered, with_transformed};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l2::dump::{
@@ -28,8 +28,8 @@ fn owned_folio_spans_resolve_for_committed_battery() {
 
 #[test]
 fn owned_folio_spans_resolve_for_optional_corpus() {
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     assert!(
@@ -55,7 +55,7 @@ fn owned_folio_spans_resolve_for_optional_corpus() {
         sweep.root.display()
     );
     eprintln!(
-        "davinci owned folio span corpus sweep: files={} checked={}",
+        "levels owned folio span corpus sweep: files={} checked={}",
         sweep.files.len(),
         checked
     );

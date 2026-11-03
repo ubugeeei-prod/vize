@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse as parseToml } from "@iarna/toml";
 
-import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const sfcPreferredL0Rows = [
@@ -29,7 +29,7 @@ const sfcPreferredL0Rows = [
   ["crates/vize_atelier_sfc/tests/support/css_engine_successors.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/css_nesting_guard.rs", "test", 6],
   ["crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs", "test", 1],
-  ["crates/vize_atelier_sfc/tests/davinci_arena_pool.rs", "test", 1],
+  ["crates/vize_atelier_sfc/tests/level_arena_pool.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/emitter_javascript_output.rs", "test", 3],
   ["crates/vize_atelier_sfc/tests/imported_pick_intersection_props.rs", "test", 1],
   ["crates/vize_atelier_sfc/tests/imported_type_cache.rs", "test", 2],

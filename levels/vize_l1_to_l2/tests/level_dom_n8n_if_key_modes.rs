@@ -9,9 +9,9 @@
     reason = "integration tests compare whole authored modules"
 )]
 
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 
-use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+use level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 use toml::Value;
 
 const CONTROLS: &[&str] = &[

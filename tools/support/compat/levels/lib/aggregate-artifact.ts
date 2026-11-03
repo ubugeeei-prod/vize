@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { repoRoot } from "./paths.ts";
 
-export const LEDGER_OUTPUT_REL = "artifacts/davinci-ledgers";
+export const LEDGER_OUTPUT_REL = "artifacts/level-ledgers";
 
 export interface AggregateArgs {
   mode: string;

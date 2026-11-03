@@ -1,4 +1,4 @@
-//! Span-carrying Vapor emission (Davinci P3-9, L4).
+//! Span-carrying Vapor emission (Levels P3-9, L4).
 //!
 //! Vapor code is generated from IR, which keeps expression nodes (with their
 //! authored spans) but not the elements that carried them. For a

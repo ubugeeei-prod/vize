@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const BUTTON: &str = r#"<script setup lang="ts">
 defineProps<{ onClick?: ((event: MouseEvent) => void) | Array<((event: MouseEvent) => void)> }>()

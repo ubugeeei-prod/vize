@@ -39,9 +39,9 @@ pub use report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
 /// use vize_l0::profile;
 /// use vize_l0::profiler::SpanAttribution;
 ///
-/// let plain = profile!("davinci.demo.plain", 1 + 1);
+/// let plain = profile!("levels.demo.plain", 1 + 1);
 /// let attributed = profile!(
-///     "davinci.demo.pass",
+///     "levels.demo.pass",
 ///     attr: SpanAttribution::new().with_stage("s1").with_pass("demo"),
 ///     1 + 1
 /// );

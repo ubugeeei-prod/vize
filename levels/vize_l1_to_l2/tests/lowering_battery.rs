@@ -4,7 +4,7 @@
 //! no fuzzer required, same soundness oracle everywhere.
 //!
 //! The battery is `vize_l1`'s own committed fixture set, imported
-//! from the shared Davinci test-support crate. The aggregate counts below are
+//! from the shared Levels test-support crate. The aggregate counts below are
 //! the cfg-regression witness the corpus lane re-pins: a change to the
 //! lowering's decision surface moves a pinned number loudly in both lanes.
 
@@ -12,7 +12,7 @@
 
 use crate::support;
 
-use davinci_test_support::surface_fixture as battery;
+use level_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};
 use vize_l0::diag::{Diagnostic, Stage};
 use vize_l0::dump::{Dump, Mode as DumpMode};

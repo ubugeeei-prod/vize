@@ -1,7 +1,7 @@
 {
   "scope": "Honest actual current source CLI PropertyKey shadow counterexample; no source checkout changes",
   "sourceRevision": "d83c194c899cc36359784073fe5ec78693e8c268",
-  "cwd": "/private/tmp/vize-overnight-20261031/davinci/aria-propertykey-probe",
+  "cwd": "/private/tmp/vize-overnight-20261031/levels/aria-propertykey-probe",
   "binary": "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
   "binarySha256": "c586919ebcf16bed94dabcff967dfb73bf9ea88ae198a7a8a6e158acec6b3060",
   "nativeHost": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",

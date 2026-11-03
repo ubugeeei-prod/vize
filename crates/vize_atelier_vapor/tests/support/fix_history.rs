@@ -70,7 +70,7 @@ pub fn option_payload(prefix: bool) -> Value {
         custom_renderer,
         experimental_in_tag_comments,
         experimental_patterned_template,
-        davinci_retained_lane,
+        level_retained_lane,
     } = options(prefix);
     let VaporCompilerExperimentalOptions {
         component_name,
@@ -86,7 +86,7 @@ pub fn option_payload(prefix: bool) -> Value {
         "customRenderer": custom_renderer,
         "experimentalInTagComments": experimental_in_tag_comments,
         "experimentalPatternedTemplate": experimental_patterned_template,
-        "retainedLane": davinci_retained_lane,
+        "retainedLane": level_retained_lane,
         "experimental": {
             "componentName": component_name, "selfComponent": self_component,
             "sourceMap": source_map, "sourceMapFilename": source_map_filename,

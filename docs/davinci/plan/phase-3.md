@@ -281,12 +281,12 @@ feed C-13. _Accept:_ remarks render in Spolvero (C-5); diff job wired.
 _Substrate slice 2026-09-21:_ see [P3-13 record](./phase-3-records/p3-13.md)
 and [remarks-format.md](./remarks-format.md): the observer's remark hook with
 a compile-time zero-cost gate (0 allocations detached, measured), the
-`[remarks]` page and schema-versioned JSON, `davinci-opt --remarks`, and
+`[remarks]` page and schema-versioned JSON, `level-opt --remarks`, and
 `hoist-static` as the first emitter. _TS-32 slice 2026-09-21:_ the corpus
 remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
 against a committed baseline whose bless refuses unexplained
 `applied → missed` transitions. _Feed slice 2026-09-21:_ the Spolvero feed
-(inspector, `analyzeSfc`, `davinci-opt`) carries the remarks, and the C-13
+(inspector, `analyzeSfc`, `level-opt`) carries the remarks, and the C-13
 backlog is mined from the TS-32 corpus. _Rendering slice 2026-09-22:_ the
 playground's Davinci tab renders them (C-5). **Landed** 2026-09-22: both
 acceptance items hold; emitters for decisions made outside the pass manager

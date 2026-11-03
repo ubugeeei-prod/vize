@@ -1,6 +1,6 @@
-// Deliberately-bad fixture for tools/commands/davinci/assertion-lint.rs (Davinci
+// Deliberately-bad fixture for tools/commands/levels/assertion-lint.rs (Levels
 // P0-12 "lint the linter" self-test). Never compiled — this file exercises
-// the lint's detection, and tests/tooling/davinci-assertion-lint.test.ts
+// the lint's detection, and tests/tooling/level-assertion-lint.test.ts
 // pins the exact finding set: lines marked FLAG must be reported with the
 // bracketed category, everything else must stay silent.
 

@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
-const level = "davinci/vize_l0/src/source_io";
+const level = "levels/vize_l0/src/source_io";
 const host = "crates/vize_carton/src/source_io";
 const ownedBufferExpectation =
   "#[expect(\n    clippy::disallowed_types,\n" +

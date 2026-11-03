@@ -22,7 +22,7 @@ const context = {
 
 function log(divergences, samples = []) {
   return [
-    `davinci DOM corpus sweep: files=1 unreadable=0 parsed=1 templates=1 compared=1 patch_fact_entries=1 old_error_skips=0 s2_refusals=0 divergences=${divergences}`,
+    `levels DOM corpus sweep: files=1 unreadable=0 parsed=1 templates=1 compared=1 patch_fact_entries=1 old_error_skips=0 s2_refusals=0 divergences=${divergences}`,
     ...samples,
   ].join("\n");
 }

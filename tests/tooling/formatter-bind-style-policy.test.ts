@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
 import { fileURLToPath } from "node:url";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import {

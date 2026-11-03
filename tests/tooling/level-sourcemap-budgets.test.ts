@@ -1,4 +1,4 @@
-// Davinci source-map budgets (plan/phase-3.md P3-9).
+// Levels source-map budgets (plan/phase-3.md P3-9).
 //
 // P3-9 replaces string appends with structured, span-carrying emission across
 // DOM, Vapor and SSR. This test pins the numeric coverage contract before the
@@ -11,7 +11,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 
 type SourceMapBudget = {
   backend: string;

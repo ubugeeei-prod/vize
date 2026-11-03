@@ -3909,13 +3909,13 @@
     "documents": [
       {
         "family": "dual-scripts-emits",
-        "templateUri": "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue.__template.ts",
+        "templateUri": "tests/_fixtures/level-ts40-projection/dual-scripts-emits.vue.__template.ts",
         "documents": 3,
         "normalizedManifestSha256": "eb2a9504f728d97f7fcbee5f5045aa190176b57ad3f813d4aaf078130bd31bff"
       },
       {
         "family": "define-model",
-        "templateUri": "tests/_fixtures/davinci-ts40-projection/define-model.vue.__template.ts",
+        "templateUri": "tests/_fixtures/level-ts40-projection/define-model.vue.__template.ts",
         "documents": 2,
         "normalizedManifestSha256": "5e10f101d9bcceb0ce6c93c56f76c59f9a9f5456c087fddee6df1545d312e14f"
       }

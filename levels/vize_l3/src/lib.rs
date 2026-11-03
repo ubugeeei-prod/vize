@@ -1,4 +1,4 @@
-//! L3 - the Davinci reactivity IR (codename Impeto): the backend convergence
+//! L3 - the Levels reactivity IR (codename Impeto): the backend convergence
 //! layer for DOM and Vapor.
 //!
 //! **Experimental:** the stage API may change in any alpha release; record
@@ -12,7 +12,7 @@
 //! effect scopes that leak.
 //!
 //! The crate is `no_std + alloc` from birth so L3 artifacts can be printed,
-//! validated, and replayed on the same portability lane as the earlier Davinci
+//! validated, and replayed on the same portability lane as the earlier Levels
 //! stage libraries.
 //!
 //! Placement alternatives (hoist / cache / inline / group) are an explicit

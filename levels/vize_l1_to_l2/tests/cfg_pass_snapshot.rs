@@ -1,4 +1,4 @@
-//! TS-17 for the template-complexity analysis (Davinci P4-9a): committed
+//! TS-17 for the template-complexity analysis (Levels P4-9a): committed
 //! fixture in, full transform pipeline out, **full normalized folio**
 //! snapshot plus the full printed breakdown. An analysis pass moves no
 //! surface, so the folio is exactly what the lowering built (the

@@ -4,7 +4,7 @@
   "sourceRevision": "4c7730325968403a71429925767871094be22f05",
   "sourceTree": "6c755a1d7328202f2db1243090e758a9600fe2d6",
   "worktree": "/private/tmp/vize-linter-next-tick-history-6881-20260927",
-  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/davinci_test_support; staged Rust/input before new snapshots",
+  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/level_test_support; staged Rust/input before new snapshots",
   "buildInputFiles": 7098,
   "buildInputTreeSha256": "e6458407d4dd6d4d6bb30776ee7fc63d52a83d7ddf07fa66470db7dad8952771",
   "buildInputManifestSha256": "af6e21bb7360a1454eb26e07d9cccb8a1f0c3e59a21d1facff9b5746dde2b964",
@@ -230,14 +230,14 @@
     },
     {
       "phase": "ledger-write",
-      "argv": ["rust-script", "tools/commands/davinci/consumer-migration-surfaces.rs", "--write"],
+      "argv": ["rust-script", "tools/commands/levels/consumer-migration-surfaces.rs", "--write"],
       "exitStatus": 0,
       "stdoutSha256": "aecd6a49b2869f3b3b85a5529339798e2310e50b432097e4142ee7a53961887f",
       "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "phase": "ledger-check",
-      "argv": ["rust-script", "tools/commands/davinci/consumer-migration-surfaces.rs", "--check"],
+      "argv": ["rust-script", "tools/commands/levels/consumer-migration-surfaces.rs", "--check"],
       "exitStatus": 0,
       "stdoutSha256": "5fa50881700e080190f9d722be49c34ae757abd474809d5426762c3023f83218",
       "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -247,8 +247,8 @@
       "argv": [
         "node",
         "--test",
-        "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
-        "tests/tooling/davinci-consumer-migration-surfaces-check.test.mjs"
+        "tests/tooling/level-consumer-migration-surfaces.test.mjs",
+        "tests/tooling/level-consumer-migration-surfaces-check.test.mjs"
       ],
       "exitStatus": 0,
       "stdoutSha256": "2b0b09864126acef0efc58912f6d46a737648b10347d40eb5e7d21429fd86fba",

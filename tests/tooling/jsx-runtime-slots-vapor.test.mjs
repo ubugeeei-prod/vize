@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
-import { evaluateCompiledRender } from "./support/davinci-runtime-trace.mjs";
+import { evaluateCompiledRender } from "./support/level-runtime-trace.mjs";
 import {
   officialCompilerVapor,
   vueVaporBrowserRuntime,

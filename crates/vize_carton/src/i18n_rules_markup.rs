@@ -5,7 +5,7 @@
 //! [`crate::i18n_rules_ecosystem`].
 //!
 //! The `en` column is the rule's own `RuleMeta` description, byte for byte —
-//! `tests/tooling/davinci-diagnostic-catalog.test.ts` reads both from source
+//! `tests/tooling/level-diagnostic-catalog.test.ts` reads both from source
 //! and fails on drift, and on any of the 249 rules without a description in
 //! every locale. Japanese follows the "〜を禁止する / 〜を必須にする / 〜を推奨する"
 //! register rule catalogues use; Chinese the matching 禁止 / 要求 / 推荐.

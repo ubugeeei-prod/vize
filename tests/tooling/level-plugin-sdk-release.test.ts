@@ -36,7 +36,7 @@ test("SDK publication uses the built artifact and waits for the tagged release",
 
 test("the release contracts execute the complete SDK release contracts", () => {
   const carrier = parse(readRepoFile(".github/workflows/release-contracts.yml"));
-  const source = "tests/tooling/davinci-plugin-sdk-release.test.ts";
+  const source = "tests/tooling/level-plugin-sdk-release.test.ts";
   assert.ok(carrier.on.pull_request.paths.includes(source));
   const steps = carrier.jobs.contracts.steps as Array<{ uses?: string; run?: string }>;
   const policy = steps.findIndex((step) => step.run?.split(/\s+/).includes(source));

@@ -1,5 +1,5 @@
 //! Arena generation counter: the debug escape check for cross-file survivals
-//! (Davinci P1-11).
+//! (Levels P1-11).
 //!
 //! Under the batch pool one `Allocator` serves file after file, so bytes that
 //! belonged to file N are handed to file N+1 after a reset. The borrow checker

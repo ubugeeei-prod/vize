@@ -12,8 +12,8 @@ measures the resulting reduction with its fixture and stage window unchanged:
 
 Linux evidence comes from [Check run 35762295465](https://github.com/ubugeeei-prod/vize/actions/runs/35762295465/job/106863895489),
 head `2f7a8674a0c8482b23b3d916b68f3e7159062fd0`, artifact
-`davinci-allocation-bench-reports` (ID `10710412914`). The required allocation
-gate ran `cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick`
+`level-allocation-bench-reports` (ID `10710412914`). The required allocation
+gate ran `cargo bench -p vize_s1_to_s2 --bench level_storage -- --quick`
 with the release profile. All five other compact-storage reports passed their
 existing budgets; only this beneficial exact-budget change failed.
 
@@ -22,7 +22,7 @@ macOS arm64 evidence was measured independently at
 the text-lowering change:
 
 ```sh
-cargo bench --profile ci-opt -p vize_s1_to_s2 --bench davinci_storage \
+cargo bench --profile ci-opt -p vize_s1_to_s2 --bench level_storage \
   --target-dir /tmp/vize-dom-emission-target \
   -- s1_to_s2_lower_vfor_three_aliases --quick
 ```

@@ -1,11 +1,11 @@
 [package]
-name = "davinci_test_support"
+name = "level_test_support"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Shared fixtures and strict schema validation for Davinci tests"
+description = "Shared fixtures and strict schema validation for Levels tests"
 publish = false
 
 [features]

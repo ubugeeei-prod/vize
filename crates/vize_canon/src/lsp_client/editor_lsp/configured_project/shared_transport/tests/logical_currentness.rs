@@ -5,7 +5,7 @@ use corsa::{
     api::{ApiClient, ManagedSnapshot, ProjectHandle},
     runtime::block_on,
 };
-use davinci_test_support::original_diagnosing_process as control;
+use level_test_support::original_diagnosing_process as control;
 use std::fs;
 use vize_l0::String;
 

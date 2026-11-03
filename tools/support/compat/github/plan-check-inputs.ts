@@ -30,7 +30,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       paths.some(isOpinionatedSourceInput) ||
       // Retain the existing conservative npm Vue routing as well as authored inputs.
       matches(
-        /^(?:crates|davinci|vendor|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
+        /^(?:crates|levels|vendor|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
       ),
   };
 }

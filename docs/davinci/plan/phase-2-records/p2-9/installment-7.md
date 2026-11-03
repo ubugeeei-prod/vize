@@ -23,7 +23,7 @@ today; adding one would be a cargo-graph gesture, not a cost model.
 The measured zero-cost shape, copied from the shipped
 `desugar_legacy_template` short-circuit:
 
-- [`LegacyCaps`](../../../../../davinci/vize_l1_to_l2/src/lower/caps.rs) is
+- [`LegacyCaps`](../../../../../levels/vize_l1_to_l2/src/lower/caps.rs) is
   three bools resolved once per file from
   `vize_carton::config::VueVersion`. It is a copy of armature's
   `LegacyDialectCapabilities` so ricalco never grows an armature edge.
@@ -137,7 +137,7 @@ The transform-directory line is done. The series box stays unticked
 because these checkboxes are still honest:
 
 - `steps/expression/` stays on the old lane (non-goal, P2-5b).
-- The old lane stays live behind `VIZE_DAVINCI_TRANSFORM` (charter
+- The old lane stays live behind `VIZE_LEVEL_TRANSFORM` (charter
   #26) until the exit gate.
 - Differential lane + P1-9 residual number: not this installment's
   measurement (see gaps). Vue 3's prior corpus figures are still the

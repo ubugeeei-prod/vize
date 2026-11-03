@@ -9,17 +9,17 @@ import {
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 const corpus = [
-  "tests/tooling/davinci-fact-spec-corpus.test.ts",
-  "tests/tooling/davinci-complexity-corpus.test.ts",
-  "tests/tooling/davinci-metamorphic-corpus.test.ts",
+  "tests/tooling/level-fact-spec-corpus.test.ts",
+  "tests/tooling/level-complexity-corpus.test.ts",
+  "tests/tooling/level-metamorphic-corpus.test.ts",
 ];
-const bench = "tests/tooling/davinci-bench-compare.test.ts";
+const bench = "tests/tooling/level-bench-compare.test.ts";
 const pack = "tests/tooling/vite-plus-fast-path.test.ts";
 const heavy = [...corpus, bench];
 const scopeFixture = mkdtempSync(join(tmpdir(), "vize-heavy-scope-"));
 for (const directory of [
   "tests/tooling",
-  "tests/tooling/davinci",
+  "tests/tooling/levels",
   "tests/tooling/release",
   "tests/tooling/_helpers",
 ]) {
@@ -44,7 +44,7 @@ void test("unrelated guide docs omit audited heavy subprocesses while full merge
 
 void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness and threshold specs", () => {
   for (const path of [
-    "davinci/vize_l1/src/parser.rs",
+    "levels/vize_l1/src/parser.rs",
     "crates/vize_croquis/tests/fact_spec/runner.rs",
     "Cargo.toml",
     "Cargo.lock",
@@ -54,8 +54,8 @@ void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness
     "tests/_fixtures/_git/create-vue",
     "tests/_fixtures/_git/ant-design-vue",
     "tests/_fixtures/_git/layoutit-grid",
-    "tests/fixtures/davinci-matrix/deleted.vue",
-    "tools/benchmarks/crates/davinci_harness/src/fixtures.rs",
+    "tests/fixtures/level-matrix/deleted.vue",
+    "tools/benchmarks/crates/level_harness/src/fixtures.rs",
     "docs/davinci/plan/complexity-metrics.md",
     "docs/davinci/plan/budgets.toml",
     "npm/cli/schemas/vize.config.schema.json",
@@ -74,14 +74,14 @@ void test("differential JavaScript harness changes do not select the Rust corpus
 });
 
 void test("standalone bench comparison retains Rust script, common helper and reports without workspace source", () => {
-  assert.equal(selected("davinci/vize_l1/src/parser.rs").has(bench), false);
+  assert.equal(selected("levels/vize_l1/src/parser.rs").has(bench), false);
   assert.equal(selected("docs/davinci/plan/phase-4.md").has(bench), false);
   for (const path of [
-    "tools/commands/davinci/bench-compare.rs",
+    "tools/commands/levels/bench-compare.rs",
     "tools/support/common.rs",
-    "tests/_fixtures/davinci-bench-compare/budgets.toml",
-    "tests/_fixtures/davinci-bench-compare/baseline/deleted.json",
-    "tests/_fixtures/davinci-bench-compare/within-tolerance/current/new.json",
+    "tests/_fixtures/level-bench-compare/budgets.toml",
+    "tests/_fixtures/level-bench-compare/baseline/deleted.json",
+    "tests/_fixtures/level-bench-compare/within-tolerance/current/new.json",
     "rust-toolchain.toml",
     ".cargo/config.toml",
     ".github/actions/setup-rust-script/action.yml",
@@ -113,7 +113,7 @@ void test("direct changes, shared inputs and unknown paths retain every heavy sc
 void test("a scoped subprocess test with unresolved runtime imports restores broad inputs", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-heavy-inputs-"));
   try {
-    for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]) {
+    for (const directory of ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"]) {
       mkdirSync(join(cwd, directory), { recursive: true });
     }
     writeFileSync(join(cwd, bench), 'import "./missing-helper.mjs";\n');

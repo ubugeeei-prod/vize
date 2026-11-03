@@ -19,7 +19,7 @@ use vize_curator::repro::Page as ReproPage;
 use vize_l0::String as CartonString;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 
-const INJECTED_FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
+const INJECTED_FAILURE: &str = "template.transform: injected levels panic in pass `transform`";
 
 fn temp_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
@@ -27,7 +27,7 @@ fn temp_project_dir(test_name: &str) -> PathBuf {
         .unwrap()
         .as_nanos();
     std::env::temp_dir().join(format!(
-        "vize-davinci-repro-{}-{}-{}",
+        "vize-level-repro-{}-{}-{}",
         std::process::id(),
         test_name,
         nonce
@@ -84,7 +84,7 @@ fn injected_build(test_name: &str) -> (PathBuf, Output) {
             "src",
             "--output",
             "dist",
-            "--davinci-inject-panic",
+            "--level-inject-panic",
             "b:transform",
         ],
     );
@@ -133,7 +133,7 @@ fn an_injected_panic_fails_one_file_writes_its_repro_and_emits_the_rest() {
     assert_eq!(folio.failed_pass.as_str(), "transform");
     assert_eq!(
         folio.reason.as_str(),
-        "injected davinci panic in pass `transform`"
+        "injected levels panic in pass `transform`"
     );
     assert_eq!(folio.artifact_stage.as_str(), "source");
     assert_eq!(folio.config.len(), 2);

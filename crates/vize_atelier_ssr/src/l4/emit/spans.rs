@@ -1,4 +1,4 @@
-//! Authored spans for the L4 string-plan emitter (Davinci P3-9).
+//! Authored spans for the L4 string-plan emitter (Levels P3-9).
 //!
 //! L2 ops keep the span of every element, attribute, binding, text, and
 //! expression. The tokens inside them are located by the authored template

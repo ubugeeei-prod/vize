@@ -15,7 +15,7 @@ fn nested_directive_arguments_keep_the_parse_once_contract() {
     let counter = summary
         .entries
         .iter()
-        .find(|entry| entry.name == "davinci.expr.parses")
+        .find(|entry| entry.name == "levels.expr.parses")
         .unwrap();
     // Three arguments and three values, with no parser invocation for finding
     // the lexical boundary of any dynamic argument.

@@ -1,6 +1,6 @@
 //! P2-11 installment 90 witness: the **`inline` root prop-hoist arm**
 //! over *component* roots, the sibling of
-//! `davinci_l2_inline_root_hoist`.
+//! `level_l2_inline_root_hoist`.
 //!
 //! A component's own hoist gate is reconstructed from the codegen shape
 //! its props end up in — slots, builtin helpers, array children — and

@@ -1,4 +1,4 @@
-// Corpus baseline contract (Davinci P0-5, TS-11): the artifact schema, the
+// Corpus baseline contract (Levels P0-5, TS-11): the artifact schema, the
 // surface list, the per-surface hash contract, and the two inputs both tools
 // read — the fixture manifest and the filed-nondeterminism sidecar.
 //
@@ -49,11 +49,11 @@ function isCorpusProject(value: unknown): value is CorpusProject & JsonRecord {
   return isRecord(value) && typeof value.id === "string";
 }
 
-export const SCHEMA = "vize.davinciCorpusBaseline";
+export const SCHEMA = "vize.levelCorpusBaseline";
 export const SCHEMA_VERSION = 1;
-export const UNSTABLE_SCHEMA = "vize.davinciCorpusUnstableRows";
+export const UNSTABLE_SCHEMA = "vize.levelCorpusUnstableRows";
 export const REGISTRY_REL = "tests/_fixtures/vue-ecosystem-fixtures.json";
-export const BASELINE_REL = "tests/_fixtures/davinci-baseline.json";
+export const BASELINE_REL = "tests/_fixtures/level-baseline.json";
 export const NOTES_REL = "docs/davinci/plan/corpus-baseline-notes.md";
 export const UNSTABLE_REL = "docs/davinci/plan/corpus-baseline-unstable.json";
 export const BASELINE_PATH = path.join(repoRoot, BASELINE_REL);

@@ -1,4 +1,4 @@
-//! Davinci stage aliases resolve as real crate names for implementation code.
+//! Levels stage aliases resolve as real crate names for implementation code.
 
 use vize_l0::Allocator;
 use vize_l2::dump::Page as L2Page;

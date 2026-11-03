@@ -24,11 +24,11 @@
 //!
 //! Every check body and the rigor field exist only under
 //! `debug_assertions`, the same cfg the arena-generation stamp uses
-//! (`davinci/vize_l0/src/allocator/generation.rs`). In release the
+//! (`levels/vize_l0/src/allocator/generation.rs`). In release the
 //! struct is a ZST with empty bodies — const-asserted below — so a release
 //! pipeline makes **zero** verifier calls, and by the P2-3 zero-cost
 //! measurement (static dispatch; empty bodies inline away; the
-//! `davinci_pipeline_no_observer` bench is alloc-identical to the
+//! `level_pipeline_no_observer` bench is alloc-identical to the
 //! unobserved pipeline) the empty shape costs nothing to carry.
 //!
 //! # Failure is a panic naming the pass

@@ -18,7 +18,7 @@ pub fn transform_typescript_to_js(code: &str) -> String {
 }
 
 /// [`transform_typescript_to_js`] with the provenance of the JavaScript in
-/// `code` (Davinci P3-9): the tokens oxc's codegen re-printed, through the
+/// `code` (Levels P3-9): the tokens oxc's codegen re-printed, through the
 /// tab expansion. The JavaScript is byte-identical to the untraced call's.
 pub(crate) fn transform_typescript_to_js_traced(code: &str) -> (String, Runs) {
     let (js, runs) = strip_typescript(code, true);
@@ -151,7 +151,7 @@ pub(crate) fn strip_typescript_for_emitter(code: &str) -> Option<String> {
 }
 
 /// [`strip_typescript_for_emitter`] with, when `trace` is set, the printed
-/// JavaScript's token provenance in `code` (Davinci P3-9 source maps).
+/// JavaScript's token provenance in `code` (Levels P3-9 source maps).
 pub(crate) fn strip_typescript_for_emitter_traced(
     code: &str,
     trace: bool,

@@ -1,12 +1,12 @@
-# Davinci production-reach floors (P3-17) — a budgets.toml companion kept in
+# Levels production-reach floors (P3-17) — a budgets.toml companion kept in
 # its own file because budgets.toml is at the source-length ceiling.
 # ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body
 #
 # Per shipping compile shape: committed-fixture templates whose module a
-# Davinci stage emitted (DOM: L2, SSR: L4 plan, Vapor: native L3) when
+# Levels stage emitted (DOM: L2, SSR: L4 plan, Vapor: native L3) when
 # compiled through `compile_sfc` exactly as each adapter does, counted from the
 # backends' one-per-template selection counters by
-# `crates/vize_atelier_sfc/tests/davinci_production_reach.rs` (per-reason
+# `crates/vize_atelier_sfc/tests/level_production_reach.rs` (per-reason
 # table: phase-3-records/p3-17.md). `accepted_min` only rises — the gate
 # prints when a run exceeds it, so the PR that raises reach raises the floor;
 # `ready_min` floors DOM templates still refused for an unprojectable

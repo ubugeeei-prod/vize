@@ -1,5 +1,5 @@
 //! Own template complexity per component: the L2 `template-complexity`
-//! facts (Davinci P4-9a), owned, with line/column positions so reports can
+//! facts (Levels P4-9a), owned, with line/column positions so reports can
 //! say where the complexity comes from without re-reading the file.
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};

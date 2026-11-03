@@ -28,7 +28,7 @@ fn paragraph_heading_anchor_and_form_elements_are_admitted() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );
@@ -53,13 +53,13 @@ fn semantic_inline_elements_match_the_retained_lane() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )

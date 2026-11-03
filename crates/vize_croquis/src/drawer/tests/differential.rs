@@ -1,4 +1,4 @@
-//! Davinci P1-6 differential lane — plain-suite coverage witness.
+//! Levels P1-6 differential lane — plain-suite coverage witness.
 //!
 //! Under `cfg(test)` the migrated helpers dual-run every retained-AST read
 //! against the legacy re-parse and panic on divergence (see
@@ -8,7 +8,7 @@
 //! `cfg` regression that silently disarmed the lane fails here. Counter
 //! deltas use `>=`: the counters are process-global and other unit tests
 //! run concurrently. The exact-pinned lane lives in
-//! `tests/davinci_differential.rs` (own process, deterministic counts).
+//! `tests/level_differential.rs` (own process, deterministic counts).
 
 use super::super::{Drawer, DrawerOptions, differential};
 use vize_carton::Allocator;

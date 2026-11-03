@@ -1,6 +1,6 @@
 //! Expression rewriting with identifier prefixing.
 //!
-//! Since Davinci P1-9 the rewrite is AST-driven where the admission proof
+//! Since Levels P1-9 the rewrite is AST-driven where the admission proof
 //! holds: a retained whole-expression AST (P1-5) that still describes the
 //! node's exact bytes and passes the dialect gate (P1-7) is walked
 //! directly — no guard re-scan, no re-parse — and the output bytes are
@@ -137,7 +137,7 @@ pub(crate) fn rewrite_expression(
     retained: Option<&JsExpression<'_>>,
     guard_maybe_ref_write: bool,
 ) -> RewriteResult {
-    // Davinci P1-9: the retained AST drives the whole rewrite when its
+    // Levels P1-9: the retained AST drives the whole rewrite when its
     // admission proof holds, checked before any byte re-scan. The caller
     // gated `raw == content`, which makes the armature parse's nesting
     // guard a proof for these exact bytes — the same

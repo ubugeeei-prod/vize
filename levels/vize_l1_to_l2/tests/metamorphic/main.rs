@@ -1,4 +1,4 @@
-//! Davinci P2-15 — the metamorphic suite v1 (TS-21).
+//! Levels P2-15 — the metamorphic suite v1 (TS-21).
 //!
 //! Equivalence-preserving mutations of Vue template source (attribute
 //! reorder, pass-through `<template>` wrap, text-node split/merge,
@@ -13,12 +13,12 @@
 //! counted; a zero-mutation run fails):
 //!
 //! - the committed construct-matrix plane
-//!   (`tests/fixtures/davinci-matrix/`, TS-12 keeps it fresh), pinned
+//!   (`tests/fixtures/level-matrix/`, TS-12 keeps it fresh), pinned
 //!   census, always on;
-//! - a corpus shard via `VIZE_DAVINCI_METAMORPHIC_CORPUS=<dir>[,<dir>…]`
+//! - a corpus shard via `VIZE_LEVEL_METAMORPHIC_CORPUS=<dir>[,<dir>…]`
 //!   (read-only, copies-in-memory only — the P0-13 convention), the
 //!   P2-8 widening shape. CI feeds it the PR-hydrated submodules from
-//!   `tests/tooling/davinci-metamorphic-corpus.test.ts`; the full-corpus
+//!   `tests/tooling/level-metamorphic-corpus.test.ts`; the full-corpus
 //!   recipe is the same variable pointed at `tests/_fixtures/_git`.
 
 #![expect(
@@ -40,7 +40,7 @@ use std::path::{Path, PathBuf};
 use runner::{Report, collect_vue_files, run_files, run_source};
 
 fn matrix_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix")
 }
 
 #[test]
@@ -86,8 +86,8 @@ fn the_matrix_plane_is_metamorphically_stable() {
 
 #[test]
 fn the_corpus_shard_is_metamorphically_stable() {
-    let Some(roots) = std::env::var_os("VIZE_DAVINCI_METAMORPHIC_CORPUS") else {
-        eprintln!("VIZE_DAVINCI_METAMORPHIC_CORPUS unset: matrix plane only");
+    let Some(roots) = std::env::var_os("VIZE_LEVEL_METAMORPHIC_CORPUS") else {
+        eprintln!("VIZE_LEVEL_METAMORPHIC_CORPUS unset: matrix plane only");
         return;
     };
     let mut files = Vec::new();
@@ -104,7 +104,7 @@ fn the_corpus_shard_is_metamorphically_stable() {
         };
         assert!(
             root.is_dir(),
-            "VIZE_DAVINCI_METAMORPHIC_CORPUS must name directories: {}",
+            "VIZE_LEVEL_METAMORPHIC_CORPUS must name directories: {}",
             root.display()
         );
         collect_vue_files(&root, &mut files);

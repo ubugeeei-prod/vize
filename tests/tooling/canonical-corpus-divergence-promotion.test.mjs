@@ -54,7 +54,7 @@ await test("a reduced witness becomes a stable minimal fixture plan", () => {
   try {
     const plan = createPromotionPlan(directory);
     assert.equal(plan.fingerprint, "abc123abc123");
-    assert.equal(plan.branch, "automation/davinci-dom-abc123abc123");
+    assert.equal(plan.branch, "automation/level-dom-abc123abc123");
     assert.equal(plan.files.length, 2);
     assert.equal(
       plan.files[0].path,

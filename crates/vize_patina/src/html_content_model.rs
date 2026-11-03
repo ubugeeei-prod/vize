@@ -1,4 +1,4 @@
-//! HTML content-model facts and the exact nesting checker (Davinci P4-11a).
+//! HTML content-model facts and the exact nesting checker (Levels P4-11a).
 //!
 //! **What is checked.** A template is checked as the HTML it will produce:
 //! the statically known element skeleton ([`skeleton`]) is evaluated node by
@@ -21,8 +21,8 @@
 //! each name the spec clause they project; the loader rejects unknown,
 //! duplicate and missing rows. The table is generated from the committed
 //! snapshot excerpt (`whatwg/`) by
-//! `rust-script tools/commands/davinci/html-content-model.rs --write`, and
-//! its `--check` mode keeps it current in `tests/tooling/davinci-matrices.test.ts`.
+//! `rust-script tools/commands/levels/html-content-model.rs --write`, and
+//! its `--check` mode keeps it current in `tests/tooling/level-matrices.test.ts`.
 //!
 //! **Precision tier `exact` within the declared domain.** Every fact is
 //! three-valued; a violation is reported only when it is proven in every

@@ -7,7 +7,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 /// The Misskey `notifications.notification-config.vue` shape: the classic block
 /// exports a type whose body depends on a classic-block value, and the setup

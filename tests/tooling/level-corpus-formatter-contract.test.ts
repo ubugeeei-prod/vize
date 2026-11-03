@@ -1,4 +1,4 @@
-// Davinci corpus baseline hashing for the formatter lane: stderr ordering is
+// Levels corpus baseline hashing for the formatter lane: stderr ordering is
 // filed nondeterminism, while formatterCheck is the deterministic evidence.
 
 import assert from "node:assert/strict";
@@ -11,8 +11,8 @@ import {
   EXCLUDED_FIELDS,
   HASHED_FIELDS,
   SURFACES,
-} from "../../tools/support/compat/davinci/lib/corpus-baseline-contract.ts";
-import { reduceShards } from "../../tools/support/compat/davinci/lib/corpus-baseline-run.ts";
+} from "../../tools/support/compat/levels/lib/corpus-baseline-contract.ts";
+import { reduceShards } from "../../tools/support/compat/levels/lib/corpus-baseline-run.ts";
 
 const projectId = "synthetic-formatter";
 
@@ -40,7 +40,7 @@ function formatterPayload(overrides: Record<string, unknown> = {}) {
 }
 
 function writeFormatterShard(payload: Record<string, unknown>) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-formatter-corpus-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "level-formatter-corpus-"));
   fs.writeFileSync(
     path.join(dir, "summary.json"),
     `${JSON.stringify({

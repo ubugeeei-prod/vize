@@ -78,7 +78,7 @@ export function productObserverSourceIdentity(repoRoot: string, spec: ObserverSp
     "rust-toolchain",
     "rust-toolchain.toml",
     "crates",
-    "davinci",
+    "levels",
     "tests",
     "tools/benchmarks/crates",
   ];

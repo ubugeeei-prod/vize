@@ -15,7 +15,7 @@ keeps that patch-flag behavior while leaving the authored handler value
 unwrapped.
 
 The durable witness is
-`crates/vize_atelier_dom/tests/davinci_s2_native_on.rs`: twelve
+`crates/vize_atelier_dom/tests/level_s2_native_on.rs`: twelve
 S2-vs-shipped DOM lane comparisons covering native elements, components,
 `v-if`, `v-for`, duplicate handlers, option modifiers, system/key
 modifiers, and inline handler expressions. The comparison is

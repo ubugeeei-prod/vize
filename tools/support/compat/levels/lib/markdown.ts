@@ -1,4 +1,4 @@
-// Markdown emission helpers for the Davinci generated artifacts.
+// Markdown emission helpers for the Levels generated artifacts.
 //
 // `vp check` formats markdown tables to prettier's aligned style (cells
 // padded to the column's maximum width; right-aligned columns pad on the

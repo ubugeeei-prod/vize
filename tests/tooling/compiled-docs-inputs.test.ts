@@ -37,12 +37,12 @@ const metadata = {
 void test("real compiled Markdown and budget witnesses select both Rust planners", () => {
   const witnesses = [
     [
-      "davinci/vize_l1_to_l2/src/pass/cfg/source.rs",
+      "levels/vize_l1_to_l2/src/pass/cfg/source.rs",
       "../../../../../docs/davinci/plan/complexity-metrics.md",
     ],
-    ["davinci/vize_l0/tests/key_manifests.rs", "../../../docs/davinci/plan/key-manifests.md"],
+    ["levels/vize_l0/tests/key_manifests.rs", "../../../docs/davinci/plan/key-manifests.md"],
     [
-      "davinci/vize_l0/tests/fact_alpha/main.rs",
+      "levels/vize_l0/tests/fact_alpha/main.rs",
       "../../../../docs/davinci/plan/fact-alpha-schemas.md",
     ],
     ["crates/vize_incremental/src/summary.rs", "../../../docs/davinci/plan/budgets.toml"],
@@ -94,7 +94,7 @@ void test("the actual exempt ledger has no compiled Rust consumer and still sele
       const path = join(directory, entry.name);
       return entry.isDirectory() ? rustFiles(path) : entry.name.endsWith(".rs") ? [path] : [];
     });
-  for (const source of ["davinci", "crates"].flatMap((directory) =>
+  for (const source of ["levels", "crates"].flatMap((directory) =>
     rustFiles(join(root, directory)),
   )) {
     const text = readFileSync(source, "utf8");

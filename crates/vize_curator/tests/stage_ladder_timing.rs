@@ -9,7 +9,7 @@
 use std::cell::Cell;
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_curator::inspector::{
     LADDER_STEP_KEY, LADDER_WALK_KEY, LadderStep, ladder_pages, ladder_profile, ladder_run,
 };
@@ -73,7 +73,7 @@ fn the_timings_export_as_a_schema_valid_profile_document() {
     let clock = squares();
     let run = ladder_run("src/App.vue", TEMPLATE, &clock);
     let profile = ladder_profile("analyze-sfc", &run.steps, &run.walks);
-    assert_eq!(LADDER_WALK_KEY, "davinci.pass.walk");
+    assert_eq!(LADDER_WALK_KEY, "levels.pass.walk");
     assert_eq!(
         schema_check::validate(&load_schema(), &profile, "$"),
         Ok(())

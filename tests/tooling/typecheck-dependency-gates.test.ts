@@ -12,7 +12,7 @@ test("test:scripts requires its typecheck dependencies", () => {
   const workflow = checkWorkflowJobSources();
   assert.match(
     command,
-    /&& VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests\/tooling\/\*\.test\.ts tests\/tooling\/\*\.test\.mjs tests\/tooling\/davinci\/\*\.test\.ts tests\/tooling\/davinci\/\*\.test\.mjs tests\/tooling\/release\/\*\.test\.ts$/,
+    /&& VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests\/tooling\/\*\.test\.ts tests\/tooling\/\*\.test\.mjs tests\/tooling\/levels\/\*\.test\.ts tests\/tooling\/levels\/\*\.test\.mjs tests\/tooling\/release\/\*\.test\.ts$/,
   );
   assert.match(
     workflow,

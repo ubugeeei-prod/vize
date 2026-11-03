@@ -7,7 +7,7 @@ import { test, type TestContext } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const summaryScript = fileURLToPath(
-  new URL("../../tools/benchmarks/scripts/davinci-production-summary.ts", import.meta.url),
+  new URL("../../tools/benchmarks/scripts/level-production-summary.ts", import.meta.url),
 );
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 
@@ -69,7 +69,7 @@ function summarize(t: TestContext, mutate?: (reports: ReturnType<typeof report>[
   const reports = [report(), report(), report()];
   mutate?.(reports);
   for (const [index, value] of reports.entries()) {
-    const directory = join(root, `davinci-production-perf-${index + 1}`);
+    const directory = join(root, `level-production-perf-${index + 1}`);
     mkdirSync(directory);
     writeFileSync(join(directory, "samples.json"), JSON.stringify(value));
   }
@@ -90,7 +90,7 @@ test("accepted emitter selections never become native-only acceptance", (t) => {
   assert.equal(
     summary,
     [
-      "# Davinci production comparison",
+      "# Levels production comparison",
       "",
       "Exact head: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.",
       "",

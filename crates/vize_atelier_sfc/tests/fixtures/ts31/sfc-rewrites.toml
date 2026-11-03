@@ -1,4 +1,4 @@
-# TS-31 source-map coverage battery: rewritten SFC script statements (Davinci P3-9).
+# TS-31 source-map coverage battery: rewritten SFC script statements (Levels P3-9).
 #
 # Measured on the structured SFC module map only. Every anchor is an authored
 # statement or token that the SFC pipeline does not copy verbatim: a

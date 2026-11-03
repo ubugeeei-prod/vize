@@ -75,7 +75,7 @@ cargo build --profile ci-opt -p vize_incremental --example resource_session \
   --config 'profile.ci-opt.inherits="release"' \
   --config 'profile.ci-opt.lto="thin"' \
   --config 'profile.ci-opt.codegen-units=16'
-rust-script tools/commands/davinci/resident-resources.rs \
+rust-script tools/commands/levels/resident-resources.rs \
   --server target/ci-opt/examples/resource_session --files 10000 --edits 32 \
   --runs 3 --out /tmp/resident-resource.json
 ```

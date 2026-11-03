@@ -19,7 +19,7 @@ use serde_json::{Map, Value, json};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
-mod davinci_mounted_behavior {
+mod level_mounted_behavior {
     mod artifact;
     mod component_events;
     mod control;
@@ -40,7 +40,7 @@ mod davinci_mounted_behavior {
     mod slots;
 }
 
-use davinci_mounted_behavior::runtime::{
+use level_mounted_behavior::runtime::{
     mounted_trace, mounted_trace_with_identity, mounted_trace_with_patterned_template,
 };
 

@@ -1,4 +1,4 @@
-//! Focused Davinci parity pins for bound literal SVG static-props hoists.
+//! Focused Levels parity pins for bound literal SVG static-props hoists.
 
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 #![expect(

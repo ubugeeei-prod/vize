@@ -12,7 +12,7 @@ import {
   sha256,
   MEMORY_ENVIRONMENT,
 } from "../../../tools/benchmarks/scripts/level-memory-lib.mjs";
-import { parseTomlLite } from "../../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../../tools/support/compat/levels/toml-lite.ts";
 import {
   write,
   listing,
@@ -50,7 +50,7 @@ export function sourceJudgeFixture(t) {
   ]) {
     const root = path.join(directory, name);
     fs.mkdirSync(root);
-    for (const prefix of ["tools/benchmarks/crates/davinci_harness", "tests/davinci_test_support"])
+    for (const prefix of ["tools/benchmarks/crates/level_harness", "tests/level_test_support"])
       fs.cpSync(path.join(repo, prefix), path.join(root, prefix), { recursive: true });
     for (const suite of suites) {
       const dest = sourcePath(root, suite);
@@ -88,12 +88,12 @@ export function sourceJudgeFixture(t) {
     }
     const build = path.join(out, name, "build"),
       provenance = path.join(out, name, "provenance");
-    const manifest = path.join(root, "tools/benchmarks/crates/davinci_harness/Cargo.toml");
-    const library = path.join(root, "tools/benchmarks/crates/davinci_harness/src/lib.rs");
+    const manifest = path.join(root, "tools/benchmarks/crates/level_harness/Cargo.toml");
+    const library = path.join(root, "tools/benchmarks/crates/level_harness/src/lib.rs");
     const packageID = `path+file://${path.dirname(manifest)}#${version}`;
     const metadata = {
       workspace_root: root,
-      packages: [{ name: "davinci_harness", id: packageID, version, manifest_path: manifest }],
+      packages: [{ name: "level_harness", id: packageID, version, manifest_path: manifest }],
     };
     const artifacts = [
       {
@@ -210,7 +210,7 @@ export function sourceJudgeFixture(t) {
       "--profile",
       "ci-opt",
       "--features",
-      "davinci_harness/instruction-counts",
+      "level_harness/instruction-counts",
       "--message-format=json",
       "--target-dir",
       target,
@@ -265,7 +265,7 @@ export function sourceJudgeFixture(t) {
             "mimalloc: option 'reserve_os_memory': 131072 KiB\n" +
             "mimalloc: option 'purge_delay': -1\n" +
             Object.values(rows)
-              .map((row) => `davinci-harness: wrote ${row.file}\n`)
+              .map((row) => `level-harness: wrote ${row.file}\n`)
               .join("");
           processRecord(
             path.join(directory, "process"),

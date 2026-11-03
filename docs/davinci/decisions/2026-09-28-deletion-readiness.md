@@ -75,7 +75,7 @@ The preflight always remains blocked because the Matrix artifacts do not yet
 carry a native-only parse/lint/output route receipt or a receipt binding the
 Actions run to the uploaded artifact. The current linter fixture manifest also
 has no real-project `projectId` membership. No exact-candidate T1/T2 evidence
-from a `davinci-deletion-evidence` producer or scheduled stability history
+from a `level-deletion-evidence` producer or scheduled stability history
 consumes the shard artifact. These five absences are machine-readable blockers,
 not future assumptions. False positives, false negatives, message or location
 drift, unimplemented or intentionally excluded findings, baseline failures,

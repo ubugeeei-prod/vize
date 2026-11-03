@@ -3,7 +3,7 @@ import Impeto.Expression
 /-!
 Pins the TS-29 expression subset against `fixtures/expression-cases.json`.
 Every supported case must evaluate to exactly the recorded JSON value.
-`davinci-lean-expression.test.ts` evaluates the same supported cases with
+`level-lean-expression.test.ts` evaluates the same supported cases with
 Node's JavaScript engine. Every unsupported case must fail closed here.
 -/
 

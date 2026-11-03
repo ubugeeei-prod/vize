@@ -11,10 +11,10 @@
 > deduplicated inventory instead of panicking — the decision gate consumes
 > the complete inventory, not the first mismatch). Reproduce with the
 > P1-6 corpus command plus the P1-8 env vars:
-> `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git` and
-> `VIZE_DAVINCI_FAST_DIVERGENCE_OUT=<file>` on
-> `cargo test -p vize_croquis --release --features davinci-differential`
-> `--test davinci_differential -- --nocapture` (one command; wrapped
+> `VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git` and
+> `VIZE_LEVEL_FAST_DIVERGENCE_OUT=<file>` on
+> `cargo test -p vize_croquis --release --features level-differential`
+> `--test level_differential -- --nocapture` (one command; wrapped
 > here). The harness extension is part of the P1-8 working set and lands
 > with the follow-up the waiver decision selects; this report is committed
 > alone per the decision gate.

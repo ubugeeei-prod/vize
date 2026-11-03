@@ -1,6 +1,6 @@
-//! Davinci microbenches: DOM backend transform vs codegen, split (P0-3).
+//! Levels microbenches: DOM backend transform vs codegen, split (P0-3).
 //!
-//! Run with: cargo bench -p vize_atelier_dom --bench davinci
+//! Run with: cargo bench -p vize_atelier_dom --bench levels
 //!
 //! The public `compile_template` entry is fused, but the DOM pipeline is the
 //! core lane's `transform` (with DOM-flavored options) followed by
@@ -12,13 +12,13 @@
 //!
 //! After all cases, the expression re-parse counter
 //! (`vize_atelier_core::expr_parse_probe`) is sampled around one fused
-//! compile per fixture - the `davinci.expr.parses` baseline recorded in
+//! compile per fixture - the `levels.expr.parses` baseline recorded in
 //! `docs/davinci/plan/expr-reparse-baseline.md`.
 #![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::fixtures::{LADDER, template_block};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::fixtures::{LADDER, template_block};
+use level_harness::stage::bench_stage_with_metrics;
 use vize_atelier_core::codegen::generate_with_sections;
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_core::lane::transform;
@@ -36,7 +36,7 @@ fn dom_transform_options(dom: &DomCompilerOptions) -> TransformOptions {
     }
 }
 
-fn davinci(criterion: &mut Criterion) {
+fn levels(criterion: &mut Criterion) {
     let dom = DomCompilerOptions::default();
 
     for fixture in &LADDER {
@@ -55,7 +55,7 @@ fn davinci(criterion: &mut Criterion) {
         transform(&allocator, &mut root, dom_transform_options(&dom), None);
         let root = root;
         let codegen_id = cstr!("atelier_dom_codegen_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &codegen_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &codegen_id, fixture.relative_path, || {
             generate_with_sections(
                 &root,
                 CodegenOptions {
@@ -66,7 +66,7 @@ fn davinci(criterion: &mut Criterion) {
         });
 
         let fused_id = cstr!("atelier_dom_compile_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
             let allocator = Allocator::new();
             let (root, errors, result) =
                 compile_template_with_options(&allocator, template, dom.clone());
@@ -82,9 +82,9 @@ fn davinci(criterion: &mut Criterion) {
         let before = expr_parse_probe::expr_parse_count();
         let _compiled = compile_template_with_options(&allocator, template, dom.clone());
         let parses = expr_parse_probe::expr_parse_count() - before;
-        eprintln!("davinci.expr.parses dom {} {parses}", fixture.name);
+        eprintln!("levels.expr.parses dom {} {parses}", fixture.name);
     }
 }
 
-criterion_group!(davinci_group, davinci);
-davinci_harness::main!(davinci_group);
+criterion_group!(level_group, levels);
+level_harness::main!(level_group);

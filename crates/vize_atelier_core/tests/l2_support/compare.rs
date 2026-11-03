@@ -66,7 +66,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     // `site/src/layouts/header/Navigation.vue` carries L2 facts
     // `NotStatic, props_hoistable, nested_static`, which `hoist::predict`
     // turns into `Props` where the legacy lane decides `None`. That is a
-    // gap in the **replay**, not in what ships: `davinci_dom_corpus`
+    // gap in the **replay**, not in what ships: `level_dom_corpus`
     // finds the two lanes' compiled output for that file byte-identical,
     // and a props hoist is visible in output (`_hoisted_1 = {…}`), so the
     // effective decision agrees. What differs is that `pass::hoist`

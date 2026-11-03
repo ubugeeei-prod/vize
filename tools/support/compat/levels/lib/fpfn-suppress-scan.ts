@@ -1,5 +1,5 @@
 // eslint-disable comment collection + vize-analog mapping for the
-// suppression-telemetry FP oracle (Davinci P0-13).
+// suppression-telemetry FP oracle (Levels P0-13).
 //
 // Comment parsing mirrors vize_patina/src/context/eslint_directive.rs so
 // the oracle reasons about exactly the pragmas vize itself honors:

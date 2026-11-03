@@ -18,7 +18,7 @@ pub(super) use wrapped::emit_wrapped_handler;
 
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
-// The checked modifier inventory in `tests/tooling/davinci-v-on-storage.test.ts`
+// The checked modifier inventory in `tests/tooling/level-v-on-storage.test.ts`
 // selects two inline entries per classifier bucket. Authored directives remain
 // unbounded and spill without changing order or output; the allocation budget in
 // `docs/davinci/plan/budgets.toml` owns the measured proof.

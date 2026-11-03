@@ -38,11 +38,11 @@
     "Cargo.lock",
     "rust-toolchain.toml",
     ".cargo",
-    "davinci",
+    "levels",
     "vendor",
     "assets",
     "tools/benchmarks/crates",
-    "tests/davinci_test_support",
+    "tests/level_test_support",
     "tests/vize_test_runner",
     "npm/cli/schemas/vize.config.schema.json",
     "docs/davinci/plan/budgets.toml"
@@ -73,7 +73,7 @@
       "oid": "14160bf03309280d6bfc8e0cd64529f2f08d682f"
     },
     {
-      "path": "davinci",
+      "path": "levels",
       "mode": "040000",
       "type": "tree",
       "oid": "e756b1f0ac6df20cf68289299309b3f48dad3045"
@@ -97,7 +97,7 @@
       "oid": "93a1d79896529a7e9fba1a42459ef1682979971f"
     },
     {
-      "path": "tests/davinci_test_support",
+      "path": "tests/level_test_support",
       "mode": "040000",
       "type": "tree",
       "oid": "07e3d846afcecd2681af276e4d9ae5f20a6cd845"
@@ -878,7 +878,7 @@
         "oid": "14160bf03309280d6bfc8e0cd64529f2f08d682f"
       },
       {
-        "path": "davinci",
+        "path": "levels",
         "mode": "040000",
         "type": "tree",
         "oid": "a6921c2e8a073ffcd866c59415896d1863dd2401"
@@ -902,7 +902,7 @@
         "oid": "93a1d79896529a7e9fba1a42459ef1682979971f"
       },
       {
-        "path": "tests/davinci_test_support",
+        "path": "tests/level_test_support",
         "mode": "040000",
         "type": "tree",
         "oid": "07e3d846afcecd2681af276e4d9ae5f20a6cd845"

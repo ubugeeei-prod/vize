@@ -33,7 +33,7 @@ use vize_l2::op::Region;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::ScopeFacts;
 
-#[cfg(feature = "davinci-benchmark-profile")]
+#[cfg(feature = "level-benchmark-profile")]
 mod benchmark;
 mod binding;
 mod bindop;

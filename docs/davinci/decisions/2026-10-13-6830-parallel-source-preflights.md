@@ -10,7 +10,7 @@ source inventories". There, five read-only checks ran one after another. The
 generated-ledger step also spawned its five independent generators serially,
 and it did so twice (`--write`, then `--check`).
 
-`tools/support/compat/davinci/source-inventories.ts` now runs four
+`tools/support/compat/levels/source-inventories.ts` now runs four
 independent lanes together:
 
 - the croquis consumer check;

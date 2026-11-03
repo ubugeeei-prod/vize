@@ -20,9 +20,9 @@ not a controlled performance comparison or proof of a two-minute whole gate.
 Only these Node-only census implementation files enter the tooling source lane
 without selecting workspace Rust, JS package builds or playground tests:
 
-- `tools/support/compat/davinci/croquis-consumers.mjs`
-- `tools/support/compat/davinci/lib/croquis-render.mjs`
-- `tools/support/compat/davinci/lib/croquis-shards.mjs`
+- `tools/support/compat/levels/croquis-consumers.mjs`
+- `tools/support/compat/levels/lib/croquis-render.mjs`
+- `tools/support/compat/levels/lib/croquis-shards.mjs`
 
 The same classification applies to the exact generated index
 `docs/davinci/plan/croquis-consumption.md` and its reserved direct

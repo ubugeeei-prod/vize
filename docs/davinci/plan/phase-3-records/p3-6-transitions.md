@@ -28,7 +28,7 @@ the admitted slice; the slot boundary flag does not leak into nested blocks.
 
 ## Evidence
 
-The dedicated `davinci_transition_parity` binary compares native, retained and
+The dedicated `level_transition_parity` binary compares native, retained and
 official compiler output under the same rc.9 runtime against recorded exact
 frames. The JS runner controls hook completion through the real `done`
 callbacks and awaits Vue's scheduler. It uses no timing sleeps.

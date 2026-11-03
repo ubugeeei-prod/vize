@@ -17,16 +17,16 @@ use std::{
 };
 
 use vize_tool_support::common;
-mod davinci_fpfn;
+mod level_fpfn;
 
-use davinci_fpfn::{
+use level_fpfn::{
     RuleMapReport, SourceInfo, SuppressionReport, SuppressionScan, SuppressionScope,
     UnmappedSuppression, defuse_suppressions, flatten_lint_json, intersect_suppressions,
     list_vue_files, load_rule_map, resolve_corpus_sources, resolve_fixture_sources,
     resolve_vize_cli, run_vize_lint_json, scan_suppressions,
 };
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/suppression-telemetry.rs (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]\n\nCollects eslint-disable pragmas, maps rule names to vize analogs, and\nreports vize diagnostics on suppressed lines as FP candidates.";
+const USAGE: &str = "Usage: rust-script tools/commands/levels/suppression-telemetry.rs (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]\n\nCollects eslint-disable pragmas, maps rule names to vize analogs, and\nreports vize diagnostics on suppressed lines as FP candidates.";
 
 #[derive(Debug)]
 struct Args {
@@ -100,7 +100,7 @@ fn run() -> Result<(), (u8, String)> {
     let lint_json =
         run_vize_lint_json(&cli, &out_dir.join("defused"), &files).map_err(|error| (2, error))?;
     let lint_rows = flatten_lint_json(&lint_json).map_err(|error| (2, error))?;
-    let mut diagnostics_by_path = BTreeMap::<String, Vec<davinci_fpfn::DiagnosticRow>>::new();
+    let mut diagnostics_by_path = BTreeMap::<String, Vec<level_fpfn::DiagnosticRow>>::new();
     for row in &lint_rows {
         diagnostics_by_path
             .entry(row.path.clone())
@@ -126,7 +126,7 @@ fn run() -> Result<(), (u8, String)> {
         .len();
     let report = SuppressionReport {
         schema_version: 1,
-        tool: "tools/commands/davinci/suppression-telemetry.rs".to_string(),
+        tool: "tools/commands/levels/suppression-telemetry.rs".to_string(),
         source: SourceInfo {
             kind: source.kind,
             label: source.label,
@@ -225,7 +225,7 @@ fn value(argv: &[String], index: usize, name: &str) -> Result<String, (u8, Strin
         .ok_or_else(|| (2, format!("{name} requires a value")))
 }
 
-fn resolve_sources(repo_root: &Path, args: &Args) -> Result<davinci_fpfn::ResolvedSources, String> {
+fn resolve_sources(repo_root: &Path, args: &Args) -> Result<level_fpfn::ResolvedSources, String> {
     let picked = usize::from(args.fixtures.is_some()) + usize::from(args.corpus_shard);
     if picked != 1 {
         return Err(format!(

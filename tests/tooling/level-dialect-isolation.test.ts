@@ -1,6 +1,6 @@
 // #6841: dialect code lives in each level's `dialect/`, `markup/`, `lang/` or `framework/`
 // modules; core modules never reference dialect policy. L1 has its own stricter gate
-// (davinci-l1-dialect-isolation.test.ts). L0 is exempt: it owns the configuration that
+// (level-l1-dialect-isolation.test.ts). L0 is exempt: it owns the configuration that
 // selects a dialect. Test code is exempt. `owed` only shrinks.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskRustSource } from "./davinci-storage-rust-syntax.ts";
+import { maskRustSource } from "./level-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crates = ["vize_l1_to_l2", "vize_l2", "vize_l2_to_l3", "vize_l3", "vize_l4"];
@@ -85,7 +85,7 @@ function offenders(root: string): string[] {
 }
 
 test("no core module outside the owed list references dialect policy", () => {
-  const found = offenders(path.join(repoRoot, "davinci"));
+  const found = offenders(path.join(repoRoot, "levels"));
   assert.deepEqual(
     found.filter((file) => !owed.includes(file)),
     [],
@@ -94,7 +94,7 @@ test("no core module outside the owed list references dialect policy", () => {
 });
 
 test("the owed list only shrinks", () => {
-  const found = new Set(offenders(path.join(repoRoot, "davinci")));
+  const found = new Set(offenders(path.join(repoRoot, "levels")));
   assert.deepEqual(
     owed.filter((file) => !found.has(file)),
     [],

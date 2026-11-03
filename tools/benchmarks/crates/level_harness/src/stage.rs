@@ -8,7 +8,7 @@
 //! [`StageWindow::measure`]:
 //!
 //! ```ignore
-//! davinci_harness::stage::bench_stage_with_metrics(c, "core_transform_small", path, |window| {
+//! level_harness::stage::bench_stage_with_metrics(c, "core_transform_small", path, |window| {
 //!     let allocator = Allocator::new();                  // setup: not measured
 //!     let (mut root, _) = parse(&allocator, template);   // setup: not measured
 //!     window.measure(|| transform(&allocator, &mut root, options, None))
@@ -196,8 +196,8 @@ pub fn bench_stage_with_metrics<T>(
         rss_peak_bytes: rss::delta_since_baseline(),
         harness_version: report::HARNESS_VERSION,
     };
-    let path = report::write(&report).expect("davinci bench report must be written");
-    eprintln!("davinci-harness: wrote {}", path.display());
+    let path = report::write(&report).expect("levels bench report must be written");
+    eprintln!("level-harness: wrote {}", path.display());
 }
 
 #[cfg(test)]

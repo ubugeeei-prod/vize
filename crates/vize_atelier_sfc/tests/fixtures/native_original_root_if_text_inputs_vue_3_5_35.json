@@ -111,7 +111,7 @@
       },
       "successorOf": {
         "sourceRevision": "bc67fe89ff0193713dccaebddfeec1e1ce694068",
-        "path": "davinci/vize_l2/src/file/region/native/conditional/tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/conditional/tests/refusal.rs",
         "test": "unsupported_condition_spelling_and_body_shapes_remain_whole_lower_refusals",
         "sourceSha256": "f100f09c940ce00be77f1bb1d342a779c02c9acb69951bfca38893d53cc0a698",
         "outcome": "UnsupportedChild and no completed File/view in the original static-only RootIf slice"

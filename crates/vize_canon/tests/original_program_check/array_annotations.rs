@@ -69,7 +69,7 @@ fn expected(case: &serde_json::Value, uri: &str) -> serde_json::Value {
 #[test]
 fn configured_original_array_ts_tsx_preserve_complete_reports_and_related_authored_ranges() {
     let pack: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../davinci/vize_l4/tests/fixtures/array-program-checker.json"
+        "../../../../levels/vize_l4/tests/fixtures/array-program-checker.json"
     ))
     .unwrap();
     let root = tempfile::TempDir::new().unwrap();

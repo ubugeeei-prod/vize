@@ -1,4 +1,4 @@
-//! Stage artifact keys (Davinci P5-1a): the content identity every cache of
+//! Stage artifact keys (Levels P5-1a): the content identity every cache of
 //! a stage artifact keys on.
 //!
 //! An [`ArtifactKey`] names one stage artifact of one SFC block — its L0

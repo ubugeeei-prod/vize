@@ -1,5 +1,5 @@
 ---
-source: davinci/vize_l2_to_l3/tests/extraction_snapshots.rs
+source: levels/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: output
 ---
 # kitchen_sink

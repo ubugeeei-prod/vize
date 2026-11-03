@@ -4,9 +4,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { withoutPathHostReferences } from "../support/davinci-path-host-imports.ts";
+import { withoutPathHostReferences } from "../support/level-path-host-imports.ts";
 
-import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const recentIssueRows = [

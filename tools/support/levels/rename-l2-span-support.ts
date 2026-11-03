@@ -5,9 +5,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const oldPath = "davinci/vize_l1_to_l2/tests/support/folio_spans.rs";
-const newPath = "davinci/vize_l1_to_l2/tests/support/dump_spans.rs";
-const supportPath = "davinci/vize_l1_to_l2/tests/support/mod.rs";
+const oldPath = "levels/vize_l1_to_l2/tests/support/folio_spans.rs";
+const newPath = "levels/vize_l1_to_l2/tests/support/dump_spans.rs";
+const supportPath = "levels/vize_l1_to_l2/tests/support/mod.rs";
 const decisionPath = "docs/davinci/decisions/2026-09-27-level-restructure.md";
 const companionPath = "docs/davinci/decisions/2026-10-04-l2-span-support-name.md";
 const sourceHash = "59aac2c9a3ee9d615551f42beb0dda95557302da1b5be735a2d33f3ecf36e364";

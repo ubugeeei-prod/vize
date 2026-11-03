@@ -3,7 +3,7 @@
   "head_sha": "44f1aff002c56b932c9be27f225f7b844ab16290",
   "manifest_sha256": "2074f89546701138e83585db2274be9ecbd535f4cc01fef30c1ec60201699011",
   "repetition": 2,
-  "raw_artifact": "davinci-production-perf-2",
+  "raw_artifact": "level-production-perf-2",
   "artifact": {
     "id": 12888012086,
     "size_in_bytes": 254460,

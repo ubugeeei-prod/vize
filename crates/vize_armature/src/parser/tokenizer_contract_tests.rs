@@ -199,9 +199,9 @@ fn complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract() {
     );
     let mut hash = StableHasher128::new();
     for document in [false, true] {
-        for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+        for fixture in level_test_support::surface_fixture::WELL_FORMED
             .iter()
-            .chain(davinci_test_support::surface_fixture::MALFORMED)
+            .chain(level_test_support::surface_fixture::MALFORMED)
         {
             for (cut_index, source) in core::iter::once(fixture.source)
                 .chain(fixture.source.char_indices().flat_map(|(index, _)| {

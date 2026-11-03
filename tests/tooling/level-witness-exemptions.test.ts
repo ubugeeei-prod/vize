@@ -17,7 +17,7 @@ import {
   readNewContractRules,
   resolveBaseRef,
   type ExemptionRow,
-} from "./support/davinci-witness-exemptions.ts";
+} from "./support/level-witness-exemptions.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const committed = fs.readFileSync(path.join(repoRoot, inventoryRelative), "utf8");
@@ -181,7 +181,7 @@ test("a renamed crate keeps its historical exemption identity and ratchet", () =
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-witness-renamed-"));
   write(
     root,
-    "davinci/vize_l1_to_l2/src/lib.rs",
+    "levels/vize_l1_to_l2/src/lib.rs",
     [
       'static OLD: Exemption = Exemption::new("vize_s1_to_s2", "lowering");',
       'static FORGED: Exemption = Exemption::new("vize_l1_to_l2", "new-code");',

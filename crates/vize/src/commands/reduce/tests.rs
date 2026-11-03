@@ -8,7 +8,7 @@ use std::ops::Range;
 use super::driver::{ReduceError, reduce};
 use super::vocabulary::{candidates, delete};
 
-const SEEDED: &str = include_str!("../../../tests/fixtures/davinci_reduce/seeded-crash.vue");
+const SEEDED: &str = include_str!("../../../tests/fixtures/level_reduce/seeded-crash.vue");
 
 #[test]
 fn candidates_are_the_exact_l1_subtrees_in_pre_order() {

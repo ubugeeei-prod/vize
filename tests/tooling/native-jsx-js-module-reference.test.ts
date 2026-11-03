@@ -6,7 +6,7 @@ import {
   executeRegistered,
   readPack,
   reference,
-} from "../../tools/support/compat/davinci/jsx-js-module-reference.ts";
+} from "../../tools/support/compat/levels/jsx-js-module-reference.ts";
 
 const pack = readPack();
 

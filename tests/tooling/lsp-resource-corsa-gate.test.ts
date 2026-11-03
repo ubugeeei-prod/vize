@@ -5,13 +5,13 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { resourceCorsaGateScript } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
-import { resourceCorsaProxySource } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts";
+import { resourceCorsaGateScript } from "../../tools/support/compat/levels/lib/lsp-resource-corsa-gate.ts";
+import { resourceCorsaProxySource } from "../../tools/support/compat/levels/lib/lsp-resource-corsa-proxy.ts";
 
 const require = createRequire(import.meta.url);
 const {
   nextMirroredDocument,
-} = require("../../tools/support/compat/davinci/lib/lsp-resource-corsa-mirror.cjs");
+} = require("../../tools/support/compat/levels/lib/lsp-resource-corsa-mirror.cjs");
 
 test("generated repeatable Corsa gate is valid CommonJS", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resource-gate-test-"));
@@ -95,8 +95,8 @@ test("source profile workflow follows every direct cancellation dependency", () 
   );
   const paths = [...workflow.matchAll(/^ {6}- "([^"]+)"$/gm)].map((match) => match[1]);
   for (const dependency of [
-    "tools/support/compat/davinci/lib/lsp-resource-sampler.ts",
-    "tools/support/compat/davinci/lib/lsp-resource-corsa-mirror.cjs",
+    "tools/support/compat/levels/lib/lsp-resource-sampler.ts",
+    "tools/support/compat/levels/lib/lsp-resource-corsa-mirror.cjs",
     "tools/support/json-value.ts",
     "tests/tooling/lsp-resource-corsa-gate.test.ts",
     "tests/tooling/support/lsp/assertions.ts",

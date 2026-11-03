@@ -13,7 +13,7 @@ const manifest = JSON.parse(
 const entries = new Map(manifest.files.map(([file, before, after]) => [file, { before, after }]));
 const production = manifest.files
   .map(([file]) => file)
-  .filter((file) => file !== "davinci/vize_l0/src/path.rs");
+  .filter((file) => file !== "levels/vize_l0/src/path.rs");
 const digest = (side: "before" | "after", file: string) => entries.get(file)![side];
 
 test("only the complete reviewed sixty-body path move qualifies", () => {
@@ -22,7 +22,7 @@ test("only the complete reviewed sixty-body path move qualifies", () => {
   assert.equal(result.completeBodyPairs, 60);
   assert.deepEqual(result.files, [...entries.keys()]);
   assert.deepEqual(
-    qualifyPathHostMove([...production, "davinci/vize_l0/src/path.rs"], new Set(), digest),
+    qualifyPathHostMove([...production, "levels/vize_l0/src/path.rs"], new Set(), digest),
     result,
   );
 });

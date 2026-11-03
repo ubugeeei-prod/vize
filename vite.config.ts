@@ -41,9 +41,9 @@ const vscodeExtensionLintIgnorePatterns = [
  * byte-stable.
  */
 const formatterSensitiveContentIgnorePatterns = [
-  "benchmarks/davinci_harness/fixtures/**",
+  "benchmarks/level_harness/fixtures/**",
   "crates/**/tests/fixtures/**",
-  "davinci/**/tests/fixtures/**",
+  "levels/**/tests/fixtures/**",
   // Registered CLI diagnostics depend on authored source positions and golden bytes.
   "tests/fixtures/typechecker/options-api-computed-setters/**",
   "tests/fixtures/typechecker/options-api-writable-computed/**",
@@ -54,7 +54,7 @@ const formatterSensitiveContentIgnorePatterns = [
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
-  "tools/benchmarks/crates/davinci_harness/fixtures/**",
+  "tools/benchmarks/crates/level_harness/fixtures/**",
   // Original public Musea inputs and observations retain their authored bytes.
   "tests/tooling/fixtures/musea/static-variant-name/**",
   "tests/tooling/fixtures/musea/variant-binding-collision/**",

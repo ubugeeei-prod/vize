@@ -39,7 +39,7 @@ test("the named V2 class refusal retains its exact original source and Cargo tar
   assert.equal(classBaseline7502.tree, "6e8e3874a828782f445510cbb3eea1f3d588064e");
   assert.equal(
     classBaseline7502.testPath,
-    "davinci/vize_l3/src/decision/attribute_value/tests/refusal.rs",
+    "levels/vize_l3/src/decision/attribute_value/tests/refusal.rs",
   );
   assert.equal(
     classBaseline7502.testSourceSha256,

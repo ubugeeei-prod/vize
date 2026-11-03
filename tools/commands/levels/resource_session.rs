@@ -1,5 +1,5 @@
-//! Measurement mechanics for `tools/commands/davinci/resource-budgets.rs`
-//! (Davinci P5-11a, TS-44): a timestamped stdio LSP session and a Linux
+//! Measurement mechanics for `tools/commands/levels/resource-budgets.rs`
+//! (Levels P5-11a, TS-44): a timestamped stdio LSP session and a Linux
 //! `/proc` sampler for process-tree RSS and CPU time.
 #![allow(dead_code)]
 
@@ -49,7 +49,13 @@ impl Session {
             loop {
                 while let Some((message, used)) = take_frame(&buffer) {
                     buffer.drain(..used);
-                    if sender.send(Received { at: Instant::now(), message }).is_err() {
+                    if sender
+                        .send(Received {
+                            at: Instant::now(),
+                            message,
+                        })
+                        .is_err()
+                    {
                         return;
                     }
                 }
@@ -59,7 +65,13 @@ impl Session {
                 }
             }
         });
-        Ok(Self { child, spawned_at, stdin, messages, next_id: 0 })
+        Ok(Self {
+            child,
+            spawned_at,
+            stdin,
+            messages,
+            next_id: 0,
+        })
     }
 
     pub fn pid(&self) -> u32 {
@@ -79,10 +91,16 @@ impl Session {
     pub fn request(&mut self, method: &str, params: Value) -> Result<(Instant, Received), String> {
         self.next_id += 1;
         let id = self.next_id;
-        let sent = self.send(json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params }))?;
-        let reply = self.wait(&format!("{method} response"), Duration::from_secs(60), |message| {
-            message.get("id").and_then(Value::as_i64) == Some(id) && message.get("method").is_none()
-        })?;
+        let sent =
+            self.send(json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params }))?;
+        let reply = self.wait(
+            &format!("{method} response"),
+            Duration::from_secs(60),
+            |message| {
+                message.get("id").and_then(Value::as_i64) == Some(id)
+                    && message.get("method").is_none()
+            },
+        )?;
         Ok((sent, reply))
     }
 
@@ -102,17 +120,26 @@ impl Session {
             let remaining = deadline.saturating_duration_since(Instant::now());
             let received = match self.messages.recv_timeout(remaining) {
                 Ok(received) => received,
-                Err(RecvTimeoutError::Timeout) => return Err(format!("timed out waiting for {label}")),
+                Err(RecvTimeoutError::Timeout) => {
+                    return Err(format!("timed out waiting for {label}"));
+                }
                 Err(RecvTimeoutError::Disconnected) => {
-                    return Err(format!("the server closed stdout while waiting for {label}"));
+                    return Err(format!(
+                        "the server closed stdout while waiting for {label}"
+                    ));
                 }
             };
             if predicate(&received.message) {
                 return Ok(received);
             }
-            if let (Some(id), Some(method)) = (received.message.get("id"), received.message.get("method")) {
+            if let (Some(id), Some(method)) =
+                (received.message.get("id"), received.message.get("method"))
+            {
                 let result = if method == "workspace/configuration" {
-                    let items = received.message.pointer("/params/items").and_then(Value::as_array);
+                    let items = received
+                        .message
+                        .pointer("/params/items")
+                        .and_then(Value::as_array);
                     Value::Array(vec![Value::Null; items.map_or(0, Vec::len)])
                 } else {
                     Value::Null
@@ -141,7 +168,8 @@ fn take_frame(buffer: &[u8]) -> Option<(Value, usize)> {
     let header = std::str::from_utf8(&buffer[..header_end]).ok()?;
     let length = header.lines().find_map(|line| {
         let (name, value) = line.split_once(':')?;
-        name.eq_ignore_ascii_case("content-length").then(|| value.trim().parse::<usize>().ok())?
+        name.eq_ignore_ascii_case("content-length")
+            .then(|| value.trim().parse::<usize>().ok())?
     })?;
     let end = header_end + 4 + length;
     if buffer.len() < end {
@@ -175,7 +203,10 @@ impl ProcSampler {
             let output = Command::new("getconf").arg(name).output().ok()?;
             String::from_utf8_lossy(&output.stdout).trim().parse().ok()
         };
-        Some(Self { ticks_per_second: getconf("CLK_TCK")?, page_bytes: getconf("PAGESIZE")? as u64 })
+        Some(Self {
+            ticks_per_second: getconf("CLK_TCK")?,
+            page_bytes: getconf("PAGESIZE")? as u64,
+        })
     }
 
     /// Sums RSS (field 24, pages) and utime+stime+cutime+cstime (fields 14–17,
@@ -184,15 +215,30 @@ impl ProcSampler {
         let mut parent_of = HashMap::new();
         let mut stats = HashMap::new();
         for entry in fs::read_dir("/proc").ok()?.flatten() {
-            let Ok(pid) = entry.file_name().to_string_lossy().parse::<u32>() else { continue };
-            let Ok(stat) = fs::read_to_string(entry.path().join("stat")) else { continue };
-            let Some(fields) = stat.rsplit_once(") ").map(|(_, rest)| rest.split(' ').collect::<Vec<_>>()) else {
+            let Ok(pid) = entry.file_name().to_string_lossy().parse::<u32>() else {
+                continue;
+            };
+            let Ok(stat) = fs::read_to_string(entry.path().join("stat")) else {
+                continue;
+            };
+            let Some(fields) = stat
+                .rsplit_once(") ")
+                .map(|(_, rest)| rest.split(' ').collect::<Vec<_>>())
+            else {
                 continue;
             };
             // `fields[0]` is field 3 (state), so field N is `fields[N - 3]`.
-            let field = |n: usize| fields.get(n - 3).and_then(|value| value.parse::<u64>().ok()).unwrap_or(0);
+            let field = |n: usize| {
+                fields
+                    .get(n - 3)
+                    .and_then(|value| value.parse::<u64>().ok())
+                    .unwrap_or(0)
+            };
             parent_of.insert(pid, field(4) as u32);
-            stats.insert(pid, (field(24), field(14) + field(15) + field(16) + field(17)));
+            stats.insert(
+                pid,
+                (field(24), field(14) + field(15) + field(16) + field(17)),
+            );
         }
         stats.get(&root)?;
         let mut sample = TreeSample::default();

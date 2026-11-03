@@ -1,4 +1,4 @@
-//! JS plugin SDK spike — the napi host (Davinci P4-16, charter #29).
+//! JS plugin SDK spike — the napi host (Levels P4-16, charter #29).
 //!
 //! The decided shape (record: `docs/davinci/plan/phase-4-records/p4-16.md`):
 //!

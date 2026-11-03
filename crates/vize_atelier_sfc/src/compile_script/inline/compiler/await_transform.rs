@@ -18,7 +18,7 @@ mod emit;
 /// 2. `await expr` (statement) → `;(\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  await __temp,\n  __restore()\n)`
 ///
 /// Given each input line's provenance (parallel to `lines`), each output
-/// line's provenance is returned too (Davinci P3-9 source maps); a rewritten
+/// line's provenance is returned too (Levels P3-9 source maps); a rewritten
 /// await statement is anchored at the statement it replaced.
 pub(super) fn transform_await_expressions(
     lines: &[String],

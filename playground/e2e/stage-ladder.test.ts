@@ -1,4 +1,4 @@
-// The Davinci tab's data path against the real wasm compiler: the preset's
+// The Levels tab's data path against the real wasm compiler: the preset's
 // stage feed negotiates, climbs every rung, and every span the stage pages
 // print lands on the authored source the editor highlights.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
@@ -11,7 +11,7 @@ import {
   negotiateProfileExport,
   type ProfileExport,
 } from "../src/wasm/types/profile";
-import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
+import { LEVEL_PRESET } from "../src/shared/presets/levels";
 import { buildLadder, type StageLadder } from "../src/features/stages/ladder";
 import { dumpLines } from "../src/features/stages/dumpLines";
 import { parseProvenance, recordsForNode } from "../src/features/stages/provenance";
@@ -27,7 +27,7 @@ let exported: ProfileExport;
 
 beforeAll(async () => {
   wasm = await loadWasm();
-  const analysis = wasm.analyzeSfc(DAVINCI_PRESET, { filename: FILENAME });
+  const analysis = wasm.analyzeSfc(LEVEL_PRESET, { filename: FILENAME });
   const negotiated = negotiateStageFeed(analysis.stageFeed);
   if (!negotiated.ok) throw new Error(negotiated.error);
   const profile = negotiateProfileExport(analysis.stageProfile);
@@ -39,15 +39,15 @@ beforeAll(async () => {
     ladderStepTimings(profile.profile),
     ladderWalkTimings(profile.profile),
   );
-  const sfc = wasm.compileSfc(DAVINCI_PRESET, { filename: FILENAME });
-  templateStart = templateStartInSfc(DAVINCI_PRESET, sfc.descriptor.template!.loc.start);
+  const sfc = wasm.compileSfc(LEVEL_PRESET, { filename: FILENAME });
+  templateStart = templateStartInSfc(LEVEL_PRESET, sfc.descriptor.template!.loc.start);
 });
 
 function authored(pageKey: string, needle: string): string {
   const page = ladder.rungs.flatMap((rung) => rung.pages).find((p) => p.key === pageKey)!;
   const line = dumpLines(page.kind, page.text).find((l) => l.text.includes(needle))!;
   const range = templateBytesToSfcRange(ladder.template, templateStart, line.span!);
-  return DAVINCI_PRESET.slice(range.start, range.end);
+  return LEVEL_PRESET.slice(range.start, range.end);
 }
 
 describe("Stage ladder from the real compiler", () => {
@@ -88,7 +88,7 @@ describe("Stage ladder from the real compiler", () => {
 
   it("maps stage lines back to the exact authored source", () => {
     expect(ladder.template).toBe(
-      DAVINCI_PRESET.slice(templateStart, templateStart + ladder.template.length),
+      LEVEL_PRESET.slice(templateStart, templateStart + ladder.template.length),
     );
     expect(authored("l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
     expect(authored("l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");

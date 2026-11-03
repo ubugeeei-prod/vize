@@ -1,6 +1,6 @@
 #![no_main]
 
-// L2 -> L3 lowering fuzz target (Davinci P3-3, TS-20).
+// L2 -> L3 lowering fuzz target (Levels P3-3, TS-20).
 //
 // This extends the L1 -> L2 totality target through the Impeto bridge. Arbitrary
 // UTF-8 must produce either a verified L3 program and partition facts or typed

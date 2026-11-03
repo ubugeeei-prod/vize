@@ -28,13 +28,13 @@ fn checked_structural_slots_match_retained_code() {
             "{source}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -81,7 +81,7 @@ fn ordinary_default_slot_controls_keep_their_dom_contract() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

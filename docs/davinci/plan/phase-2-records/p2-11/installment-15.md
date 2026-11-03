@@ -10,7 +10,7 @@ descendants stay inline VNodes, and Vue integration points such as
 `foreignObject` re-enter HTML for their children.
 
 The durable witness is
-`crates/vize_atelier_dom/tests/davinci_s2_dom_namespace.rs`: five
+`crates/vize_atelier_dom/tests/level_s2_dom_namespace.rs`: five
 S2-vs-shipped DOM lane comparisons covering simple SVG, SVG
 `foreignObject`, nested SVG dynamic props, same-namespace dynamic
 descendants, and MathML. The comparison is byte-for-byte including helper

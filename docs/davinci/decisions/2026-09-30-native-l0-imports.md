@@ -5,7 +5,7 @@ Decision for [#6833](https://github.com/ubugeeei-prod/vize/issues/6833), followi
 
 Level and conversion crates, extension contracts/hosting, and MoonBit use the
 canonical L0 key, Dump, pass/fact, diagnostic/witness and identity APIs directly.
-Their Cargo dependency declarations no longer name `vize_davinci`, including
+Their Cargo dependency declarations no longer name `vize_level`, including
 dev dependencies. The contract acceptance module names its diagnostic alias
 `diag`. This changes Rust paths and dependency ownership; wire schemas,
 historical fixtures, generated JS and instruction ceilings remain unchanged.

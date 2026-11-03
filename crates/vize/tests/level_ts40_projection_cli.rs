@@ -25,7 +25,7 @@ const NO_CONNECT_TEST_TIMEOUT: Duration = Duration::from_millis(25);
 fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     let root = workspace_root();
     let matrix: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(root.join("tests/_fixtures/davinci-ts40-projection/matrix.json"))
+        &std::fs::read_to_string(root.join("tests/_fixtures/level-ts40-projection/matrix.json"))
             .unwrap(),
     )
     .unwrap();
@@ -34,7 +34,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
 
     let project = root
         .join("target/vize-tests/tests")
-        .join(cstr!("davinci-ts40-cli-{}", std::process::id()).as_str());
+        .join(cstr!("level-ts40-cli-{}", std::process::id()).as_str());
     let _ = std::fs::remove_dir_all(&project);
     std::fs::create_dir_all(project.join("src")).unwrap();
     let project = project.canonicalize().unwrap();
@@ -125,7 +125,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     assert_eq!(json["fileCount"], fixtures.len());
     assert_eq!(json["warningCount"], 1);
     insta::assert_snapshot!(
-        "davinci_ts40_show_virtual_ts_matrix",
+        "level_ts40_show_virtual_ts_matrix",
         serde_json::to_string_pretty(&json).unwrap()
     );
 
@@ -162,7 +162,7 @@ fn socket_oracle_times_out_when_the_cli_exits_before_connecting() {
             "check",
             "--socket",
             socket.to_str().unwrap(),
-            "--davinci-no-connect-probe",
+            "--level-no-connect-probe",
         ])
         .output()
         .unwrap();
@@ -173,7 +173,7 @@ fn socket_oracle_times_out_when_the_cli_exits_before_connecting() {
     assert_eq!(output.stdout, b"");
     assert_eq!(
         std::str::from_utf8(&output.stderr).unwrap(),
-        "error: unexpected argument '--davinci-no-connect-probe' found\n\n  tip: to pass '--davinci-no-connect-probe' as a value, use '-- --davinci-no-connect-probe'\n\nUsage: vize check --socket <SOCKET> [PATTERNS]...\n\nFor more information, try '--help'.\n"
+        "error: unexpected argument '--level-no-connect-probe' found\n\n  tip: to pass '--level-no-connect-probe' as a value, use '-- --level-no-connect-probe'\n\nUsage: vize check --socket <SOCKET> [PATTERNS]...\n\nFor more information, try '--help'.\n"
     );
     assert_eq!(accept_error.kind(), ErrorKind::TimedOut);
     assert_eq!(

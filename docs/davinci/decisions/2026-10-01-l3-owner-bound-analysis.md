@@ -14,7 +14,7 @@ for any owner. The artifact borrow prevents unsealing it while decisions live.
 L4 accepts this sole bound result and derives its owner and selected policy.
 
 The sole native producer moves byte-exactly to L3 in a move-only commit;
-`tools/commands/davinci/move-native-decision-producer.ts` replays the rename
+`tools/commands/levels/move-native-decision-producer.ts` replays the rename
 on a fresh parent. A following commit wraps the actual producer result.
 L3 takes the normal downward L2 dependency needed for this ownership boundary;
 the conversion crate only re-exports the native producer and still owns the

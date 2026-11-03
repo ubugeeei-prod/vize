@@ -21,12 +21,12 @@ The executable evidence is:
   byte-fidelity cases.
 - `crates/vize_s1_to_s2/tests/emit_comments.rs` covers the S1 parse option and
   absence of comment vnode output.
-- `crates/vize_atelier_dom/tests/davinci_s2_production_selector.rs` covers the
+- `crates/vize_atelier_dom/tests/level_s2_production_selector.rs` covers the
   S2 production selector case.
-- `crates/vize_atelier_dom/tests/davinci_s2_source_map.rs` covers source-map
+- `crates/vize_atelier_dom/tests/level_s2_source_map.rs` covers source-map
   requests on the same surface.
-- `tests/tooling/davinci-dom-production-boundary.test.ts` and
-  `tests/tooling/davinci-storage-policy.test.ts` keep the production-boundary
+- `tests/tooling/level-dom-production-boundary.test.ts` and
+  `tests/tooling/level-storage-policy.test.ts` keep the production-boundary
   and storage-policy ledgers aligned with the shipped surface.
 
 This installment does not tick P2-11. The full production-lane switch remains

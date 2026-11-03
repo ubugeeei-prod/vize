@@ -5,14 +5,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L0 - the Davinci foundation level: ids, side tables, keys, dumps, diagnostics, passes and facts"
+description = "L0 - the Levels foundation level: ids, side tables, keys, dumps, diagnostics, passes and facts"
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [dependencies]
 vize_l0_derive.workspace = true
 # Arena allocator: one pool per compile, backing both the template containers
-# and the retained-AST parses (Davinci P1-10 collapsed the P1-1 two-pool handle).
+# and the retained-AST parses (Levels P1-10 collapsed the P1-1 two-pool handle).
 oxc_allocator = { workspace = true }
 # Identifier classification for the expression guard's `\uXXXX` escape decoding.
 oxc_syntax = { workspace = true }
@@ -41,13 +41,13 @@ vize_carton = { path = "../../crates/vize_carton" }
 criterion.workspace = true
 # Foundation laws use higher-level and legacy producers only as dev oracles.
 # Version-less path declarations are stripped when this foundation is packaged.
-davinci_harness.workspace = true
+level_harness.workspace = true
 vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc" }
 vize_croquis = { path = "../../crates/vize_croquis" }
 vize_l1 = { path = "../vize_l1" }
 vize_l1_to_l2 = { path = "../vize_l1_to_l2" }
 vize_l2 = { path = "../vize_l2" }
-davinci_test_support.workspace = true
+level_test_support.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 

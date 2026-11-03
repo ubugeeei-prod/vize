@@ -2,7 +2,7 @@
 //! declared consumers, the debug detector's exact refusal (and counter) on
 //! an undeclared read, and a demand graph acyclic by strata.
 //!
-//! `cargo test -p vize_davinci --test fact_demand`
+//! `cargo test -p vize_level --test fact_demand`
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 

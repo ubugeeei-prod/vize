@@ -9,7 +9,7 @@ import {
   resolvePreservedJsonLayoutSource,
   validatePreservedJsonLayoutWitness,
 } from "./formatter-json-layout-source.ts";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
+import { stripRust } from "../../tools/support/compat/levels/lib/rust-source.ts";
 import {
   resolveSoleChildVueSource,
   validateSoleChildVueWitness,

@@ -5,7 +5,7 @@
 
 use serde_json::Value;
 
-use davinci_test_support::ssr_fix_history as fixtures;
+use level_test_support::ssr_fix_history as fixtures;
 
 const EXPECTED: &str = include_str!("fixtures/fix-history/capture-22dec/first.stdout.json");
 

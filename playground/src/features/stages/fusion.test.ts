@@ -88,27 +88,27 @@ describe("PassTimeline walks", () => {
 
   it("brackets the passes of each walk and names how it ran", async () => {
     const wrapper = mount(PassTimeline, { props: { steps, walks, current: null } });
-    const groups = wrapper.findAll(".davinci-walk");
+    const groups = wrapper.findAll(".level-walk");
     expect(groups.map((group) => group.classes())).toEqual([
-      ["davinci-walk", "fusable"],
-      ["davinci-walk"],
+      ["level-walk", "fusable"],
+      ["level-walk"],
     ]);
     expect(
-      groups.map((group) => group.findAll(".davinci-step-pass").map((pass) => pass.text())),
+      groups.map((group) => group.findAll(".level-step-pass").map((pass) => pass.text())),
     ).toEqual([["normalize", "fold"], ["check"]]);
     const label = (group: (typeof groups)[number]) =>
-      group.findAll(".davinci-walk-label > span").map((part) => part.text());
+      group.findAll(".level-walk-label > span").map((part) => part.text());
     expect(groups.map(label)).toEqual([
       ["walk 1", "2 passes fused", "7 µs"],
       ["walk 2", "barrier"],
     ]);
-    expect(groups[0].find(".davinci-walk-steps").attributes("aria-label")).toBe(
+    expect(groups[0].find(".level-walk-steps").attributes("aria-label")).toBe(
       "Walk 1 over the L2 tree (2 passes fused): normalize, fold, 7 µs",
     );
-    expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
+    expect(wrapper.find(".level-timeline-summary").text()).toBe(
       "0 of 3 passes changed the folio in 2 walks",
     );
-    await groups[0].findAll(".davinci-step")[1].trigger("click");
+    await groups[0].findAll(".level-step")[1].trigger("click");
     expect(wrapper.emitted("select")).toEqual([[steps[2]]]);
     wrapper.unmount();
   });

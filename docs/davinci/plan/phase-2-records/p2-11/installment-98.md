@@ -11,7 +11,7 @@ keys are assembled.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_cache_slot_order.rs` pins the cache
+`crates/vize_atelier_dom/tests/level_s2_cache_slot_order.rs` pins the cache
 slot numbering across handlers, hoists, slots, memo, once and model-key paths.
 `emit::cache_slots` owns the printed-order numbering API used by those emit
 sites.

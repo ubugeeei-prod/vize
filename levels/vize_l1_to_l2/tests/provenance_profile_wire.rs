@@ -1,5 +1,5 @@
 //! The native L1→L2 provenance metrics keep one stable profile wire family.
-#![cfg(feature = "davinci-benchmark-profile")]
+#![cfg(feature = "level-benchmark-profile")]
 
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::Allocator;
@@ -10,16 +10,16 @@ use vize_l2::provenance::ProvenanceRecord;
 
 const PREFIX: &str = "l1_to_l2.provenance.";
 const OLD_KEYS: [&str; 10] = [
-    "davinci.lower.provenance.record",
-    "davinci.lower.provenance.records",
-    "davinci.lower.provenance.vector_capacity_bytes",
-    "davinci.lower.provenance.record_bytes",
-    "davinci.lower.provenance.rule_heap_strings",
-    "davinci.lower.provenance.rule_heap_capacity_bytes",
-    "davinci.lower.provenance.before_heap_strings",
-    "davinci.lower.provenance.before_heap_capacity_bytes",
-    "davinci.lower.provenance.after_heap_strings",
-    "davinci.lower.provenance.after_heap_capacity_bytes",
+    "levels.lower.provenance.record",
+    "levels.lower.provenance.records",
+    "levels.lower.provenance.vector_capacity_bytes",
+    "levels.lower.provenance.record_bytes",
+    "levels.lower.provenance.rule_heap_strings",
+    "levels.lower.provenance.rule_heap_capacity_bytes",
+    "levels.lower.provenance.before_heap_strings",
+    "levels.lower.provenance.before_heap_capacity_bytes",
+    "levels.lower.provenance.after_heap_strings",
+    "levels.lower.provenance.after_heap_capacity_bytes",
 ];
 
 #[test]

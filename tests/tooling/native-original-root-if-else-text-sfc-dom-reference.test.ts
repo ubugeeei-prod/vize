@@ -73,7 +73,7 @@ for (const fixture of fixtures.slice(0, 2)) {
   const successor = (fixture as RootIfElseTextFixture & { successorOf?: unknown }).successorOf;
   object(successor);
   assert.equal(successor.sourceRevision, "f233823358c1242013b51e53680ce257253c84fc");
-  assert.equal(successor.path, "davinci/vize_l2/src/file/region/native/pair/tests.rs");
+  assert.equal(successor.path, "levels/vize_l2/src/file/region/native/pair/tests.rs");
   assert.equal(successor.sourceSha256, hash(fixture.source));
   assert.equal(successor.oracleGitBlob, "88c13a550551258e704f32b5312478aa581af0a4");
 }

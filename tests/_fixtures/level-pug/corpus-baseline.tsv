@@ -1,6 +1,6 @@
-# Davinci P4-12c pug corpus baseline: sha256 of pug@3.0.4 (doctype html, pretty false)
+# Levels P4-12c pug corpus baseline: sha256 of pug@3.0.4 (doctype html, pretty false)
 # rendering of each inline lang="pug" template, as @vue/compiler-sfc extracts it.
-# Regenerate: VIZE_PUG_ORACLE_WRITE=1 node --test tests/tooling/davinci-pug-corpus-oracle.test.ts
+# Regenerate: VIZE_PUG_ORACLE_WRITE=1 node --test tests/tooling/level-pug-corpus-oracle.test.ts
 # project	revision	file	sha256
 dho-web-client	94a804ee650cb49990f6fcd4f4c54afa3a925abe	src/App.vue	2afbc5e12980db240cbbe624f73cd67b09136a59c958092dbec056e6e0667a3d
 dho-web-client	94a804ee650cb49990f6fcd4f4c54afa3a925abe	src/components/archetypes/archetype-radio.vue	3bb046e5d242357f473d93d100734f5190f925eecc2ffaf40fcf8da4372ca97c

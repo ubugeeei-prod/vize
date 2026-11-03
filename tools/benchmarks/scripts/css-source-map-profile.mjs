@@ -250,7 +250,7 @@ function run(base, head, destination) {
       targetInitiallyEmpty: true,
       command: argv,
       sourceTrees: Object.fromEntries(
-        ["crates", "davinci", "vendor", "npm/native"].map((entry) => [
+        ["crates", "levels", "vendor", "npm/native"].map((entry) => [
           entry,
           git(root, "rev-parse", `HEAD:${entry}`),
         ]),

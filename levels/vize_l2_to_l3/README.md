@@ -1,6 +1,6 @@
 # vize_l2_to_l3
 
-`vize_l2_to_l3` lowers Davinci L2 semantic regions into the flat L3 Impeto
+`vize_l2_to_l3` lowers Levels L2 semantic regions into the flat L3 Impeto
 program shape and exports the shared static/dynamic partition facts computed
 during that lowering.
 

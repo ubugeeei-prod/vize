@@ -110,7 +110,7 @@ export function planAffectedJs(
       if (owner.path !== "docs") changed.add(owner.name);
       continue;
     }
-    if (/^(?:crates\/|davinci\/|vendor\/)/.test(path) && rust) continue;
+    if (/^(?:crates\/|levels\/|vendor\/)/.test(path) && rust) continue;
     if (isToolingOnlyInput(path)) continue;
     if (path.startsWith("editors/")) continue;
     full = true;

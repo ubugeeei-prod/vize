@@ -7,11 +7,11 @@
   "mode": "attribution-only (no acceptance timings)",
   "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
   "allocator": "ProfilingAllocator<mimalloc> (attribution only; real allocation traffic, retained provenance capacities separately)",
-  "features": "native,davinci-production-profile; no retained-AST differential dual-run",
+  "features": "native,level-production-profile; no retained-AST differential dual-run",
   "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
   "scope": "committed fixture SFCs, excluding _git, _git-worktrees and node_modules; this report does not establish universal speed or semantic parity",
   "artifact": {
-    "name": "davinci-production-perf-1",
+    "name": "level-production-perf-1",
     "id": 12887639614,
     "size_in_bytes": 347901,
     "archive_sha256": "565467ce0bc12012fed84c8b5e502d0d48646f6d922d47dc6004ec907812c976"

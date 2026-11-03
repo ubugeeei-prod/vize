@@ -219,8 +219,8 @@ for (const file of production.filter((file) => !file.endsWith("/profiling.rs")))
 }
 
 const profiling = fs.readFileSync("crates/vize_canon/src/profiling.rs", "utf8"),
-  macros = fs.readFileSync("davinci/vize_l0/src/profiler/micro_macros.rs", "utf8"),
-  macroLaw = fs.readFileSync("davinci/vize_l0/tests/source_operations_profile.rs", "utf8"),
+  macros = fs.readFileSync("levels/vize_l0/src/profiler/micro_macros.rs", "utf8"),
+  macroLaw = fs.readFileSync("levels/vize_l0/tests/source_operations_profile.rs", "utf8"),
   rootManifest = fs.readFileSync("crates/vize/Cargo.toml", "utf8"),
   canonManifest = fs.readFileSync("crates/vize_canon/Cargo.toml", "utf8");
 assert.match(rootManifest, /"vize_canon\/profiling"/u);

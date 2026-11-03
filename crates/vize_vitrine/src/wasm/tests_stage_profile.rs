@@ -59,7 +59,7 @@ fn the_analyze_result_times_every_ladder_step_by_the_host_clock() {
     assert_eq!(
         result["stageProfile"],
         profile(vec![
-            span("davinci.pass.walk", "s2", "hoist-static", 33_000, 64_000),
+            span("levels.pass.walk", "s2", "hoist-static", 33_000, 64_000),
             step("s3", "lower", 17_000, 32_000),
             step("s2", "template-complexity", 13_000, 16_000),
             step("s2", "hoist-static", 9_000, 16_000),

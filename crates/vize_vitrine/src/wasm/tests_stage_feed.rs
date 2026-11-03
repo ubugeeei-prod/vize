@@ -1,7 +1,7 @@
 //! The croquis alias byte-identity pin and the `analyzeSfc` stage feed
 //! (P2-18; the full L1 -> L2 -> L3 stage ladder since C-2/C-5).
 //!
-//! The alias contract (Davinci P0-10): the wasm `analyzeSfc` result carries
+//! The alias contract (Levels P0-10): the wasm `analyzeSfc` result carries
 //! the croquis folio text under both the deprecated `vir` key and the
 //! nested `folio.croquis`, byte-identically. No test pinned that before
 //! this one, which is why the P2-18 acceptance demands it: the ladder work

@@ -1,7 +1,7 @@
 //! `vize repro` - replay a crash repro folio (P2-13, TS-23).
 //!
 //! Reads a `repro.folio` written by a failed build, replays it through
-//! [`davinci_ice::replay`], and compares the replayed failure against the
+//! [`level_ice::replay`], and compares the replayed failure against the
 //! recorded one by **exact equality** - stage, pass and reason all
 //! byte-equal, the assurance doctrine's "no partial matching" applied to the
 //! ICE policy itself. The comparison lives in the tool, not only in its
@@ -16,7 +16,7 @@ use std::path::PathBuf;
 
 use clap::Args;
 
-use super::davinci_ice::{self, IceFailure};
+use super::level_ice::{self, IceFailure};
 use vize_curator::repro::Page as ReproPage;
 use vize_l0::dump::Dump;
 
@@ -47,7 +47,7 @@ pub fn run(args: ReproArgs) {
         pass: folio.failed_pass.clone(),
         reason: folio.reason.clone(),
     };
-    match davinci_ice::replay(&folio) {
+    match level_ice::replay(&folio) {
         Err(message) => {
             eprintln!("repro: {}: {message}", path.display());
             std::process::exit(2);

@@ -16,15 +16,15 @@ fn output_boundary(c: &mut Criterion) {
     for (name, source) in [
         (
             "small",
-            include_str!("../../../tools/benchmarks/crates/davinci_harness/fixtures/small.vue"),
+            include_str!("../../../tools/benchmarks/crates/level_harness/fixtures/small.vue"),
         ),
         (
             "medium",
-            include_str!("../../../tools/benchmarks/crates/davinci_harness/fixtures/medium.vue"),
+            include_str!("../../../tools/benchmarks/crates/level_harness/fixtures/medium.vue"),
         ),
         (
             "large",
-            include_str!("../../../tools/benchmarks/crates/davinci_harness/fixtures/large.vue"),
+            include_str!("../../../tools/benchmarks/crates/level_harness/fixtures/large.vue"),
         ),
     ] {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse fixture");

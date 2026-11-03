@@ -6,11 +6,11 @@ import {
   executeSnapshots,
   readPack,
   reference,
-} from "../../tools/support/compat/davinci/jsx-js-module-reference.ts";
+} from "../../tools/support/compat/levels/jsx-js-module-reference.ts";
 
 const pack = readPack(
   new URL(
-    "../../davinci/vize_l4/tests/fixtures/jsx-scalar-attributes-vue-3.5.35.json",
+    "../../levels/vize_l4/tests/fixtures/jsx-scalar-attributes-vue-3.5.35.json",
     import.meta.url,
   ),
 );

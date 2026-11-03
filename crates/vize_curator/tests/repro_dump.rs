@@ -15,7 +15,7 @@ const CANONICAL: &str = "[repro]\n\
 pipeline=template(transform,codegen)\n\
 failed-stage=template\n\
 failed-pass=transform\n\
-reason=injected davinci panic in pass `transform`\n\
+reason=injected levels panic in pass `transform`\n\
 artifact-stage=source\n\
 \n\
 [repro.config]\n\
@@ -33,7 +33,7 @@ fn canonical_value() -> ReproPage {
         pipeline: String::from("template(transform,codegen)"),
         failed_stage: String::from("template"),
         failed_pass: String::from("transform"),
-        reason: String::from("injected davinci panic in pass `transform`"),
+        reason: String::from("injected levels panic in pass `transform`"),
         artifact_stage: String::from("source"),
         config,
         artifact: String::from("<template><div>b</div></template>\n"),
@@ -71,7 +71,7 @@ fn values_round_trip_structurally_after_normalize() {
 #[test]
 fn scrambled_scalars_and_config_normalize_on_first_print() {
     let scrambled = "[repro]\n\
-reason=injected davinci panic in pass `transform`\n\
+reason=injected levels panic in pass `transform`\n\
 artifact-stage=source\n\
 pipeline=template(transform,codegen)\n\
 failed-pass=transform\n\
@@ -125,7 +125,7 @@ fn failure_text_marks_an_unattributable_pass_with_a_question_mark() {
     let folio = ReproPage::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(
         folio.failure().as_str(),
-        "template.transform: injected davinci panic in pass `transform`"
+        "template.transform: injected levels panic in pass `transform`"
     );
 }
 

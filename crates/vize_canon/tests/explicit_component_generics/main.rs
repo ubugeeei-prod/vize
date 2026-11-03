@@ -1,7 +1,7 @@
 //! `<!-- @vue-generic {…} -->` instantiates the component usage it precedes
 //! with the authored type arguments (the upstream `v-generic` corpus project).
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const CHILD: &str = r#"<script setup lang="ts" generic="T extends string | number, K = any">
 defineProps<{ value?: T }>();

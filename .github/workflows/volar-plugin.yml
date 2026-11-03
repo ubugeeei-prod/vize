@@ -6,7 +6,7 @@ on:
       - "npm/volar/**"
       - "npm/native/**"
       - "crates/**"
-      - "davinci/**"
+      - "levels/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "package.json"

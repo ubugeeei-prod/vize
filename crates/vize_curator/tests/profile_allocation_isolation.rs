@@ -160,7 +160,7 @@ fn local_profile_preserves_active_native_allocation_and_counter_session() {
                   "wall_ns": { "total": 40, "self": 40, "min": 10, "max": 30,
                                "p50": 1000, "p95": 1000, "p99": 1000 },
                   "alloc": null, "attribution": { "stage": "s1", "pass": "parse", "block": "template" } },
-                { "key": "davinci.pass.walk", "count": 1,
+                { "key": "levels.pass.walk", "count": 1,
                   "wall_ns": { "total": 7, "self": 7, "min": 7, "max": 7,
                                "p50": 1000, "p95": 1000, "p99": 1000 },
                   "alloc": null, "attribution": { "stage": "s2", "pass": "lower", "block": "template" } },

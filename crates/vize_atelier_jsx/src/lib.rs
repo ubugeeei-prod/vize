@@ -1,7 +1,7 @@
 //! Shared JSX/TSX lowering layer for Vize.
 //!
 //! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR and its
-//! Davinci L2 projection exactly once, so the VDOM
+//! Levels L2 projection exactly once, so the VDOM
 //! ([`vize_atelier_dom`](https://docs.rs/vize_atelier_dom)) and Vapor
 //! (`vize_atelier_vapor`) backends, the type checker, the LSP, and Patina all
 //! consume the same lowered representation instead of forking JSX-only logic.

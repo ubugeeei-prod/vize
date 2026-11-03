@@ -1,4 +1,4 @@
-//! Production interface export from Croquis to the six Davinci α facets.
+//! Production interface export from Croquis to the six Levels α facets.
 //!
 //! Contracts are compact JSON with fixed field order. Type spellings and
 //! defaults are kept verbatim, including whitespace inside literal types.

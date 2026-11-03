@@ -55,7 +55,7 @@ export type {
   NativeObservation,
 } from "./canonical-corpus-types.ts";
 
-export const collectorSource = "tests/davinci_test_support/src/corpus.rs";
+export const collectorSource = "tests/level_test_support/src/corpus.rs";
 const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const gitSource = (cwd: string, sha: string, path: string) =>
   execFileSync("git", ["show", `${sha}:${path}`], { cwd });

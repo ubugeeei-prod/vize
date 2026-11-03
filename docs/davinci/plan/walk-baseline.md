@@ -15,15 +15,15 @@
 
 ```sh
 cargo test -p vize_atelier_dom -p vize_atelier_ssr -p vize_atelier_vapor \
-  --test davinci_walk_baseline -- --nocapture
+  --test level_walk_baseline -- --nocapture
 ```
 
-Each backend's `tests/davinci_walk_baseline.rs` prints one
-`davinci.walk <backend> <fixture> walks=<n> visits=<n> <stage>=<walks>/<visits>…`
+Each backend's `tests/level_walk_baseline.rs` prints one
+`levels.walk <backend> <fixture> walks=<n> visits=<n> <stage>=<walks>/<visits>…`
 line per fixture and then asserts the whole table at once, so a re-record
 prints every row rather than stopping at the first drift. The counters are
 process-global and monotone, so each file holds a single `#[test]` in its own
-binary — the `davinci_expr_reparse_floor.rs` shape.
+binary — the `level_expr_reparse_floor.rs` shape.
 
 **Determinism** (the P0-2/P0-5 two-run convention): the command above was run
 twice at `232870a8` and the 18 output lines were byte-identical. Walk counts,
@@ -144,17 +144,17 @@ neither is in scope.
 
 - `budgets.toml [traversal]`, keyed `<backend>_<fixture>` — 18 entries,
   gated exactly, reconciled against the ladder in both directions by
-  `tests/tooling/davinci-traversal-budgets.test.ts`.
-- `crates/vize_atelier_{dom,ssr,vapor}/tests/davinci_walk_baseline.rs` — the
+  `tests/tooling/level-traversal-budgets.test.ts`.
+- `crates/vize_atelier_{dom,ssr,vapor}/tests/level_walk_baseline.rs` — the
   same numbers pinned as ordinary integration tests, so they run in the
   default `cargo test --workspace` lane rather than a feature-gated one (the
   P1-5/P1-7 counter-law shape).
 
 ## Native Vapor L3 selection (2026-09-20)
 
-The table above remains the legacy-plan baseline. `davinci_walk_baseline` now
+The table above remains the legacy-plan baseline. `level_walk_baseline` now
 selects that route explicitly with empty binding metadata so its exact visit
-counts stay meaningful. `davinci_vapor_artifact` independently pins zero legacy
+counts stay meaningful. `level_vapor_artifact` independently pins zero legacy
 core-transform/Vapor-lower walks and zero expression reparses for admitted L3
 native artifacts, and two legacy walks for unsupported shapes. This does not
 claim that the parser preflight or L1/L2/L3 conversion performs no traversal, or

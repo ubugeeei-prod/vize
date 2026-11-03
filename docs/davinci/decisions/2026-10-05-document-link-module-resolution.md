@@ -23,7 +23,7 @@ encoding. Only literal path brackets become `%5B` and `%5D`; already encoded
 brackets and literal percent filenames must remain stable. This change adds no
 native IPC, child process, pipeline stage or public Rust API. Existing descriptor,
 CSS and Art links still use their existing paths. Resident SFC descriptor reuse
-is unchanged. No native provider or Davinci/default-path replacement is claimed.
+is unchanged. No native provider or Levels/default-path replacement is claimed.
 
 ## Original corpus and validation
 

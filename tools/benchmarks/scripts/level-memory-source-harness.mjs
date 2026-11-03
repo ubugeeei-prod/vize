@@ -4,14 +4,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const REPORT_DIRECTORY = "tools/benchmarks/results/davinci";
+export const REPORT_DIRECTORY = "tools/benchmarks/results/levels";
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const harnessSourceWitnesses = new WeakSet();
 const harnessSourcePins = new WeakSet();
 const HARNESS_SOURCE_PATHS = Object.freeze([
   "Cargo.toml",
-  "tools/benchmarks/crates/davinci_harness/Cargo.toml",
-  "tools/benchmarks/crates/davinci_harness/src/lib.rs",
+  "tools/benchmarks/crates/level_harness/Cargo.toml",
+  "tools/benchmarks/crates/level_harness/src/lib.rs",
 ]);
 
 function harnessSourceFile(root, relative) {
@@ -68,9 +68,9 @@ export function bindHarnessSource(root, metadata, artifacts, sourcePin) {
   assert.equal(metadata.workspace_root, root, "foreign Cargo metadata workspace");
   assert.ok(Array.isArray(metadata.packages), "missing harness source packages");
   assert.ok(Array.isArray(artifacts), "missing harness build artifacts");
-  const manifest = path.join(root, "tools/benchmarks/crates/davinci_harness/Cargo.toml");
+  const manifest = path.join(root, "tools/benchmarks/crates/level_harness/Cargo.toml");
   const source = path.join(path.dirname(manifest), "src/lib.rs");
-  const packages = metadata.packages.filter((pkg) => pkg.name === "davinci_harness");
+  const packages = metadata.packages.filter((pkg) => pkg.name === "level_harness");
   assert.equal(packages.length, 1, "missing or duplicate source harness package");
   const pkg = packages[0];
   assert.equal(pkg.manifest_path, manifest, "foreign harness source manifest");

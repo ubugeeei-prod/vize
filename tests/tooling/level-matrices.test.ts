@@ -23,33 +23,33 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const matrices = [
   {
     name: "croquis consumption matrix",
-    generator: "tools/support/compat/davinci/croquis-consumers.ts",
+    generator: "tools/support/compat/levels/croquis-consumers.ts",
     artifact: "docs/davinci/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
   },
   {
     name: "SourceLocation consumer inventory",
-    generator: "tools/support/compat/davinci/sourcelocation-inventory.ts",
+    generator: "tools/support/compat/levels/sourcelocation-inventory.ts",
     artifact: "docs/davinci/plan/sourcelocation-inventory.md",
   },
   {
     name: "consumer migration surface inventory",
-    generator: "tools/support/compat/davinci/consumer-migration-surfaces.ts",
+    generator: "tools/support/compat/levels/consumer-migration-surfaces.ts",
     artifact:
       "docs/davinci/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
   },
   {
     name: "natural v-on corpus inventory (evidence for the inline v-on buckets)",
-    generator: "tools/support/compat/davinci/v-on-corpus.ts",
+    generator: "tools/support/compat/levels/v-on-corpus.ts",
     artifact: "docs/davinci/plan/v-on-corpus/<area>.tsv",
   },
   {
     name: "construct-matrix fixture plane (element kind × directive)",
-    generator: "tools/commands/davinci/matrix-gen.rs",
-    artifact: "tests/fixtures/davinci-matrix/",
+    generator: "tools/commands/levels/matrix-gen.rs",
+    artifact: "tests/fixtures/level-matrix/",
   },
   {
     name: "HTML content-model fact table (P4-11a, pinned WHATWG snapshot)",
-    generator: "tools/commands/davinci/html-content-model.rs",
+    generator: "tools/commands/levels/html-content-model.rs",
     artifact: "crates/vize_patina/src/html_content_model/whatwg.tsv",
   },
 ];
@@ -80,8 +80,8 @@ for (const matrix of matrices) {
 
 for (const name of ["rule-parity", "storage-summary"]) {
   test(`${name} run artifact is deterministic and rejects missing or edited output`, () => {
-    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), `davinci-${name}-`));
-    const generator = path.join(repoRoot, `tools/support/compat/davinci/${name}.ts`);
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), `level-${name}-`));
+    const generator = path.join(repoRoot, `tools/support/compat/levels/${name}.ts`);
     const run = (mode: string) =>
       spawnSync(process.execPath, [generator, mode, "--out-dir", scratch], {
         cwd: repoRoot,
@@ -112,24 +112,19 @@ for (const name of ["rule-parity", "storage-summary"]) {
 // on a throwaway copy of the fixture plane (the committed tree is never
 // touched).
 test("the fixture-plane staleness check fails on an injected edit", () => {
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-matrix-check-"));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "level-matrix-check-"));
   try {
     const write = spawnSync(
       "rust-script",
-      [
-        path.join(repoRoot, "tools/commands/davinci/matrix-gen.rs"),
-        "--write",
-        "--out-dir",
-        scratch,
-      ],
+      [path.join(repoRoot, "tools/commands/levels/matrix-gen.rs"), "--write", "--out-dir", scratch],
       { cwd: repoRoot, encoding: "utf8" },
     );
     assert.equal(write.status, 0, `${write.stdout}${write.stderr}`.trim());
-    const clean = runCheck("tools/commands/davinci/matrix-gen.rs", ["--out-dir", scratch]);
+    const clean = runCheck("tools/commands/levels/matrix-gen.rs", ["--out-dir", scratch]);
     assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`.trim());
     const victim = path.join(scratch, "native--v-if.vue");
     fs.appendFileSync(victim, "<!-- injected edit -->\n");
-    const stale = runCheck("tools/commands/davinci/matrix-gen.rs", ["--out-dir", scratch]);
+    const stale = runCheck("tools/commands/levels/matrix-gen.rs", ["--out-dir", scratch]);
     assert.equal(
       stale.status,
       1,
@@ -144,7 +139,7 @@ test("the fixture-plane staleness check fails on an injected edit", () => {
 // Same discipline for the P4-11a content-model table: regenerate it into a
 // throwaway copy, then prove `--check` rejects a one-member edit there.
 test("the content-model table staleness check fails on an injected edit", () => {
-  const generator = "tools/commands/davinci/html-content-model.rs";
+  const generator = "tools/commands/levels/html-content-model.rs";
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "level-html-content-model-"));
   const table = path.join(scratch, "whatwg.tsv");
   try {

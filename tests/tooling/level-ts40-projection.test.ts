@@ -10,7 +10,7 @@ import {
   validateProjectionMatrix,
   verifyProjectionDigest,
   type ProjectionDigest,
-} from "./support/davinci-ts40-projection.ts";
+} from "./support/level-ts40-projection.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -19,8 +19,8 @@ test("TS-40 current-projection fixture matrix is explicit and non-vacuous", () =
   validateProjectionMatrix(root, matrix);
   assert.ok(matrix.fixtures.length >= 10, "TS-40 matrix must contain at least 10 fixtures");
   assert.ok(
-    matrix.unproven.some((item) => item.includes("Davinci or L2")),
-    "TS-40 matrix must explicitly leave Davinci or L2 parity unproven",
+    matrix.unproven.some((item) => item.includes("Levels or L2")),
+    "TS-40 matrix must explicitly leave Levels or L2 parity unproven",
   );
   assert.ok(
     matrix.normalization.some((item) => item.includes("preserve generation order")),
@@ -32,7 +32,7 @@ test("TS-40 matrix reports the fixture id when a source fixture is missing", () 
   const matrix = loadProjectionMatrix(root);
   const fixture = matrix.fixtures[0];
   assert.ok(fixture, "TS-40 matrix must contain a fixture for the missing-source oracle");
-  const missingFile = "tests/_fixtures/davinci-ts40-projection/missing.vue";
+  const missingFile = "tests/_fixtures/level-ts40-projection/missing.vue";
 
   assert.throws(
     () =>
@@ -109,10 +109,10 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
       .split("\n")
       .map((line) => line.trim()),
     [
-      "cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture",
-      "cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture",
-      "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture",
-      "node --test tests/tooling/davinci-ts40-projection.test.ts",
+      "cargo test -p vize --test integration -- level_ts40_projection_cli:: --nocapture",
+      "cargo test -p vize_maestro --test level_ts40_projection -- --nocapture",
+      "cargo test -p vize_maestro --features legacy --test level_ts40_projection -- --nocapture",
+      "node --test tests/tooling/level-ts40-projection.test.ts",
     ],
   );
 });

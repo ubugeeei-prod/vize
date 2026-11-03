@@ -21,7 +21,7 @@ const studies = [
   "doctor-filter-bench",
   "text-boundary-bench",
   "type-snapshot-bench",
-  "davinci-canon-scaling",
+  "level-canon-scaling",
 ];
 const workflow = (name: string) =>
   parse(
@@ -75,7 +75,7 @@ test("manual qualification retains its independent CLI and original400 authoriti
   const cli = snapshot.jobs["paired-cli"].steps;
   assert.ok(cli.some((step) => step.run?.includes("canon-alias-native.mjs")));
   assert.ok(cli.some((step) => step.run?.includes("type-snapshot-cli-paired.mjs")));
-  const canon = workflow("davinci-canon-scaling");
+  const canon = workflow("level-canon-scaling");
   assert.deepEqual(Object.keys(canon.on.workflow_dispatch.inputs), [
     "original_control_sha",
     "original_after_sha",

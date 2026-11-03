@@ -32,8 +32,8 @@ const toolingTestCiEvidence: Evidence = {
     "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}",
     '"tests/tooling/*.test.ts"',
     '"tests/tooling/*.test.mjs"',
-    '"tests/tooling/davinci/*.test.ts"',
-    '"tests/tooling/davinci/*.test.mjs"',
+    '"tests/tooling/levels/*.test.ts"',
+    '"tests/tooling/levels/*.test.mjs"',
   ],
 };
 

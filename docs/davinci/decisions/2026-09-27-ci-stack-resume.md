@@ -40,7 +40,7 @@ Native GitHub stack #6902 is a `PullRequestStack`, not a PR or issue. Its
 GraphQL ID is `PRS_kwDOQvjuaM4AFqpa`; its six entries are #6899, #6900, #6901,
 #6905, #6906 and #6907. The latter three layers are managed separately from this
 replay. Existing Check, Zizmor, Nuxt and title workflow PR branch filters accept
-only main/davinci, so stacked branches need deliberate CI triggering and base
+only main/levels, so stacked branches need deliberate CI triggering and base
 management. No automatic rebasing behavior was verified by this replay.
 
 ## Replay after the first queue merges

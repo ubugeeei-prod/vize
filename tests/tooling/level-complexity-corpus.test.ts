@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // TS-34's corpus-shard lane for the template-complexity fact group
-// (Davinci P4-9a). The matrix-plane half and the hand-computed pins ride
+// (Levels P4-9a). The matrix-plane half and the hand-computed pins ride
 // `cargo test --workspace` in clippy-and-test; this gate runs the corpus
 // half in the test-scripts job over exactly the submodules that job
 // already hydrates (check.yml, "Hydrate CLI diagnostic fixture"), the
@@ -48,7 +48,7 @@ test("the complexity corpus shard agrees with the naive evaluator, with a scope 
     {
       cwd: repoRoot,
       encoding: "utf8",
-      env: { ...process.env, VIZE_DAVINCI_COMPLEXITY_CORPUS: shard.join(",") },
+      env: { ...process.env, VIZE_LEVEL_COMPLEXITY_CORPUS: shard.join(",") },
       timeout: 1_500_000,
     },
   );

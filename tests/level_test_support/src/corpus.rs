@@ -1,7 +1,7 @@
 //! Differential-corpus root resolution and closure-evidence gating.
 //!
-//! Every corpus-runnable Davinci lane reads
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` and sweeps the `.vue` files under
+//! Every corpus-runnable Levels lane reads
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` and sweeps the `.vue` files under
 //! `<dir>`. Only this checkout's own `tests/_fixtures/_git` root can count as
 //! Phase 2 closure evidence, and only when its indexed mode-160000 gitlinks
 //! reconcile exactly with `git submodule status`: a missing, drifted,
@@ -38,7 +38,7 @@ use vize_l0::CompactString;
 pub const CANONICAL_CORPUS_RELATIVE: &str = "tests/_fixtures/_git";
 
 /// The environment variable naming the corpus root to sweep.
-pub const CORPUS_ENV: &str = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS";
+pub const CORPUS_ENV: &str = "VIZE_LEVEL_DIFFERENTIAL_CORPUS";
 
 /// How much a sweep over a corpus root is allowed to prove.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -265,11 +265,11 @@ pub fn resolve_env_sweep() -> Option<CorpusSweep> {
     let sweep = CorpusSweep { root, scope, files };
     match sweep.scope {
         CorpusScope::Canonical { submodules } => eprintln!(
-            "davinci-differential corpus scope: root={} scope=canonical closure_evidence=true submodules={submodules}",
+            "level-differential corpus scope: root={} scope=canonical closure_evidence=true submodules={submodules}",
             sweep.root.display(),
         ),
         CorpusScope::Smoke => eprintln!(
-            "davinci-differential corpus scope: root={} scope=smoke closure_evidence=false",
+            "level-differential corpus scope: root={} scope=smoke closure_evidence=false",
             sweep.root.display(),
         ),
     }

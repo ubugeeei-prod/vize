@@ -61,7 +61,7 @@ merges, refreshed main and the next patch release. Leave #8038 Draft until
 actual measured improvement. Deliver #8071 as a scoped original bundled-library
 rename protection; keep #8010 open for configured runtime library origin authority.
 The unchanged conditional gap is not a reason to withhold the tested partial
-improvement, and its closure is not claimed. All other P0/native/default/fix-history/Davinci
+improvement, and its closure is not claimed. All other P0/native/default/fix-history/Levels
 completion remains unfinished. Admit reviewed slices to Draft qualification
 while existing owners continue current checks and actual merge delivery.
 

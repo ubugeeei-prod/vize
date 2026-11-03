@@ -1,10 +1,10 @@
-//! Davinci P2-8 corpus-runnable entry — the P1-6/P1-7 lane shape.
+//! Levels P2-8 corpus-runnable entry — the P1-6/P1-7 lane shape.
 //!
 //! Compiled only with the `legacy-differential` feature (`[[test]]
 //! required-features` in Cargo.toml). Runs the committed battery with its
 //! exact-pinned scope and census (the same numbers the plain suite pins,
 //! so a feature-wiring regression fails loudly in both lanes), then,
-//! with `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, additionally sweeps
+//! with `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`, additionally sweeps
 //! every `.vue` file under `<dir>`: the **whole file's bytes** go
 //! through the L1 parser (SFC block markup as markup, script/style as
 //! raw text — the TS-19 lane's framing) and then through [`lower`],
@@ -13,14 +13,14 @@
 //! round-trip. Every file lowers or diagnoses; none may panic. The
 //! canonical fixture root fails closed unless its submodule inventory
 //! reconciles; other roots sweep in smoke scope with
-//! `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! `closure_evidence=false` (see `level_test_support::corpus`).
 //!
 //! Run:
 //!
 //! ```text
-//! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+//! VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_l1_to_l2 --features legacy-differential \
-//!     --test davinci_lowering_corpus -- --nocapture
+//!     --test level_lowering_corpus -- --nocapture
 //! ```
 
 #[expect(
@@ -31,7 +31,7 @@ mod support;
 
 use std::fs;
 
-use davinci_test_support::surface_fixture as battery;
+use level_test_support::surface_fixture as battery;
 use support::{assert_sound, with_lowered};
 
 #[test]
@@ -63,8 +63,8 @@ fn lowering_corpus_is_total() {
     );
 
     // -- optional corpus sweep -----------------------------------------
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let files = &sweep.files;
@@ -89,7 +89,7 @@ fn lowering_corpus_is_total() {
         checked += 1;
     }
     eprintln!(
-        "davinci lowering corpus sweep: files={} checked={} with_diagnostics={}",
+        "levels lowering corpus sweep: files={} checked={} with_diagnostics={}",
         files.len(),
         checked,
         with_diagnostics

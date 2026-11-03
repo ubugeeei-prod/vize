@@ -4,8 +4,8 @@
 > P5-1b. A cache key covering less than its artifact's inputs is a
 > corruption bug, not a performance detail. Content is covered by the P5-1a
 > artifact key; every other input is **ambient** and is declared here, per
-> cached artifact. `vize_davinci::key::manifest` is the executable form of
-> these two tables and `davinci/vize_l0/tests/key_manifests.rs` reads this
+> cached artifact. `vize_level::key::manifest` is the executable form of
+> these two tables and `levels/vize_l0/tests/key_manifests.rs` reads this
 > file to prove the two agree row for row.
 
 ## Rules

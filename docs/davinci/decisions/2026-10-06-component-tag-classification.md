@@ -52,7 +52,7 @@ credit; fresh ordinary/native Actions remain required.
 ## Actual first source inventory rejection
 
 Current a593 ordinary run37412374786 Tooling3 job112103547185 rejected
-`davinci-matrices.test.ts:65`: two consumer-migration-surface shards were stale.
+`level-matrices.test.ts:65`: two consumer-migration-surface shards were stale.
 The complete784,516-byte log SHA-256 is
 `1ec6bcd1511c53a2cbc25c4b73b3a832711e277b923fc0bba48401f42c4f7cd2`.
 Regenerate only the existing Canon/Typechecker and Maestro/LSP shards from the

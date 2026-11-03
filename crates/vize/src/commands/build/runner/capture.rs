@@ -81,7 +81,7 @@ pub(super) fn compile_planned_file(
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     let dir = settings
-        .davinci
+        .levels
         .dump_dir
         .as_deref()
         .map(|root| page_files::prepare(root, &input.relative_source))
@@ -102,7 +102,7 @@ pub(super) fn compile_planned_file(
             dir,
             &input.relative_source,
             capture,
-            settings.davinci.dump_after_change,
+            settings.levels.dump_after_change,
         )
         .map_err(|error| CompileError {
             path: input.source.clone(),

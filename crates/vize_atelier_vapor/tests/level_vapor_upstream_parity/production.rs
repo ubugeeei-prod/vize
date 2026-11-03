@@ -6,7 +6,7 @@ use super::{Allocator, Fixture, VaporCompilerOptions, WalkCounts, compile_vapor,
 #[test]
 fn production_branch_updates_and_disposal_match_official_vapor() {
     let fixture: Fixture = serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/davinci-ts33-vapor-branch.json"
+        "../../../../tests/_fixtures/level-ts33-vapor-branch.json"
     ))
     .unwrap();
     let allocator = Allocator::new();
@@ -26,14 +26,14 @@ fn production_branch_updates_and_disposal_match_official_vapor() {
     );
     assert_eq!(WalkCounts::snapshot().since(before).total_walks(), 0);
     let vize = trace(
-        "davinci-mounted-trace.mjs",
+        "level-mounted-trace.mjs",
         json!({
             "backend": "vapor", "code": compiled.code, "context": fixture.context,
             "steps": fixture.steps, "identities": true, "production": true,
         }),
     );
     let upstream = trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({
             "source": fixture.source, "context": fixture.context,
             "steps": fixture.steps, "production": true,

@@ -21,7 +21,7 @@ pub fn prepare(
         .map_err(|e| e.to_string())?
         .trim()
         .to_string();
-    for directory in ["crates", "davinci"] {
+    for directory in ["crates", "levels"] {
         let current_manifest = Command::new("git")
             .args(["show", &format!("{sha}:{directory}/{package}/Cargo.toml")])
             .output()
@@ -61,7 +61,7 @@ pub fn prepare(
         return Err("cannot extract actual Git base".into());
     }
     let workspace_path = destination.join("Cargo.toml");
-    let root = ["crates", "davinci"]
+    let root = ["crates", "levels"]
         .iter()
         .map(|directory| destination.join(directory).join(old_name))
         .find(|root| root.join("Cargo.toml").is_file())
@@ -105,7 +105,7 @@ fn adapt_manifests(
     let dependency = workspace["workspace"]["dependencies"][old_name]
         .as_table_like_mut()
         .ok_or("actual base workspace dependency lookup is missing")?;
-    if !["crates", "davinci"].iter().any(|directory| {
+    if !["crates", "levels"].iter().any(|directory| {
         dependency.get("path").and_then(|path| path.as_str())
             == Some(&format!("{directory}/{old_name}"))
     }) {

@@ -15,7 +15,7 @@ codegen-nodes (`NodeType` 13–20) are minted on this path.
 
 Dual-run lives in `vize_atelier_dom` test space (dev-dep carve-out):
 old `compile_template` vs S2 emit, **byte-for-byte**, including helper
-order. `VIZE_DAVINCI_DOM=legacy` is named; a pinned comparison count
+order. `VIZE_LEVEL_DOM=legacy` is named; a pinned comparison count
 makes a silent disarm fail.
 
 Home: `vize_s1_to_s2::emit` (`emit.rs` + `emit/buf.rs` / `js.rs` /

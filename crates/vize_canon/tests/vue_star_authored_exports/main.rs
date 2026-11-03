@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const ACCORDION: &str = r#"<script lang="ts">
 export interface AccordionProps { multiple?: boolean }

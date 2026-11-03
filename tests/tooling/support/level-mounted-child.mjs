@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
+import { evaluateCompiledRender } from "./level-runtime-trace.mjs";
 
 /**
  * A child component compiled by the same backend and lane as its parent. The

@@ -36,7 +36,7 @@ const gateWiring = new Set([
 const docsInput =
   /^(docs\/|playground\/|examples\/vite-musea\/|npm\/ui\/|npm\/builder\/vite-musea\/|\.github\/workflows\/build-docs\.yml$|package\.json$|pnpm-(lock|workspace)\.yaml$)/;
 const rustInput =
-  /^(crates\/|davinci\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$|\.github\/workflows\/miri\.yml$)/;
+  /^(crates\/|levels\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$|\.github\/workflows\/miri\.yml$)/;
 // Fuzz targets replay corpora seeded from repository fixtures.
 const fuzzInput =
   /^(tests\/fuzz\/|tests\/fixtures\/|tests\/_fixtures\/_projects\/|tools\/commands\/ci\/fuzz\/|\.github\/workflows\/fuzz\.yml$)/;

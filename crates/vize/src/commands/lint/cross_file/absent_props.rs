@@ -1,4 +1,4 @@
-//! The absent-value oracle composition prunes with (Davinci FP-3).
+//! The absent-value oracle composition prunes with (Levels FP-3).
 //!
 //! A child's `<button v-if="copy">` is not rendered at a usage that does not
 //! pass `copy` when the value Vue gives an unpassed `copy` is falsy: no

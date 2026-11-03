@@ -15,7 +15,7 @@
 > [!NOTE]
 > **Early re-cut 2026-09-21, while phases 3–5 are still live**, under the plan README's [early re-cut rule](./README.md#task-format), in the same shape as [phase 4](./phase-4.md) and [phase 5](./phase-5.md). The maintainer's completion target (**2026-09-23**) and the public presentation at Vue Fes Japan 2026 (**2026-10-24**) make the contract work that needs no later substrate worth starting now: the input-dialect WIT world, the versioning policy, the wasmtime lane, the MoonBit hosting spike and the communications decision. Every task states its **start gate**: _startable now_ or _gated on_ a named earlier-phase task. The exit gate is unchanged and still follows the phase-5 exit (P6-13 depends on P5-14). Tasks whose acceptance needs people outside the repository (the Volt maintainer, a third-party dialect author, the maintainer's own decisions) say so as **review points**, never as green checks.
 
-**The per-task contracts live in [phase-6-tasks.md](./phase-6-tasks.md) (P6-1a…P6-6) and [phase-6-tasks-later.md](./phase-6-tasks-later.md) (P6-7…P6-13)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 16 tasks. [`davinci-phase6-contract-status.test.ts`](../../../tests/tooling/davinci-phase6-contract-status.test.ts) enforces the structure through the shared re-cut checker.
+**The per-task contracts live in [phase-6-tasks.md](./phase-6-tasks.md) (P6-1a…P6-6) and [phase-6-tasks-later.md](./phase-6-tasks-later.md) (P6-7…P6-13)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 16 tasks. [`level-phase6-contract-status.test.ts`](../../../tests/tooling/level-phase6-contract-status.test.ts) enforces the structure through the shared re-cut checker.
 
 ## What the re-cut changed
 
@@ -43,19 +43,19 @@ Measured on `origin/main` (2026-09-21):
 
 Lanes own disjoint paths within this phase; registration touchpoints (the workspace `Cargo.toml`, workspace members, `test-suites.md`) are the expected rebase conflicts. Lane A updates the released surface in `versions/` with each WIT change; lane B packages that surface without editing it. Lane F follows phase-4 lane O (`crates/vize_vitrine/src/napi/plugin*`) sequentially — P6-7 is gated behind P4-16 through P5-13.
 
-| Lane | Tasks               | Owns (only this lane edits)                                                                                                                      |
-| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A    | P6-1a, P6-1b, P6-1c | `davinci/vize_guest/wit/`, `davinci/vize_guest/versions/`                                                                                        |
-| B    | P6-2                | `davinci/vize_guest/src/`, `davinci/vize_guest/examples/`, `davinci/vize_guest/Cargo.toml`, `davinci/vize_guest/README.md`, `npm/extension-sdk/` |
-| C    | P6-3                | `davinci/vize_extension_host/`                                                                                                                   |
-| D    | P6-4a, P6-4b, P6-5  | `davinci/vize_dialect_moonbit/`, `docs/davinci/plan/exprref-validation.md`                                                                       |
-| E    | P6-6                | `examples/volt-target/`                                                                                                                          |
-| F    | P6-7                | `npm/plugin-sdk/`, `crates/vize_vitrine/src/napi/plugin_sdk*`                                                                                    |
-| G    | P6-8                | `crates/vize_marquette/src/contracts*`, `docs/davinci/contracts-compat-policy.md`                                                                |
-| H    | P6-9                | `tests/external-consumers/`                                                                                                                      |
-| I    | P6-10, P6-11        | `docs/davinci/completion-metrics.md`, `docs/release/v1-alpha-go-no-go.md`                                                                        |
-| J    | P6-12               | `docs/davinci/communications.md`                                                                                                                 |
-| X    | P6-13               | `docs/davinci/plan/phase-6-records/`                                                                                                             |
+| Lane | Tasks               | Owns (only this lane edits)                                                                                                                  |
+| ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| A    | P6-1a, P6-1b, P6-1c | `levels/vize_guest/wit/`, `levels/vize_guest/versions/`                                                                                      |
+| B    | P6-2                | `levels/vize_guest/src/`, `levels/vize_guest/examples/`, `levels/vize_guest/Cargo.toml`, `levels/vize_guest/README.md`, `npm/extension-sdk/` |
+| C    | P6-3                | `levels/vize_extension_host/`                                                                                                                |
+| D    | P6-4a, P6-4b, P6-5  | `levels/vize_dialect_moonbit/`, `docs/davinci/plan/exprref-validation.md`                                                                    |
+| E    | P6-6                | `examples/volt-target/`                                                                                                                      |
+| F    | P6-7                | `npm/plugin-sdk/`, `crates/vize_vitrine/src/napi/plugin_sdk*`                                                                                |
+| G    | P6-8                | `crates/vize_marquette/src/contracts*`, `docs/davinci/contracts-compat-policy.md`                                                            |
+| H    | P6-9                | `tests/external-consumers/`                                                                                                                  |
+| I    | P6-10, P6-11        | `docs/davinci/completion-metrics.md`, `docs/release/v1-alpha-go-no-go.md`                                                                    |
+| J    | P6-12               | `docs/davinci/communications.md`                                                                                                             |
+| X    | P6-13               | `docs/davinci/plan/phase-6-records/`                                                                                                         |
 
 ## Critical path
 

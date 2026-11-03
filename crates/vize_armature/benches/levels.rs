@@ -1,10 +1,10 @@
-//! Davinci microbenches: tokenizer and parser over the P0-2 fixture ladder.
+//! Levels microbenches: tokenizer and parser over the P0-2 fixture ladder.
 //!
-//! Run with: cargo bench -p vize_armature --bench davinci
+//! Run with: cargo bench -p vize_armature --bench levels
 //!
 //! Each case exports wall p50/p95, allocation calls, peak transient heap, and
-//! the RSS delta to `tools/benchmarks/results/davinci/<bench_id>.json` via
-//! `davinci_harness`. Inputs are the root `<template>` block contents of the
+//! the RSS delta to `tools/benchmarks/results/levels/<bench_id>.json` via
+//! `level_harness`. Inputs are the root `<template>` block contents of the
 //! committed ladder fixtures, matching what the SFC pipeline hands armature.
 //! The tokenize cases drive the tokenizer with no-op callbacks, so they price
 //! raw tokenization; the parse cases include a fresh arena per iteration, the
@@ -16,7 +16,7 @@
 )]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_armature::{Callbacks, ErrorCode, Parser, QuoteType, Tokenizer};
 use vize_l0::{Allocator, cstr};
 
@@ -47,19 +47,19 @@ impl Callbacks for NoopCallbacks {
     fn on_error(&mut self, _code: ErrorCode, _index: usize) {}
 }
 
-fn davinci(criterion: &mut Criterion) {
+fn levels(criterion: &mut Criterion) {
     for fixture in &LADDER {
         let template =
             template_block(fixture.source).expect("every ladder fixture has a template block");
 
         let tokenize_id = cstr!("armature_tokenize_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &tokenize_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &tokenize_id, fixture.relative_path, || {
             let mut tokenizer = Tokenizer::new(template, NoopCallbacks);
             tokenizer.tokenize();
         });
 
         let parse_id = cstr!("armature_parse_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &parse_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &parse_id, fixture.relative_path, || {
             let allocator = Allocator::new();
             let (root, errors) = Parser::new(&allocator, template).parse();
             (root.children.len(), errors.len())
@@ -67,5 +67,5 @@ fn davinci(criterion: &mut Criterion) {
     }
 }
 
-criterion_group!(davinci_group, davinci);
-davinci_harness::main!(davinci_group);
+criterion_group!(level_group, levels);
+level_harness::main!(level_group);

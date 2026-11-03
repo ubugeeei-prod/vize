@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { runLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
+import { runLanes } from "../../tools/support/compat/levels/source-inventories.ts";
 
 await test("parallel source preflights keep lane order and fail on any lane", async () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-source-inventories-"));

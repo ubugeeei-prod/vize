@@ -10,9 +10,9 @@
 ## What landed
 
 The first P2-11 PR. Independent of the P2-10 stack. Names
-`VIZE_DAVINCI_DOM` in `vize_s1_to_s2::dom` as `DOM_LANE_FLAG` so the
+`VIZE_LEVEL_DOM` in `vize_s1_to_s2::dom` as `DOM_LANE_FLAG` so the
 phase-2 exit-gate deletion grep has one home (charter #26), the same
-shape as `VIZE_DAVINCI_TRANSFORM`.
+shape as `VIZE_LEVEL_TRANSFORM`.
 
 Ricalco is `no_std` and reads no environment. Value `legacy` is what
 will disarm the S2 dual-run; the comparator that honors it lands with

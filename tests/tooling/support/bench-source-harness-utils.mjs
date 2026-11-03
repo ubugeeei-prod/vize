@@ -27,10 +27,10 @@ export function listing(root) {
 }
 export function sourcePathFor(repo, root, suite) {
   const directory =
-    suite.pkg === "davinci_harness"
+    suite.pkg === "level_harness"
       ? "tools/benchmarks/crates"
-      : fs.existsSync(path.join(repo, "davinci", suite.pkg))
-        ? "davinci"
+      : fs.existsSync(path.join(repo, "levels", suite.pkg))
+        ? "levels"
         : "crates";
   return path.join(root, directory, suite.pkg, "benches", `${suite.bench}.rs`);
 }
@@ -116,7 +116,7 @@ export function fixtureReportWriter({ arms, out, authority, budgets, measurement
         window: identity.window,
       },
       raw_sha256: sha256(raw),
-      file: path.join(arm.root, "tools/benchmarks/results/davinci", `${id}.json`),
+      file: path.join(arm.root, "tools/benchmarks/results/levels", `${id}.json`),
       raw_file: rawFile,
     };
     measurement.measurements[name][repetition - 1][id] = row;

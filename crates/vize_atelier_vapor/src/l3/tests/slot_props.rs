@@ -27,13 +27,13 @@ fn computed_slot_props_match_retained_generation_and_order() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -62,12 +62,12 @@ fn malformed_computed_slot_sources_preserve_parser_diagnostics() {
         r#"<slot :[names[index]]="value"><b></slot>"#,
     ] {
         let allocator = Allocator::new();
-        let compile = |davinci_retained_lane| {
+        let compile = |level_retained_lane| {
             crate::compile::compile_vapor_with_diagnostics(
                 &allocator,
                 source,
                 VaporCompilerOptions {
-                    davinci_retained_lane,
+                    level_retained_lane,
                     ..Default::default()
                 },
             )

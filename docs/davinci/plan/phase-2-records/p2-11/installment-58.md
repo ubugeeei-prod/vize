@@ -12,10 +12,10 @@ remains a separate hydrated fixture operation.
 The durable witnesses are:
 
 - [`check.yml`](../../../../../.github/workflows/check.yml)
-  - runs `davinci_dom_corpus` explicitly after `cargo test --workspace`.
-- [`davinci-lowering-ci-lane.test.ts`](../../../../../tests/tooling/davinci-lowering-ci-lane.test.ts)
+  - runs `level_dom_corpus` explicitly after `cargo test --workspace`.
+- [`level-lowering-ci-lane.test.ts`](../../../../../tests/tooling/level-lowering-ci-lane.test.ts)
   - pins the check-job command and Cargo feature registration.
-- [`davinci_dom_corpus.rs`](../../../../../davinci/vize_l1_to_l2/tests/davinci_dom_corpus.rs)
+- [`level_dom_corpus.rs`](../../../../../levels/vize_l1_to_l2/tests/level_dom_corpus.rs)
   - reports when the run is committed-battery only.
 
 This installment does not tick P2-11. CI now guards the battery lane; hydrated

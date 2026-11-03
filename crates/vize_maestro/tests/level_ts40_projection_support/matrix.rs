@@ -55,7 +55,7 @@ impl Fixture {
 }
 
 pub fn load_matrix() -> Matrix {
-    let path = workspace_root().join("tests/_fixtures/davinci-ts40-projection/matrix.json");
+    let path = workspace_root().join("tests/_fixtures/level-ts40-projection/matrix.json");
     let text = std::fs::read_to_string(&path)
         .unwrap_or_else(|error| panic!("failed to read {}: {error}", path.display()));
     let matrix: Matrix = serde_json::from_str(&text).expect("valid TS-40 matrix JSON");
@@ -63,7 +63,7 @@ pub fn load_matrix() -> Matrix {
     assert_eq!(matrix.claim, "current-canon-maestro-behavior-only");
     assert!(!matrix.normalization.is_empty());
     let expected_unproven = [
-        "Davinci or L2 projection parity",
+        "Levels or L2 projection parity",
         "full-corpus vize check diagnostic parity",
         "all tsgo Content Mapper editor features",
         "static slot-name navigation mappings outside Content Mapper",

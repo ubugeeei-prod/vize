@@ -6,7 +6,7 @@ import { compileFunction } from "node:vm";
 import { transformSync } from "@babel/core";
 import jsx from "@vue/babel-plugin-jsx";
 import { Window } from "happy-dom";
-import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
+import { loadRuntime, observeChildren } from "./level-mounted-trace.mjs";
 import { vueVaporVersion } from "./vue-vapor-release.mjs";
 
 let payload = "";

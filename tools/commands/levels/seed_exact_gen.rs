@@ -13,7 +13,7 @@ use std::{
 use serde::Serialize;
 
 use crate::common;
-use crate::davinci_fpfn::{
+use crate::level_fpfn::{
     DiagnosticRow, flatten_lint_json, index_to_line_col, line_starts_of, resolve_vize_cli,
 };
 use crate::seed_exact::{self, Contract};
@@ -87,7 +87,7 @@ pub fn run(
     }
     let manifest = Manifest {
         schema_version: 1,
-        tool: "tools/commands/davinci/seed-defects.rs --exact-classes",
+        tool: "tools/commands/levels/seed-defects.rs --exact-classes",
         classes: seeded
             .iter()
             .map(|file| ManifestClass {

@@ -14,14 +14,14 @@
 //! P2-5b text expected lowerings to receive armature's retained ASTs;
 //! the L1 that actually landed (P2-7, crate `vize_l1`, codename Sinopia) is token-level and
 //! retains no ASTs, so the lowering is where a template expression first
-//! parses on the Davinci lane - through this one admission rule, never a
+//! parses on the Levels lane - through this one admission rule, never a
 //! private variant of it. The deviation is recorded in the P2-8 record.
 //!
 //! Unlike armature's site, a parse here does **not** increment the
-//! `davinci.expr.parses` profiler counter: the P1-5 counter law
+//! `levels.expr.parses` profiler counter: the P1-5 counter law
 //! (`counter == distinct expressions`, each parsed at most once) is a
 //! statement about the shipped compile path. A folio load is tooling
-//! re-entry, and the P2-8 lowering is the additive Davinci lane - it
+//! re-entry, and the P2-8 lowering is the additive Levels lane - it
 //! runs beside the shipped path, so counting it would double-count any
 //! file both paths see. The lane's counter story lands with the fused
 //! build path (P2-12b), where the lane *becomes* the compile path.

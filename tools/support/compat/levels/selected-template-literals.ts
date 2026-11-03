@@ -54,7 +54,7 @@ interface NativeCapture extends NativeOutput {
 }
 
 const fixturePath = new URL(
-  "../../../../davinci/vize_l4/tests/fixtures/selected-template-literal-vue-3.5.35.json",
+  "../../../../levels/vize_l4/tests/fixtures/selected-template-literal-vue-3.5.35.json",
   import.meta.url,
 );
 const fromUi = createRequire(new URL("../../../../npm/ui/package.json", import.meta.url));

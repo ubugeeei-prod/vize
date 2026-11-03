@@ -32,7 +32,7 @@ export function inspectDirectoryDependencies(metadata: CargoMetadata): Directory
   const packages = metadata.packages.filter((pkg) => members.has(pkg.id));
   const byName = new Map(packages.map((pkg) => [pkg.name, pkg]));
   const violations: DirectoryViolation[] = [];
-  for (const root of packages.filter((pkg) => relative(pkg.manifest_path).startsWith("davinci/"))) {
+  for (const root of packages.filter((pkg) => relative(pkg.manifest_path).startsWith("levels/"))) {
     const seen = new Set([root.name]),
       queue = [{ pkg: root, route: [root.name] }];
     for (const { pkg, route } of queue) {

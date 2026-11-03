@@ -31,7 +31,7 @@ independent source review before dispatch.
 
 ## Observer contract
 
-The explicit `davinci_harness/allocation-window-diagnostics` feature adds an
+The explicit `level_harness/allocation-window-diagnostics` feature adds an
 allocation-free fixed atomic ledger. Every successful alloc/zeroed/realloc
 keeps its original process-global call/live/peak updates and receives a global
 ordinal, Linux kernel TID, size and operation label. Destructor-free constant

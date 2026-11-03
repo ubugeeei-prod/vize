@@ -1,7 +1,7 @@
-//! Vocabulary of the Davinci diagnostic renderer (`vize_l0::render`).
+//! Vocabulary of the Levels diagnostic renderer (`vize_l0::render`).
 //!
 //! One entry per `vize_l0::render::Phrase`, keyed by `Phrase::key`.
-//! `tests/tooling/davinci-diagnostic-catalog.test.ts` enumerates the phrases
+//! `tests/tooling/level-diagnostic-catalog.test.ts` enumerates the phrases
 //! from the renderer's source and fails when any key is missing here in any
 //! locale, or when the `en` column drifts from the renderer's built-in
 //! `EnglishCatalog`.

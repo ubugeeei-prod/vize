@@ -59,7 +59,7 @@ enum TomlValue {
     Array(Vec<TomlValue>),
 }
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>] [--ratchet <file>] [--write-ratchet]\n\nScans Rust test code for banned weak-assertion patterns (Davinci assurance\ndoctrine). Without flags: scans crates/** and davinci/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist. Out-of-line test modules (files reached through a cfg(test) mod\ndeclaration) are held by a generated per-file count ratchet\n(docs/davinci/plan/assertion-ratchet.tsv); --write-ratchet regenerates it\nand counts may only go down.";
+const USAGE: &str = "Usage: rust-script tools/commands/levels/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>] [--ratchet <file>] [--write-ratchet]\n\nScans Rust test code for banned weak-assertion patterns (Levels assurance\ndoctrine). Without flags: scans crates/** and levels/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist. Out-of-line test modules (files reached through a cfg(test) mod\ndeclaration) are held by a generated per-file count ratchet\n(docs/davinci/plan/assertion-ratchet.tsv); --write-ratchet regenerates it\nand counts may only go down.";
 
 fn main() -> ExitCode {
     match run() {
@@ -547,8 +547,8 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
     let mut files = Vec::new();
     if default_tree {
         walk_rust_files(&root.join("crates"), &mut files)?;
-        walk_rust_files(&root.join("davinci"), &mut files)?;
-        walk_rust_files(&root.join("tests/davinci_test_support/src"), &mut files)?;
+        walk_rust_files(&root.join("levels"), &mut files)?;
+        walk_rust_files(&root.join("tests/level_test_support/src"), &mut files)?;
     } else {
         walk_rust_files(root, &mut files)?;
     }
@@ -564,8 +564,13 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
                     whole_file: true,
                     ratcheted: false,
                 });
-            } else if rel.starts_with("tests/davinci_test_support/src/") {
-                targets.push(Target { file, rel, whole_file: true, ratcheted: false });
+            } else if rel.starts_with("tests/level_test_support/src/") {
+                targets.push(Target {
+                    file,
+                    rel,
+                    whole_file: true,
+                    ratcheted: false,
+                });
             } else if is_crate_source(&rel) {
                 let ratcheted = test_only.contains(&file);
                 targets.push(Target {
@@ -593,7 +598,7 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
 fn is_crate_integration_test(rel: &str) -> bool {
     let parts = rel.split('/').collect::<Vec<_>>();
     parts.len() >= 4
-        && matches!(parts[0], "crates" | "davinci")
+        && matches!(parts[0], "crates" | "levels")
         && parts[2] == "tests"
         && rel.ends_with(".rs")
 }
@@ -601,7 +606,7 @@ fn is_crate_integration_test(rel: &str) -> bool {
 fn is_crate_source(rel: &str) -> bool {
     let parts = rel.split('/').collect::<Vec<_>>();
     parts.len() >= 4
-        && matches!(parts[0], "crates" | "davinci")
+        && matches!(parts[0], "crates" | "levels")
         && parts[2] == "src"
         && rel.ends_with(".rs")
 }

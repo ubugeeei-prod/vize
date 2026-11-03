@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_vapor/tests/davinci_mounted_behavior.rs
+source: crates/vize_atelier_vapor/tests/level_mounted_behavior.rs
 expression: result.code
 ---
 import { applyTextModel as _applyTextModel, template as _template } from 'vue';

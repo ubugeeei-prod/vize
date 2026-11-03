@@ -89,13 +89,12 @@ fn run() -> Result<u8, ConfigError> {
         .map_err(ConfigError)?;
     let options = parse_args(&root, env::args().skip(1).collect())?;
 
-    if options.update_baseline && env::var("DAVINCI_BASELINE_REFRESH").ok().as_deref() != Some("1")
-    {
+    if options.update_baseline && env::var("LEVEL_BASELINE_REFRESH").ok().as_deref() != Some("1") {
         eprint!(
-            "bench-compare: refusing --update-baseline without DAVINCI_BASELINE_REFRESH=1.\n\
+            "bench-compare: refusing --update-baseline without LEVEL_BASELINE_REFRESH=1.\n\
              The committed baseline is the reference every PR is gated against; refreshing it\n\
              must be a deliberate act on the reference runner, not a side effect. Re-run with\n\
-             DAVINCI_BASELINE_REFRESH=1 in the environment to proceed.\n"
+             LEVEL_BASELINE_REFRESH=1 in the environment to proceed.\n"
         );
         return Ok(2);
     }
@@ -119,7 +118,7 @@ fn run() -> Result<u8, ConfigError> {
     let current_reports = select_reports(load_reports(&options.results, "current")?, &selected);
     if current_reports.is_empty() {
         return Err(ConfigError(format!(
-            "no current bench reports (*.json) under {} - run the davinci benches first (vp bench:davinci)",
+            "no current bench reports (*.json) under {} - run the levels benches first (vp bench:levels)",
             options.results.display()
         )));
     }
@@ -165,8 +164,8 @@ fn run() -> Result<u8, ConfigError> {
 fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
     let mut options = Options {
         budgets: root.join("docs/davinci/plan/budgets.toml"),
-        baseline: root.join("tools/benchmarks/results/davinci/baseline"),
-        results: root.join("tools/benchmarks/results/davinci"),
+        baseline: root.join("tools/benchmarks/results/levels/baseline"),
+        results: root.join("tools/benchmarks/results/levels"),
         benches: Vec::new(),
         update_baseline: false,
         source_harness_pair: None,

@@ -22,7 +22,7 @@ import { needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 
 export { corpusRoot } from "./canonical-corpus-inventory.mjs";
-export const artifactRoot = "real-project-davinci-dom-corpus";
+export const artifactRoot = "real-project-level-dom-corpus";
 export const observers = ["dom", "ssr-pug", "reach"];
 export const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 

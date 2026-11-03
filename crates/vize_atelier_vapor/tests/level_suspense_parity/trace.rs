@@ -9,7 +9,7 @@ use std::{
 
 pub(super) fn trace(input: Value) -> Vec<Value> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support/davinci-suspense-trace.mjs");
+        .join("../../tests/tooling/support/level-suspense-trace.mjs");
     let mut child = Command::new("node")
         .arg(path)
         .stdin(Stdio::piped())

@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const generator = "tools/support/compat/davinci/generated-ledgers.ts";
+const generator = "tools/support/compat/levels/generated-ledgers.ts";
 const names = [
   "analysis-consumption-summary.md",
   "consumer-migration-summary.md",
@@ -17,7 +17,7 @@ const names = [
 ];
 
 test("the run bundle preserves authored guides and rejects edited or extra artifacts", () => {
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-generated-ledgers-"));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "level-generated-ledgers-"));
   const guides = ["rule-parity.md", "storage-summary.md"].map((name) => ({
     file: path.join(root, "docs/davinci/plan", name),
     text: fs.readFileSync(path.join(root, "docs/davinci/plan", name), "utf8"),

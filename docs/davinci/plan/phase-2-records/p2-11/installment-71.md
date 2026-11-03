@@ -11,9 +11,9 @@ without reordering shipped output.
 
 The durable witnesses are:
 
-- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_hoist_order.rs)
+- [`level_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_hoist_order.rs)
   - pins the Ant Design row/column prop-order regression.
-- [`call_props.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/component/call_props.rs)
+- [`call_props.rs`](../../../../../levels/vize_l1_to_l2/src/emit/component/call_props.rs)
   - owns the nested component prop hoist decision.
 
 This installment does not tick P2-11. The production-lane switch remains open.

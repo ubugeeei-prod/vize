@@ -6,9 +6,9 @@ import {
   SURFACES,
   scanConsumerMigrationSurfaces,
   surfaceNameKind,
-} from "../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+} from "../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 import { lexicalView } from "../../tools/support/levels/move-host-runtime.ts";
-import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/davinci/lib/consumer-migration-render.ts";
+import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/levels/lib/consumer-migration-render.ts";
 
 const TSV_HEADERS = [
   "consumer_id",
@@ -384,9 +384,9 @@ const readSurfaceSource = (relPath) =>
 function assertContentMapperHostPath(
   contentMapper,
   read = readSurfaceSource,
-  foundation = read("davinci/vize_l0/src/lib.rs"),
+  foundation = read("levels/vize_l0/src/lib.rs"),
   host = read("crates/vize_carton/src/path.rs"),
-  lowerPathExists = existsSync(new URL("../../davinci/vize_l0/src/path.rs", import.meta.url)),
+  lowerPathExists = existsSync(new URL("../../levels/vize_l0/src/path.rs", import.meta.url)),
 ) {
   const nonStage = contentMapper.sites.filter((site) => site.group !== "stage");
   assert.ok(nonStage.length > 0, "the host adapter must remain visible in the inventory");
@@ -439,7 +439,7 @@ void test("content mapper records the exact host path role without admitting leg
       }),
     { name: "AssertionError" },
   );
-  const foundation = readSurfaceSource("davinci/vize_l0/src/lib.rs");
+  const foundation = readSurfaceSource("levels/vize_l0/src/lib.rs");
   assert.throws(() =>
     assertContentMapperHostPath(mapper, readSurfaceSource, `${foundation}\npub mod path;\n`),
   );

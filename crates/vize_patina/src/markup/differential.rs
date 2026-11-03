@@ -1,4 +1,4 @@
-//! The TS-25 lane for Davinci P4-7a: one document, two projections, one
+//! The TS-25 lane for Levels P4-7a: one document, two projections, one
 //! hook trace.
 //!
 //! Each input is projected twice — through the Relief backend (a raw template
@@ -11,7 +11,7 @@
 //!
 //! Compiled for `cfg(test)` (the plain-suite witness) and under the
 //! `legacy-differential` feature (the corpus-runnable entry,
-//! `tests/davinci_markup_differential.rs`).
+//! `tests/level_markup_differential.rs`).
 
 mod battery;
 mod fixture_cursor;

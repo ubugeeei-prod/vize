@@ -1,4 +1,4 @@
-//! Span-carrying SSR prop objects (Davinci P3-9, L4).
+//! Span-carrying SSR prop objects (Levels P3-9, L4).
 //!
 //! Element attribute objects (`_ssrRenderAttrs(_mergeProps({ id: "x" }, _attrs))`)
 //! are assembled from [`VNodePropEntry`] values before they are written. An

@@ -5,7 +5,7 @@ run-name: >-
   (inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
   (inputs.lsp_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
-  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  (inputs.level_dom_corpus_mode || 'enforce') == 'enforce' &&
   'enforced' || 'observational' }} @ ${{ github.sha }}
 
 on:
@@ -57,8 +57,8 @@ on:
           - enforce
           - record-only
           - skip
-      davinci_dom_corpus_mode:
-        description: "Davinci L2 DOM corpus gate handling"
+      level_dom_corpus_mode:
+        description: "Levels L2 DOM corpus gate handling"
         required: false
         default: "enforce"
         type: choice
@@ -245,7 +245,7 @@ jobs:
             tests/tooling/sfc-equivalence.test.ts \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
-            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts \
+            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/level-pug-corpus-oracle.test.ts \
             tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
           for property in idempotence parse-preservation lint-agreement; do
             if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
@@ -312,8 +312,8 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  davinci-dom-corpus:
+  level-dom-corpus:
     permissions: { contents: read, actions: read }
-    uses: ./.github/workflows/davinci-canonical-corpus.yml
+    uses: ./.github/workflows/level-canonical-corpus.yml
     with:
-      davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+      level_dom_corpus_mode: ${{ inputs.level_dom_corpus_mode || 'enforce' }}

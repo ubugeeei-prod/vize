@@ -2,7 +2,7 @@
 //!
 //! Today's span identity is one dotted `&'static str`
 //! (`"atelier.dom.template.parse"`). Attribution extends that identity with
-//! optional `{stage, pass, file_id, block, span}` coordinates so the Davinci
+//! optional `{stage, pass, file_id, block, span}` coordinates so the Levels
 //! pass manager can report pass × stage × block × span costs. Every field is
 //! optional and the empty attribution is exactly the historical dotted key, so
 //! existing `profile!` call sites keep their identity and behavior.

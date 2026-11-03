@@ -1,4 +1,4 @@
-# TS-31 source-map coverage battery: template fixtures (Davinci P3-9).
+# TS-31 source-map coverage battery: template fixtures (Levels P3-9).
 #
 # Every fixture is compiled by the DOM, Vapor and SSR backends with source maps
 # on. Each `[[fixture.anchor]]` names one authored token the map must resolve:

@@ -189,7 +189,7 @@ pub struct Node {
     pub end: u32,
 }
 
-/// What composition may prune with (Davinci FP-3); empty unless the skeleton
+/// What composition may prune with (Levels FP-3); empty unless the skeleton
 /// was built composable.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PropFacts {

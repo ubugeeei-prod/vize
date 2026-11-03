@@ -1,7 +1,7 @@
-2026-10-10T08:18:25.1171232Z davinci SSR production sweep: scope=smoke templates=2611 compared=2603 s4=2598 error_skips=8 rejected=0 divergences=4
-2026-10-10T08:18:25.1171854Z davinci SSR production lanes: {"legacy.expression_or_encoding": 6, "none": 7, "s4": 2598}
+2026-10-10T08:18:25.1171232Z levels SSR production sweep: scope=smoke templates=2611 compared=2603 s4=2598 error_skips=8 rejected=0 divergences=4
+2026-10-10T08:18:25.1171854Z levels SSR production lanes: {"legacy.expression_or_encoding": 6, "none": 7, "s4": 2598}
 2026-10-10T08:18:25.1172034Z 
-2026-10-10T08:18:25.1172204Z thread '<unnamed>' (485077) panicked at crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs:156:5:
+2026-10-10T08:18:25.1172204Z thread '<unnamed>' (485077) panicked at crates/vize_atelier_ssr/tests/level_ssr_corpus/production.rs:156:5:
 2026-10-10T08:18:25.1172457Z production: 4 production SFC divergences:
 2026-10-10T08:18:25.1172690Z /home/runner/_work/vize/vize/target/nextest/pr/vapor-sfc/326274-100/source.vue ["s4"]
 2026-10-10T08:18:25.1172903Z --- selected
@@ -217,6 +217,6 @@
 2026-10-10T08:18:25.1206827Z }
 2026-10-10T08:18:25.1206987Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 2026-10-10T08:18:25.1207135Z 
-2026-10-10T08:18:25.1207308Z thread 'ssr_lanes_agree_on_sfc_templates' (485076) panicked at crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs:282:10:
+2026-10-10T08:18:25.1207308Z thread 'ssr_lanes_agree_on_sfc_templates' (485076) panicked at crates/vize_atelier_ssr/tests/level_ssr_corpus.rs:282:10:
 2026-10-10T08:18:25.1207587Z P3-8 SSR corpus thread must not panic: Any { .. }
 2026-10-10T08:18:25.1207766Z test ssr_lanes_agree_on_sfc_templates ... FAILED

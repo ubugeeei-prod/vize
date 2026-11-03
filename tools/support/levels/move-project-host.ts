@@ -3,9 +3,9 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path";
 
 const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-const source = "davinci/vize_l0/src/config/project.rs";
+const source = "levels/vize_l0/src/config/project.rs";
 const target = "crates/vize_carton/src/config/project.rs";
-const core = "davinci/vize_l0/src/config.rs";
+const core = "levels/vize_l0/src/config.rs";
 const host = "crates/vize_carton/src/config.rs";
 const callers = [
   "crates/vize_maestro/src/server/state/batch_cache.rs",
@@ -65,7 +65,7 @@ function integrate() {
     );
   }
   requireCondition(
-    read("tests/tooling/support/davinci-host-imports.ts").includes("host_project_selection"),
+    read("tests/tooling/support/level-host-imports.ts").includes("host_project_selection"),
     "the reviewed project-host gate companion must accompany replay",
   );
   write(

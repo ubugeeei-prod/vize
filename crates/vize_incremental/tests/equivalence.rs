@@ -1,5 +1,5 @@
 //! TS-42 on the committed plane (P5-9): the committed edit scripts
-//! (`tools/commands/davinci/incremental-equivalence/scripts/`) run through
+//! (`tools/commands/levels/incremental-equivalence/scripts/`) run through
 //! one long-lived database per file over every committed project fixture,
 //! and every served artifact equals the clean path after every step.
 //!
@@ -7,7 +7,7 @@
 //! Under the `seeded-stale-cache` feature (the firewall's equality weakened
 //! to block lengths) the same run must report stale artifacts, which proves
 //! the harness can see the bug class it exists for. The corpus shard runs
-//! the same harness in CI (`davinci-incremental.yml`).
+//! the same harness in CI (`level-incremental.yml`).
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
@@ -21,7 +21,7 @@ fn repo() -> PathBuf {
 }
 
 fn scripts() -> Vec<EditScript> {
-    let dir = repo().join("tools/commands/davinci/incremental-equivalence/scripts");
+    let dir = repo().join("tools/commands/levels/incremental-equivalence/scripts");
     let mut paths: Vec<PathBuf> = std::fs::read_dir(&dir)
         .expect("committed edit scripts")
         .map(|entry| entry.expect("script entry").path())

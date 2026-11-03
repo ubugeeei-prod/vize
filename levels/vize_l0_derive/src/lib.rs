@@ -1,4 +1,4 @@
-//! `#[derive(Dump)]` - the mechanical half of the Davinci stage-dump
+//! `#[derive(Dump)]` - the mechanical half of the Levels stage-dump
 //! contract.
 //!
 //! **Experimental:** generated format and macro API may change in any alpha

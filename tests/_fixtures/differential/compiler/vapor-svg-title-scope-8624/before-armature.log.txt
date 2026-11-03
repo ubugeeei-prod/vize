@@ -3,13 +3,13 @@ help: Check that the patched package version and available features are compatib
       with the dependency requirements. If the patch has a different version from
       what is locked in the Cargo.lock file, run `cargo update` to use the new
       version. This may also occur with an optional dependency that is not enabled.
-   Compiling vize_l0 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/davinci/vize_l0)
+   Compiling vize_l0 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/levels/vize_l0)
    Compiling vize_oxc_parser v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/vendor/oxc_parser)
    Compiling vize_carton v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_carton)
-   Compiling davinci_test_support v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tests/davinci_test_support)
-   Compiling vize_l1 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/davinci/vize_l1)
+   Compiling level_test_support v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tests/level_test_support)
+   Compiling vize_l1 v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/levels/vize_l1)
    Compiling vize_relief v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_relief)
-   Compiling davinci_harness v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tools/benchmarks/crates/davinci_harness)
+   Compiling level_harness v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/tools/benchmarks/crates/level_harness)
    Compiling vize_armature v0.443.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-vapor-svg-title-scope-8624-20261012/crates/vize_armature)
 warning: unused import: `Allocator`
  --> crates/vize_armature/src/parser/compat_reference.rs:5:15
@@ -35,7 +35,7 @@ test parser::svg_title_tests::svg_title_children_preserve_complete_html_rcdata_c
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 148 filtered out; finished in 0.00s
 
-     Running tests/davinci_expr_parses.rs (/tmp/vize-svg-title-target-20261012/debug/deps/davinci_expr_parses-00bc90869d4721c7)
+     Running tests/level_expr_parses.rs (/tmp/vize-svg-title-target-20261012/debug/deps/level_expr_parses-00bc90869d4721c7)
 
 running 0 tests
 

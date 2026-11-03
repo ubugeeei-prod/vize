@@ -31,7 +31,7 @@
       "prBaseGitObject": "981fb903201e4d9a3af401a625d9cf932cb31ff0"
     },
     {
-      "path": "tests/_fixtures/davinci-ts40-projection",
+      "path": "tests/_fixtures/level-ts40-projection",
       "beforeGitObject": "fb6e7b2def23d1a99a745b738054b1494dfd0b2d",
       "prBaseGitObject": "fb6e7b2def23d1a99a745b738054b1494dfd0b2d"
     },

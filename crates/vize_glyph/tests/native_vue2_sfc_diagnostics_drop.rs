@@ -1,6 +1,6 @@
 //! Isolated authentic whole-owner diagnostic heap drop and unwind.
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, stats};
+use level_harness::alloc::{CountingAllocator, mark_installed, stats};
 use vize_glyph::native_doc::{NativeVue2SfcOptions, observe_native_vue2_sfc_in};
 use vize_l0::Allocator;
 

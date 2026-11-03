@@ -15,14 +15,14 @@ metadata.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_sfc_namespace_selector.rs` pins custom
+`crates/vize_atelier_dom/tests/level_s2_sfc_namespace_selector.rs` pins custom
 foreign descendants, non-ASCII quoted attribute text, and root HTML title
 compatibility.
 
 Focused gates:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_sfc_namespace_selector --test davinci_s2_production_selector --test davinci_s2_profile --test davinci_s2_dom_namespace
+cargo test -p vize_atelier_dom --test level_s2_sfc_namespace_selector --test level_s2_production_selector --test level_s2_profile --test level_s2_dom_namespace
 cargo test -p vize_s1_to_s2
 cargo clippy -p vize_s1_to_s2 --lib -- -D warnings
 cargo clippy -p vize_atelier_dom --tests -- -D warnings

@@ -5,8 +5,8 @@ on:
       - .github/workflows/script-recovery-cost.yml
       - crates/vize_croquis/src/script_parser/recovery.rs
       - crates/vize_croquis/src/script_parser/recovery/**
-      - davinci/vize_l0/examples/source_recovery_benchmark.rs
-      - davinci/vize_l0/tests/source_probes/mod.rs
+      - levels/vize_l0/examples/source_recovery_benchmark.rs
+      - levels/vize_l0/tests/source_probes/mod.rs
       - tools/benchmarks/scripts/recovery_cost_contract.ts
       - tools/benchmarks/scripts/compare_recovery_cost.ts
       - tools/benchmarks/scripts/profile-evidence-json.ts
@@ -61,8 +61,8 @@ jobs:
           git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
           test "$(cat evidence/base.sha)" = "$(cat evidence/first-parent.sha)"
           git diff --name-status "$recovery_base_sha" HEAD > evidence/source-diff.txt
-          cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
-          sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
+          cp levels/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/levels/vize_l0/examples/"
+          sha256sum levels/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/levels/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
           test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
           rustc +1.99.1 -vV > evidence/rustc.txt
           lscpu > evidence/cpu.txt
@@ -97,10 +97,10 @@ jobs:
               carrier = [x for x in artifacts if x['target']['name'] == 'source_recovery_benchmark' and x['target']['kind'] == ['example']]
               assert len(croquis) == len(carrier) == 1
               assert pathlib.Path(croquis[0]['manifest_path']) == source/'crates/vize_croquis/Cargo.toml'
-              assert pathlib.Path(carrier[0]['target']['src_path']) == source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'
+              assert pathlib.Path(carrier[0]['target']['src_path']) == source/'levels/vize_l0/examples/source_recovery_benchmark.rs'
               executable = pathlib.Path(carrier[0]['executable'])
               assert sha(executable) == sha(evidence/f'normal-{role}')
-              receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'davinci/vize_l0/examples/source_recovery_benchmark.rs'), 'binarySha256': sha(executable), 'artifacts': [{k:x[k] for k in ('package_id', 'manifest_path', 'target', 'profile', 'features', 'fresh', 'executable')} for x in (croquis[0], carrier[0])]}
+              receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'levels/vize_l0/examples/source_recovery_benchmark.rs'), 'binarySha256': sha(executable), 'artifacts': [{k:x[k] for k in ('package_id', 'manifest_path', 'target', 'profile', 'features', 'fresh', 'executable')} for x in (croquis[0], carrier[0])]}
           assert receipt['roles']['base']['carrierSha256'] == receipt['roles']['head']['carrierSha256']
           assert receipt['roles']['base']['lockSha256'] == receipt['roles']['head']['lockSha256']
           (evidence/'identity.json').write_text(json.dumps(receipt, indent=2)+'\n')

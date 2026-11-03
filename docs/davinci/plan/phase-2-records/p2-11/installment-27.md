@@ -15,13 +15,13 @@ model names into the same prop family as the shipped lane: model value key,
 
 The durable current witness is:
 
-- [`emit_model.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_model.rs)
+- [`emit_model.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_model.rs)
   — direct S2 emitter pins for dynamic component model arguments and modifiers.
-- [`davinci_s2_model.rs`](../../../../../crates/vize_atelier_dom/tests/l2_model.rs)
+- [`level_s2_model.rs`](../../../../../crates/vize_atelier_dom/tests/l2_model.rs)
   — S2-vs-shipped byte-for-byte fixtures for component dynamic model args.
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/l2_patch_flags.rs)
+- [`level_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/l2_patch_flags.rs)
   — patch-flag fixtures proving dynamic model args use `FULL_PROPS`.
-- [`davinci-storage-policy.test.ts`](../../../../../tests/tooling/davinci-storage-policy.test.ts)
+- [`level-storage-policy.test.ts`](../../../../../tests/tooling/level-storage-policy.test.ts)
   — reviewed owned-storage inventory for the new model-key helpers.
 
 This installment also narrows the P2-9 surface/hoist comparator by removing

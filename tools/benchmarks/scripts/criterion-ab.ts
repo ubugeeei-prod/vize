@@ -90,9 +90,9 @@ export const CRITERION_SUITES: CriterionSuite[] = [
   { package: "vize_patina", benches: ["lint_bench", "markup_ir_bench"], label: "Lint" },
   {
     package: "vize_atelier_vapor",
-    benches: ["davinci"],
+    benches: ["levels"],
     filter: "vapor_native_pair",
-    label: "Davinci Vapor native/retained pairs",
+    label: "Levels Vapor native/retained pairs",
   },
 ];
 

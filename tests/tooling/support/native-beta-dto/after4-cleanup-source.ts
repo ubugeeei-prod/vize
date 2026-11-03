@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { parseTomlLite } from "../../../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../../../tools/support/compat/levels/toml-lite.ts";
 import type { WatcherContext } from "./stable-watcher-boundary.ts";
 type Row = Record<string, unknown>;
 const object = (value: unknown): Row => {

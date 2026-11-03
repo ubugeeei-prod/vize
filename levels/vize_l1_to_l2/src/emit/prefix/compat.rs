@@ -1,5 +1,5 @@
 //! The JS-module dialect gate (`vize_atelier_core::retained::js_module_compatible`,
-//! Davinci P1-7), ported verbatim: the retained TS-dialect AST drives the
+//! Levels P1-7), ported verbatim: the retained TS-dialect AST drives the
 //! rewrite only when the legacy `SourceType::default().with_module(true)`
 //! parse of the same bytes is provably the same parse; everything the scan
 //! rejects keeps the legacy re-parse chain, whose *failure* modes (raw

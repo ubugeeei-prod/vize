@@ -5,8 +5,8 @@ export function moveSharedTypes(root: string, mode: string): void {
   const read = (file: string): string => readFileSync(path.join(root, file), "utf8");
   const write = (file: string, source: string): void =>
     writeFileSync(path.join(root, file), source);
-  const carton = "davinci/vize_l0/src/",
-    substrate = "davinci/vize_davinci/src/";
+  const carton = "levels/vize_l0/src/",
+    substrate = "levels/vize_level/src/";
   if (mode === "--shared-moves-only") {
     mkdirSync(path.join(root, carton, "compiler_error"), { recursive: true });
     for (const [before, after] of [
@@ -110,8 +110,8 @@ mod codes;
     "markup/lex/compat/states.rs",
   ];
   for (const file of [
-    ...files.map((file) => "davinci/vize_l1/src/" + file),
-    "davinci/vize_l1/tests/surface_fidelity.rs",
+    ...files.map((file) => "levels/vize_l1/src/" + file),
+    "levels/vize_l1/tests/surface_fidelity.rs",
   ]) {
     write(
       file,
@@ -120,6 +120,6 @@ mod codes;
         .replaceAll("vize_relief::Namespace", "vize_l0::Namespace"),
     );
   }
-  const manifest = "davinci/vize_l1/Cargo.toml";
+  const manifest = "levels/vize_l1/Cargo.toml";
   write(manifest, read(manifest).replace("vize_relief = { workspace = true }\n", ""));
 }

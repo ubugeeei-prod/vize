@@ -28,7 +28,7 @@
 //! - **Arena allocation**: Uses `vize_l0::Allocator` for fast allocation
 //! - **Minimal allocations**: Only allocates when absolutely necessary
 //! - **Shared parse stages**: Art files split through the shared SFC block
-//!   splitter (Davinci L0) and the `<art>` block parses as a lossless L1
+//!   splitter (Levels L0) and the `<art>` block parses as a lossless L1
 //!   surface tree — no private byte scanner
 //!
 //! ## Usage

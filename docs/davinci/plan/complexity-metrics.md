@@ -3,8 +3,8 @@
 **Status:** decided by [P4-9a](./phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec)
 (2026-09-22), confirming the [open-question recommendation](../open-questions.md#complexity-metric-definition)
 with the amendments listed at the end. Production implementation:
-`davinci/vize_l1_to_l2/src/pass/cfg.rs` (the `template-complexity` pass).
-Independent implementation: `davinci/vize_l1_to_l2/tests/cfg_complexity_oracle/`
+`levels/vize_l1_to_l2/src/pass/cfg.rs` (the `template-complexity` pass).
+Independent implementation: `levels/vize_l1_to_l2/tests/cfg_complexity_oracle/`
 (TS-34). Cross-file attribution and the rule are
 [P4-9b](./phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding).
 
@@ -109,7 +109,7 @@ Percentiles are nearest-rank. The command that reproduces the table:
 
 ```sh
 git submodule update --init --depth 1 tests/_fixtures/_git
-VIZE_DAVINCI_COMPLEXITY_CORPUS=tests/_fixtures/_git \
+VIZE_LEVEL_COMPLEXITY_CORPUS=tests/_fixtures/_git \
   cargo test -p vize_l1_to_l2 --test cfg_complexity_oracle \
   the_corpus_shard_agrees_with_the_naive_evaluator -- --exact --nocapture
 ```
@@ -151,7 +151,7 @@ from a child to its parent.
 | rendered components | 40,724 |   1 |  12 |  24 |  56 |   371 |
 
 ```sh
-VIZE_DAVINCI_RENDERED_CORPUS=tests/_fixtures/_git \
+VIZE_LEVEL_RENDERED_CORPUS=tests/_fixtures/_git \
   cargo test -p vize_curator --lib the_rendered_distribution_over_a_corpus_obeys_its_laws \
   -- --nocapture
 ```

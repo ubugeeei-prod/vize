@@ -9,7 +9,7 @@
 //!
 //! Contract:
 //!
-//! - `davinci.expr.parses` increments once per guard-admitted non-static
+//! - `levels.expr.parses` increments once per guard-admitted non-static
 //!   node, whether parsing succeeds or fails; guard refusal never attempts
 //!   OXC. Consumers of retained slots never parse the same value again.
 //! - Ordinary `js_ast` is `Some` iff content parses as one complete
@@ -136,7 +136,7 @@ pub fn retain_slot_parameters_in<'a>(
             (!overflow).then_some("mismatched expression delimiters"),
         );
     }
-    global_profiler().record_counter("davinci.expr.parses", 1);
+    global_profiler().record_counter("levels.expr.parses", 1);
     let parameters =
         oxc_parser::Parser::new(allocator.as_oxc(), raw, EXPR_SOURCE_TYPE).parse_slot_parameters();
     if let Ok(parameters) = &parameters
@@ -157,7 +157,7 @@ pub fn retain_slot_parameters_in<'a>(
 
 /// The single retained-expression parse site.
 ///
-/// Every oxc parse here is one `davinci.expr.parses` increment, whether or
+/// Every oxc parse here is one `levels.expr.parses` increment, whether or
 /// not the text turns out to be a lone complete expression — an attempt is a
 /// parse. Text the nesting guard refuses is never handed to oxc at all, so
 /// it is not an attempt and not counted — the same refusal every legacy
@@ -174,7 +174,7 @@ fn parse_retained<'a>(
     if !expression_is_safe_to_parse(raw) {
         return None;
     }
-    global_profiler().record_counter("davinci.expr.parses", 1);
+    global_profiler().record_counter("levels.expr.parses", 1);
     let parsed = oxc_parser::Parser::new(oxc_allocator, raw, EXPR_SOURCE_TYPE)
         .parse_expression()
         .ok()?;

@@ -11,7 +11,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const lintPath = path.join(repoRoot, "tools", "commands", "davinci", "assertion-lint.rs");
+const lintPath = path.join(repoRoot, "tools", "commands", "levels", "assertion-lint.rs");
 const partial = (name: string) =>
   `    #[test]\n    fn ${name}() {\n        assert!("ab".contains("a"));\n    }\n`;
 

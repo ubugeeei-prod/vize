@@ -1,7 +1,7 @@
 //! Historical template-traversal plans for inspected legacy compiles.
 //!
 //! The DOM, SSR and Vapor plans record the template walks pinned by the
-//! backends' `davinci_walk_baseline` laws. Each backend reads this inspection
+//! backends' `level_walk_baseline` laws. Each backend reads this inspection
 //! metadata through a path-only dev dependency. The CLI uses the same plans
 //! to describe its selected legacy compile when writing a crash report.
 //!

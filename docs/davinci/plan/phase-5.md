@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Early re-cut 2026-09-21, while phases 3 and 4 are still live**, under the plan README's [early re-cut rule](./README.md#task-format) and in the same shape as [phase 4](./phase-4.md). The maintainer's completion target (**2026-09-23**) does not leave room to wait for the phase-4 exit, and a large part of this phase — stage keys, the salsa skeleton, the Maestro request-path waves, Corsa session reuse, the resource baselines and multi-client conformance — reads only L0–L2 artifacts that already exist. Every task states its **start gate**: _startable now_ (no open earlier-phase dependency) or _gated on_ a named phase-4 task. The exit gate is unchanged and still follows the phase-4 exit (P5-14 depends on P4-17). The date orders work; it relaxes no gate or ratchet.
 
-**The per-task contracts live in [phase-5-tasks.md](./phase-5-tasks.md) (P5-1a…P5-6c) and [phase-5-tasks-later.md](./phase-5-tasks-later.md) (P5-7…P5-14)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 19 tasks. [`davinci-phase5-contract-status.test.ts`](../../../tests/tooling/davinci-phase5-contract-status.test.ts) enforces the structure through the shared re-cut checker.
+**The per-task contracts live in [phase-5-tasks.md](./phase-5-tasks.md) (P5-1a…P5-6c) and [phase-5-tasks-later.md](./phase-5-tasks-later.md) (P5-7…P5-14)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 19 tasks. [`level-phase5-contract-status.test.ts`](../../../tests/tooling/level-phase5-contract-status.test.ts) enforces the structure through the shared re-cut checker.
 
 ## What the re-cut changed
 
@@ -38,20 +38,20 @@ Phase 4 was re-cut the same day; nothing has landed yet. These P4 tasks gate thi
 
 Lanes own disjoint paths within this phase. Cross-phase: lane D must not edit phase-4 lane paths (`crates/vize_maestro/src/ide/ecosystem*`, `crates/vize_maestro/src/virtual_code*`, `crates/vize_maestro/src/ide/diagnostics/corsa*`) until their owning P4 task has landed — which is exactly why P5-6b and P5-6c are gated. Registration touchpoints (`Cargo.toml`, `lib.rs`, `budgets.toml`, `test-suites.md`) are the expected rebase conflicts.
 
-| Lane | Tasks               | Owns (only this lane edits)                                                                    |
-| ---- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| A    | P5-1a, P5-1b        | `davinci/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                          |
-| B    | P5-2, P5-3          | `davinci/vize_davinci/src/summary*`                                                            |
-| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                     |
-| D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                              |
-| E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                      |
-| F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`         |
-| G    | P5-9                | `tools/commands/davinci/incremental-equivalence*`, `.github/workflows/davinci-incremental.yml` |
-| H    | P5-10               | `davinci/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                         |
-| I    | P5-11a, P5-11b      | `tools/commands/davinci/resource-budgets*`, `tests/tooling/davinci-resource-budgets*`          |
-| J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                               |
-| K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                                   |
-| X    | P5-14               | `docs/davinci/plan/phase-5-records/`                                                           |
+| Lane | Tasks               | Owns (only this lane edits)                                                                 |
+| ---- | ------------------- | ------------------------------------------------------------------------------------------- |
+| A    | P5-1a, P5-1b        | `levels/vize_level/src/key*`, `docs/davinci/plan/key-manifests.md`                          |
+| B    | P5-2, P5-3          | `levels/vize_level/src/summary*`                                                            |
+| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                  |
+| D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                           |
+| E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                   |
+| F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`      |
+| G    | P5-9                | `tools/commands/levels/incremental-equivalence*`, `.github/workflows/level-incremental.yml` |
+| H    | P5-10               | `levels/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                       |
+| I    | P5-11a, P5-11b      | `tools/commands/levels/resource-budgets*`, `tests/tooling/level-resource-budgets*`          |
+| J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                            |
+| K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                                |
+| X    | P5-14               | `docs/davinci/plan/phase-5-records/`                                                        |
 
 ## Critical path
 

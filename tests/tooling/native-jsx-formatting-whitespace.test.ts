@@ -10,7 +10,7 @@ import jsx from "@vue/babel-plugin-jsx";
 import { Window } from "happy-dom";
 
 const fixture = new URL(
-  "../../davinci/vize_l2/tests/fixtures/jsx-formatting-whitespace/",
+  "../../levels/vize_l2/tests/fixtures/jsx-formatting-whitespace/",
   import.meta.url,
 );
 const inputPath = new URL("cases.json", fixture);

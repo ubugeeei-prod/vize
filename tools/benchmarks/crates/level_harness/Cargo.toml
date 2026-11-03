@@ -1,11 +1,11 @@
 [package]
-name = "davinci_harness"
+name = "level_harness"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Davinci bench harness - criterion wrapper with allocation and RSS metrics"
+description = "Levels bench harness - criterion wrapper with allocation and RSS metrics"
 publish = false
 autobenches = false
 metadata.vize.stability = "experimental"
@@ -18,7 +18,7 @@ instruction-counts = ["dep:valgrind-requests", "dep:stacker"]
 
 [dependencies]
 criterion = { workspace = true }
-davinci_test_support = { workspace = true }
+level_test_support = { workspace = true }
 mimalloc = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

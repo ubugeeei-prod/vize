@@ -109,15 +109,15 @@ test("Doctor reporter benchmarks are enrolled in scoped Criterion A/B runs", () 
   assert.deepEqual(result.selected, ["vize_doctor"]);
 });
 
-test("Vapor source changes select the paired Davinci compile benchmark", () => {
+test("Vapor source changes select the paired Levels compile benchmark", () => {
   const suite = CRITERION_SUITES.find(
     ({ package: packageName }) => packageName === "vize_atelier_vapor",
   );
   assert.deepEqual(suite, {
     package: "vize_atelier_vapor",
-    benches: ["davinci"],
+    benches: ["levels"],
     filter: "vapor_native_pair",
-    label: "Davinci Vapor native/retained pairs",
+    label: "Levels Vapor native/retained pairs",
   });
   const result = selectCriterionSuites({
     changedPaths: ["crates/vize_atelier_vapor/src/l3.rs"],

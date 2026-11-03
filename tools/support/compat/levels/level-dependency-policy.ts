@@ -184,8 +184,8 @@ export function readBaseAllowlist(cwd: string, base: string | undefined): Allowl
       "--name-only",
       base,
       "--",
-      "tools/support/compat/davinci/level-dependencies.mjs",
-      "tools/support/compat/davinci/level-dependencies.ts",
+      "tools/support/compat/levels/level-dependencies.mjs",
+      "tools/support/compat/levels/level-dependencies.ts",
     ],
     { cwd, encoding: "utf8" },
   ).trim();

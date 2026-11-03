@@ -78,7 +78,7 @@ for (const [index, fixture] of fixtures.slice(0, 5).entries()) {
   assert.equal(
     successor.path,
     index < 4
-      ? "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs"
+      ? "levels/vize_l2/src/file/region/native/pair/text_tests/refusal.rs"
       : "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_root_if_else_text/refusal.rs",
   );
   assert.equal(

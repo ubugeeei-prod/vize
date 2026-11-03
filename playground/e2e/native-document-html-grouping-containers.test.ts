@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-grouping-body-containers.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-grouping-body-containers.json";
 
 describe("native Document grouping HTML body containers", () => {
   it("retains eight complete sources and whole ancestry, attribute and node packets", () => {

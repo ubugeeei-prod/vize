@@ -1,12 +1,12 @@
-//! Davinci P2-11 DOM corpus-runnable entry under `prefix_identifiers`
+//! Levels P2-11 DOM corpus-runnable entry under `prefix_identifiers`
 //! (installment 85): the same committed battery and
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening as
-//! `davinci_dom_corpus`, with both lanes compiled under
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widening as
+//! `level_dom_corpus`, with both lanes compiled under
 //! `prefix_identifiers: true`.
 
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 
-use davinci_dom_corpus_support::{
+use level_dom_corpus_support::{
     Lane, Report, assert_clean_corpus, assert_empty, compare_sfc_template_lane, compare_sweep_lane,
 };
 
@@ -55,8 +55,8 @@ fn prefixed_dom_emit_agrees_on_sfc_templates_body() {
         report.patch_fact_entries,
     );
 
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     assert!(
@@ -67,7 +67,7 @@ fn prefixed_dom_emit_agrees_on_sfc_templates_body() {
 
     let corpus = compare_sweep_lane(&sweep, Lane::Prefixed);
     eprintln!(
-        "davinci prefixed DOM corpus sweep: scope={} files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
+        "levels prefixed DOM corpus sweep: scope={} files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
         sweep.scope_label(),
         corpus.files,
         corpus.unreadable_count,
@@ -80,15 +80,15 @@ fn prefixed_dom_emit_agrees_on_sfc_templates_body() {
         corpus.divergence_count,
     );
     eprintln!(
-        "davinci prefixed DOM corpus refusal reasons: {:?}",
+        "levels prefixed DOM corpus refusal reasons: {:?}",
         corpus.s2_refusal_reasons
     );
     eprintln!(
-        "davinci prefixed DOM corpus old-lane error reasons: {:?}",
+        "levels prefixed DOM corpus old-lane error reasons: {:?}",
         corpus.old_error_reasons
     );
     eprintln!(
-        "davinci prefixed DOM corpus refusal samples: {:?}",
+        "levels prefixed DOM corpus refusal samples: {:?}",
         corpus.s2_refusal_samples
     );
     assert!(

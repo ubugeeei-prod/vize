@@ -7,10 +7,10 @@ on:
       - crates/vize_armature/tests/_fixtures/tokenizer_parser_*.bin
       - crates/vize_atelier_vapor/src/lower/element/template.rs
       - crates/vize_atelier_vapor/src/lower/element/template/**
-      - davinci/vize_l1_to_l2/src/lower/**
-      - davinci/vize_l1_to_l2/tests/pre_textarea_first_newline.rs
-      - davinci/vize_l1_to_l2/tests/text_pass.rs
-      - davinci/vize_l1_to_l2/tests/text_singleton.rs
+      - levels/vize_l1_to_l2/src/lower/**
+      - levels/vize_l1_to_l2/tests/pre_textarea_first_newline.rs
+      - levels/vize_l1_to_l2/tests/text_pass.rs
+      - levels/vize_l1_to_l2/tests/text_singleton.rs
       - tests/tooling/pre-textarea-first-newline.test.mjs
       - tests/tooling/support/first-newline-vapor-oracle.mjs
       - tests/_fixtures/differential/compiler/pre-textarea-first-newline/**

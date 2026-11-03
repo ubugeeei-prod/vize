@@ -30,7 +30,7 @@ import { nativeScopedCaptureRequired } from "./native-scoped-capture.ts";
 
 import { nativeVaporCaptureRequired } from "./native-vapor-capture.mjs";
 import { nativeAttributeValues7502CaptureRequired } from "./native-attribute-values-7502-capture.mjs";
-import { isVOnCorpusInput, V_ON_GATE } from "../davinci/lib/v-on-corpus.ts";
+import { isVOnCorpusInput, V_ON_GATE } from "../levels/lib/v-on-corpus.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];

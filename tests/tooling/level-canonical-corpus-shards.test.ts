@@ -49,22 +49,22 @@ await test("one build and one binary per suite: a base process plus disjoint swe
   assert.deepEqual(processArguments(reach[0]!), [
     "--exact",
     "--skip",
-    "production_compiles_report_and_hold_their_davinci_reach",
+    "production_compiles_report_and_hold_their_level_reach",
     "--nocapture",
   ]);
   assert.deepEqual(processArguments(reach[3]!), [
     "--exact",
-    "production_compiles_report_and_hold_their_davinci_reach",
+    "production_compiles_report_and_hold_their_level_reach",
     "--nocapture",
   ]);
-  assert.equal(reach[3]!.vector, "reach-davinci_production_reach-shard-02-of-16.nul");
+  assert.equal(reach[3]!.vector, "reach-level_production_reach-shard-02-of-16.nul");
   const ssrPug = observerProcesses("ssr-pug");
   assert.deepEqual(
     ssrPug.map((entry) => `${entry.suite.test}:${entry.role}`),
     [
-      "davinci_ssr_corpus:base",
-      ...Array.from({ length: 12 }, () => "davinci_ssr_corpus:shard"),
-      "davinci_pug_corpus:full",
+      "level_ssr_corpus:base",
+      ...Array.from({ length: 12 }, () => "level_ssr_corpus:shard"),
+      "level_pug_corpus:full",
     ],
   );
   assert.deepEqual(processArguments(ssrPug.at(-1)!), ["--nocapture"]);
@@ -77,13 +77,13 @@ await test("one build and one binary per suite: a base process plus disjoint swe
       ]),
     ),
     {
-      dom: ["test -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus"],
+      dom: ["test -p vize_l1_to_l2 --features legacy-differential --test level_dom_corpus"],
       "ssr-pug": [
-        "test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus",
-        "test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus",
+        "test -p vize_atelier_ssr --features legacy-differential --test level_ssr_corpus",
+        "test -p vize_l1_to_l2 --features legacy-differential --test level_pug_corpus",
       ],
       reach: [
-        "test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach",
+        "test -p vize_atelier_sfc --features legacy-dom-differential --test level_production_reach",
       ],
     },
   );
@@ -101,7 +101,7 @@ await test("complete shard vectors cover files.json exactly and sum to the whole
       identity,
       evidence(shards),
     );
-    assert(counters.some((line) => line.startsWith("davinci-differential corpus shard:")));
+    assert(counters.some((line) => line.startsWith("level-differential corpus shard:")));
     assert.throws(
       () => validateObserverLog(observer, shards.log, identity),
       /requires the canonical manifest/,
@@ -111,7 +111,7 @@ await test("complete shard vectors cover files.json exactly and sum to the whole
 
 await test("an omitted, duplicated, foreign or miscounted shard path fails closed", () => {
   const shards = shardedObserverEvidence("reach", paths, 7);
-  const name = "reach-davinci_production_reach-shard-03-of-16.nul";
+  const name = "reach-level_production_reach-shard-03-of-16.nul";
   const original = shards.vectors.get(name)!;
   const withVector = (bytes: Buffer) => ({
     ...shards,
@@ -172,7 +172,7 @@ await test("every process must be present, clean and from the same binary", () =
     [
       "reach",
       reach,
-      /test production_compiles_report_and_hold_their_davinci_reach \.\.\. ok/,
+      /test production_compiles_report_and_hold_their_level_reach \.\.\. ok/,
       "test other ... ok",
     ],
     [
@@ -204,12 +204,12 @@ await test("every process must be present, clean and from the same binary", () =
       "reach",
       reach,
       "   Compiling",
-      "davinci production reach: scope=canonical files=61\n   Compiling",
+      "levels production reach: scope=canonical files=61\n   Compiling",
     ],
     [
       "reach",
       reach,
-      /\ncanonical observer process exit: test=davinci_production_reach role=shard index=15[^\n]*\n$/,
+      /\ncanonical observer process exit: test=level_production_reach role=shard index=15[^\n]*\n$/,
       "\n",
     ],
     ["ssr-pug", ssr, /scope=canonical files=6 parsed=6/, "scope=canonical files=6 parsed=5"],
@@ -221,7 +221,7 @@ await test("every process must be present, clean and from the same binary", () =
       "legacy_error_skips=0 rejected=0 divergences=3",
     ],
     ["ssr-pug", ssr, "pug=3 refused=0", "pug=3 refused=1"],
-    ["ssr-pug", ssr, "davinci pug corpus sweep: files=61", "davinci pug corpus sweep: files=60"],
+    ["ssr-pug", ssr, "levels pug corpus sweep: files=61", "levels pug corpus sweep: files=60"],
     ["ssr-pug", ssr, "pug=3 refused=0 compiled_lanes=9", "pug=0 refused=0 compiled_lanes=0"],
     ["ssr-pug", ssr, "role=full\n", "role=base\n"],
   ] as const) {
@@ -233,7 +233,7 @@ await test("every process must be present, clean and from the same binary", () =
 
 await test("the observer workflow builds in the background and runs each sharded observer", () => {
   type Step = { name?: string; run?: string; uses?: string; with?: Record<string, unknown> };
-  const workflow = parse(readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "level-canonical-corpus.yml"));
   const steps = workflow.jobs["canonical-observers"].steps as Step[];
   const names = steps.map((step) => step.name);
   const step = (name: string) => steps.find((candidate) => candidate.name === name) as Step;
@@ -255,7 +255,7 @@ await test("the observer workflow builds in the background and runs each sharded
     "node tools/support/compat/github/canonical-corpus-shards.ts run ssr-pug ssr-pug.log",
   );
   assert.equal(
-    step("Measure Davinci production reach on the hydrated corpus").run,
+    step("Measure Levels production reach on the hydrated corpus").run,
     "node tools/support/compat/github/canonical-corpus-shards.ts run reach reach.log",
   );
   for (const name of [
@@ -267,7 +267,7 @@ await test("the observer workflow builds in the background and runs each sharded
       key: "${{ steps.corpus-plan.outputs.cache-key }}",
       "restore-keys": "${{ steps.corpus-plan.outputs.cache-restore-key }}",
     });
-  const finalizer = workflow.jobs["davinci-dom-corpus"].steps as Step[];
+  const finalizer = workflow.jobs["level-dom-corpus"].steps as Step[];
   assert(
     finalizer.findIndex((candidate) => candidate.name === "Setup Node") <
       finalizer.findIndex((candidate) => candidate.name === "Select complete canonical workers"),

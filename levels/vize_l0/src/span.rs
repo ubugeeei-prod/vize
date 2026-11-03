@@ -1,11 +1,11 @@
-//! The Davinci span type: two byte offsets into the authored file.
+//! The Levels span type: two byte offsets into the authored file.
 //!
 //! `Span` is the L0 source-model coordinate (`docs/davinci/architecture.md`):
 //! every node records where it came from as a half-open byte range
 //! `[start, end)` into the one authored source string, and nothing else.
 //! Text is recovered on demand with [`Span::slice`]; line/column exist only
 //! at diagnostic-rendering time, derived from offsets (see
-//! [`crate::line_index::LineIndex`]). Since Davinci P1-3 the relief
+//! [`crate::line_index::LineIndex`]). Since Levels P1-3 the relief
 //! `SourceLocation` carries one of these instead of an owned `source: String`
 //! copy of the covered text; the migration record lives in
 //! `docs/davinci/plan/sourcelocation-inventory.md`.

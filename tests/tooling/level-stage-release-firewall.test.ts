@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { metadata, workspacePackage, type Package } from "./support/davinci-stage-dependencies.ts";
+import { metadata, workspacePackage, type Package } from "./support/level-stage-dependencies.ts";
 
-const publishedDavinciStages = new Set([
+const publishedLevelStages = new Set([
   "vize_l0",
   "vize_l1",
   "vize_l2",
@@ -11,7 +11,7 @@ const publishedDavinciStages = new Set([
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ]);
-const publishedDifferentialAlias = ["davinci", "differential"].join("-");
+const publishedDifferentialAlias = ["levels", "differential"].join("-");
 
 function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;
@@ -55,8 +55,8 @@ test("Feature values resolve unpublished stages through dependency keys", () => 
   assert.equal(referencedWorkspaceFeaturePackage(pkg, "local_feature"), null);
 });
 
-test("Davinci stage crates are published before a production feature can select them", () => {
-  for (const packageName of publishedDavinciStages) {
+test("Levels stage crates are published before a production feature can select them", () => {
+  for (const packageName of publishedLevelStages) {
     assert.ok(
       isPublishable(workspacePackage(metadata, packageName)),
       `${packageName} is not publishable`,
@@ -86,7 +86,7 @@ test("DOM production keeps the published L2 renderer available for profiling", (
   assert.deepEqual(dom.features[publishedDifferentialAlias], ["legacy-differential"]);
 
   const stageEdges = dom.dependencies
-    .filter((dependency) => publishedDavinciStages.has(dependency.name))
+    .filter((dependency) => publishedLevelStages.has(dependency.name))
     .map((dependency) => ({
       name: dependency.name,
       kind: dependency.kind,
@@ -122,7 +122,7 @@ test("DOM production keeps the published L2 renderer available for profiling", (
 test("Vapor production selects only published stages for the L3 bridge", () => {
   const stageEdges = workspacePackage(metadata, "vize_atelier_vapor")
     .dependencies.filter(
-      (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
+      (dependency) => dependency.kind === null && publishedLevelStages.has(dependency.name),
     )
     .map((dependency) => ({
       name: dependency.name,
@@ -183,7 +183,7 @@ test("Vapor production selects only published stages for the L3 bridge", () => {
 test("SSR production selects only published stages for the L4 bridge", () => {
   const stageEdges = workspacePackage(metadata, "vize_atelier_ssr")
     .dependencies.filter(
-      (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
+      (dependency) => dependency.kind === null && publishedLevelStages.has(dependency.name),
     )
     .map((dependency) => ({
       name: dependency.name,

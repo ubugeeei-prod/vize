@@ -6,7 +6,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/lint-unused-disable-config.yml
-      - davinci/vize_l0/src/config/model/linter.rs
+      - levels/vize_l0/src/config/model/linter.rs
       - crates/vize/src/commands/lint/entry_rules.rs
       - crates/vize_maestro/src/ide/diagnostics/patina.rs
       - crates/vize_carton/src/config/loader/vite-runtime.mjs

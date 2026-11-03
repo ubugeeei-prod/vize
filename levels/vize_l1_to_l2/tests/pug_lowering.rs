@@ -1,8 +1,8 @@
-//! TS-20 for the pug dialect (Davinci P4-12c): the pug → Vue-template
+//! TS-20 for the pug dialect (Levels P4-12c): the pug → Vue-template
 //! desugaring and the L2 lowering behind it.
 //!
 //! - **Oracle.** Every matrix fixture derives exactly the committed
-//!   `.html`, which `tests/tooling/davinci-pug-oracle.test.ts` proves is
+//!   `.html`, which `tests/tooling/level-pug-oracle.test.ts` proves is
 //!   the pinned `pug@3.0.4` rendering; every refused fixture reports
 //!   exactly its committed diagnostics (`VIZE_PUG_BLESS=1` rewrites them).
 //! - **Totality.** Every fixture and every prefix/suffix truncation lowers
@@ -33,7 +33,7 @@ use vize_l1_to_l2::lower::pug::{derive_template_source, lower_pug};
 
 fn fixtures(dir: &str) -> Vec<(String, String, PathBuf)> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/_fixtures/davinci-pug")
+        .join("../../tests/_fixtures/level-pug")
         .join(dir);
     let mut paths: Vec<_> = std::fs::read_dir(&root)
         .expect("pug fixture directory")

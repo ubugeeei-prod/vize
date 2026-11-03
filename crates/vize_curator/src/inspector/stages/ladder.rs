@@ -1,5 +1,5 @@
 //! The stage ladder for one template (C-2 / C-5): every rung the
-//! Davinci pipeline has today, produced by the real compiler layers.
+//! Levels pipeline has today, produced by the real compiler layers.
 //! The stage fields below retain schema-1 wire identifiers (`s1`–`s3`).
 //!
 //! One L1 parse feeds everything, so every page describes the same run:

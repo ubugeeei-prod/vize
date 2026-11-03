@@ -4,7 +4,7 @@ import {
   type FileStorage,
   type StorageKind,
   type StorageMeasurement,
-} from "./davinci-storage-scan.ts";
+} from "./level-storage-scan.ts";
 
 export type StorageScope = "infra" | "l1" | "l2" | "l3" | "l1_to_l2" | "l2_to_l3";
 export type VecCategory = "contract" | "analysis" | "lower" | "pass" | "emit";

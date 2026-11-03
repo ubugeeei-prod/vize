@@ -9,7 +9,7 @@
 //! opts out with a module-level
 //! `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`. This check counts
 //! those `expect(clippy::todo` occurrences (outside comments) per crate
-//! under `crates/` and `davinci/` and compares them with `tools/config/skeleton-todos.toml`:
+//! under `crates/` and `levels/` and compares them with `tools/config/skeleton-todos.toml`:
 //!
 //! - a crate above its baseline (or missing from it) fails: counts only go down;
 //! - a crate below its baseline fails too, so each PR that fills a skeleton
@@ -46,7 +46,7 @@ fn run(check: bool, write: bool) -> Result<(), String> {
     let baseline_text = fs::read_to_string(BASELINE).map_err(|err| format!("{BASELINE}: {err}"))?;
     let baseline = parse_baseline(&baseline_text)?;
     let mut counts = count_crates(Path::new("crates"))?;
-    counts.extend(count_crates(Path::new("davinci"))?);
+    counts.extend(count_crates(Path::new("levels"))?);
 
     let mut problems = Vec::new();
     let mut raised = false;

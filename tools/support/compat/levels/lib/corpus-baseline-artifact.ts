@@ -1,4 +1,4 @@
-// Corpus baseline artifact assembly, scope proof, and drift diff (Davinci
+// Corpus baseline artifact assembly, scope proof, and drift diff (Levels
 // P0-5, TS-11). `buildArtifact`/`renderArtifact` produce the committed
 // fingerprint file, `verifyScope` re-proves that a run actually covered the
 // manifest, and `diffRows` reports per-surface per-project drift.

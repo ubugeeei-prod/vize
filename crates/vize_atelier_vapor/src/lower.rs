@@ -48,7 +48,7 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
 }
 
 /// [`transform_to_ir_with_scope_id`] that also returns the authored anchors
-/// of every template string when `spans` is set (Davinci P3-9).
+/// of every template string when `spans` is set (Levels P3-9).
 pub(crate) fn transform_to_ir_with_spans<'a>(
     allocator: &'a Allocator,
     root: &RootNode<'a>,

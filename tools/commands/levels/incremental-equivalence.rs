@@ -1,5 +1,5 @@
 #!/usr/bin/env rust-script
-//! TS-42 — incremental ≡ clean over a corpus (Davinci P5-9).
+//! TS-42 — incremental ≡ clean over a corpus (Levels P5-9).
 //!
 //! Runs the committed edit scripts (`incremental-equivalence/scripts/*.edits`)
 //! through the resident tier's salsa database, one long-lived database per
@@ -7,8 +7,8 @@
 //! from-scratch run after every step (`vize_incremental::equivalence`).
 //!
 //! ```text
-//! rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard [--fixtures <dir>] [--seeded] [--report <path>]
-//! rust-script tools/commands/davinci/incremental-equivalence.rs --fixtures <dir> [--seeded] [--report <path>]
+//! rust-script tools/commands/levels/incremental-equivalence.rs --corpus-shard [--fixtures <dir>] [--seeded] [--report <path>]
+//! rust-script tools/commands/levels/incremental-equivalence.rs --fixtures <dir> [--seeded] [--report <path>]
 //! ```
 //!
 //! Scope proof: files, steps, comparisons and compared blocks are counted,
@@ -20,10 +20,10 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
-/// The P0-13 corpus shard (`tools/commands/davinci/davinci_fpfn.rs`).
+/// The P0-13 corpus shard (`tools/commands/levels/level_fpfn.rs`).
 const CORPUS_SHARD: [&str; 3] = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
-const SCRIPTS: &str = "tools/commands/davinci/incremental-equivalence/scripts";
-const USAGE: &str = "usage: rust-script tools/commands/davinci/incremental-equivalence.rs (--corpus-shard | --fixtures <dir>)... [--seeded] [--report <path>]";
+const SCRIPTS: &str = "tools/commands/levels/incremental-equivalence/scripts";
+const USAGE: &str = "usage: rust-script tools/commands/levels/incremental-equivalence.rs (--corpus-shard | --fixtures <dir>)... [--seeded] [--report <path>]";
 
 fn main() -> ExitCode {
     match run() {
@@ -39,7 +39,9 @@ fn main() -> ExitCode {
 fn run() -> Result<bool, String> {
     let root = std::env::current_dir().map_err(|error| error.to_string())?;
     if !root.join(SCRIPTS).is_dir() {
-        return Err(format!("run from the repository root ({SCRIPTS} not found)\n{USAGE}"));
+        return Err(format!(
+            "run from the repository root ({SCRIPTS} not found)\n{USAGE}"
+        ));
     }
     let mut roots: Vec<(String, PathBuf)> = Vec::new();
     let mut seeded = false;
@@ -91,9 +93,13 @@ fn run() -> Result<bool, String> {
     }
     command.args(["--", "--scripts", SCRIPTS]);
     for (label, dir) in &roots {
-        command.arg("--root").arg(format!("{label}={}", dir.display()));
+        command
+            .arg("--root")
+            .arg(format!("{label}={}", dir.display()));
     }
-    let output = command.output().map_err(|error| format!("cannot run cargo: {error}"))?;
+    let output = command
+        .output()
+        .map_err(|error| format!("cannot run cargo: {error}"))?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     let counts = parse_counts(&stdout);

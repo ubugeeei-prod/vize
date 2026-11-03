@@ -10,14 +10,14 @@
 //! its per-stage breakdown) and move the budget entry with a reviewed PR, per
 //! the ratchet rule at the top of `budgets.toml`.
 //!
-//! The same run also pins Davinci's side of the tie: the walks measured here
+//! The same run also pins Levels's side of the tie: the walks measured here
 //! must equal `vize_curator::legacy_plan::VAPOR.group_count()`, so the
 //! pass-manager plan that *describes* the shipped pipeline cannot drift from
 //! it silently. The plans live in `vize_curator::legacy_plan` and are read from the dev-dependencies:
 //! a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single
-//! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
+//! `#[test]` in its own binary - the `level_expr_reparse_floor.rs` shape.
 
 #![expect(
     clippy::disallowed_macros,
@@ -25,7 +25,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
@@ -52,12 +52,12 @@ fn vapor_walk_baseline_holds() {
         let before = WalkCounts::snapshot();
         // This remains the legacy plan's baseline. The explicit retained-lane
         // selector keeps measuring that lane without changing fixture values;
-        // davinci_vapor_artifact separately pins zero legacy walks on admission.
+        // level_vapor_artifact separately pins zero legacy walks on admission.
         let _compiled = compile_vapor(
             &allocator,
             template,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );
@@ -78,14 +78,14 @@ fn vapor_walk_baseline_holds() {
             })
             .collect::<String>();
         println!(
-            "davinci.walk vapor {} walks={} visits={}{}",
+            "levels.walk vapor {} walks={} visits={}{}",
             fixture.name,
             delta.total_walks(),
             delta.total_visits(),
             breakdown
         );
 
-        // The Davinci plan and the pipeline it describes must agree on the
+        // The Levels plan and the pipeline it describes must agree on the
         // walk count. A plan that drifts from the compiler fails here, which
         // is why the plan is declared as data rather than written as a
         // comment (`vize_curator::legacy_plan`).

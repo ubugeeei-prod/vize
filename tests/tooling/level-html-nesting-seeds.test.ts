@@ -1,4 +1,4 @@
-// Davinci P4-11a / P4-11b — TS-37 seeded HTML nesting classes.
+// Levels P4-11a / P4-11b — TS-37 seeded HTML nesting classes.
 //
 // `seed-defects.rs --html-nesting` appends one snippet per checker class
 // (and, where a `<script setup>` exists, the cross-component class) to every
@@ -17,11 +17,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const seedTool = path.join(root, "tools/commands/davinci/seed-defects.rs");
-const fixtures = path.join(root, "tests/_fixtures/davinci-html-nesting");
+const seedTool = path.join(root, "tools/commands/levels/seed-defects.rs");
+const fixtures = path.join(root, "tests/_fixtures/level-html-nesting");
 
 function seed(env: NodeJS.ProcessEnv = process.env) {
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-html-nesting-"));
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "level-html-nesting-"));
   process.on("exit", () => fs.rmSync(out, { recursive: true, force: true }));
   const args = [seedTool, "--html-nesting", "--fixtures", fixtures, "--out", out, "--assert"];
   const result = spawnSync("rust-script", args, { cwd: root, encoding: "utf8", env });
@@ -69,7 +69,7 @@ test("the seeded classes are exactly the checker's classes plus the composed one
 });
 
 test("the assertion fails when the linter finds nothing (non-vacuous)", () => {
-  const bin = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-html-nesting-bin-"));
+  const bin = fs.mkdtempSync(path.join(os.tmpdir(), "level-html-nesting-bin-"));
   const fake = path.join(bin, "vize");
   fs.writeFileSync(fake, '#!/bin/sh\n[ "$1" = "--version" ] && echo vize && exit 0\necho "[]"\n');
   fs.chmodSync(fake, 0o755);

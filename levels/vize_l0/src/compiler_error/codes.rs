@@ -5,7 +5,7 @@
 //! surface: it is the variant name in kebab case under `compiler/`, and it
 //! never changes once published. The host translation catalog keys each
 //! code's `message` and `help` on it in en, ja and zh;
-//! `tests/tooling/davinci-diagnostic-catalog.test.ts` enumerates [`ErrorCode`]
+//! `tests/tooling/level-diagnostic-catalog.test.ts` enumerates [`ErrorCode`]
 //! from source and fails on a variant without a name, an entry or an `en`
 //! message equal to [`ErrorCode::message`].
 

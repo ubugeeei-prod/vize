@@ -9,12 +9,12 @@ import {
   templateCarrierExtensions,
   V_ON_CORPUS_DIR,
   V_ON_GATE,
-} from "../../tools/support/compat/davinci/lib/v-on-corpus.ts";
+} from "../../tools/support/compat/levels/lib/v-on-corpus.ts";
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 function fixture() {
   const cwd = mkdtempSync(join(tmpdir(), "vize-v-on-selection-"));
-  for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]) {
+  for (const directory of ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"]) {
     mkdirSync(join(cwd, directory), { recursive: true });
   }
   // No literal imports or repository references: selection must represent the

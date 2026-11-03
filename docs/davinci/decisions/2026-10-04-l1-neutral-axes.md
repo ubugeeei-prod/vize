@@ -9,7 +9,7 @@ implementation, any new framework parser, or product acceptance.
 
 The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
 
-The representative `davinci/vize_l1/src/` boundaries at that commit are:
+The representative `levels/vize_l1/src/` boundaries at that commit are:
 
 | Current API                                                                | What it actually supplies                                                              | Remaining boundary                                                                |
 | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -138,7 +138,7 @@ artifacts). This design closes only #6855 after review and merge.
   separately. Include Vue versions/quirks and configured language mismatch
   diagnostics, rather than testing only the default SFC combination.
 - Verify core-to-axis imports are absent and no normal/build dependency from
-  `davinci/` to `crates/` is introduced. A dev-only legacy differential oracle
+  `levels/` to `crates/` is introduced. A dev-only legacy differential oracle
   never supplies product facts.
 - Demonstrate shared same-run retained syntax and downstream diagnostics for
   JS/TS and JSX/TSX. Product selection still requires each fix-history gate;

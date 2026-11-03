@@ -77,7 +77,7 @@ fn complete_original_named_export_keeps_authoritative_path_source_kind_and_proje
 fn actual_named_export_supplies_module_goal_without_a_fabricated_force_requirement() {
     let arena = Allocator::default();
     let pack: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../../davinci/vize_l4/tests/fixtures/required-named-export-program-checker.json"
+        "../../../../../levels/vize_l4/tests/fixtures/required-named-export-program-checker.json"
     ))
     .unwrap();
     let case = &pack["cases"][0];

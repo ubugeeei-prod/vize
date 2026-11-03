@@ -23,32 +23,32 @@ pub struct Fixture {
 pub const LADDER: [Fixture; 6] = [
     Fixture {
         name: "small",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         source: include_str!("../fixtures/small.vue"),
     },
     Fixture {
         name: "medium",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         source: include_str!("../fixtures/medium.vue"),
     },
     Fixture {
         name: "large",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         source: include_str!("../fixtures/large.vue"),
     },
     Fixture {
         name: "stress-deep",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         source: include_str!("../fixtures/stress-deep.vue"),
     },
     Fixture {
         name: "stress-wide",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         source: include_str!("../fixtures/stress-wide.vue"),
     },
     Fixture {
         name: "stress-interp",
-        relative_path: "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        relative_path: "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         source: include_str!("../fixtures/stress-interp.vue"),
     },
 ];

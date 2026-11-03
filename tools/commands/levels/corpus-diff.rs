@@ -20,7 +20,7 @@ use std::{
 };
 
 use vize_tool_support::common;
-mod davinci_corpus;
+mod level_corpus;
 
 #[derive(Debug)]
 struct Args {
@@ -42,37 +42,37 @@ fn main() -> ExitCode {
 fn run() -> Result<(), String> {
     let root = common::repo_root()?;
     let args = parse_args(env::args().skip(1).collect())?;
-    let surfaces = davinci_corpus::surface_filter(&args.surfaces)?;
-    let manifest = davinci_corpus::load_manifest(&root)?;
+    let surfaces = level_corpus::surface_filter(&args.surfaces)?;
+    let manifest = level_corpus::load_manifest(&root)?;
     let baseline_path = absolutize(
         &root,
         args.baseline
-            .unwrap_or_else(|| root.join(davinci_corpus::BASELINE_REL)),
+            .unwrap_or_else(|| root.join(level_corpus::BASELINE_REL)),
     );
     let baseline_label = common::relative_path(&root, &baseline_path);
 
     if args.clean_fixtures {
-        let removed = davinci_corpus::clean_fixtures(&root)?;
+        let removed = level_corpus::clean_fixtures(&root)?;
         println!("corpus-diff: cleaned {removed} materialized node_modules from the fixtures");
     }
-    davinci_corpus::assert_fixtures_pristine(&root, args.allow_dirty_fixtures)?;
+    level_corpus::assert_fixtures_pristine(&root, args.allow_dirty_fixtures)?;
 
     if !baseline_path.exists() {
         return Err(format!(
-            "baseline artifact is missing: {baseline_label}\ngenerate it with: rust-script tools/commands/davinci/corpus-baseline.rs"
+            "baseline artifact is missing: {baseline_label}\ngenerate it with: rust-script tools/commands/levels/corpus-baseline.rs"
         ));
     }
     let baseline = common::read_json(&baseline_path)?;
-    let all_surfaces = davinci_corpus::surface_filter(&Vec::new())?;
+    let all_surfaces = level_corpus::surface_filter(&Vec::new())?;
     let baseline_scope_failures =
-        davinci_corpus::verify_scope(&baseline, &manifest, &all_surfaces, "committed baseline")?;
+        level_corpus::verify_scope(&baseline, &manifest, &all_surfaces, "committed baseline")?;
     if !baseline_scope_failures.is_empty() {
         return Err(format!(
             "scope proof failed for the committed baseline:\n{}",
             baseline_scope_failures.join("\n")
         ));
     }
-    let vize_bin = davinci_corpus::resolve_vize_bin(&root, args.vize_bin)?;
+    let vize_bin = level_corpus::resolve_vize_bin(&root, args.vize_bin)?;
 
     println!(
         "corpus-diff: {} projects, surfaces [{}], {} parallel shards",
@@ -81,8 +81,8 @@ fn run() -> Result<(), String> {
         args.shards
     );
     let started = Instant::now();
-    let scratch_dir = davinci_corpus::scratch_root(&root, &format!("diff-{}", process_slug()));
-    let shard_dirs = match davinci_corpus::run_matrix(
+    let scratch_dir = level_corpus::scratch_root(&root, &format!("diff-{}", process_slug()));
+    let shard_dirs = match level_corpus::run_matrix(
         &root,
         args.shards,
         &vize_bin,
@@ -99,8 +99,8 @@ fn run() -> Result<(), String> {
             return Err(error);
         }
     };
-    let fresh_rows = davinci_corpus::reduce_shards(&root, &shard_dirs, &surfaces)?;
-    let fresh = davinci_corpus::build_artifact(&fresh_rows, &manifest)?;
+    let fresh_rows = level_corpus::reduce_shards(&root, &shard_dirs, &surfaces)?;
+    let fresh = level_corpus::build_artifact(&fresh_rows, &manifest)?;
     if let Some(write_fresh) = args.write_fresh {
         let fresh_path = absolutize(&root, write_fresh);
         common::write_json_pretty(&fresh_path, &fresh)?;
@@ -110,7 +110,7 @@ fn run() -> Result<(), String> {
         );
     }
     if !args.keep_raw {
-        davinci_corpus::cleanup_scratch(&scratch_dir)?;
+        level_corpus::cleanup_scratch(&scratch_dir)?;
     } else {
         println!(
             "raw shard reports kept: {}",
@@ -119,7 +119,7 @@ fn run() -> Result<(), String> {
     }
 
     let fresh_scope_failures =
-        davinci_corpus::verify_scope(&fresh, &manifest, &surfaces, "fresh run")?;
+        level_corpus::verify_scope(&fresh, &manifest, &surfaces, "fresh run")?;
     let baseline_rows = baseline
         .get("rows")
         .and_then(Value::as_array)
@@ -132,8 +132,8 @@ fn run() -> Result<(), String> {
         })
         .cloned()
         .collect::<Vec<_>>();
-    let all_drift = davinci_corpus::diff_rows(&baseline_rows, &fresh_rows);
-    let unstable_keys = davinci_corpus::load_unstable_rows(&root, &manifest)?
+    let all_drift = level_corpus::diff_rows(&baseline_rows, &fresh_rows);
+    let unstable_keys = level_corpus::load_unstable_rows(&root, &manifest)?
         .iter()
         .filter_map(|row| {
             Some(format!(
@@ -164,7 +164,7 @@ fn run() -> Result<(), String> {
     for record in &unstable_drift {
         println!(
             "unstable (filed in {}, not gating): {}/{} {} -> {}",
-            davinci_corpus::UNSTABLE_REL,
+            level_corpus::UNSTABLE_REL,
             record.get("surface").and_then(Value::as_str).unwrap_or("?"),
             record.get("project").and_then(Value::as_str).unwrap_or("?"),
             prefix12(
@@ -248,8 +248,7 @@ fn run() -> Result<(), String> {
         println!("corpus-diff: FAIL in {elapsed_seconds}s");
         return Err("corpus-diff failed".to_string());
     }
-    let expected_fresh_comparisons =
-        davinci_corpus::expected_comparison_count(&manifest, &surfaces)?;
+    let expected_fresh_comparisons = level_corpus::expected_comparison_count(&manifest, &surfaces)?;
     let filter_note = if surfaces.len() == all_surfaces.len() {
         String::new()
     } else {
@@ -298,20 +297,20 @@ fn parse_args(argv: Vec<String>) -> Result<Args, String> {
         };
         match arg.as_str() {
             "--shards" => {
-                args.shards = davinci_corpus::positive_integer(&value(&mut index)?, arg)? as usize
+                args.shards = level_corpus::positive_integer(&value(&mut index)?, arg)? as usize
             }
             "--vize-bin" => args.vize_bin = Some(PathBuf::from(value(&mut index)?)),
             "--baseline" => args.baseline = Some(PathBuf::from(value(&mut index)?)),
             "--write-fresh" => args.write_fresh = Some(PathBuf::from(value(&mut index)?)),
             "--timeout-ms" => {
-                args.timeout_ms = Some(davinci_corpus::positive_integer(&value(&mut index)?, arg)?)
+                args.timeout_ms = Some(level_corpus::positive_integer(&value(&mut index)?, arg)?)
             }
             "--keep-raw" => args.keep_raw = true,
             "--clean-fixtures" => args.clean_fixtures = true,
             "--allow-dirty-fixtures" => args.allow_dirty_fixtures = true,
             "--surface" => args
                 .surfaces
-                .extend(davinci_corpus::split_csv(&value(&mut index)?)),
+                .extend(level_corpus::split_csv(&value(&mut index)?)),
             "--help" | "-h" => {
                 print_help();
                 std::process::exit(0);
@@ -325,7 +324,7 @@ fn parse_args(argv: Vec<String>) -> Result<Args, String> {
 
 fn print_help() {
     println!(
-        "usage: rust-script tools/commands/davinci/corpus-diff.rs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]"
+        "usage: rust-script tools/commands/levels/corpus-diff.rs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]"
     );
 }
 

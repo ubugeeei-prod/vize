@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path";
 
 const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-const core = "davinci/vize_l0/src/config";
+const core = "levels/vize_l0/src/config";
 const host = "crates/vize_carton/src/config";
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 const write = (path: string, value: string) => {
@@ -43,9 +43,9 @@ const projectExports = () =>
 const loaderExports = /pub use loader::\{[\s\S]*?\n\};\n/;
 const bridgeInventory = "docs/davinci/plan/foundation-storage-bridges.json";
 const retiredBridge =
-  "davinci/vize_l0/src/config/loader.rs: forbidden std storage path: std::string::String";
-const hostGate = "tests/tooling/support/davinci-stage-dependencies.ts";
-const hostGateImport = 'import { withoutHostRuntimeReferences } from "./davinci-host-imports.ts";';
+  "levels/vize_l0/src/config/loader.rs: forbidden std storage path: std::string::String";
+const hostGate = "tests/tooling/support/level-stage-dependencies.ts";
+const hostGateImport = 'import { withoutHostRuntimeReferences } from "./level-host-imports.ts";';
 const oldHostMask = String.raw`source.replace(/\bvize_carton::corsa_(?:api_mode|resolver)\b/gu, "host_runtime")`;
 const newHostMask = "withoutHostRuntimeReferences(source, path.relative(repoRoot, fullPath))";
 
@@ -114,7 +114,7 @@ function integrate() {
     [hostGate, oldHostMask, newHostMask],
   ];
   requireCondition(
-    exists("tests/tooling/support/davinci-host-imports.ts"),
+    exists("tests/tooling/support/level-host-imports.ts"),
     "the published host-import gate companion must accompany replay",
   );
   requireCondition(
@@ -136,7 +136,7 @@ function integrate() {
   const end = lock.indexOf("\n[[package]]", start);
   requireCondition(start >= 0 && end > start, "missing L0 lock entry");
   requireCondition(
-    read("davinci/vize_l0/Cargo.toml").includes('name = "vize_l0"'),
+    read("levels/vize_l0/Cargo.toml").includes('name = "vize_l0"'),
     "unexpected provider manifest",
   );
   write(hostRoot, expectedHost);
@@ -161,8 +161,8 @@ function integrate() {
     );
   }
   write(
-    "davinci/vize_l0/Cargo.toml",
-    read("davinci/vize_l0/Cargo.toml").replace("pklrust = { workspace = true }\n", ""),
+    "levels/vize_l0/Cargo.toml",
+    read("levels/vize_l0/Cargo.toml").replace("pklrust = { workspace = true }\n", ""),
   );
   write(
     "Cargo.lock",
@@ -200,7 +200,7 @@ function check() {
     "workspace config must use the host loader owner",
   );
   requireCondition(
-    !read("davinci/vize_l0/Cargo.toml").includes("pklrust"),
+    !read("levels/vize_l0/Cargo.toml").includes("pklrust"),
     "L0 must not retain the unused PKL host dependency",
   );
   requireCondition(

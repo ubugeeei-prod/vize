@@ -1,4 +1,4 @@
-//! Temporary template-walk counter (Davinci P2-12a).
+//! Temporary template-walk counter (Levels P2-12a).
 //!
 //! Counts the pre-L2 traversal work of the fused compile path: one **visit**
 //! per template node a stage's descent dispatches on, and one **walk** per

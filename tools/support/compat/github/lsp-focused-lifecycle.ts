@@ -24,9 +24,9 @@ export const packetCommand = [
 export const resourceObserver = `
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { createSampler } from './tools/support/compat/davinci/lib/lsp-resource-sampler.ts';
+import { createSampler } from './tools/support/compat/levels/lib/lsp-resource-sampler.ts';
 const [rootPid, directory] = process.argv.slice(1);
-const source = 'tools/support/compat/davinci/lib/lsp-resource-sampler.ts';
+const source = 'tools/support/compat/levels/lib/lsp-resource-sampler.ts';
 const sampler = createSampler(Number(rootPid));
 const started = process.hrtime.bigint();
 let count = 0;

@@ -10,9 +10,9 @@ import {
   repoRoot,
   walkRustFiles,
   workspacePackage,
-} from "./support/davinci-stage-dependencies.ts";
+} from "./support/level-stage-dependencies.ts";
 
-test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
+test("Levels SSR compile path imports the L4 string-plan bridge", () => {
   for (const [dependencyName, rename] of [
     ["vize_l0", null],
     ["vize_l1", null],

@@ -9,19 +9,19 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const suffixes = new Set([".rs", ".toml", ".ts", ".mjs", ".yml", ".yaml"]);
 const extraPaths = [
-  "tools/commands/fixtures/davinci-dom-corpus-workflow.rs",
-  "tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs",
+  "tools/commands/fixtures/level-dom-corpus-workflow.rs",
+  "tools/support/compat/fixtures/level-dom-corpus-workflow.mjs",
   "docs/davinci/plan/test-suites.md",
 ];
 const renames = [
-  ["davinci-dom-differential", "legacy-dom-differential"],
-  ["davinci-differential", "legacy-differential"],
+  ["level-dom-differential", "legacy-dom-differential"],
+  ["level-differential", "legacy-differential"],
 ] as const;
 const protectedMessages = [
-  "davinci-differential (P1-",
-  "davinci-differential corpus ",
-  "davinci-differential totals:",
-  "vize_s1 --features davinci-differential",
+  "level-differential (P1-",
+  "level-differential corpus ",
+  "level-differential totals:",
+  "vize_s1 --features level-differential",
 ];
 const aliasManifests = new Set([
   "crates/vize_atelier_core/Cargo.toml",
@@ -32,8 +32,8 @@ const aliasManifests = new Set([
   "crates/vize_atelier_vapor/Cargo.toml",
   "crates/vize_canon/Cargo.toml",
   "crates/vize_croquis/Cargo.toml",
-  "davinci/vize_l1/Cargo.toml",
-  "davinci/vize_l1_to_l2/Cargo.toml",
+  "levels/vize_l1/Cargo.toml",
+  "levels/vize_l1_to_l2/Cargo.toml",
   "crates/vize_patina/Cargo.toml",
 ]);
 const sfcManifest = "crates/vize_atelier_sfc/Cargo.toml";
@@ -47,7 +47,7 @@ export function eligible(relative: string): boolean {
     parts.some((p) => ["fixtures", "snapshots"].includes(p))
   )
     return false;
-  if (parts[0] === "tests") return ["tooling", "davinci_test_support"].includes(parts[1]);
+  if (parts[0] === "tests") return ["tooling", "level_test_support"].includes(parts[1]);
   return [".github", "crates"].includes(parts[0]);
 }
 
@@ -61,12 +61,12 @@ export function rewrite(input: string, relative: string): string {
   };
   let source = input;
   if (relative === sfcManifest) {
-    const definitions = [...source.matchAll(/^davinci-production-bench\s*=/gm)];
-    const blocks = [...source.matchAll(/^davinci-production-bench\s*=\s*\[\r?\n[\s\S]*?^\]\s*$/gm)];
+    const definitions = [...source.matchAll(/^level-production-bench\s*=/gm)];
+    const blocks = [...source.matchAll(/^level-production-bench\s*=\s*\[\r?\n[\s\S]*?^\]\s*$/gm)];
     if (definitions.length !== 1 || blocks.length !== 1)
       throw new Error("expected exactly one published SFC benchmark block");
     const block = blocks[0][0];
-    for (const edge of ["davinci-dom-differential", "vize_atelier_ssr/davinci-differential"]) {
+    for (const edge of ["level-dom-differential", "vize_atelier_ssr/level-differential"]) {
       if ([...block.matchAll(new RegExp(`^\\s*"${escape(edge)}",?\\s*$`, "gm"))].length !== 1)
         throw new Error(`expected exactly one published benchmark edge: ${edge}`);
     }
@@ -74,7 +74,7 @@ export function rewrite(input: string, relative: string): string {
   }
   if (aliasManifests.has(relative)) {
     for (const [old, replacement] of renames) {
-      if (old === "davinci-dom-differential" && relative !== sfcManifest) continue;
+      if (old === "level-dom-differential" && relative !== sfcManifest) continue;
       const alias = `${old} = ["${replacement}"]`;
       source = source.replace(new RegExp(`^${escape(alias)}$`, "gm"), () => protect(alias));
     }

@@ -2,19 +2,19 @@
 //! P1-6/P1-7 lane shape. Compiled only with the `legacy-differential`
 //! feature (`[[test]] required-features`). Runs the committed battery
 //! with the same exact-pinned counters as the plain witness, then, with
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, additionally dual-runs the
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`, additionally dual-runs the
 //! template block of every `.vue` file under `<dir>` through both
 //! lanes. Divergence panics (TS-25); every skip is a counted class.
 //! The canonical fixture root fails closed unless its submodule
 //! inventory reconciles; other roots sweep in smoke scope with
-//! `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! `closure_evidence=false` (see `level_test_support::corpus`).
 //!
 //! Run:
 //!
 //! ```text
-//! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+//! VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_atelier_core --features legacy-differential \
-//!     --test davinci_l2_transform_corpus -- --nocapture
+//!     --test level_l2_transform_corpus -- --nocapture
 //! ```
 
 #[expect(unused_imports, reason = "shared support; this binary uses a subset")]
@@ -22,10 +22,10 @@ mod l2_support;
 
 use std::fs;
 
-use davinci_harness::fixtures::template_block;
 use l2_support::{
     BATTERY, Counters, HoistCounters, SlotCounters, SurfaceCounters, TextCounters, compare,
 };
+use level_harness::fixtures::template_block;
 
 #[test]
 fn the_l2_transform_lane_holds_over_the_corpus() {
@@ -118,8 +118,8 @@ fn the_l2_transform_lane_holds_over_the_corpus() {
     );
 
     // -- optional corpus sweep --------------------------------------
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let files = &sweep.files;
@@ -144,7 +144,7 @@ fn the_l2_transform_lane_holds_over_the_corpus() {
         compare(context.as_ref(), template, &mut corpus);
     }
     eprintln!(
-        "davinci s2 transform corpus sweep: files={} unreadable={unreadable} \
+        "levels s2 transform corpus sweep: files={} unreadable={unreadable} \
          without_template={without_template} {corpus:?}",
         files.len(),
     );

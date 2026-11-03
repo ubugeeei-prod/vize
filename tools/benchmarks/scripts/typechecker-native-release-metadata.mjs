@@ -8,7 +8,7 @@ export function rewriteVersionMetadata(path, content, old, next) {
   // Preserve read-only metadata custody for historical published integrations.
   const cargoLock =
     ["Cargo.lock", "editors/zed/Cargo.lock", "examples/volt-target/Cargo.lock"].includes(path) ||
-    (path.startsWith("davinci/vize_extension_host/tests/guests/") && path.endsWith("/Cargo.lock"));
+    (path.startsWith("levels/vize_extension_host/tests/guests/") && path.endsWith("/Cargo.lock"));
   let section = "",
     pkg = "",
     replaced = false,
@@ -58,7 +58,7 @@ export function rewriteVersionMetadata(path, content, old, next) {
         cargoLock &&
         (pkg === "vize" ||
           pkg.startsWith("vize_") ||
-          ["davinci_harness", "davinci_test_support", "vize-zed-extension"].includes(pkg)) &&
+          ["level_harness", "level_test_support", "vize-zed-extension"].includes(pkg)) &&
         trimmed === `version = "${old}"`
       )
         return line.replace(old, next);

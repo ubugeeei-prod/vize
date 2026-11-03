@@ -1,4 +1,4 @@
-//! L2 - the Davinci semantic IR (codename Disegno): the pivot stage and the
+//! L2 - the Levels semantic IR (codename Disegno): the pivot stage and the
 //! primary consumer surface.
 //!
 //! **Experimental:** the stage API may change in any alpha release; record

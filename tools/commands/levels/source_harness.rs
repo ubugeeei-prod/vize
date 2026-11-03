@@ -269,31 +269,31 @@ fn original_specs(
     tree: &BTreeMap<String, GitFile>,
 ) -> Result<Vec<(String, String, String, String)>, String> {
     let pairs = [
-        ("davinci_harness", "selfcheck"),
-        ("vize_armature", "davinci"),
-        ("vize_croquis", "davinci"),
-        ("vize_atelier_core", "davinci"),
-        ("vize_atelier_dom", "davinci"),
-        ("vize_atelier_vapor", "davinci"),
-        ("vize_atelier_ssr", "davinci"),
+        ("level_harness", "selfcheck"),
+        ("vize_armature", "levels"),
+        ("vize_croquis", "levels"),
+        ("vize_atelier_core", "levels"),
+        ("vize_atelier_dom", "levels"),
+        ("vize_atelier_vapor", "levels"),
+        ("vize_atelier_ssr", "levels"),
         ("vize_l0", "pass_runtime"),
         ("vize_l0", "fact_runtime"),
         ("vize_l1_to_l2", "l1_to_l2_storage"),
-        ("vize_patina", "davinci_markup"),
-        ("vize_musea", "davinci_art"),
+        ("vize_patina", "level_markup"),
+        ("vize_musea", "level_art"),
         ("vize_glyph", "formatter_instructions"),
     ];
     let mut specs = Vec::new();
     for (pkg, bench) in pairs {
         let benches = if pkg == "vize_l1_to_l2" {
-            vec![bench, "davinci_storage"]
+            vec![bench, "level_storage"]
         } else {
             vec![bench]
         };
         let paths = benches
             .iter()
             .flat_map(|bench| {
-                ["tools/benchmarks/crates", "davinci", "crates"].map(|directory| {
+                ["tools/benchmarks/crates", "levels", "crates"].map(|directory| {
                     (
                         bench.to_string(),
                         format!("{directory}/{pkg}/benches/{bench}.rs"),
@@ -384,8 +384,8 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     )?;
     let tree = git_tree(&listing)?;
     let workspace = source_toml(&root, &tree, "Cargo.toml")?;
-    let harness_path = "tools/benchmarks/crates/davinci_harness/Cargo.toml";
-    let library_path = "tools/benchmarks/crates/davinci_harness/src/lib.rs";
+    let harness_path = "tools/benchmarks/crates/level_harness/Cargo.toml";
+    let library_path = "tools/benchmarks/crates/level_harness/src/lib.rs";
     let harness = source_toml(&root, &tree, harness_path)?;
     require!(
         toml_at(&harness, &["package", "version", "workspace"])?.as_bool() == Some(true),
@@ -487,7 +487,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
         .as_array()
         .ok_or("source harness: missing Cargo packages")?
         .iter()
-        .filter(|row| row["name"] == "davinci_harness")
+        .filter(|row| row["name"] == "level_harness")
         .collect::<Vec<_>>();
     require!(packages.len() == 1, "missing or duplicate harness metadata");
     let manifest = root.join(harness_path);
@@ -559,8 +559,8 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     let registry_path = "tools/benchmarks/scripts/instruction-counts-suites.mjs";
     protocol.insert(registry_path.into(), source(&root, &tree, registry_path)?);
     for prefix in [
-        "tools/benchmarks/crates/davinci_harness/",
-        "tests/davinci_test_support/",
+        "tools/benchmarks/crates/level_harness/",
+        "tests/level_test_support/",
     ] {
         let expected = tree
             .keys()
@@ -585,7 +585,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
         "--profile".into(),
         "ci-opt".into(),
         "--features".into(),
-        "davinci_harness/instruction-counts".into(),
+        "level_harness/instruction-counts".into(),
         "--message-format=json".into(),
         "--target-dir".into(),
         target
@@ -686,7 +686,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     require!(
         utf8(after)?
             .lines()
-            .all(|file| file.starts_with("tools/benchmarks/results/davinci/")),
+            .all(|file| file.starts_with("tools/benchmarks/results/levels/")),
         "source changed after measurements"
     );
     let lock = source_toml(&root, &tree, "Cargo.lock")?;
@@ -930,7 +930,7 @@ fn completed_normal_rows(
         let mut emitted = BTreeSet::new();
         for line in stderr
             .lines()
-            .filter_map(|line| line.strip_prefix("davinci-harness: wrote "))
+            .filter_map(|line| line.strip_prefix("level-harness: wrote "))
         {
             require!(
                 emitted.insert(PathBuf::from(line)),
@@ -947,7 +947,7 @@ fn completed_normal_rows(
             expected.insert(
                 source_arm
                     .root
-                    .join("tools/benchmarks/results/davinci")
+                    .join("tools/benchmarks/results/levels")
                     .join(format!("{id}.json")),
             );
             require!(
@@ -1123,7 +1123,7 @@ pub fn load(
                     text(row, "file")?
                         == source_arm
                             .root
-                            .join("tools/benchmarks/results/davinci")
+                            .join("tools/benchmarks/results/levels")
                             .join(format!("{id}.json"))
                             .to_str()
                             .unwrap_or(""),

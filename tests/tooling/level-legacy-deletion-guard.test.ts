@@ -8,7 +8,7 @@ import {
   missingLegacyRouteWitnesses,
   removedLegacyManifests,
   retiredLegacyRouteWitnesses,
-} from "../../tools/support/compat/davinci/legacy-deletion-guard.ts";
+} from "../../tools/support/compat/levels/legacy-deletion-guard.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const sha = "a".repeat(40);
@@ -25,10 +25,10 @@ void test("crate manifest deletion or move triggers the guard", () => {
       [
         "D\tcrates/vize_armature/Cargo.toml",
         "D\tcrates/vize_croquis_cf/Cargo.toml",
-        "R100\tcrates/vize_atelier_core/Cargo.toml\tdavinci/vize_l2/Cargo.toml",
+        "R100\tcrates/vize_atelier_core/Cargo.toml\tlevel/vize_l2/Cargo.toml",
         "D\tcrates/vize_relief/src/lib.rs",
         "M\tcrates/vize_croquis/Cargo.toml",
-        "D\tdavinci/vize_l1/Cargo.toml",
+        "D\tlevel/vize_l1/Cargo.toml",
       ].join("\n"),
     ),
     [
@@ -117,5 +117,5 @@ void test("the existing PR and merge-group check runs the conditional deletion g
   assert.match(workflow, /- name: Guard legacy crate deletion\n\s+if: .*pull_request.*merge_group/);
   assert.match(workflow, /BASE_SHA: .*pull_request\.base\.sha.*merge_group\.base_sha/);
   assert.match(workflow, /CANDIDATE_SHA: .*pull_request\.head\.sha.*merge_group\.head_sha/);
-  assert.match(workflow, /vp node tools\/support\/compat\/davinci\/legacy-deletion-guard\.ts/);
+  assert.match(workflow, /vp node tools\/support\/compat\/levels\/legacy-deletion-guard\.ts/);
 });

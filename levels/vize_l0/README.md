@@ -1,11 +1,11 @@
 # vize_l0
 
-`vize_l0` is the Davinci foundation level (L0): source, arena and span storage,
+`vize_l0` is the Levels foundation level (L0): source, arena and span storage,
 node and analysis ids, side tables, artifact keys, the dump trait and runtime,
 diagnostics and witnesses, the pass and fact managers, and the level registry.
 
 L0 owns the shared foundation implementation. The legacy `vize_carton` package
-re-exports it from `crates/`, so Davinci has no reverse dependency on that tree.
+re-exports it from `crates/`, so Levels has no reverse dependency on that tree.
 Its allocator, storage, configuration and platform helpers keep their existing
 behavior and std dependency. No-std isolation remains in #6834.
 

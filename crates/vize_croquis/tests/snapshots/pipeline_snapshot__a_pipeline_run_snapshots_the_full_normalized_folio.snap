@@ -1,5 +1,5 @@
 ---
-source: crates/vize_davinci/tests/pipeline_snapshot.rs
+source: crates/vize_level/tests/pipeline_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& folio, $crate :: folio :: FolioMode :: Full,)"
 ---
 [vir]

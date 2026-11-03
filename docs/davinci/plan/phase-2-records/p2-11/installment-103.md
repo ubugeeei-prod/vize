@@ -21,7 +21,7 @@ baking the `scope_id` pair into every cached child VNode.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_option_matrix.rs` runs a 32-template
+`crates/vize_atelier_dom/tests/level_s2_option_matrix.rs` runs a 32-template
 battery under three option bundles: `cache_handlers + scope_id`, non-inline
 script setup module mode, and inline script setup module mode. The held-out
 inline component/static-prop cases remain documented as pre-existing inline
@@ -30,7 +30,7 @@ surface residuals.
 The focused gate is:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_option_matrix
+cargo test -p vize_atelier_dom --test level_s2_option_matrix
 ```
 
 This installment does not tick P2-11. The production-lane switch remains open,

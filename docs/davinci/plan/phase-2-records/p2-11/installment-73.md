@@ -10,9 +10,9 @@ helper ranks keep the existing preferred/helper registration fallback.
 
 The durable witnesses are:
 
-- [`davinci_s2_helper_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_helper_order.rs)
+- [`level_s2_helper_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_helper_order.rs)
   - pins corpus-derived DOM helper-order regressions.
-- [`buf.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/buf.rs)
+- [`buf.rs`](../../../../../levels/vize_l1_to_l2/src/emit/buf.rs)
   - owns helper preamble ordering.
 
 This installment does not tick P2-11. The production-lane switch remains open.

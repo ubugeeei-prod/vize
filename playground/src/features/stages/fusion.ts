@@ -28,7 +28,7 @@ export interface TimelineWalk {
   passes: string[];
   /** Whether the walk is a fusable group rather than a lone barrier. */
   fusable: boolean;
-  /** Measured walk time (profile key `davinci.pass.walk`), when profiled. */
+  /** Measured walk time (profile key `levels.pass.walk`), when profiled. */
   nanos: number | null;
 }
 

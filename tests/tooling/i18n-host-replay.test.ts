@@ -68,7 +68,7 @@ test("malformed real host calls reject before replay writes", () => {
 });
 
 test("mixed module ownership and missing host manifest edges reject before replay writes", () => {
-  const core = "davinci/vize_l0/src/lib.rs";
+  const core = "levels/vize_l0/src/lib.rs";
   assert.throws(
     state({ [core]: readFileSync(path.join(root, core), "utf8") + "pub mod i18n;\n" }),
     /module ownership|integration state/u,

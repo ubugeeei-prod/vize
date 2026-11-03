@@ -38,9 +38,9 @@ const isTimedSample = (sample: Record<string, unknown>): sample is TimedSample =
 
 const [root, output] = process.argv.slice(2);
 if (!root || !output)
-  throw new Error("usage: davinci-production-summary.ts <artifact-root> <output.md>");
+  throw new Error("usage: level-production-summary.ts <artifact-root> <output.md>");
 const files = readdirSync(root)
-  .filter((name) => /^davinci-production-perf-[123]$/.test(name))
+  .filter((name) => /^level-production-perf-[123]$/.test(name))
   .sort()
   .map((name) => join(root, name, "samples.json"));
 if (files.length !== 3) throw new Error(`Expected three independent reports, got ${files.length}`);
@@ -80,7 +80,7 @@ for (const report of reports) {
 const median = (values: number[]) =>
   [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const lines = [
-  "# Davinci production comparison",
+  "# Levels production comparison",
   "",
   `Exact head: \`${String(reports[0].head_sha)}\`.`,
   "",

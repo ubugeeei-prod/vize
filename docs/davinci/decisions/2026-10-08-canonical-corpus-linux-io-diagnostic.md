@@ -37,7 +37,7 @@ the current checkout/run/tree, unchanged source collector, whole fixed snapshot
 vector, all 149 gitlinks, Jellyfin pin and complete per-file snapshot digests.
 It runs the exact extracted original Rust collector and tests every fixed input
 under both the absolute corpus root and literal
-`tests/davinci_test_support/../../tests/_fixtures/_git` spelling.
+`tests/level_test_support/../../tests/_fixtures/_git` spelling.
 
 For each input it records Rust metadata, direct Linux `open64`, `File::open`
 with complete byte reads, `fs::read_to_string`, and independent Node reads.

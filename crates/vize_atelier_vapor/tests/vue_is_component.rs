@@ -269,7 +269,7 @@ fn reserved_component_names_resolve_as_static_components() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..options
             },
         );

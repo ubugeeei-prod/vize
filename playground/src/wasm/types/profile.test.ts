@@ -61,7 +61,7 @@ describe("negotiateProfileExport", () => {
   it("reads walks under the timing observer's key, by lead pass", () => {
     const negotiated = negotiateProfileExport(profile);
     if (!negotiated.ok) throw new Error(negotiated.error);
-    expect(LADDER_WALK_KEY).toBe("davinci.pass.walk");
+    expect(LADDER_WALK_KEY).toBe("levels.pass.walk");
     expect([...ladderWalkTimings(negotiated.profile)]).toEqual([["l2/hoist-static", 9500]]);
   });
 

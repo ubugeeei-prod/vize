@@ -85,7 +85,7 @@ receipt correction; all current laws require fresh execution.
 
 The complete, unmodified pinned petite-vue SVG example is committed with its
 original license and exact source/blob/hash identities in
-[`tests/fixtures/document`](../../../davinci/vize_l1/tests/fixtures/document/README.md).
+[`tests/fixtures/document`](../../../levels/vize_l1/tests/fixtures/document/README.md).
 Its real once-run law checks all seventeen authored opening tags, all four
 interpolations, the original `v-scope` head and untouched script/style source.
 It provides lexical evidence only, without runtime or semantic credit.

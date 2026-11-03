@@ -1,4 +1,4 @@
-//! Parser for Art files (*.art.vue), on the Davinci L0/L1 stages (P4-13).
+//! Parser for Art files (*.art.vue), on the Levels L0/L1 stages (P4-13).
 //!
 //! An Art file is an SFC whose gallery definition is the `<art>` custom
 //! block:

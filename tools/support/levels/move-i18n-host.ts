@@ -51,8 +51,8 @@ function integrate() {
     "complete the pure i18n move first",
   );
   requireState(
-    read("tests/tooling/support/davinci-i18n-host-imports.ts").includes("host_i18n_import") &&
-      read("tests/tooling/support/davinci-host-imports.ts").includes("withoutI18nHostImports"),
+    read("tests/tooling/support/level-i18n-host-imports.ts").includes("host_i18n_import") &&
+      read("tests/tooling/support/level-host-imports.ts").includes("withoutI18nHostImports"),
     "the reviewed host import companion must accompany replay",
   );
   const updatedLock = preflight(read, exists);
@@ -184,16 +184,16 @@ function integrate() {
       .replaceAll("l0_locale", "translation_locale")
       .replace("Convert to L0 locale for i18n.", "Bind the host translation locale."),
   );
-  const reader = "tests/tooling/davinci-diagnostic-catalog-sources.ts";
+  const reader = "tests/tooling/level-diagnostic-catalog-sources.ts";
   write(
     reader,
     read(reader)
       .replaceAll(
-        'read("davinci", "vize_l0", "src", file)',
+        'read("levels", "vize_l0", "src", file)',
         'read("crates", "vize_carton", "src", file)',
       )
       .replaceAll(
-        'read("davinci", "vize_l0", "src", "i18n",',
+        'read("levels", "vize_l0", "src", "i18n",',
         'read("crates", "vize_carton", "src", "i18n",',
       ),
   );

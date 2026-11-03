@@ -1,4 +1,4 @@
-//! L1→L2 — the Vue lowering (codename Ricalco, Davinci P2-8).
+//! L1→L2 — the Vue lowering (codename Ricalco, Levels P2-8).
 //!
 //! **Experimental:** the lowering API may change in any alpha release; record
 //! intentional breaking changes in the release notes.

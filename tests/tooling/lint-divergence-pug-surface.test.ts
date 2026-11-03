@@ -1,4 +1,4 @@
-// Davinci P4-12c: Patina lints `<template lang="pug">` through the pug
+// Levels P4-12c: Patina lints `<template lang="pug">` through the pug
 // dialect, but the ESLint baseline (vue-eslint-parser) cannot parse pug, so
 // the lint-divergence runner reports Patina findings inside a pug template
 // body as outside the comparable surface instead of scoring them as false

@@ -1,4 +1,4 @@
-//! The Davinci ICE machinery (charter #30, P2-13), shared by the build path
+//! The Levels ICE machinery (charter #30, P2-13), shared by the build path
 //! and `vize repro`.
 //!
 //! The policy this implements: an internal compiler error **fails the file
@@ -131,7 +131,7 @@ impl Injection {
     }
 }
 
-/// Validate a `--davinci-inject-panic <file-stem>:<pass>[:<tag>]` spec
+/// Validate a `--level-inject-panic <file-stem>:<pass>[:<tag>]` spec
 /// against the plan the build will run, so an injection that could never
 /// fire is an argument error rather than a silently green run.
 pub(crate) fn parse_inject_spec(
@@ -187,7 +187,7 @@ pub(crate) fn panic_reason(payload: Box<dyn core::any::Any + Send>) -> String {
 }
 
 /// Bind parsed segments to runnable plans; every named pass is an optional,
-/// fusable no-op (the `davinci-opt` shape - no catalogue until P2-9). Names
+/// fusable no-op (the `level-opt` shape - no catalogue until P2-9). Names
 /// are leaked into the `&'static str` the const-data manager requires; both
 /// callers are one-shot CLI runs.
 fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {
@@ -233,7 +233,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
     for plan in &build_plans(&segments) {
         let mut last: Option<(String, String)> = None;
         // The timing observer keeps a --profile-json build's export honest
-        // about davinci-driven walks; with profiling off it costs one atomic
+        // about level-driven walks; with profiling off it costs one atomic
         // load per walk.
         let mut observers = Pair(TimingObserver::new(), BudgetObserver::new());
         let outcome = run_pipeline(plan, &mut observers, |event| {
@@ -242,7 +242,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
                 String::from(event.desc().name),
             ));
             if event.desc().name == inject_pass {
-                return Err(PassFailure::new("injected davinci failure"));
+                return Err(PassFailure::new("injected levels failure"));
             }
             Ok(())
         });
@@ -252,7 +252,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
             return Err(IceFailure {
                 stage,
                 pass,
-                reason: cstr!("injected davinci panic in pass `{inject_pass}`"),
+                reason: cstr!("injected levels panic in pass `{inject_pass}`"),
             });
         }
     }

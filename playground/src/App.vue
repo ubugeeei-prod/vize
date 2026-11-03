@@ -36,7 +36,7 @@ type MainTab =
   | "cross-file"
   | "musea"
   | "glyph"
-  | "davinci";
+  | "levels";
 const validTabs: MainTab[] = [
   "atelier",
   "inspector",
@@ -46,7 +46,7 @@ const validTabs: MainTab[] = [
   "cross-file",
   "musea",
   "glyph",
-  "davinci",
+  "levels",
 ];
 
 function getInitialTab(): MainTab {
@@ -192,10 +192,10 @@ onMounted(async () => {
         </button>
         <button
           type="button"
-          :class="['main-tab', { active: mainTab === 'davinci' }]"
-          @click="() => (mainTab = 'davinci')"
+          :class="['main-tab', { active: mainTab === 'levels' }]"
+          @click="() => (mainTab = 'levels')"
         >
-          <span class="tab-name">Davinci</span>
+          <span class="tab-name">Levels</span>
           <span class="tab-desc">stages</span>
         </button>
       </div>
@@ -293,7 +293,7 @@ onMounted(async () => {
       <template v-else-if="mainTab === 'glyph'">
         <GlyphPlayground :compiler />
       </template>
-      <template v-else-if="mainTab === 'davinci'">
+      <template v-else-if="mainTab === 'levels'">
         <StagePlayground :compiler />
       </template>
       <template v-else>

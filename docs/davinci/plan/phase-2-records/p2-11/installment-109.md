@@ -17,7 +17,7 @@ by the public DOM compile surface.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_production_selector.rs` keeps the
+`crates/vize_atelier_dom/tests/level_s2_production_selector.rs` keeps the
 selector boundary pinned: inline SFC and custom-elements compiles that need
 sections can use S2, while source-map, comment-preserving and unsupported
 option-shape requests continue to use the compatibility path.
@@ -25,7 +25,7 @@ option-shape requests continue to use the compatibility path.
 Focused gates:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_production_selector
+cargo test -p vize_atelier_dom --test level_s2_production_selector
 cargo test -p vize_atelier_dom -p vize_atelier_sfc -p vize_s1_to_s2 --tests
 cargo fmt --all -- --check
 git diff --check

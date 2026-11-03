@@ -1,7 +1,7 @@
 //! Error owners are parked on the heap; node-size gates do not make them free.
 
 use core::mem::{align_of, needs_drop, size_of, size_of_val};
-use davinci_harness::alloc::{measure_returning, stats};
+use level_harness::alloc::{measure_returning, stats};
 use oxc_span::SourceType;
 use vize_l0::Allocator;
 use vize_relief::{RetainedJsAst, RetainedJsAstKind, SimpleExpressionNode};

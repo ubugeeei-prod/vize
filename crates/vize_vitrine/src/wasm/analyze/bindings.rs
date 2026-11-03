@@ -1,5 +1,5 @@
 //! The `analyzeSfc` payload's bindings, read through a declared fact demand
-//! (Davinci P4-3a).
+//! (Levels P4-3a).
 
 use vize_croquis::Croquis;
 use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};

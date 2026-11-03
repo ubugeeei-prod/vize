@@ -5,7 +5,7 @@
 use std::path::Path;
 use vize_carton::timing_observer::TimingObserver;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::dump::collector::Collector;
 use vize_l0::pass::{
@@ -92,7 +92,7 @@ fn timing_json_satisfies_the_p0_11_schema() {
     assert_eq!(schema_check::validate(&schema, &json, "$"), Ok(()));
     assert_eq!(json["schema_version"], 1);
     assert_eq!(json["command"], "typed-pass-test");
-    assert_eq!(json["spans"][0]["key"], "davinci.pass.walk");
+    assert_eq!(json["spans"][0]["key"], "levels.pass.walk");
     assert_eq!(json["spans"][0]["count"], 1);
     assert_eq!(json["spans"][0]["attribution"]["stage"], "l2");
     assert_eq!(json["spans"][0]["attribution"]["pass"], "alpha");

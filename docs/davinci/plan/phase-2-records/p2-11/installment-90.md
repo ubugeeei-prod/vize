@@ -11,8 +11,8 @@ emission gained the root-hoist arm that only exists for the inline shape.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_inline_root_hoist.rs` and
-`crates/vize_atelier_dom/tests/davinci_s2_inline_root_hoist_components.rs`
+`crates/vize_atelier_dom/tests/level_s2_inline_root_hoist.rs` and
+`crates/vize_atelier_dom/tests/level_s2_inline_root_hoist_components.rs`
 compare the S2 output against the shipped lane for native and component roots.
 The support binding fixtures keep the inline read shape explicit.
 

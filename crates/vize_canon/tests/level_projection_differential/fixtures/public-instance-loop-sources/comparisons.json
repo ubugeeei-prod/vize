@@ -647,7 +647,7 @@
         "severity": "error",
         "start": 579
       },
-      "path": "davinci-routes/demo-app/src/components/UserCard.vue",
+      "path": "level-routes/demo-app/src/components/UserCard.vue",
       "templateBase": 315
     },
     {
@@ -661,7 +661,7 @@
         "severity": "error",
         "start": 147
       },
-      "path": "davinci-ts40-projection/options-api-slots.vue",
+      "path": "level-ts40-projection/options-api-slots.vue",
       "templateBase": 114
     },
     {
@@ -675,7 +675,7 @@
         "severity": "error",
         "start": 167
       },
-      "path": "davinci-ts40-projection/options-api-slots.vue",
+      "path": "level-ts40-projection/options-api-slots.vue",
       "templateBase": 114
     },
     {
@@ -689,7 +689,7 @@
         "severity": "error",
         "start": 160
       },
-      "path": "davinci-ts40-projection/vue2-native-event.vue",
+      "path": "level-ts40-projection/vue2-native-event.vue",
       "templateBase": 122
     },
     {
@@ -703,7 +703,7 @@
         "severity": "error",
         "start": 173
       },
-      "path": "davinci-ts40-projection/vue2-native-event.vue",
+      "path": "level-ts40-projection/vue2-native-event.vue",
       "templateBase": 122
     },
     {

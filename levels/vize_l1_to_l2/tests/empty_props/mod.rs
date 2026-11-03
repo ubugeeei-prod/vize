@@ -9,7 +9,7 @@
 
 use serde_json::Value;
 
-use crate::davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+use crate::level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
 macro_rules! official_control {
     ($name:literal) => {

@@ -1,6 +1,6 @@
-//! Davinci microbenches: SSR codegen over the P0-2 fixture ladder.
+//! Levels microbenches: SSR codegen over the P0-2 fixture ladder.
 //!
-//! Run with: cargo bench -p vize_atelier_ssr --bench davinci
+//! Run with: cargo bench -p vize_atelier_ssr --bench levels
 //!
 //! `SsrCodegenContext` borrows the compile arena (production shares one
 //! arena across parse/transform/codegen), so the iteration rebuilds arena +
@@ -9,12 +9,12 @@
 //! stage without letting a shared arena grow across iterations. A fused
 //! `compile_ssr` case pins the end-to-end number, and the expression
 //! re-parse counter is sampled around one fused compile per fixture for the
-//! `davinci.expr.parses` baseline.
+//! `levels.expr.parses` baseline.
 #![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::fixtures::{LADDER, template_block};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::fixtures::{LADDER, template_block};
+use level_harness::stage::bench_stage_with_metrics;
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
@@ -32,7 +32,7 @@ fn ssr_transform_options() -> TransformOptions {
     }
 }
 
-fn davinci(criterion: &mut Criterion) {
+fn levels(criterion: &mut Criterion) {
     let options = SsrCompilerOptions::default();
 
     for fixture in &LADDER {
@@ -49,7 +49,7 @@ fn davinci(criterion: &mut Criterion) {
         });
 
         let fused_id = cstr!("atelier_ssr_compile_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
             let allocator = Allocator::new();
             let (root, errors, result) = compile_ssr(&allocator, template);
             // The AST borrows the iteration-local arena; return owned facts.
@@ -64,9 +64,9 @@ fn davinci(criterion: &mut Criterion) {
         let before = expr_parse_probe::expr_parse_count();
         let _compiled = compile_ssr(&allocator, template);
         let parses = expr_parse_probe::expr_parse_count() - before;
-        eprintln!("davinci.expr.parses ssr {} {parses}", fixture.name);
+        eprintln!("levels.expr.parses ssr {} {parses}", fixture.name);
     }
 }
 
-criterion_group!(davinci_group, davinci);
-davinci_harness::main!(davinci_group);
+criterion_group!(level_group, levels);
+level_harness::main!(level_group);

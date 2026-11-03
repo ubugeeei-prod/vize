@@ -14,10 +14,10 @@ use vize_tool_support::common;
 pub const CLASS_A: &str = "undefined-template-ref";
 pub const CLASS_B: &str = "unused-binding";
 pub const CLASS_A_RULE: &str = "vue/no-undefined-refs";
-pub const SEEDED_NAME_SUFFIX: &str = "__davinci_seeded";
+pub const SEEDED_NAME_SUFFIX: &str = "__level_seeded";
 pub const CLASS_B_RULE: &str = "vue/no-unused-setup-bindings";
-pub const UNUSED_BINDING_NAME: &str = "davinciSeededUnused";
-pub const UNUSED_BINDING_STATEMENT: &str = "const davinciSeededUnused = 0;\n";
+pub const UNUSED_BINDING_NAME: &str = "levelSeededUnused";
+pub const UNUSED_BINDING_STATEMENT: &str = "const levelSeededUnused = 0;\n";
 pub const RULE_MAP_FIXTURE: &str = "tests/_fixtures/patina-eslint-vue-rule-map.json";
 pub const CORPUS_SHARD: [&str; 3] = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 

@@ -44,7 +44,7 @@ fn static_force_modifiers_are_native_and_merge_in_authored_order() {
             source,
             crate::VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

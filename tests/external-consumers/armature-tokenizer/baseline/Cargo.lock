@@ -1002,18 +1002,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "vize_davinci"
+name = "vize_level"
 version = "0.429.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1edc9c9c5f21d63be35f8c2e85668079fa975ee29dd027d84d947cf98dfd6f29"
 dependencies = [
  "unicode-width",
  "vize_carton",
- "vize_davinci_derive",
+ "vize_level_derive",
 ]
 
 [[package]]
-name = "vize_davinci_derive"
+name = "vize_level_derive"
 version = "0.429.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e874f36b3fafdc8d2a048d221b800bd2d15af127a7718dd0d21e8f54a1a8aba2"
@@ -1035,7 +1035,7 @@ dependencies = [
  "serde",
  "thiserror",
  "vize_carton",
- "vize_davinci",
+ "vize_level",
 ]
 
 [[package]]

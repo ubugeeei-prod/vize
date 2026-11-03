@@ -56,7 +56,7 @@ fn structural_slot_lifetimes_match_official_runtime() {
             &allocator,
             &case.source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..options
             },
         );
@@ -67,7 +67,7 @@ fn structural_slot_lifetimes_match_official_runtime() {
             retained.error_messages
         );
         let official = trace::trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source": case.source, "context": case.context, "steps": case.steps,
                 "components": {"Child": {"source": case.child, "props": ["value"]}},
@@ -76,7 +76,7 @@ fn structural_slot_lifetimes_match_official_runtime() {
         assert_semantics(&case.name, &official);
         for (lane, code) in [("native", &native.code), ("retained", &retained.code)] {
             let actual = trace::trace(
-                "davinci-mounted-trace.mjs",
+                "level-mounted-trace.mjs",
                 json!({
                     "backend": "vapor", "code": code, "context": case.context, "steps": case.steps,
                     "identities": true, "components": {"Child": {"code": child.code, "props": ["value"]}},

@@ -1,7 +1,7 @@
 // Byte-exact `--write` / `--check` for a generated artifact *set*: a list of
 // files plus the shard directories the generator owns outright.
 //
-// Davinci plan matrices are sharded (one file per crate / consumer) so two PRs
+// Levels plan matrices are sharded (one file per crate / consumer) so two PRs
 // touching different crates never edit the same committed file. The staleness
 // gate stays exactly as strict as the single-file one: every generated file
 // must exist and match byte for byte, and an owned shard directory must hold
@@ -10,7 +10,7 @@
 //
 // `runFiles` are per-run facts (file paths and line numbers) that every PR
 // would otherwise rewrite. They are never committed: both modes write them
-// under `artifacts/davinci-ledgers/`, which CI uploads, and an owned directory
+// under `artifacts/level-ledgers/`, which CI uploads, and an owned directory
 // that still holds one of them in the repository is stale.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -65,7 +65,7 @@ function removeEmptyDirs(dirRel: string): void {
 
 /** Where a run file lands: its plan path moved under the uploaded ledger directory. */
 export function runFilePath(relPath: string): string {
-  return relPath.replace(/^docs\/davinci\/plan\//u, "artifacts/davinci-ledgers/");
+  return relPath.replace(/^docs\/davinci\/plan\//u, "artifacts/level-ledgers/");
 }
 
 function writeRunFiles(set: ArtifactSet): void {

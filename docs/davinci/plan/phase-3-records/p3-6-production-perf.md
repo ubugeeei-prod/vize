@@ -4,7 +4,7 @@
 Blacksmith 32 vCPU Ubuntu 24.04 jobs compile the same exact head, then measure
 the committed fixture SFC corpus through the four shipping adapter shapes from
 P3-17: DOM inline, DOM separate module, SSR, and Vapor inline. The option builder
-mirrors `davinci_production_reach/shapes.rs`, including script and style ids,
+mirrors `level_production_reach/shapes.rs`, including script and style ids,
 scoped-style inference, default DOM compiler options, and source-level Vapor
 overrides. The SSR shape retains its SSR fallback for explicit Vapor sources.
 
@@ -18,7 +18,7 @@ gh workflow run criterion-bench.yml --ref <head-branch> \
 This mode measures selected and forced retained compiles **on the same head**;
 `base_sha` establishes provenance and ancestry, not a second timed revision.
 The existing template Criterion and dialect comparison modes are unchanged.
-The SFC feature `davinci-production-bench` enables only scoped backend selectors;
+The SFC feature `level-production-bench` enables only scoped backend selectors;
 it does not enable the retained-AST differential dual run. The Vapor selector
 and its thread-local access are absent from ordinary builds. Its guard restores
 the caller's selection after nested scopes and unwinding, covered by a focused
@@ -62,8 +62,8 @@ runtime and source-map gates remain required. Two additional full-corpus
 profiler-enabled passes export attribution for each lane **after** the timed
 samples. Attribution times are diagnostic data, not acceptance medians.
 
-A separate `davinci-production-profile` executable records detailed Vapor
-bridge stages on runner 1. Its extra `davinci-benchmark-profile` spans are
+A separate `level-production-profile` executable records detailed Vapor
+bridge stages on runner 1. Its extra `level-benchmark-profile` spans are
 absent both from ordinary production builds and from the timed-pair executable.
 This executable accepts only `--attribution-only`; it cannot emit acceptance
 timings. The artifact records S1 parsing, S1-to-S2 and S2-to-S3 lowering,
@@ -104,9 +104,9 @@ completed successfully on benchmark head
 `d424f46d0401575a591e34272aae2c28298d4901` (the Transition stack layer).
 The manifest contains 442 SFCs and hashes to
 `673fc2d888d7f22d3fc19c2da64103d273bdc4a27bbf8e4356c9c58169c96a70`.
-All three `davinci-production-perf-*` artifacts retain raw paired samples,
+All three `level-production-perf-*` artifacts retain raw paired samples,
 input observations and runner provenance; runner 1 also retains separate
-detailed bridge attribution. `davinci-production-summary` validates and
+detailed bridge attribution. `level-production-summary` validates and
 aggregates those reports.
 
 The committed [raw timing record](./p3-6-production-control.samples.json)

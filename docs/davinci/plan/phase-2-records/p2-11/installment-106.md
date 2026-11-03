@@ -12,12 +12,12 @@ path rather than only by direct emitter tests.
 
 The source-map request remains the compatibility boundary because S2 still
 emits no map. With source maps disabled, a custom runtime module compile now
-enters S2 profiling, records the `davinci.s2_dom.*` counters and stays
+enters S2 profiling, records the `levels.s2_dom.*` counters and stays
 byte-identical with the compatibility source-map compile.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_runtime_module_profile.rs` asserts
+`crates/vize_atelier_dom/tests/level_s2_runtime_module_profile.rs` asserts
 that a module-mode DOM compile using
 `runtime_module_name = "@scope/vue-runtime"` stays on S2 under profiling and
 produces the same import preamble and render body as the compatibility
@@ -26,7 +26,7 @@ source-map compile.
 Focused gate:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_runtime_module_profile
+cargo test -p vize_atelier_dom --test level_s2_runtime_module_profile
 ```
 
 This installment does not tick P2-11. The production-lane switch remains

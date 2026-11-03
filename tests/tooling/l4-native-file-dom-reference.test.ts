@@ -7,10 +7,7 @@ import { pathToFileURL } from "node:url";
 
 const pack = JSON.parse(
   fs.readFileSync(
-    new URL(
-      "../../davinci/vize_l4/tests/fixtures/native-dom-file-vue-3.5.35.json",
-      import.meta.url,
-    ),
+    new URL("../../levels/vize_l4/tests/fixtures/native-dom-file-vue-3.5.35.json", import.meta.url),
     "utf8",
   ),
 );

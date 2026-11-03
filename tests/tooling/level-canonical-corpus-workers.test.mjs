@@ -48,7 +48,7 @@ const run = {
 const commands = [
   "Run L2 DOM differential corpus",
   "Run L4 SSR and pug L1 differential corpora",
-  "Measure Davinci production reach on the hydrated corpus",
+  "Measure Levels production reach on the hydrated corpus",
 ];
 const jobs = observers.map((observer, index) => ({
   id: index + 1,

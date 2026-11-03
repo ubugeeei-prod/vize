@@ -1,4 +1,4 @@
-//! Davinci P1-9: exact source-map assertions for rewritten identifiers
+//! Levels P1-9: exact source-map assertions for rewritten identifiers
 //! over the P0 fixture ladder.
 //!
 //! The identifier-prefix transform is span-preserving: the AST decides
@@ -20,7 +20,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{CodegenOptions, CodegenResult, ErrorCode, TransformOptions, generate};
 
 /// A single decoded `mappings` segment: 0-indexed generated line/column and

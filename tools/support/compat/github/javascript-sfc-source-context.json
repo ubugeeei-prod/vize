@@ -28,9 +28,9 @@
     "crates/vize_canon/src/virtual_ts/scope/component_prop_navigation.rs",
     "crates/vize_canon/src/virtual_ts/scope/component_slots.rs",
     "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap"
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap"
   ],
   "historicalLexicalAfter": ["crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs"],
   "parts": [
@@ -97,9 +97,9 @@
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
     "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
     "docs/davinci/plan/croquis-consumption/vize_canon.md",
     "tests/_fixtures/ci/native-phase-membership-original.json",
@@ -153,7 +153,7 @@
   "callerContext": "tests/_fixtures/ci/javascript-sfc-source-callers.json",
   "callerContextSHA256": "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d",
   "callerPaths": [
-    ".github/workflows/davinci-canon-scaling.yml",
+    ".github/workflows/level-canon-scaling.yml",
     "tests/performance/support/warm-type-backed-host-qualifications.ts",
     "tests/tooling/support/native-lexical-dollar-fixture.mjs",
     "tests/tooling/warm-type-backed-lexical-dollar-host.test.ts",

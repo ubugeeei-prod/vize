@@ -11,7 +11,7 @@ import {
 import type { SfcCompileResult, WasmModule } from "../../wasm/index";
 import { negotiateProductCapture } from "../../wasm/types/productCapture";
 import type { InspectorDiff } from "../../wasm/types/inspector";
-import { DAVINCI_PRESET } from "../../shared/presets/davinci";
+import { LEVEL_PRESET } from "../../shared/presets/levels";
 import type { EditorHighlight } from "../../shared/MonacoEditor.vue";
 import {
   compileCodeOutputs,
@@ -41,7 +41,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   const injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
   const theme = computed<"dark" | "light">(() => injectedTheme?.value ?? "light");
 
-  const source = ref(DAVINCI_PRESET);
+  const source = ref(LEVEL_PRESET);
   const captures = shallowRef<Partial<Record<OutputTarget, ProductCapturedResult>>>({});
   const compiledSource = ref<string | null>(null);
   const error = ref<string | null>(null);
@@ -129,7 +129,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     const span = focusSpan.value;
     if (!span || !ladder.value || templateStart.value === null) return [];
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
-    return [{ ...range, className: "davinci-provenance", reveal: hoveredLine.value === null }];
+    return [{ ...range, className: "level-provenance", reveal: hoveredLine.value === null }];
   });
   const focusSource = computed(() => {
     const span = focusSpan.value;

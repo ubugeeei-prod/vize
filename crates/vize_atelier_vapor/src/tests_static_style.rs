@@ -118,7 +118,7 @@ fn retained_style_merge_preserves_order_and_existing_class_behavior() {
             source,
             VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

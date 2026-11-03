@@ -42,7 +42,7 @@ export function canonicalWorkerLog(observer, fileCount, repositoryCount) {
       .replaceAll("submodules=147", `submodules=${repositoryCount}`)
       .replaceAll("42998", String(fileCount))
       .replace(
-        /(davinci native-only acceptance:[^\n]*unverified=)(\d+)/g,
+        /(levels native-only acceptance:[^\n]*unverified=)(\d+)/g,
         (_, prefix, count) => `${prefix}${Number(count) + fileCount - 42998}`,
       ),
   );

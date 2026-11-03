@@ -93,7 +93,7 @@ impl EscapeKind {
 /// every premise demands, then apply the provide/inject cap.
 ///
 /// It reads nothing but the three axes, so the Kani harness in
-/// `davinci/vize_l3/src/lattice/kani.rs` verifies this exact source against the
+/// `levels/vize_l3/src/lattice/kani.rs` verifies this exact source against the
 /// rule table.
 #[must_use]
 pub const fn classify(

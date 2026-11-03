@@ -1,4 +1,4 @@
-//! Davinci P1-7 differential lane — plain-suite coverage witness.
+//! Levels P1-7 differential lane — plain-suite coverage witness.
 //!
 //! Under `cfg(test)` the migrated atelier sites dual-run every retained-AST
 //! read against the legacy re-parse and panic on divergence (see
@@ -9,7 +9,7 @@
 //! comparators actually fired — a `cfg` regression that silently disarmed
 //! the lane fails here. Counter deltas use `>=`: the counters are
 //! process-global and other unit tests run concurrently. The exact-pinned
-//! lane lives in `vize_atelier_sfc/tests/davinci_differential.rs` (own
+//! lane lives in `vize_atelier_sfc/tests/level_differential.rs` (own
 //! process, deterministic counts).
 
 use crate::codegen::generate_with_sections;

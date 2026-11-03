@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 #[test]
 fn authored_slot_types_and_the_public_component_contract_are_distinct() {

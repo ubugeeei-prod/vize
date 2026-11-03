@@ -86,50 +86,50 @@ function describe(frame: FlameFrame): string {
 </script>
 
 <template>
-  <div class="davinci-flame">
-    <header class="davinci-flame-bar">
-      <p v-if="opened" class="davinci-hint">
+  <div class="level-flame">
+    <header class="level-flame-bar">
+      <p v-if="opened" class="level-hint">
         Showing <code>{{ opened.name }}</code> (tool {{ opened.profile.tool }}, command
         {{ opened.profile.command }})
       </p>
-      <p v-else class="davinci-hint">
+      <p v-else class="level-hint">
         Measured compiler work by stage, pass and block. Width is time; siblings sort by name.
       </p>
       <template v-if="opened">
-        <label class="davinci-hint" :for="keyId">Span key</label>
-        <select :id="keyId" v-model="key" class="davinci-select">
+        <label class="level-hint" :for="keyId">Span key</label>
+        <select :id="keyId" v-model="key" class="level-select">
           <option v-for="name in keys" :key="name" :value="name">{{ name }}</option>
         </select>
-        <button type="button" class="davinci-ghost" @click="closeExport">Back to this run</button>
+        <button type="button" class="level-ghost" @click="closeExport">Back to this run</button>
       </template>
       <template v-else>
-        <button type="button" class="davinci-ghost" :disabled="!profile" @click="() => emit('pin')">
+        <button type="button" class="level-ghost" :disabled="!profile" @click="() => emit('pin')">
           {{ baseline ? "Pin this run instead" : "Pin as baseline" }}
         </button>
-        <button v-if="baseline" type="button" class="davinci-ghost" @click="() => emit('unpin')">
+        <button v-if="baseline" type="button" class="level-ghost" @click="() => emit('unpin')">
           Clear baseline
         </button>
       </template>
       <input
         :id="fileId"
-        class="davinci-flame-file"
+        class="level-flame-file"
         type="file"
         accept=".json,application/json"
         @change="openExport"
       />
-      <label class="davinci-ghost" :for="fileId">Open a --profile-json file</label>
+      <label class="level-ghost" :for="fileId">Open a --profile-json file</label>
     </header>
-    <p v-if="openError" class="davinci-message error" role="alert">{{ openError }}</p>
-    <div v-if="flame && flame.total > 0" class="davinci-flame-graph">
-      <div v-for="row in rows" :key="row.name" class="davinci-flame-row">
-        <span class="davinci-flame-level">{{ row.name }}</span>
-        <div class="davinci-flame-lane">
+    <p v-if="openError" class="level-message error" role="alert">{{ openError }}</p>
+    <div v-if="flame && flame.total > 0" class="level-flame-graph">
+      <div v-for="row in rows" :key="row.name" class="level-flame-row">
+        <span class="level-flame-level">{{ row.name }}</span>
+        <div class="level-flame-lane">
           <button
             v-for="frame in row.frames"
             :key="frame.path.join(' › ')"
             type="button"
             :class="[
-              'davinci-flame-frame',
+              'level-flame-frame',
               `rung-${frame.path[0]}`,
               compared ? `trend-${flameTrend(frame)}` : null,
             ]"
@@ -138,14 +138,14 @@ function describe(frame: FlameFrame): string {
             :aria-label="describe(frame)"
             @click="() => pick(frame)"
           >
-            <span class="davinci-flame-name">{{ frame.path[frame.depth] }}</span>
-            <span class="davinci-flame-time">{{ formatNanos(frame.nanos) }}</span>
+            <span class="level-flame-name">{{ frame.path[frame.depth] }}</span>
+            <span class="level-flame-time">{{ formatNanos(frame.nanos) }}</span>
           </button>
         </div>
       </div>
     </div>
-    <p v-else class="davinci-message">This run has no step timings to draw.</p>
-    <p v-if="compared && flame && flame.total > 0" class="davinci-flame-legend">
+    <p v-else class="level-message">This run has no step timings to draw.</p>
+    <p v-if="compared && flame && flame.total > 0" class="level-flame-legend">
       Against the pinned run: <span class="trend-slower">slower</span>
       <span class="trend-faster">faster</span> <span class="trend-same">within 10%</span>
       <span class="trend-new">new</span>

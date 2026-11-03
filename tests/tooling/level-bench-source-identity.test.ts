@@ -59,7 +59,7 @@ await test("source-owned comparison refuses claim-only, incomplete, foreign and 
   f.measurement.measurements.head[0][id] = original;
   f.measurement.measurements.head[0][id] = {
     ...original,
-    file: path.join(f.arms.base.root, "tools/benchmarks/results/davinci", `${id}.json`),
+    file: path.join(f.arms.base.root, "tools/benchmarks/results/levels", `${id}.json`),
   };
   f.save();
   refuse(/missing extra or foreign actual report marker/);
@@ -99,8 +99,8 @@ await test("source-owned comparison refuses legitimate source protocol changes a
     assert.match(result.stderr, reason);
   };
   for (const relative of [
-    "tools/benchmarks/crates/davinci_harness/src/report.rs",
-    "tools/benchmarks/crates/davinci_harness/benches/selfcheck.rs",
+    "tools/benchmarks/crates/level_harness/src/report.rs",
+    "tools/benchmarks/crates/level_harness/benches/selfcheck.rs",
   ]) {
     const file = path.join(f.arms.head.root, relative),
       original = fs.readFileSync(file);
@@ -112,7 +112,7 @@ await test("source-owned comparison refuses legitimate source protocol changes a
     f.refresh("head");
     f.save();
   }
-  const extra = path.join(f.arms.head.root, "tools/benchmarks/crates/davinci_harness/src/extra.rs");
+  const extra = path.join(f.arms.head.root, "tools/benchmarks/crates/level_harness/src/extra.rs");
   fs.writeFileSync(extra, "// additional protocol path\n");
   f.refresh("head");
   f.save();

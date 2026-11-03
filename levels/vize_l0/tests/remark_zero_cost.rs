@@ -5,7 +5,7 @@
 //! one allocation), guarded by the channel's compile-time `ENABLED`. Under
 //! an observer that consumes no remarks the guarded path must vanish, so the
 //! measured window allocates **exactly zero** - the P2-3 bench pair's
-//! `allocs = 0` instrument (`davinci_harness`'s counting allocator), applied
+//! `allocs = 0` instrument (`level_harness`'s counting allocator), applied
 //! to the remark path. The attached run is the control: the same body under
 //! a (non-allocating) counter allocates exactly one label per pass, so a
 //! zero in the detached runs is the observer's absence, not a guard that
@@ -16,7 +16,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
+use level_harness::alloc::{CountingAllocator, mark_installed, measure};
 use vize_carton::timing_observer::TimingObserver;
 use vize_l0::Span;
 use vize_l0::pass::{

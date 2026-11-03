@@ -80,7 +80,7 @@ vize_canon = { workspace = true }
 vize_croquis.workspace = true
 vize_croquis_cf.workspace = true
 vize_l2.workspace = true
-# The resident tier (Davinci P5-6a): request paths read memoized SFC
+# The resident tier (Levels P5-6a): request paths read memoized SFC
 # descriptors instead of calling `parse_sfc` per request.
 vize_incremental.workspace = true
 vize_musea.workspace = true
@@ -90,8 +90,8 @@ vize_musea.workspace = true
 libc.workspace = true
 
 [dev-dependencies]
-davinci_harness.workspace = true
-davinci_test_support = { workspace = true, features = ["vue-fixtures"] }
+level_harness.workspace = true
+level_test_support = { workspace = true, features = ["vue-fixtures"] }
 insta.workspace = true
 sha2.workspace = true
 tempfile.workspace = true

@@ -1,8 +1,8 @@
-//! Davinci bench harness (P0-1).
+//! Levels bench harness (P0-1).
 //!
-//! Wraps criterion with the memory metric families the Davinci budgets gate
+//! Wraps criterion with the memory metric families the Levels budgets gate
 //! on - allocation pressure and peak RSS - and exports every bench run as
-//! schema-validated JSON under `tools/benchmarks/results/davinci/`.
+//! schema-validated JSON under `tools/benchmarks/results/levels/`.
 //!
 //! The pieces:
 //!
@@ -14,7 +14,7 @@
 //! - [`rss`]: `ru_maxrss` peak-RSS sampling, normalized to bytes and always
 //!   reported as a baseline-subtracted delta.
 //! - [`report`]: the JSON exporter, checked against
-//!   `schema/davinci-bench.schema.json` by a strict subset validator.
+//!   `schema/level-bench.schema.json` by a strict subset validator.
 //! - [`bench_with_metrics`]: the per-bench entry point - criterion drives
 //!   sampling, the harness computes percentiles and collects the memory
 //!   metrics, and the report lands on disk.
@@ -23,7 +23,7 @@
 //!
 //! ```ignore
 //! criterion::criterion_group!(groups, my_bench);
-//! davinci_harness::main!(groups);
+//! level_harness::main!(groups);
 //! ```
 
 // Bench tooling: a bench that cannot record its result, or whose stage
@@ -91,12 +91,12 @@ pub fn percentile_ns(sorted_ns: &[f64], q: f64) -> u64 {
     sample.round() as u64
 }
 
-/// Run one bench through criterion and export the Davinci metric report.
+/// Run one bench through criterion and export the Levels metric report.
 ///
 /// Criterion owns the sampling strategy (via `iter_custom`); the harness
 /// records per-iteration wall times, reduces the measurement-phase samples to
 /// p50/p95, runs one instrumented pass for allocation metrics, reads the
-/// RSS delta, and writes `tools/benchmarks/results/davinci/<bench_id>.json`.
+/// RSS delta, and writes `tools/benchmarks/results/levels/<bench_id>.json`.
 ///
 /// The routine should return the value it computes so the harness can
 /// `black_box` it; wall timings include the counting allocator's overhead,
@@ -162,11 +162,11 @@ pub fn bench_with_metrics<T>(
         rss_peak_bytes: rss::delta_since_baseline(),
         harness_version: report::HARNESS_VERSION,
     };
-    let path = report::write(&report).expect("davinci bench report must be written");
-    eprintln!("davinci-harness: wrote {}", path.display());
+    let path = report::write(&report).expect("levels bench report must be written");
+    eprintln!("level-harness: wrote {}", path.display());
 }
 
-/// Define the bench binary entry point with the Davinci metric setup.
+/// Define the bench binary entry point with the Levels metric setup.
 ///
 /// Expands to the counting global allocator (over mimalloc), the RSS baseline
 /// capture, and a criterion main that runs each listed
@@ -176,7 +176,7 @@ pub fn bench_with_metrics<T>(
 macro_rules! main {
     ($($group:path),+ $(,)?) => {
         #[global_allocator]
-        static DAVINCI_HARNESS_GLOBAL_ALLOC: $crate::alloc::CountingAllocator =
+        static LEVEL_HARNESS_GLOBAL_ALLOC: $crate::alloc::CountingAllocator =
             $crate::alloc::CountingAllocator::mimalloc();
 
         fn main() {

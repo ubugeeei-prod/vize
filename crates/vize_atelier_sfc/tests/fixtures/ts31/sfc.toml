@@ -1,4 +1,4 @@
-# TS-31 source-map coverage battery: SFC fixtures (Davinci P3-9).
+# TS-31 source-map coverage battery: SFC fixtures (Levels P3-9).
 #
 # Measures the structured SFC module map against authored `<script>` /
 # `<script setup>` statements. This is the domain the deleted text-matching

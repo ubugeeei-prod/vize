@@ -52,21 +52,21 @@ void test("formatter collection is separate from the unchanged twelve-suite leve
   assert.deepEqual(
     levelInstructionSuites(root).map(([pkg, bench]) => [
       pkg,
-      pkg === "vize_l1_to_l2" && bench === "davinci_storage" ? "l1_to_l2_storage" : bench,
+      pkg === "vize_l1_to_l2" && bench === "level_storage" ? "l1_to_l2_storage" : bench,
     ]),
     [
-      ["davinci_harness", "selfcheck"],
-      ["vize_armature", "davinci"],
-      ["vize_croquis", "davinci"],
-      ["vize_atelier_core", "davinci"],
-      ["vize_atelier_dom", "davinci"],
-      ["vize_atelier_vapor", "davinci"],
-      ["vize_atelier_ssr", "davinci"],
+      ["level_harness", "selfcheck"],
+      ["vize_armature", "levels"],
+      ["vize_croquis", "levels"],
+      ["vize_atelier_core", "levels"],
+      ["vize_atelier_dom", "levels"],
+      ["vize_atelier_vapor", "levels"],
+      ["vize_atelier_ssr", "levels"],
       ["vize_l0", "pass_runtime"],
       ["vize_l0", "fact_runtime"],
       ["vize_l1_to_l2", "l1_to_l2_storage"],
-      ["vize_patina", "davinci_markup"],
-      ["vize_musea", "davinci_art"],
+      ["vize_patina", "level_markup"],
+      ["vize_musea", "level_art"],
     ],
   );
   const levelRegistry = loadRegistry(path.join(root, "docs/davinci/plan/budgets.toml"));

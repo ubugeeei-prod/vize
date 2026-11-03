@@ -11,24 +11,24 @@ import {
   recordCancellationPublications,
   sourceSha256,
   summarizeCancellationDurations,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-cancellation.ts";
 import {
   canonicalPublicStatePosition,
   gateCleanupStatus,
   identifierAtLspPosition,
   nativeFrameEvidence,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-corsa-gate.ts";
 import {
   createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
   rssDeltaMib,
   updateCancellationPublicationProgress,
   type AllocationProfileLink,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-cancellation-run.ts";
 import {
   componentSource,
   documentUri,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-workspace.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-workspace.ts";
 
 test("resource cancellation frames retain exact write order, version and source identity", () => {
   const source = "<template><p>日本語</p></template>\n";

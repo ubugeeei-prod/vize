@@ -12,5 +12,5 @@ passed modifier object so synthetic modifier mappings cannot steal their ranges.
 The generator test checks exact start/end byte mappings for every generated
 modifier key, including non-ASCII names, CRLF and a nonzero template offset.
 
-This is a production Canon regression corpus. It provides no Davinci product
+This is a production Canon regression corpus. It provides no Levels product
 replacement or whole fix-history acceptance credit.

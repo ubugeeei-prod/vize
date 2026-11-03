@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-body-void-elements.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-body-void-elements.json";
 
 describe("native Document HTML body void elements", () => {
   it("retains ten complete sources and whole ancestry, attribute and node packets", () => {

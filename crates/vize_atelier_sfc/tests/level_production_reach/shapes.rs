@@ -37,7 +37,7 @@ impl Shape {
         }
     }
 
-    /// The Davinci stage a template reaches on this shape when its lane
+    /// The Levels stage a template reaches on this shape when its lane
     /// accepts it.
     pub const fn stage(self) -> &'static str {
         match self {

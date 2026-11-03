@@ -1,7 +1,7 @@
 {
   "name": "destructure",
   "wholeSource": "type Card = { 'item-row': (props: { title: string }) => unknown };\nconst card = undefined as unknown as Card;\nconst { 'item-row': slot } = card;\nconst unrelated = 'item-row';\ntype Other = { 'item-row': () => void };\nconst other = undefined as unknown as Other;\nvoid other['item-row'];\nvoid slot;\n",
-  "runtime": "/Users/ubugeeei/orca/workspaces/vize/davinci/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+  "runtime": "/Users/ubugeeei/orca/workspaces/vize/levels/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
   "runtimeSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
   "version": "7.0.2",
   "observations": [

@@ -1,4 +1,4 @@
-//! Public SFC regression corpus for #7899 and #7901; no Davinci parity claim.
+//! Public SFC regression corpus for #7899 and #7901; no Levels parity claim.
 use serde::Deserialize;
 use std::path::Path;
 use vize_l0::String;

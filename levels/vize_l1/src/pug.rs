@@ -1,5 +1,5 @@
 //! The lossless **pug** surface tree — charter #12's second L1 dialect
-//! (Davinci P4-12c).
+//! (Levels P4-12c).
 //!
 //! [`parse_pug`] builds a typed tree whose in-order render is the exact
 //! authored bytes, malformed input included, with the debug verifier

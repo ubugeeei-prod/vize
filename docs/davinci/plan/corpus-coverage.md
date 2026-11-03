@@ -1,11 +1,11 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: rust-script tools/commands/davinci/corpus-coverage.rs --write
-     Verify:     rust-script tools/commands/davinci/corpus-coverage.rs --check
-     Generator:  tools/commands/davinci/corpus-coverage.rs -->
+     Regenerate: rust-script tools/commands/levels/corpus-coverage.rs --write
+     Verify:     rust-script tools/commands/levels/corpus-coverage.rs --check
+     Generator:  tools/commands/levels/corpus-coverage.rs -->
 
 # Corpus construct coverage
 
-Counts of the [taxonomy.toml](./taxonomy.toml) construct dimensions observed in the **hydrated** corpus projects registered in `tests/_fixtures/vue-ecosystem-fixtures.json` (Davinci P0-6). This file is generated; it goes stale whenever the taxonomy, the fixtures manifest, or the set of hydrated fixture submodules changes — regenerate with `--write`, verify with `--check` (byte-compare). The `--check` staleness gate can only join `tests/tooling/davinci-matrices.test.ts` once CI hydrates the full corpus; until then the scope-proof footer below is the honesty mechanism.
+Counts of the [taxonomy.toml](./taxonomy.toml) construct dimensions observed in the **hydrated** corpus projects registered in `tests/_fixtures/vue-ecosystem-fixtures.json` (Davinci P0-6). This file is generated; it goes stale whenever the taxonomy, the fixtures manifest, or the set of hydrated fixture submodules changes — regenerate with `--write`, verify with `--check` (byte-compare). The `--check` staleness gate can only join `tests/tooling/level-matrices.test.ts` once CI hydrates the full corpus; until then the scope-proof footer below is the honesty mechanism.
 
 ## Scan scope
 

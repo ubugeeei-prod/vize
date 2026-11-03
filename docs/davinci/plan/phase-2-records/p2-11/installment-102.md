@@ -18,14 +18,14 @@ letting the prop key path and the fragment-key path drift.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_corpus_residuals.rs` promotes the
+`crates/vize_atelier_dom/tests/level_s2_corpus_residuals.rs` promotes the
 reduced corpus witness from `vif/chain-keys.vue`, where the `v-else-if`
 template contains `<img v-for="src in images" key="img">` between statically
 keyed conditional siblings.
 
-`crates/vize_atelier_dom/tests/davinci_s2_for.rs` pins the plain native
+`crates/vize_atelier_dom/tests/level_s2_for.rs` pins the plain native
 `v-for` static-key case byte-for-byte against the shipped lane, while
-`crates/vize_atelier_dom/tests/davinci_s2_memo.rs` pins both byte output and
+`crates/vize_atelier_dom/tests/level_s2_memo.rs` pins both byte output and
 the per-node patch-site expectation for a static-keyed `v-memo` loop.
 
 The focused smoke corpus probe over `crates/vize_s1_to_s2/tests/fixtures`

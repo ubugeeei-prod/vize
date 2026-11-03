@@ -1,4 +1,4 @@
-//! Reading the pinned WHATWG HTML snapshot (Davinci P4-11a).
+//! Reading the pinned WHATWG HTML snapshot (Levels P4-11a).
 //!
 //! Two layers. `extract_*` turn the upstream multipage HTML into the
 //! committed plain-text excerpt (`whatwg/*.txt|tsv`): the element and

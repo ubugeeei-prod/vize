@@ -1,6 +1,6 @@
 //! Minimal, strict JSON Schema subset validator.
 //!
-//! Implements exactly the keywords used by the committed Davinci schemas and
+//! Implements exactly the keywords used by the committed Levels schemas and
 //! rejects any unsupported validation keyword instead of silently skipping it.
 
 use serde_json::Value;
@@ -90,7 +90,7 @@ const IMPLEMENTED_KEYWORDS: [&str; 9] = [
     "const",
 ];
 
-/// Validate `instance` against the strict Davinci schema subset.
+/// Validate `instance` against the strict Levels schema subset.
 pub fn validate(schema: &Value, instance: &Value, path: &str) -> Result<(), SchemaError> {
     let Some(schema_object) = schema.as_object() else {
         return Err(SchemaError::NotObject { path: path.into() });

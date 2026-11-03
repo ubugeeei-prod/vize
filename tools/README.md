@@ -12,7 +12,7 @@ call the Rust Script command path, and new user-facing automation belongs in
 
 - `tools/commands/agents`: agent-facing local automation.
 - `tools/commands/ci`: GitHub Actions, fuzz, and hosted verification helpers.
-- `tools/commands/davinci`: Davinci roadmap, matrix, corpus, and budget commands.
+- `tools/commands/levels`: Levels roadmap, matrix, corpus, and budget commands.
 - `tools/commands/editors`: editor extension packaging and real-server checks.
 - `tools/commands/fixtures`: real-project and generated fixture orchestration.
 - `tools/commands/release`: release, npm, and changelog commands.

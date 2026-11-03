@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import process from "node:process";
 import { build } from "vite-plus";
 import { chromium } from "@playwright/test";
-import { mountEventFixture } from "./davinci-event-browser.mjs";
+import { mountEventFixture } from "./level-event-browser.mjs";
 import {
   officialCompilerVapor,
   vueVaporRuntimeEntry,

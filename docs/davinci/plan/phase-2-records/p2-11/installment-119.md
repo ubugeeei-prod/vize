@@ -12,10 +12,10 @@ still belongs to the foreign subtree.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_sfc_namespace_selector.rs` compares
+`crates/vize_atelier_dom/tests/level_s2_sfc_namespace_selector.rs` compares
 an `<svg><foreignObject><div>...</DIV></foreignObject>...` section compile
 against the compatibility lane and asserts the selected compile records one
-`davinci.s2_dom.files` counter. The implementation change is limited to
+`levels.s2_dom.files` counter. The implementation change is limited to
 `compile::sfc::selector::pop_closed_tag`.
 
 This installment does not tick P2-11. The full production-lane switch remains

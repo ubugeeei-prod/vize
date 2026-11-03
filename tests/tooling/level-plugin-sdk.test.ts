@@ -11,10 +11,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { corpus, measure } from "./fixtures/davinci-plugin-sdk/bench.mjs";
-import { definePlugin, runProxy } from "./fixtures/davinci-plugin-sdk/sdk.mjs";
-import team from "./fixtures/davinci-plugin-sdk/team-conventions.mjs";
-import { TODO_LIST } from "./fixtures/davinci-plugin-sdk/sources.mjs";
+import { corpus, measure } from "./fixtures/level-plugin-sdk/bench.mjs";
+import { definePlugin, runProxy } from "./fixtures/level-plugin-sdk/sdk.mjs";
+import team from "./fixtures/level-plugin-sdk/team-conventions.mjs";
+import { TODO_LIST } from "./fixtures/level-plugin-sdk/sources.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const native = createRequire(import.meta.url)(path.join(root, "npm/native/index.js"));
@@ -119,7 +119,7 @@ test("plugin results persist across Node processes under the manifest key", () =
   const child = `
     import { createRequire } from "node:module";
     const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
-    const { default: team } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/team-conventions.mjs")).href)});
+    const { default: team } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/level-plugin-sdk/team-conventions.mjs")).href)});
     const output = native.lintWithPlugins(${JSON.stringify(TODO_LIST)}, [team], {
       filename: "TodoList.vue", cache: true, cacheDir: process.argv[1]
     });
@@ -153,7 +153,7 @@ test("captured plugin configuration invalidates a persisted result across proces
   const child = `
     import { createRequire } from "node:module";
     const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
-    const { definePlugin } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/sdk.mjs")).href)});
+    const { definePlugin } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/level-plugin-sdk/sdk.mjs")).href)});
     const threshold = process.argv[2];
     const plugin = definePlugin({
       name: "captured-config", version: "1", visit: ["ui.element"], demands: [],

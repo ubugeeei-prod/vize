@@ -3,7 +3,7 @@
 //! Generates a TOML-like human-readable representation of a croquis
 //! for debugging and inspection purposes.
 //!
-//! VIR is absorbed into Davinci as the **croquis folio**: the parsing
+//! VIR is absorbed into Levels as the **croquis folio**: the parsing
 //! side and the format contract live in
 //! `vize_croquis::dump` (see
 //! `docs/davinci/plan/folio-format.md`). Changes here must keep the folio

@@ -1,10 +1,10 @@
-//! Davinci P4-12c corpus-runnable entry for the pug dialect — the P2-8
-//! lane shape (`davinci_lowering_corpus.rs`) for `<template lang="pug">`,
+//! Levels P4-12c corpus-runnable entry for the pug dialect — the P2-8
+//! lane shape (`level_lowering_corpus.rs`) for `<template lang="pug">`,
 //! and the corpus half of the P4-12c compile oracle.
 //!
 //! Compiled only with the `legacy-differential` feature. Pins the
 //! committed fixture census, then, with
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, sweeps every `.vue` file
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`, sweeps every `.vue` file
 //! under `<dir>` whose inline template is pug:
 //!
 //! - **TS-19**: the pug L1 render is the authored template body;
@@ -12,17 +12,17 @@
 //!   holds on the derived template, every diagnostic sits in the pug;
 //! - **oracle**: the derived template's sha256 equals the committed
 //!   baseline's hash of the pinned `pug@3.0.4` rendering
-//!   (`tests/_fixtures/davinci-pug/corpus-baseline.tsv`, pinned by
-//!   `tests/tooling/davinci-pug-corpus-oracle.test.ts`), and the SFC
+//!   (`tests/_fixtures/level-pug/corpus-baseline.tsv`, pinned by
+//!   `tests/tooling/level-pug-corpus-oracle.test.ts`), and the SFC
 //!   compiles byte-identically to its twin whose template is that HTML in
 //!   the DOM, SSR and Vapor lanes — the compile oracle;
 //! - **scope proof**: every baseline row of a project present under
 //!   `<dir>` is visited, and every pug SFC visited has a row.
 //!
 //! ```text
-//! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+//! VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_l1_to_l2 --features legacy-differential \
-//!     --test davinci_pug_corpus -- --nocapture
+//!     --test level_pug_corpus -- --nocapture
 //! ```
 
 #![expect(
@@ -53,7 +53,7 @@ use vize_l1::pug::{check_pug_fidelity, parse_pug};
 use vize_l1_to_l2::lower::pug::lower_pug;
 
 fn fixture_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-pug")
 }
 
 fn fixture_count(dir: &str) -> usize {
@@ -163,8 +163,8 @@ fn pug_corpus_matches_the_pinned_pug_and_compiles_like_it() {
     );
     let rows = baseline();
     assert_eq!(rows.len(), 499, "the corpus baseline scope is pinned");
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed fixtures only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed fixtures only");
         return;
     };
     let mut visited = BTreeMap::new();
@@ -206,7 +206,7 @@ fn pug_corpus_matches_the_pinned_pug_and_compiles_like_it() {
         );
     }
     eprintln!(
-        "davinci pug corpus sweep: files={} pug={} refused={refused} compiled_lanes={compiled}",
+        "levels pug corpus sweep: files={} pug={} refused={refused} compiled_lanes={compiled}",
         sweep.files.len(),
         visited.len()
     );

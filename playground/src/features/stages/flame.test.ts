@@ -102,14 +102,14 @@ describe("flameGraph", () => {
 describe("FlameView", () => {
   it("lays frames out by share and opens what a frame names", async () => {
     const wrapper = mount(FlameView, { props: { profile: PROFILE, baseline: null } });
-    const rows = wrapper.findAll(".davinci-flame-row");
-    expect(rows.map((row) => row.find(".davinci-flame-level").text())).toEqual([
+    const rows = wrapper.findAll(".level-flame-row");
+    expect(rows.map((row) => row.find(".level-flame-level").text())).toEqual([
       "Stage",
       "Pass",
       "Block",
     ]);
-    const stages = rows[0].findAll(".davinci-flame-frame");
-    expect(stages.map((frame) => frame.find(".davinci-flame-name").text())).toEqual([
+    const stages = rows[0].findAll(".level-flame-frame");
+    expect(stages.map((frame) => frame.find(".level-flame-name").text())).toEqual([
       "l1",
       "l2",
       "l3",
@@ -122,45 +122,45 @@ describe("FlameView", () => {
     const placed = (stages[1].element as HTMLElement).style;
     expect([placed.left, placed.width]).toEqual([probe.style.left, probe.style.width]);
     expect(stages[1].attributes("title")).toBe("l2: 31 µs, 58% of the run, 3 calls");
-    expect(stages[1].classes()).toEqual(["davinci-flame-frame", "rung-l2"]);
-    await rows[1].findAll(".davinci-flame-frame")[1].trigger("click");
+    expect(stages[1].classes()).toEqual(["level-flame-frame", "rung-l2"]);
+    await rows[1].findAll(".level-flame-frame")[1].trigger("click");
     expect(wrapper.emitted("select")).toEqual([[["l2", "hoist-static"]]]);
-    await wrapper.find(".davinci-flame-bar button").trigger("click");
+    await wrapper.find(".level-flame-bar button").trigger("click");
     expect(wrapper.emitted("pin")).toEqual([[]]);
-    expect(wrapper.find(".davinci-flame-legend").exists()).toBe(false);
+    expect(wrapper.find(".level-flame-legend").exists()).toBe(false);
     wrapper.unmount();
   });
 
   it("colours frames by trend against the baseline and can drop it", async () => {
     const baseline = run([span(LADDER_STEP_KEY, "s1", "parse", 2_000)]);
     const wrapper = mount(FlameView, { props: { profile: PROFILE, baseline } });
-    const stages = wrapper.findAll(".davinci-flame-row")[0].findAll(".davinci-flame-frame");
+    const stages = wrapper.findAll(".level-flame-row")[0].findAll(".level-flame-frame");
     expect(stages.map((frame) => frame.classes().slice(-1)[0])).toEqual([
       "trend-faster",
       "trend-new",
       "trend-new",
     ]);
     expect(stages[0].attributes("title")).toBe("l1: 1 µs, 2% of the run, 1 call; baseline 2 µs");
-    const buttons = wrapper.findAll(".davinci-flame-bar button");
+    const buttons = wrapper.findAll(".level-flame-bar button");
     expect(buttons.map((button) => button.text())).toEqual([
       "Pin this run instead",
       "Clear baseline",
     ]);
     await buttons[1].trigger("click");
     expect(wrapper.emitted("unpin")).toEqual([[]]);
-    expect(wrapper.find(".davinci-flame-legend").exists()).toBe(true);
+    expect(wrapper.find(".level-flame-legend").exists()).toBe(true);
     wrapper.unmount();
   });
 
   it("opens a --profile-json file on its heaviest key, and goes back", async () => {
     const build = run([
       span("compile.template", "s2", "lower", 900),
-      span("davinci.pass.walk", "s2", "hoist-static", 4_000),
-      span("davinci.pass.walk", "s2", "v-slot", 3_000),
+      span("levels.pass.walk", "s2", "hoist-static", 4_000),
+      span("levels.pass.walk", "s2", "v-slot", 3_000),
     ]);
     const wrapper = mount(FlameView, { props: { profile: PROFILE, baseline: PROFILE } });
     // The input id comes from `useId()`; the label must point at it.
-    const input = wrapper.find<HTMLInputElement>("input.davinci-flame-file");
+    const input = wrapper.find<HTMLInputElement>("input.level-flame-file");
     const label = wrapper.find("label[for]");
     expect(input.attributes("id")).toBeTruthy();
     expect(label.attributes("for")).toBe(input.attributes("id"));
@@ -178,35 +178,35 @@ describe("FlameView", () => {
     expect(wrapper.find("[role=alert]").text()).toBe("build.json: The file is not JSON.");
 
     // The key select's id also comes from `useId()`: find it through its class.
-    const keySelect = () => wrapper.find<HTMLSelectElement>(".davinci-flame-bar select");
+    const keySelect = () => wrapper.find<HTMLSelectElement>(".level-flame-bar select");
     await choose(JSON.stringify(build), () => keySelect().exists());
     expect(wrapper.find("[role=alert]").exists()).toBe(false);
-    expect(wrapper.find(".davinci-flame-bar p").text()).toBe(
+    expect(wrapper.find(".level-flame-bar p").text()).toBe(
       "Showing build.json (tool vize, command analyze-sfc)",
     );
     const select = keySelect();
     expect(select.findAll("option").map((option) => option.text())).toEqual([
-      "davinci.pass.walk",
+      "levels.pass.walk",
       "compile.template",
     ]);
-    const names = () => wrapper.findAll(".davinci-flame-name").map((name) => name.text());
+    const names = () => wrapper.findAll(".level-flame-name").map((name) => name.text());
     expect(names()).toEqual(["l2", "hoist-static", "v-slot", "template", "template"]);
     // An opened file is not compared with this run's baseline or linked to pages.
-    expect(wrapper.find(".davinci-flame-legend").exists()).toBe(false);
-    await wrapper.findAll(".davinci-flame-frame")[1].trigger("click");
+    expect(wrapper.find(".level-flame-legend").exists()).toBe(false);
+    await wrapper.findAll(".level-flame-frame")[1].trigger("click");
     expect(wrapper.emitted("select")).toBeUndefined();
 
     await select.setValue("compile.template");
     expect(names()).toEqual(["l2", "lower", "template"]);
-    await wrapper.find(".davinci-flame-bar button").trigger("click");
+    await wrapper.find(".level-flame-bar button").trigger("click");
     expect(names()[0]).toBe("l1");
-    expect(wrapper.find(".davinci-flame-legend").exists()).toBe(true);
+    expect(wrapper.find(".level-flame-legend").exists()).toBe(true);
     wrapper.unmount();
   });
 
   it("says so when the run has no step timings", () => {
     const wrapper = mount(FlameView, { props: { profile: null, baseline: null } });
-    expect(wrapper.find(".davinci-message").text()).toBe("This run has no step timings to draw.");
+    expect(wrapper.find(".level-message").text()).toBe("This run has no step timings to draw.");
     wrapper.unmount();
   });
 });

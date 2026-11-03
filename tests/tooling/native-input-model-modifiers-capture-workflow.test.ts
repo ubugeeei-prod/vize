@@ -5,7 +5,7 @@ import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/na
 
 test("modifier inputs, native producers, and all real consumer leaves select hosted capture", () => {
   for (const path of [
-    "davinci/vize_l3/tests/native_model_lazy.rs",
+    "levels/vize_l3/tests/native_model_lazy.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_input_model_modifiers.rs",
     ...["custody", "output", "outside", "refusal", "finish"].map(
       (name) =>
@@ -26,7 +26,7 @@ test("modifier inputs, native producers, and all real consumer leaves select hos
   ])
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_lazy_old.rs",
+    "levels/vize_l3/tests/native_model_lazy_old.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_modifier_inputs.json.old",
     "tests/tooling/support/native-input-model-lazy-unknown.ts",
     "docs/davinci/model-lazy.md",
