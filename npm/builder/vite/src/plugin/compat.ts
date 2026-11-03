@@ -18,6 +18,7 @@ import { applyDefineReplacements } from "../transform.ts";
 import { transformVirtualTypeScript } from "./vite-transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
+import { prepareSfcSrcRequests, viteHostResolve } from "./src-requests.ts";
 import { oxContentModuleToSfc } from "./markdown.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
@@ -185,6 +186,14 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
         try {
           const isSsr = !!transformOptions?.ssr;
           const extractCss = shouldExtractCssForRequest(state, isSsr);
+          await prepareSfcSrcRequests(
+            state,
+            viteHostResolve((request, importer) =>
+              this.resolve(request, importer, { skipSelf: true }),
+            ),
+            id,
+            source,
+          );
           const compiled = compileFile(
             id,
             getEnvironmentCache(state, isSsr),

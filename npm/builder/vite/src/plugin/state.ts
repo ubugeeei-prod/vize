@@ -8,6 +8,7 @@ import type { ViteDevServer } from "vite";
 
 import type { VizeOptions, CompiledModule } from "../types.ts";
 import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
+import type { SfcSrcResolutions } from "../../../shared/sfc-src.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { type DynamicImportAliasRule } from "../virtual.ts";
 import { createLogger } from "../transform.ts";
@@ -72,6 +73,8 @@ export interface VizePluginState {
   initialized: boolean;
   dynamicImportAliasRules: DynamicImportAliasRule[];
   cssAliasRules: CssAliasRule[];
+  /** Bundler-resolved `src` module requests, per SFC path (see `src-requests.ts`). */
+  srcResolutions?: Map<string, SfcSrcResolutions>;
   extractCss: boolean;
   componentsCssFileName: string;
   clientViteDefine: Record<string, string>;
@@ -101,6 +104,7 @@ export type CompileOptionsForRequest = {
   vueVersion?: string | number;
   inlineTemplate?: boolean;
   isProd?: boolean;
+  srcResolutions?: ReadonlyMap<string, SfcSrcResolutions>;
 } & PluginVueCompileOptions &
   Partial<
     Pick<
@@ -118,7 +122,7 @@ export function getCompileOptionsForRequest(
     VizePluginState,
     "isProduction" | "mergedOptions" | "viteBuildSourcemap" | "fileCompilerOptions"
   > &
-    Partial<Pick<VizePluginState, "root">>,
+    Partial<Pick<VizePluginState, "root" | "srcResolutions">>,
   ssr: boolean,
   file?: string,
 ): CompileOptionsForRequest {
@@ -128,6 +132,7 @@ export function getCompileOptionsForRequest(
       : (state.fileCompilerOptions?.(file) ?? state.mergedOptions);
   const options: CompileOptionsForRequest = {
     ...(state.root ? { root: state.root } : {}),
+    ...(state.srcResolutions?.size ? { srcResolutions: state.srcResolutions } : {}),
     sourceMap: mergedOptions?.sourceMap ?? (!state.isProduction || !!state.viteBuildSourcemap),
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.

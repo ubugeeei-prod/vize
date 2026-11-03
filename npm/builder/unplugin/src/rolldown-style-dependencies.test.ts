@@ -66,6 +66,9 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
     source: string;
     expectedError: RegExp | null;
     scoped?: boolean;
+    /** `foo.css` moved to a package or an aliased directory (#11482). */
+    cssAt?: string;
+    alias?: boolean;
   }> = [
     {
       id: "original-src",
@@ -83,6 +86,26 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
       id: "missing-src",
       source: replaceStyle('<style scoped src="./missing.css"></style>'),
       expectedError: /<style src="\.\/missing\.css"> not found/,
+    },
+    {
+      id: "package-src",
+      source: replaceStyle('<style scoped src="fake-css/foo.css"></style>'),
+      expectedError: null,
+      scoped: true,
+      cssAt: "node_modules/fake-css/foo.css",
+    },
+    {
+      id: "alias-src",
+      source: replaceStyle('<style scoped src="@styles/foo.css"></style>'),
+      expectedError: null,
+      scoped: true,
+      cssAt: "styles/foo.css",
+      alias: true,
+    },
+    {
+      id: "missing-package-src",
+      source: replaceStyle('<style scoped src="missing-css/foo.css"></style>'),
+      expectedError: /<style src="missing-css\/foo\.css"> not found/,
     },
     {
       id: "inline-import",
@@ -116,7 +139,16 @@ void test("#11456 real tsdown/Rolldown builds original style src CSS and refuses
         fs.writeFileSync(target, file.content);
       }
       fs.writeFileSync(path.join(cwd, "src/Foo.vue"), item.source);
-      fs.writeFileSync(path.join(cwd, "tsdown.config.ts"), adaptedConfig);
+      if (item.cssAt) {
+        fs.mkdirSync(path.dirname(path.join(cwd, item.cssAt)), { recursive: true });
+        fs.renameSync(path.join(cwd, "src/foo.css"), path.join(cwd, item.cssAt));
+      }
+      // Rolldown resolves the alias through `this.resolve`.
+      const aliasConfig = `  alias: { "@styles": ${JSON.stringify(path.join(cwd, "styles"))} },\n  plugins:`;
+      fs.writeFileSync(
+        path.join(cwd, "tsdown.config.ts"),
+        item.alias ? adaptedConfig.replace("  plugins:", aliasConfig) : adaptedConfig,
+      );
       const result = spawnSync(process.execPath, [cli, "--config", "tsdown.config.ts"], {
         cwd,
         encoding: "utf8",

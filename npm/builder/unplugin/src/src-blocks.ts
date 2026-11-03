@@ -1,6 +1,6 @@
 import fs from "node:fs";
-import path from "node:path";
 import { parseSfc } from "@vizejs/native";
+import { sfcSrcFile, type SfcSrcResolutions } from "../../shared/sfc-src.ts";
 
 export interface InlinedSfcSource {
   source: string;
@@ -41,8 +41,9 @@ function readSrcBlock(
   filePath: string,
   tag: string,
   src: string,
+  resolutions: SfcSrcResolutions | undefined,
 ): { path: string; content: string } {
-  const resolved = path.resolve(path.dirname(filePath), src);
+  const resolved = sfcSrcFile(filePath, tag, src, resolutions);
   try {
     return { path: resolved, content: fs.readFileSync(resolved, "utf8") };
   } catch {
@@ -52,41 +53,60 @@ function readSrcBlock(
   }
 }
 
-/**
- * Inline `<template src>`, `<script src>` and `<style src>` files into the SFC
- * source, as `@vizejs/vite-plugin` does. Blocks are located by the native
- * parser, so `src` text inside scripts or comments is left alone.
- */
-export function inlineSfcSrcBlocks(filePath: string, source: string): InlinedSfcSource {
-  if (!SRC_BLOCK_HINT.test(source)) return { source, dependencies: [] };
+type SrcBlock = { tag: string; src: string; openTag: string; tagStart: number; tagEnd: number };
 
+function collectSrcBlocks(filePath: string, bytes: Buffer, source: string): SrcBlock[] {
   let parsed: ReturnType<typeof parseSfc>;
   try {
     parsed = parseSfc(source, { filename: filePath });
   } catch {
     // The compiler reports malformed sources with its own diagnostics.
-    return { source, dependencies: [] };
+    return [];
   }
   const blocks: Array<[string, Block]> = [
     ["template", parsed.template],
     ["script", parsed.script],
     ...parsed.styles.map((style): [string, Block] => ["style", style]),
   ];
-  const bytes = Buffer.from(source);
-  const edits: Array<{ start: number; end: number; text: string }> = [];
-  const dependencies: string[] = [];
-
+  const found: SrcBlock[] = [];
   for (const [tag, block] of blocks) {
     if (!block) continue;
     const { start, tagStart, tagEnd } = block.loc;
     const split = splitSrcAttribute(tag, bytes.subarray(tagStart, start).toString("utf8"));
-    if (!split) continue;
-    const file = readSrcBlock(filePath, tag, split.src);
+    if (split) found.push({ tag, ...split, tagStart, tagEnd });
+  }
+  return found;
+}
+
+/** The `src` values of an SFC's blocks, in source order. */
+export function listSfcSrcBlocks(filePath: string, source: string): string[] {
+  if (!SRC_BLOCK_HINT.test(source)) return [];
+  return collectSrcBlocks(filePath, Buffer.from(source), source).map((block) => block.src);
+}
+
+/**
+ * Inline `<template src>`, `<script src>` and `<style src>` files into the SFC
+ * source, as `@vizejs/vite-plugin` does. Blocks are located by the native
+ * parser, so `src` text inside scripts or comments is left alone. Module
+ * requests come from the bundler's `resolutions` (see {@link sfcSrcFile}).
+ */
+export function inlineSfcSrcBlocks(
+  filePath: string,
+  source: string,
+  resolutions?: SfcSrcResolutions,
+): InlinedSfcSource {
+  if (!SRC_BLOCK_HINT.test(source)) return { source, dependencies: [] };
+  const bytes = Buffer.from(source);
+  const edits: Array<{ start: number; end: number; text: string }> = [];
+  const dependencies: string[] = [];
+
+  for (const block of collectSrcBlocks(filePath, bytes, source)) {
+    const file = readSrcBlock(filePath, block.tag, block.src, resolutions);
     dependencies.push(file.path);
     edits.push({
-      start: tagStart,
-      end: tagEnd,
-      text: `${split.openTag}\n${file.content}\n</${tag}>`,
+      start: block.tagStart,
+      end: block.tagEnd,
+      text: `${block.openTag}\n${file.content}\n</${block.tag}>`,
     });
   }
   if (edits.length === 0) return { source, dependencies };

@@ -1,3 +1,4 @@
+import type { SfcSrcResolutions } from "../../shared/sfc-src.ts";
 import type { BatchCompileOptionsNapi, SfcCompileOptionsNapi } from "./types.ts";
 import { generateScopeId } from "./utils/index.ts";
 import type { PluginVueCompileOptions } from "./plugin/plugin-vue-options.ts";
@@ -23,6 +24,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   vueVersion?: string | number;
   inlineTemplate?: boolean;
   isProd?: boolean;
+  /** Bundler-resolved `src` module requests, per SFC path. */
+  srcResolutions?: ReadonlyMap<string, SfcSrcResolutions>;
 }
 
 export interface CompileBatchOptions extends PluginVueCompileOptions {
@@ -46,6 +49,8 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   vueVersion?: string | number;
   inlineTemplate?: boolean;
   isProd?: boolean;
+  /** Bundler-resolved `src` module requests, per SFC path. */
+  srcResolutions?: ReadonlyMap<string, SfcSrcResolutions>;
 }
 
 export function buildCompileFileOptions(

@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import path from "node:path";
 import * as native from "@vizejs/native";
 import { prependMappedJsxCode } from "../../shared/source-map.ts";
+import { isRelativeSfcSrc, sfcSrcFile, type SfcSrcResolutions } from "../../shared/sfc-src.ts";
 import type {
   CompiledModule,
   BatchFileInput,
@@ -61,16 +61,13 @@ export interface ResolvedSfcSrcImports {
   dependencies: string[];
 }
 
-function resolveRelativeSrc(filePath: string, src: string): string {
-  return path.isAbsolute(src) ? src : path.resolve(path.dirname(filePath), src);
-}
-
 function readSrcImport(
   filePath: string,
   tag: string,
   src: string,
+  resolutions: SfcSrcResolutions | undefined,
 ): { path: string; content: string } {
-  const resolvedPath = resolveRelativeSrc(filePath, src);
+  const resolvedPath = sfcSrcFile(filePath, tag, src, resolutions);
   try {
     return {
       path: resolvedPath,
@@ -93,12 +90,13 @@ function inlineSingleSrcBlock(
   tag: "script" | "template",
   src: string | undefined,
   dependencies: string[],
+  resolutions: SfcSrcResolutions | undefined,
 ): string {
   if (!src) {
     return source;
   }
 
-  const imported = readSrcImport(filePath, tag, src);
+  const imported = readSrcImport(filePath, tag, src, resolutions);
   dependencies.push(imported.path);
   const pattern = new RegExp(
     `<${tag}\\b([^>]*)\\bsrc\\s*=\\s*(['"])[^'"]+\\2([^>]*)>[\\s\\S]*?<\\/${tag}>`,
@@ -111,13 +109,18 @@ function inlineSingleSrcBlock(
   });
 }
 
-function inlineStyleSrcBlocks(source: string, filePath: string, dependencies: string[]): string {
-  const pattern = /<style\b([^>]*)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>[\s\S]*?<\/style>/gi;
+const STYLE_SRC_BLOCK_RE = /<style\b([^>]*)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>[\s\S]*?<\/style>/gi;
 
+function inlineStyleSrcBlocks(
+  source: string,
+  filePath: string,
+  dependencies: string[],
+  resolutions: SfcSrcResolutions | undefined,
+): string {
   return source.replace(
-    pattern,
+    STYLE_SRC_BLOCK_RE,
     (_match, beforeSrc: string, _quote: string, src: string, afterSrc: string) => {
-      const imported = readSrcImport(filePath, "style", src);
+      const imported = readSrcImport(filePath, "style", src, resolutions);
       dependencies.push(imported.path);
       const attrs = stripSrcAttribute(`${beforeSrc}${afterSrc}`);
       return `<style${attrs}>\n${imported.content}\n</style>`;
@@ -138,7 +141,12 @@ function inlineStyleSrcBlocks(source: string, filePath: string, dependencies: st
  */
 const SFC_SRC_ATTRIBUTE_HINT = /\bsrc\s*=/i;
 
-export function resolveSfcSrcImports(filePath: string, source: string): ResolvedSfcSrcImports {
+/** Module requests in `src` come from the bundler's `resolutions` (see {@link sfcSrcFile}). */
+export function resolveSfcSrcImports(
+  filePath: string,
+  source: string,
+  resolutions?: SfcSrcResolutions,
+): ResolvedSfcSrcImports {
   if (!SFC_SRC_ATTRIBUTE_HINT.test(source)) {
     return { source, dependencies: [] };
   }
@@ -153,6 +161,7 @@ export function resolveSfcSrcImports(filePath: string, source: string): Resolved
     "script",
     srcInfo.scriptSrc,
     dependencies,
+    resolutions,
   );
   resolvedSource = inlineSingleSrcBlock(
     resolvedSource,
@@ -160,13 +169,23 @@ export function resolveSfcSrcImports(filePath: string, source: string): Resolved
     "template",
     srcInfo.templateSrc,
     dependencies,
+    resolutions,
   );
-  resolvedSource = inlineStyleSrcBlocks(resolvedSource, filePath, dependencies);
+  resolvedSource = inlineStyleSrcBlocks(resolvedSource, filePath, dependencies, resolutions);
 
   return {
     source: resolvedSource,
     dependencies,
   };
+}
+
+/** The `src` module requests (not relative paths) the inliner will need resolved. */
+export function listSfcSrcRequests(filePath: string, source: string): string[] {
+  if (!SFC_SRC_ATTRIBUTE_HINT.test(source)) return [];
+  const srcInfo = native.extractSfcSrcInfo(source, filePath);
+  const requests = [srcInfo.scriptSrc, srcInfo.templateSrc];
+  for (const match of source.matchAll(STYLE_SRC_BLOCK_RE)) requests.push(match[3]);
+  return requests.filter((src): src is string => !!src && !isRelativeSfcSrc(src));
 }
 
 export function compileFile(
@@ -177,7 +196,7 @@ export function compileFile(
   diagnostics?: { logWarnings?: boolean },
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
-  const resolved = resolveSfcSrcImports(filePath, content);
+  const resolved = resolveSfcSrcImports(filePath, content, options.srcResolutions?.get(filePath));
   const scopeId = generateScopeId(filePath, options.root, options.isProd ?? false, content);
 
   const result = compileSfc(resolved.source, buildCompileFileOptions(filePath, options, scopeId));
@@ -296,7 +315,11 @@ export function compileBatch(
 ): BatchCompileResultWithFiles {
   const dependenciesByPath = new Map<string, string[]>();
   const resolvedFiles = files.map((file) => {
-    const resolved = resolveSfcSrcImports(file.path, file.source);
+    const resolved = resolveSfcSrcImports(
+      file.path,
+      file.source,
+      options.srcResolutions?.get(file.path),
+    );
     dependenciesByPath.set(file.path, resolved.dependencies);
     return {
       path: file.path,

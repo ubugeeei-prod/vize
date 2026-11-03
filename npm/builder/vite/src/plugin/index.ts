@@ -24,6 +24,7 @@ import {
   resolveComponentsCssFileName,
 } from "./hmr.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
+import { prepareLoadSrcRequests, viteHostResolve } from "./src-requests.ts";
 import { createManifestPlugin } from "./manifest.ts";
 import {
   createPostTransformPlugin,
@@ -270,6 +271,9 @@ export function vize(
         await compileAll(
           { ...state, extractCss: shouldExtractCssForBuild(state, this) },
           precompileInputOwners(this, precompileConfig),
+          viteHostResolve((request, importer) =>
+            this.resolve(request, importer, { skipSelf: true }),
+          ),
         );
       } catch (error) {
         if (!(error instanceof PrecompileDiagnosticsError)) throw error;
@@ -285,7 +289,12 @@ export function vize(
       });
     },
 
-    load(id, loadOptions) {
+    async load(id, loadOptions) {
+      await prepareLoadSrcRequests(
+        state,
+        viteHostResolve((request, importer) => this.resolve(request, importer, { skipSelf: true })),
+        id,
+      );
       return loadHook(state, id, {
         ...loadOptions,
         ssr: resolveHookSsr(this, loadOptions),
@@ -311,7 +320,11 @@ export function vize(
     // Vite 7.3+ prefers `hotUpdate` when both hooks exist. Keep this deprecated
     // shim for plugin-vue drop-in compatibility and older Vite integrations.
     async handleHotUpdate(ctx) {
-      return handleHotUpdateHook(state, ctx);
+      const container =
+        ctx.server.environments?.client?.pluginContainer ?? ctx.server.pluginContainer;
+      return handleHotUpdateHook(state, ctx, {
+        resolve: viteHostResolve((request, importer) => container.resolveId(request, importer)),
+      });
     },
 
     generateBundle(_, bundle) {

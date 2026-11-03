@@ -17,6 +17,7 @@ import {
   preferAcceptingClientModules,
 } from "./hmr-module-graph.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import { prepareSfcSrcRequests, type HostResolve } from "./src-requests.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
@@ -66,6 +67,8 @@ export async function handleHotUpdateHook(
     ensureAcceptingClientModule?: (vueFile: string) => Promise<ModuleNode>;
     requireAcceptingClientModule?: boolean;
     onRecompileError?: (error: unknown) => void;
+    /** The dev server's resolver, for the SFC's `src` module requests. */
+    resolve?: HostResolve;
   } = {},
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
@@ -130,6 +133,7 @@ export async function handleHotUpdateHook(
 
       const prevCompiled = state.cache.get(file);
 
+      if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, file, source);
       compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
       state.ssrCache.delete(file);
 
