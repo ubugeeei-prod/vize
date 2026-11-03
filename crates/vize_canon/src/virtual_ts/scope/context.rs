@@ -167,6 +167,9 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
     pub(crate) hoist_shared_preamble: bool,
+    /// The template runs inside the SFC's generic setup signature, so a
+    /// component binding's type may be a type parameter.
+    pub(crate) generic_component: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
     pub(super) dynamic_aliases: &'a DynamicComponentAliases,
     /// Component usages whose props have already been materialized for event

@@ -30,6 +30,8 @@ pub(super) struct EmitsInfo {
     generic_event_map_decl: String,
     generic_event_map_names: String,
     preserve_event_navigation: bool,
+    /// The template runs inside the SFC's generic setup signature.
+    generic_component: bool,
 }
 
 impl EmitsInfo {
@@ -74,6 +76,13 @@ impl EmitsInfo {
             ts,
             summary,
             forwards_roots,
+            legacy_vue2,
+            hoist_shared_preamble,
+        );
+        crate::virtual_ts::scope::emit_gate_aliases(
+            ts,
+            summary,
+            self.generic_component,
             legacy_vue2,
             hoist_shared_preamble,
         );
@@ -291,6 +300,7 @@ pub(super) fn emit_emits_type(
         generic_event_map_decl,
         generic_event_map_names,
         preserve_event_navigation,
+        generic_component: generic_param.is_some_and(|generic| !generic.parameters.is_empty()),
     }
 }
 

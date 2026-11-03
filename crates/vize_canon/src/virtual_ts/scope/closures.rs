@@ -313,6 +313,9 @@ pub(super) fn emit_scope_closures(
             check_options,
             legacy_vue2: options.legacy_vue2,
             hoist_shared_preamble: options.hoist_shared_preamble,
+            generic_component: options
+                .generic_parameters
+                .is_some_and(|generic| !generic.parameters.is_empty()),
             explicit_generics: &explicit_generics,
             dynamic_aliases: &dynamic_aliases,
             event_inference_usages: &event_inference_usages,
