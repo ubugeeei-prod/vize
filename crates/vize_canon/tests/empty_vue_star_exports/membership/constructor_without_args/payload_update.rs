@@ -8,6 +8,7 @@ mod emit_overloads;
 mod emit_props_twins;
 mod public_base_keys;
 mod public_instance;
+mod required_fallthrough_short_circuit;
 mod required_keys_short_circuit;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
@@ -154,6 +155,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     public_base_keys::retain_provenance(manifest);
     emit_props_twins::retain_provenance(manifest);
     required_keys_short_circuit::retain_provenance(manifest);
+    required_fallthrough_short_circuit::retain_provenance(manifest);
 }
 
 #[cfg(test)]

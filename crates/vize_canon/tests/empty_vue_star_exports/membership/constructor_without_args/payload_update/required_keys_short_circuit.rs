@@ -91,6 +91,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::required_fallthrough_short_circuit::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -104,6 +105,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::required_fallthrough_short_circuit::preamble_before(current);
     invert(
         current,
         PREAMBLE_EDITS,
@@ -153,13 +155,17 @@ mod tests {
     fn current_assets_preamble_and_sdk_reconstruct_only_the_required_fields_layer() {
         for file in &FILES {
             let body = current(file.path);
-            assert_eq!(
-                redo(source_before(file.path, body.clone()), file.edits),
-                body
+            let newer = super::super::required_fallthrough_short_circuit::source_before(
+                file.path,
+                body.clone(),
             );
+            assert_eq!(redo(source_before(file.path, body), file.edits), newer);
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(redo(preamble_before(preamble), PREAMBLE_EDITS), preamble);
+        assert_eq!(
+            redo(preamble_before(preamble), PREAMBLE_EDITS),
+            super::super::required_fallthrough_short_circuit::preamble_before(preamble)
+        );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });

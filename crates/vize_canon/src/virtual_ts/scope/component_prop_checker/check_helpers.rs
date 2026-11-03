@@ -138,7 +138,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     // type, so the intersection it joins still displays as the child's `Props`
     // in diagnostics, the way `vue-tsc` prints it.
     ts.push_str(
-        "  type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
+        "  type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never] ? never : $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
     );
     append_vue_public_component_attrs(ts);
     if check_unknown_props {

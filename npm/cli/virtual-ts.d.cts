@@ -184,11 +184,13 @@ export type $FallthroughProps<C> =
         : NonNullable<__F>
       : {}
     : {};
-export type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [
-  __K,
-] extends [never]
-  ? {}
-  : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+export type $RequiredFallthroughProps<
+  C,
+  __F = $FallthroughProps<C>,
+  __K = [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]
+    ? never
+    : $RequiredKeys<__F>,
+> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
 type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
 type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I
   ? $IsAny<__I> extends true

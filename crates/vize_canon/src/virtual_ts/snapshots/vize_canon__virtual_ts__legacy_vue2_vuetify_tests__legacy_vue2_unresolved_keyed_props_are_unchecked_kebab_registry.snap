@@ -180,7 +180,7 @@ function __setup() {
   type $IsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
   type $HasFallthroughProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
   type $FallthroughProps<C> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
-  type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+  type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never] ? never : $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
   type $VueVNodeProps = import('vue').VNodeProps;
   type $VueAllowedComponentProps = import('vue').AllowedComponentProps;
   type $VueComponentCustomProps = import('vue').ComponentCustomProps;

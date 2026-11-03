@@ -70,7 +70,16 @@ export type ProvenDefaultChange = {
   oracle: string;
 };
 
-export const PROVEN_DEFAULT_CHANGES: readonly ProvenDefaultChange[] = [];
+export const PROVEN_DEFAULT_CHANGES: readonly ProvenDefaultChange[] = [
+  {
+    exportName: "$RequiredFallthroughProps",
+    parameter: "__K",
+    before: "$RequiredKeys<__F>",
+    after:
+      "[__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n    ? never\n    : $RequiredKeys<__F>",
+    oracle: "tests/tooling/canon-required-keys-equivalence.test.ts",
+  },
+];
 
 const repositoryRoot = new URL("../../../", import.meta.url);
 

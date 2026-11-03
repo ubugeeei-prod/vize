@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
 
-// The all-optional short-circuit in `$EmitRequiredFields` must compute exactly
-// what the per-key scan it skips computed. The previous definition is the oracle.
+// The all-optional short-circuits in `$EmitRequiredFields` and in the exported
+// `$RequiredFallthroughProps` `__K` default must compute exactly what the
+// per-key scans they skip computed. The previous definitions are the oracle;
+// this file is the oracle the public-default law lists for `__K`.
 const declarations = new URL(
   "../../crates/vize_canon/src/virtual_ts/helpers/declarations/",
   import.meta.url,
@@ -27,9 +29,15 @@ const line = (file: URL, name: string): string => {
 const current = [
   line(new URL("emit-inference.d.ts.txt", declarations), "$EmitRequiredKeys"),
   line(new URL("emit-inference.d.ts.txt", declarations), "$EmitRequiredFields"),
+  line(
+    new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
+    "$RequiredKeys",
+  ),
+  line(new URL("component-checks.d.ts.txt", declarations), "$RequiredFallthroughProps"),
 ];
 const previous = [
   "type OldEmitRequiredFields<T> = T extends unknown ? Pick<T, $EmitRequiredKeys<T>> : never;",
+  "type OldRequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };",
 ];
 
 const subjects = [
@@ -94,6 +102,7 @@ function diagnostics(content: string, exactOptionalPropertyTypes: boolean): stri
 const prelude = [
   "export {};",
   "type $IsAny<T> = 0 extends (1 & T) ? true : false;",
+  "type $FallthroughProps<C> = {};",
   "type Equal<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2 ? true : false;",
   "type Expect<T extends true> = T;",
 ];
@@ -105,6 +114,7 @@ function equalities(helpers: string[]): string {
     ...previous,
     ...subjects.flatMap((subject, index) => [
       `type _fields${index} = Expect<Equal<$EmitRequiredFields<${subject}>, OldEmitRequiredFields<${subject}>>>;`,
+      `type _fallthrough${index} = Expect<Equal<$RequiredFallthroughProps<unknown, ${subject}>, OldRequiredFallthroughProps<unknown, ${subject}>>>;`,
     ]),
   ].join("\n");
 }
@@ -138,6 +148,51 @@ function usage(fields: string): string {
   ].join("\n");
 }
 
+// The same for the exported `$RequiredFallthroughProps`. A deferred instance
+// prints its `__K` default, so inside the generic body only position and code
+// are compared; inference and every later check must match in full text.
+const FALL_BODY_END = prelude.length + current.length + previous.length + 8;
+
+function fallUsage(fallthrough: string): string {
+  return [
+    ...prelude,
+    ...current,
+    ...previous,
+    `type Fall<T> = ${fallthrough}<unknown, T>;`,
+    "declare function fall<T>(props: Fall<T>): T;",
+    "function deferred<T extends { a?: string; b: number }>(rest: Fall<T>, value: T) {",
+    "  const key: keyof typeof rest = 'b';",
+    "  const fromValue: Fall<T> = value;",
+    "  const missing: Fall<T> = {};",
+    "  void key; void fromValue; void missing;",
+    "}",
+    ...["{ a: 1 }", "{ a: 1, b: 'x' }", "{}", "{ a: undefined }", "{ ...{ a: 1 } }"].flatMap(
+      (call, index) => [
+        `const fallResult${index} = fall(${call});`,
+        `export type FallResult${index} = typeof fallResult${index};`,
+      ],
+    ),
+  ].join("\n");
+}
+
+void test("the $RequiredFallthroughProps __K default keeps every result identical", () => {
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    const fresh = diagnostics(fallUsage("$RequiredFallthroughProps"), exactOptionalPropertyTypes);
+    const old = diagnostics(
+      fallUsage("OldRequiredFallthroughProps"),
+      exactOptionalPropertyTypes,
+    ).map((text) => text.replaceAll("OldRequiredFallthroughProps", "$RequiredFallthroughProps"));
+    const body = (text: string) => Number(text.split(":")[0]) <= FALL_BODY_END;
+    const shape = (text: string) => text.split(" ").slice(0, 2).join(" ");
+    assert.deepEqual(fresh.filter(body).map(shape), old.filter(body).map(shape));
+    assert.deepEqual(
+      fresh.filter((text) => !body(text)),
+      old.filter((text) => !body(text)),
+    );
+    assert.ok(fresh.length > 0);
+  }
+});
+
 void test("all-optional short-circuits keep every required-field result identical", () => {
   for (const exactOptionalPropertyTypes of [false, true]) {
     assert.deepEqual(
@@ -155,11 +210,16 @@ void test("all-optional short-circuits keep every required-field result identica
   }
 });
 
-void test("the oracle rejects a short-circuit that drops required keys", () => {
-  // Negative control: a guard answering "nothing required" without the per-member test.
-  const broken = [...current];
-  broken[1] = "type $EmitRequiredFields<T> = T extends unknown ? Pick<T, never> : never;";
-  assert.ok(diagnostics(equalities(broken), false).some((text) => / TS2344 /u.test(text)));
+void test("the oracle rejects short-circuits that drop required keys", () => {
+  // Negative controls: guards answering "nothing required" without the per-member test.
+  const fields = [...current];
+  fields[1] = "type $EmitRequiredFields<T> = T extends unknown ? Pick<T, never> : never;";
+  const fallthrough = [...current];
+  fallthrough[3] =
+    "type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = never> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };";
+  for (const broken of [fields, fallthrough]) {
+    assert.ok(diagnostics(equalities(broken), false).some((text) => / TS2344 /u.test(text)));
+  }
 });
 
 void test("generated code and helpers only intersect $EmitRequiredFields, never read its keys", () => {
