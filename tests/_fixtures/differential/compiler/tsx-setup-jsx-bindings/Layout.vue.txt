@@ -1,0 +1,11 @@
+<script setup lang="tsx">
+import { ref } from 'vue'
+const { title = 'Count' } = defineProps<{ title?: string }>()
+const emit = defineEmits<{ inc: [n: number] }>()
+const count = ref(0)
+const Button = () => <button onClick={() => emit('inc', count.value)}>{title}: {count.value}</button>
+</script>
+
+<template>
+  <div @click="count++"><Button /></div>
+</template>

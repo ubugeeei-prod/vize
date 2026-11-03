@@ -5,7 +5,6 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, ExportNamedDeclaration, Expression, Program, Statement};
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
 use super::macros::is_runtime_erased_macro;
@@ -45,7 +44,7 @@ pub(crate) fn extract_script_sections(
 ) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, content, source_type);
 
     if ret.panicked {
         return None;

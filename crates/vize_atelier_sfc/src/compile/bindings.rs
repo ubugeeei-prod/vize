@@ -44,12 +44,11 @@ pub(super) fn croquis_to_legacy_bindings(
 /// `import { Form as PForm }`, default imports, and namespace imports).
 pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
     use oxc_allocator::Allocator;
-    use oxc_parser::Parser;
     use oxc_span::SourceType;
 
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = crate::script::parse_script_text(&allocator, content, source_type);
     let mut bindings = BindingMetadata::default();
 
     if ret.panicked {

@@ -97,6 +97,37 @@ pub fn analyze_script_setup_fast(content: &str) -> ScriptParseResult {
     vize_croquis::script_parser::parse_script_setup(content)
 }
 
+/// Parse script text with `source_type`. A `lang="tsx"` or `"jsx"` block may
+/// carry JSX, which the TypeScript grammar rejects; text that only parses with
+/// JSX enabled is read that way, so stages without the authored `lang` agree
+/// with the TSX setup program.
+pub(crate) fn parse_script_text<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    source: &'a str,
+    source_type: oxc_span::SourceType,
+) -> oxc_parser::ParserReturn<'a> {
+    let parsed = oxc_parser::Parser::new(allocator, source, source_type).parse();
+    if (parsed.panicked || !parsed.diagnostics.is_empty())
+        && !source_type.is_jsx()
+        && source.contains('<')
+    {
+        let jsx = oxc_parser::Parser::new(allocator, source, source_type.with_jsx(true)).parse();
+        if !jsx.panicked && jsx.diagnostics.is_empty() {
+            return jsx;
+        }
+    }
+    parsed
+}
+
+/// Source type for `<script setup>` content. Plain scripts parse as
+/// TypeScript like every other stage; JSX dialects need the TSX grammar.
+pub fn script_setup_source_type(lang: Option<&str>) -> oxc_span::SourceType {
+    match lang {
+        Some("tsx" | "jsx") => oxc_span::SourceType::tsx(),
+        _ => oxc_span::SourceType::from_path("script.ts").unwrap_or_default(),
+    }
+}
+
 /// Analyze script setup and return a croquis Croquis.
 ///
 /// This uses vize_croquis for the core analysis and converts
@@ -118,13 +149,19 @@ pub fn parse_script_setup_program<'a>(
     allocator: &'a oxc_allocator::Allocator,
     content: &'a str,
 ) -> Option<oxc_ast::ast::Program<'a>> {
-    use oxc_span::SourceType;
+    parse_script_setup_program_for_lang(allocator, content, None)
+}
+
+/// [`parse_script_setup_program`] for an authored `lang`: `tsx` and `jsx`
+/// setup scripts may contain JSX, which the TypeScript grammar rejects.
+pub fn parse_script_setup_program_for_lang<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    content: &'a str,
+    lang: Option<&str>,
+) -> Option<oxc_ast::ast::Program<'a>> {
     use vize_carton::profile;
 
-    // Same source type as the per-stage parsers this replaces
-    // (croquis `parse_script_setup`, `ScriptCompileContext::parse_with_oxc`,
-    // and `extract_script_sections` all parse as "script.ts").
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let source_type = script_setup_source_type(lang);
     let ret = profile!(
         "atelier.sfc.script_setup.oxc_parse",
         vize_croquis::script_parser::parse_program_for_analysis(allocator, content, source_type)

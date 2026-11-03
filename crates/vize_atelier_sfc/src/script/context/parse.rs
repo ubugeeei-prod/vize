@@ -7,7 +7,6 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, BindingPattern, Expression, Program, Statement, VariableDeclarationKind,
 };
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
 use vize_carton::{String, ToCompactString, profile};
@@ -32,7 +31,7 @@ impl ScriptCompileContext {
 
         let ret = profile!(
             "atelier.script.context.oxc_parse",
-            Parser::new(&allocator, source, source_type).parse()
+            crate::script::parse_script_text(&allocator, source, source_type)
         );
 
         if ret.panicked {
@@ -117,7 +116,7 @@ impl ScriptCompileContext {
         let source_type = SourceType::from_path("script.ts").unwrap_or_default();
         let ret = profile!(
             "atelier.script.context.collect_types_parse",
-            Parser::new(&allocator, source, source_type).parse()
+            crate::script::parse_script_text(&allocator, source, source_type)
         );
         if ret.panicked {
             return;

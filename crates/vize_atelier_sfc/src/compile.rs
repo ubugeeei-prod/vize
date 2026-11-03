@@ -396,7 +396,11 @@ fn compile_sfc_inner(
     // which reproduces the historical panicked behavior.
     let setup_ast_allocator = oxc_allocator::Allocator::default();
     let setup_program =
-        crate::script::parse_script_setup_program(&setup_ast_allocator, &script_setup_content);
+        crate::script::parse_script_setup_program_for_lang(
+            &setup_ast_allocator,
+            &script_setup_content,
+            script_setup.lang.as_deref(),
+        );
     setup_exports::validate(setup_program.as_ref(), &script_setup_content, descriptor)?;
 
     // 1. Croquis parser: rich analysis with ReactivityTracker

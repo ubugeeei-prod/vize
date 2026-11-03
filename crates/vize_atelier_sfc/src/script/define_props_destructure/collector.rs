@@ -10,6 +10,8 @@ use oxc_ast::ast::{
 use vize_carton::FxHashMap;
 
 use super::helpers::gen_props_access_exp;
+
+mod jsx;
 use vize_carton::{String, ToCompactString};
 
 /// Collect identifier rewrites from AST
@@ -702,6 +704,12 @@ pub(crate) fn collect_from_expression<'a>(
                 }
                 _ => {}
             }
+        }
+        Expression::JSXElement(element) => {
+            jsx::collect_from_element(element, source, local_to_key, local_bindings, rewrites);
+        }
+        Expression::JSXFragment(fragment) => {
+            jsx::collect_from_fragment(fragment, source, local_to_key, local_bindings, rewrites);
         }
         _ => {}
     }

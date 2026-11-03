@@ -8,7 +8,6 @@
 //! surfaces a structured compile diagnostic so the failure is visible.
 
 use oxc_allocator::Allocator;
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::FxHashMap;
 
@@ -59,7 +58,7 @@ pub(crate) fn transform_destructured_props_with_edits(
         .with_module(true);
     let ret = profile!(
         "atelier.props_destructure.parse",
-        Parser::new(&allocator, source, source_type).parse()
+        crate::script::parse_script_text(&allocator, source, source_type)
     );
 
     if ret.panicked {

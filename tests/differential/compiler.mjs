@@ -71,7 +71,7 @@ export function loadCompilerManifest(manifestPath) {
         assert.match(fixture.reference.cssSha256, /^[a-f0-9]{64}$/);
       }
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
-      assert(["js", "ts"].includes(fixture.comparison.scriptLang ?? "js"));
+      assert(["js", "ts", "jsx", "tsx"].includes(fixture.comparison.scriptLang ?? "js"));
       if (!dialect && fixture.dialectCoverage.state !== "unknown") {
         assert.deepEqual(fixture.dialectCoverage, {
           state: "source-inspected",
@@ -82,7 +82,9 @@ export function loadCompilerManifest(manifestPath) {
               dialects: [
                 "vue3-sfc",
                 "html-template",
-                ...(fixture.comparison.scriptLang === "ts" ? ["ts"] : []),
+                ...(fixture.comparison.scriptLang && fixture.comparison.scriptLang !== "js"
+                  ? [fixture.comparison.scriptLang]
+                  : []),
               ],
               selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
             },

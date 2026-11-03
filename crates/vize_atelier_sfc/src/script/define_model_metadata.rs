@@ -3,7 +3,6 @@ use oxc_ast::ast::{
     Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
     Statement,
 };
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, String, ToCompactString};
 use vize_croquis::{croquis::Croquis, macros::ModelDefinition};
@@ -53,7 +52,7 @@ pub(crate) fn define_model_metadata(source: &str, macro_call: &MacroCall) -> Def
         return default_metadata();
     };
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+    let parsed = crate::script::parse_script_text(&allocator, source, SourceType::ts());
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return default_metadata();
     }
@@ -129,7 +128,7 @@ pub(crate) fn define_model_prop_option_spans(
         return Vec::new();
     };
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, call_source, SourceType::ts()).parse();
+    let parsed = crate::script::parse_script_text(&allocator, call_source, SourceType::ts());
     let Some(Statement::ExpressionStatement(statement)) = parsed.program.body.first() else {
         return Vec::new();
     };
