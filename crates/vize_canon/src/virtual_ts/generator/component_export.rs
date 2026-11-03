@@ -247,6 +247,7 @@ pub(super) fn emit_default_export_declaration(
             generic_names,
             fallthrough_props_ref,
             props_type,
+            checks.check_unknown_props,
             checks.check_unknown_fallthrough_props,
             checks.strict_component_attrs(),
         );

@@ -1,0 +1,8 @@
+<script setup lang="ts" generic="T extends string">
+defineOptions({ inheritAttrs: false });
+defineProps<{ bar: T }>();
+</script>
+
+<template>
+  <div />
+</template>

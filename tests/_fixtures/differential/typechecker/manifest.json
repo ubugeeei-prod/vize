@@ -12698,6 +12698,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-generic-inherit-attrs-11446",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-generic-inherit-attrs-11446/Foo.vue.txt",
+          "sha256": "0855f381ed0e7f9fe781f676e57aaf5c3f92d8aafc95a2dd035e8ad15a651742",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "reported-generic-inherit-attrs-11446/Probe.vue.txt",
+          "sha256": "364da0d7916dbbae8909e916d7219bbc289e3645c090a89f1cc177422181efab",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::generic_inherit_attrs_open_tail; Q16 #11446 generic child with inheritAttrs:false and an undeclared attribute, with checkUnknownProps off, explicitly false, strictTemplates on, and a wrong declared value. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-model-props-11359",
       "state": "active",
       "targets": [
