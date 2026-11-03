@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Foo from "./Foo.vue";
+</script>
+
+<template>
+  <Foo @bar-baz="(value) => value.toFixed()" />
+</template>

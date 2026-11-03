@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ barBaz: [value: number]; "bar-baz": [value: number] }>();
+</script>
+
+<template>
+  <div />
+</template>

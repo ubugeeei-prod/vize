@@ -203,6 +203,7 @@ fn previous(path: &str, current: &str, update: &Value, historical: &Value) -> St
     let entry = &update["entries"][index];
     let frozen = &historical["files"][index];
     assert_eq!(frozen["path"], path);
+    let current = &super::emit_overloads::source_before(path, current.to_owned());
     assert_eq!(entry["c3Bytes"], frozen["afterBytes"]);
     assert_eq!(entry["c3Sha256"], frozen["afterSha256"]);
     image(current, &update["files"][index]);

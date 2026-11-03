@@ -24,6 +24,7 @@ mod directive_anchors;
 mod directive_values;
 mod dynamic_component_index_targets;
 mod dynamic_component_union_listener;
+mod emit_camel_kebab_twins;
 mod empty_required_props;
 mod exact_optional_props;
 mod external_esm_module_augmentation;

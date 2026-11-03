@@ -5,6 +5,7 @@ use std::fs;
 
 mod emit_overload_stall;
 mod emit_overloads;
+mod emit_props_twins;
 mod public_base_keys;
 mod public_instance;
 
@@ -150,6 +151,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);
     public_base_keys::retain_provenance(manifest);
+    emit_props_twins::retain_provenance(manifest);
 }
 
 #[cfg(test)]

@@ -50,7 +50,13 @@ assert.equal(
     .split(currentPublicBase).length - 1,
   1,
 );
+// #11453 then guarded the camelized emit handler key against a declared twin.
+const currentEmitProps =
+  "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };";
+const historicalEmitProps =
+  "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as $HandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };";
 const successors = [
+  [currentEmitProps, historicalEmitProps],
   [currentPublicBase, historicalPublicBase],
   [currentRecursive, historicalRecursive],
 ] as const;

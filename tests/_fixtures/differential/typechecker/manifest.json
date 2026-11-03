@@ -12747,6 +12747,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-emit-camel-kebab-twins-11453",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reported-emit-camel-kebab-twins-11453/Foo.vue.txt",
+          "sha256": "2a8e3353c9e67d222447408413f8844c57c4ff24b3786e853742dbf4f4646aed",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "reported-emit-camel-kebab-twins-11453/Probe.vue.txt",
+          "sha256": "0307f050b87ed535a39f00d08a120176f6cd9e34f13a583dd7b650046d1f8614",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::emit_camel_kebab_twins; Q16 #11453 component declaring both barBaz and bar-baz, listened as @bar-baz and @barBaz, with a wrong member and a wrong handler type as controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-expression-duplicates-11374",
       "state": "active",
       "targets": [

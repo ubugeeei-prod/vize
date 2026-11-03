@@ -90,6 +90,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::emit_props_twins::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -103,7 +104,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 pub(super) fn preamble_before(current: &str) -> String {
     invert(
-        current,
+        &super::emit_props_twins::preamble_before(current),
         &[ASSET],
         PREAMBLE_BEFORE_BYTES,
         (PREAMBLE_BEFORE_SHA, PREAMBLE_AFTER_SHA),
@@ -159,7 +160,7 @@ mod tests {
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
             preamble_before(preamble).replacen(super::ASSET.0, super::ASSET.1, 1),
-            preamble
+            super::super::emit_props_twins::preamble_before(preamble)
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
