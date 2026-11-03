@@ -4,16 +4,18 @@ title: Comment Annotations
 
 # Comment Annotations
 
-Vize provides comment-based annotations to control linting, diagnostics, and codegen behavior. There are two annotation systems depending on where they are used:
+Use a comment when a particular line or region needs a different lint setting from the rest of the project. Without annotations, the configured rules and severities apply normally.
 
-- **`<!-- @vize:xxx -->`** — HTML comments in `<template>` (Patina linter directives)
-- **`// @vize forget: reason`** — JS comments in `<script>` (cross-file analysis suppression)
+- `<!-- @vize:xxx -->` comments inside `<template>` change lint diagnostics or mark build-only content.
+- `// @vize forget: reason` comments inside `<script>` suppress a cross-file analysis warning on the following code line.
+
+To change the policy for every file, use [lint configuration](./lint-execution.md). To read and act on a finding, see [diagnostics](./analysis-diagnostics.md).
 
 All `@vize:` template directives are **stripped from build output** — they never appear in production code.
 
 ## Template Directives (`@vize:`)
 
-Used inside `<template>` as HTML comments. These control Patina (the built-in linter) behavior.
+Used inside `<template>` as HTML comments. These change the built-in linter's behavior.
 
 ### `@vize:expected`
 
@@ -132,7 +134,7 @@ Mark a node to be stripped in production builds, kept in development.
 
 ## Script Suppression (`@vize forget`)
 
-Used inside `<script>` as JS comments. Suppresses cross-file analysis warnings (Croquis) on the next line.
+Use a JavaScript comment inside `<script>` to suppress a cross-file analysis warning on the next code line.
 
 ### Syntax
 
