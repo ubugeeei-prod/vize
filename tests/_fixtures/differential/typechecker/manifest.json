@@ -12201,6 +12201,40 @@
       }
     },
     {
+      "id": "typechecker/regression/library-generic-event-payload-11447",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "library-generic-event-payload-11447/lib.ts.txt",
+          "sha256": "fc626bb9f1530c093dc053c44af993bc698effcf284af77970361963c6aab4f5",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "library-generic-event-payload-11447/Probe.vue.txt",
+          "sha256": "5763e4285484a0ddd7f8b0a8ac30c76571aab7c336dcddc541a93e8d8dc15ae4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_library_children::listener_payloads_of_generic_library_children_use_the_inferred_parameters; #11447 reported vue-tsc library generic export (`VNode & { __ctx }`) whose listener payload must come from the bound-props call, plus unconstrained, dotted, $event, payload-poison, explicit-unknown and no-__ctx controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/misskey-component-v-for-source",
       "state": "active",
       "targets": [

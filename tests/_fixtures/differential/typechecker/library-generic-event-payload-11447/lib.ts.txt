@@ -1,0 +1,6 @@
+import type { VNode } from "vue";
+
+export declare const Foo: <TBar>(
+  props: NonNullable<Awaited<typeof setup>>["props"],
+  setup?: Promise<{ props: { modelValue?: TBar; "onUpdate:modelValue"?: (value: TBar) => void } }>,
+) => VNode & { __ctx?: NonNullable<Awaited<typeof setup>> };

@@ -1,0 +1,16 @@
+<script setup lang="ts" generic="TBaz extends string">
+import { Foo } from "./lib";
+
+const model = defineModel<TBaz>({ required: true });
+</script>
+
+<template>
+  <Foo
+    :model-value="model"
+    @update:model-value="
+      (value) => {
+        if (typeof value === 'string') model = value;
+      }
+    "
+  />
+</template>
