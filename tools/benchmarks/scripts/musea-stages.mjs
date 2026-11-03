@@ -63,15 +63,15 @@ function hookOf(plugin, name) {
  * parse fails the run rather than producing a fast, meaningless number.
  */
 function resolvedConfigFor(workDir, configPatch) {
+  const build = { ssr: false, rollupOptions: configPatch?.build?.rollupOptions ?? {} };
   return {
     root: workDir,
     command: "build",
     mode: "production",
     plugins: [],
-    build: {
-      ssr: false,
-      rollupOptions: configPatch?.build?.rollupOptions ?? {},
-    },
+    build,
+    // Vite always resolves the client environment; the plugin reads it.
+    environments: { client: { build, optimizeDeps: {} } },
   };
 }
 

@@ -68,7 +68,10 @@ export function musea() {
         "musea-static-runtime": "virtual:musea-static-runtime",
       } } } };
     },
-    configResolved(config) { root = config.root; },
+    configResolved(config) {
+      if (config.environments.client.optimizeDeps == null) throw new Error("no client environment");
+      root = config.root;
+    },
     options() { return null; },
     buildStart() { native = require("@vizejs/native"); },
     resolveId(id) { return id.endsWith(".art.vue") ? "\\0fixture:" + id : null; },
