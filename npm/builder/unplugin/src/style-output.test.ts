@@ -1,11 +1,5 @@
 import { test } from "node:test";
-import {
-  extractStyleBlocks,
-  generateOutput,
-  generateScopeId,
-  hasDelegatedStyles,
-  toStyleBlockInfo,
-} from "./style.ts";
+import { extractStyleBlocks, generateOutput, generateScopeId, toStyleBlockInfo } from "./style.ts";
 import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
 function makeBlock(over: Partial<StyleBlockInfo> = {}): StyleBlockInfo {
@@ -113,39 +107,6 @@ void test("generateScopeId is deterministic and returns an 8-char hex id", (t) =
 
   t.assert.equal(a, b);
   t.assert.match(a, /^[0-9a-f]{8}$/);
-});
-
-void test("hasDelegatedStyles is false for a single plain non-module css block", (t) => {
-  t.assert.equal(hasDelegatedStyles(makeCompiled({ styles: [makeBlock()] })), false);
-  // explicit lang "css" is also plain
-  t.assert.equal(hasDelegatedStyles(makeCompiled({ styles: [makeBlock({ lang: "css" })] })), false);
-  // no styles at all
-  t.assert.equal(hasDelegatedStyles(makeCompiled({ styles: [] })), false);
-});
-
-void test("hasDelegatedStyles is true when any block needs a preprocessor", (t) => {
-  for (const lang of ["scss", "sass", "less", "stylus", "styl"]) {
-    t.assert.equal(
-      hasDelegatedStyles(makeCompiled({ styles: [makeBlock({ lang })] })),
-      true,
-      `lang=${lang} should delegate`,
-    );
-  }
-});
-
-void test("hasDelegatedStyles is true for css-module blocks (unnamed or named)", (t) => {
-  t.assert.equal(hasDelegatedStyles(makeCompiled({ styles: [makeBlock({ module: true })] })), true);
-  t.assert.equal(
-    hasDelegatedStyles(makeCompiled({ styles: [makeBlock({ module: "cls" })] })),
-    true,
-  );
-});
-
-void test("hasDelegatedStyles is true when one of several blocks delegates", (t) => {
-  const compiled = makeCompiled({
-    styles: [makeBlock({ index: 0 }), makeBlock({ index: 1, lang: "less" })],
-  });
-  t.assert.equal(hasDelegatedStyles(compiled), true);
 });
 
 void test("generateOutput (a): export default with hasScoped and no _sfc_main rewrites and appends scopeId", (t) => {
@@ -296,23 +257,34 @@ void test("generateOutput (c'): named css module uses its name as binding and ur
   t.assert.match(out, /_sfc_main\.__cssModules\["cls"\] = cls;/);
 });
 
-void test("generateOutput (c''): without a host CSS pipeline, preprocessor blocks still need one", (t) => {
-  const out = generateOutput(
+void test("generateOutput (c''): without a host CSS pipeline, CSS modules are injected and preprocessors rejected", (t) => {
+  const options = {
+    isProduction: true,
+    isDev: false,
+    hostCss: "none",
+    filePath: "/proj/App.vue",
+  } as const;
+  const modules = generateOutput(
     makeCompiled({
       code: "export default {}",
-      scopeId: "abc123",
-      css: ".p{}",
-      styles: [makeBlock({ lang: "scss", scoped: true, index: 0 }), makeBlock({ index: 1 })],
+      css: ".x_a{}",
+      styles: [makeBlock({ module: true, content: ".a{}" }), makeBlock({ index: 1 })],
     }),
-    { isProduction: true, isDev: false, hostCss: "none", filePath: "/proj/App.vue" },
+    options,
   );
+  t.assert.match(modules, /export const __vize_css__ = ".x_a\{\}";/);
+  t.assert.equal(modules.includes("type=style"), false);
+  t.assert.equal(modules.includes("import "), false);
 
-  t.assert.match(
-    out,
-    /import "\/proj\/App\.vue\?vue&type=style&index=0&scoped=data-v-abc123&lang\.css";/,
+  // Negative control: nothing here compiles Sass.
+  t.assert.throws(
+    () =>
+      generateOutput(
+        makeCompiled({ css: ".p{}", styles: [makeBlock({ lang: "scss", scoped: true })] }),
+        options,
+      ),
+    /\/proj\/App\.vue: <style lang="scss"> needs a bundler CSS pipeline/,
   );
-  t.assert.match(out, /import "\/proj\/App\.vue\?vue&type=style&index=1&lang\.css";/);
-  t.assert.equal(out.includes("__vize_css__"), false);
 });
 
 void test("generateOutput (d): named render export with no export default and no _sfc_main appends component shell", (t) => {

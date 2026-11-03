@@ -50,8 +50,13 @@ void test("external style dependency guards preserve lexical and delegated CSS b
     { id: "comment", style: block('/* @import "./foo.css"; */ .foo {color:red}'), error: null },
     { id: "string", style: block(".foo::after {content: '@import \"./foo.css\";'}"), error: null },
     { id: "media", style: block("@media (width > 1px) {.foo {color:red}}"), error: null },
-    { id: "module-inline", style: block('@import "./foo.css";', { module: true }), error: null },
-    { id: "scss-inline", style: block('@import "./foo.scss";', { lang: "scss" }), error: null },
+    {
+      id: "module-inline",
+      style: block('@import "./foo.css";', { module: true }),
+      error: "import",
+    },
+    { id: "scss-inline", style: block('@import "./foo.scss";', { lang: "scss" }), error: "lang" },
+    { id: "less-plain", style: block(".a { color: red; }", { lang: "less" }), error: "lang" },
   ] as const;
   const outcomes = cases.map((item) => {
     try {
@@ -78,9 +83,11 @@ void test("external style dependency guards preserve lexical and delegated CSS b
       assert.equal(actual.outcome.state, "threw", actual.id);
       assert.match(
         JSON.stringify(actual.outcome),
-        actual.error === "src"
-          ? /<style src=/
-          : /CSS @import in <style> needs a bundler CSS pipeline/,
+        {
+          src: /<style src=/,
+          import: /CSS @import in <style> needs a bundler CSS pipeline/,
+          lang: /<style lang=\\"(?:scss|less)\\"> needs a bundler CSS pipeline/,
+        }[actual.error],
       );
       assert.match(JSON.stringify(actual.outcome), /@vizejs\/vite-plugin/);
     }
