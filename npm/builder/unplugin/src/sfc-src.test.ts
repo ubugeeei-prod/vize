@@ -17,18 +17,27 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   const file = path.join(root, "Foo.vue");
   const at = (name: string) => path.join(root, name);
 
-  const cases: Array<{ id: string; source: string; inlined: string; dependencies: string[] }> = [
+  const cases: Array<{
+    id: string;
+    source: string;
+    inlined: string;
+    dependencies: string[];
+    /** Style block index -> the file it came from (#11522). */
+    styleSrcs: [number, string][];
+  }> = [
     {
       id: "scoped",
       source: '<template><b/></template>\n<style scoped src="./a.css"></style>',
       inlined: "<template><b/></template>\n<style scoped>\n.a{color:red}\n</style>",
       dependencies: [at("a.css")],
+      styleSrcs: [[0, at("a.css")]],
     },
     {
       id: "self-closing, lang, module, single quotes and uppercase",
       source: "<style SRC='./styles/b.scss' lang=\"scss\" module />\n<style>.z{}</style>",
       inlined: '<style lang="scss" module>\n$c: blue; .b{color:$c}\n</style>\n<style>.z{}</style>',
       dependencies: [at("styles/b.scss")],
+      styleSrcs: [[0, at("styles/b.scss")]],
     },
     {
       id: "script, template and two styles keep source order and UTF-8 offsets",
@@ -37,12 +46,21 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
       inlined:
         "<script>\nexport default { name: 'S' }\n</script>\n<template>\n<p>é</p>\n</template>\n<style>\n.a{color:red}\n</style>\n<style>.é{}</style>\n<style scoped>\n.a{color:red}\n</style>",
       dependencies: [at("t.html"), at("s.js"), at("a.css"), at("a.css")],
+      // The inline middle block is index 1.
+      styleSrcs: [
+        [0, at("a.css")],
+        [2, at("a.css")],
+      ],
     },
   ];
   for (const item of cases) {
     assert.deepEqual(
       inlineSfcSrcBlocks(parseSfc, file, item.source),
-      { source: item.inlined, dependencies: item.dependencies },
+      {
+        source: item.inlined,
+        dependencies: item.dependencies,
+        styleSrcs: new Map(item.styleSrcs),
+      },
       item.id,
     );
   }
@@ -57,7 +75,7 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   ]) {
     assert.deepEqual(
       inlineSfcSrcBlocks(parseSfc, file, source),
-      { source, dependencies: [] },
+      { source, dependencies: [], styleSrcs: new Map() },
       source,
     );
   }
@@ -89,6 +107,7 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
   assert.deepEqual(inline("fake-normalize/n.css", resolutions), {
     source: "<style>\nhtml{line-height:1.15}\n</style>",
     dependencies: [path.join(root, "n.css")],
+    styleSrcs: new Map([[0, path.join(root, "n.css")]]),
   });
   // Absolute paths are module requests too.
   assert.match(inline(path.join(root, "n.css"), resolutions).source, /line-height/);

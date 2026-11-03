@@ -27,26 +27,47 @@ function needsCssPipeline(block: StyleBlockInfo): boolean {
   return block.content.includes("@apply");
 }
 
+/** A production build names modules from the root, so they match across checkouts. */
+function rootRelativePath(
+  file: string,
+  root: string | undefined,
+  isProduction: boolean,
+): string | null {
+  if (!isProduction || !root) return null;
+  const relativePath = path.relative(root, file);
+  if (
+    !relativePath ||
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    return null;
+  }
+  return `/${relativePath.split(path.sep).join("/")}`;
+}
+
 function createStyleImportUrl(
   filePath: string,
   params: URLSearchParams,
   root: string | undefined,
   isProduction: boolean,
+  block: StyleBlockInfo,
 ): string {
-  let styleFilePath = filePath;
-  if (isProduction && root) {
-    const relativePath = path.relative(root, filePath);
-    if (
-      relativePath &&
-      relativePath !== ".." &&
-      !relativePath.startsWith(`..${path.sep}`) &&
-      !path.isAbsolute(relativePath)
-    ) {
-      styleFilePath = `/${relativePath.split(path.sep).join("/")}`;
-      params.set("vize-root-relative", "");
-    }
+  const owner = rootRelativePath(filePath, root, isProduction);
+  if (owner) params.set("vize-root-relative", "");
+  const styleFilePath = owner ?? filePath;
+  if (!block.src) {
+    return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);
   }
-  return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);
+  // A `<style src>` block's module is the src file itself, as in
+  // @vitejs/plugin-vue, so Vite resolves its relative `@import`, `@use` and
+  // `url()` from its own directory. `vize-file` names the owning SFC; the
+  // trailing `lang.<ext>` lets Vite tell a CSS Module from a plain stylesheet.
+  // Nuxt CSS discovery excludes dots in the query, as for createStyleVirtualId.
+  params.set("vize-file", styleFilePath);
+  const src = (owner && rootRelativePath(block.src, root, isProduction)) || block.src;
+  const lang = `${isCssModule(block) ? "module." : ""}${block.lang ?? "css"}`;
+  return `${src}?${params.toString().replaceAll(".", "%2E")}&lang.${lang}`;
 }
 
 /**
@@ -229,18 +250,18 @@ export function generateOutputWithMap(
         }
         params.set("inline", "");
         const bindingName = `_style_${block.index}`;
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
         customElementStyleBindings.push(bindingName);
       } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
       } else {
         // Side-effect import: Vite will inject the CSS
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
     }

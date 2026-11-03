@@ -184,7 +184,15 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): string | LoadResult | null {
-  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) return null;
+  // A `<style src>` module is the src file; its query names the owning SFC.
+  if (
+    id !== RESOLVED_CSS_MODULE &&
+    !id.startsWith("\0") &&
+    !id.includes(".vue") &&
+    !id.includes("vize-file=")
+  ) {
+    return null;
+  }
 
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);

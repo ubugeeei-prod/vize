@@ -30,7 +30,11 @@ import {
   toPluginVisibleVirtualId,
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
-import { resolveStyleVirtualId } from "./style-request.ts";
+import {
+  isStyleSrcModuleId,
+  resolveStyleSrcModuleId,
+  resolveStyleVirtualId,
+} from "./style-request.ts";
 import { resolveTemplateOnlySfcId, type ResolvedSfcId } from "./tree-shaking.ts";
 export function resolveVuePath(state: VizePluginState, id: string, importer?: string): string {
   return resolveViteVuePath(state.root, id, importer);
@@ -663,7 +667,9 @@ function isPotentialVizeResolveId(id: string): boolean {
     /\.vue(?:\?|\.__vize_style_)/.test(id) ||
     /\.vue\.tsx?\?/.test(id) ||
     id.includes("?macro=true") ||
-    id.includes("?definePage")
+    id.includes("?definePage") ||
+    // A `<style src>` module, whose path is the src stylesheet.
+    id.includes("vize-file=")
   );
 }
 
@@ -800,6 +806,11 @@ export async function resolveIdHook(
   // since the later `importerRequest` derivations all need the same result.
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
+  }
+  // A `<style src>` module is the src file itself; `load` serves it from the
+  // owning SFC named in its query.
+  if (isStyleSrcModuleId(id)) {
+    return resolveStyleSrcModuleId(id, state.root);
   }
   const importerRequest = classifyImporterRequest(importer);
 

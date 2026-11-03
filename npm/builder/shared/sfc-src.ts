@@ -8,6 +8,8 @@ export interface InlinedSfcSource {
   source: string;
   /** Absolute paths read for `src` blocks, for watch mode. */
   dependencies: string[];
+  /** The file each inlined `<style src>` block came from, by style block index. */
+  styleSrcs: Map<number, string>;
 }
 
 /**
@@ -63,7 +65,15 @@ export type ParseSfc = (
   options: { filename: string },
 ) => { template: Block; script: Block; scriptSetup: Block; styles: NonNullable<Block>[] };
 
-type SrcBlock = { tag: string; src: string; openTag: string; tagStart: number; tagEnd: number };
+type SrcBlock = {
+  tag: string;
+  src: string;
+  openTag: string;
+  tagStart: number;
+  tagEnd: number;
+  /** The block's index among the SFC's `<style>` blocks. */
+  styleIndex?: number;
+};
 
 /** Split an opening tag into its `src` value and the tag without it. */
 function splitSrcAttribute(tag: string, openTag: string): { src: string; openTag: string } | null {
@@ -101,18 +111,18 @@ function collectSrcBlocks(
     // The compiler reports malformed sources with its own diagnostics.
     return [];
   }
-  const blocks: Array<[string, Block]> = [
+  const blocks: Array<[string, Block, number?]> = [
     ["template", parsed.template],
     ["script", parsed.script],
     ["script", parsed.scriptSetup],
-    ...parsed.styles.map((style): [string, Block] => ["style", style]),
+    ...parsed.styles.map((style, index): [string, Block, number] => ["style", style, index]),
   ];
   const found: SrcBlock[] = [];
-  for (const [tag, block] of blocks) {
+  for (const [tag, block, styleIndex] of blocks) {
     if (!block) continue;
     const { start, tagStart, tagEnd } = block.loc;
     const split = splitSrcAttribute(tag, bytes.subarray(tagStart, start).toString("utf8"));
-    if (split) found.push({ tag, ...split, tagStart, tagEnd });
+    if (split) found.push({ tag, ...split, tagStart, tagEnd, styleIndex });
   }
   return found;
 }
@@ -152,7 +162,8 @@ export function inlineSfcSrcBlocks(
   source: string,
   resolutions?: SfcSrcResolutions,
 ): InlinedSfcSource {
-  if (!SRC_BLOCK_HINT.test(source)) return { source, dependencies: [] };
+  const styleSrcs = new Map<number, string>();
+  if (!SRC_BLOCK_HINT.test(source)) return { source, dependencies: [], styleSrcs };
   const bytes = Buffer.from(source);
   const edits: Array<{ start: number; end: number; text: string }> = [];
   const dependencies: string[] = [];
@@ -160,13 +171,14 @@ export function inlineSfcSrcBlocks(
   for (const block of collectSrcBlocks(parseSfc, filePath, bytes, source)) {
     const file = readSrcBlock(filePath, block.tag, block.src, resolutions);
     dependencies.push(file.path);
+    if (block.styleIndex !== undefined) styleSrcs.set(block.styleIndex, file.path);
     edits.push({
       start: block.tagStart,
       end: block.tagEnd,
       text: `${block.openTag}\n${file.content}\n</${block.tag}>`,
     });
   }
-  if (edits.length === 0) return { source, dependencies };
+  if (edits.length === 0) return { source, dependencies, styleSrcs };
 
   edits.sort((a, b) => a.start - b.start);
   const parts: Buffer[] = [];
@@ -176,5 +188,5 @@ export function inlineSfcSrcBlocks(
     offset = edit.end;
   }
   parts.push(bytes.subarray(offset));
-  return { source: Buffer.concat(parts).toString("utf8"), dependencies };
+  return { source: Buffer.concat(parts).toString("utf8"), dependencies, styleSrcs };
 }
