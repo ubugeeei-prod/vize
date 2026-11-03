@@ -46,6 +46,7 @@ void test("the same canonical ID loads real client and SSR compilation caches in
   const { compileFile } = await import("../compiler.ts");
   const { getCompileOptionsForRequest } = await import("./state.ts");
   const { loadHook, transformHook } = await import("./load.ts");
+  const { loadSfcModule } = await import("../test/sfc-module.ts");
   const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-mode-cache-"));
   try {
     const filename = path.join(root, "app/pages/Page.vue");
@@ -81,9 +82,11 @@ void test("the same canonical ID loads real client and SSR compilation caches in
     const id = toPluginVisibleVirtualId(filename);
     const outputs: string[] = [];
     for (const ssr of [false, true, false, true]) {
-      const loaded = loadHook(state, id, { ssr });
-      assert.ok(loaded && typeof loaded === "object");
-      assert.equal(await transformHook(state, loaded.code, id, { ssr }), null);
+      const source = loadHook(state, id, { ssr });
+      assert.equal(typeof source, "string");
+      assert.equal(await transformHook(state, source as string, id, { ssr }), null);
+      const loaded = await loadSfcModule(state, id, { ssr });
+      assert.ok(loaded);
       outputs.push(loaded.code);
     }
     assert.equal(outputs[0], outputs[2]);

@@ -272,3 +272,99 @@ void test("#11592 Nuxt's navigateTo early return also sees Vize modules", () => 
     false,
   );
 });
+
+// Nuxt 4.6.4 SFC source transforms (dist/index.mjs), ordered before the compiler.
+const VUE_ID_FILTER = [/\.vue$/, /[?&]macro=/, /[?&]vue(?:&|$)/];
+const VUE_TEMPLATE_ID_FILTER = [/\.vue$/, /\?macro=true$/, /[?&]vue&type=template\b/];
+const DEVONLY_COMP_SINGLE_RE =
+  /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)(?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/;
+const TEMPLATE_WITH_LAZY_HYDRATION_RE =
+  /<template>[\s\S]*\bhydrate-on-visible\b[\s\S]*<\/template>/;
+
+void test("#11641 Nuxt's DevOnly strip reads the whole-file identity of a Vize module", () => {
+  const calls: string[] = [];
+  const plugin = {
+    name: "nuxt:server-devonly:transform",
+    enforce: "pre",
+    transform: {
+      filter: {
+        id: { include: VUE_TEMPLATE_ID_FILTER },
+        code: { include: DEVONLY_COMP_SINGLE_RE },
+      },
+      handler(_code: string, id: string) {
+        calls.push(id);
+        return null;
+      },
+    },
+  };
+  const source = "<template><DevOnly><p>dev</p></DevOnly></template>";
+  const vizeId = "/app/pages/index.vue?vue&vize";
+  assert.equal(hostCalls(plugin.transform.filter, vizeId, source), false);
+
+  patchNuxtVueTypeGatedTransform(plugin);
+  const { filter } = plugin.transform;
+  for (const id of [
+    vizeId,
+    "/app/pages/index.vue?vue&vize-ssr",
+    "/app/pages/index.vue?vue&vize&used",
+  ]) {
+    assert.equal(hostCalls(filter, id, source), true, id);
+    plugin.transform.handler(source, id);
+  }
+  // @vitejs/plugin-vue hands a whole-SFC source transform the file itself.
+  assert.deepEqual(calls, ["/app/pages/index.vue", "/app/pages/index.vue", "/app/pages/index.vue"]);
+  // Negative controls: the host's own refusals stand.
+  assert.equal(hostCalls(filter, vizeId, "<template><p>prod</p></template>"), false);
+  assert.equal(hostCalls(filter, "/app/pages/index.vue?vue&type=style&index=0", source), false);
+  assert.equal(hostCalls(filter, "/app/pages/index.vue?vue&type=script&vize", source), false);
+  assert.equal(hostCalls(filter, "/app/pages/index.vue?raw", source), false);
+});
+
+void test("#11641 a function-form DevOnly gate also reads the whole-file identity", () => {
+  const isNuxtVueTemplate = (id: string) => VUE_TEMPLATE_ID_FILTER.some((re) => re.test(id));
+  const plugin = {
+    name: "nuxt:server-devonly:transform",
+    transform(code: string, id: string) {
+      return isNuxtVueTemplate(id) ? code.replace(DEVONLY_COMP_SINGLE_RE, "") : null;
+    },
+  };
+  patchNuxtVueTypeGatedTransform(plugin);
+  const source = "<template><main><DevOnly><p>dev</p></DevOnly></main></template>";
+  assert.equal(
+    plugin.transform(source, "/app/A.vue?vue&vize"),
+    "<template><main></main></template>",
+  );
+  assert.equal(plugin.transform(source, "/app/A.vue?vue&type=style&index=0"), null);
+});
+
+void test("#11641 Nuxt's isVue-gated SFC source transforms admit Vize modules unpatched", () => {
+  // `nuxt:components-loader-pre` (lazy hydration) and
+  // `nuxt:server-only-component-transform` (islands) gate on `VUE_ID_FILTER`.
+  const source = "<template><LazyCard hydrate-on-visible /></template>";
+  for (const id of ["/app/A.vue?vue&vize", "/app/A.vue?vue&vize-ssr"]) {
+    assert.equal(
+      hostCalls(
+        { id: { include: VUE_ID_FILTER }, code: TEMPLATE_WITH_LAZY_HYDRATION_RE },
+        id,
+        source,
+      ),
+      true,
+      id,
+    );
+  }
+  for (const name of ["nuxt:components-loader-pre", "nuxt:server-only-component-transform"]) {
+    const handler = (_code: string, id: string) => id;
+    const plugin = { name, transform: { filter: { id: { include: VUE_ID_FILTER } }, handler } };
+    patchNuxtVueTypeGatedTransform(plugin);
+    assert.equal(plugin.transform.handler, handler, name);
+  }
+  // Negative control: a style block is still not an SFC source.
+  assert.equal(
+    hostCalls(
+      { id: { include: VUE_ID_FILTER }, code: TEMPLATE_WITH_LAZY_HYDRATION_RE },
+      "/app/A.vue?vue&type=style&index=0",
+      "p{}",
+    ),
+    false,
+  );
+});

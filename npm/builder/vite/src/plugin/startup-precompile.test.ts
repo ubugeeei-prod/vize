@@ -6,7 +6,7 @@ import { build, type Plugin } from "vite";
 import { vize } from "./index.ts";
 import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { compileFile, formatCompileErrorMessage, VizeSfcCompileError } from "../compiler.ts";
-import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { toVirtualId } from "../virtual.ts";
 import { makeState, persistedFiles } from "../test/precompile-cache-project.ts";
 import {
@@ -90,13 +90,16 @@ void test("failed cold and warm scans evict actual client, SSR, CSS and disk ent
         metadata: [...current.precompileMetadata],
         disk: persistedFiles(project.root),
       };
-      const imports = [false, true].map((ssr) => {
-        try {
-          return { result: loadHook(current, toVirtualId(file, ssr), { ssr }), error: null };
-        } catch (error) {
-          return { result: null, error };
-        }
-      });
+      const imports = await Promise.all(
+        [false, true].map(async (ssr) => {
+          try {
+            const result = await loadSfcModule(current, toVirtualId(file, ssr), { ssr });
+            return { result, error: null };
+          } catch (error) {
+            return { result: null, error };
+          }
+        }),
+      );
       retainObservation("cache-refusal", { original, scan, cached, imports });
       assert.ok(scan.error instanceof PrecompileDiagnosticsError);
       assert.deepEqual(

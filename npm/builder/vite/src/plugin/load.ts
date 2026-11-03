@@ -11,62 +11,24 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
-import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
-import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
+import { getLoadableVueSfcPath } from "./load-sfc.ts";
+import { normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
-import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
-import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
 import { resolveCssImports } from "../utils/css.ts";
-import {
-  fromPluginVisibleVirtualId,
-  isPluginVisibleSsrVirtualId,
-  LEGACY_VIZE_PREFIX,
-  RESOLVED_CSS_MODULE,
-} from "../virtual.ts";
-import {
-  rewriteDynamicTemplateImports,
-  rewriteImportMetaGlobBase,
-  rewriteStaticAssetUrls,
-} from "../transform.ts";
+import type { SourceMapV3 } from "../utils/source-map.ts";
+import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
-import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import {
   getCompiledStyleSource,
   getVirtualStyleContent,
   normalizeStyleVirtualId,
 } from "./load-style.ts";
-import { loadedSfcModule } from "./tree-shaking.ts";
-import type { LoadedSfcSource } from "./src-requests.ts";
+import { getSfcModuleRequest, loadSfcModuleSource } from "./sfc-module.ts";
 
 export { normalizeVueServerRendererImport };
+export { getBoundaryPlaceholderCode } from "./sfc-module.ts";
 
-type LoadResult = { code: string; map: SourceMapV3 | null; moduleSideEffects?: boolean };
-type LoadOptions = {
-  ssr?: boolean;
-  addWatchFile?: (id: string) => void;
-  /** The SFC source `load` read for its `src` request scan. */
-  sfcSource?: LoadedSfcSource;
-};
-
-const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
-export default defineComponent({
-  name: "ServerPlaceholder",
-  render() {
-    return createElementBlock("div");
-  }
-});
-`;
-
-export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): string | null {
-  const boundaryKind = classifyVitePluginRequest(realPath).boundaryKind;
-  if (ssr && boundaryKind === "client") {
-    return SERVER_PLACEHOLDER_CODE;
-  }
-  if (!ssr && boundaryKind === "server") {
-    return SERVER_PLACEHOLDER_CODE;
-  }
-  return null;
-}
+type LoadOptions = { ssr?: boolean };
 
 function findMacroArtifactModule(
   state: VizePluginState,
@@ -86,85 +48,6 @@ function findMacroArtifactModule(
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
-}
-
-function loadCompiledSfcModule(
-  state: VizePluginState,
-  realPath: string,
-  isSsr: boolean,
-  currentBase: string,
-  needsGlobBaseRewrite: boolean,
-  loadOptions?: LoadOptions,
-): LoadResult | string | null {
-  const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
-  if (placeholderCode) {
-    state.logger.log(`load: using boundary placeholder for ${realPath}`);
-    return { code: placeholderCode, map: null };
-  }
-
-  const cache = getEnvironmentCache(state, isSsr);
-  const customElement = isPluginVueCustomElement(state.mergedOptions, realPath);
-  const extractCss = shouldExtractCssForRequest(state, isSsr) && !customElement;
-  let compiled = cache.get(realPath);
-
-  // On-demand compile if not cached, from the source `load` already read.
-  const source =
-    loadOptions?.sfcSource?.file === realPath ? loadOptions.sfcSource.source : undefined;
-  if (!compiled && (source !== undefined || fs.existsSync(realPath))) {
-    state.logger.log(`load: on-demand compiling ${realPath}`);
-    compiled = compileFile(realPath, cache, compileOptions(state, isSsr, realPath), source, {
-      logWarnings: shouldLogSfcWarnings(state, realPath),
-    });
-  }
-  syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
-
-  if (!compiled) {
-    return null;
-  }
-
-  for (const watchFile of new Set([realPath, ...(compiled.dependencies ?? [])])) {
-    loadOptions?.addWatchFile?.(watchFile);
-  }
-
-  const hasDelegated = hasDelegatedStyles(compiled);
-  const outputOptions = {
-    isProduction: state.isProduction,
-    isDev: state.server !== null && !isSsr,
-    ssr: isSsr,
-    hmrUpdateType: loadOptions?.ssr ? undefined : state.pendingHmrUpdateTypes.get(realPath),
-    extractCss,
-    customElement,
-    filePath: realPath,
-    root: state.root,
-  };
-  if (compiled.css && !hasDelegated && embedsInlineCss(compiled, outputOptions)) {
-    compiled = {
-      ...compiled,
-      css: resolveCssImports(
-        compiled.css,
-        realPath,
-        state.cssAliasRules,
-        state.server !== null,
-        currentBase,
-      ),
-    };
-  }
-  const emitted = generateOutputWithMap(compiled, outputOptions);
-  // Each rewrite below substitutes inside a single line, but they go through
-  // `MappedModule` anyway so the map cannot silently drift if one ever does not.
-  const rewritten = new MappedModule(
-    isSsr ? normalizeVueServerRendererImport(emitted.code) : emitted.code,
-    emitted.map,
-  );
-  rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
-  rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
-  // File-based IDs let Vite retain authored glob keys and resolve outside root.
-  // Only legacy null-prefixed modules still need the #884 compatibility rewrite.
-  if (needsGlobBaseRewrite) {
-    rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
-  }
-  rewritten.edit(registerSfcModule(state, rewritten.code, realPath, isSsr));
-  return loadedSfcModule(rewritten.code, rewritten.map, state.isProduction, isSsr, compiled);
 }
 
 function loadDefinePageArtifact(
@@ -192,7 +75,7 @@ export function loadHook(
   state: VizePluginState,
   id: string,
   loadOptions?: LoadOptions,
-): string | LoadResult | null {
+): string | { code: string; map: SourceMapV3 | null } | null {
   // A `<style src>` module is the src file; its query names the owning SFC.
   if (
     id !== RESOLVED_CSS_MODULE &&
@@ -309,37 +192,10 @@ export function loadHook(
     }
   }
 
-  // Handle vize virtual modules
-  if (request.isVizeVirtual || pluginVisibleVirtualPath) {
-    const realPath = request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "";
-    const isSsr = request.isVizeSsrVirtual || isPluginVisibleSsrVirtualId(id) || !!loadOptions?.ssr;
-
-    if (!realPath.endsWith(".vue")) {
-      state.logger.log(`load: skipping non-vue virtual module ${realPath}`);
-      return null;
-    }
-    if (!shouldLoadCompiledVueSfcPath(state, realPath)) {
-      return null;
-    }
-    return loadCompiledSfcModule(
-      state,
-      realPath,
-      isSsr,
-      currentBase,
-      id.startsWith("\0"),
-      loadOptions,
-    );
-  }
-
-  if (loadableVueSfcPath) {
-    const hasNuxtComponentQuery =
-      !!request.querySuffix &&
-      new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
-    if (!shouldLoadCompiledVueSfcPath(state, loadableVueSfcPath, hasNuxtComponentQuery)) {
-      return null;
-    }
-    const isSsr = !!loadOptions?.ssr;
-    return loadCompiledSfcModule(state, loadableVueSfcPath, isSsr, currentBase, false, loadOptions);
+  // An SFC main module enters the pipeline as its SFC text; `transform` compiles it.
+  if (request.isVizeVirtual || pluginVisibleVirtualPath || loadableVueSfcPath) {
+    const sfc = getSfcModuleRequest(state, id);
+    return sfc ? loadSfcModuleSource(state, sfc, !!loadOptions?.ssr) : null;
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.
@@ -366,12 +222,6 @@ export function loadHook(
   }
 
   return null;
-}
-
-function shouldLogSfcWarnings(state: VizePluginState, realPath: string): boolean {
-  if (!realPath.includes("node_modules")) return true;
-  if ((state.mergedOptions.handleNodeModulesVue ?? true) === false) return false;
-  return state.filter(realPath);
 }
 
 function isJsxComponentPath(path: string): boolean {
@@ -475,6 +325,8 @@ export async function transformHook(
   }
 
   const request = classifyVitePluginRequest(id);
+  // An SFC main module is still SFC text here; its compile stage applies these.
+  if (!request.isMacroVirtualId && getSfcModuleRequest(state, id)) return null;
   if (request.isVizeVirtual || request.isMacroVirtualId || pluginVisibleVirtualPath) {
     const realPath = request.isMacroVirtualId
       ? (request.strippedVirtualPath ?? "")

@@ -20,6 +20,8 @@ import "./native-shape-binding.test.ts";
 import "./css-module-output.test.ts";
 import "./module-shape-fallback.test.ts";
 import "./tree-shaking.test.ts";
+import "./host-source-transform.test.ts";
+import "./plugin/sfc-module.test.ts";
 import "./plugin/tree-shaking.test.ts";
 import "./transform.test.ts";
 import "./utils-filter.test.ts";

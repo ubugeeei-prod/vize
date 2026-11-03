@@ -281,7 +281,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
 
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
-    await setupNuxtViteCompiler(compilerOptions, nuxt.options, options.compiler);
+    await setupNuxtViteCompiler(compilerOptions, nuxt, options.compiler);
   }
 
   let isNuxtBuild = false;

@@ -98,6 +98,11 @@ export interface StyleBlockInfo {
 }
 
 export interface CompiledModule {
+  /**
+   * The SFC text this module was compiled from. A module answers only for this
+   * text; the pre-compile cache stores its hash instead.
+   */
+  source?: string;
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, when the compiler was

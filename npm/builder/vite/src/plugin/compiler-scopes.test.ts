@@ -11,7 +11,7 @@ import { compileFile } from "../compiler.ts";
 import { compileAll } from "./precompile-run.ts";
 import { handleHotUpdateHook } from "./hmr.ts";
 import { toVirtualId } from "../virtual.ts";
-import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
 import { makeProject, makeState } from "../test/precompile-cache-project.ts";
 
@@ -154,8 +154,8 @@ void test("scoped compiler output survives batches, cold caches, client/SSR load
     await compileAll(changed);
     assert.equal(changed.cache.get(scoped)?.code, expectedCode(scoped, "preserve"));
     const onDemand = makeScopedState();
-    loadHook(onDemand, toVirtualId(scoped), { ssr: false });
-    loadHook(onDemand, toVirtualId(scoped, true), { ssr: true });
+    await loadSfcModule(onDemand, toVirtualId(scoped), { ssr: false });
+    await loadSfcModule(onDemand, toVirtualId(scoped, true), { ssr: true });
     assert.equal(onDemand.cache.get(scoped)?.code, expectedCode(scoped, "condense"));
     assert.equal(onDemand.ssrCache.get(scoped)?.code, expectedCode(scoped, "condense", true));
     const edited = source.replace("a</span>", "updated</span>");
@@ -199,9 +199,9 @@ void test("public plugin config resolution applies compiler entries to productio
     resolve: { alias: [] },
   } as unknown as ResolvedConfig;
   async function output(config: ResolvedVizeConfig, filename: string, ssr: boolean) {
-    const plugin = vize({ root, config }).find(
-      (candidate) => candidate.name === "vite-plugin-vize",
-    )!;
+    const plugins = vize({ root, config });
+    const plugin = plugins.find((candidate) => candidate.name === "vite-plugin-vize")!;
+    const sfcPlugin = plugins.find((candidate) => candidate.name === "vite-plugin-vize:sfc")!;
     const resolve =
       typeof plugin.configResolved === "function"
         ? plugin.configResolved
@@ -210,7 +210,14 @@ void test("public plugin config resolution applies compiler entries to productio
     const load = typeof plugin.load === "function" ? plugin.load : plugin.load!.handler;
     const watched: string[] = [];
     const context = { addWatchFile: (file: string) => watched.push(file) };
-    const result = await load.call(context as never, toVirtualId(filename, ssr), { ssr });
+    const id = toVirtualId(filename, ssr);
+    const source = await load.call(context as never, id, { ssr });
+    assert.equal(typeof source, "string");
+    const transform =
+      typeof sfcPlugin.transform === "function"
+        ? sfcPlugin.transform
+        : sfcPlugin.transform!.handler;
+    const result = await transform.call(context as never, source as string, id, { ssr } as never);
     assert.ok(result);
     assert.deepEqual(watched, [filename]);
     return result;
