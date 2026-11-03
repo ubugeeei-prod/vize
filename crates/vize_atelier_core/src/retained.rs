@@ -180,6 +180,25 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
     fn visit_ts_enum_declaration(&mut self, _it: &oxc_ast_types::TSEnumDeclaration<'a>) {
         self.reject();
     }
+    // TypeScript-only declarations a function body may hold.
+    fn visit_ts_type_alias_declaration(&mut self, _it: &oxc_ast_types::TSTypeAliasDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_interface_declaration(&mut self, _it: &oxc_ast_types::TSInterfaceDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_module_declaration(&mut self, _it: &oxc_ast_types::TSModuleDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_global_declaration(&mut self, _it: &oxc_ast_types::TSGlobalDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_import_equals_declaration(
+        &mut self,
+        _it: &oxc_ast_types::TSImportEqualsDeclaration<'a>,
+    ) {
+        self.reject();
+    }
     fn visit_decorator(&mut self, _it: &oxc_ast_types::Decorator<'a>) {
         self.reject();
     }

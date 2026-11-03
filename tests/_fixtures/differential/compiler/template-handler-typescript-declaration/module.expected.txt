@@ -1,0 +1,13 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent(_resolveComponent("Counter"), _mergeProps({ onIncrement: () => {
+	$data.count++;
+} }, _attrs), null, _parent))
+}
+
+const _sfc_main = { data: () => ({ count: 0 }) };
+
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

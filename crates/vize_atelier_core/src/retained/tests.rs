@@ -34,6 +34,10 @@ fn whole_retained_identifier_gate_keeps_dialect_and_original_byte_boundaries() {
         (r"\u0068andler00", true),
         ("handler00 as unknown", false),
         ("() => handler00", true),
+        // TypeScript-only declarations in a function body are not JavaScript.
+        ("() => { void handler00; type T = typeof handler00 }", false),
+        ("() => { interface I { id: number } handler00() }", false),
+        ("() => { void handler00 }", true),
     ];
     for (raw, expected) in cases {
         let allocator = Allocator::new();

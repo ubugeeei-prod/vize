@@ -1,0 +1,9 @@
+<script lang="ts">
+export default {
+  data: () => ({ count: 0 }),
+}
+</script>
+
+<template>
+  <Counter @increment="() => { count++; type Count = typeof count; }" />
+</template>

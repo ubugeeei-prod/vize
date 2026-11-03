@@ -2344,6 +2344,49 @@
       }
     },
     {
+      "id": "compiler/sfc/template-handler-typescript-declaration",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-handler-typescript-declaration",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "a7f017a29d74f156b6bcb3c702f53add29b0252f46a67d4b02ca2c8a2992180a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-handler-typescript-declaration/module.expected.txt",
+        "sha256": "9685878b63a206ef0164904c900b93e34227abb36b7a885dc6c51e84bb5df62c",
+        "source": "crates/vize_atelier_sfc/tests/template_handler_typescript.rs:typescript_declarations_in_a_handler_body_are_erased_in_every_lane"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards template type erasure of a statement-handler body."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-host-globals-10927",
       "state": "active",
       "targets": ["ssr"],
