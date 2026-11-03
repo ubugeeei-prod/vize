@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from 'vue'
+import N_Props from './N_Props.vue'
+declare function takesNumber(n: number): void
+declare function takesString(s: string): void
+const picked = useTemplateRef('picked')
+onMounted(() => takesString(picked.value!.get()))
+</script>
+<template>
+  <N_Props ref="picked" v="a" @pick="(x) => takesString(x)" v-slot="{ v }">{{ takesString(v) }}</N_Props>
+  <N_Props v="a" @pick="(x) => takesNumber(x)" />
+  <N_Props :v="1" :list="['b']" />
+</template>

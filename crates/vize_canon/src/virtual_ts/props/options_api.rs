@@ -1,3 +1,4 @@
+use crate::virtual_ts::generated_names as names;
 use vize_carton::{String, append};
 use vize_l0::ts;
 
@@ -58,27 +59,37 @@ pub(super) fn emit_options_api_props_type(
     ts: &mut String,
     generic_decl: &str,
     source: &OptionsApiPropsSource,
-    type_name: &str,
+    type_name: &'static str,
     exported: bool,
 ) {
     if source.captures_default {
-        ts.push_str(
-            "type $DefaultProps<T> = $IsAny<T> extends true ? {} : T extends abstract new (...args: any[]) => { $props: infer P } ? P : {};\n",
+        append!(
+            *ts,
+            "type {}<T> = $IsAny<T> extends true ? {{}} : T extends abstract new (...args: any[]) => {{ $props: infer P }} ? P : {{}};\n",
+            names::declared("$DefaultProps")
         );
     }
-    match source.direct.as_ref() {
+    let head = if exported {
+        names::export_type(type_name)
+    } else {
+        names::local_type(type_name)
+    };
+    let declared = match source.direct.as_ref() {
         // A `default` makes the prop optional for the parent even beside
         // `required: true` (Vue's `$props` is `Partial<Defaults> & …`), except
         // on a plain `Boolean` prop, whose `required: true` wins; this is the
         // `$props` `vue-tsc` checks the parent against.
-        Some(DirectOptionsApiPropsSource::DeferredObject(_)) => ts.push_str(
+        Some(DirectOptionsApiPropsSource::DeferredObject(_)) => {
+            ts.push_str(
             "type $OptionsPropRequired<T> = T extends { required: true } ? T extends { default: any } ? T extends { type: BooleanConstructor } ? true : false : true : false;\ntype $OptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
-        ),
+            );
+            false
+        }
         Some(DirectOptionsApiPropsSource::Names(names)) => {
             if exported {
-                ts! { &mut *ts => #("export type ") #type_name #generic_decl #(" = ") }
+                ts! { &mut *ts => #head #generic_decl #(" = ") }
             } else {
-                ts! { &mut *ts => #("type ") #type_name #(" = ") }
+                ts! { &mut *ts => #head #(" = ") }
             }
             ts! { &mut *ts =>
                 {
@@ -92,25 +103,36 @@ pub(super) fn emit_options_api_props_type(
             }
             append_default_props(ts, source);
             ts.push_str(";\n");
+            true
         }
         None => {
             if exported {
-                append!(
-                    *ts,
-                    "export type {type_name}{generic_decl} = $DefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
-                );
+                append!(*ts, "{head}{generic_decl} = ");
             } else {
-                append!(
-                    *ts,
-                    "type {type_name} = $DefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>;\n"
-                );
+                append!(*ts, "{head} = ");
             }
+            push_default_props(ts);
+            ts.push_str(";\n");
+            true
         }
+    };
+    if exported && declared {
+        names::reexport(ts, type_name);
     }
+}
+
+fn push_default_props(ts: &mut String) {
+    append!(
+        *ts,
+        "{}<{}[\"__default__\"]>",
+        names::declared("$DefaultProps"),
+        names::setup_return("")
+    );
 }
 
 pub(crate) fn append_default_props(ts: &mut String, source: &OptionsApiPropsSource) {
     if source.captures_default {
-        ts.push_str(" & $DefaultProps<Awaited<ReturnType<typeof __setup>>[\"__default__\"]>");
+        ts.push_str(" & ");
+        push_default_props(ts);
     }
 }

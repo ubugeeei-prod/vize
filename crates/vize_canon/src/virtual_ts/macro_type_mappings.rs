@@ -34,7 +34,7 @@ impl<'a> MacroTypeMappings<'a> {
         ts: &str,
         generated_start: usize,
         call: Option<&MacroCall>,
-        export_name: &str,
+        export_name: &'static str,
     ) {
         let Some(call) = call else {
             return;
@@ -61,7 +61,10 @@ impl<'a> MacroTypeMappings<'a> {
         let Some(generated) = ts.get(generated_start..) else {
             return;
         };
-        let declaration = cstr!("export type {export_name}");
+        let declaration = cstr!(
+            "{}",
+            crate::virtual_ts::generated_names::export_type(export_name)
+        );
         let Some(generated_type_start) = generated
             .find(declaration.as_str())
             .and_then(|start| Some(start + generated.get(start..)?.find(" = ")? + 3))

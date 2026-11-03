@@ -4,12 +4,13 @@ use super::{
     FallthroughRootTarget, explicit_attrs_targets, possible_single_root_targets,
     push_ts_string_literal,
 };
-use vize_carton::{CompactString, FxHashSet, String};
+use vize_carton::{CompactString, FxHashSet, String, cstr};
 use vize_croquis::Croquis;
 use vize_relief::RootNode;
 
 use crate::virtual_ts::{
-    component_reference::resolved_component_binding_reference, types::VirtualTsOptions,
+    component_reference::resolved_component_binding_reference, generated_names as names,
+    types::VirtualTsOptions,
 };
 
 /// The bindings a component root resolves through. A root that is not a
@@ -122,7 +123,7 @@ fn fallthrough_type_ref(
     scope: Option<&FallthroughComponentScope<'_>>,
 ) -> Option<String> {
     let Some(template_ast) = template_ast else {
-        return Some(String::from("Record<string, unknown>"));
+        return Some(open_attrs());
     };
     let targets = fallthrough_targets(summary, template_ast)?;
     Some(targets_type_ref(&targets, public_types, scope))
@@ -163,13 +164,17 @@ fn targets_type_ref(
                         )
                     })
                 else {
-                    return String::from("Record<string, unknown>");
+                    return open_attrs();
                 };
-                let mut surface = String::from(if check_required {
-                    "$ComponentFallthroughSurface<typeof "
-                } else {
-                    "$ComponentFallthroughProps<typeof "
-                });
+                let mut surface = names::helper(
+                    if check_required {
+                        "$ComponentFallthroughSurface"
+                    } else {
+                        "$ComponentFallthroughProps"
+                    },
+                    &[""],
+                );
+                surface.push_str("<typeof ");
                 surface.push_str(reference.as_str());
                 surface.push('>');
                 if check_required
@@ -191,13 +196,15 @@ fn targets_type_ref(
         // supply the root's required ones; the root's own bindings are never
         // the parent's to provide either way.
         if !check_required {
-            ty.push_str("Partial<");
+            ty.push_str(&names::lib("Partial"));
+            ty.push('<');
             ty.push_str(surface.as_str());
             ty.push('>');
         } else if root.authored_keys.is_empty() {
             ty.push_str(surface.as_str());
         } else {
-            ty.push_str("Omit<");
+            ty.push_str(&names::lib("Omit"));
+            ty.push('<');
             ty.push_str(surface.as_str());
             ty.push_str(", ");
             push_omitted_keys(&mut ty, &root.authored_keys);
@@ -218,12 +225,16 @@ pub(super) fn push_omitted_keys(ty: &mut String, keys: &[String]) {
 }
 
 fn native_target_surface(tag: &str, public_types: bool) -> String {
-    let mut ty = String::from(if public_types {
-        "import('vue').NativeElements["
+    let mut ty = if public_types {
+        String::from("import('vue').NativeElements[")
     } else {
-        "$NativeElement<"
-    });
+        cstr!("{}<", names::helper("$NativeElement", &["PropertyKey"]))
+    };
     push_ts_string_literal(&mut ty, tag);
     ty.push_str(if public_types { "]" } else { ">" });
     ty
+}
+
+fn open_attrs() -> String {
+    cstr!("{}<string, unknown>", names::lib("Record"))
 }

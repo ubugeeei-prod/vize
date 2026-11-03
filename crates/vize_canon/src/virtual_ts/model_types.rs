@@ -27,7 +27,10 @@ pub(crate) fn model_value_type(
     let arguments = generic_parameters
         .map(|generic| cstr!("<{}>", generic.names))
         .unwrap_or_default();
-    let mut ty = cstr!("$ModelDefaults{arguments}[");
+    let mut ty = cstr!(
+        "{}{arguments}[",
+        super::generated_names::declared("$ModelDefaults")
+    );
     push_ts_string_literal(&mut ty, model.name.as_str());
     ty.push(']');
     ty
@@ -67,6 +70,8 @@ pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&Generic
         .unwrap_or_default();
     append!(
         *ts,
-        "type $ModelDefaults{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_model_defaults\"];\n"
+        "type {}{declaration} = {}[\"__vize_model_defaults\"];\n",
+        super::generated_names::declared("$ModelDefaults"),
+        super::generated_names::setup_return(&arguments)
     );
 }

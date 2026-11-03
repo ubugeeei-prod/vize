@@ -119,14 +119,15 @@ impl SlotOutletChecks {
 /// the bare alias would collapse to their defaults (#3065, #10221); instantiate
 /// it with the SFC's own parameters instead.
 fn slots_type_ref(summary: &Croquis, generic_parameters: Option<&GenericParameters>) -> String {
+    let slots = crate::virtual_ts::generated_names::declared("$Slots");
     let Some(define_slots) = summary.macros.define_slots() else {
-        return String::from("$Slots");
+        return slots;
     };
     if super::super::script_facts::contains_binding(summary, "slots") {
         return String::from("typeof slots");
     }
     let Some(generic) = generic_parameters else {
-        return String::from("$Slots");
+        return slots;
     };
     let generic_names = &generic.names;
     let names: Vec<String> = generic_names
@@ -139,8 +140,8 @@ fn slots_type_ref(summary: &Croquis, generic_parameters: Option<&GenericParamete
     if define_slots_type_requires_setup_scope(summary)
         || references_any_identifier(slots_type, &names)
     {
-        cstr!("$Slots<{generic_names}>")
+        cstr!("{slots}<{generic_names}>")
     } else {
-        String::from("$Slots")
+        slots
     }
 }

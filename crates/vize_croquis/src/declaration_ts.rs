@@ -6,6 +6,9 @@
 use crate::{Croquis, ScopeData, ScopeKind};
 use vize_carton::{SmallVec, String, append, cstr};
 
+mod names;
+use names::Names;
+
 /// Result of declaration generation.
 #[derive(Debug, Clone, Default)]
 pub struct DeclarationTsOutput {
@@ -59,10 +62,14 @@ fn generate_declaration_ts_inner(
         emit_module_statements(&mut ts, summary, script);
     }
 
-    emit_props_type(&mut ts, summary, generic_decl.as_str());
-    emit_emits_type(&mut ts, summary, generic_decl.as_str());
-    emit_slots_type(&mut ts, summary, generic_decl.as_str());
-    emit_default_component(&mut ts, generic_decl.as_str(), generic_ref.as_str());
+    let names = Names {
+        summary,
+        bound: generic_param.map(extract_generic_names).unwrap_or_default(),
+    };
+    emit_props_type(&mut ts, &names, generic_decl.as_str());
+    emit_emits_type(&mut ts, &names, generic_decl.as_str());
+    emit_slots_type(&mut ts, &names, generic_decl.as_str());
+    emit_default_component(&mut ts, &names, generic_decl.as_str(), generic_ref.as_str());
 
     DeclarationTsOutput { content: ts }
 }
@@ -131,23 +138,27 @@ fn emit_module_statements(ts: &mut String, summary: &Croquis, script: &ScriptCon
     }
 }
 
-fn emit_props_type(ts: &mut String, summary: &Croquis, generic_decl: &str) {
-    if type_exists(summary, "Props") {
+fn emit_props_type(ts: &mut String, names: &Names<'_>, generic_decl: &str) {
+    if type_exists(names.summary, "Props") {
         return;
     }
+    emit_props_alias(ts, names.summary, &names.export_head("Props"), generic_decl);
+    names.reexport(ts, "Props");
+}
 
+fn emit_props_alias(ts: &mut String, summary: &Croquis, head: &str, generic_decl: &str) {
     if let Some(type_args) = summary
         .macros
         .define_props()
         .and_then(|call| call.type_args.as_ref())
     {
         let inner = strip_outer_angle_brackets(type_args.as_str());
-        append!(*ts, "export type Props{generic_decl} = {inner};\n");
+        append!(*ts, "{head}{generic_decl} = {inner};\n");
         return;
     }
 
     if !summary.macros.props().is_empty() {
-        append!(*ts, "export type Props{generic_decl} = {{\n");
+        append!(*ts, "{head}{generic_decl} = {{\n");
         for prop in summary.macros.props() {
             let key = property_key(prop.name.as_str());
             let optional = if prop.required { "" } else { "?" };
@@ -158,26 +169,30 @@ fn emit_props_type(ts: &mut String, summary: &Croquis, generic_decl: &str) {
         return;
     }
 
-    append!(*ts, "export type Props{generic_decl} = {{}};\n");
+    append!(*ts, "{head}{generic_decl} = {{}};\n");
 }
 
-fn emit_emits_type(ts: &mut String, summary: &Croquis, generic_decl: &str) {
-    if type_exists(summary, "Emits") {
+fn emit_emits_type(ts: &mut String, names: &Names<'_>, generic_decl: &str) {
+    if type_exists(names.summary, "Emits") {
         return;
     }
+    emit_emits_alias(ts, names.summary, &names.export_head("Emits"), generic_decl);
+    names.reexport(ts, "Emits");
+}
 
+fn emit_emits_alias(ts: &mut String, summary: &Croquis, head: &str, generic_decl: &str) {
     if let Some(type_args) = summary
         .macros
         .define_emits()
         .and_then(|call| call.type_args.as_ref())
     {
         let inner = strip_outer_angle_brackets(type_args.as_str());
-        append!(*ts, "export type Emits{generic_decl} = {inner};\n");
+        append!(*ts, "{head}{generic_decl} = {inner};\n");
         return;
     }
 
     if !summary.macros.emits().is_empty() {
-        append!(*ts, "export type Emits{generic_decl} = {{\n");
+        append!(*ts, "{head}{generic_decl} = {{\n");
         for emit in summary.macros.emits() {
             let key = string_literal(emit.name.as_str());
             let payload = emit.payload_type.as_deref().unwrap_or("any[]");
@@ -187,45 +202,58 @@ fn emit_emits_type(ts: &mut String, summary: &Croquis, generic_decl: &str) {
         return;
     }
 
-    append!(*ts, "export type Emits{generic_decl} = {{}};\n");
+    append!(*ts, "{head}{generic_decl} = {{}};\n");
 }
 
-fn emit_slots_type(ts: &mut String, summary: &Croquis, generic_decl: &str) {
-    if type_exists(summary, "Slots") {
+fn emit_slots_type(ts: &mut String, names: &Names<'_>, generic_decl: &str) {
+    if type_exists(names.summary, "Slots") {
         return;
     }
+    emit_slots_alias(ts, names.summary, &names.export_head("Slots"), generic_decl);
+    names.reexport(ts, "Slots");
+}
 
+fn emit_slots_alias(ts: &mut String, summary: &Croquis, head: &str, generic_decl: &str) {
     if let Some(type_args) = summary
         .macros
         .define_slots()
         .and_then(|call| call.type_args.as_ref())
     {
         let inner = strip_outer_angle_brackets(type_args.as_str());
-        append!(*ts, "export type Slots{generic_decl} = {inner};\n");
+        append!(*ts, "{head}{generic_decl} = {inner};\n");
         return;
     }
 
-    append!(*ts, "export type Slots{generic_decl} = {{}};\n");
+    append!(*ts, "{head}{generic_decl} = {{}};\n");
 }
 
-fn emit_default_component(ts: &mut String, generic_decl: &str, generic_ref: &str) {
-    let props_ref = cstr!("Props{generic_ref}");
-    let emits_ref = cstr!("Emits{generic_ref}");
-    let slots_ref = cstr!("Slots{generic_ref}");
+fn emit_default_component(
+    ts: &mut String,
+    names: &Names<'_>,
+    generic_decl: &str,
+    generic_ref: &str,
+) {
+    let props_ref = cstr!("{}{generic_ref}", names.local("Props"));
+    let emits_ref = cstr!("{}{generic_ref}", names.local("Emits"));
+    let slots_ref = cstr!("{}{generic_ref}", names.local("Slots"));
+    let (instance, emit_fn) = (names.local("$ComponentInstance"), names.local("__EmitFn"));
 
     ts.push_str("type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? {\n");
     ts.push_str("  [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[];\n");
     ts.push_str("} : Record<string, any[]>;\n");
     ts.push_str("type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n");
-    ts.push_str("type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n");
-    append!(*ts, "type $ComponentInstance{generic_decl} = {{\n");
+    append!(
+        *ts,
+        "type {emit_fn}<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n"
+    );
+    append!(*ts, "type {instance}{generic_decl} = {{\n");
     append!(*ts, "  $props: {props_ref};\n");
-    append!(*ts, "  $emit: __EmitFn<{emits_ref}>;\n");
+    append!(*ts, "  $emit: {emit_fn}<{emits_ref}>;\n");
     append!(*ts, "  $slots: {slots_ref};\n");
     ts.push_str("};\n");
     append!(
         *ts,
-        "declare const __vize_component__: new {generic_decl}(...args: any[]) => $ComponentInstance{generic_ref};\n"
+        "declare const __vize_component__: new {generic_decl}(...args: any[]) => {instance}{generic_ref};\n"
     );
     ts.push_str("export default __vize_component__;\n");
 }
@@ -242,7 +270,7 @@ fn generic_param(summary: &Croquis) -> Option<&str> {
         })
 }
 
-fn type_exists(summary: &Croquis, name: &str) -> bool {
+pub(super) fn type_exists(summary: &Croquis, name: &str) -> bool {
     summary
         .type_exports
         .iter()

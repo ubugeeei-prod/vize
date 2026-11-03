@@ -177,9 +177,10 @@ impl SetupHelperPlan {
         } else {
             vize_carton::cstr!("<{generic_names}>")
         };
+        let authored = crate::virtual_ts::generated_names::declared("$AuthoredEventMap");
         append!(
             *ts,
-            "  const __vize_emit_calls_nav = undefined as unknown as $AuthoredEventMap{generic_suffix};\n"
+            "  const __vize_emit_calls_nav = undefined as unknown as {authored}{generic_suffix};\n"
         );
         for call in &self.emit_calls {
             ts.push_str("  void __vize_emit_calls_nav[");

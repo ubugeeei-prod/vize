@@ -172,7 +172,8 @@ impl HoistedGenericAliases {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
-                "type $HoistedGeneric{index}<{}> = {type_name}<{}>;\n",
+                "type {}<{}> = {type_name}<{}>;\n",
+                hoisted_alias(index),
                 self.generic_decl,
                 self.generic_names
             );
@@ -183,7 +184,8 @@ impl HoistedGenericAliases {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
-                "  type {type_name} = $HoistedGeneric{index}<{}>;\n",
+                "  type {type_name} = {}<{}>;\n",
+                hoisted_alias(index),
                 self.generic_names
             );
         }
@@ -191,6 +193,10 @@ impl HoistedGenericAliases {
             append!(*ts, "  {declaration}\n");
         }
     }
+}
+
+fn hoisted_alias(index: usize) -> String {
+    crate::virtual_ts::generated_names::declared_dynamic(&cstr!("$HoistedGeneric{index}"))
 }
 
 /// Generic suffix (`<T extends string = any>`) for a module-scope type alias

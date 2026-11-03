@@ -78,9 +78,10 @@ impl TemplatePropsModel {
                 |generic| cstr!("{contract}<{}>", generic.names),
             )
         } else if !setup_scoped && super::hoisted_props_alias_replaced(summary) {
+            let resolved = super::names::declared("$ResolvedProps");
             generic_param.map_or_else(
-                || "$ResolvedProps".into(),
-                |generic| cstr!("$ResolvedProps<{}>", generic.names),
+                || resolved.clone(),
+                |generic| cstr!("{resolved}<{}>", generic.names),
             )
         } else {
             props_type_ref(generic_param, setup_scoped.then_some("$SetupProps"))
@@ -194,7 +195,7 @@ pub(crate) struct TemplatePropsScope<'a> {
     generic_parameters: Option<&'a GenericParameters>,
     props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
     props_object_binding: &'a str,
-    component_contract: Option<&'static str>,
+    component_contract: Option<&'a str>,
 }
 
 impl<'a> TemplatePropsScope<'a> {
@@ -211,7 +212,7 @@ impl<'a> TemplatePropsScope<'a> {
         }
     }
 
-    pub(crate) fn with_component_contract(mut self, contract: &'static str) -> Self {
+    pub(crate) fn with_component_contract(mut self, contract: &'a str) -> Self {
         self.component_contract = Some(contract);
         self
     }

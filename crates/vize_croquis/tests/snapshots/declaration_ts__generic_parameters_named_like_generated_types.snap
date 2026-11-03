@@ -1,0 +1,22 @@
+---
+source: crates/vize_croquis/tests/declaration_ts.rs
+expression: declaration.as_str()
+---
+type Props_1<Props extends string = any, Emits = any, Slots = any, __EmitFn = any> = { v: Props };
+export type { Props_1 as Props };
+type Emits_1<Props extends string = any, Emits = any, Slots = any, __EmitFn = any> = { pick: [value: Props] };
+export type { Emits_1 as Emits };
+type Slots_1<Props extends string = any, Emits = any, Slots = any, __EmitFn = any> = { default(p: { v: Props }): any };
+export type { Slots_1 as Slots };
+type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? {
+  [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[];
+} : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn_1<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type $ComponentInstance<Props extends string = any, Emits = any, Slots = any, __EmitFn = any> = {
+  $props: Props_1<Props, Emits, Slots, __EmitFn>;
+  $emit: __EmitFn_1<Emits_1<Props, Emits, Slots, __EmitFn>>;
+  $slots: Slots_1<Props, Emits, Slots, __EmitFn>;
+};
+declare const __vize_component__: new <Props extends string = any, Emits = any, Slots = any, __EmitFn = any>(...args: any[]) => $ComponentInstance<Props, Emits, Slots, __EmitFn>;
+export default __vize_component__;

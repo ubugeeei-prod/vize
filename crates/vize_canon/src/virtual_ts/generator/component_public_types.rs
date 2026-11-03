@@ -1,8 +1,9 @@
 //! Public slot and expose aliases, captured from the setup and template scopes.
 
 use super::{emits::inner_type_of, generics::module_alias_generic_suffix};
+use crate::virtual_ts::generated_names as names;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
-use vize_carton::{String, cstr};
+use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
 
@@ -26,25 +27,30 @@ pub(super) fn emit_slots_type(
         .macros
         .define_slots()
         .and_then(|m| m.type_args.as_ref());
+    let slots = names::declared("$Slots");
     let is_generic = if let Some(type_args) = slots_type_args {
         let inner_type = inner_type_of(type_args);
         if super::setup_scope::define_slots_type_requires_setup_scope(summary) {
             let (declaration, arguments) = generic_injection
-                .map(|(declaration, names)| {
-                    (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", ")))
+                .map(|(declaration, arguments)| {
+                    (
+                        cstr!("<{declaration}>"),
+                        cstr!("<{}>", arguments.join(", ")),
+                    )
                 })
                 .unwrap_or_default();
             // Preserve the original quote bytes: retained projections and their
             // source coordinates are shared with independent native observers.
+            let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>> #("['__vize_typed_slots']")
+                #("type ") #slots #declaration = #setup #("['__vize_typed_slots']")
             }
             mappings.emit_slot_key_witnesses(ts, &summary.macros);
             ts! { &mut *ts => ; }
             generic_injection.is_some()
         } else {
             let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-            ts! { &mut *ts => type $Slots #suffix = }
+            ts! { &mut *ts => #("type ") #slots #suffix = }
             let start = ts.len();
             ts! { &mut *ts => #inner_type }
             let end = ts.len();
@@ -54,14 +60,20 @@ pub(super) fn emit_slots_type(
         }
     } else if inferred_slots {
         let (declaration, arguments) = generic_injection
-            .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))
+            .map(|(declaration, arguments)| {
+                (
+                    cstr!("<{declaration}>"),
+                    cstr!("<{}>", arguments.join(", ")),
+                )
+            })
             .unwrap_or_default();
+        let setup = names::setup_return(&arguments);
         ts! { &mut *ts =>
-            type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>> #("['__vize_template_slots']");
+            #("type ") #slots #declaration = #setup #("['__vize_template_slots']");
         }
         generic_injection.is_some()
     } else {
-        ts! { &mut *ts => type $Slots = {}; }
+        ts! { &mut *ts => #("type ") #slots = {}; }
         false
     };
     if export_slots {
@@ -75,7 +87,7 @@ pub(super) fn emit_slots_type(
             // The component marker consumes `$Slots` directly, so an unrelated
             // authored alias or value-only import named `Slots` cannot collide
             // with or replace the generated contract.
-            ts! { &mut *ts => export type { $Slots as Slots }; }
+            append!(*ts, "export type {{ {slots} as Slots }};\n");
         }
     }
     is_generic
@@ -108,41 +120,58 @@ pub(super) fn emit_exposed_type(
     summary: &Croquis,
     generic_injection: Option<&(String, Vec<String>)>,
 ) -> (bool, bool) {
+    let exposed = emit_exposed_alias(ts, summary, generic_injection);
+    if exposed.0 {
+        names::reexport(ts, "Exposed");
+    }
+    exposed
+}
+
+fn emit_exposed_alias(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_injection: Option<&(String, Vec<String>)>,
+) -> (bool, bool) {
     let Some(expose) = summary.macros.define_expose() else {
         return (false, false);
     };
+    let head = names::export_type("Exposed");
     if expose.type_args.is_some()
         && super::setup_scope::define_expose_type_requires_setup_scope(summary)
     {
         // Setup-local names resolve only through the setup return.
-        if let Some((declaration, names)) = generic_injection {
-            let names = names.join(", ");
+        if let Some((declaration, arguments)) = generic_injection {
+            let arguments = cstr!("<{}>", arguments.join(", "));
+            let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                export type Exposed<#declaration> = Awaited<ReturnType<typeof __setup<#names>>>["__vize_typed_exposed"];
+                #head<#declaration> = #setup["__vize_typed_exposed"];
             }
             return (true, true);
         }
+        let setup = names::setup_return("");
         ts! { &mut *ts =>
-            export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_typed_exposed"];
+            #head = #setup["__vize_typed_exposed"];
         }
         (true, false)
     } else if let Some(ref type_args) = expose.type_args {
         let inner_type = inner_type_of(type_args);
         let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        ts! { &mut *ts => export type Exposed #suffix = #inner_type; }
+        ts! { &mut *ts => #head #suffix = #inner_type; }
         (true, !suffix.is_empty())
     } else if expose.runtime_args.is_some() {
         // Runtime args are returned from __setup() to keep them in scope.
         // Use Awaited<ReturnType<...>> to handle both sync and async setup.
-        if let Some((declaration, names)) = generic_injection {
-            let names = names.join(", ");
+        if let Some((declaration, arguments)) = generic_injection {
+            let arguments = cstr!("<{}>", arguments.join(", "));
+            let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                export type Exposed<#declaration> = Awaited<ReturnType<typeof __setup<#names>>>["__vize_exposed"];
+                #head<#declaration> = #setup["__vize_exposed"];
             }
             return (true, true);
         }
+        let setup = names::setup_return("");
         ts! { &mut *ts =>
-            export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_exposed"];
+            #head = #setup["__vize_exposed"];
         }
         (true, false)
     } else {

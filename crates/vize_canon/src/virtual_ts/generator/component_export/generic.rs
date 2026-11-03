@@ -1,4 +1,5 @@
-use vize_carton::{String, cstr};
+use crate::virtual_ts::generated_names as names;
+use vize_carton::{String, append, cstr};
 
 /// The child-side slot resolver a parent's `v-slot` scope calls to instantiate
 /// this component's generic parameters from the authored props (#4147).
@@ -23,8 +24,13 @@ pub(super) fn slot_resolver_field(
         return String::default();
     }
     let resolver_decl = generic_decl;
+    let (partial, record, slots) = (
+        names::lib("Partial"),
+        names::lib("Record"),
+        names::declared("$Slots"),
+    );
     cstr!(
-        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => $Slots<{generic_names}>; "
+        "__vizeResolveSlots?: <{resolver_decl}>(props: {partial}<{props_type}<{generic_names}>> & {record}<string, unknown>) => {slots}<{generic_names}>; "
     )
 }
 
@@ -53,11 +59,13 @@ pub(super) fn generic_check_props_param(
     let mut param = cstr!(
         "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps"
     );
+    let record = names::lib("Record");
     if !strict_component_attrs {
-        param.push_str(" & $ComponentGlobalHtmlAttrs");
+        param.push_str(" & ");
+        param.push_str(&names::helper("$ComponentGlobalHtmlAttrs", &[]));
     }
     if !check_unknown_props {
-        param.push_str(" & Record<string, unknown>");
+        append!(param, " & {record}<string, unknown>");
         return param;
     }
     if let Some(fallthrough) = fallthrough_props_ref {
@@ -66,7 +74,7 @@ pub(super) fn generic_check_props_param(
                 cstr!(" & {{ [K in keyof ({fallthrough}) as string extends K ? never : K]?: unknown }}").as_str(),
             );
         } else {
-            param.push_str(" & Record<string, unknown>");
+            append!(param, " & {record}<string, unknown>");
         }
     }
     param

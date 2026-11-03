@@ -5,6 +5,9 @@
 
 use core::fmt;
 
+use crate::virtual_ts::generated_names as names;
+use vize_carton::{String, cstr};
+
 #[cfg(test)]
 mod tests;
 
@@ -83,19 +86,28 @@ impl fmt::Display for GenericContext<'_> {
             emit_props_type,
             ..
         } = self;
+        let context = names::declared("$GenericContext");
         write!(
             formatter,
-            "type $GenericContext{parameters} = {{\n  props: {props_type}{arguments}"
+            "type {context}{parameters} = {{\n  props: {props_type}{arguments}"
         )?;
         if self.emit_props {
             write!(formatter, " & {emit_props_type}<{emits}>")?;
         }
         if self.jsx_slots {
-            write!(formatter, " & $JsxSlotProps<{slots}>")?;
+            write!(
+                formatter,
+                " & {}<{slots}>",
+                names::declared("$JsxSlotProps")
+            )?;
         }
         formatter.write_str(" & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: ")?;
         if self.emit_props {
-            write!(formatter, "$PublicEmit<{emits}>")?;
+            write!(
+                formatter,
+                "{}<{emits}>",
+                names::helper("$PublicEmit", &[""])
+            )?;
         } else {
             formatter.write_str("{}")?;
         }
@@ -106,13 +118,15 @@ impl fmt::Display for GenericContext<'_> {
         if self.root_element {
             write!(
                 formatter,
-                " & {{ $el: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_root_el'] }}"
+                " & {{ $el: {}['__vize_root_el'] }}",
+                names::setup_return(arguments)
             )?;
         }
         if self.template_refs {
             write!(
                 formatter,
-                " & {{ $refs: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_refs'] }}"
+                " & {{ $refs: {}['__vize_refs'] }}",
+                names::setup_return(arguments)
             )?;
         }
         formatter.write_str(") => void;\n};\n")
@@ -136,19 +150,22 @@ pub(super) struct GenericSignature<'a> {
 impl fmt::Display for GenericSignature<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (name, props_tail) = match self.role {
-            SignatureRole::Component => ("$GenericComponent", ""),
-            SignatureRole::TemplateRefResolver => {
-                ("$GenericRefResolver", " & Record<string, unknown>")
-            }
+            SignatureRole::Component => ("$GenericComponent", String::default()),
+            SignatureRole::TemplateRefResolver => (
+                "$GenericRefResolver",
+                cstr!(" & {}<string, unknown>", names::lib("Record")),
+            ),
         };
         let Self {
             parameters,
             arguments,
             ..
         } = self;
+        let context = names::declared("$GenericContext");
+        let pick = names::lib("Pick");
         writeln!(
             formatter,
-            "type {name} = {parameters}(props: $GenericContext{arguments}['props']{props_tail}, ctx?: Pick<$GenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: $GenericContext{arguments} }};"
+            "type {name} = {parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }};"
         )
     }
 }

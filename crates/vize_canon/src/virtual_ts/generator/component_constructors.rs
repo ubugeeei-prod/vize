@@ -67,7 +67,7 @@ const LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS: &str = r#"type $Vue2ComponentCo
 
 pub(super) fn emit_component_constructors<'a>(
     ts: &mut String,
-    setup_props_plan: &SetupPropsPlan,
+    setup_props_plan: &'a SetupPropsPlan,
     aliases: &ComponentInstanceAliases<'a>,
     authored_generic: Option<&'a str>,
     legacy_vue2: bool,
@@ -76,8 +76,14 @@ pub(super) fn emit_component_constructors<'a>(
     let _profile = vize_l0::profiler::global_profiler()
         .global_span("canon.virtual_ts.emit_component_constructors");
     let legacy_component = needs_legacy_vue2_helpers(legacy_vue2, dialect);
+    let declared = crate::virtual_ts::generated_names::declared;
+    let (props, emits, slots) = (declared("Props"), declared("Emits"), declared("$Slots"));
     if aliases.jsx_slots {
-        ts.push_str("declare global { namespace JSX { interface ElementChildrenAttribute {} } }\ntype $JsxSlotProps<S> = { [K in keyof JSX.ElementChildrenAttribute]?: S };\n");
+        append!(
+            *ts,
+            "declare global {{ namespace JSX {{ interface ElementChildrenAttribute {{}} }} }}\ntype {}<S> = {{ [K in keyof JSX.ElementChildrenAttribute]?: S }};\n",
+            declared("$JsxSlotProps")
+        );
     }
     if !legacy_component
         && let Some((declaration, names)) = aliases.generic_params
@@ -107,11 +113,13 @@ pub(super) fn emit_component_constructors<'a>(
     if aliases.has_exposed_type {
         ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
+    let authored_instance = declared("$AuthoredInstance");
     if aliases.has_authored_default && legacy_component {
-        ts.push_str("type $ComponentInstance = $AuthoredInstance & {\n");
+        append!(*ts, "type $ComponentInstance = {authored_instance} & {{\n");
     } else if aliases.has_authored_default {
-        ts.push_str(
-            "type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & {\n",
+        append!(
+            *ts,
+            "type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {{\n"
         );
     } else {
         ts.push_str("type $ComponentInstance = {\n");
@@ -125,18 +133,20 @@ pub(super) fn emit_component_constructors<'a>(
         aliases.hoist_shared_preamble,
     );
     if legacy_component {
-        ts.push_str("  $emit: __EmitFn<Emits>;\n");
-        ts.push_str("  $slots: $Slots;\n");
+        append!(*ts, "  $emit: __EmitFn<{emits}>;\n  $slots: {slots};\n");
     } else {
-        ts.push_str("  $emit: $PublicEmit<Emits>;\n");
-        ts.push_str("  $slots: $PublicSlots<$Slots>;\n");
+        append!(
+            *ts,
+            "  $emit: $PublicEmit<{emits}>;\n  $slots: $PublicSlots<{slots}>;\n"
+        );
     }
-    ts.push_str(instance_suffix(
+    instance_suffix(
+        ts,
         legacy_vue2,
         dialect,
         aliases.has_exposed_type,
         (aliases.has_root_el, aliases.has_refs),
-    ));
+    );
     if legacy_component {
         ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);
         ts.push_str(
@@ -148,12 +158,12 @@ pub(super) fn emit_component_constructors<'a>(
             .map(|_| setup_props_plan.generic_fallback_component_props_type_ref())
             .unwrap_or_else(|| setup_props_plan.component_props_type_ref().into());
         if aliases.jsx_slots {
-            props_ref = cstr!("{props_ref} & $JsxSlotProps<$Slots>");
+            props_ref = cstr!("{props_ref} & {}<{slots}>", declared("$JsxSlotProps"));
         }
         let emit_props_ref = if aliases.has_emits_for_props {
             let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
                 .select(aliases.hoist_shared_preamble);
-            cstr!("{emit_props}<Emits>")
+            cstr!("{emit_props}<{emits}>")
         } else {
             String::from("{}")
         };
@@ -174,11 +184,12 @@ pub(super) fn emit_component_constructors<'a>(
     }
 
     let (generic_decl, generic_names) = aliases.generic_params?;
-    let slots_ref = alias_ref("$Slots", aliases.slots_is_generic, generic_names);
-    let emits_ref = alias_ref("Emits", aliases.emits_is_generic, generic_names);
+    let slots_ref = alias_ref(&slots, aliases.slots_is_generic, generic_names);
+    let emits_ref = alias_ref(&emits, aliases.emits_is_generic, generic_names);
+    let helper = crate::virtual_ts::generated_names::helper;
+    let (component_props, emit_fn) = (helper("$ComponentProps", &[""]), helper("__EmitFn", &[""]));
     let emit_props_field = if aliases.has_emits_for_props {
-        let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS
-            .select(aliases.hoist_shared_preamble);
+        let emit_props = super::emits::emit_props_ref(aliases.hoist_shared_preamble);
         cstr!(" & {emit_props}<{emits_ref}>")
     } else {
         String::default()
@@ -191,27 +202,36 @@ pub(super) fn emit_component_constructors<'a>(
             #(">(...args: any[]): ")
             #{
                 if aliases.has_authored_default {
-                    __ts.push_str("$AuthoredInstance & ");
+                    __ts.push_str(&authored_instance);
+                    __ts.push_str(" & ");
                 }
             }
-            #("{\n  $props: $ComponentProps<Props<")
+            #("{\n  $props: ")
+            #component_props
+            #("<")
+            #props
+            #("<")
             #generic_names
             #(">>")
             #emit_props_field
-            #(";\n  readonly __vizeRawProps?: Props<")
+            #(";\n  readonly __vizeRawProps?: ")
+            #props
+            #("<")
             #generic_names
-            #(">;\n  $emit: __EmitFn<")
+            #(">;\n  $emit: ")
+            #emit_fn
+            #("<")
             #emits_ref
             #(">;\n  $slots: ")
             #slots_ref
             #(";\n")
             #{
-                __ts.push_str(&generic_instance_suffix(
-                    legacy_vue2,
-                    dialect,
+                generic_instance_suffix(
+                    __ts,
+                    (legacy_vue2, dialect),
                     aliases.has_exposed_type,
                     aliases.exposed_is_generic.then_some(generic_names.as_str()),
-                ));
+                );
             }
         }
         #(" & $Vue2ComponentConstructorStatics;\n")
