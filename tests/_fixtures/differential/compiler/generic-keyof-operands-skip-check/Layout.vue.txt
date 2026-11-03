@@ -1,0 +1,8 @@
+<script setup lang="ts" generic="T extends object">
+import type * as Ext from 'ext'
+const props = defineProps<{ open?: boolean | keyof (T); field?: keyof Ext.Inner }>()
+</script>
+
+<template>
+  <span :data-open="props.open">{{ props.field }}</span>
+</template>
