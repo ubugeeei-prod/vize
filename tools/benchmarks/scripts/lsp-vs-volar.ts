@@ -14,6 +14,7 @@
  *   node tools/benchmarks/scripts/lsp-vs-volar.ts --fixture misskey \
  *     --vize head=target/ci-opt/vize --vize base=/tmp/vize-base --tsgo <tsgo> \
  *     --volar-root <dir with node_modules/{@vue/language-server,@vue/typescript-plugin,typescript}> \
+ *     --tsserver-plugin <dir with node_modules/{@vizejs/typescript-vue-plugin,@vizejs/native,typescript}> \
  *     --fixtures-dir /tmp/projects --rounds 3 --cycles 10 --out lsp.md --json lsp.json
  *   node tools/benchmarks/scripts/lsp-vs-volar.ts --plan --fixture misskey --fixture scale-1k
  *     (prints the CI jobs: one per fixture, one per size curve)
@@ -34,6 +35,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { type Editor, TsgoMapperEditor, VizeEditor } from "./lsp-vs-volar-editors.ts";
+import { TsServerEditor } from "./lsp-vs-volar-tsserver.ts";
 import { VolarEditor } from "./lsp-vs-volar-volar.ts";
 import {
   FIXTURES,
@@ -91,6 +93,8 @@ async function main() {
       "tsgo-mapper": { type: "string" },
       "tsgo-mapper-version": { type: "string" },
       "mapper-modules": { type: "string" },
+      "tsserver-plugin": { type: "string" },
+      "tsserver-plugin-version": { type: "string" },
       "fixtures-dir": { type: "string" },
       rounds: { type: "string" },
       warmups: { type: "string" },
@@ -163,8 +167,24 @@ async function main() {
       setup: (workspace, spec) => installContentMapper(workspace, spec, modules),
     });
   }
+  if (values["tsserver-plugin"]) {
+    const root = resolve(values["tsserver-plugin"]);
+    const typescript = (
+      JSON.parse(readFileSync(join(root, "node_modules/typescript/package.json"), "utf8")) as {
+        version: string;
+      }
+    ).version;
+    const label = `tsserver ${typescript} + vize ${values["tsserver-plugin-version"] ?? "?"} plugin`;
+    const install = { root, plugin: "@vizejs/typescript-vue-plugin" };
+    factories.push({
+      label,
+      create: (workspace, env) => new TsServerEditor(label, install, { workspace, env }),
+    });
+  }
   if (factories.length < 2)
-    throw new Error("compare at least two editors (--vize, --volar-root, --tsgo-mapper)");
+    throw new Error(
+      "compare at least two editors (--vize, --volar-root, --tsgo-mapper, --tsserver-plugin)",
+    );
   const options: SessionOptions = {
     cycles: positiveInteger(values.cycles, 5, "--cycles"),
     coldTimeoutMs: 600_000,
