@@ -250,14 +250,13 @@ pub(super) fn generate_v_slot_scope(
             if let Some((_, annotation)) = split_slot_pattern_annotation(props_pattern.as_str())
                 && let Some(pattern_offset) = pattern_offset
             {
-                let start = (ctx.template_offset + pattern_offset) as usize;
                 emit_slot_annotation_check(
                     ts,
-                    mappings,
+                    mappings.diagnostics,
                     inner_indent,
                     slot_types.member.as_str(),
                     annotation,
-                    start..start + props_pattern.len(),
+                    (ctx.template_offset + pattern_offset) as usize,
                 );
             }
             if data.prop_names.is_empty() {

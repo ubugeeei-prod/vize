@@ -90,27 +90,27 @@ pub(super) fn emit_slot_function_open(
 /// vue-tsc's `__VLS_vSlot(slot, (_: Annotation) => [] as any)`: the annotated
 /// callback must be assignable to the declared slot member, so a method slot
 /// compares its parameter bivariantly and an object-declared slot rejects any
-/// annotation. The callback maps to the whole slot expression, as vue-tsc's.
+/// annotation. TypeScript reports the callback at its `(`, which maps to the
+/// slot expression's first byte, where vue-tsc reports it. The other bytes
+/// stay unmapped so the authored pattern keeps its own spans.
 pub(super) fn emit_slot_annotation_check(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    diagnostics: &mut Vec<VizeMapping>,
     indent: &str,
     slot_member_type: &str,
     annotation: &str,
-    expression_source: std::ops::Range<usize>,
+    expression_start: usize,
 ) {
     append!(
         *ts,
         "{indent}(undefined as unknown as <__S, __D extends __S>(slot: __S, decl: __D) => void)(undefined as unknown as ({slot_member_type}), "
     );
-    let start = ts.len();
-    append!(*ts, "(_: {annotation}) => [] as any");
-    mappings.push(VizeMapping {
-        gen_range: start..ts.len(),
-        src_range: expression_source,
+    diagnostics.push(VizeMapping {
+        gen_range: ts.len()..ts.len() + 1,
+        src_range: expression_start..expression_start + 1,
         sub_spans: Vec::new(),
     });
-    ts.push_str(");\n");
+    append!(*ts, "(_: {annotation}) => [] as any);\n");
 }
 
 pub(super) fn append_v_for_comment(

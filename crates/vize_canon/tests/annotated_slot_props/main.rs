@@ -2,6 +2,8 @@
 //! An annotated `v-slot` parameter is checked against the slot the child
 //! declares, as vue-tsc's `__VLS_vSlot(slot, (_: Annotation) => …)` does: the
 //! annotated callback must be assignable to the declared slot member.
+use std::path::Path;
+
 use davinci_test_support::script_block_project as project;
 
 const PARENT: &str = include_str!(concat!(
@@ -110,4 +112,35 @@ fn a_dynamic_slot_name_checks_the_member_it_selects() {
             "src/Parent.vue(7,24): error TS2345: Argument of type '(_: { s: number; }) => any' is not assignable to parameter of type '(props: { s: string; }) => any'.\nTypes of parameters '_' and 'props' are incompatible.\nType '{ s: string; }' is not assignable to type '{ s: number; }'.\nTypes of property 's' are incompatible.\nType 'string' is not assignable to type 'number'."
         ]
     );
+}
+
+/// Through the content mapper the callback keeps a span from its `(` to the
+/// slot expression, so the host reports it instead of ignoring the range.
+#[test]
+fn the_content_mapper_maps_the_checked_callback_to_the_slot_expression() {
+    let source = PARENT.replace("SLOT_EXPRESSION", "{ data }: { data: { mode: 'new' } }");
+    let transform =
+        vize_canon::generate_vue_content_mapper_transform(Path::new("Parent.vue"), &source)
+            .expect("complete mapper projection");
+    let callback = transform
+        .text
+        .find("(_: { data: { mode: 'new' } }) => [] as any")
+        .expect("the annotated callback is emitted");
+    let expression = source
+        .find("{ data }: {")
+        .expect("the slot expression is authored");
+    let mapped: Vec<[usize; 2]> = transform
+        .mappings
+        .iter()
+        .filter(|span| span.0[0] <= callback && callback < span.0[0] + span.0[1])
+        .map(|span| [span.0[2], span.0[3]])
+        .collect();
+    assert_eq!(mapped, [[expression, 1]]);
+    let ignored = transform
+        .diagnostic_directives
+        .iter()
+        .flat_map(|table| &table.directives)
+        .filter(|directive| directive.0[2] <= callback && callback < directive.0[3])
+        .count();
+    assert_eq!(ignored, 0);
 }
