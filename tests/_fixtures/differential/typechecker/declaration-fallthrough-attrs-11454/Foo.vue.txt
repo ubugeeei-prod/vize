@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ bar: number }>();
+defineEmits<{ change: [] }>();
+</script>
+
+<template>
+  <div />
+</template>

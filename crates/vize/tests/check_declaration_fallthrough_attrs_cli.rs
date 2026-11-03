@@ -8,51 +8,20 @@ use std::{
 };
 use vize_l0::String;
 
-const CONFIG: &str = r#"{
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext"
-  },
-  "include": ["src/**/*.vue"]
-}
-"#;
+const CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/declaration-fallthrough-attrs-11454/tsconfig.json.txt"
+));
 
-const STRICT_CONFIG: &str = r#"{
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext"
-  },
-  "vueCompilerOptions": { "checkUnknownProps": true },
-  "include": ["src/**/*.vue"]
-}
-"#;
+const FOO: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/declaration-fallthrough-attrs-11454/Foo.vue.txt"
+));
 
-const FOO: &str = r#"<script setup lang="ts">
-defineProps<{ bar: number }>();
-defineEmits<{ change: [] }>();
-</script>
-
-<template>
-  <div />
-</template>
-"#;
-
-const PROBE: &str = r#"<script setup lang="ts">
-import Foo from "./vendor/Foo.vue";
-</script>
-
-<template>
-  <Foo :bar="1" disabled />
-</template>
-"#;
+const PROBE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/declaration-fallthrough-attrs-11454/Probe.vue.txt"
+));
 
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -145,6 +114,10 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
     let two = FOO.replace("bar: number", "bar: number; baz: number");
     let two_without_emits = two.replace("defineEmits<{ change: [] }>();\n", "");
     let emit_only = FOO.replace("defineProps<{ bar: number }>();\n", "");
+    let strict = CONFIG.replace(
+        "\"include\"",
+        "\"vueCompilerOptions\": { \"checkUnknownProps\": true },\n  \"include\"",
+    );
     let cases: [Case; 9] = [
         ("original", FOO, PROBE.into(), CONFIG, vec![]),
         (
@@ -209,7 +182,7 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             "check-unknown-props",
             FOO,
             PROBE.into(),
-            STRICT_CONFIG,
+            &strict,
             vec![(6, 4, 2345)],
         ),
     ];
