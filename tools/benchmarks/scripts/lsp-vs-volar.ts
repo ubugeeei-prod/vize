@@ -30,9 +30,15 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { type Editor, VizeEditor } from "./lsp-vs-volar-editors.ts";
+import { type Editor, TsgoMapperEditor, VizeEditor } from "./lsp-vs-volar-editors.ts";
 import { VolarEditor } from "./lsp-vs-volar-volar.ts";
-import { FIXTURES, plantProbes, prepareFixture } from "./lsp-vs-volar-fixtures.ts";
+import {
+  FIXTURES,
+  type FixtureSpec,
+  installContentMapper,
+  plantProbes,
+  prepareFixture,
+} from "./lsp-vs-volar-fixtures.ts";
 import { markdown, summarize } from "./lsp-vs-volar-report.ts";
 import { runSession, type SessionOptions, type SessionResult } from "./lsp-vs-volar-session.ts";
 
@@ -41,6 +47,8 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", ".
 type EditorFactory = {
   label: string;
   create: (workspace: string, env: Record<string, string>) => Editor;
+  /** Per-session project setup this editor needs; returns the restore step. */
+  setup?: (workspace: string, spec: FixtureSpec) => () => void;
 };
 
 function pairs(
@@ -70,6 +78,9 @@ async function main() {
       "vize-env": { type: "string", multiple: true },
       tsgo: { type: "string" },
       "volar-root": { type: "string" },
+      "tsgo-mapper": { type: "string" },
+      "tsgo-mapper-version": { type: "string" },
+      "mapper-modules": { type: "string" },
       "fixtures-dir": { type: "string" },
       rounds: { type: "string" },
       warmups: { type: "string" },
@@ -123,8 +134,22 @@ async function main() {
       create: (workspace, env) => new VolarEditor(label, { root }, { workspace, env }),
     });
   }
+  if (values["tsgo-mapper"]) {
+    if (!values["mapper-modules"]) throw new Error("--tsgo-mapper needs --mapper-modules");
+    const tsgo = resolve(values["tsgo-mapper"]);
+    const modules = resolve(values["mapper-modules"]);
+    const version = (name: string) =>
+      (JSON.parse(readFileSync(join(modules, name, "package.json"), "utf8")) as { version: string })
+        .version;
+    const label = `tsgo ${values["tsgo-mapper-version"] ?? "?"} + vize ${version("vize")} mapper`;
+    factories.push({
+      label,
+      create: (workspace, env) => new TsgoMapperEditor(label, tsgo, { workspace, env }),
+      setup: (workspace, spec) => installContentMapper(workspace, spec, modules),
+    });
+  }
   if (factories.length < 2)
-    throw new Error("compare at least two editors (--vize ... and/or --volar-root)");
+    throw new Error("compare at least two editors (--vize, --volar-root, --tsgo-mapper)");
   const options: SessionOptions = {
     cycles: positiveInteger(values.cycles, 5, "--cycles"),
     coldTimeoutMs: 600_000,
@@ -177,6 +202,7 @@ async function main() {
       const once = async (factory: EditorFactory, round: number, session: SessionOptions) => {
         const home = mkdtempSync(join(os.tmpdir(), "lsp-bench-home-"));
         const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
+        const restore = factory.setup?.(workspace, spec);
         try {
           const result = await runSession(
             factory.create(workspace, env),
@@ -199,6 +225,7 @@ async function main() {
           );
           return null;
         } finally {
+          restore?.();
           // The server's own log (Vize writes it under XDG_CACHE_HOME) explains where time went.
           const log = join(home, ".cache/vize/logs/lsp.log");
           if (values.logs && round === 1 && existsSync(log)) {

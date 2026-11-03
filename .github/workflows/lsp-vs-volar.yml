@@ -30,6 +30,14 @@ on:
         description: Cores the benchmark may use
         required: true
         default: "8"
+      tsgo_mapper:
+        description: Optional TypeScript native version (e.g. 7.1.0-beta) for a third row, its own LSP checking .vue through the Vize content mapper
+        required: false
+        default: ""
+      mapper_vize:
+        description: npm spec of the vize package whose content mapper the tsgo row loads
+        required: false
+        default: "latest"
       vize_env:
         description: Optional space-separated KEY=VALUE pairs for every vize row (diagnosis runs, e.g. VIZE_TRACE_EDITOR_PREPARATION=1)
         required: false
@@ -56,6 +64,8 @@ env:
   CYCLES: ${{ inputs.cycles || '5' }}
   CPUS: ${{ inputs.cpus || '8' }}
   VIZE_ENV: ${{ inputs.vize_env || '' }}
+  TSGO_MAPPER: ${{ inputs.tsgo_mapper || '' }}
+  MAPPER_VIZE: ${{ inputs.mapper_vize || 'latest' }}
 
 jobs:
   plan:
@@ -126,6 +136,14 @@ jobs:
             "typescript@$ts" "@typescript/typescript-linux-x64@$corsa"
           node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
 
+      - name: Install the content-mapper row (TypeScript native LSP + published vize mapper)
+        if: ${{ env.TSGO_MAPPER != '' }}
+        run: |
+          mkdir "$RUNNER_TEMP/mapper" && cd "$RUNNER_TEMP/mapper"
+          echo '{"private":true}' > package.json
+          npm install --no-audit --no-fund "@typescript/typescript-linux-x64@$TSGO_MAPPER" "vize@$MAPPER_VIZE"
+          node -e 'for (const name of ["@typescript/typescript-linux-x64", "vize"]) console.log("mapper:" + name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
+
       - name: Measure
         env:
           FIXTURE: ${{ matrix.fixture }}
@@ -134,6 +152,12 @@ jobs:
           args=(--fixture "$FIXTURE" --vize "head=$RUNNER_TEMP/vize-head")
           if [ -n "$COMPARE_REF" ]; then
             args+=(--vize "compare=$RUNNER_TEMP/vize-compare" --meta "compare=$COMPARE_REF")
+          fi
+          if [ -n "$TSGO_MAPPER" ]; then
+            # The mapper row reads the project's own TypeScript native host, not vize's pin.
+            args+=(--tsgo-mapper "$RUNNER_TEMP/mapper/node_modules/@typescript/typescript-linux-x64/lib/tsc")
+            args+=(--tsgo-mapper-version "$TSGO_MAPPER" --mapper-modules "$RUNNER_TEMP/mapper/node_modules")
+            while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/mapper/versions.txt"
           fi
           for assignment in $VIZE_ENV; do
             args+=(--vize-env "head:$assignment" --meta "env=$assignment")

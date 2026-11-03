@@ -25,7 +25,7 @@ export interface Location {
 
 export interface Editor {
   readonly label: string;
-  readonly kind: "vize" | "volar";
+  readonly kind: "vize" | "volar" | "tsgo";
   pids(): number[];
   start(): Promise<void>;
   open(doc: OpenDocument): void;
@@ -268,12 +268,12 @@ export async function stopLsp(peer: LspPeer): Promise<void> {
 }
 
 export class VizeEditor implements Editor {
-  readonly kind = "vize" as const;
-  private peer!: LspPeer;
-  private published!: PublishedDiagnostics;
+  readonly kind: Editor["kind"] = "vize";
+  protected peer!: LspPeer;
+  protected published!: PublishedDiagnostics;
   readonly label: string;
-  private readonly binary: string;
-  private readonly environment: EditorEnvironment;
+  protected readonly binary: string;
+  protected readonly environment: EditorEnvironment;
 
   constructor(label: string, binary: string, environment: EditorEnvironment) {
     this.label = label;
@@ -376,5 +376,41 @@ export class VizeEditor implements Editor {
 
   exited() {
     return this.peer?.exit ?? null;
+  }
+}
+
+/**
+ * TypeScript 7.1's own `tsc --lsp` checking `.vue` through Vize's content
+ * mapper (the same mapper as `tsc --runExternalCode` batch checks): no Vize
+ * server, mirror or second program. Diagnostics are pulled, as tsgo serves them.
+ */
+export class TsgoMapperEditor extends VizeEditor {
+  override readonly kind: Editor["kind"] = "tsgo";
+
+  override async start(): Promise<void> {
+    const { workspace, env } = this.environment;
+    this.peer = spawnPeer(this.binary, ["--lsp", "--stdio"], this.label, env, workspace);
+    this.published = new PublishedDiagnostics(this.peer);
+    const params = initializeParams(workspace, { runExternalCode: true });
+    (params.capabilities.textDocument as Record<string, unknown>).diagnostic = {
+      dynamicRegistration: false,
+    };
+    await this.peer.request("initialize", params, 300_000);
+    this.peer.notify("initialized", {});
+  }
+
+  /** One pull answers for the latest buffer: tsgo applies edits before it. */
+  override async diagnostics(
+    doc: OpenDocument,
+    until: (diagnostics: Diagnostic[]) => boolean,
+    timeoutMs: number,
+  ) {
+    const report = await this.peer.request<{ items?: unknown[] } | null>(
+      "textDocument/diagnostic",
+      { textDocument: { uri: doc.uri } },
+      timeoutMs,
+    );
+    const diagnostics = lspDiagnostics((report?.items ?? []) as any[]);
+    return { diagnostics, satisfied: until(diagnostics) };
   }
 }
