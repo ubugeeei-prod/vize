@@ -94,6 +94,35 @@ void test("vue-tsc gets a heap that holds the headline tier", () => {
   ]);
 });
 
+void test("every vize check run starts from an empty cache, so no run replays incremental results", () => {
+  const caches: { dir: string; empty: boolean }[] = [];
+  const lanes = createTypecheckToolVariants({
+    fileCount: 1,
+    vizeBin: "vize",
+    corsaPath: "tsgo",
+    resolveWorkspaceBin: (name: string) => name,
+    cpus: 4,
+    runCommand: (_binary: string, _args: string[], options: { env?: Record<string, string> }) => {
+      const dir = options.env?.XDG_CACHE_HOME;
+      if (dir) {
+        caches.push({ dir, empty: readdirSync(dir).length === 0 });
+        // What a run leaves behind must not reach the next one.
+        writeFileSync(join(dir, "tsconfig.tsbuildinfo"), "{}");
+      }
+      return {};
+    },
+  }).filter((lane: { tool: string }) => lane.tool === "vize check");
+  assert.ok(lanes.length >= 2);
+  for (const lane of lanes) {
+    lane.run("/project");
+    lane.run("/project");
+  }
+  assert.equal(caches.length, lanes.length * 2);
+  assert.equal(new Set(caches.map((cache) => cache.dir)).size, caches.length);
+  assert.ok(caches.every((cache) => cache.empty));
+  assert.ok(caches.every((cache) => !existsSync(cache.dir)));
+});
+
 function fakeInstall(root: string) {
   const modules = join(root, "nuxt-app", "node_modules");
   mkdirSync(join(modules, ".vite"), { recursive: true });

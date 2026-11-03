@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
-import { availableParallelism } from "node:os";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { availableParallelism, tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -67,6 +67,22 @@ export function prepareTypecheckDir({
   );
   prepareProject(outputDir);
   return outputDir;
+}
+
+/**
+ * `vize check` keeps its generated project and tsgo's `--incremental` build
+ * info in the user cache, so a second run over an unchanged project replays
+ * the first one's diagnostics instead of checking. Every invocation gets an
+ * empty cache (`XDG_CACHE_HOME`, which `dirs::cache_dir` reads on Linux), so
+ * each timed run does the full check the other lanes do.
+ */
+function withEmptyCache(run) {
+  const cache = mkdtempSync(join(tmpdir(), "vize-check-cache-"));
+  try {
+    return run(cache);
+  } finally {
+    rmSync(cache, { recursive: true, force: true });
+  }
 }
 
 /**
@@ -162,21 +178,23 @@ export function createTypecheckToolVariants({
       files: fileCount,
       format: "json",
       run: (cwd) =>
-        runCommand(
-          vizeBin,
-          [
-            "check",
-            ".",
-            "--quiet",
-            "--format",
-            "json",
-            "--tsconfig",
-            join(cwd, "tsconfig.json"),
-            "--corsa-path",
-            corsaPath,
-            ...args,
-          ],
-          { cwd, env },
+        withEmptyCache((cache) =>
+          runCommand(
+            vizeBin,
+            [
+              "check",
+              ".",
+              "--quiet",
+              "--format",
+              "json",
+              "--tsconfig",
+              join(cwd, "tsconfig.json"),
+              "--corsa-path",
+              corsaPath,
+              ...args,
+            ],
+            { cwd, env: { ...env, XDG_CACHE_HOME: cache } },
+          ),
         ),
     })),
     ...(mapperHosts ? createMapperLanes({ fileCount, hosts: mapperHosts, cpus, runCommand }) : []),
