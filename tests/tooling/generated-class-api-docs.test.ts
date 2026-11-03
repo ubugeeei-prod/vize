@@ -68,8 +68,53 @@ test("an unresolved public class field refuses generation instead of inventing i
   const directory = mkdtempSync(path.join(tmpdir(), "vize-reference-class-invalid-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const file = path.join(directory, "entry.ts");
-  writeFileSync(file, "export class Broken { readonly value = missingInput; }\n");
-  assert.throws(() => moduleExports(file), /Cannot find name 'missingInput'/);
+  const source = "export class Broken { readonly value = missingInput; }\n";
+  writeFileSync(file, source);
+  assert.throws(
+    () => moduleExports(file),
+    (error: unknown) => {
+      assert(error instanceof Error);
+      return (
+        error.message.includes(`entry.ts(1,${source.indexOf("missingInput") + 1})`) &&
+        error.message.includes("error TS2304") &&
+        error.message.includes("Cannot find name 'missingInput'")
+      );
+    },
+  );
+});
+
+test("imported class diagnostics retain their original file and position", (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vize-reference-class-import-error-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const file = path.join(directory, "entry.ts");
+  const imported = "export const value = missingInput;\n";
+  writeFileSync(path.join(directory, "broken.ts"), imported);
+  writeFileSync(
+    file,
+    'import { value } from "./broken.js";\nexport class Broken { readonly value = value; }\n',
+  );
+  assert.throws(
+    () => moduleExports(file),
+    (error: unknown) => {
+      assert(error instanceof Error);
+      return (
+        error.message.includes(`broken.ts(1,${imported.indexOf("missingInput") + 1})`) &&
+        error.message.includes("error TS2304") &&
+        error.message.includes("Cannot find name 'missingInput'")
+      );
+    },
+  );
+});
+
+test("a declaration-only input reports its missing emit output explicitly", (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vize-reference-class-no-output-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const file = path.join(directory, "entry.d.ts");
+  writeFileSync(file, "export declare class Declared { readonly value: string; }\n");
+  assert.throws(
+    () => moduleExports(file),
+    /Declaration emit skipped: false; output produced: false/,
+  );
 });
 
 test("a named default abstract class retains its ambient public declaration", (t) => {

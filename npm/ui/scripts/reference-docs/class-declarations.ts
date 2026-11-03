@@ -2,6 +2,11 @@ import path from "node:path";
 import ts from "typescript";
 
 const declarations = new WeakMap<ts.SourceFile, ReadonlyMap<string, string>>();
+const diagnosticsHost: ts.FormatDiagnosticsHost = {
+  getCanonicalFileName: (file) => file,
+  getCurrentDirectory: () => process.cwd(),
+  getNewLine: () => "\n",
+};
 
 function compilerOptions(file: string): ts.CompilerOptions {
   const configPath = ts.findConfigFile(path.dirname(file), (candidate) =>
@@ -15,15 +20,10 @@ function compilerOptions(file: string): ts.CompilerOptions {
       strict: true,
     };
   const config = ts.readConfigFile(configPath, (candidate) => ts.sys.readFile(candidate));
-  if (config.error != null)
-    throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
+  if (config.error != null) throw new Error(ts.formatDiagnostics([config.error], diagnosticsHost));
   const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
   if (parsed.errors.length > 0)
-    throw new Error(
-      parsed.errors
-        .map((error) => ts.flattenDiagnosticMessageText(error.messageText, "\n"))
-        .join("\n"),
-    );
+    throw new Error(ts.formatDiagnostics(parsed.errors, diagnosticsHost));
   return parsed.options;
 }
 
@@ -39,12 +39,7 @@ export function classDeclarations(source: ts.SourceFile): ReadonlyMap<string, st
     noEmit: false,
   });
   const diagnostics = ts.getPreEmitDiagnostics(program);
-  if (diagnostics.length > 0)
-    throw new Error(
-      diagnostics
-        .map((error) => ts.flattenDiagnosticMessageText(error.messageText, "\n"))
-        .join("\n"),
-    );
+  if (diagnostics.length > 0) throw new Error(ts.formatDiagnostics(diagnostics, diagnosticsHost));
   const input = program.getSourceFile(source.fileName);
   if (input == null) throw new Error(`Missing class source: ${source.fileName}`);
   let output: string | undefined;
@@ -57,7 +52,11 @@ export function classDeclarations(source: ts.SourceFile): ReadonlyMap<string, st
     true,
   );
   if (result.emitSkipped || result.diagnostics.length > 0 || output == null)
-    throw new Error(`Cannot emit public class declarations: ${source.fileName}`);
+    throw new Error(
+      `Cannot emit public class declarations: ${source.fileName}\n` +
+        `Declaration emit skipped: ${result.emitSkipped}; output produced: ${output != null}.\n` +
+        ts.formatDiagnostics(result.diagnostics, diagnosticsHost),
+    );
   const emitted = ts.createSourceFile(
     `${source.fileName}.d.ts`,
     output,
