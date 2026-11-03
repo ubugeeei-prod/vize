@@ -50,7 +50,16 @@ test("check workflow gates PRs and merge groups without report dependencies", ()
   );
   assert.match(reportJob, /contents:\s*read/);
   assert.doesNotMatch(reportJob, /issues:\s*write/);
-  assert.doesNotMatch(reportJob, /pull-requests:\s*write/);
+  // Only the report job may write, and only to its PR comment.
+  const jobs = parse(workflow).jobs as Record<string, { permissions?: Record<string, string> }>;
+  for (const [name, job] of Object.entries(jobs)) {
+    const writes = Object.entries(job.permissions ?? {}).filter(([, level]) => level === "write");
+    assert.deepEqual(
+      writes,
+      name === "test-report" ? [["pull-requests", "write"]] : [],
+      `${name} permissions`,
+    );
+  }
 
   for (const jobName of [
     "iteration-plan",
@@ -68,6 +77,37 @@ test("check workflow gates PRs and merge groups without report dependencies", ()
   assert.match(reportJob, /uses: actions\/setup-node@/);
   assert.match(reportJob, /node-version-file: package\.json/);
   assert.doesNotMatch(reportJob, /vp install|npm install|pnpm install|report-test-inventory/);
+});
+
+test("the required test-report job posts its result after the gate decides it", () => {
+  type Step = {
+    id?: string;
+    name?: string;
+    if?: string;
+    run?: string;
+    env?: Record<string, string>;
+    "continue-on-error"?: boolean;
+  };
+  const jobs = parse(checkWorkflowJobSources()).jobs as Record<string, { steps: Step[] }>;
+  const steps = jobs["test-report"].steps;
+  const gate = steps.findIndex((step) => step.name === "Require every needed job to succeed");
+  assert.equal(steps[gate].id, "gate");
+  assert.deepEqual(steps.slice(gate + 1), [
+    {
+      name: "Report test results",
+      if: "${{ !cancelled() }}",
+      "continue-on-error": true,
+      env: {
+        GITHUB_TOKEN: "${{ github.token }}",
+        TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
+        TEST_REPORT_HEAD_SHA:
+          "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
+        TEST_REPORT_PR_NUMBER:
+          "${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}",
+      },
+      run: "node tools/support/compat/github/comment-test-report.ts",
+    },
+  ]);
 });
 
 test("check workflow runs the editor extension host smoke against a real vize server", () => {

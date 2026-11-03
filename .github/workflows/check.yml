@@ -437,12 +437,25 @@ jobs:
       - level-dependency-direction
     permissions:
       contents: read
-      pull-requests: read
+      # Writes the PR's test report comment. Fork PR tokens stay read-only.
+      pull-requests: write
       actions: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every needed job to succeed
+        id: gate
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --check-report
+      # Only the gate decides this check; the report never changes it.
+      - name: Report test results
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TEST_REPORT_GATE: ${{ steps.gate.outcome }}
+          TEST_REPORT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          # Empty without a write token: fork PRs and merge groups get only the step summary.
+          TEST_REPORT_PR_NUMBER: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}
+        run: node tools/support/compat/github/comment-test-report.ts

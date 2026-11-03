@@ -96,18 +96,21 @@ const reports = [
     ],
     permissions: {
       contents: "read",
-      "pull-requests": "read",
+      "pull-requests": "write",
       actions: "read",
     },
     if: "${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}",
     timeout: 5,
     leaf: {
       name: "Require every needed job to succeed",
+      id: "gate",
       env: {
         NEEDS_JSON: "${{ toJSON(needs) }}",
       },
       run: "node tools/support/compat/github/require-needs-success.ts --check-report",
     },
+    // Runs after the gate and never decides the check.
+    report: "node tools/support/compat/github/comment-test-report.ts",
   },
 ];
 for (const expected of reports) {
@@ -121,10 +124,13 @@ for (const expected of reports) {
     assert.deepEqual(job.permissions, expected.permissions);
     assert.equal(job.if, expected.if);
     assert.equal(job["timeout-minutes"], expected.timeout);
-    assert.deepEqual(job.steps.at(-1), expected.leaf);
+    const report = "report" in expected ? [expected.report] : [];
+    assert.deepEqual(job.steps.at(-1 - report.length), expected.leaf);
+    for (const step of job.steps.slice(job.steps.length - report.length))
+      assert.equal(step["continue-on-error"], true);
     assert.deepEqual(
       job.steps.filter((step) => Object.hasOwn(step, "run")).map((step) => step.run),
-      [expected.leaf.run],
+      [expected.leaf.run, ...report],
     );
   });
 }
