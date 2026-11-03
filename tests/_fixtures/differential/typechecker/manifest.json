@@ -12640,6 +12640,45 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-dynamic-generic-key-11448",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "dynamic-generic-key-11448/Bar.vue.txt",
+          "sha256": "acc43dd168ab619a55bc1ef7fc708c685a2e2eed9474d6bf4e27261fafbb1c75",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-generic-key-11448/Baz.vue.txt",
+          "sha256": "acc43dd168ab619a55bc1ef7fc708c685a2e2eed9474d6bf4e27261fafbb1c75",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-generic-key-11448/Probe.vue.txt",
+          "sha256": "dfd4794166a39957e6c917ea4496e4b2740d4b9e151b1c880b1f98eef7845257",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::dynamic_component_index_targets::reported_inputs_keep_their_component_targets; exact #11448 generic-key report physically consumed with an invalid-key control. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-dynamic-guard-11362",
       "state": "active",
       "targets": [
@@ -12664,6 +12703,45 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::reported_dynamic_targets::originals_and_error_repair_restore_keep_component_target_types; physically consumes exact reported input at 883fa4ee879026d37fc293f94f212aaa0e804dcb for #11362; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-dynamic-slot-guard-11449",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "dynamic-slot-guard-11449/Bar.vue.txt",
+          "sha256": "44bac019daaf8a0aef688a9cd3e9b6f55ec95aa01e035a56cef9c88bbb3dc9e3",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-slot-guard-11449/Baz.vue.txt",
+          "sha256": "ac0ed839cf9d6683d8292bd2001942b46918dca3c6a5005e764a005fbbb640d9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-slot-guard-11449/Probe.vue.txt",
+          "sha256": "f7a157d77070a05ed24f4f23834b3919666569c6860305c9e740d6eba6924be5",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::dynamic_component_index_targets::reported_inputs_keep_their_component_targets; exact #11449 guarded slot report physically consumed with a wrong-payload control. Input-only registration, no diagnostic pack."
           }
         ]
       }

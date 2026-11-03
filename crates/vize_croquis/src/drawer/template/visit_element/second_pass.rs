@@ -34,10 +34,8 @@ impl Drawer {
         &mut self,
         el: &ElementNode<'_>,
         scope_vars: &mut Vec<CompactString>,
-        is_component: bool,
-        tag: &str,
+        event_target_component: Option<CompactString>,
     ) {
-        let event_target_component = self.event_target_component(el, is_component, tag);
         profile!("croquis.template.element.second_pass", {
             for prop in &el.props {
                 let PropNode::Directive(dir) = prop else {
@@ -203,19 +201,6 @@ impl Drawer {
 }
 
 impl Drawer {
-    pub(super) fn event_target_component(
-        &self,
-        el: &ElementNode<'_>,
-        is_component: bool,
-        tag: &str,
-    ) -> Option<CompactString> {
-        if is_component {
-            return Some(CompactString::new(tag));
-        }
-
-        self.dynamic_component_target(el, tag)
-    }
-
     pub(super) fn dynamic_component_target(
         &self,
         el: &ElementNode<'_>,
@@ -249,13 +234,14 @@ impl Drawer {
                 return dynamic_component_target_is_known(self, target.as_str()).then_some(target);
             }
             // Root-owned script values keep their identity under a slot/loop
-            // which does not capture them. Actual lexical bindings, unknown
-            // globals and same-element v-for captures still cannot be hoisted.
+            // which does not capture them; so must the v-if guard the root
+            // alias repeats. Actual lexical bindings, unknown globals and
+            // same-element v-for captures still cannot be hoisted.
             ((self.in_template_root_scope()
-                || (self.current_vif_guard().is_none()
-                    && !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else" | "for" | "scope")))
+                || (!el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "scope"))
                     && self.new_dynamic_alias_is_unbound(el.loc.span.start)
-                    && self.dynamic_index_has_only_script_values(exp)))
+                    && self.dynamic_is_reads_only_script_values(exp)
+                    && self.vif_guard_reads_only_script_values()))
                 && !dynamic_is_captures_same_element_for_alias(
                     el,
                     expression_content(exp, &self.template_source),

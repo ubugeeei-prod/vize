@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Bar from "./Bar.vue";
+import Baz from "./Baz.vue";
+
+const map = { foo: Bar };
+const key = "foo";
+const isShown = true;
+</script>
+
+<template>
+  <Baz>
+    <template #qux>
+      <component :is="map[key]" v-if="isShown" @select="(value) => value.toFixed()" />
+    </template>
+  </Baz>
+</template>

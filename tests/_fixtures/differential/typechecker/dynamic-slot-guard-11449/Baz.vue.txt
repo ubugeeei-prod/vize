@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineSlots<{ qux: () => unknown }>();
+</script>
+
+<template>
+  <slot name="qux" />
+</template>

@@ -4,46 +4,51 @@
 use vize_carton::String;
 
 use super::super::super::Drawer;
+use crate::drawer::helpers::{
+    IdentifierRef, extract_identifier_refs_checked, extract_identifier_refs_retained_only,
+};
 use crate::scope::ScopeKind;
 
 impl Drawer {
-    /// A simple computed target may be captured at the template root only
-    /// when both retained-AST identifiers have the same actual script owner
-    /// at this usage. Slot/loop shadows and type-only imports are not values.
-    pub(super) fn dynamic_index_has_only_script_values(
+    /// A nested target may be captured at the template root only when every
+    /// retained-AST read has the same actual script owner at this usage.
+    /// Slot/loop shadows, unknown globals and type-only imports are not values.
+    pub(super) fn dynamic_is_reads_only_script_values(
         &self,
         expression: &vize_relief::ExpressionNode<'_>,
     ) -> bool {
-        use oxc_ast::ast::Expression;
         let vize_relief::ExpressionNode::Simple(expression) = expression else {
             return false;
         };
         let Some(js) = expression.js_ast.and_then(|js| js.as_expression()) else {
             return false;
         };
-        let Expression::ComputedMemberExpression(member) = js.ast else {
-            return false;
-        };
-        let (Expression::Identifier(object), Expression::Identifier(key)) =
-            (&member.object, &member.expression)
-        else {
-            return false;
-        };
-        js.raw == expression.content
-            && self.croquis.bindings.is_script_setup
-            && [object.name.as_str(), key.name.as_str()]
-                .iter()
-                .all(|name| {
-                    self.croquis.bindings.contains(name)
-                        && self.croquis.scopes.lookup(name).is_none_or(|(scope, _)| {
-                            matches!(
-                                scope.kind,
-                                ScopeKind::Module
-                                    | ScopeKind::ScriptSetup
-                                    | ScopeKind::ExternalModule
-                            )
-                        })
-                })
+        extract_identifier_refs_retained_only(expression.content, &js).is_some_and(|references| {
+            !references.is_empty() && self.reads_only_script_values(&references)
+        })
+    }
+
+    /// The root alias repeats the joined v-if guard, so it must read only
+    /// script values as well.
+    pub(super) fn vif_guard_reads_only_script_values(&self) -> bool {
+        self.current_vif_guard().is_none_or(|guard| {
+            extract_identifier_refs_checked(guard.as_str())
+                .is_some_and(|references| self.reads_only_script_values(&references))
+        })
+    }
+
+    fn reads_only_script_values(&self, references: &[IdentifierRef]) -> bool {
+        self.croquis.bindings.is_script_setup
+            && references.iter().all(|reference| {
+                let name = reference.name.as_str();
+                self.croquis.bindings.contains(name)
+                    && self.croquis.scopes.lookup(name).is_none_or(|(scope, _)| {
+                        matches!(
+                            scope.kind,
+                            ScopeKind::Module | ScopeKind::ScriptSetup | ScopeKind::ExternalModule
+                        )
+                    })
+            })
     }
 
     /// New admissions must not shadow an authored value or be captured by

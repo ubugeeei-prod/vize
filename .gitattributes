@@ -18,6 +18,9 @@ tests/_fixtures/differential/typechecker/content-mapper-component-v-for-source/*
 tests/_fixtures/differential/typechecker/library-generic-event-payload-11447/*.txt text eol=lf
 # Original commented else-if report inputs are consumed by Content Mapper tests.
 tests/_fixtures/differential/typechecker/commented-vif-11378/*.txt text eol=lf
+# Dynamic component target report inputs are consumed by batch type-checker tests.
+tests/_fixtures/differential/typechecker/dynamic-generic-key-11448/*.txt text eol=lf
+tests/_fixtures/differential/typechecker/dynamic-slot-guard-11449/*.txt text eol=lf
 # Original nested callback report inputs are physically consumed by Content Mapper tests.
 tests/_fixtures/differential/typechecker/nested-callback-inference-11361/*.txt text eol=lf
 # Derived imported markRaw callback inputs are physically consumed by native tests.

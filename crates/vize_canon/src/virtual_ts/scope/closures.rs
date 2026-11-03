@@ -68,7 +68,14 @@ pub(super) fn emit_scope_closures(
             check_options.accepts_vue3_intrinsic_attrs(),
         );
     }
-    super::dynamic_component::emit_dynamic_component_aliases(ts, summary, options.template_ast);
+    super::dynamic_component::emit_dynamic_component_aliases(
+        ts,
+        summary,
+        options.template_ast,
+        options
+            .generic_parameters
+            .is_some_and(|generics| !generics.parameters.is_empty()),
+    );
     let template_source = options.template_ast.map(|root| root.source);
     let explicit_generics = ExplicitGenerics::collect(summary, template_source);
     explicit_generics.emit(

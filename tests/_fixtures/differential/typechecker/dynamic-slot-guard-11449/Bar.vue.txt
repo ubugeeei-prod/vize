@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const emit = defineEmits<{ select: [value: number] }>();
+</script>
+
+<template>
+  <button @click="emit('select', 1)" />
+</template>
