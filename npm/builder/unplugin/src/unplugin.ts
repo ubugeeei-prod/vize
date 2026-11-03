@@ -2,11 +2,11 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { Compiler as WebpackCompiler } from "webpack";
+import { parseSfc } from "@vizejs/native";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
 import { compileJsxModule, compileVueModule } from "./compiler.ts";
-import { listSfcSrcBlocks } from "./src-blocks.ts";
-import { isRelativeSfcSrc, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
+import { listSfcSrcRequests, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
 import { isJsxFile, isVueFile, isVueStyleRequest, parseVueRequest } from "./request.ts";
 import { generateOutput } from "./style.ts";
 import {
@@ -293,7 +293,7 @@ async function resolveSrcRequests(
   importer: string,
   source: string,
 ): Promise<Map<string, string> | undefined> {
-  const requests = listSfcSrcBlocks(importer, source).filter((src) => !isRelativeSfcSrc(src));
+  const requests = listSfcSrcRequests(parseSfc, importer, source);
   const resolve = requests.length > 0 ? hostResolver(context) : null;
   return resolve ? resolveSfcSrcRequests(importer, requests, resolve) : undefined;
 }

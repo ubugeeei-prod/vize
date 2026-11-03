@@ -4,7 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { build, type Rollup } from "vite";
-import { compileFile, listSfcSrcRequests, resolveSfcSrcImports } from "./compiler.ts";
+import { parseSfc } from "@vizejs/native";
+import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
+import { compileFile } from "./compiler.ts";
 import { vize } from "./index.ts";
 import { prepareSfcSrcRequests } from "./plugin/src-requests.ts";
 import { getCompileOptionsForRequest } from "./plugin/state.ts";
@@ -77,11 +79,36 @@ void test("#11482 vite build resolves style src packages and aliases with Vite's
   }
 });
 
+void test("#11493 vite build finds src blocks with the parser", async (t) => {
+  const { root, write } = project(t);
+  write(
+    "src/Foo.vue",
+    `<script setup>
+const s = '<style src="./missing.css"></style>'
+</script>
+<template><button class="foo">{{ s }}</button></template>
+<!-- <style src="./missing.css"></style> -->
+<style src="./near.css" />
+<style>.after { color: teal; }</style>
+`,
+  );
+  for (const scan of [true, false]) {
+    const output = await viteBuild(root, scan);
+    assert.match(output, /color: olive/);
+    assert.match(output, /color: teal/);
+    assert.match(output, /<style src=\\?"\.\/missing\.css\\?"><\/style>/);
+  }
+});
+
 void test("#11482 the synchronous compile reads module requests from prepared resolutions", async (t) => {
   const { root, file } = project(t);
   const css = path.join(root, "node_modules/fake-normalize/n.css");
   assert.deepEqual(
-    listSfcSrcRequests(file, `${SOURCE}<script src="./a.ts"></script><style src="./b.css" />`),
+    listSfcSrcRequests(
+      parseSfc,
+      file,
+      `${SOURCE}<script src="./a.ts"></script><style src="./b.css" />`,
+    ),
     ["fake-normalize/n.css"],
   );
 
@@ -115,11 +142,11 @@ void test("#11482 the synchronous compile reads module requests from prepared re
 
   // Relative paths need no resolution; unresolved requests still fail.
   assert.match(
-    resolveSfcSrcImports(file, '<style src="./near.css"></style>').source,
+    inlineSfcSrcBlocks(parseSfc, file, '<style src="./near.css"></style>').source,
     /color: olive/,
   );
   assert.throws(
-    () => resolveSfcSrcImports(file, SOURCE),
+    () => inlineSfcSrcBlocks(parseSfc, file, SOURCE),
     /<style src="fake-normalize\/n\.css"> not found: the bundler resolved no file/,
   );
 });

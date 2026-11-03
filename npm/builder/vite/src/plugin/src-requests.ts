@@ -1,7 +1,6 @@
 import fs from "node:fs";
-import { classifyVitePluginRequest } from "@vizejs/native";
-import { resolveSfcSrcRequests } from "../../../shared/sfc-src.ts";
-import { listSfcSrcRequests } from "../compiler.ts";
+import { classifyVitePluginRequest, parseSfc } from "@vizejs/native";
+import { listSfcSrcRequests, resolveSfcSrcRequests } from "../../../shared/sfc-src.ts";
 import { fromPluginVisibleVirtualId } from "../virtual.ts";
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import type { VizePluginState } from "./state.ts";
@@ -31,7 +30,7 @@ export async function prepareSfcSrcRequests(
   file: string,
   source: string,
 ): Promise<void> {
-  const requests = listSfcSrcRequests(file, source);
+  const requests = listSfcSrcRequests(parseSfc, file, source);
   if (requests.length === 0) {
     state.srcResolutions?.delete(file);
     return;

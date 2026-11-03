@@ -3,7 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { inlineSfcSrcBlocks, listSfcSrcBlocks } from "./src-blocks.ts";
+import { parseSfc } from "@vizejs/native";
+import { inlineSfcSrcBlocks, listSfcSrcRequests } from "../../shared/sfc-src.ts";
 
 void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-blocks-")));
@@ -40,7 +41,7 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
   ];
   for (const item of cases) {
     assert.deepEqual(
-      inlineSfcSrcBlocks(file, item.source),
+      inlineSfcSrcBlocks(parseSfc, file, item.source),
       { source: item.inlined, dependencies: item.dependencies },
       item.id,
     );
@@ -54,15 +55,19 @@ void test("#11456 src blocks are inlined at their parsed positions", (t) => {
     '<template><b/></template><!-- <style src="./missing.css"></style> -->',
     '<template><b/></template>\n<style src="./missing.css">',
   ]) {
-    assert.deepEqual(inlineSfcSrcBlocks(file, source), { source, dependencies: [] }, source);
+    assert.deepEqual(
+      inlineSfcSrcBlocks(parseSfc, file, source),
+      { source, dependencies: [] },
+      source,
+    );
   }
 
   assert.throws(
-    () => inlineSfcSrcBlocks(file, '<style scoped src="./missing.css"></style>'),
+    () => inlineSfcSrcBlocks(parseSfc, file, '<style scoped src="./missing.css"></style>'),
     /<style src="\.\/missing\.css"> not found \(resolved: .*missing\.css\)/,
   );
   assert.throws(
-    () => inlineSfcSrcBlocks(file, '<style src=""></style>'),
+    () => inlineSfcSrcBlocks(parseSfc, file, '<style src=""></style>'),
     /<style src=""> not found/,
   );
 });
@@ -75,7 +80,7 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
   fs.writeFileSync(path.join(root, "src", "near.css"), ".near{color:olive}");
   const file = path.join(root, "src", "Foo.vue");
   const inline = (src: string, resolutions?: Map<string, string>) =>
-    inlineSfcSrcBlocks(file, `<style src="${src}"></style>`, resolutions);
+    inlineSfcSrcBlocks(parseSfc, file, `<style src="${src}"></style>`, resolutions);
   const resolutions = new Map([
     ["fake-normalize/n.css", path.join(root, "n.css")],
     [path.join(root, "n.css"), path.join(root, "n.css")],
@@ -101,8 +106,8 @@ void test("#11482 src module requests come from the bundler's resolutions", (t) 
       src,
     );
   }
-  assert.deepEqual(listSfcSrcBlocks(file, '<style src="a.css"></style><style src="./b.css" />'), [
-    "a.css",
-    "./b.css",
-  ]);
+  assert.deepEqual(
+    listSfcSrcRequests(parseSfc, file, '<style src="a.css"></style><style src="./b.css" />'),
+    ["a.css"],
+  );
 });
