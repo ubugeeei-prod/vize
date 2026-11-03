@@ -12,15 +12,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import {
-  cpSync,
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -167,12 +159,6 @@ function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
     verbatimSymlinks: true,
   });
   prepareMapperPackages(dir, hosts);
-  // Vue's mapper loads `typescript/ast` from the project, as in an installed project.
-  symlinkSync(
-    realpathSync(join(TYPECHECK_HOSTS_DIR, "node_modules", "typescript")),
-    join(dir, "node_modules", "typescript"),
-    "dir",
-  );
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
 }
 
