@@ -34,6 +34,7 @@ import {
 } from "./typecheck-corpus-pair-report.ts";
 import { runTypecheckCommand } from "./typecheck-command.mjs";
 import {
+  checkerBusyMs,
   checkMsByFile,
   probeBytesByFile,
   projectionReport,
@@ -338,6 +339,7 @@ function main(): void {
           cwd(lane),
         ),
         check: checkMsByFile(join(work, "traces", key), cwd(lane)),
+        busy: checkerBusyMs(join(work, "traces", key)),
       };
     };
     const [base, head, vue] = VARIANTS.map(side);

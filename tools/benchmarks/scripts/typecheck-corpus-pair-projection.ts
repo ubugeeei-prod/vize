@@ -15,6 +15,7 @@ export type ProjectionReport = {
   files: number;
   totals: { base: FileCost; head: FileCost; vue: FileCost };
   headAtMostVue: number;
+  checkers: { base: number[]; head: number[]; vue: number[] };
   rows: ProjectionRow[];
 };
 
@@ -67,6 +68,32 @@ export function checkMsByFile(dir: string, root: string): Map<string, number> {
   return total;
 }
 
+/**
+ * Busy milliseconds of each checker thread (every `checkSourceFile`, lib files
+ * included), largest first. Check time is bounded by the busiest thread, so a
+ * change that cuts total work can still lengthen it by unbalancing them.
+ */
+export function checkerBusyMs(dir: string): number[] {
+  const busy = new Map<string, number>();
+  if (!existsSync(dir)) return [];
+  for (const name of readdirSync(dir).filter((entry) => /^trace.*\.json$/u.test(entry))) {
+    const events = JSON.parse(readFileSync(join(dir, name), "utf8")) as TraceEvent[];
+    const open = new Map<string, number[]>();
+    for (const event of events) {
+      if (event.name !== "checkSourceFile") continue;
+      const thread = `${name}:${event.pid}:${event.tid}`;
+      const add = (us: number) => busy.set(thread, (busy.get(thread) ?? 0) + us / 1000);
+      if (event.ph === "X") add(event.dur ?? 0);
+      if (event.ph === "B") open.set(thread, [...(open.get(thread) ?? []), event.ts]);
+      if (event.ph === "E") {
+        const begin = open.get(thread)?.pop();
+        if (begin != null) add(event.ts - begin);
+      }
+    }
+  }
+  return [...busy.values()].sort((a, b) => b - a);
+}
+
 const cost = (bytes: Map<string, number>, check: Map<string, number>, file: string): FileCost => ({
   bytes: bytes.get(file) ?? 0,
   checkMs: check.size > 0 ? (check.get(file) ?? 0) : null,
@@ -76,7 +103,7 @@ export function projectionReport(
   corpus: string,
   sources: Record<
     "base" | "head" | "vue",
-    { bytes: Map<string, number>; check: Map<string, number> }
+    { bytes: Map<string, number>; check: Map<string, number>; busy?: number[] }
   >,
 ): ProjectionReport {
   const files = [...sources.head.bytes.keys()].sort();
@@ -98,6 +125,11 @@ export function projectionReport(
     files: rows.length,
     totals: { base: sum("base"), head: sum("head"), vue: sum("vue") },
     headAtMostVue: rows.filter((row) => row.head.bytes <= row.vue.bytes).length,
+    checkers: {
+      base: sources.base.busy ?? [],
+      head: sources.head.busy ?? [],
+      vue: sources.vue.busy ?? [],
+    },
     rows,
   };
 }
@@ -120,6 +152,9 @@ function table(title: string, rows: ProjectionRow[]): string[] {
   ];
 }
 
+const busy = (threads: number[]) =>
+  threads.length > 0 ? threads.map((value) => value.toFixed(0)).join(" / ") : "n/a";
+
 export function renderProjection(report: ProjectionReport, top = 15): string {
   const { totals } = report;
   const by = (key: (row: ProjectionRow) => number) =>
@@ -128,6 +163,8 @@ export function renderProjection(report: ProjectionReport, top = 15): string {
     `### Projection per SFC: ${report.corpus}`,
     "",
     `Vize head projects ${kb(totals.head.bytes)} KB over ${report.files} SFCs (${ratio(totals.head.bytes, totals.vue.bytes)} Vue's ${kb(totals.vue.bytes)} KB; base ${kb(totals.base.bytes)} KB). ${report.headAtMostVue} of ${report.files} SFCs are at most Vue's size. tsc spends ${ms(totals.head.checkMs)} ms in checkSourceFile on Vize head projections, ${ms(totals.vue.checkMs)} ms on Vue's and ${ms(totals.base.checkMs)} ms on Vize base's (untimed traced run, summed over checker threads).`,
+    "",
+    `Checker thread busy ms, busiest first: Vize base ${busy(report.checkers.base)}; Vize head ${busy(report.checkers.head)}; Vue ${busy(report.checkers.vue)}.`,
     "",
     ...table(
       "Largest Vize projections",

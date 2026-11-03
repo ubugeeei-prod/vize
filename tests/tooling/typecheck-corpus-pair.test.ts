@@ -26,6 +26,7 @@ import {
   summarizePair,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-report.ts";
 import {
+  checkerBusyMs,
   checkMsByFile,
   probeBytesByFile,
   projectionReport,
@@ -401,6 +402,8 @@ void test("the projection report ranks SFCs by bytes and traced check time again
       ["B.vue", 2],
     ],
   );
+  // The lib file still occupies its checker thread.
+  assert.deepEqual(checkerBusyMs(traces), [13, 2]);
   const report = projectionReport("demo", {
     base: {
       bytes: bytes([
@@ -415,6 +418,7 @@ void test("the projection report ranks SFCs by bytes and traced check time again
         ["B.vue", 100],
       ]),
       check,
+      busy: [13, 2],
     },
     vue: {
       bytes: bytes([
@@ -429,5 +433,6 @@ void test("the projection report ranks SFCs by bytes and traced check time again
   assert.equal(report.headAtMostVue, 1);
   const markdown = renderProjection(report);
   assert.match(markdown, /1 of 2 SFCs are at most Vue's size/u);
+  assert.match(markdown, /Vize head 13 \/ 2; Vue n\/a/u);
   assert.ok(markdown.indexOf("`A.vue` | 0.2 | 0.1 | 1.33×") > 0, markdown);
 });
