@@ -48,7 +48,8 @@ on:
     paths:
       - .github/workflows/lsp-vs-volar.yml
       - tools/benchmarks/scripts/lsp-vs-volar*.ts
-      - tests/tooling/lsp-vs-volar-evidence.test.ts
+      - tests/tooling/lsp-vs-volar-*.test.ts
+      - tests/tooling/support/lsp-vs-volar-*.ts
 
 concurrency:
   group: lsp-vs-volar-${{ github.event.pull_request.number || github.ref }}-${{ inputs.compare_ref || '' }}
@@ -91,7 +92,9 @@ jobs:
         run: |
           args=()
           for id in $FIXTURES; do args+=(--fixture "$id"); done
-          echo "jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")" >> "$GITHUB_OUTPUT"
+          # Assigned first, so an unknown fixture fails this step instead of planning nothing.
+          jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")
+          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
 
   bench:
     name: lsp-vs-volar (${{ matrix.job.name }})
@@ -123,7 +126,7 @@ jobs:
         with: { node-version-file: "package.json", package-manager-cache: false }
 
       - name: Validate measurement evidence contracts
-        run: node --test tests/tooling/lsp-vs-volar-evidence.test.ts
+        run: node --test tests/tooling/lsp-vs-volar-evidence.test.ts tests/tooling/lsp-vs-volar-scale.test.ts
 
       - name: Build this commit
         run: |
@@ -181,6 +184,8 @@ jobs:
             if [ -n "$COMPARE_REF" ]; then args+=(--vize-env "compare:$assignment"); fi
           done
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
+          # The runner has 128 GB: a server past 96 GiB is killed and reported, not left to take the machine down.
+          args+=(--memory-budget-gib 96 --meta "memory-budget=96GiB")
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
             --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
