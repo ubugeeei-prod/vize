@@ -11812,6 +11812,65 @@
       }
     },
     {
+      "id": "typechecker/legacy-js-mixin-return-11780/inferred-return-type",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Invalid.vue",
+          "path": "legacy-js-mixin-return-11780/src/Invalid.vue.txt",
+          "sha256": "953636be1db7bde2b82d9df18fdc9ec4467fa112562f7235475249bb401c740a"
+        },
+        {
+          "file": "src/Unicode.vue",
+          "path": "legacy-js-mixin-return-11780/src/Unicode.vue.txt",
+          "sha256": "77f072a12e1be70e77a30ab696882d28387a1ab8ce31d512563db7e53b40e7d3"
+        },
+        {
+          "file": "src/Valid.vue",
+          "path": "legacy-js-mixin-return-11780/src/Valid.vue.txt",
+          "sha256": "bcb33c9a299975a0def7bf0c330b954a62593d8c2e5689903d880256db3b3f7b"
+        },
+        {
+          "file": "src/mixin.js",
+          "path": "legacy-js-mixin-return-11780/src/mixin.js.txt",
+          "sha256": "a8c81ef0171a2a101225c62693370e6f7e6441259e1f131706623cfd8df7be56"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-js-mixin-return-11780/tsconfig.json.txt",
+          "sha256": "42e525dbf17c7e9dff546202c16c38bbf4c4f018887391eabb74780a37ca7f4f"
+        },
+        {
+          "file": "vite.config.mjs",
+          "path": "legacy-js-mixin-return-11780/vite.config.mjs.txt",
+          "sha256": "1ac3e2b3e0fe9ae25e3798a0a241051512fdc967fd89e6cbd00a069eb28c9f73"
+        },
+        {
+          "file": "controls/mixin-any.js",
+          "path": "legacy-js-mixin-return-11780/controls/mixin-any.js.txt",
+          "sha256": "23c80e12bb0ded575940b775b91fa88ccc40924a7c0f5a83aebc64e2c61f34b7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue2-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "required native legacy_js_mixin_receiver::inferred_return fixture checks inferred JavaScript string returns, authored-any sensitivity control, and exact restoration in both strict modes with Unicode/CRLF negative and positive Vue inputs"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/legacy-typed-mixin-methods/finite-typed-methods",
       "state": "active",
       "targets": [

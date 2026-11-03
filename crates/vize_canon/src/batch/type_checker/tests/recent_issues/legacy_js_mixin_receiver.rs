@@ -1,5 +1,7 @@
 //! JavaScript mixin methods must not open the entire legacy receiver (#11780).
 
+mod inferred_return;
+
 use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
