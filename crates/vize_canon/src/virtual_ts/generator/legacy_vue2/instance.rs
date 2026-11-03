@@ -47,7 +47,7 @@ pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
 /// `(has_root_el, has_refs)`: the instance members the setup scope infers
 /// (`inferComponentDollarEl`, `inferComponentDollarRefs`) replace the ones
 /// `ComponentPublicInstance` declares.
-pub(in crate::virtual_ts::generator) fn instance_suffix(
+fn instance_suffix(
     ts: &mut String,
     legacy_vue2: bool,
     dialect: VueVersion,
