@@ -22,7 +22,7 @@ import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modul
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import { compileFile } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
-import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
+import { identitySourceMap, MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import { fromPluginVisibleVirtualId, isPluginVisibleSsrVirtualId } from "../virtual.ts";
 import {
@@ -99,14 +99,24 @@ export function getSfcModuleRequest(state: VizePluginState, id: string): SfcModu
   return { realPath, ssrId: false, virtual: false, nullPrefixed };
 }
 
-/** The SFC text a main module request starts the pipeline with. */
-export function loadSfcModuleSource(realPath: string): string | null {
+/**
+ * The SFC text a main module request starts the pipeline with, mapped to its
+ * file when the compile emits a map.
+ */
+export function loadSfcModuleSource(
+  state: VizePluginState,
+  sfc: SfcModuleRequest,
+  ssr: boolean,
+): string | { code: string; map: SourceMapV3 } | null {
+  let source: string;
   try {
-    return fs.readFileSync(realPath, "utf-8");
+    source = fs.readFileSync(sfc.realPath, "utf-8");
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;
   }
+  if (!compileOptions(state, sfc.ssrId || ssr, sfc.realPath).sourceMap) return source;
+  return { code: source, map: identitySourceMap(sfc.realPath, source) };
 }
 
 function shouldLogSfcWarnings(state: VizePluginState, realPath: string): boolean {

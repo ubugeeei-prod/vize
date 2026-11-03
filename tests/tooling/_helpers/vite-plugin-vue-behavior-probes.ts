@@ -54,6 +54,9 @@ function createFixture(files: Record<string, string>): string {
   return root;
 }
 
+/** Each booted main plugin's SFC compile stage, which Vite runs after `load`. */
+const compileStages = new WeakMap<Plugin, Plugin>();
+
 async function bootPlugin(
   root: string,
   options: Record<string, unknown> = {},
@@ -61,7 +64,9 @@ async function bootPlugin(
 ): Promise<Plugin> {
   const plugins = vize({ configMode: false, scanPatterns: [], ...options }) as Plugin[];
   const plugin = plugins.find((candidate) => candidate.name === "vite-plugin-vize");
-  assert.ok(plugin, "the Vize plugin set must expose its main plugin");
+  const compileStage = plugins.find((candidate) => candidate.name === "vite-plugin-vize:sfc");
+  assert.ok(plugin && compileStage, "the Vize plugin set must expose its main plugin");
+  compileStages.set(plugin, compileStage);
   await hook<(config: ResolvedConfig) => Promise<void>>(plugin.configResolved).call(
     {},
     resolvedConfig(root, configOverrides),
@@ -82,15 +87,28 @@ async function resolveVueId(plugin: Plugin, id: string): Promise<string | null> 
     : null;
 }
 
+function moduleCode(result: unknown): string | undefined {
+  return typeof result === "string" ? result : (result as { code?: string } | null)?.code;
+}
+
 async function loadVueModule(plugin: Plugin, id: string): Promise<string> {
-  const loaded = await hook<AnyHook>(plugin.load).call(
-    { addWatchFile() {} },
-    id as never,
-    {} as never,
+  const context = { addWatchFile() {}, resolve: async () => null };
+  const loaded = moduleCode(
+    await hook<AnyHook>(plugin.load).call(context, id as never, {} as never),
   );
-  const code = typeof loaded === "string" ? loaded : (loaded as { code?: string } | null)?.code;
-  assert.equal(typeof code, "string", `loading ${id} must produce module code`);
-  return code as string;
+  assert.equal(typeof loaded, "string", `loading ${id} must produce module code`);
+  const stage = compileStages.get(plugin);
+  const compiled = stage
+    ? moduleCode(
+        await hook<AnyHook>(stage.transform).call(
+          context,
+          loaded as never,
+          id as never,
+          {} as never,
+        ),
+      )
+    : undefined;
+  return compiled ?? (loaded as string);
 }
 
 async function loadResolvedVueModule(plugin: Plugin, id: string): Promise<string> {

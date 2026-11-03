@@ -105,8 +105,9 @@ export async function startupHost(
     load: async (file: string, ssr = false) => {
       const id = toVirtualId(file, ssr);
       const pluginContext = { addWatchFile() {}, resolve: async () => null } as never;
-      const source = await hook(plugin.load).call(pluginContext, id, { ssr });
-      return hook(sfcPlugin.transform).call(pluginContext, source as string, id, { ssr } as never);
+      const loaded = await hook(plugin.load).call(pluginContext, id, { ssr });
+      const source = typeof loaded === "string" ? loaded : (loaded as { code: string }).code;
+      return hook(sfcPlugin.transform).call(pluginContext, source, id, { ssr } as never);
     },
     close: () => hook(plugin.closeBundle).call(context as never),
   };

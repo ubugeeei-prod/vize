@@ -15,6 +15,7 @@ import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import { normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { resolveCssImports } from "../utils/css.ts";
+import type { SourceMapV3 } from "../utils/source-map.ts";
 import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import {
@@ -74,7 +75,7 @@ export function loadHook(
   state: VizePluginState,
   id: string,
   loadOptions?: LoadOptions,
-): string | { code: string; map: null } | null {
+): string | { code: string; map: SourceMapV3 | null } | null {
   // A `<style src>` module is the src file; its query names the owning SFC.
   if (
     id !== RESOLVED_CSS_MODULE &&
@@ -194,7 +195,7 @@ export function loadHook(
   // An SFC main module enters the pipeline as its SFC text; `transform` compiles it.
   if (request.isVizeVirtual || pluginVisibleVirtualPath || loadableVueSfcPath) {
     const sfc = getSfcModuleRequest(state, id);
-    return sfc ? loadSfcModuleSource(sfc.realPath) : null;
+    return sfc ? loadSfcModuleSource(state, sfc, !!loadOptions?.ssr) : null;
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.
