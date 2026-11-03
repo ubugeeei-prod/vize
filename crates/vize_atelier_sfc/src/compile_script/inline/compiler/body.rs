@@ -10,7 +10,7 @@ use crate::types::{CssModuleMapping, SfcError};
 use super::super::super::props::WithDefaultsValues;
 use super::super::super::{
     ScriptCompileResult, TemplateParts,
-    function_mode::helpers::collect_runtime_identifier_references,
+    function_mode::helpers::{collect_runtime_identifier_references, parse_setup_body},
     import_utils::import_block_has_local_from,
     typescript::{transform_typescript_to_js, transform_typescript_to_js_traced},
 };
@@ -135,9 +135,12 @@ pub(super) fn compile_script_setup_inline_body(
         setup_code
     };
 
+    // One parse of the setup body serves hoisting and runtime references.
+    let setup_allocator = oxc_allocator::Allocator::default();
+    let setup_parse = parse_setup_body(&setup_allocator, &transformed_setup);
     let (hoisted, body) = profile!(
         "atelier.script_inline.separate_hoisted",
-        separate_hoisted_consts(&transformed_setup, &ctx)
+        separate_hoisted_consts(&transformed_setup, &setup_parse, &ctx)
     );
     let segment_runs = |trace: &SetupTrace, segments: &[(String, usize)]| -> Vec<Runs> {
         let slice = |(text, offset): &(String, usize)| trace.setup_code.slice(*offset, text.len());
@@ -205,7 +208,7 @@ pub(super) fn compile_script_setup_inline_body(
         && !template.render_fn.is_empty()
         && !preamble.setup_return_imports.is_empty()
     {
-        Some(collect_runtime_identifier_references(&transformed_setup))
+        Some(collect_runtime_identifier_references(&setup_parse))
     } else {
         None
     };

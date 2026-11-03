@@ -24,7 +24,7 @@ use super::super::props::{
 };
 use super::super::typescript::transform_typescript_to_js;
 use super::expose::emit_expose;
-use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
+use super::helpers::{is_reserved_word, runtime_identifier_references};
 use super::imports::dedupe_imports;
 use super::model::emit_model_bindings;
 use super::prop_types::{prop_types_from_context, resolve_prop_type};
@@ -243,7 +243,7 @@ pub fn compile_script_setup(
         output.push(b'\n');
     }
 
-    let runtime_used_identifiers = collect_runtime_identifier_references(&transformed_setup);
+    let runtime_used_identifiers = runtime_identifier_references(&transformed_setup);
 
     // Generate __returned__ object
     let returned_bindings = build_returned_bindings(
