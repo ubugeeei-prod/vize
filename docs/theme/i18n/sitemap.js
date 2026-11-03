@@ -72,6 +72,7 @@
     "/guide/formatter-property-quotes",
     "/guide/formatter-jsx-quotes",
     "/guide/type-checking",
+    "/guide/type-checking-beyond-vue-tsc",
     "/guide/check-performance",
     "/guide/language-server",
     "/guide/vite-plus-editor",
@@ -152,6 +153,7 @@
     ]),
     section("typeChecker", [
       "/guide/type-checking",
+      "/guide/type-checking-beyond-vue-tsc",
       "/guide/content-mapper",
       "/guide/check-performance",
     ]),

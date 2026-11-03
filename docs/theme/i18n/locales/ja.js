@@ -46,6 +46,7 @@
       "/guide/wasm": "WASM バインディング",
       "/guide/static-analysis": "静的解析",
       "/guide/type-checking": "型チェック",
+      "/guide/type-checking-beyond-vue-tsc": "vue-tsc を超える型チェック",
       "/guide/language-server": "言語サーバー",
       "/guide/cross-file-complexity": "ファイル間の複雑さ",
       "/guide/analysis-diagnostics": "診断",

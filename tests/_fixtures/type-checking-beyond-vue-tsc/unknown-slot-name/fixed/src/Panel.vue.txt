@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import EmptyState from "./EmptyState.vue";
+</script>
+
+<template>
+  <EmptyState>
+    <template #default>Connect a node first.</template>
+  </EmptyState>
+</template>

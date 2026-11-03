@@ -75,6 +75,27 @@ Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
 | the same project on tsrs                      | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`             |
 | Vue - Official extension diagnostics          | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
 
+## Type-checking policy
+
+> We are NOT aiming for full vue-tsc compatibility. We are aiming for something more correct and more precise.
+
+vue-tsc, `@vue/content-mapper` and TypeScript are references, not the specification. When
+Vize and vue-tsc disagree, the authored code decides. If Vize is right, it keeps the behavior.
+If Vize is wrong, the difference is a bug. Positions, codes and messages are chosen for
+accuracy, such as the exact attribute rather than the whole tag.
+
+So Vize reports some real mistakes that vue-tsc misses:
+
+- A prop keeps its declared type when a sibling prop's type can't be resolved, where vue-tsc
+  turns the props into `any`.
+- A listener on a native element receives a DOM `Event`, even for a name such as
+  `@before-enter` on a `<div>`.
+- Content passed to a slot the component doesn't declare is an error, on by default.
+
+[Type checking beyond vue-tsc](./type-checking-beyond-vue-tsc.md) lists each case with a small
+example, the diagnostic Vize reports and what vue-tsc 3.3 reports. It also covers editor answers
+that are more precise than Volar's.
+
 ## Also available: `vize check`
 
 `vize check` type-checks `.vue`, `.ts`, `.tsx`, and `.d.ts` files with the
@@ -250,6 +271,7 @@ vize check --socket /tmp/vize-check.sock src
 ## Related
 
 - [Content Mapper](./content-mapper.md) for the TypeScript 7.1 setup
+- [Type checking beyond vue-tsc](./type-checking-beyond-vue-tsc.md) for what Vize reports that vue-tsc misses
 - [CLI reference: `vize check`](./cli.md#check)
 - [Language server](./language-server.md) for type errors in the editor
 - [Type-aware lint rules](../rules/type-and-script.md), which reuse the same checker
