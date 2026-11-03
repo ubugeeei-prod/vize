@@ -38,6 +38,11 @@ tsserver with `@vue/typescript-plugin`) on misskey and n8n, for each of:
 Per-edit cost must depend on the edited SFC and its real dependents, never on
 project size. Correctness must not regress.
 
+Accuracy is judged against the correct answer, not against Volar. Vize does
+not aim for vue-tsc or Volar compatibility. Volar is a reference, not the spec.
+Hover shows the instantiated type. Definition, references and rename find every
+authored location, even where Volar finds fewer.
+
 ## Status
 
 Backend A wins big on cold open on both fixtures (7.7× misskey, 8.1× n8n)
