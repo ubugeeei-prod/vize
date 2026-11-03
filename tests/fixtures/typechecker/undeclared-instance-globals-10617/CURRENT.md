@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-7f70c48c66d8.json`: all 80 whole transform results from [source Actions 41661826361](https://github.com/ubugeeei-prod/vize/actions/runs/41661826361/job/126010466907), actual merge producer `7f70c48c66d8e4e36da9f1bcaa138e76051e3b32` (PR head `2fb13a1f97b135613c6a99d6b5a66f43106bdc7c`). Its launch receipt binds physical CLI SHA-256 `9f2f658442e560f6f839ed0b4b2307548fb518ff1f19a19c7f82a76ff9843a6b`.
+
+The original strict capture remains **unqualified**: 419 of 499 outcomes passed. Exactly the 80 whole packets differ from the previous population. Each change is the component export for #11635 and #11637: the component type gets a name (`type GlobalsComponent = <the same intersection>; declare const __vize_component__: GlobalsComponent;`), the exported name gains one navigation-target row mapping to an empty range at the SFC's start, and the unmapped-range ignore around that name splits in two. Diagnostics are unchanged. Previous and current directive tables, added rows and text digests are retained per packet in `source-packets-current-7f70c48c66d8-provenance.json`.
+
+`complete: true` means the complete observed expected population. It gives no strict native, host-matrix or installed-public acceptance. The existing comparator still checks complete result objects, ordered mappings and opaque fields; every semantic, ownership, geometry and mutation outcome remains required. Historical packets, original inputs and qualification flags are preserved. No packet normalizer or diagnostic filter is added.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-949a579fb06d.json`: all 80 whole transform results from [source Actions 41633971310](https://github.com/ubugeeei-prod/vize/actions/runs/41633971310/job/125911274132), actual merge producer `949a579fb06d3f11fb57e21e82278cb15b42bc88` (PR head `e4d41f75eb820d6953d2aed96d1805fcb194a686`). Its launch receipt binds the physical CLI it built.
 
 The original strict capture remains **unqualified**: 318 of 398 outcomes passed. Exactly the 80 whole packets differ from the previous population. Installed-package content-mapper modules now import the checker-only `vize/virtual-ts-checker` entry instead of `vize/virtual-ts` (#11591), so the import grows by 8 bytes. Every generated coordinate after it moves by exactly 8 in text map comments, mappings, directive rows and semantic links. Authored coordinates and every other field are unchanged. Per-packet import ends are retained in `source-packets-current-949a579fb06d-provenance.json`.
