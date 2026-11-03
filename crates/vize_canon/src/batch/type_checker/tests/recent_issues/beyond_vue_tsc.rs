@@ -81,11 +81,9 @@ fn assert_case(name: &str, label: &str, files: &[(String, String)], expected: &P
         .iter()
         .map(|(path, source)| (path.as_str(), source.as_str()))
         .collect();
-    let Some(snapshot) =
+    let snapshot =
         snapshot_project_diagnostics(&create_project_case(&cstr!("bvt-{name}-{label}"), &files))
-    else {
-        return;
-    };
+            .expect("available TypeScript checker did not return diagnostics");
     let actual = render(&snapshot);
     if std::env::var_os("VIZE_BLESS_BEYOND_VUE_TSC").is_some() {
         std::fs::write(expected, actual.as_str()).unwrap();
