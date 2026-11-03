@@ -107,7 +107,10 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
   }
 
   let compileVersion = 0;
+  let compileTimer: ReturnType<typeof setTimeout> | null = null;
   async function compile() {
+    if (compileTimer) clearTimeout(compileTimer);
+    compileTimer = null;
     const version = ++compileVersion;
     result.value = null;
     codeOutputVersion.value += 1;
@@ -194,14 +197,13 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
     copyToClipboard(fullOutput);
   }
 
-  let compileTimer: ReturnType<typeof setTimeout> | null = null;
   onScopeDispose(() => {
     compileVersion += 1;
     if (compileTimer) clearTimeout(compileTimer);
   });
 
   watch(
-    [source, options, inputMode, experimentals, cssOptions],
+    [source, options, inputMode, experimentals],
     () => {
       compileVersion += 1;
       isCompiling.value = false;
@@ -214,6 +216,8 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
     },
     { deep: true, flush: "sync" },
   );
+
+  watch(cssOptions, compile, { deep: true, flush: "sync" });
 
   watch(availableCodeOutputTargets, (targets) => {
     if (!targets.includes(codeOutputTarget.value)) {
