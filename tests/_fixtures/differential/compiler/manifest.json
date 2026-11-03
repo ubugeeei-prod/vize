@@ -758,6 +758,49 @@
       }
     },
     {
+      "id": "compiler/sfc/generic-union-skip-check-11466",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "generic-union-skip-check-11466",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "66d68eabcc7e894ddc2660d92b08a1fd79ad4ff477b52d2f335ab32f503b1f14",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "generic-union-skip-check-11466/module.expected.txt",
+        "sha256": "c9dba899226535ff24606885a36b4007493649091d58b2e6228fa17643abb339",
+        "source": "crates/vize_atelier_sfc/src/compile_script/props/ast_resolve/runtime_type_combine/tests.rs:unknown_union_members_keep_boolean_and_function_with_skip_check"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards the legacy type-based runtime prop inference only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/incomplete-script-setup-recovery-10200",
       "state": "active",
       "targets": ["ssr"],

@@ -3,7 +3,8 @@ use vize_carton::{String, ToCompactString, cstr};
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 use super::super::super::props::{
-    WithDefaultsValues, extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
+    WithDefaultsValues, extract_emit_names_from_type, resolve_prop_js_type, split_skip_check,
+    ts_type_to_js_type,
 };
 use super::super::type_handling::resolve_type_args;
 use super::props::build_user_props_decl;
@@ -22,14 +23,16 @@ pub(super) type ModelInfo = (
 /// Resolve a defineModel `<T>` type argument to its runtime constructor,
 /// mirroring `@vue/compiler-sfc`'s `inferRuntimeType`: primitives map directly
 /// (`string` → `String`), and local interface / type-alias references that do
-/// not map directly resolve to `Object` via the script context.
-fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> String {
+/// not map directly resolve to `Object` via the script context. The flag is
+/// Vue's `skipCheck` for `Boolean`/`Function` beside an unresolvable member.
+fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> (String, bool) {
     let js_type = ts_type_to_js_type(type_arg);
-    if js_type == "null" {
+    let js_type = if js_type == "null" {
         resolve_prop_js_type(type_arg, &ctx.interfaces, &ctx.type_aliases).unwrap_or(js_type)
     } else {
         js_type
-    }
+    };
+    split_skip_check(&js_type)
 }
 
 /// Render the runtime prop-options object for a single defineModel, mirroring
@@ -41,17 +44,26 @@ pub(super) fn model_value_prop(
     ctx: &ScriptCompileContext,
     options: &Option<String>,
     type_arg: &Option<String>,
+    is_prod: bool,
 ) -> String {
     let type_arg = type_arg.as_deref().map(str::trim).filter(|t| !t.is_empty());
+    let runtime_type = |type_arg| {
+        let (runtime_type, skip_check) = model_runtime_type(ctx, type_arg);
+        if skip_check && !is_prod {
+            cstr!("{runtime_type}, skipCheck: true")
+        } else {
+            runtime_type
+        }
+    };
     match (type_arg, options.as_deref()) {
         (Some(type_arg), Some(options)) => {
-            let runtime_type = model_runtime_type(ctx, type_arg);
-            cstr!("{{ type: {}, ...{} }}", runtime_type, options.trim())
+            cstr!(
+                "{{ type: {}, ...{} }}",
+                runtime_type(type_arg),
+                options.trim()
+            )
         }
-        (Some(type_arg), None) => {
-            let runtime_type = model_runtime_type(ctx, type_arg);
-            cstr!("{{ type: {} }}", runtime_type)
-        }
+        (Some(type_arg), None) => cstr!("{{ type: {} }}", runtime_type(type_arg)),
         (None, Some(options)) => options.trim().to_compact_string(),
         (None, None) => "{}".to_compact_string(),
     }
@@ -80,7 +92,8 @@ pub(super) fn build_model_props_emits(
             model_decl.extend_from_slice(b"\n    \"");
             model_decl.extend_from_slice(model_name.as_bytes());
             model_decl.extend_from_slice(b"\": ");
-            model_decl.extend_from_slice(model_value_prop(ctx, options, type_arg).as_bytes());
+            model_decl
+                .extend_from_slice(model_value_prop(ctx, options, type_arg, is_prod).as_bytes());
             model_decl.extend_from_slice(b",\n    \"");
             if model_name == "modelValue" {
                 model_decl.extend_from_slice(b"modelModifiers");

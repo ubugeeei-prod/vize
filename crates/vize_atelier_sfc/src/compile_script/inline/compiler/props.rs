@@ -130,6 +130,9 @@ pub(super) fn build_user_props_decl(
                     } else {
                         decl.extend_from_slice(b"required: true");
                     }
+                    if prop_type.skip_check {
+                        decl.extend_from_slice(b", skipCheck: true");
+                    }
                     has_option = true;
                 }
                 let mut has_default = false;
