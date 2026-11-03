@@ -117,7 +117,7 @@ function pathWithNodeBins(cwd: string): string {
   return [...dirs.reverse(), process.env.PATH ?? ""].join(delimiter);
 }
 
-function runCommand(binary: string, commandArgs: string[], options: MeasureOptions): number {
+export function runCommand(binary: string, commandArgs: string[], options: MeasureOptions): number {
   // Every lane starts from an empty user cache: `vize check` would otherwise
   // replay the previous run's diagnostics for base and head alike.
   return withEmptyUserCache((cache) => runCommandIn(binary, commandArgs, options, cache));

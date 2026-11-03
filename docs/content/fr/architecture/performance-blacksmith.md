@@ -77,12 +77,12 @@ Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/viz
 | Moteur TypeScript natif (tsgo)     | tsc + Vue mapper (--checkers 4)   |   9.49s |                               4.98x |
 | Moteur TypeScript natif (tsgo)     | tsc + Vue mapper (--checkers 32)  |   9.72s |                               5.10x |
 | Moteur TypeScript natif (tsgo)     | verter-tsc                        |  12.12s |                               6.36x |
-| undefined                          | tsrs + Vize mapper                | 685.1ms |                               1.00x |
-| undefined                          | tsrs + Vize mapper (--fast)       | 693.4ms |                               1.01x |
-| undefined                          | tsrs + Vue mapper (--fast)        |   7.91s |                              11.55x |
-| undefined                          | tsrs + Vue mapper                 |   7.94s |                              11.59x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vize mapper                | 685.1ms |                               1.00x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vize mapper (--fast)       | 693.4ms |                               1.01x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vue mapper (--fast)        |   7.91s |                              11.55x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vue mapper                 |   7.94s |                              11.59x |
 
-Les rapports comparent uniquement les outils utilisant le même moteur tsgo natif. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.
+Les rapports comparent uniquement les outils d’une même classe de moteur TypeScript. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.
 
 Golar typecheck (validation préalable): rejeté lors de la validation ; aucun temps ni classement publié.
 
@@ -145,12 +145,12 @@ Validation du travail de vérification des types (templates stricts ; avant pré
 | Moteur TypeScript natif (tsgo)     | tsc + Vue mapper (--checkers 8)   |   2.85s |                              11.03x |
 | Moteur TypeScript natif (tsgo)     | tsc + Vue mapper (--checkers 4)   |   2.97s |                              11.48x |
 | Moteur TypeScript natif (tsgo)     | tsc + Vue mapper                  |   2.98s |                              11.51x |
-| undefined                          | tsrs + Vize mapper (--fast)       | 217.6ms |                               1.00x |
-| undefined                          | tsrs + Vize mapper                | 227.8ms |                               1.05x |
-| undefined                          | tsrs + Vue mapper (--fast)        |   2.70s |                              12.40x |
-| undefined                          | tsrs + Vue mapper                 |   2.76s |                              12.70x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vize mapper (--fast)       | 217.6ms |                               1.00x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vize mapper                | 227.8ms |                               1.05x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vue mapper (--fast)        |   2.70s |                              12.40x |
+| Portage TypeScript natif (tsrs)    | tsrs + Vue mapper                 |   2.76s |                              12.70x |
 
-Les rapports comparent uniquement les outils utilisant le même moteur tsgo natif. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.
+Les rapports comparent uniquement les outils d’une même classe de moteur TypeScript. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.
 
 Golar typecheck (validation préalable): rejeté lors de la validation ; aucun temps ni classement publié.
 

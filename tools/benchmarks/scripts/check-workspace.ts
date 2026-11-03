@@ -248,7 +248,7 @@ function seconds(text: string): number {
   return Number(match[1]) * scale;
 }
 
-function runCheck(bin: string, cwd: string): Record<Phase | "total", number> {
+export function runCheck(bin: string, cwd: string): Record<Phase | "total", number> {
   // A reused cache would replay the previous run's diagnostics (empty-user-cache.ts).
   const result = withEmptyUserCache((cache) =>
     spawnSync(bin, ["check", "-q", "src"], {

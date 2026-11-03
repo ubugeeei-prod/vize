@@ -77,12 +77,12 @@ Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/viz
 | 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   9.49s |          4.98x |
 | 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 32)  |   9.72s |          5.10x |
 | 原生 TypeScript 引擎 (tsgo)      | verter-tsc                        |  12.12s |          6.36x |
-| undefined                        | tsrs + Vize mapper                | 685.1ms |          1.00x |
-| undefined                        | tsrs + Vize mapper (--fast)       | 693.4ms |          1.01x |
-| undefined                        | tsrs + Vue mapper (--fast)        |   7.91s |         11.55x |
-| undefined                        | tsrs + Vue mapper                 |   7.94s |         11.59x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vize mapper                | 685.1ms |          1.00x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vize mapper (--fast)       | 693.4ms |          1.01x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vue mapper (--fast)        |   7.91s |         11.55x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vue mapper                 |   7.94s |         11.59x |
 
-速度比仅比较使用相同原生 tsgo 引擎的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
+速度比仅比较使用相同 TypeScript 引擎类别的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
 
 Golar typecheck (预检): 验证未通过，不公布耗时或排名。
 
@@ -145,12 +145,12 @@ missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__Ch
 | 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 8)   |   2.85s |         11.03x |
 | 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper (--checkers 4)   |   2.97s |         11.48x |
 | 原生 TypeScript 引擎 (tsgo)      | tsc + Vue mapper                  |   2.98s |         11.51x |
-| undefined                        | tsrs + Vize mapper (--fast)       | 217.6ms |          1.00x |
-| undefined                        | tsrs + Vize mapper                | 227.8ms |          1.05x |
-| undefined                        | tsrs + Vue mapper (--fast)        |   2.70s |         12.40x |
-| undefined                        | tsrs + Vue mapper                 |   2.76s |         12.70x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vize mapper (--fast)       | 217.6ms |          1.00x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vize mapper                | 227.8ms |          1.05x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vue mapper (--fast)        |   2.70s |         12.40x |
+| 原生 TypeScript 移植版 (tsrs)    | tsrs + Vue mapper                 |   2.76s |         12.70x |
 
-速度比仅比较使用相同原生 tsgo 引擎的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
+速度比仅比较使用相同 TypeScript 引擎类别的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。
 
 Golar typecheck (预检): 验证未通过，不公布耗时或排名。
 

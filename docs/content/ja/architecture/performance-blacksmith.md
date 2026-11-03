@@ -79,12 +79,12 @@ README と全言語のページは、同じコミット済み成果物から生�
 | ネイティブ TypeScript エンジン (tsgo) | tsc + Vue mapper (--checkers 4)   |   9.49s |        4.98x |
 | ネイティブ TypeScript エンジン (tsgo) | tsc + Vue mapper (--checkers 32)  |   9.72s |        5.10x |
 | ネイティブ TypeScript エンジン (tsgo) | verter-tsc                        |  12.12s |        6.36x |
-| undefined                             | tsrs + Vize mapper                | 685.1ms |        1.00x |
-| undefined                             | tsrs + Vize mapper (--fast)       | 693.4ms |        1.01x |
-| undefined                             | tsrs + Vue mapper (--fast)        |   7.91s |       11.55x |
-| undefined                             | tsrs + Vue mapper                 |   7.94s |       11.59x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vize mapper                | 685.1ms |        1.00x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vize mapper (--fast)       | 693.4ms |        1.01x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vue mapper (--fast)        |   7.91s |       11.55x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vue mapper                 |   7.94s |       11.59x |
 
-速度比は同じネイティブ tsgo エンジンの比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
+速度比は同じ TypeScript エンジン種別内の比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
 
 Golar typecheck (事前検証): 検証で除外。実行時間と順位は掲載しません。
 
@@ -147,12 +147,12 @@ missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__Ch
 | ネイティブ TypeScript エンジン (tsgo) | tsc + Vue mapper (--checkers 8)   |   2.85s |       11.03x |
 | ネイティブ TypeScript エンジン (tsgo) | tsc + Vue mapper (--checkers 4)   |   2.97s |       11.48x |
 | ネイティブ TypeScript エンジン (tsgo) | tsc + Vue mapper                  |   2.98s |       11.51x |
-| undefined                             | tsrs + Vize mapper (--fast)       | 217.6ms |        1.00x |
-| undefined                             | tsrs + Vize mapper                | 227.8ms |        1.05x |
-| undefined                             | tsrs + Vue mapper (--fast)        |   2.70s |       12.40x |
-| undefined                             | tsrs + Vue mapper                 |   2.76s |       12.70x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vize mapper (--fast)       | 217.6ms |        1.00x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vize mapper                | 227.8ms |        1.05x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vue mapper (--fast)        |   2.70s |       12.40x |
+| ネイティブ TypeScript ポート (tsrs)   | tsrs + Vue mapper                 |   2.76s |       12.70x |
 
-速度比は同じネイティブ tsgo エンジンの比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
+速度比は同じ TypeScript エンジン種別内の比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
 
 Golar typecheck (事前検証): 検証で除外。実行時間と順位は掲載しません。
 

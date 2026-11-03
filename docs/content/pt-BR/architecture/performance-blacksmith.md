@@ -77,12 +77,12 @@ Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/viz
 | Mecanismo TypeScript nativo (tsgo)    | tsc + Vue mapper (--checkers 4)   |   9.49s |                               4.98x |
 | Mecanismo TypeScript nativo (tsgo)    | tsc + Vue mapper (--checkers 32)  |   9.72s |                               5.10x |
 | Mecanismo TypeScript nativo (tsgo)    | verter-tsc                        |  12.12s |                               6.36x |
-| undefined                             | tsrs + Vize mapper                | 685.1ms |                               1.00x |
-| undefined                             | tsrs + Vize mapper (--fast)       | 693.4ms |                               1.01x |
-| undefined                             | tsrs + Vue mapper (--fast)        |   7.91s |                              11.55x |
-| undefined                             | tsrs + Vue mapper                 |   7.94s |                              11.59x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vize mapper                | 685.1ms |                               1.00x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vize mapper (--fast)       | 693.4ms |                               1.01x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vue mapper (--fast)        |   7.91s |                              11.55x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vue mapper                 |   7.94s |                              11.59x |
 
-As razões comparam apenas ferramentas que usam o mesmo mecanismo tsgo nativo. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.
+As razões comparam apenas ferramentas da mesma classe de mecanismo TypeScript. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.
 
 Golar typecheck (pré-validação): rejeitado na validação; nenhum tempo ou posição publicado.
 
@@ -145,12 +145,12 @@ Validação do trabalho de verificação de tipos (templates estritos; antes do 
 | Mecanismo TypeScript nativo (tsgo)    | tsc + Vue mapper (--checkers 8)   |   2.85s |                              11.03x |
 | Mecanismo TypeScript nativo (tsgo)    | tsc + Vue mapper (--checkers 4)   |   2.97s |                              11.48x |
 | Mecanismo TypeScript nativo (tsgo)    | tsc + Vue mapper                  |   2.98s |                              11.51x |
-| undefined                             | tsrs + Vize mapper (--fast)       | 217.6ms |                               1.00x |
-| undefined                             | tsrs + Vize mapper                | 227.8ms |                               1.05x |
-| undefined                             | tsrs + Vue mapper (--fast)        |   2.70s |                              12.40x |
-| undefined                             | tsrs + Vue mapper                 |   2.76s |                              12.70x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vize mapper (--fast)       | 217.6ms |                               1.00x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vize mapper                | 227.8ms |                               1.05x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vue mapper (--fast)        |   2.70s |                              12.40x |
+| Port nativo de TypeScript (tsrs)      | tsrs + Vue mapper                 |   2.76s |                              12.70x |
 
-As razões comparam apenas ferramentas que usam o mesmo mecanismo tsgo nativo. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.
+As razões comparam apenas ferramentas da mesma classe de mecanismo TypeScript. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.
 
 Golar typecheck (pré-validação): rejeitado na validação; nenhum tempo ou posição publicado.
 

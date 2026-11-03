@@ -80,7 +80,7 @@ function runCommand(binary, commandArgs, options = {}) {
   return { ms, status: result.status, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
 
-function runVizeCheck(vizeBin, corsaPath, cwd, extraArgs = [], env = {}) {
+export function runVizeCheck(vizeBin, corsaPath, cwd, extraArgs = [], env = {}) {
   const args = ["check", ".", "--quiet", "--format", "json", "--tsconfig", "tsconfig.json"];
   // A reused cache would replay the previous run's diagnostics (empty-user-cache.ts).
   const result = withEmptyUserCache((cache) =>
