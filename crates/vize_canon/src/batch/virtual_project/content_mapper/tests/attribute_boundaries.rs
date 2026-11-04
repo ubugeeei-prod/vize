@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use vize_l0::cstr;
+
 use crate::batch::generate_vue_content_mapper_transform;
 
 #[test]
@@ -18,6 +20,18 @@ fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
         "{:?}",
         expected.diagnostics
     );
+    let expression = source.find("{{ a }}").expect("authored interpolation") + 3;
+    let original_marker = cstr!("// @vize-map: expr -> {}:{}", expression, expression + 1);
+    let spaced_marker = cstr!(
+        "// @vize-map: expr -> {}:{}",
+        expression + 1,
+        expression + 2
+    );
+    assert_eq!(expected.text.matches(spaced_marker.as_str()).count(), 1);
+    expected.text = expected
+        .text
+        .replace(spaced_marker.as_str(), original_marker.as_str())
+        .into();
     for span in &mut expected.mappings {
         let start = span.0[2];
         let end = start + span.0[3];
