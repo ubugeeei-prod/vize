@@ -5,6 +5,8 @@ import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
 import { publicInstanceReference } from "./public-instance-reference.js";
+import { listenerWrapperReference } from "./listener-wrapper-reference.js";
+import "./listener-wrapper-reference.test.js";
 import {
   directory,
   workspace,
@@ -360,7 +362,10 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
       e.languageService.getSemanticDiagnostics(file),
     );
     // The wrong listener parameter and the wrong prop both survive (#11657).
-    const anchors = [eventParent.indexOf('="(value'), eventParent.indexOf("foo-bar")];
+    const anchors = [
+      eventParent.indexOf("(value: number) => undefined"),
+      eventParent.indexOf("foo-bar"),
+    ];
     assert.deepEqual(
       errors.map((diagnostic) => [diagnostic.code, diagnostic.start]),
       anchors.map((start) => [2322, start]),
@@ -508,5 +513,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(packets, publicInstanceReference(expected));
+  assert.deepEqual(packets, listenerWrapperReference(publicInstanceReference(expected)));
 });
