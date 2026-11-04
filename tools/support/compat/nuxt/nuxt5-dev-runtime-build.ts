@@ -9,7 +9,10 @@ import { at, readJson } from "../../json-value.ts";
 import { closeConsumer, freePort, loadChromium, type BrowserGlobals } from "./host-types.ts";
 import { prepareNuxtSourceBinding } from "./source-binding.ts";
 import { waitForDevelopmentSsr } from "./development-response.ts";
-import { verifyDevelopmentProcesses } from "./development-processes.ts";
+import {
+  developmentProcessIsRunning,
+  verifyDevelopmentProcesses,
+} from "./development-processes.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const relative = "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime";
@@ -152,7 +155,7 @@ try {
   const html = await waitForDevelopmentSsr({
     url,
     output,
-    running: () => server?.exitCode === null && server.signalCode === null && !serverError,
+    running: () => developmentProcessIsRunning(server, serverError),
   });
   assert.match(html, /<button\b[^>]*>0<\/button>/);
   assert.equal((html.match(/ghost-vize-entry\.js/g) ?? []).length, 0);
@@ -212,6 +215,7 @@ try {
   );
   throw error;
 } finally {
+  const controlledTermination = developmentProcessIsRunning(server, serverError);
   await closeConsumer(browser, server, () => {
     try {
       if (server) {
@@ -219,7 +223,7 @@ try {
           code: server.exitCode,
           signal: server.signalCode,
           error: serverError?.message ?? null,
-          controlledTermination: true,
+          controlledTermination,
         });
       }
     } finally {

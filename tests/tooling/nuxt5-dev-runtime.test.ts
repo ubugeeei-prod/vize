@@ -14,7 +14,10 @@ import observeNitro2 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-ru
 import observeNitro3 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts";
 import { closeConsumer } from "../../tools/support/compat/nuxt/host-types.ts";
 import { waitForDevelopmentSsr } from "../../tools/support/compat/nuxt/development-response.ts";
-import { verifyDevelopmentProcesses } from "../../tools/support/compat/nuxt/development-processes.ts";
+import {
+  developmentProcessIsRunning,
+  verifyDevelopmentProcesses,
+} from "../../tools/support/compat/nuxt/development-processes.ts";
 
 type Step = {
   name?: string;
@@ -26,6 +29,41 @@ type Step = {
   with?: { path?: string };
   "continue-on-error"?: boolean;
 };
+
+for (const [name, source, exitedBeforeCleanup] of [
+  ["live server", "setInterval(() => {}, 1000)", false],
+  ["prior failure exit", "process.exit(7)", true],
+  ["prior signal exit", 'process.kill(process.pid, "SIGTERM")', true],
+] as const) {
+  void test(`development cleanup records ${name} without relabeling a prior exit`, async () => {
+    const server = spawn(process.execPath, ["--eval", source]);
+    if (exitedBeforeCleanup) await once(server, "exit");
+    else await once(server, "spawn");
+    const controlledTermination = developmentProcessIsRunning(server);
+    let packet: unknown;
+    await closeConsumer(undefined, server, () => {
+      packet = { code: server.exitCode, signal: server.signalCode, controlledTermination };
+    });
+    assert.equal(controlledTermination, !exitedBeforeCleanup);
+    assert.deepEqual(packet, {
+      code: name === "prior failure exit" ? 7 : null,
+      signal: name === "prior failure exit" ? null : "SIGTERM",
+      controlledTermination: !exitedBeforeCleanup,
+    });
+    assert.equal(developmentProcessIsRunning(server), false);
+  });
+}
+
+void test("a missing or failed development process cannot claim controlled cleanup", () => {
+  assert.equal(developmentProcessIsRunning(undefined), false);
+  assert.equal(
+    developmentProcessIsRunning(
+      { pid: process.pid, exitCode: null, signalCode: null },
+      new Error("observed spawn failure"),
+    ),
+    false,
+  );
+});
 
 void test("the default Nuxt fork may compile only inside the launched process tree", () => {
   const snapshot = "1 0\n100 1\n101 100\n102 101\n200 1\n";
@@ -254,6 +292,8 @@ void test("the existing source job appends development qualification after produ
       "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts",
       "tools/support/compat/nuxt/development-response.ts",
       "tools/support/compat/nuxt/development-processes.ts",
+      "tools/support/compat/nuxt/host-types.ts",
+      "tools/support/json-value.ts",
       "tests/tooling/nuxt5-dev-runtime.test.ts",
     ])
       assert.ok(

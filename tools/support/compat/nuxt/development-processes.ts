@@ -1,4 +1,17 @@
 import assert from "node:assert/strict";
+import type { ChildProcess } from "node:child_process";
+
+export function developmentProcessIsRunning(
+  server: Pick<ChildProcess, "pid" | "exitCode" | "signalCode"> | undefined,
+  error?: Error,
+): boolean {
+  return (
+    server?.pid !== undefined &&
+    server.exitCode === null &&
+    server.signalCode === null &&
+    error === undefined
+  );
+}
 
 export function verifyDevelopmentProcesses(
   launcher: number,
