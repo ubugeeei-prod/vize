@@ -17466,5 +17466,21 @@
         }
       }
     }
+  ],
+  "nativeDocumentIdentitySuccessors": [
+    {
+      "id": "typechecker/protocol/native-document-identity-review-11586",
+      "state": "active",
+      "source": "e3c055bbbe68d4d03f38d116a8a803e96610327f",
+      "tree": "8f00424ff6be4b24eb2953f58e1c119506b6946d",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/current-source.json.gz",
+        "sha256": "ab03fe7250b47fa09c5ce71ba68f292d92b68342a2ca4d3ffe90f46b8c91cb12"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
+    }
   ]
 }

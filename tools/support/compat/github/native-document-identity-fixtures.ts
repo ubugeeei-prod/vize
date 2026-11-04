@@ -50,7 +50,7 @@ export function assertCompiledIdentityConsumer(source: string, selector: string,
     assert.ok(source.includes(input), "compiled consumer must read its pinned input");
   }
 }
-function preserveHistoricalAbi(read: ReadFile, value: unknown) {
+export function assertNativeDocumentIdentityAbi(read: ReadFile, value: unknown) {
   const legacy = object(value);
   assert.equal(legacy.id, "typechecker/protocol/native-beta-diagnostic-dto-10731");
   const registrations = (["base", "head"] as const).map((side) => {
@@ -225,7 +225,7 @@ export function newNativeDocumentIdentityCases(
     }
   }
   row.tests.forEach((value) => consumer(read, value));
-  preserveHistoricalAbi(read, row.legacyProtocol);
+  assertNativeDocumentIdentityAbi(read, row.legacyProtocol);
   result.ids.push(NATIVE_DOCUMENT_IDENTITY_ID);
   return result;
 }

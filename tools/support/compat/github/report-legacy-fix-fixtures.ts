@@ -44,6 +44,7 @@ export {
   formatSummary,
 } from "./legacy-fix-fixture-report.ts";
 import { newNativeDocumentIdentityCases } from "./native-document-identity-fixtures.ts";
+import { newNativeIdentitySuccessor } from "./native-document-identity-successor.ts";
 
 export type Product = "compiler" | "formatter" | "linter" | "lsp" | "typechecker";
 type Side = "base" | "head";
@@ -101,6 +102,7 @@ interface Manifest {
   languageProjectCases?: unknown;
   runtimeCases?: unknown;
   nativeDocumentIdentityCases?: unknown;
+  nativeDocumentIdentitySuccessors?: unknown;
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
   jsxChildApiCases?: unknown;
@@ -282,12 +284,21 @@ function checkProduct(
             readFile,
           )
         : { ids: [] as string[], sources: new Set<string>() };
+    const identitySuccessor =
+      product === "typechecker"
+        ? newNativeIdentitySuccessor(
+            before?.nativeDocumentIdentitySuccessors,
+            manifest.nativeDocumentIdentitySuccessors,
+            manifest.nativeDocumentIdentityCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>(), historyRead: readFile };
     const identity =
       product === "typechecker"
         ? newNativeDocumentIdentityCases(
             before?.nativeDocumentIdentityCases,
             manifest.nativeDocumentIdentityCases,
-            readFile,
+            identitySuccessor.historyRead,
           )
         : { ids: [] as string[], sources: new Set<string>() };
     const dtoRequired =
@@ -298,7 +309,8 @@ function checkProduct(
           !phases.sources.has(path) &&
           !currentObserver.sources.has(path) &&
           !logical.sources.has(path) &&
-          !identity.sources.has(path),
+          !identity.sources.has(path) &&
+          !identitySuccessor.sources.has(path),
       );
     const runtime = newNativeRuntimeCases(
       product,
@@ -318,6 +330,7 @@ function checkProduct(
               !currentObserver.sources.has(path) &&
               !logical.sources.has(path) &&
               !identity.sources.has(path) &&
+              !identitySuccessor.sources.has(path) &&
               !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -380,6 +393,7 @@ function checkProduct(
         ...logical.ids,
         ...phases.ids,
         ...identity.ids,
+        ...identitySuccessor.ids,
       ],
       ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };

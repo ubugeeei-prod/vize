@@ -13,6 +13,7 @@ import { loadLspManifest } from "../differential/lsp-manifest.ts";
 
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+delete manifest.nativeDocumentIdentitySuccessors;
 const rows = manifest.nativeDocumentIdentityCases;
 const row = rows[0];
 const originals: Record<string, string> = JSON.parse(
@@ -26,7 +27,8 @@ const actor = nativeDocumentIdentityActor(
   rows,
 );
 const read: Read = (side, path) => {
-  if (side === "base" && path === manifestPath) return Buffer.from(JSON.stringify(beforeManifest));
+  if (path === manifestPath)
+    return Buffer.from(JSON.stringify(side === "base" ? beforeManifest : manifest));
   if (side === "base" && Object.hasOwn(originals, path)) {
     const original = originals[path];
     assert.ok(typeof original === "string");
