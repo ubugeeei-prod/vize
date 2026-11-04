@@ -8,11 +8,6 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { summarizeNativeEvents } from "./native-analysis.mjs";
 import { validateNativeTargetCustody } from "./native-target.mjs";
-import {
-  devCacheReporterFilename,
-  devCacheReporterSource,
-  parcelHostConfig,
-} from "./reporter-config.ts";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const arguments_ = process.argv.slice(2);
@@ -110,9 +105,20 @@ async function makeApp(directory) {
   await fs.mkdir(path.join(directory, "styles"), { recursive: true });
   await fs.writeFile(
     path.join(directory, ".parcelrc"),
-    JSON.stringify(parcelHostConfig(), null, 2),
+    JSON.stringify(
+      {
+        extends: "@parcel/config-default",
+        reporters: ["@vizejs/parcel-transformer/dev-cache", "./native-trace.cjs", "..."],
+        transformers: {
+          "*.vue": ["@vizejs/parcel-transformer"],
+          "vize-component:*.vue": ["@vizejs/parcel-transformer"],
+          "*.css": ["@vizejs/parcel-transformer/style", "..."],
+        },
+      },
+      null,
+      2,
+    ),
   );
-  await fs.writeFile(path.join(directory, devCacheReporterFilename), devCacheReporterSource);
   await fs.writeFile(
     path.join(directory, "native-trace.cjs"),
     `const { Reporter } = require('@parcel/plugin');

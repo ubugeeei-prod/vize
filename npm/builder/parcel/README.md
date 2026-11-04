@@ -16,7 +16,7 @@ Register the transformer and named component pipeline in `.parcelrc`:
 ```json
 {
   "extends": "@parcel/config-default",
-  "reporters": ["./vize-parcel-dev-cache.cjs", "..."],
+  "reporters": ["@vizejs/parcel-transformer/dev-cache", "..."],
   "transformers": {
     "*.vue": ["@vizejs/parcel-transformer"],
     "vize-component:*.vue": ["@vizejs/parcel-transformer"],
@@ -24,16 +24,6 @@ Register the transformer and named component pipeline in `.parcelrc`:
   }
 }
 ```
-
-Create `vize-parcel-dev-cache.cjs` beside `.parcelrc`:
-
-```js
-module.exports = require("@vizejs/parcel-transformer/dev-cache");
-```
-
-Parcel validates reporter package names before resolving their exports. The
-relative CommonJS adapter loads the reporter through its public package subpath
-and keeps it ahead of the default development server reporter.
 
 The named pipeline isolates component execution from style dependencies. The CSS
 continuation scopes styles after Parcel's preprocessor pipeline and preserves its
