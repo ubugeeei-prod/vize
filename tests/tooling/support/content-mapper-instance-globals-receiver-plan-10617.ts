@@ -1,3 +1,4 @@
+import { assertSourceProtocolAdmission } from "./helper-abi-source-admission-11809.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -235,7 +236,7 @@ export function runReceiverPlanControls(
           { status: 0, signal: null, error: null, stderr: "" },
         );
       assert.equal(responses.length, 6);
-      assertProtocolAdmission(responses, path.join(source, "tsconfig.json"));
+      assertSourceProtocolAdmission(responses, path.join(source, "tsconfig.json"));
       assertProtocolAdmission(
         decodeFrames(publicPacket.stdout),
         path.join(published, "tsconfig.json"),
