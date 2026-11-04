@@ -83,7 +83,12 @@ fn complete_original_ant_design_files_preserve_every_other_cli_finding() {
             );
             assert!(output.stderr.is_empty(), "{}", input.path);
             let observed: Value = serde_json::from_slice(&output.stdout).unwrap();
-            assert_eq!(observed, serde_json::json!([expected]), "{}", input.path);
+            assert_eq!(
+                observed,
+                crate::support::current_rule_documentation::packet(serde_json::json!([expected])),
+                "{}",
+                input.path
+            );
             assert_eq!(fs::read(&target).unwrap(), bytes, "{}", input.path);
             assert!(!project.path().join("vize.config.json").exists());
             assert!(!project.path().join("node_modules").exists());

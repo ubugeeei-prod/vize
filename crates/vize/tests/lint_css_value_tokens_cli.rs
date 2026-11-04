@@ -99,6 +99,7 @@ fn original_command_and_all_css_vectors_keep_whole_public_reports() {
     );
     fs::remove_file(root.join("MyNotes.vue")).unwrap();
     for case in cases {
+        let expected = crate::support::current_rule_documentation::packet(case["cli"].clone());
         let filename = case["filename"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         assert_eq!(sha(source.as_bytes()), case["sha256"].as_str().unwrap());
@@ -112,10 +113,10 @@ fn original_command_and_all_css_vectors_keep_whole_public_reports() {
         let actual = serde_json::from_slice::<Value>(&output.stdout).ok();
         if output.status.code() != Some(0)
             || !output.stderr.is_empty()
-            || actual.as_ref() != Some(&case["cli"])
+            || actual.as_ref() != Some(&expected)
         {
             failures.push(json!({"case": case["id"], "status": output.status.code(),
-                "actual": actual, "expected": case["cli"], "stderr": output.stderr}));
+                "actual": actual, "expected": expected, "historicalExpected": case["cli"], "stderr": output.stderr}));
         }
         assert_eq!(fs::read(root.join(filename)).unwrap(), source.as_bytes());
         assert_eq!(

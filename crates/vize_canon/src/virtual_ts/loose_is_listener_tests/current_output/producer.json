@@ -1,0 +1,62 @@
+{
+  "schema": "vize.canon.current-unit-oracle-producer.v1",
+  "sourceUri": "https://github.com/ubugeeei-prod/vize/actions/runs/41883888626/artifacts/13351346328",
+  "source": "28f98c998682d92b454f559f959fd9869e978118",
+  "actual": "9e844870b21fadf064894157f816a597844e75cc",
+  "tree": "be8b4fe59456271242680d6ca2d8997614b086f5",
+  "run": "41883888626",
+  "attempt": "1",
+  "binary": {
+    "bytes": 125246648,
+    "path": "/home/runner/_work/vize/vize/target/ci/deps/vize_canon-08f62e9710481b3a",
+    "sha256": "2621d0e81d251d43ef52a85d769ce891cb602acc83a4df64d4b5bb7d8ef057dd"
+  },
+  "unitSourceSha256": "3d80284e433b8ffd8e3b921b72fa44f56f98b7cc5d5eb84a118119bc263b7773",
+  "captureSourceSha256": "c9a4ab58fc0dcb497d7ed407e627e9c81e2a8e01fd59590302d63c5ecbc66c19",
+  "transportQualification": false,
+  "assertionsAfterChange": "pending exact-source Actions",
+  "projections": [
+    {
+      "name": "declared-child",
+      "input": {
+        "script": "const emit = defineEmits<{ pick: [value: string] }>()\n",
+        "template": "<button @click=\"emit('pick', 'ok')\"></button>",
+        "scriptOffset": 0,
+        "templateOffset": 0,
+        "options": "VirtualTsOptions::default()",
+        "entry": "generate_virtual_ts_with_offsets"
+      },
+      "inputSha256": "d5e21132d6e0b2b6be64dc7cfa8faa1585a1833c7f41e6416712e69aa0d02702",
+      "codeBytes": 20182,
+      "codeSha256": "0990b6b42f5fdee34b97216806204fc9bb9498787867e3551ab1ba6898de086f"
+    },
+    {
+      "name": "loose-targets",
+      "input": {
+        "script": "type Component = new (...args: any[]) => { $emit: (...args: any[]) => void }\ninterface VNode { readonly __v_isVNode: true }\ndeclare const target: Component\ndeclare const node: VNode\ndeclare const loose: any\ndeclare const tag: string\nconst take = (value: unknown) => value\n",
+        "template": "<component :is=\"target\" @pick=\"(v) => take(v)\"></component><component :is=\"node\" @pick=\"(v) => take(v)\"></component><component :is=\"loose\" @pick=\"(v) => take(v)\"></component><component :is=\"tag\" @pick=\"(v) => take(v)\"></component><component :is=\"'span'\" @pick=\"(v) => take(v)\"></component>",
+        "scriptOffset": 0,
+        "templateOffset": 0,
+        "options": "VirtualTsOptions::default()",
+        "entry": "generate_virtual_ts_with_offsets"
+      },
+      "inputSha256": "0cf38147d10adb8e41f44241cd7aeaaa64baee6828d4c2521a1772bd8340b8bd",
+      "codeBytes": 62736,
+      "codeSha256": "327d0a674793d5f9db411e9e39413e44a73bda31d07060b5f3fa6c88a182a8d6"
+    },
+    {
+      "name": "typed-parent",
+      "input": {
+        "script": "import Child from './Child.vue'\nconst take = (value: string) => value\n",
+        "template": "<Child @pick=\"(v) => take(v)\"></Child>",
+        "scriptOffset": 0,
+        "templateOffset": 0,
+        "options": "VirtualTsOptions::default()",
+        "entry": "generate_virtual_ts_with_offsets"
+      },
+      "inputSha256": "ab7d6e4536766b1c7ca11f78c09b3f6b48212368c76324f9a0096f2b52d2d972",
+      "codeBytes": 34341,
+      "codeSha256": "d7fdcf916c06cc225805d269088b1eac865269bea2d44d33bb226eac8acc9505"
+    }
+  ]
+}

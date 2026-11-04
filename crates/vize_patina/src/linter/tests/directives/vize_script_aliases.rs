@@ -21,7 +21,7 @@ fn expected(filename: &str, lines: &[u32]) -> Value {
         .map(|line| {
             json!({
                 "ruleId": RULE,
-                "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                "ruleDocsPath": "docs/content/rules/reference/script-no-restricted-globals.md",
                 "severity": 2,
                 "message": MESSAGE,
                 "line": line,

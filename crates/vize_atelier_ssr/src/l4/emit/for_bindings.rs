@@ -37,7 +37,13 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             } else if alias.is_ascii() && !alias.contains('\\') {
                 // Register the same JavaScript names the callback emits.
                 // `index: number` is `index`; a raw annotation never enters scope.
-                let erased = erase_typescript_params(alias.trim());
+                // JavaScript aliases already have their runtime spelling.
+                let erased = self
+                    .ctx
+                    .options
+                    .is_ts
+                    .then(|| erase_typescript_params(alias.trim()))
+                    .flatten();
                 extract_destructure_params(erased.as_deref().unwrap_or(alias.trim()), &mut params);
             }
         }
@@ -58,7 +64,12 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 .map(|alias| {
                     rewrite_for_alias_expressions(alias, |expr| self.text_expr(expr)).map(|text| {
                         let authored = text.unwrap_or_else(|| String::from(alias));
-                        erase_typescript_params(authored.as_str()).unwrap_or(authored)
+                        self.ctx
+                            .options
+                            .is_ts
+                            .then(|| erase_typescript_params(authored.as_str()))
+                            .flatten()
+                            .unwrap_or(authored)
                     })
                 })
                 .transpose()

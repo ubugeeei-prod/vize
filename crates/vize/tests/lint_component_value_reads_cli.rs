@@ -104,7 +104,8 @@ fn component_value_reads_use_the_actual_ecosystem_cli_and_selected_error_disable
         );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
         assert_eq!(
-            actual, case["expected"],
+            actual,
+            crate::support::current_rule_documentation::packet(case["expected"].clone()),
             "{id}: entire formatter report, no rule filtering"
         );
         assert_eq!(

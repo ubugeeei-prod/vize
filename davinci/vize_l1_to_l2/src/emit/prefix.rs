@@ -400,16 +400,34 @@ pub(super) fn prefix_inline_handler(
     })
 }
 
-/// Whether the authored handler is a method reference (Vue's
-/// `isMemberExpression`), read off the node's content.
-pub(super) fn handler_is_reference(file: &str, expr: &ExprRef<'_>) -> bool {
+/// A component receives its method reference unchanged, except an Options API
+/// method keeps its live-lookup wrapper. Read the same erased text as emission.
+pub(super) fn handler_bypasses_component_cache(
+    scope: &PrefixScope<'_>,
+    file: &str,
+    expr: &ExprRef<'_>,
+) -> bool {
     let (source, js) = match expr {
         ExprRef::Js(js) => (js.source, Some(*js)),
         ExprRef::Opaque(opaque) => (opaque.source, None),
         ExprRef::Foreign(_) | ExprRef::Filter(_) => return false,
     };
     let content = node_content(file, source, expr.span());
-    handler::is_reference(content.text.as_str(), content.retained(js))
+    let erased = erase(scope, &content, js);
+    let content = erased.js().trim();
+    let name = content.strip_prefix("$options.").unwrap_or(content);
+    let options_reference = is_simple_identifier(name)
+        && scope.bindings().and_then(|table| table.kind(name))
+            == Some(super::options::BindingKind::Options);
+    !options_reference
+        && handler::is_reference(
+            erased.js(),
+            if erased.changed() {
+                None
+            } else {
+                erased.retained
+            },
+        )
 }
 
 /// Whether processed handler text is already a function or a callable

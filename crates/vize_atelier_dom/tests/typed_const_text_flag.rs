@@ -56,6 +56,34 @@ fn render(source: &str, inline: bool, legacy: bool) -> (vize_l0::String, vize_l0
     (result.preamble, result.code)
 }
 
+// The bare source is an independent legacy control, not a typed-output snapshot.
+// Both full outputs were captured on the f697 production source. Type erasure
+// preserves their renderer and preamble; authored type syntax additionally keeps
+// TEXT in inline mode. Non-inline mode already keeps TEXT for the bare control.
+// Vue 3.5.44 independently confirms that inline bare setup consts omit TEXT;
+// its wrapper, parameter spelling, and non-inline bare flag differ from Vize.
+const EXPECTED_PREAMBLE: &str = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n";
+
+fn expected_code(inline: bool, keeps_flag: bool) -> &'static str {
+    match (inline, keeps_flag) {
+        (true, false) => {
+            r#"export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(pick)))
+}"#
+        }
+        (true, true) => {
+            r#"export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(pick), 1 /* TEXT */))
+}"#
+        }
+        (false, _) => {
+            r#"export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.pick), 1 /* TEXT */))
+}"#
+        }
+    }
+}
+
 #[test]
 fn typed_setup_const_keeps_the_text_flag_on_both_lanes() {
     for inline in [true, false] {
@@ -68,19 +96,14 @@ fn typed_setup_const_keeps_the_text_flag_on_both_lanes() {
                 "{name} preamble (inline: {inline})"
             );
             assert_eq!(legacy_code, l2_code, "{name} (inline: {inline})\n{l2_code}");
-            let spelled = if inline {
-                "_toDisplayString(pick)"
-            } else {
-                "_toDisplayString($setup.pick)"
-            };
-            assert!(
-                l2_code.contains(spelled),
-                "{name} (inline: {inline}) did not erase to {spelled}:\n{l2_code}"
+            assert_eq!(
+                l2_preamble, EXPECTED_PREAMBLE,
+                "{name} full preamble (inline: {inline})"
             );
             assert_eq!(
-                l2_code.contains("1 /* TEXT */"),
-                keeps_flag,
-                "{name} TEXT flag (inline: {inline}):\n{l2_code}"
+                l2_code,
+                expected_code(inline, keeps_flag),
+                "{name} full renderer and TEXT flag (inline: {inline})"
             );
         }
     }

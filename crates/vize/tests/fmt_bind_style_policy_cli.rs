@@ -418,7 +418,7 @@ fn formatter_matches_the_existing_cli_options_only_registration_order() {
                 "messages":[{"column":6,"endColumn":21,"endLine":2,"line":2,
                     "help":"Use v-bind:attr=\"value\" instead of :attr=\"value\"",
                     "message":"[vize:vue/v-bind-style] Prefer `v-bind:` over shorthand `:`",
-                    "ruleDocsPath":"docs/content/rules/vue.md","ruleId":RULE,"severity":1}]
+                    "ruleDocsPath":"docs/content/rules/reference/vue-v-bind-style.md","ruleId":RULE,"severity":1}]
             }])
         );
         let format = run(

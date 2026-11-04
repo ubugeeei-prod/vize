@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use clap::builder::{PossibleValue, TypedValueParser};
 use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{Arg, ArgGroup, Args, Command, Error, ValueEnum};
-use vize_carton::cstr;
+use vize_l0::cstr;
 use vize_l1::embed::Lang;
 use vize_l1::embed::syntax::{ProgramGoal, ProgramOptions};
 

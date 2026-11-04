@@ -1,0 +1,29 @@
+[
+  {
+    "level": "WARN",
+    "fields": [
+      [
+        "message",
+        "Refusing formatter request for ${file}: normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style"
+      ]
+    ]
+  },
+  {
+    "level": "WARN",
+    "fields": [
+      [
+        "message",
+        "Refusing formatter request for ${file}: normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style"
+      ]
+    ]
+  },
+  {
+    "level": "WARN",
+    "fields": [
+      [
+        "message",
+        "Refusing formatter request for ${file}: normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style"
+      ]
+    ]
+  }
+]
