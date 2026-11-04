@@ -108,7 +108,7 @@ async function makeApp(directory) {
     JSON.stringify(
       {
         extends: "@parcel/config-default",
-        reporters: ["./native-trace.cjs", "..."],
+        reporters: ["@vizejs/parcel-transformer/dev-cache", "./native-trace.cjs", "..."],
         transformers: {
           "*.vue": ["@vizejs/parcel-transformer"],
           "vize-component:*.vue": ["@vizejs/parcel-transformer"],
