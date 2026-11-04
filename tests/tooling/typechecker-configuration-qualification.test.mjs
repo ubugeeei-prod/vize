@@ -31,11 +31,15 @@ test("authored type errors stay semantic findings", () => {
   const packet = parsed([
     {
       file: "src/App.vue",
-      diagnostics: ["src/App.vue(1,1): error TS2322: Type 'string' is not assignable to type 'number'."],
+      diagnostics: [
+        "src/App.vue(1,1): error TS2322: Type 'string' is not assignable to type 'number'.",
+      ],
     },
     {
       file: configFile,
-      diagnostics: [`${configFile}(1,1): error TS2688: Cannot find type definition file for 'vue'.`],
+      diagnostics: [
+        `${configFile}(1,1): error TS2688: Cannot find type definition file for 'vue'.`,
+      ],
     },
   ]);
   assert.equal(typecheckerRunStatus(1, packet), "findings");
