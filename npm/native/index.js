@@ -100,5 +100,7 @@ module.exports.transformViteCssVarsForPipeline = nativeBinding.transformViteCssV
 module.exports.typeCheck = nativeBinding.typeCheck;
 module.exports.typeCheckBatch = nativeBinding.typeCheckBatch;
 module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;
+module.exports.typeProjectInputs = nativeBinding.typeProjectInputs;
+module.exports.typeProjectOwners = nativeBinding.typeProjectOwners;
 module.exports.validateDesignTokenReference = nativeBinding.validateDesignTokenReference;
 module.exports.wrapSfcScopedPreprocessorStyle = nativeBinding.wrapSfcScopedPreprocessorStyle;

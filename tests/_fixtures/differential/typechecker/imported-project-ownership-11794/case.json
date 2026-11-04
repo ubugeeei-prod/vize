@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "issue": 11794,
+  "source": "app/Layout.vue",
+  "selectedConfig": "projects/app/tsconfig.json",
+  "files": {
+    "tsconfig.json": {
+      "files": [],
+      "references": [
+        {
+          "path": "./projects/unrelated"
+        },
+        {
+          "path": "./projects/app"
+        }
+      ]
+    },
+    "app/types/FooProps.ts": "export interface FooProps { bar?: Record<string, unknown> }",
+    "app/Layout.vue": "<script setup lang=\"ts\">import type { FooProps } from '@lib/FooProps'; const props = defineProps<FooProps>();</script><template><div>{{ props.bar }}</div></template>",
+    "projects/unrelated/tsconfig.json": {
+      "include": ["../../unrelated/**/*.vue"],
+      "compilerOptions": {
+        "paths": {
+          "@lib/*": ["./wrong/*"]
+        }
+      }
+    },
+    "projects/unrelated/wrong/FooProps.ts": "export interface FooProps { wrong: number }",
+    "projects/app/tsconfig.json": {
+      "include": ["../../app/**/*.vue"],
+      "compilerOptions": {
+        "paths": {
+          "@lib/*": ["../../app/types/*"]
+        }
+      }
+    }
+  },
+  "expectedProps": {
+    "bar": {
+      "type": "Object",
+      "required": false
+    }
+  },
+  "configEdit": {
+    "files": {
+      "app/alternate/FooProps.ts": "export interface FooProps { bar?: string }",
+      "projects/app/tsconfig.json": {
+        "include": ["../../app/**/*.vue"],
+        "compilerOptions": {
+          "paths": {
+            "@lib/*": ["../../app/alternate/*"]
+          }
+        }
+      }
+    },
+    "expectedProps": {
+      "bar": {
+        "type": "String",
+        "required": false
+      }
+    }
+  },
+  "ownershipEdit": {
+    "files": {
+      "projects/unrelated/tsconfig.json": {
+        "include": ["../../app/**/*.vue"],
+        "compilerOptions": {
+          "paths": {
+            "@lib/*": ["./wrong/*"]
+          }
+        }
+      }
+    },
+    "selectedConfig": "tsconfig.json",
+    "expectedError": "Cannot resolve imported macro type `FooProps` from `@lib/FooProps`."
+  }
+}

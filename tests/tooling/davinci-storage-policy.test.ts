@@ -13,6 +13,11 @@ import {
 } from "./davinci-storage-inventory.ts";
 import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davinci-storage-scan.ts";
 
+import {
+  movedProjectStorageIssues,
+  projectStorageBridgePaths,
+} from "./support/typescript-project-storage-bridge.ts";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
   "davinci/vize_l0/src",
@@ -111,7 +116,16 @@ test("stage storage has no opaque imports or unreviewed std paths", () => {
       /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|pool(?:\/tests)?|profiler\/core|telegraph)\.rs: forbidden std storage (?:path|import): /u,
     );
   }
-  assert.deepEqual(measureInventory().issues.toSorted(), foundationBridges.issues.toSorted());
+  const projectSources = Object.fromEntries(
+    projectStorageBridgePaths.map((file) => {
+      const absolute = path.join(repoRoot, file);
+      return [file, fs.existsSync(absolute) ? fs.readFileSync(absolute, "utf8") : null];
+    }),
+  );
+  assert.deepEqual(
+    measureInventory().issues.toSorted(),
+    [...foundationBridges.issues, ...movedProjectStorageIssues(projectSources)].toSorted(),
+  );
 });
 
 test("all owned storage equals the reviewed per-file inventory", () => {

@@ -11,13 +11,29 @@ pub(super) fn resolve_members(
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
+    missing: &mut impl FnMut(&str),
+    collect_missing: bool,
 ) -> Option<String> {
     let mut members: Vec<Member> = Vec::new();
+    let mut complete = true;
     for part in parts {
         // Keep the original expression when any branch cannot be expanded.
         // A partial literal would erase the unresolved branch before the
         // existing AST resolver has a chance to inspect it.
-        let body = resolve_type_to_object_body_inner(part, interfaces, type_aliases, stack)?;
+        let Some(body) = resolve_type_to_object_body_inner(
+            part,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        ) else {
+            if !collect_missing {
+                return None;
+            }
+            complete = false;
+            continue;
+        };
         for member in parse_members(&body) {
             if let Some(previous) = members.iter_mut().find(|old| old.key == member.key) {
                 previous.optional |= member.optional;
@@ -30,7 +46,7 @@ pub(super) fn resolve_members(
             }
         }
     }
-    (!members.is_empty()).then(|| render_members(&members))
+    (complete && !members.is_empty()).then(|| render_members(&members))
 }
 
 #[cfg(test)]

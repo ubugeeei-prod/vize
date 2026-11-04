@@ -7,6 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use sha2::{Digest, Sha256};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 use crate::parse_sfc;
@@ -17,9 +18,18 @@ use super::ScriptCompileContext;
 use super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 use super::helpers::is_import_type_only;
 
+mod required;
+
+#[derive(Default)]
+pub(crate) struct ImportedTypes {
+    pub imports: Vec<(String, String)>,
+    pub dependencies: Vec<String>,
+}
 pub(super) mod resolution;
 mod sources;
-use resolution::{canonical_base_file, path_key, resolve_import_path};
+use resolution::{
+    canonical_base_file, path_key, project::Project, resolve_import_path_with_project,
+};
 
 /// Type declarations and outgoing specifiers extracted from a source module.
 #[derive(Debug, Default)]
@@ -28,49 +38,66 @@ pub(super) struct FileTypeSummary {
     type_aliases: Vec<(String, String)>,
     /// Import/re-export specifiers to follow, in source order.
     specifiers: Vec<String>,
+    /// Local type names and their module requests, for checked macro imports.
+    imports: Vec<(String, String)>,
 }
 
-/// Freshness stamp for a cached summary: modification time plus file size,
-/// so an edit within the same mtime granularity is still detected most of
-/// the time.
+/// Metadata hints for configuration discovery. Imported module summaries below
+/// validate strong source fingerprints instead of treating metadata as identity.
 type FileStamp = (Option<SystemTime>, u64);
 
-/// One cached file summary plus the metadata needed to revalidate it.
-///
-/// `validated_epoch` records the active batch epoch in which the entry's
-/// [`FileStamp`] was last confirmed against disk. It is an atomic so a read
-/// hit can stamp it forward under the shared read guard, without upgrading to
-/// a write lock.
+/// One transient read. Changed bytes and their digest move to the parser together.
+struct FileTypeSource {
+    text: String,
+    fingerprint: [u8; 32],
+}
+
+impl FileTypeSource {
+    fn read(path: &Path) -> Option<Self> {
+        let text = std::fs::read_to_string(path).ok()?;
+        let fingerprint = Sha256::digest(text.as_bytes()).into();
+        Some(Self {
+            text: text.into(),
+            fingerprint,
+        })
+    }
+}
+
+/// A parsed summary and a strong source digest, without retaining the whole file.
 struct CachedFileSummary {
-    stamp: FileStamp,
+    fingerprint: [u8; 32],
     validated_epoch: AtomicU64,
     summary: FileTypeSummary,
 }
 
 impl CachedFileSummary {
-    /// Whether this entry may be reused without re-reading the file, paying the
-    /// `file_stamp` `metadata` syscall only when the entry has not already been
-    /// confirmed this batch. The epoch is stamped forward on a successful
-    /// revalidation so later hits in the same batch skip the syscall; outside a
-    /// batch (`NO_EPOCH`) every call re-stamps.
-    fn is_fresh(&self, path: &Path, epoch: u64) -> bool {
+    /// A changed read is returned to the parser so it is never read twice.
+    fn revalidate(&self, path: &Path, epoch: u64) -> Result<(), Option<FileTypeSource>> {
         if epoch != NO_EPOCH && self.validated_epoch.load(Ordering::Relaxed) == epoch {
-            return true;
+            return Ok(());
         }
-        if self.stamp == file_stamp(path) {
+        let source = FileTypeSource::read(path);
+        if source
+            .as_ref()
+            .is_some_and(|source| source.fingerprint == self.fingerprint)
+        {
             self.validated_epoch.store(epoch, Ordering::Relaxed);
-            true
+            Ok(())
         } else {
-            false
+            Err(source)
         }
     }
 }
 
-/// Process-wide summary cache. Batch compiles and long-lived dev servers walk
-/// the same type-barrel closure for every SFC (nuxt-ui re-reads ~200 files per
-/// component without this); outside a batch entries are revalidated against
-/// [`FileStamp`] on every use so on-disk edits are picked up, and within a
-/// batch the first hit revalidates and the rest reuse it.
+enum SummaryLookup {
+    Cached(Vec<String>),
+    Reload(Option<FileTypeSource>),
+    Miss,
+}
+
+/// Shared AST summaries, revalidated once per file in each batch. Standalone
+/// compiles compare source digests on each request; metadata cannot prove that a
+/// same-length edit within filesystem timestamp granularity is unchanged.
 static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, CachedFileSummary>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
@@ -81,18 +108,19 @@ fn file_stamp(path: &Path) -> FileStamp {
     }
 }
 
+#[cfg(test)]
 fn build_file_summary(path: &Path) -> Option<FileTypeSummary> {
     let content = std::fs::read_to_string(path).ok()?;
+    Some(file_summary_from_source(path, &content))
+}
+
+fn file_summary_from_source(path: &Path, content: &str) -> FileTypeSummary {
     let is_vue = path.extension().is_some_and(|ext| ext == "vue");
     let follows_value_imports = path.file_name().is_some_and(|name| {
         let name = name.to_string_lossy();
         name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
     });
-    Some(extract_file_summary(
-        &content,
-        is_vue,
-        follows_value_imports,
-    ))
+    extract_file_summary(content, is_vue, follows_value_imports)
 }
 
 fn extract_file_summary(
@@ -171,6 +199,25 @@ fn extract_script_summary(
                 summary
                     .specifiers
                     .push(import_decl.source.value.to_compact_string());
+                if let Some(specifiers) = &import_decl.specifiers {
+                    for specifier in specifiers {
+                        let local = match specifier {
+                            ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                        };
+                        summary.imports.push((
+                            local.name.to_compact_string(),
+                            import_decl.source.value.to_compact_string(),
+                        ));
+                    }
+                }
             }
             // Plain (non-`type`) re-exports forward types as well in TS:
             // `export * from './Link.vue'` in a types barrel re-exports
@@ -232,8 +279,18 @@ impl ScriptCompileContext {
     /// misfired on JS object keys like `type: 'text'` next to any `import`,
     /// which is exactly what the `is_ts` gate cuts off.
     pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
+        let _ = self.try_collect_imported_types_from_path(source, filename, is_ts, None);
+    }
+
+    pub(crate) fn try_collect_imported_types_from_path(
+        &mut self,
+        source: &str,
+        filename: &str,
+        is_ts: bool,
+        selected: Option<&Project>,
+    ) -> Result<ImportedTypes, String> {
         if !is_ts {
-            return;
+            return Ok(ImportedTypes::default());
         }
 
         // The root source lives in memory (possibly unsaved editor state), so
@@ -246,22 +303,51 @@ impl ScriptCompileContext {
         if root.specifiers.is_empty() {
             // Nothing to resolve — skip base-file canonicalization entirely
             // (the common case: scripts with only runtime imports).
-            return;
+            return Ok(ImportedTypes::default());
         }
 
         let owned_base = canonical_base_file(filename);
         let base_file = owned_base.as_path();
         let Some(base_dir) = base_file.parent() else {
-            return;
+            return Ok(ImportedTypes::default());
         };
         if base_dir.as_os_str().is_empty() {
-            return;
+            return Ok(ImportedTypes::default());
         }
 
+        let discovered = if selected.is_none() {
+            resolution::project::for_file(base_file)?
+        } else {
+            None
+        };
+        let project = selected.or(discovered.as_deref());
+
         let mut visited = FxHashSet::default();
+        let mut imports = root.imports;
         for specifier in &root.specifiers {
-            self.collect_types_from_specifier(specifier, base_file, &mut visited);
+            self.collect_types_from_specifier(
+                specifier,
+                base_file,
+                &mut visited,
+                project,
+                &mut imports,
+            );
         }
+        let mut dependencies: Vec<String> = visited.into_iter().collect();
+        dependencies.extend(
+            Project::discovery_inputs(base_file)?
+                .iter()
+                .map(|path| path_key(path)),
+        );
+        if let Some(project) = project {
+            dependencies.extend(project.inputs().iter().map(|path| path_key(path)));
+        }
+        dependencies.sort();
+        dependencies.dedup();
+        Ok(ImportedTypes {
+            imports,
+            dependencies,
+        })
     }
 
     fn collect_types_from_specifier(
@@ -269,8 +355,12 @@ impl ScriptCompileContext {
         specifier: &str,
         current_file: &Path,
         visited: &mut FxHashSet<String>,
+        project: Option<&Project>,
+        imports: &mut Vec<(String, String)>,
     ) {
-        let Some(resolved_path) = resolve_import_path(current_file, specifier) else {
+        let Some(resolved_path) =
+            resolve_import_path_with_project(current_file, specifier, project)
+        else {
             return;
         };
 
@@ -279,54 +369,78 @@ impl ScriptCompileContext {
             return;
         }
 
-        // Fast path: merge the declarations under the read guard and only
-        // clone the (small) specifier list for the recursion below — taking
-        // the lock recursively would risk deadlock against writers.
-        //
-        // Within a batch (epoch != NO_EPOCH), an entry already revalidated this
-        // epoch is trusted with no syscall: the only `file_stamp` (a `metadata`
-        // call) is paid on the first hit of the batch. Outside a batch every
-        // hit re-stats, preserving the edit-detection behavior single compiles
-        // rely on.
         let epoch = current_batch_epoch();
-        let mut specifiers: Option<std::vec::Vec<String>> = None;
-        if let Ok(cache) = FILE_TYPE_CACHE.read()
-            && let Some(entry) = cache.get(&resolved_path)
-            && entry.is_fresh(&resolved_path, epoch)
-        {
-            self.merge_file_summary(&entry.summary);
-            specifiers = Some(entry.summary.specifiers.clone());
-        }
-
-        let specifiers = match specifiers {
-            Some(specifiers) => specifiers,
-            None => {
-                // Capture the stamp from the same snapshot we parse so the
-                // entry is consistent; a concurrent edit just loses the race
-                // and re-stamps on the next miss.
-                let stamp = file_stamp(&resolved_path);
-                let Some(summary) = build_file_summary(&resolved_path) else {
+        let specifiers = match self.cached_file_summary(&resolved_path, epoch, imports) {
+            SummaryLookup::Cached(specifiers) => specifiers,
+            SummaryLookup::Reload(source) => {
+                let Some(specifiers) =
+                    self.merge_file_source(&resolved_path, source, epoch, imports)
+                else {
                     return;
                 };
-                self.merge_file_summary(&summary);
-                let specifiers = summary.specifiers.clone();
-                if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
-                    cache.insert(
-                        resolved_path.clone(),
-                        CachedFileSummary {
-                            stamp,
-                            validated_epoch: AtomicU64::new(epoch),
-                            summary,
-                        },
-                    );
-                }
+                specifiers
+            }
+            SummaryLookup::Miss => {
+                let source = FileTypeSource::read(&resolved_path);
+                let Some(specifiers) =
+                    self.merge_file_source(&resolved_path, source, epoch, imports)
+                else {
+                    return;
+                };
                 specifiers
             }
         };
 
         for specifier in &specifiers {
-            self.collect_types_from_specifier(specifier, &resolved_path, visited);
+            self.collect_types_from_specifier(specifier, &resolved_path, visited, project, imports);
         }
+    }
+
+    fn cached_file_summary(
+        &mut self,
+        path: &Path,
+        epoch: u64,
+        imports: &mut Vec<(String, String)>,
+    ) -> SummaryLookup {
+        let Ok(cache) = FILE_TYPE_CACHE.read() else {
+            return SummaryLookup::Miss;
+        };
+        let Some(entry) = cache.get(path) else {
+            return SummaryLookup::Miss;
+        };
+        match entry.revalidate(path, epoch) {
+            Ok(()) => {
+                self.merge_file_summary(&entry.summary);
+                imports.extend(entry.summary.imports.iter().cloned());
+                SummaryLookup::Cached(entry.summary.specifiers.clone())
+            }
+            Err(source) => SummaryLookup::Reload(source),
+        }
+    }
+
+    fn merge_file_source(
+        &mut self,
+        path: &Path,
+        source: Option<FileTypeSource>,
+        epoch: u64,
+        imports: &mut Vec<(String, String)>,
+    ) -> Option<Vec<String>> {
+        let source = source?;
+        let summary = file_summary_from_source(path, &source.text);
+        self.merge_file_summary(&summary);
+        imports.extend(summary.imports.iter().cloned());
+        let specifiers = summary.specifiers.clone();
+        if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
+            cache.insert(
+                path.to_path_buf(),
+                CachedFileSummary {
+                    fingerprint: source.fingerprint,
+                    validated_epoch: AtomicU64::new(epoch),
+                    summary,
+                },
+            );
+        }
+        Some(specifiers)
     }
 
     fn merge_file_summary(&mut self, summary: &FileTypeSummary) {

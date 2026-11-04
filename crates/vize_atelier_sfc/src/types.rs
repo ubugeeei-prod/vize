@@ -227,8 +227,9 @@ pub struct SfcCompileResult {
     #[serde(default)]
     pub macro_artifacts: Vec<SfcMacroArtifact>,
 
-    /// Files the compile read besides the SFC (pug `include`s), for
-    /// watchers.
+    /// Files consulted besides the SFC: pug includes, imported types, and
+    /// project configuration, including absent selection candidates. Hosts
+    /// watch them to invalidate compiled output when its authority changes.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub dependencies: Vec<String>,
 }

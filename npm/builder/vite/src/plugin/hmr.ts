@@ -19,6 +19,7 @@ import {
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
+import { typeProjectDependencyRoots } from "./type-project-watches.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
@@ -48,17 +49,27 @@ type GenerateBundle = Record<string, GenerateBundleItem>;
  * with the number of components in the project; the caches now carry a reverse
  * index that answers it in constant time. See `compiled-module-cache.ts`.
  */
-function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string): string[] {
-  const normalizedDependency = path.resolve(dependencyFile);
+function getVueFilesDependingOn(
+  state: VizePluginState,
+  dependencyFile: string,
+): { owners: string[]; clientOwners: Set<string> } {
+  const dependencies = [
+    path.resolve(dependencyFile),
+    ...typeProjectDependencyRoots(state.cache, dependencyFile),
+  ];
   const owners = new Set<string>();
+  const clientOwners = new Set<string>();
 
   for (const cache of [state.cache, state.ssrCache]) {
-    for (const vueFile of ownersOfDependency(cache, normalizedDependency)) {
-      owners.add(vueFile);
+    for (const dependency of dependencies) {
+      for (const vueFile of ownersOfDependency(cache, dependency)) {
+        owners.add(vueFile);
+        if (cache === state.cache) clientOwners.add(vueFile);
+      }
     }
   }
 
-  return [...owners];
+  return { owners: [...owners], clientOwners };
 }
 
 export async function handleHotUpdateHook(
@@ -74,8 +85,10 @@ export async function handleHotUpdateHook(
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
-  const clientDependencyOwners = new Set(ownersOfDependency(state.cache, path.resolve(file)));
-  const dependencyOwners = getVueFilesDependingOn(state, file);
+  const { owners: dependencyOwners, clientOwners: clientDependencyOwners } = getVueFilesDependingOn(
+    state,
+    file,
+  );
   if (dependencyOwners.length > 0) {
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
 

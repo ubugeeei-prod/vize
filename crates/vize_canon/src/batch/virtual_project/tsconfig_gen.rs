@@ -15,8 +15,8 @@ mod native_options;
 mod path_rebase;
 pub(super) mod references;
 pub use references::{
-    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, TsconfigWildcard,
-    TsconfigWildcardUsage,
+    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigOwnershipSnapshot,
+    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
 };
 mod jsx_files;
 mod remap;

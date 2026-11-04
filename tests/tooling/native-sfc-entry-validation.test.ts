@@ -164,6 +164,7 @@ test("original SFC entry failures and type-only controls cross the actual public
     "macroArtifacts",
     "dependencies",
     "moduleShape",
+    "typeProject",
   ];
   for (const observation of observations) {
     const { row, parsed, first, repeated } = observation;
@@ -179,6 +180,14 @@ test("original SFC entry failures and type-only controls cross the actual public
     const result = first.value;
     for (const key of Reflect.ownKeys(result))
       assert.ok(typeof key === "string" && allowed.includes(key));
+    if (Object.hasOwn(result, "typeProject")) {
+      record(result.typeProject);
+      assert.deepEqual(Object.keys(result.typeProject).sort(), ["revision", "root"]);
+      assert.equal(result.typeProject.root, path.join(root, "tsconfig.json"));
+      assert.equal(typeof result.typeProject.revision, "string");
+      assert.match(result.typeProject.revision as string, /^[1-9][0-9]*$/);
+      assert.ok((result.dependencies as string[]).includes(result.typeProject.root as string));
+    }
     assert.ok(typeof result.code === "string");
     assert.deepEqual(result.warnings, []);
     assert.deepEqual(result.macroArtifacts, []);

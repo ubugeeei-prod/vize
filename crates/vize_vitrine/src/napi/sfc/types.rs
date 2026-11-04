@@ -74,6 +74,8 @@ pub struct SfcCompileOptionsNapi {
     pub vapor: Option<bool>,
     /// Extract Nuxt page metadata only when its integration opts in.
     pub nuxt_page_meta: Option<bool>,
+    /// Fallback tsconfig when an input has no nearest user project.
+    pub type_resolution_fallback_tsconfig: Option<String>,
     pub custom_renderer: Option<bool>,
     pub custom_elements: Option<Vec<String>>,
     pub template_syntax: Option<String>,
@@ -142,6 +144,8 @@ impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
 
 #[napi(object)]
 pub struct SfcCompileResultNapi {
+    /// Project authority for configuration watches shared across components.
+    pub type_project: Option<TypeProjectContextNapi>,
     pub code: String,
     /// Source Map v3 document (JSON) describing `code`, present only when
     /// `sourceMap` was requested and at least one emitted token maps to the
@@ -172,6 +176,8 @@ pub struct BatchCompileOptionsNapi {
     pub vapor: Option<bool>,
     /// Extract Nuxt page metadata only when its integration opts in.
     pub nuxt_page_meta: Option<bool>,
+    /// Fallback tsconfig when inputs have no nearest user project.
+    pub type_resolution_fallback_tsconfig: Option<String>,
     pub custom_renderer: Option<bool>,
     pub custom_elements: Option<Vec<String>>,
     pub template_syntax: Option<String>,
@@ -245,6 +251,8 @@ pub struct BatchFileInputNapi {
 
 #[napi(object)]
 pub struct BatchFileResultNapi {
+    /// Project authority for configuration watches shared across components.
+    pub type_project: Option<TypeProjectContextNapi>,
     pub path: String,
     pub code: String,
     /// Source Map v3 document (JSON) describing `code`, present only when
@@ -275,8 +283,14 @@ pub struct BatchCompileResultWithFilesNapi {
     pub time_ms: f64,
 }
 
+#[napi(object)]
+pub struct TypeProjectContextNapi {
+    pub root: String,
+    pub revision: String,
+}
+
 mod conversions;
-pub(super) use conversions::{dependencies_to_napi, macro_artifacts_to_napi};
+pub(super) use conversions::{dependencies_to_napi, macro_artifacts_to_napi, type_project_to_napi};
 
 pub(super) fn style_blocks_to_napi(
     styles: &[vize_atelier_sfc::SfcStyleBlock],

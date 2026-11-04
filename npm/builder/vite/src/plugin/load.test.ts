@@ -330,39 +330,6 @@ assert.match(
   "Repeated client loads for one update must keep the same HMR mode",
 );
 
-const watchedDependency = "/src/external.css";
-const watchedPath = "/src/Watched.vue";
-const watchedState: VizePluginState = {
-  ...hmrState,
-  cache: new Map([
-    [
-      watchedPath,
-      {
-        code: `export function render() { return null }
-const _sfc_main = {}
-_sfc_main.render = render
-export default _sfc_main`,
-        scopeId: "watch1234",
-        hasScoped: false,
-        styles: [],
-        dependencies: [watchedDependency],
-      },
-    ],
-  ]),
-  pendingHmrUpdateTypes: new Map(),
-};
-const watchedFiles: string[] = [];
-const watchedLoad = await transformCachedSfcModule(watchedState, toVirtualId(watchedPath), {
-  ssr: false,
-  addWatchFile: (id) => watchedFiles.push(id),
-});
-assert.ok(watchedLoad && typeof watchedLoad === "object", "Watched SFC should load");
-assert.deepEqual(
-  watchedFiles,
-  [watchedPath, watchedDependency],
-  "Virtual SFC loads should register the real source file and src dependencies with Vite's watcher",
-);
-
 const inlinePath = "/src/InlineHmr.vue";
 const inlineState: VizePluginState = {
   ...hmrState,

@@ -20,6 +20,7 @@ import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.
 import { normalizeStyleVirtualId } from "./style-request.ts";
 import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
+import { createDependencyWatch } from "./dependency-watches.ts";
 import { compileFile } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { identitySourceMap, MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
@@ -33,6 +34,8 @@ import {
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
+import { watchTypeProject } from "./type-project-watches.ts";
+import { evictCompiledModule } from "./compiled-module-cache.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -163,10 +166,18 @@ export async function transformSfcModule(
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
-  // A transform's watch file is a module import; only a legacy `\0` id needs its own file.
+  const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
+  try {
+    watchTypeProject(state.cache, compiled.typeProject, watchDependency);
+  } catch (error) {
+    evictCompiledModule(cache, realPath);
+    throw error;
+  }
+  // The real SFC is executable; compiler inputs only need filesystem watches.
+  if (sfc.nullPrefixed) options.addWatchFile?.(realPath);
   const dependencies = compiled.dependencies ?? [];
-  for (const watchFile of new Set(sfc.nullPrefixed ? [realPath, ...dependencies] : dependencies)) {
-    options.addWatchFile?.(watchFile);
+  for (const dependency of new Set(dependencies)) {
+    watchDependency?.(dependency);
   }
 
   const hasDelegated = hasDelegatedStyles(compiled);

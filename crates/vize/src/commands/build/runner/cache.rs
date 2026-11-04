@@ -26,6 +26,7 @@ use crate::commands::build::config::ErrorPhase;
 /// specific component name through self-component resolution.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(super) struct StatsCompileCacheKey {
+    pub(super) type_context: Option<crate::type_projects::TypeProjectCacheIdentity>,
     /// Fast content fingerprint used to group identical generated benchmark bodies.
     pub(super) source_hash: u64,
     /// Guards the fingerprint and keeps same-hash, different-length sources apart.
@@ -67,6 +68,7 @@ pub(super) enum StatsCompileCacheEntry {
 #[derive(Default)]
 pub(super) struct StatsCompileCache {
     pub(super) entries: Mutex<FxHashMap<StatsCompileCacheKey, StatsCompileCacheEntry>>,
+    pub(super) source_facts: crate::type_projects::SourceFacts,
 }
 
 /// Returns whether a source can reuse another file's stats-only compile result.
@@ -171,6 +173,7 @@ const rows = ref(['a', 'b', 'c'])
 
     fn key_for(source: &str) -> StatsCompileCacheKey {
         StatsCompileCacheKey {
+            type_context: None,
             source_hash: hash_str(source),
             source_len: source.len(),
             component_name_len: 0,

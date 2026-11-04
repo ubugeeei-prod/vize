@@ -95,6 +95,8 @@ export type CompileOptionsForRequest = {
   ssr: boolean;
   vapor: boolean;
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   mode?: "module" | "function";
   customRenderer: boolean;
   customElements?: string[];
@@ -145,6 +147,9 @@ export function getCompileOptionsForRequest(
     ...resolvePluginVueCompileOptions(mergedOptions ?? {}),
   };
 
+  if (mergedOptions?.typeResolutionFallbackTsconfig !== undefined) {
+    options.typeResolutionFallbackTsconfig = mergedOptions.typeResolutionFallbackTsconfig;
+  }
   if (mergedOptions?.nuxtPageMeta !== undefined) {
     options.nuxtPageMeta = mergedOptions.nuxtPageMeta;
   }
