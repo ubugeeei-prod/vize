@@ -9,7 +9,7 @@ function parsed(files) {
   return { files };
 }
 
-test("n8n configuration diagnostics do not qualify as semantic findings", () => {
+void test("n8n configuration diagnostics do not qualify as semantic findings", () => {
   const packet = parsed([
     { file: "src/App.vue", diagnostics: [] },
     {
@@ -27,7 +27,7 @@ test("n8n configuration diagnostics do not qualify as semantic findings", () => 
   assert.equal(typecheckerRunStatus(0, packet), "ok");
 });
 
-test("authored type errors stay semantic findings", () => {
+void test("authored type errors stay semantic findings", () => {
   const packet = parsed([
     {
       file: "src/App.vue",
@@ -45,7 +45,7 @@ test("authored type errors stay semantic findings", () => {
   assert.equal(typecheckerRunStatus(1, packet), "findings");
 });
 
-test("a clean packet stays ok only at exit zero", () => {
+void test("a clean packet stays ok only at exit zero", () => {
   const packet = parsed([{ file: "src/App.vue", diagnostics: [] }]);
   assert.equal(typecheckerRunStatus(0, packet), "ok");
   assert.equal(typecheckerRunStatus(1, packet), "findings");
