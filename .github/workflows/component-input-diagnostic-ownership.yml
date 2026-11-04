@@ -18,6 +18,10 @@ on:
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
       - "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
+      - "crates/vize_canon/src/virtual_ts/generator/emits.rs"
+      - "crates/vize_canon/tests/constructor_emission_projection.rs"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt"
@@ -34,7 +38,14 @@ on:
       - "tools/support/compat/content-mapper/callback-owner*.ts"
       - "tools/support/compat/content-mapper/aria-component*.ts"
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
+      - "tools/support/compat/content-mapper/constructor-helper-assets.ts"
+      - "tools/support/compat/content-mapper/constructor-projection-receipt.ts"
+      - "tools/support/compat/content-mapper/projection-byte-relocation.ts"
+      - "tools/support/compat/content-mapper/owned-emit-overload-transition.ts"
       - "tests/tooling/constructor-projection-parity.test.ts"
+      - "tests/tooling/constructor-projection-emit-overload.test.ts"
+      - "tests/tooling/emit-overload-transition-fixture.ts"
+      - "tests/tooling/fixtures/emit-overload-transition/**"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
       - "tests/tooling/callback-owner-certificate.test.ts"
       - "tests/tooling/aria-component-attrs.test.ts"
@@ -349,7 +360,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test tests/tooling/constructor-projection-parity.test.ts
+          node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/constructor-projection-emit-overload.test.ts
           node tools/support/compat/content-mapper/constructor-projection-parity.ts \
             "$RUNNER_TEMP/component-input-parity" \
             "$RUNNER_TEMP/component-input-base" "$GITHUB_WORKSPACE"

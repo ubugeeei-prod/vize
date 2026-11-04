@@ -91,3 +91,13 @@ export function withoutProducerUnmappedIgnores<T extends Packet>(
   }
   return result;
 }
+
+/** Authenticate the complete producer population in every current transform. */
+export function certifyCurrentProducerPopulation(packets: Iterable<Packet>): number {
+  let count = 0;
+  for (const packet of packets) {
+    withoutProducerUnmappedIgnores(packet, { requireComplete: true });
+    count++;
+  }
+  return count;
+}

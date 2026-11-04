@@ -17,6 +17,10 @@ export function isProjectionSourcePath(file) {
   return (
     file === "tools/support/compat/github/unicode-prop-projection-custody.mjs" ||
     file === "tools/support/compat/content-mapper/constructor-projection-parity.ts" ||
+    file === "tools/support/compat/content-mapper/constructor-helper-assets.ts" ||
+    file === "tools/support/compat/content-mapper/constructor-projection-receipt.ts" ||
+    file === "tools/support/compat/content-mapper/projection-byte-relocation.ts" ||
+    file === "tools/support/compat/content-mapper/owned-emit-overload-transition.ts" ||
     file === "tools/support/compat/content-mapper/canonical-helper-transition.ts" ||
     file === "tools/support/compat/content-mapper/producer-unmapped-ignores.ts" ||
     file.endsWith(".rs") ||
@@ -29,13 +33,20 @@ export function isProjectionSourcePath(file) {
 }
 
 /** Reuse the finite source certificate without changing either raw capture. */
-export function certifyUnaffectedProjectionPackets(baseBytes, headBytes, baseRoot, headRoot) {
+export function certifyUnaffectedProjectionPackets(
+  baseBytes,
+  headBytes,
+  baseRoot,
+  headRoot,
+  sources,
+) {
   const before = JSON.parse(baseBytes.toString("utf8"));
   const after = JSON.parse(headBytes.toString("utf8"));
-  const assets = readAssets(baseRoot, headRoot);
+  const assets = readAssets(baseRoot, headRoot, sources);
   return {
     baseSha256: hash(baseBytes),
     headSha256: hash(headBytes),
+    emitOverloads: assets.emitOverloads?.provenance,
     comparatorSha256: hash(
       fs.readFileSync(
         new URL("../content-mapper/constructor-projection-parity.ts", import.meta.url),
@@ -225,7 +236,17 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   assert.notEqual(roles.base.target, roles.head.target);
   const baseBytes = fs.readFileSync(path.join(output, "base.json")),
     headBytes = fs.readFileSync(path.join(output, "head.json"));
-  const projectionParity = certifyUnaffectedProjectionPackets(baseBytes, headBytes, baseline, root);
+  const projectionParity = certifyUnaffectedProjectionPackets(
+    baseBytes,
+    headBytes,
+    baseline,
+    root,
+    {
+      repository: root,
+      base: roles.base.source.revision,
+      head: roles.head.source.revision,
+    },
+  );
   const receipt = {
     schema: "vize.unicodePropProjectionCustody",
     version: 1,
