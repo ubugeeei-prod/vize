@@ -213,7 +213,7 @@ const message = "hello"
         result
             .text
             .lines()
-            .filter_map(|line| line.strip_prefix("const message "))
+            .filter_map(|line| line.strip_prefix("  const message "))
             .collect::<Vec<_>>(),
         ["= \"hello\""]
     );

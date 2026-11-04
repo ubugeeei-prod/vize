@@ -5865,38 +5865,6 @@
       ]
     },
     {
-      "id": "typechecker/expect-instance-primary-11675",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "sourceRevision": "65331762308cfe796152dbadfafda0af92f5a2fa",
-      "test": "batch::virtual_project::content_mapper::directive_tests::directive_exact::volar_expect_directive_owns_the_instance_primary_not_a_navigation_copy",
-      "inputs": [
-        {
-          "path": "expect-instance-primary-11675/Directives.vue.txt",
-          "sha256": "2975dbfa0d263d3f3321ce1e5ea300e6b94405aab9b41b4fa9ff1324b157d35e",
-          "role": "physically-consumed-native-projection-ownership-regression"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      },
-      "scope": "Exact failing Volar Directives.vue input consumed by the named native mapper ownership unit. Input registration only; batch CLI/native after qualification remains a separate Actions gate."
-    },
-    {
       "state": "active",
       "targets": [
         "batch"
@@ -11636,6 +11604,38 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/expect-instance-primary-11675",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "65331762308cfe796152dbadfafda0af92f5a2fa",
+      "test": "batch::virtual_project::content_mapper::directive_tests::directive_exact::volar_expect_directive_owns_the_instance_primary_not_a_navigation_copy",
+      "inputs": [
+        {
+          "path": "expect-instance-primary-11675/Directives.vue.txt",
+          "sha256": "2975dbfa0d263d3f3321ce1e5ea300e6b94405aab9b41b4fa9ff1324b157d35e",
+          "role": "physically-consumed-native-projection-ownership-regression"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "scope": "Exact failing Volar Directives.vue input consumed by the named native mapper ownership unit. Input registration only; batch CLI/native after qualification remains a separate Actions gate."
     },
     {
           "id": "typechecker/expect-sibling-interpolation-10871",
