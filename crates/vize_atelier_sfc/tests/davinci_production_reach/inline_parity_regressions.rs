@@ -79,6 +79,17 @@ fn typed_slot_handlers_keep_the_current_scope_and_outside_cache() {
 }
 
 #[test]
+fn typed_component_method_references_preserve_callable_identity() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "events/expression.vue",
+        include_str!(
+            "../../../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue"
+        ),
+    );
+}
+
+#[test]
 fn maybe_ref_model_writes_match_shipped_compiler() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
