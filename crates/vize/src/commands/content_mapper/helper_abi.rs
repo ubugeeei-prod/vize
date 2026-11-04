@@ -85,7 +85,9 @@ pub(super) fn installed_helpers(
     };
     let manifest_bytes = std::fs::read(&manifest_path).ok();
     let mut fingerprint = Sha256::new();
-    let package_identity = std::fs::canonicalize(&package).unwrap_or_else(|_| package.clone());
+    let Ok(package_identity) = std::fs::canonicalize(&package) else {
+        return capability;
+    };
     fingerprint.update(package_identity.to_string_lossy().as_bytes());
     fingerprint.update(manifest_bytes.as_deref().unwrap_or_default());
     // Watch missing declarations too: repairing an incomplete install must
@@ -115,8 +117,29 @@ pub(super) fn installed_helpers(
                 });
         }
     }
-    let same_vue = resolve_node_package(project_directory, "vue")
-        .zip(resolve_node_package(&package, "vue"))
+    // TypeScript normally resolves package imports through their real path.
+    // A pnpm package's peer dependencies belong to that physical package, not
+    // to the project's logical node_modules symlink. preserveSymlinks opts in
+    // to the latter authority for both TypeScript and this capability gate.
+    let helper_root = if compiler_options.get("preserveSymlinks") == Some(&Value::Bool(true)) {
+        &package
+    } else {
+        &package_identity
+    };
+    let project_vue = resolve_node_package(
+        project_directory,
+        "vue",
+        &mut capability.watched_files,
+        &mut fingerprint,
+    );
+    let helper_vue = resolve_node_package(
+        helper_root,
+        "vue",
+        &mut capability.watched_files,
+        &mut fingerprint,
+    );
+    let same_vue = project_vue
+        .zip(helper_vue)
         .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue);
     let manifest =
         manifest_bytes.and_then(|contents| serde_json::from_slice::<Value>(&contents).ok());
@@ -184,14 +207,30 @@ fn supports_sdk_resolution(project_directory: &Path, compiler_options: &Value) -
     true
 }
 
-fn resolve_node_package(from: &Path, package: &str) -> Option<PathBuf> {
+fn resolve_node_package(
+    from: &Path,
+    package: &str,
+    watched_files: &mut Vec<CompactString>,
+    fingerprint: &mut Sha256,
+) -> Option<PathBuf> {
     from.ancestors().find_map(|directory| {
-        std::fs::canonicalize(
-            directory
-                .join("node_modules")
-                .join(package)
-                .join("package.json"),
-        )
-        .ok()
+        let candidate = directory
+            .join("node_modules")
+            .join(package)
+            .join("package.json");
+        watched_files.push(CompactString::from(candidate.to_string_lossy().as_ref()));
+        fingerprint.update(candidate.to_string_lossy().as_bytes());
+        fingerprint.update(b"\0");
+        let Ok(manifest) = std::fs::canonicalize(candidate) else {
+            fingerprint.update(b"missing\0");
+            return None;
+        };
+        watched_files.push(CompactString::from(manifest.to_string_lossy().as_ref()));
+        fingerprint.update(manifest.to_string_lossy().as_bytes());
+        fingerprint.update(b"\0");
+        if let Ok(contents) = std::fs::read(&manifest) {
+            fingerprint.update(Sha256::digest(contents));
+        }
+        Some(manifest)
     })
 }

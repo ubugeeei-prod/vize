@@ -68,6 +68,22 @@ impl InstalledSdk {
         assert_eq!(source.matches(before).count(), 1, "{}", file.display());
         std::fs::write(file, source.replacen(before, after, 1)).unwrap();
     }
+
+    #[cfg(unix)]
+    fn move_to_pnpm_store(&self, same_vue: bool) {
+        let root = self._directory.path();
+        let physical = root.join("store/vize/node_modules/vize");
+        std::fs::create_dir_all(physical.parent().unwrap()).unwrap();
+        std::fs::rename(&self.package, &physical).unwrap();
+        std::os::unix::fs::symlink(&physical, &self.package).unwrap();
+        let helper_vue = physical.parent().unwrap().join("vue");
+        if same_vue {
+            std::os::unix::fs::symlink(root.join("node_modules/vue"), helper_vue).unwrap();
+        } else {
+            std::fs::create_dir_all(&helper_vue).unwrap();
+            std::fs::write(helper_vue.join("package.json"), "{}").unwrap();
+        }
+    }
 }
 
 fn copy_declarations(source: &Path, target: &Path) {
@@ -175,4 +191,80 @@ fn sdk_repairs_invalidate_the_open_project_identity_and_watch_closure() {
     );
     std::fs::write(declaration, original).unwrap();
     assert_eq!(before, sdk.open_result());
+}
+
+#[cfg(unix)]
+#[test]
+fn pnpm_helpers_use_their_physical_vue_peer_by_default() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(false);
+    assert_self_contained(&sdk.transform());
+}
+
+#[cfg(unix)]
+#[test]
+fn pnpm_helpers_with_the_same_physical_vue_peer_keep_shared_types() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(true);
+    assert!(
+        sdk.transform()
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn preserve_symlinks_uses_the_logical_vue_authority() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(false);
+    assert!(
+        sdk.transform_with_options(json!({"preserveSymlinks": true}))
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn pnpm_peer_repairs_are_watched_and_change_the_project_identity() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(false);
+    let physical = std::fs::canonicalize(&sdk.package).unwrap();
+    let peer = physical.parent().unwrap().join("vue");
+    let before = sdk.open_result();
+    assert!(
+        before["watchedFiles"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(peer.join("package.json")))
+    );
+    std::fs::remove_dir_all(&peer).unwrap();
+    std::os::unix::fs::symlink(sdk._directory.path().join("node_modules/vue"), peer).unwrap();
+    assert_ne!(
+        before["configIdentity"],
+        sdk.open_result()["configIdentity"]
+    );
+    assert!(
+        sdk.transform()
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
+}
+
+#[test]
+fn a_new_closer_vue_installation_is_watched_before_it_exists() {
+    let sdk = InstalledSdk::new();
+    let closer = sdk.config.parent().unwrap().join("node_modules/vue");
+    let before = sdk.open_result();
+    assert!(
+        before["watchedFiles"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(closer.join("package.json")))
+    );
+    std::fs::create_dir_all(&closer).unwrap();
+    std::fs::write(closer.join("package.json"), "{}").unwrap();
+    assert_ne!(
+        before["configIdentity"],
+        sdk.open_result()["configIdentity"]
+    );
+    assert_self_contained(&sdk.transform());
 }
