@@ -6,7 +6,7 @@ use vize_atelier_core::{
     CompilerError, ErrorCode, ParserOptions, parser::parse_with_options_and_template_syntax,
 };
 use vize_carton::{Allocator, cstr, profile};
-use vize_relief::RootNode;
+use vize_relief::{RootNode, options::ParseMode};
 
 use super::{VueCodegenOptions, diagnostic_for_offset};
 use crate::batch::{Diagnostic, SfcBlockType};
@@ -26,6 +26,7 @@ pub(super) fn parse<'a>(
             allocator,
             template_content,
             ParserOptions {
+                mode: ParseMode::Sfc,
                 experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
                 ..ParserOptions::default()
             },

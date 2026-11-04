@@ -1,4 +1,12 @@
-use super::{LexErrorCode, QuoteType, TokenEvent, tokenize};
+use super::{LexErrorCode, LexOptions, Lexer, QuoteType, TestCallbacks, TokenEvent, tokenize};
+use crate::markup::VueComponent;
+
+fn tokenize_vue(source: &str) -> TestCallbacks {
+    let mut lexer =
+        Lexer::<VueComponent, _>::new(source, TestCallbacks::default(), LexOptions::default());
+    lexer.run();
+    lexer.into_sink()
+}
 
 #[test]
 fn quoted_values_end_before_an_adjacent_attribute_in_every_quote_pair() {
@@ -24,7 +32,7 @@ fn quoted_values_end_before_an_adjacent_attribute_in_every_quote_pair() {
             QuoteType::Single,
         ),
     ] {
-        let callbacks = tokenize(source);
+        let callbacks = tokenize_vue(source);
         assert!(
             callbacks.errors.is_empty(),
             "{source}: {:?}",
@@ -74,17 +82,19 @@ fn adjacency_does_not_change_unquoted_or_unfinished_value_errors() {
 
 #[test]
 fn html_documents_keep_their_whitespace_error_and_the_same_attribute_tokens() {
-    use super::{LexOptions, Lexer, TestCallbacks};
     use crate::markup::profile::Document;
 
     let source = "<div a=\"x\"b='y'></div>";
-    let component = tokenize(source);
+    let component = tokenize_vue(source);
+    let standard = tokenize(source);
     let mut lexer =
         Lexer::<Document, _>::new(source, TestCallbacks::default(), LexOptions::default());
     lexer.run();
     let document = lexer.into_sink();
     assert!(component.errors.is_empty());
     assert_eq!(document.events, component.events);
+    assert_eq!(standard.events, component.events);
+    assert_eq!(standard.errors, document.errors);
     assert_eq!(
         document.errors.as_slice(),
         &[(LexErrorCode::MissingWhitespaceBetweenAttributes, 10)]
