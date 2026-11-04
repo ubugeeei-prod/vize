@@ -126,10 +126,9 @@ fn transform_declares_its_virtual_extension_on_every_response() {
     assert_eq!(fallback.extension, CONTENT_MAPPER_VIRTUAL_EXTENSION);
     let fallback_json = serde_json::to_value(&fallback).expect("fallback transform json");
     let fallback_object = assert_serialized_transform_uses_protocol_v1_header(&fallback_json);
-    assert!(
-        fallback_object["text"]
-            .as_str()
-            .is_some_and(|text| text.contains("__vize_component"))
+    assert_eq!(
+        fallback_object["text"].as_str(),
+        Some("declare const __vize_component: any;\nexport default __vize_component;\n")
     );
     assert!(
         fallback_object["mappings"]
@@ -210,11 +209,21 @@ const message = "hello"
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
 
-    assert!(result.text.contains("const message = \"hello\""));
-    assert!(
-        !result
+    assert_eq!(
+        result
             .text
-            .contains("/// <reference types=\"vite/client\" />")
+            .lines()
+            .filter_map(|line| line.strip_prefix("const message "))
+            .collect::<Vec<_>>(),
+        ["= \"hello\""]
+    );
+    assert_eq!(
+        result
+            .text
+            .lines()
+            .filter_map(|line| line.trim_start().strip_prefix("/// <reference types="))
+            .collect::<Vec<_>>(),
+        Vec::<&str>::new()
     );
     assert!(!result.mappings.is_empty());
     let interpolation = result
@@ -269,7 +278,7 @@ const message = "hello"
         }
     }
     assert!(result.mappings.iter().all(|mapping| {
-        diagnostic_anchors.contains(&mapping.0)
+        diagnostic_anchors.iter().any(|anchor| mapping.0 == *anchor)
             || mapping.0[5]
                 == match mapping.0[4] {
                     kind if kind == ContentMapperSpanKind::Verbatim as usize => {
