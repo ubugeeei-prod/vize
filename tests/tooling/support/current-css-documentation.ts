@@ -38,7 +38,7 @@ export function currentCssPacket(expected: unknown): unknown[] {
   }));
 }
 
-function currentPlain(expected: string): string {
+export function currentCssPlain(expected: string): string {
   let reference: string | null = null;
   return expected
     .split(/(?<=\n)/u)
@@ -67,7 +67,9 @@ export function currentCssCases<T extends CssCase>(cases: readonly T[]): T[] {
   return cases.map((row) => ({
     ...row,
     expectedCli: currentCssPacket(row.expectedCli),
-    ...(row.expectedPlain === undefined ? {} : { expectedPlain: currentPlain(row.expectedPlain) }),
+    ...(row.expectedPlain === undefined
+      ? {}
+      : { expectedPlain: currentCssPlain(row.expectedPlain) }),
   }));
 }
 
@@ -75,6 +77,6 @@ export function currentCssReport<T extends { json: unknown; plain: string }>(exp
   return {
     ...expected,
     json: currentCssPacket(expected.json),
-    plain: currentPlain(expected.plain),
+    plain: currentCssPlain(expected.plain),
   };
 }
