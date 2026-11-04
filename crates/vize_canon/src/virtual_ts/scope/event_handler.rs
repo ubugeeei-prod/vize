@@ -207,6 +207,7 @@ pub(super) fn generate_event_handler_expressions(
             // expression is the next best anchor, so the identifier's error
             // still maps back instead of being dropped for want of a sub-span
             // (same fallback as a component prop's name/value ranges).
+            let value_range = gen_range.clone();
             let (gen_range, sub_spans) = match listener_spans {
                 Some((stmt_gen_range, name_gen_range)) => (
                     stmt_gen_range,
@@ -239,6 +240,18 @@ pub(super) fn generate_event_handler_expressions(
                 authored_content,
                 &scoped_access,
             );
+            if is_callable_reference && let Some(ownership) = ctx.diagnostic_ownership {
+                ownership.borrow_mut().record(
+                    crate::virtual_ts::diagnostic_ownership::InputOwner::for_listener_reference(
+                        expr.scope_id.as_u32(),
+                        expr.start,
+                        expr.end,
+                    ),
+                    value_range,
+                    src_start..src_end,
+                    false,
+                );
+            }
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
