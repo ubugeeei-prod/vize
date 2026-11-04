@@ -73,10 +73,10 @@ await test("source CLI preserves whole compound global ownership and refusal rep
         fs.writeFileSync(path.join(directory, row.filename), row.source);
         writeVueConfigFixture(directory, config);
         const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
-        const expected = currentRuleDocumentationPacket(row.expectedCli);
+        const currentExpected = currentRuleDocumentationPacket(row.expectedCli);
         for (let pass = 0; pass < 3; pass++) {
-          const raw = run(row, `${id}-json-${pass}`, args, config, expected);
-          assert.deepEqual(JSON.parse(raw.stdout), expected, row.id);
+          const raw = run(row, `${id}-json-${pass}`, args, config, currentExpected);
+          assert.deepEqual(JSON.parse(raw.stdout), currentExpected, row.id);
         }
         const plainArgs = [
           "lint",
