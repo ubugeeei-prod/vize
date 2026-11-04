@@ -213,7 +213,10 @@ await test("the final provenance POST uses a fresh token for the original permis
   assert.equal(fresh?.run_id, initial?.run_id);
   assert.equal(fresh?.workflow_ref, initial?.workflow_ref);
   assert.notEqual(provenance?.authorization, upload?.authorization);
-  assert.equal(provenance?.body, JSON.stringify({ bundle: { mediaType: "application/vnd.dev.sigstore.bundle+json" } }));
+  assert.equal(
+    provenance?.body,
+    JSON.stringify({ bundle: { mediaType: "application/vnd.dev.sigstore.bundle+json" } }),
+  );
 });
 
 await test("negative permission bindings are not forwarded on the provenance POST", async () => {
@@ -291,7 +294,13 @@ await test("Deno's successful provenance warning is not acceptance", () => {
     exitCodeForPublish({
       childCode: 0,
       output: warning,
-      receipt: { attempted: false, accepted: false, reason: null, registryStatus: null, binding: null },
+      receipt: {
+        attempted: false,
+        accepted: false,
+        reason: null,
+        registryStatus: null,
+        binding: null,
+      },
     }),
     1,
   );
@@ -299,7 +308,13 @@ await test("Deno's successful provenance warning is not acceptance", () => {
     exitCodeForPublish({
       childCode: 0,
       output: "Successfully published @vizejs/vize@0.471.0",
-      receipt: { attempted: false, accepted: false, reason: null, registryStatus: null, binding: null },
+      receipt: {
+        attempted: false,
+        accepted: false,
+        reason: null,
+        registryStatus: null,
+        binding: null,
+      },
     }),
     1,
   );
@@ -307,7 +322,13 @@ await test("Deno's successful provenance warning is not acceptance", () => {
     exitCodeForPublish({
       childCode: 0,
       output: "Warning: Skipping, already published @vizejs/vize@0.471.0",
-      receipt: { attempted: false, accepted: false, reason: null, registryStatus: null, binding: null },
+      receipt: {
+        attempted: false,
+        accepted: false,
+        reason: null,
+        registryStatus: null,
+        binding: null,
+      },
     }),
     0,
   );
@@ -315,7 +336,13 @@ await test("Deno's successful provenance warning is not acceptance", () => {
     exitCodeForPublish({
       childCode: 124,
       output: "",
-      receipt: { attempted: false, accepted: false, reason: null, registryStatus: null, binding: null },
+      receipt: {
+        attempted: false,
+        accepted: false,
+        reason: null,
+        registryStatus: null,
+        binding: null,
+      },
     }),
     124,
   );
@@ -323,7 +350,10 @@ await test("Deno's successful provenance warning is not acceptance", () => {
 
 await test("permission audiences that are not one package publish binding are rejected", () => {
   assert.equal(parsePermissionAudience("sigstore"), null);
-  assert.equal(parsePermissionAudience(audienceFor({ ...binding, tarballHash: "ab".repeat(32) })), null);
+  assert.equal(
+    parsePermissionAudience(audienceFor({ ...binding, tarballHash: "ab".repeat(32) })),
+    null,
+  );
   const widened = JSON.stringify({
     permissions: [
       {
@@ -350,8 +380,5 @@ await test("permission audiences that are not one package publish binding are re
     iat: now,
     exp: now + 300,
   });
-  assert.equal(
-    freshCredentialFailure({ presented, fresh, audience, now }),
-    "permission-audience",
-  );
+  assert.equal(freshCredentialFailure({ presented, fresh, audience, now }), "permission-audience");
 });

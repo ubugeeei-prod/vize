@@ -146,7 +146,10 @@ test("release smokes retain the timing artifact for every host", () => {
   const release = readRepoFile(".github", "workflows", "release.yml");
   const native = readRepoFile(".github", "workflows", "native-smoke.yml");
   for (const workflow of [release, native]) {
-    assert.match(workflow, /VIZE_SMOKE_TIMING_FILE: \$\{\{ runner\.temp \}\}\/packed-smoke-timing\.jsonl/);
+    assert.match(
+      workflow,
+      /VIZE_SMOKE_TIMING_FILE: \$\{\{ runner\.temp \}\}\/packed-smoke-timing\.jsonl/,
+    );
     assert.match(workflow, /name: Retain packed smoke timing/);
     assert.match(workflow, /if-no-files-found: warn/);
   }
