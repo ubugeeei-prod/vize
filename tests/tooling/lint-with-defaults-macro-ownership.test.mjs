@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -117,7 +118,7 @@ await test("original withDefaults CLI corpus reports only actual script-setup ma
     for (const entry of cases) {
       const bytes = fs.readFileSync(path.join(fixture, entry.input));
       fs.writeFileSync(path.join(directory, entry.filename), bytes);
-      const oracle = expected(bytes, entry);
+      const oracle = currentRuleDocumentationPacket(expected(bytes, entry));
       for (let repeat = 0; repeat < 2; repeat++) {
         const run = capture(
           binary,

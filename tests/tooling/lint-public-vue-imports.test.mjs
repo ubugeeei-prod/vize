@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -158,7 +159,9 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
         config,
         configSource,
         input: { source: entry.source, sha256: sha256(bytes) },
-        expected: withoutHelp(wholeJson({ ...entry, source: finalSource }, findings)),
+        expected: currentRuleDocumentationPacket(
+          withoutHelp(wholeJson({ ...entry, source: finalSource }, findings)),
+        ),
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
         expectedFinalSource: finalSource,
         status: run.status,
