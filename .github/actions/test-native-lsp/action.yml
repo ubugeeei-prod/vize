@@ -43,6 +43,7 @@ runs:
           tests/tooling/lsp-html-element-hover.test.ts \
           tests/tooling/lsp-diagnostics-lifecycle.test.ts \
           tests/tooling/lsp-type-diagnostic-retention.test.ts \
+          tests/tooling/lsp-script-syntax-prompt.test.ts \
           tests/tooling/lsp-implementation-capability.test.ts \
           tests/tooling/lsp-editor-jsconfig.test.ts \
           tests/tooling/lsp-package-private-imports.test.ts \

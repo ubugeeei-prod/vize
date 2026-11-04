@@ -12,6 +12,7 @@ import {
 import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 import { summarizeDialectCoverage } from "../differential/harness.mjs";
+import { readLogicalSourceActor } from "./support/logical-source-actor.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 // Private integration preparation can use the actual consumer owner's checkout.
@@ -23,6 +24,9 @@ const fixtureRoot =
 const authority = JSON.parse(
   fs.readFileSync(path.join(root, fixtureRoot, "source-authority.json"), "utf8"),
 );
+const productionActor = process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT
+  ? undefined
+  : readLogicalSourceActor(root, authority.production);
 const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestPath), "utf8"));
 const row = manifest.protocolCases.find(
   (value: { id: string }) => value.id === LOGICAL_WORKSPACE_PROTOCOL_ID,
@@ -41,6 +45,14 @@ function read(side: "base" | "head", file: string): Buffer | null {
         cwd: root,
         stdio: ["ignore", "pipe", "ignore"],
       });
+    // Production bytes belong to the sealed registration actor. Current
+    // observer/tooling bytes remain independently authenticated below.
+    if (
+      !process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT &&
+      authority.production.files.some((entry: { path: string }) => entry.path === file)
+    ) {
+      return productionActor?.get(file) ?? null;
+    }
     return fs.readFileSync(path.join(file.startsWith(fixtureRoot) ? root : sourceRoot, file));
   } catch {
     return null;

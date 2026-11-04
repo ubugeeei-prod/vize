@@ -1,0 +1,40 @@
+{
+  "schema": "vize.native-diagnostic-phase",
+  "version": 1,
+  "origin": "Explicit framed SDK mock inputs. These are not a new native ABI capture or backend performance qualification.",
+  "compilerKindDiagnostic": {
+    "fileName": "/workspace/a #.ts",
+    "pos": 0,
+    "end": 5,
+    "code": 1192,
+    "category": 1,
+    "text": "same code across kinds"
+  },
+  "warmSemantic": [
+    {
+      "fileName": "/workspace/a #.ts",
+      "pos": 0,
+      "end": 5,
+      "category": 1,
+      "code": 1192,
+      "text": "no default export"
+    }
+  ],
+  "encodedSnapshotSource": "AAAABQAAAAAAAAAAAAAAAAAAAAAAAAAALAAAAEQAAACGAAAAtgAAALYAAAAAAAAAIAAAACAAAAAxAAAAMQAAAEIAAABjb25zdCBlbW9qaSA9ICfwn5iAJzsNCi8vIGNhZsOpDS93b3Jrc3BhY2UvYSAjLnRzL3dvcmtzcGFjZS9hICMudHMAAAAAAgAAAAQAAAAAAAAAAwAAAP///////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwEAAAAAAAAdAAAAAAAAAAAAAAAAAACAAAAAAA==",
+  "bucketDiagnostic": {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 1
+      }
+    },
+    "severity": 1,
+    "code": 1192,
+    "source": "ts",
+    "message": "same diagnostic code"
+  }
+}

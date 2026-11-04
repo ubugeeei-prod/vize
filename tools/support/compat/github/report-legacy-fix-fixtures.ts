@@ -28,11 +28,11 @@ import {
   remainingShutdownProtocolCases,
   protocolPartition,
 } from "./native-beta-logical-workspace-fixtures.ts";
-
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
+import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -95,6 +95,7 @@ interface Manifest {
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
   jsxChildApiCases?: unknown;
+  diagnosticPhaseCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -282,6 +283,15 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
+    const phases =
+      product === "typechecker"
+        ? newNativeDiagnosticPhaseCases(
+            before?.diagnosticPhaseCases,
+            manifest.diagnosticPhaseCases,
+            readFile,
+            canonPaths,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const currentObserver =
       product === "typechecker"
         ? currentNativeBetaDtoObserver(
@@ -304,6 +314,7 @@ function checkProduct(
       canonPaths.some(
         (path) =>
           nativeBetaDtoProtocolSource(path) &&
+          !phases.sources.has(path) &&
           !currentObserver.sources.has(path) &&
           !logical.sources.has(path),
       );
@@ -384,6 +395,7 @@ function checkProduct(
         ...languageProject.ids,
         ...dtoProtocols,
         ...logical.ids,
+        ...phases.ids,
       ],
       ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };

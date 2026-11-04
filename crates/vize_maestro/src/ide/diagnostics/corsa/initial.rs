@@ -21,7 +21,7 @@ use super::super::{
 };
 use super::{
     collect::{CorsaDiagnostics, classify},
-    collect_virtual::{CorsaDocument, assemble_corsa_diagnostics, finished_from_lsp},
+    collect_virtual::{CorsaDocument, assemble_corsa_diagnostics, finished_from_phased_lsp},
 };
 use crate::server::ServerState;
 
@@ -58,7 +58,7 @@ impl PreparedInitialApiDiagnostics {
 
     pub(crate) fn complete(
         &self,
-        diagnostics: Vec<vize_canon::corsa_bridge::LspDiagnostic>,
+        diagnostics: Vec<vize_canon::corsa_bridge::PhasedLspDiagnostic>,
     ) -> CombinedDiagnostics {
         let document = CorsaDocument {
             code: String::from(self.opened.code.as_str()),
@@ -67,10 +67,15 @@ impl PreparedInitialApiDiagnostics {
         };
         let finished = diagnostics
             .into_iter()
-            .filter_map(|diagnostic| finished_from_lsp(&document.code, diagnostic, 0))
+            .filter_map(|diagnostic| finished_from_phased_lsp(&document.code, diagnostic, 0))
             .collect();
         let mut native = assemble_corsa_diagnostics(&self.content, &[document], finished);
-        native.extend(self.configuration.iter().cloned());
+        native.extend(
+            self.configuration
+                .iter()
+                .cloned()
+                .map(super::super::NativeDiagnostic::from),
+        );
         let native = NativeFamily {
             diagnostics: native,
             owns_script_syntax: true,
@@ -184,19 +189,23 @@ impl DiagnosticService {
         };
         let native = match result {
             CorsaDiagnostics::Complete(mut native) => {
-                native.extend(super::collect::configuration_disclosures(state));
+                native.extend(
+                    super::collect::configuration_disclosures(state)
+                        .into_iter()
+                        .map(super::super::NativeDiagnostic::from),
+                );
                 NativeFamily {
                     diagnostics: native,
                     owns_script_syntax: true,
                 }
             }
             CorsaDiagnostics::Unavailable(hints) => NativeFamily {
-                diagnostics: hints,
+                diagnostics: hints.into_iter().map(Into::into).collect(),
                 owns_script_syntax: false,
             },
         };
         let mut combined = combine(sync, native_script_syntax, Some(native));
-        with_unavailable_hint(state, &mut combined.diagnostics);
+        with_unavailable_hint(state, &mut combined);
         combined
     }
 }

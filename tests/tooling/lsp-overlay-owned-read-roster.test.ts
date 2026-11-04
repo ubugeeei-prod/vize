@@ -8,6 +8,7 @@ const prefix = "corsa_bridge::bridge::initial_diagnostics::tests::";
 const owned =
   prefix +
   "owned_read::cancelled_outer_query_keeps_the_exact_bridge_until_the_entered_read_finishes";
+const phase = prefix + "owned_read::initial_phase_and_diagnostic_are_committed_as_one_cache_entry";
 const prior = [
   "cancelled_caller_keeps_real_snapshot_alive_until_entered_read_drains",
   "current_read_commits_whole_cache_only_after_foreground_lane_remains_usable",
@@ -22,17 +23,19 @@ function tap(names: string[], count = names.length): string {
     `\ntest result: ok. ${count} passed; 0 failed; 0 ignored; 0 measured;\n`
   );
 }
-test("the genuine child joins all six original lease laws", () => {
+test("the genuine child joins every original lease law and the phase commit law", () => {
   const expected = initialReadTests();
-  assert.deepEqual([...expected].sort(), [...prior, owned].sort());
-  execution(tap([...prior, owned]), expected);
+  assert.deepEqual([...expected].sort(), [...prior, owned, phase].sort());
+  execution(tap([...prior, owned, phase]), expected);
 });
 test("missing child, unexpected child and wrong result count cannot pass", () => {
   const expected = initialReadTests();
   for (const output of [
     tap(prior),
-    tap([...prior, owned, prefix + "unknown"]),
-    tap([...prior, owned], 6),
+    tap([...prior, owned]),
+    tap([...prior, phase]),
+    tap([...prior, owned, phase, prefix + "unknown"]),
+    tap([...prior, owned, phase], 7),
   ])
     assert.throws(() => execution(output, expected));
 });

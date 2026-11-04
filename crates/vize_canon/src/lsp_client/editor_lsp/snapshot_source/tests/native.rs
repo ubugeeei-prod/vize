@@ -115,7 +115,10 @@ fn actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packe
         let uri = path_to_file_uri(path);
         let actual = native_diagnostics::read(&client, &snapshot, project, &uri)
             .unwrap()
-            .expect("real lower compiler methods must complete, not fall through");
+            .expect("real lower compiler methods must complete, not fall through")
+            .into_iter()
+            .map(|row| row.diagnostic)
+            .collect::<Vec<_>>();
         let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(legacy)) =
             editor.diagnostics(&uri).unwrap()
         else {

@@ -66,7 +66,8 @@ pub(crate) use worker::retirement as native_operation;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::{
-    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome,
+    InitialApiDiagnosticsProvenanceOutcome, PendingInitialApiDiagnostics,
 };
 pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
@@ -80,11 +81,11 @@ pub use script_document::{
 };
 pub use source_catalog::CorsaSourceCatalog;
 pub use types::{
-    CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
+    CorsaBridgeConfig, CorsaBridgeError, DiagnosticPhase, LspCompletionItem, LspCompletionList,
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
+    LspSignatureInformation, PhasedLspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 pub use vue_document::{
     CorsaInitialVueDocument, CorsaInitialVueProject, CorsaMaterializedMappingKind,

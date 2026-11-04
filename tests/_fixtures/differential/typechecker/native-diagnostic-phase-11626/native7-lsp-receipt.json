@@ -1,0 +1,306 @@
+{
+  "runtime": "/private/tmp/claude-501/lsp-lead/vize-rel/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+  "version": "Version 7.0.2",
+  "sha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "uri": "file:///private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts",
+  "initialization": {
+    "capabilities": {
+      "positionEncoding": "utf-16",
+      "textDocumentSync": {
+        "openClose": true,
+        "change": 2,
+        "save": true
+      },
+      "completionProvider": {
+        "triggerCharacters": [
+          ".",
+          "\"",
+          "'",
+          "`",
+          "/",
+          "@",
+          "<",
+          "#",
+          " ",
+          "*"
+        ],
+        "resolveProvider": true,
+        "completionItem": {
+          "labelDetailsSupport": true
+        }
+      },
+      "hoverProvider": true,
+      "signatureHelpProvider": {
+        "triggerCharacters": [
+          "(",
+          ",",
+          "<"
+        ],
+        "retriggerCharacters": [
+          ")"
+        ]
+      },
+      "definitionProvider": true,
+      "typeDefinitionProvider": true,
+      "implementationProvider": true,
+      "referencesProvider": true,
+      "documentHighlightProvider": true,
+      "documentSymbolProvider": true,
+      "codeActionProvider": {
+        "codeActionKinds": [
+          "quickfix",
+          "source.organizeImports",
+          "source.removeUnusedImports",
+          "source.sortImports",
+          "source.fixAll"
+        ]
+      },
+      "codeLensProvider": {
+        "resolveProvider": true
+      },
+      "workspaceSymbolProvider": true,
+      "documentFormattingProvider": true,
+      "documentRangeFormattingProvider": true,
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": "{",
+        "moreTriggerCharacter": [
+          "}",
+          ";",
+          "\n"
+        ]
+      },
+      "renameProvider": {
+        "prepareProvider": true
+      },
+      "foldingRangeProvider": true,
+      "selectionRangeProvider": true,
+      "callHierarchyProvider": true,
+      "linkedEditingRangeProvider": true,
+      "semanticTokensProvider": {
+        "legend": {
+          "tokenTypes": [],
+          "tokenModifiers": []
+        },
+        "range": true,
+        "full": true
+      },
+      "inlayHintProvider": true,
+      "diagnosticProvider": {
+        "identifier": "typescript",
+        "interFileDependencies": true,
+        "workspaceDiagnostics": false
+      },
+      "workspace": {
+        "fileOperations": {
+          "willRename": {
+            "filters": [
+              {
+                "scheme": "file",
+                "pattern": {
+                  "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "experimental": {
+        "customSourceDefinitionProvider": true,
+        "customMultiDocumentHighlightProvider": true
+      },
+      "_vs_onAutoInsertProvider": {
+        "_vs_triggerCharacters": [
+          ">"
+        ]
+      },
+      "_vs_referencesProvider": true
+    },
+    "serverInfo": {
+      "name": "typescript-go",
+      "version": "7.0.2"
+    }
+  },
+  "result": {
+    "kind": "full",
+    "items": [
+      {
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 7
+          },
+          "end": {
+            "line": 0,
+            "character": 12
+          }
+        },
+        "severity": 1,
+        "code": 1192,
+        "source": "ts",
+        "message": "Module '\"/private/tmp/claude-501/lsp-11647-phase-evidence/project/dep\"' has no default export."
+      }
+    ]
+  },
+  "notices": [
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Resolved client capabilities: {\n\t\"textDocument\": {\n\t\t\"diagnostic\": {\n\t\t\t\"relatedDocumentSupport\": true\n\t\t}\n\t}\n}"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "file watching: using builtin in-process watcher (client lacks dynamic watch registration)"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "handled method 'initialized' in 416.167µs"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Processed 1 file changes in 6.625µs"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "handled method 'textDocument/didOpen' in 29.051709ms"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Adopted snapshot 1 (parent 0) as current session snapshot (replacing 0)"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Adopted snapshot 2 (parent 1) as current session snapshot (replacing 1)"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "======== Cloning snapshot 0 ========\n[04:12:31.483] Reason: DidOpenFile - file:///private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts\n[04:12:31.483] DidChangeCustomConfigFileName\n[04:12:31.483] DidChangeFiles\n\t[04:12:31.483] Checking for changes affecting config files\n\t\t[04:12:31.483] Summarizing file changes\n\t\t[04:12:31.483] Checking if any changed files are config files\n\t[04:12:31.483] computeConfigFileName:: File: /private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts:: Result: /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json\n\t[04:12:31.483] Searching for default configured project for /private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts\n\t\t[04:12:31.483] Acquiring config for open file\n\t\t\t[04:12:31.483] Loading config file: /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json\n\t\t\t[04:12:31.484] Finished loading config file\n\t\t[04:12:31.484] Creating ConfiguredProject: /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json, currentDirectory: /private/tmp/claude-501/lsp-11647-phase-evidence/project\n\t\t[04:12:31.484] Acquiring config for project\n\t\t[04:12:31.484] CompilerHost\n\t\t[04:12:31.512] Program update for /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json completed in 28.515333ms\n\t\t[04:12:31.512] Project contains file directly\n\t[04:12:31.512] Found default configured project for /private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts: /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json (in 28.740667ms)\n[04:12:31.512] DidRequestFile\n\t[04:12:31.512] Acquiring config for project\n[04:12:31.512] Removed 1 cached file(s) in 33.458µs\n[04:12:31.512] UpdateAutoImports\n\t[04:12:31.512] Building autoimport registry\n\t\t[04:12:31.512] Added project: /private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json\n\t\t[04:12:31.512] Added directory: /private\n\t\t[04:12:31.512] Added directory: /\n\t\t[04:12:31.512] Added directory: /private/tmp/claude-501/lsp-11647-phase-evidence/project\n\t\t[04:12:31.512] Added directory: /private/tmp/claude-501/lsp-11647-phase-evidence\n\t\t[04:12:31.512] Added directory: /private/tmp/claude-501\n\t\t[04:12:31.512] Added directory: /private/tmp\n\t\t[04:12:31.512] Updated buckets and directories in 86.541µs\n\t\t[04:12:31.512] Built autoimport registry in 89.5µs\n[04:12:31.512] Finished cloning snapshot 0 into snapshot 1 in 29.003ms\n"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "\nProject '/private/tmp/claude-501/lsp-11647-phase-evidence/project/tsconfig.json'\n\tFiles (65)\n-----------------------------------------------"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "======== Cloning snapshot 1 ========\n[04:12:31.512] Reason: RequestedLanguageService (pending file changes) -  Documents: [file:///private/tmp/claude-501/lsp-11647-phase-evidence/project/main.ts]\n[04:12:31.512] DidChangeCustomConfigFileName\n[04:12:31.512] DidRequestFile\n\t[04:12:31.512] Acquiring config for project\n[04:12:31.512] UpdateAutoImports\n\t[04:12:31.512] Building autoimport registry\n\t\t[04:12:31.512] Updated buckets and directories in 21.292µs\n\t\t[04:12:31.512] Built autoimport registry in 23.625µs\n[04:12:31.512] Finished cloning snapshot 1 into snapshot 2 in 36.916µs\n"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "\n======== Cache Statistics ========"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": ""
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Open file count:        1"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Updated watches in 7.958µs"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Cached disk files:     64"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Realpath aliases:       0"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Project count:          1"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "Config count:           1"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": ""
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "type": 3,
+        "message": "handled method 'textDocument/diagnostic' (2) in 837.333µs"
+      }
+    }
+  ]
+}
