@@ -187,16 +187,23 @@ test("the actual workflow rejects extra builds and preserves failed phase output
     ]) {
       assert.throws(() => assertConsumerFailure(`${injected}\n${proof.run}`), injected);
     }
-    const missingStderrCapture = proof.run.replace('2>"$capture/consumer.stderr"', "");
-    assert.notEqual(
-      missingStderrCapture,
-      proof.run,
-      "the counterfactual must remove stderr capture",
-    );
-    assert.throws(
-      () => assertConsumerFailure(missingStderrCapture),
-      "missing consumer stderr capture",
-    );
+    const stderrRedirect = /2>\s*"\$capture\/consumer\.stderr"/;
+    for (const program of [
+      proof.run.replace(stderrRedirect, '2>"$capture/consumer.stderr"'),
+      proof.run.replace(stderrRedirect, '2> "$capture/consumer.stderr"'),
+    ]) {
+      assertConsumerFailure(program);
+      const missingStderrCapture = program.replace(stderrRedirect, "");
+      assert.notEqual(
+        missingStderrCapture,
+        program,
+        "the counterfactual must remove stderr capture",
+      );
+      assert.throws(
+        () => assertConsumerFailure(missingStderrCapture),
+        "missing consumer stderr capture",
+      );
+    }
     env.PACK_STATUS = "17";
     assert.equal(run(proof.run).status, 17);
     assert.equal(fs.existsSync(args), false);
