@@ -6,6 +6,12 @@ declare const node: VNode
 declare const loose: any
 declare const tag: string
 const take = (value: unknown) => value
+const forward = (value: string) => value
+const forwardMany = (...values: unknown[]) => values
+function generic<T>(value: T): T { return value }
+function overloaded(value: string): string
+function overloaded(value: number): number
+function overloaded(value: string | number) { return value }
 </script>
 <template>
 <component :is="target" @pick="(v) => take(v)" />
@@ -13,4 +19,12 @@ const take = (value: unknown) => value
 <component :is="loose" @pick="(v) => take(v)" />
 <component :is="tag" @pick="(v) => take(v)" />
 <component :is="'span'" @pick="(v) => take(v)" />
+<component :is="target" @pick="forward($event); $event.foo; forwardMany($event)" />
+<component :is="node" @pick="forward($event); $event.foo; forwardMany($event)" />
+<component :is="loose" @pick="forward($event); $event.foo; forwardMany($event)" />
+<component :is="tag" @pick="forward($event); $event.foo; forwardMany($event)" />
+<component :is="'span'" @pick="forward($event); $event.foo; forwardMany($event)" />
+<component :is="loose" @pick="(...values: unknown[]) => forwardMany(...values)" />
+<component :is="loose" @pick="generic" />
+<component :is="loose" @pick="overloaded" />
 </template>

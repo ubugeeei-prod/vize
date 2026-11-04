@@ -38,7 +38,7 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) hoist_shared_preamble: bool,
     /// The module declares the gate aliases and this component's type is closed.
     pub(super) gated_inference: bool,
-    /// Emit context ownership only for modern callable handler consumers.
+    /// Modern consumers use loose ownership for runtime args and callback context.
     pub(super) contextual_listener: bool,
 }
 

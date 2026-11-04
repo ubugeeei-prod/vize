@@ -11965,7 +11965,7 @@
         {
           "file": "src/LooseTargets.vue",
           "path": "loose-listener-context-11600/LooseTargets.vue.txt",
-          "sha256": "a0c0f8e644e9146c82a5403b0885e1a2a313c5de0fb8eaed3b6b568188058310"
+          "sha256": "d80f20003db43089c1710197924d01cea3e476b6f2f78b819044841cdfc850c0"
         },
         {
           "file": "src/HandlerValues.vue",
@@ -12000,7 +12000,7 @@
         {
           "file": "cases.json",
           "path": "loose-listener-context-11600/cases.json",
-          "sha256": "41a542793db6fe58c4a8f8af798c68faa1d24a3d0c52fd5cf4f4a99f0bdd1fea"
+          "sha256": "04aa646e015709ff27201c03f0337bf3d1f1898e402dadb7c764b24736635ccd"
         }
       ],
       "dialectCoverage": {

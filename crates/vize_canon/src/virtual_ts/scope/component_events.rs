@@ -318,7 +318,7 @@ pub(super) fn generate_component_event_types(
             indent,
             hoist_shared_preamble,
             gated_inference: gated_inference && explicit_generic.is_none(),
-            contextual_listener: !legacy_vue2 && needs_typed_handler_assignment,
+            contextual_listener: !legacy_vue2,
         },
     );
 
@@ -330,13 +330,21 @@ pub(super) fn generate_component_event_types(
     }
     if let Some(inference) = inferred_emit_args.as_ref() {
         let inferred = &inference.arguments;
+        // Missing contextual parameters do not mean that runtime emits have
+        // zero arguments. Keep the loose sentinel wide, while a declared []
+        // keeps its actual empty tuple and its known callback signature.
+        let loose_runtime_args = inference
+            .contextless_listener
+            .as_ref()
+            .map(|loose| cstr!("{loose} extends true ? unknown[] : "))
+            .unwrap_or_default();
         append!(
             *ts,
             "{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\n",
         );
         append!(
             *ts,
-            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
+            "{indent}type {args_type} = {loose_runtime_args}unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
         );
     } else {
         append!(

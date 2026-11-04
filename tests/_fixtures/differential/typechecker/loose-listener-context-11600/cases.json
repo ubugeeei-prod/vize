@@ -1,7 +1,7 @@
 [
   {
     "file": "LooseTargets.vue",
-    "contract": "exact five TS7006 at authored v, no synthetic arity errors"
+    "contract": "exact five TS7006 at authored v; inline event forwarding/member access, typed rest forwarding and generic/overload references stay valid with unknown runtime arity"
   },
   {
     "file": "HandlerValues.vue",
