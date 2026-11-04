@@ -39,6 +39,7 @@ fn scoped_slots_template_cli_preserves_whole_packets_and_the_original_n8n_projec
         .join("packets.json");
     let mut runs = Vec::new();
     let mut run = |case: &Value, config: Value, expected: Value, profile: &str| {
+        let expected = crate::support::current_rule_documentation::packet(expected);
         let filename = case["filename"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         fs::write(directory.path().join(filename), source).unwrap();
@@ -118,9 +119,7 @@ fn scoped_slots_template_cli_preserves_whole_packets_and_the_original_n8n_projec
     run(
         case,
         json!({"linter": projection["linter"]}),
-        crate::support::current_rule_documentation::packet(json!([
-            corpus["origin"]["originalCliExpectation"]
-        ])),
+        json!([corpus["origin"]["originalCliExpectation"]]),
         "original-whole51",
     );
     run(
