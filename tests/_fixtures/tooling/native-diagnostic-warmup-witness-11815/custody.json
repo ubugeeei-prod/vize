@@ -1,0 +1,23 @@
+{
+  "schema": "vize.lsp.native-warmup-witness-successor",
+  "version": 1,
+  "historical": {
+    "path": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+    "sha256": "ba8d53759b8f5fdf771dc8ee0169477ef5bdfe8357c8fa7c5501346eef62031e",
+    "sourceRevision": "c4918d796969adae9a73a9ecbf382e0f79becf56"
+  },
+  "archive": {
+    "path": "historical-witness.ts.txt",
+    "sha256": "ba8d53759b8f5fdf771dc8ee0169477ef5bdfe8357c8fa7c5501346eef62031e"
+  },
+  "mainSuccessor": {
+    "sourceRevision": "68a68d44f5fe38f7aa09b3ff8d3a0e532328d9a1",
+    "sha256": "3f5f24dac1732cf8298d8ec03e5678eafd475581cd05d7910eff0b4c6c35854c",
+    "change": "two exact post-resume notification cursors; no diagnostic expectation change"
+  },
+  "currentConsumer": {
+    "path": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+    "sha256": "3490ac3e5fb56512d3cdafd13b0e76f068b77ec688554a86797bacb1b7d8fa4f",
+    "meaning": "current test executor custody only; no backend or stdio qualification"
+  }
+}

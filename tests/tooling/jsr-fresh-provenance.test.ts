@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
+import { createServer, type Server } from "node:http";
 import { test } from "node:test";
 
 import {
@@ -8,7 +8,31 @@ import {
   freshCredentialFailure,
   parsePermissionAudience,
   publishWithFreshProvenance,
-} from "../../tools/support/release/jsr/publish-with-fresh-provenance.mjs";
+} from "../../tools/support/release/jsr/publish-with-fresh-provenance.ts";
+import type {
+  JwtPayload,
+  PermissionBinding,
+} from "../../tools/support/release/jsr/provenance-types.ts";
+
+interface OidcCall {
+  audience: string | null;
+  authorization: string | undefined;
+}
+
+interface RegistryCall {
+  method: string | undefined;
+  url: string | undefined;
+  authorization: string | undefined;
+  body: string;
+}
+
+interface ScenarioOptions {
+  permissionAudience?: string;
+  path?: string;
+  freshAudience?: string | null;
+  freshClaims?: JwtPayload;
+  provenanceStatus?: number;
+}
 
 const now = 1_700_000_000;
 const hash = `sha256-${"ab".repeat(32)}`;
@@ -43,7 +67,7 @@ await provenance.arrayBuffer();
 console.log("provenance-status=" + provenance.status);
 `;
 
-function audienceFor(binding) {
+function audienceFor(binding: PermissionBinding) {
   return JSON.stringify({
     permissions: [
       {
@@ -65,8 +89,8 @@ const binding = {
 };
 const audience = audienceFor(binding);
 
-function claims(tokenAudience, overrides = {}) {
-  return {
+function claims(tokenAudience: string | null, overrides: JwtPayload = {}) {
+  const payload = {
     iss: issuer,
     sub: "repo:ubugeeei-prod/vize:ref:refs/heads/main",
     repository: "ubugeeei-prod/vize",
@@ -89,21 +113,23 @@ function claims(tokenAudience, overrides = {}) {
     runner_environment: "github-hosted",
     ...overrides,
     aud: tokenAudience,
-    iss: issuer,
   };
+  // Preserve the issuer's original JSON key position while rejecting issuer overrides.
+  payload.iss = issuer;
+  return payload;
 }
 
-function jwt(payload) {
-  const encode = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
+function jwt(payload: JwtPayload) {
+  const encode = (value: JwtPayload) => Buffer.from(JSON.stringify(value)).toString("base64url");
   return `${encode({ alg: "none", typ: "JWT" })}.${encode(payload)}.sig`;
 }
 
-function payloadOf(header) {
+function payloadOf(header: string | undefined) {
   const token = header?.replace(/^githuboidc /, "") ?? "";
   return decodeJwtPayload(token);
 }
 
-function listen(server) {
+function listen(server: Server): Promise<string> {
   return new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", () => {
@@ -117,7 +143,7 @@ function listen(server) {
   });
 }
 
-function close(server) {
+function close(server: Server): Promise<void> {
   server.closeAllConnections?.();
   return new Promise((resolve) => server.close(() => resolve()));
 }
@@ -128,9 +154,9 @@ async function runScenario({
   freshAudience = null,
   freshClaims = { jti: "fresh", iat: now, exp: now + 300 },
   provenanceStatus = 204,
-}) {
-  const oidcCalls = [];
-  const jsrCalls = [];
+}: ScenarioOptions) {
+  const oidcCalls: OidcCall[] = [];
+  const jsrCalls: RegistryCall[] = [];
   const oidc = createServer((request, response) => {
     request.resume();
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
@@ -145,7 +171,7 @@ async function runScenario({
     response.end(JSON.stringify({ value: jwt(payload) }));
   });
   const registry = createServer(async (request, response) => {
-    const chunks = [];
+    const chunks: Buffer[] = [];
     for await (const chunk of request) chunks.push(chunk);
     jsrCalls.push({
       method: request.method,
@@ -187,7 +213,7 @@ async function runScenario({
   }
 }
 
-function provenanceCall(jsrCalls) {
+function provenanceCall(jsrCalls: readonly RegistryCall[]) {
   return jsrCalls.find((call) => call.url?.split("?")[0]?.endsWith("/provenance"));
 }
 

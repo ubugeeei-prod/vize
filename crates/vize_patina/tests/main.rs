@@ -36,6 +36,7 @@ mod css_id_selector_ranges;
 mod css_type_aware_ownership;
 mod css_utility_literal_tokens;
 mod css_value_tokens_7989;
+mod current_css_documentation;
 mod custom_directive_identity;
 mod deep_template_lint;
 mod deprecated_attr_border_scope;

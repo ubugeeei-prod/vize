@@ -8,6 +8,7 @@ import {
   applyReturnedEdits,
   checkout,
   completedProducer,
+  consumerSuccessor,
   corpus,
   custody,
   expected,
@@ -18,6 +19,7 @@ import {
   requiredMerges,
   sourceFor,
   validateSourceCopies,
+  validateCurrentConsumer,
 } from "../../tools/support/release/patina_attribute_ignore_public/contract.ts";
 import { configSource } from "../../tools/support/release/patina_attribute_ignore_public/cli.ts";
 import {
@@ -102,6 +104,42 @@ await test("source custody refuses missing changed duplicated or escaped origina
   assert.throws(() =>
     validateSourceCopies(source, () => {
       throw new Error("missing original");
+    }),
+  );
+});
+
+await test("the current source consumer is an exact documentation-only successor of the retained original", () => {
+  const successor = consumerSuccessor();
+  const historicalPath = asString(asRecord(successor.historical).snapshot);
+  const currentPath = asString(successor.path);
+  const historical = readFileSync(join(checkout, historicalPath));
+  const current = readFileSync(join(checkout, currentPath));
+  validateCurrentConsumer(historical, current);
+  assert.deepEqual(asRecord(successor.change), {
+    ruleId: "vue/attribute-hyphenation",
+    before: "docs/content/rules/vue.md",
+    after: "docs/content/rules/reference/vue-attribute-hyphenation.md",
+    occurrences: 1,
+  });
+  for (const locale of ["", "ja/"]) {
+    const page = readFileSync(
+      join(checkout, `docs/content/${locale}rules/reference/vue-attribute-hyphenation.md`),
+      "utf8",
+    );
+    assert.equal(/^title: "([^"]+)"$/mu.exec(page)?.[1], "vue/attribute-hyphenation");
+  }
+  assert.throws(() =>
+    validateCurrentConsumer(Buffer.concat([historical, Buffer.from("x")]), current),
+  );
+  assert.throws(() =>
+    validateCurrentConsumer(historical, Buffer.concat([current, Buffer.from("x")])),
+  );
+  assert.throws(() => validateCurrentConsumer(historical, historical));
+  const source = custody();
+  assert.throws(() =>
+    validateSourceCopies(source, (path) => {
+      if (path === historicalPath) throw new Error("missing original consumer");
+      return readFileSync(join(checkout, path));
     }),
   );
 });

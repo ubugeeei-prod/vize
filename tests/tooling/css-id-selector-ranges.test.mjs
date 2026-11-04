@@ -39,7 +39,20 @@ await test("source-built CLI locates every original and authored CSS ID selector
       const source = fs.readFileSync(path.join(fixture, entry.source));
       assert.equal(source.length, entry.bytes);
       assert.equal(sha256(source), entry.sha256);
-      const expected = JSON.parse(fs.readFileSync(path.join(fixture, entry.cliExpected), "utf8"));
+      const expectedBytes = fs.readFileSync(path.join(fixture, entry.cliExpected));
+      const original = JSON.parse(expectedBytes.toString("utf8"));
+      const authoredCurrent = entry.id === "repeated-compound-ids";
+      if (authoredCurrent) {
+        assert.equal(entry.cliExpected, "repeated-compound-ids.cli.expected.json");
+        assert.equal(expectedBytes.length, 2451);
+        assert.equal(
+          sha256(expectedBytes),
+          "5cc3f4660cc685b4a25450a08ff8481f2834494a9dfe9194f70f531740c33337",
+        );
+      }
+      const expected = authoredCurrent
+        ? { ...original, plain: currentCssPlain(original.plain) }
+        : currentCssReport(original);
       fs.writeFileSync(path.join(directory, entry.filename), source);
       for (const format of entry.id === "original-7981"
         ? ["json", "plain", "json"]
@@ -95,3 +108,4 @@ await test("source-built CLI locates every original and authored CSS ID selector
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+import { currentCssPlain, currentCssReport } from "./support/current-css-documentation.ts";

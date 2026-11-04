@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { parenthesisDiagnosticMappings } from "./content-mapper-parenthesis-mappings-11675.ts";
 import {
   location,
   type GlobalCase,
@@ -178,8 +179,11 @@ export function assertReceiverSymbols(
   const at = location(entry.source, "$ghost.value", "$ghost");
   assert.deepEqual(
     result.mappings.filter((span) => span[5] === 0),
-    [[start, end - start, at.byteStart, at.byteLength, 1, 0]],
-    "the actual symbol-owned receiver prefix has only diagnostic identity",
+    [
+      [start, end - start, at.byteStart, at.byteLength, 1, 0],
+      ...parenthesisDiagnosticMappings(result),
+    ].sort((left, right) => left[0] - right[0]),
+    "the symbol-owned receiver prefix and generated parentheses have only diagnostic identity",
   );
   assert.ok(
     result.mappings.some(

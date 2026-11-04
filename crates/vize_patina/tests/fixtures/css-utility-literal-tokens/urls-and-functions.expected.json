@@ -32,7 +32,7 @@
       "messages": [
         {
           "ruleId": "css/no-utility-classes",
-          "ruleDocsPath": "docs/content/rules/reference/css-no-utility-classes.md",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
           "severity": 1,
           "message": "[vize:css/no-utility-classes] Utility class should be in global styles, not component styles",
           "line": 8,
@@ -42,7 +42,7 @@
         },
         {
           "ruleId": "css/no-utility-classes",
-          "ruleDocsPath": "docs/content/rules/reference/css-no-utility-classes.md",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
           "severity": 1,
           "message": "[vize:css/no-utility-classes] Utility class should be in global styles, not component styles",
           "line": 9,

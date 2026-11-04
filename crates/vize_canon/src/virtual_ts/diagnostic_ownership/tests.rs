@@ -205,3 +205,22 @@ fn deferred_publication_order_preserves_exact_owner_and_overlap_checks() {
         assert_eq!(ranges(ledger), vec![(10..15, 22..27)]);
     }
 }
+
+#[test]
+fn instance_primary_authority_follows_only_proven_publication_edits() {
+    let mut ledger = DiagnosticOwnership::default();
+    ledger.record_diagnostic_primary(10..15, 22..27);
+    ledger.note_generated_insertion(0, 3);
+    assert_eq!(ledger.diagnostic_primaries(), vec![13..18]);
+    ledger.note_generated_rewrite(|range| (range.start + 2..range.end + 2, true));
+    assert_eq!(ledger.diagnostic_primaries(), vec![15..20]);
+    ledger.note_generated_insertion(17, 1);
+    assert!(
+        ledger.diagnostic_primaries().is_empty(),
+        "an interior edit revokes the proof"
+    );
+    let mut rewritten = DiagnosticOwnership::default();
+    rewritten.record_diagnostic_primary(10..15, 22..27);
+    rewritten.note_generated_rewrite(|range| (range.clone(), false));
+    assert!(rewritten.diagnostic_primaries().is_empty());
+}

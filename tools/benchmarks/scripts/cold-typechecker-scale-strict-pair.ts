@@ -5,6 +5,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import {
+  captureCurrentSdkDeclarations,
+  relativeDeclarationGraph,
+} from "../../support/compat/content-mapper/current-sdk-declarations.ts";
 export interface SdkScanner {
   version: string;
   preProcessFile(
@@ -81,8 +85,35 @@ export function verifyStrictSourceInputs(input: {
   return { sdkVersion: "2.0.0-beta.4", files: cargoIdentity };
 }
 
-export function verifySourceSdkPair(base: string, head: string, typescript: SdkScanner) {
+export function verifySourceSdkPair(
+  base: string,
+  head: string,
+  typescript: SdkScanner,
+  authority: "frozen" | "current" = "frozen",
+) {
   assert.equal(typescript.version, "6.0.3");
+  if (authority === "current") {
+    const before = captureCurrentSdkDeclarations(path.join(base, "npm/cli"));
+    const after = captureCurrentSdkDeclarations(path.join(head, "npm/cli"));
+    const graph = relativeDeclarationGraph(before.graph, before.root);
+    assert.deepEqual(relativeDeclarationGraph(after.graph, after.root), graph);
+    const manifest = fs.readFileSync(path.join(base, "npm/cli/package.json"));
+    assert.ok(manifest.equals(fs.readFileSync(path.join(head, "npm/cli/package.json"))));
+    return {
+      declarations: graph.files.map((file) => ({
+        file: file.path,
+        bytes: file.bytes,
+        sha256: file.sha256,
+      })),
+      edges: graph.edges.map((edge) => ({
+        file: edge.from,
+        specifier: edge.specifier,
+        target: edge.target,
+      })),
+      packageManifest: { bytes: manifest.length, sha256: hash(manifest) },
+      scope: "whole current source SDK identity, not installed-public consumer qualification",
+    };
+  }
   const edges: { file: string; specifier: string; target: string }[] = [];
   const declarations = files.map((file) => {
     const before = fs.readFileSync(path.join(base, "npm/cli", file));

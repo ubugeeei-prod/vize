@@ -153,7 +153,6 @@ crates/vize_canon/src/batch/type_checker/tests/tsx_sfc.rs	2
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests.rs	10
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/models.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/navigation.rs	6
-crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs	3
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/slot_outlet_navigation.rs	4
 crates/vize_canon/src/batch/virtual_project/dependency_scan/shared_type_sources_tests.rs	5
 crates/vize_canon/src/batch/virtual_project/dependency_scan/tests.rs	1
