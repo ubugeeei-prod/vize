@@ -46,6 +46,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
             "docs/content/rules/type-and-script.md",
             "docs/content/rules/reference/type-strict-boolean-expressions.md",
         ),
+        "type/require-typed-emits" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/type-require-typed-emits.md",
+        ),
         "script/prefer-ref-over-reactive" => (
             "docs/content/rules/type-and-script.md",
             "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
