@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 const history = Object.freeze([
@@ -370,6 +369,47 @@ export function listStarCounterpartFiles(owner, source, initialNames) {
   return Object.freeze([...chosen].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
 }
 
+/** Keep literal imports inside the reporting owner's ignored output boundary. */
+export function ownedCounterpartDirectory(owner) {
+  const root = fs.realpathSync(owner);
+  const directory = path.join(root, "target", "tooling-source-counterparts");
+  // check-ignore accepts filenames rather than Git pathspec magic.
+  git(root, [
+    "--no-literal-pathspecs",
+    "check-ignore",
+    "--quiet",
+    "--",
+    "target/tooling-source-counterparts",
+  ]);
+  for (const parent of [path.join(root, "target"), directory]) {
+    if (!fs.existsSync(parent)) fs.mkdirSync(parent, { recursive: true });
+    assert(fs.lstatSync(parent).isDirectory() && !fs.lstatSync(parent).isSymbolicLink());
+    assert.equal(fs.realpathSync(parent), parent, "owned physical counterpart output");
+  }
+  return fs.realpathSync(fs.mkdtempSync(path.join(directory, "vize-star-counterpart-")));
+}
+
+/** Scope historical os.tmpdir() imports without changing their authenticated bytes. */
+export async function registerWithOwnedTemporaryDirectory(owner, register) {
+  const directory = ownedCounterpartDirectory(owner);
+  const keys = ["TMPDIR", "TMP", "TEMP"];
+  const previous = new Map(keys.map((key) => [key, process.env[key]]));
+  const cleanup = () => fs.rmSync(directory, { recursive: true, force: true });
+  let retained = false;
+  try {
+    for (const key of keys) process.env[key] = directory;
+    const value = await register();
+    retained = true;
+    return Object.freeze({ value, cleanup });
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    if (!retained) cleanup();
+  }
+}
+
 /** Raw literal files in a disposable private Git repository; no authentication credit. */
 export function provisionStarSourceCounterpart(owner, source, names) {
   names = selectedNames(names);
@@ -381,7 +421,7 @@ export function provisionStarSourceCounterpart(owner, source, names) {
   const common = git(owned.root, ["rev-parse", "--git-common-dir"]).toString().trim();
   const pool = fs.realpathSync(path.resolve(owned.root, common, "objects"));
   assert(fs.lstatSync(pool).isDirectory() && !/[\r\n]/u.test(pool), "physical owner object pool");
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-star-counterpart-")));
+  const root = ownedCounterpartDirectory(owned.root);
   const cleanup = () => fs.rmSync(root, { recursive: true, force: true });
   try {
     fs.mkdirSync(path.join(root, ".git/objects/info"), { recursive: true, mode: 0o700 });
