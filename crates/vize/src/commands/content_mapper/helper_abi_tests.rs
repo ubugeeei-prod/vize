@@ -351,3 +351,33 @@ fn closer_sdk_candidates_are_watched_before_an_installed_parent() {
             .contains("import type {} from \"vize/virtual-ts-checker\";")
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn a_manifest_symlink_cannot_move_the_sdk_vue_authority() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(false);
+    let metadata = sdk._directory.path().join("metadata/package.json");
+    std::fs::create_dir_all(metadata.parent().unwrap()).unwrap();
+    let manifest = sdk.package.join("package.json");
+    std::fs::rename(&manifest, &metadata).unwrap();
+    std::os::unix::fs::symlink(metadata, manifest).unwrap();
+    assert_self_contained(&sdk.transform());
+}
+
+#[cfg(unix)]
+#[test]
+fn shared_manifest_bytes_do_not_merge_distinct_vue_package_directories() {
+    let sdk = InstalledSdk::new();
+    sdk.move_to_pnpm_store(false);
+    let project = sdk._directory.path().join("node_modules/vue/package.json");
+    let physical = std::fs::canonicalize(&sdk.package).unwrap();
+    let peer = physical.parent().unwrap().join("vue/package.json");
+    let metadata = sdk._directory.path().join("metadata/vue.json");
+    std::fs::create_dir_all(metadata.parent().unwrap()).unwrap();
+    std::fs::rename(&project, &metadata).unwrap();
+    std::fs::remove_file(&peer).unwrap();
+    std::os::unix::fs::symlink(&metadata, project).unwrap();
+    std::os::unix::fs::symlink(metadata, peer).unwrap();
+    assert_self_contained(&sdk.transform());
+}

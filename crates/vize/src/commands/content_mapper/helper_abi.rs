@@ -77,7 +77,7 @@ pub(super) fn installed_helpers(
         capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
         return capability;
     }
-    let Some((manifest_path, package_manifest)) = locate_node_package(
+    let Some((manifest_path, package_identity)) = locate_node_package(
         project_directory,
         "vize",
         &mut capability.watched_files,
@@ -93,9 +93,6 @@ pub(super) fn installed_helpers(
         return capability;
     };
     let manifest_bytes = std::fs::read(&manifest_path).ok();
-    let Some(package_identity) = package_manifest.parent() else {
-        return capability;
-    };
     fingerprint.update(package_identity.to_string_lossy().as_bytes());
     fingerprint.update(manifest_bytes.as_deref().unwrap_or_default());
     // Watch missing declarations too: repairing an incomplete install must
@@ -132,7 +129,7 @@ pub(super) fn installed_helpers(
     let helper_root = if compiler_options.get("preserveSymlinks") == Some(&Value::Bool(true)) {
         package
     } else {
-        package_identity
+        package_identity.as_path()
     };
     let project_vue = resolve_node_package(
         project_directory,
@@ -242,6 +239,7 @@ fn resolve_node_package(
     locate_node_package(from, package, watched_files, fingerprint).map(|(_, canonical)| canonical)
 }
 
+/// Return the logical manifest path and the canonical package directory.
 fn locate_node_package(
     from: &Path,
     package: &str,
@@ -260,12 +258,17 @@ fn locate_node_package(
             fingerprint.update(b"missing\0");
             return None;
         };
+        // The package directory owns relative type/dependency resolution. A
+        // package.json file may itself be a symlink to unrelated metadata.
+        let identity = std::fs::canonicalize(candidate.parent()?).ok()?;
         watched_files.push(CompactString::from(manifest.to_string_lossy().as_ref()));
         fingerprint.update(manifest.to_string_lossy().as_bytes());
+        fingerprint.update(b"\0");
+        fingerprint.update(identity.to_string_lossy().as_bytes());
         fingerprint.update(b"\0");
         if let Ok(contents) = std::fs::read(&manifest) {
             fingerprint.update(Sha256::digest(contents));
         }
-        Some((candidate, manifest))
+        Some((candidate, identity))
     })
 }
