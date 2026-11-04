@@ -123,7 +123,7 @@ test("the actual workflow rejects extra builds and preserves failed phase output
     );
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/bash\nif [ "$1" = "npm/native/scripts/native-build-receipt.mjs" ]; then printf "producer receipt\\n" > "$MOCK_PRODUCER"; exit 0; fi\nmkdir -p "$3"\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "failed outcome\\n" > "$3/receipt.json"\nexit 23\n',
+      '#!/bin/bash\nif [ "$1" = "npm/native/scripts/native-build-receipt.mjs" ]; then printf "producer receipt\\n" > "$MOCK_PRODUCER"; exit 0; fi\nmkdir -p "$3"\nprintf "controlled consumer stderr\\n" >&2\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "failed outcome\\n" > "$3/receipt.json"\nexit 23\n',
       { mode: 0o755 },
     );
     const args = path.join(directory, "args.txt");
@@ -172,6 +172,10 @@ test("the actual workflow rejects extra builds and preserves failed phase output
         output,
       ]);
       assert.equal(fs.readFileSync(path.join(output, "receipt.json"), "utf8"), "failed outcome\n");
+      assert.equal(
+        fs.readFileSync(path.join(output, "consumer.stderr"), "utf8"),
+        "controlled consumer stderr\n",
+      );
     };
     assertConsumerFailure(proof.run);
     for (const injected of [
@@ -183,6 +187,16 @@ test("the actual workflow rejects extra builds and preserves failed phase output
     ]) {
       assert.throws(() => assertConsumerFailure(`${injected}\n${proof.run}`), injected);
     }
+    const missingStderrCapture = proof.run.replace('2>"$capture/consumer.stderr"', "");
+    assert.notEqual(
+      missingStderrCapture,
+      proof.run,
+      "the counterfactual must remove stderr capture",
+    );
+    assert.throws(
+      () => assertConsumerFailure(missingStderrCapture),
+      "missing consumer stderr capture",
+    );
     env.PACK_STATUS = "17";
     assert.equal(run(proof.run).status, 17);
     assert.equal(fs.existsSync(args), false);
