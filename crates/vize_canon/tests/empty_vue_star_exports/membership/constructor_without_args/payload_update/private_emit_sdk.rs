@@ -24,11 +24,16 @@ fn load() -> Value {
         let current =
             fs::read_to_string(support::repository().join(asset["path"].as_str().unwrap()))
                 .unwrap();
+        let current = super::generic_event_specialization::source_before(
+            asset["path"].as_str().unwrap(),
+            current,
+        );
         authenticate(&current, asset);
     }
     record
 }
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::generic_event_specialization::source_before(path, current);
     let record = load();
     let Some(entry) = record["files"]
         .as_array()
@@ -38,8 +43,11 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     else {
         return current;
     };
-    authenticate(&current, &entry["after"]);
-    let mut previous = current;
+    inverse(&current, entry)
+}
+fn inverse(current: &str, entry: &Value) -> String {
+    authenticate(current, &entry["after"]);
+    let mut previous = current.to_owned();
     for edit in entry["edits"].as_array().unwrap() {
         let after = edit["after"].as_str().unwrap();
         assert!(!after.is_empty());
@@ -66,8 +74,10 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| source_before(path, changed)).is_err());
             }
             let added = entry["edits"][0]["after"].as_str().unwrap();
+            let current = super::super::generic_event_specialization::source_before(path, current);
+            assert_eq!(current.matches(added).count(), 1);
             assert!(
-                std::panic::catch_unwind(|| source_before(path, current.replacen(added, "", 1)))
+                std::panic::catch_unwind(|| inverse(&current.replacen(added, "", 1), entry))
                     .is_err()
             );
         }

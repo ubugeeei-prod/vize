@@ -59,7 +59,8 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     }
 }
 pub(super) fn preamble_before(current: &str) -> String {
-    inverse(current, &load()["preamble"])
+    let current = super::generic_event_specialization::preamble_before(current);
+    inverse(&current, &load()["preamble"])
 }
 pub(super) fn retain_provenance(manifest: &mut Value) {
     manifest["provenance"]["currentCanonicalLooseEmitSdkUpdate"] = load();
@@ -95,7 +96,7 @@ mod tests {
                 edit["after"].as_str().unwrap(),
                 1
             ),
-            current
+            super::super::generic_event_specialization::preamble_before(current)
         );
         assert!(std::panic::catch_unwind(|| preamble_before(&format!("{current}\n"))).is_err());
     }

@@ -1,5 +1,6 @@
 /** Keep the public emit resolver on the same canonical policy as the producer. */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
@@ -7,6 +8,7 @@ import { format } from "oxfmt";
 
 const names = [
   "$LooseEmitProps",
+  "$DeferredEmitProps",
   "$LooseEmitPropsFactory",
   "$EmitIsWide",
   "$NativeEmitPropsFactory",
@@ -17,6 +19,9 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
 export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 `;
 const leaf = "npm/cli/virtual-ts-emits.d.ts";
+const previousLeafSha256 = "970d2e01606062f48faed4194df96322c53b57158eee854196afe6f71f117809";
+const previousNative =
+  "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;";
 const namespaceImport =
   'import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };';
 const forwards = `
@@ -28,7 +33,7 @@ import type {
   IsAny as $IsAny,
   $ConstructorEmitPropsFactory,
   $EmitOwnedKeys,
-  __vizeConstructorEmitProps,
+  __EmitProps,
 } from "./virtual-ts.js" with { "resolution-mode": "import" };
 `;
 const printer = ts.createPrinter({ removeComments: true });
@@ -84,7 +89,7 @@ export async function emitInferenceExports(
     );
     for (const [current, exported] of [
       [embedded, false],
-      [shared, index === 4],
+      [shared, name === "$EmitPropsFactory"],
     ] as const) {
       assert.equal(
         current.nodes[index]!.modifiers?.some(
@@ -107,10 +112,25 @@ export async function emitInferenceExports(
   );
   assert.deepEqual(canonical.errors, []);
   const old = family(previous, "known previous public emit factory");
+  const previousShared = family(
+    shared.nodes
+      .filter((node) => node.name.text !== "$DeferredEmitProps")
+      .map((node) =>
+        node.name.text === "$NativeEmitPropsFactory" ? previousNative : node.getText(shared.source),
+      )
+      .join("\n"),
+    "known previous shared emit family",
+  );
   const forwarded = family(forwards, "known public namespace forwarders");
   const outputs = new Map<string, string>();
   if (pending.has(leaf) || existsSync(path.join(root, leaf))) {
-    assert.equal(read(leaf), canonical.code, `${leaf} refuses noncanonical helper content`);
+    const existing = read(leaf);
+    if (existing !== canonical.code)
+      assert.equal(
+        createHash("sha256").update(existing).digest("hex"),
+        previousLeafSha256,
+        `${leaf} refuses noncanonical helper content`,
+      );
   }
   outputs.set(leaf, canonical.code);
   for (const extension of ["ts", "mts", "cts"]) {
@@ -122,7 +142,14 @@ export async function emitInferenceExports(
     const isForwarded =
       actual.nodes.length === 2 &&
       identity(actual.nodes[0]!, actual.source) === identity(forwarded.nodes[0]!, forwarded.source);
-    const expected = actual.nodes.length === 2 ? (isForwarded ? forwarded : old) : shared;
+    const expected =
+      actual.nodes.length === 2
+        ? isForwarded
+          ? forwarded
+          : old
+        : actual.nodes.length === 5
+          ? previousShared
+          : shared;
     assert.deepEqual(
       actual.nodes.map((node) => node.name.text),
       expected.nodes.map((node) => node.name.text),

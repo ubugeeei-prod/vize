@@ -3,9 +3,14 @@ import type {
   IsAny as $IsAny,
   $ConstructorEmitPropsFactory,
   $EmitOwnedKeys,
-  __vizeConstructorEmitProps,
+  __EmitProps,
 } from "./virtual-ts.js" with { "resolution-mode": "import" };
 type $LooseEmitProps = { readonly __vizeLooseListener: [] };
+type $DeferredEmitProps<E, P = __EmitProps<E>> = `on${Capitalize<string>}` extends keyof P
+  ? $EmitIsWide<new () => { $emit: E }> extends true
+    ? $LooseEmitProps
+    : P
+  : P;
 type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any
   ? $IsAny<P> extends true
     ? (component: C) => (props: {}) => $LooseEmitProps
@@ -30,9 +35,9 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
         C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
         $EmitOwnedKeys<C>
       >
-    : $EmitIsWide<C> extends true
-      ? $LooseEmitPropsFactory<C>
-      : typeof __vizeConstructorEmitProps
+    : <P, E>(
+        component: new (props: P, ...args: any[]) => { $emit: E },
+      ) => (props: P) => $DeferredEmitProps<E>
   : $LooseEmitPropsFactory<C>;
 type $EmitPropsFactory<C> =
   $IsAny<C> extends true
