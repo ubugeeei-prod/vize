@@ -22,8 +22,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
-    env, fs,
-    io::Read,
+    env, fs, io::Read,
     path::{Path, PathBuf},
     process::{Child, Command, ExitCode, Stdio},
     time::{Duration, Instant},
@@ -130,7 +129,6 @@ fn run() -> Result<u8, String> {
         }
         return Ok(0);
     }
-
     let output_dir = args
         .output_dir
         .clone()
@@ -142,9 +140,9 @@ fn run() -> Result<u8, String> {
     let mut planned_runs = 0usize;
     let mut ok_runs = 0usize;
     let mut findings_runs = 0usize;
+    let mut configuration_runs = 0usize;
     let mut failed_runs = 0usize;
     let mut missing_fixture_runs = 0usize;
-
     for project in &projects {
         let mut runs = Vec::new();
         for tool in &tools {
@@ -153,6 +151,7 @@ fn run() -> Result<u8, String> {
                 "planned" => planned_runs += 1,
                 "ok" => ok_runs += 1,
                 "findings" => findings_runs += 1,
+                "configuration" => configuration_runs += 1,
                 "missing-fixture" => missing_fixture_runs += 1,
                 _ => failed_runs += 1,
             }
@@ -186,6 +185,7 @@ fn run() -> Result<u8, String> {
             "plannedRuns": planned_runs,
             "okRuns": ok_runs,
             "findingsRuns": findings_runs,
+            "configurationRuns": configuration_runs,
             "failedRuns": failed_runs,
             "missingFixtureRuns": missing_fixture_runs,
         },
