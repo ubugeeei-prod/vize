@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "pullRequest": 11815,
+  "issue": 11675,
+  "predecessor": {
+    "path": "successor-11734/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "641d711aac2e741427d132ebecb6ef4d5d0cb0f41fcb204ec782e9d2c49e54a9"
+  },
+  "successor": {
+    "path": "successor-11675/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "64fef1d5892867f04a90b1b7ddb0fad3864153aa92b53d757afd5f992eb26fdd"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 0,
+    "contentMapperMappings": 2,
+    "contentMapperAuthoredHits": 2
+  },
+  "capture": {
+    "runId": 41818766110,
+    "jobId": 126536577795,
+    "artifactId": 13315708044,
+    "artifactSha256": "e70fa529f19c5bff77b1eed158c78d707927d07fc7e2e337e28c57d42c653b03",
+    "sourceRevision": "beca9eaf068137e6dffd818c4949b522c4919dd1",
+    "pullRequestHead": "b3ccaa6786e63d91902a684f41fb1ec296231602",
+    "producerCommit": "46b752b95bd8e2b955148866655e01b58a166fe4"
+  },
+  "scope": "Diagnostics-only Atom spans on the two generated interpolation parentheses. All predecessor bytes except content-mapper mapping and authored-hit summaries remain identical."
+}

@@ -136,47 +136,9 @@ declare function __vizeConstructorEmitProps<P, E>(
 type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(
   component: new (props: P, ...args: any[]) => { $emit: E },
 ) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
-type $LooseEmitProps = { readonly __vizeLooseListener: [] };
-type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any
-  ? $IsAny<P> extends true
-    ? (component: C) => (props: {}) => $LooseEmitProps
-    : (component: C) => (props: P) => {}
-  : (component: C) => (props: {}) => $LooseEmitProps;
-type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E }
-  ? $IsAny<E> extends true
-    ? true
-    : E extends (...args: infer A) => any
-      ? string extends A[0]
-        ? true
-        : [A] extends [any[]]
-          ? any[] extends A
-            ? true
-            : false
-          : false
-      : false
-  : false;
-type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any }
-  ? C extends { readonly __vizeComponentMarker: true }
-    ? $ConstructorEmitPropsFactory<
-        C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
-        $EmitOwnedKeys<C>
-      >
-    : $EmitIsWide<C> extends true
-      ? $LooseEmitPropsFactory<C>
-      : typeof __vizeConstructorEmitProps
-  : $LooseEmitPropsFactory<C>;
-export type $EmitPropsFactory<C> =
-  $IsAny<C> extends true
-    ? (component: C) => (props: {}) => $LooseEmitProps
-    : C extends { __vizeResolveEmitProps?: infer F }
-      ? F extends (...args: any[]) => any
-        ? (component: C) => F
-        : $NativeEmitPropsFactory<C>
-      : C extends { __vizeResolveProps?: infer F }
-        ? F extends (...args: any[]) => any
-          ? (component: C) => F
-          : $NativeEmitPropsFactory<C>
-        : $NativeEmitPropsFactory<C>;
+import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };
+type $NativeEmitPropsFactory<C> = __vizeEmitTypes.$NativeEmitPropsFactory<C>;
+export type $EmitPropsFactory<C> = __vizeEmitTypes.$EmitPropsFactory<C>;
 
 // Component usage helpers shared by every generated module in a batch project.
 export type IsAny<T> = $IsAny<T>;

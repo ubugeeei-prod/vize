@@ -14,6 +14,7 @@ import {
 } from "../differential/lsp-formatter-warning-capture.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 const packRoot = fileURLToPath(new URL("../_fixtures/differential/lsp/", import.meta.url));
 const directory = path.join(packRoot, "formatter-warning-capture-11815");
 
@@ -46,6 +47,25 @@ test("the new input materializes all three requests and authenticates the actual
   assert.deepEqual(current.requests, original.requests);
 });
 
+test("scratch fixture copies keep repository custody separate and preserve the original SHA rejection", () => {
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vize-warning-pack-"));
+  try {
+    fs.cpSync(packRoot, scratch, { recursive: true });
+    const copied = loadLspManifest(path.join(scratch, "manifest.json"));
+    assert.equal(
+      copied.cases.find((entry) => entry.id === FORMATTER_WARNING_CAPTURE_ID)?.requests.length,
+      3,
+    );
+    fs.appendFileSync(
+      path.join(scratch, "html-element-hover-documentation/responses.expected.json"),
+      "corrupted",
+    );
+    assert.throws(() => loadLspManifest(path.join(scratch, "manifest.json")), /SHA256 mismatch/);
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 test("unknown and old IDs cannot reuse the warning-capture profile", () => {
   for (const id of [
     "lsp/regression/unknown-warning",
@@ -53,7 +73,7 @@ test("unknown and old IDs cannot reuse the warning-capture profile", () => {
   ]) {
     const { data, files, expected } = fixture();
     data.id = id;
-    assert.throws(() => loadFormatterWarningCapture(packRoot, data, files, expected));
+    assert.throws(() => loadFormatterWarningCapture(repositoryRoot, data, files, expected));
   }
   const { data, files, expected } = fixture();
   assert.throws(() => loadFormatterBindPolicy(data, files, expected));
@@ -63,19 +83,19 @@ test("missing warning input and altered source, config, warning or response byte
   const missing = fixture();
   missing.files.pop();
   assert.throws(() =>
-    loadFormatterWarningCapture(packRoot, missing.data, missing.files, missing.expected),
+    loadFormatterWarningCapture(repositoryRoot, missing.data, missing.files, missing.expected),
   );
   for (const index of [0, 1, 2]) {
     const { data, files, expected } = fixture();
     files[index]!.bytes = Buffer.from("changed input\n");
     // A repinned hash cannot replace the fixed semantic contract.
     data.files![index]!.sha256 = sha256(files[index]!.bytes);
-    assert.throws(() => loadFormatterWarningCapture(packRoot, data, files, expected));
+    assert.throws(() => loadFormatterWarningCapture(repositoryRoot, data, files, expected));
   }
   const response = fixture();
   response.expected[0].result = [];
   assert.throws(() =>
-    loadFormatterWarningCapture(packRoot, response.data, response.files, response.expected),
+    loadFormatterWarningCapture(repositoryRoot, response.data, response.files, response.expected),
   );
 });
 
@@ -83,11 +103,10 @@ test("a different consumer hash or a hash-valid consumer that leaves inputs unus
   const changed = fixture();
   changed.data.provenance.witness!.sha256 = "0".repeat(64);
   assert.throws(() =>
-    loadFormatterWarningCapture(packRoot, changed.data, changed.files, changed.expected),
+    loadFormatterWarningCapture(repositoryRoot, changed.data, changed.files, changed.expected),
   );
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-warning-consumer-"));
   try {
-    const fakePack = path.join(root, "tests/_fixtures/differential/lsp");
     const consumer = path.join(root, FORMATTER_WARNING_CONSUMER);
     fs.mkdirSync(path.dirname(consumer), { recursive: true });
     const source =
@@ -96,7 +115,7 @@ test("a different consumer hash or a hash-valid consumer that leaves inputs unus
     const unused = fixture();
     unused.data.provenance.witness!.sha256 = sha256(Buffer.from(source));
     assert.throws(
-      () => loadFormatterWarningCapture(fakePack, unused.data, unused.files, unused.expected),
+      () => loadFormatterWarningCapture(root, unused.data, unused.files, unused.expected),
       /unused input/,
     );
   } finally {

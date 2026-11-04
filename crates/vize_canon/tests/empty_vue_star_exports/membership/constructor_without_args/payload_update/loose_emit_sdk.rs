@@ -27,7 +27,9 @@ fn load() -> Value {
         let current =
             fs::read_to_string(support::repository().join(asset["path"].as_str().unwrap()))
                 .unwrap();
-        authenticate(&current, asset);
+        let previous =
+            super::private_emit_sdk::source_before(asset["path"].as_str().unwrap(), current);
+        authenticate(&previous, asset);
     }
     record
 }
@@ -44,6 +46,7 @@ fn inverse(current: &str, entry: &Value) -> String {
     previous
 }
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::private_emit_sdk::source_before(path, current);
     let record = load();
     match record["files"]
         .as_array()
@@ -75,8 +78,10 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| source_before(path, changed)).is_err());
             }
             let added = entry["edits"][0]["after"].as_str().unwrap();
+            let canonical = super::super::private_emit_sdk::source_before(path, current);
+            assert_eq!(canonical.matches(added).count(), 1);
             assert!(
-                std::panic::catch_unwind(|| source_before(path, current.replacen(added, "", 1)))
+                std::panic::catch_unwind(|| inverse(&canonical.replacen(added, "", 1), entry))
                     .is_err()
             );
         }

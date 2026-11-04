@@ -93,7 +93,9 @@ fn global_ownership_preserves_complete_css_sfc_json_plain_and_off_results() {
     let off = configured(HelpLevel::Full).with_disabled_rules(vec![RULE.into()]);
     let mut css_linter = CssLinter::new();
     css_linter.add_rule(Box::new(NoDisplayNone));
-    for case in corpus.cases {
+    for mut case in corpus.cases {
+        case.expected_cli = crate::current_css_documentation::packet(case.expected_cli);
+        case.expected_plain = crate::current_css_documentation::plain(&case.expected_plain);
         let css = case.source.get(case.style_start..case.style_end).unwrap();
         // No acceptance from a CSS parse refusal returning an empty result.
         let stylesheet = lightningcss::stylesheet::StyleSheet::parse(

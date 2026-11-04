@@ -1,6 +1,10 @@
 import type { PackageManifest } from "./template-alias-paired-11822-types.ts";
-import type { Diagnostic, SourceFile } from "typescript";
-export type TypeScriptApi = typeof import("typescript");
+import type {
+  Diagnostic,
+  SourceFile,
+  TypeScriptApi,
+} from "../../../tests/_helpers/template-alias-typescript-11822.ts";
+export type { TypeScriptApi } from "../../../tests/_helpers/template-alias-typescript-11822.ts";
 interface ParsedSourceFile extends SourceFile {
   readonly parseDiagnostics: readonly Diagnostic[];
 }

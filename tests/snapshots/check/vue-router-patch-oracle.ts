@@ -522,7 +522,7 @@ function assertBrokenLint(result: LintResult): void {
       messages: [
         {
           ruleId: "vue/v-on-style",
-          ruleDocsPath: "docs/content/rules/vue.md",
+          ruleDocsPath: "docs/content/rules/reference/vue-v-on-style.md",
           severity: 2,
           message: "[vize:vue/v-on-style] Prefer shorthand `@` over `v-on:`",
           line: 23,
@@ -538,7 +538,7 @@ function assertBrokenLint(result: LintResult): void {
   ]);
 }
 
-function sha256(source: string | Buffer): string {
+function sha256(source: Parameters<ReturnType<typeof createHash>["update"]>[0]): string {
   return createHash("sha256").update(source).digest("hex");
 }
 

@@ -1,0 +1,2622 @@
+{
+  "schema": "vize.instance-globals-parenthesis-transition",
+  "version": 1,
+  "featureCommit": "46b752b95bd8e2b955148866655e01b58a166fe4",
+  "previous": {
+    "path": "source-packets-current-2d46a96fbefd.json",
+    "sha256": "e95ccde784b823f2c8d93b9d2a428714b512527614e3fb111104322263a453c2"
+  },
+  "producer": {
+    "sourceRevision": "beca9eaf068137e6dffd818c4949b522c4919dd1",
+    "sourceTree": "7dd35652480035c0882d7d6d9c6e45da6a36540d",
+    "pullRequestHead": "b3ccaa6786e63d91902a684f41fb1ec296231602",
+    "binarySha256": "d8558d9e14fe8eea687976ca077d4526d7aa2dc646a8db51fc7b948f1f0f5b2f",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 41818766110,
+    "artifactId": 13315534394,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "sourceLaunch": {
+    "binary": "/home/runner/_work/vize/vize/target/ci/vize",
+    "expected": {
+      "sourceRevision": "beca9eaf068137e6dffd818c4949b522c4919dd1",
+      "binaryPath": "target/ci/vize",
+      "binarySha256": "d8558d9e14fe8eea687976ca077d4526d7aa2dc646a8db51fc7b948f1f0f5b2f",
+      "cliVersion": "vize 0.474.0-dev"
+    },
+    "receipt": {
+      "schema": "vize.differential.build",
+      "version": 1,
+      "recipe": "cargo build --profile ci -p vize",
+      "sourceRevision": "beca9eaf068137e6dffd818c4949b522c4919dd1",
+      "binaryPath": "target/ci/vize",
+      "binarySha256": "d8558d9e14fe8eea687976ca077d4526d7aa2dc646a8db51fc7b948f1f0f5b2f",
+      "cliVersion": "vize 0.474.0-dev"
+    },
+    "buildRecipe": "cargo build --profile ci -p vize",
+    "versionProbe": {
+      "exitStatus": 0,
+      "signal": null,
+      "stdoutBase64": "dml6ZSAwLjQ3NC4wLWRldgo=",
+      "stderrBase64": "",
+      "processError": null
+    }
+  },
+  "raw": {
+    "source-protocol.json": {
+      "bytes": 446927,
+      "sha256": "6ef734acc56c6b2f3163bd932d86781c75b93945d0b8c0ff068965b94aebfc55"
+    },
+    "source-profile.json": {
+      "bytes": 28771,
+      "sha256": "b34be0ed6c9f7a038bed725f17b08cb86dc4ca967035ac1dffd65d9914319f08"
+    },
+    "source-adapter.json": {
+      "bytes": 7893,
+      "sha256": "af25c4a9f3f354ae3a6faa1618237f5e768da4df7b5d6b4222d5e604e6114c86"
+    },
+    "outcomes.json": {
+      "bytes": 390755,
+      "sha256": "83dfdf5f92fcf9a836386af62689017a8b671d70d01ee92477597d8cd9cb7e05"
+    },
+    "qualification.json": {
+      "bytes": 394221,
+      "sha256": "61842a0d67c81062557f987db8f8dae544e15d87aac50d645d5e317789d796ef"
+    }
+  },
+  "actualQualification": {
+    "status": "unqualified",
+    "outcomes": [
+      {
+        "id": "lf/original/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/undeclared-only/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repeated/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/optional/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/call/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/v-for-source/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/intentional-any/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/declared-unknown/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/setup-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/loop-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/slot-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/css-module/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/own-props/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/options-own-method/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-error-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/shorthand-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/typeof-value-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/object-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/member-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/string-comment-role/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-raw/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-mixed/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/computed-key-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-loop-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-slot-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/destructured-callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/original/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/undeclared-only/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repeated/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/optional/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/call/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/v-for-source/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/intentional-any/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/declared-unknown/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/setup-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/loop-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/slot-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/css-module/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/own-props/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/options-own-method/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-error-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/shorthand-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/typeof-value-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/object-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/member-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/string-comment-role/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-raw/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-mixed/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/computed-key-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-loop-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-slot-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/destructured-callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/no-dollar",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/disabled",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/same-scope-repeat",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/actual-scope-isolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect-strict-unused/unused/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect-strict-unused/unused/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect-strict-unused/unused/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect-strict-unused/unused/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/loop-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/loop-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/callback-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/callback-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/escaped-callback-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/escaped-callback-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/closed-protocol",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect-strict-unused/unused",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect-strict-unused/unused",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/loop-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/callback-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/escaped-callback-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/named/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/spread/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/slot-expect/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/callback-expect/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/closed-protocol",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/symbols-and-geometry",
+        "outcome": "gap"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/3/original",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/original",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/4/valid",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/valid",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/5/undeclared-only",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/undeclared-only",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/6/repaired",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/repaired",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/7/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/8/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/9/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/10/v-for-source",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/v-for-source",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/11/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/12/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/13/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/14/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/15/setup-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/setup-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/16/loop-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/loop-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/17/slot-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/slot-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/18/css-module",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/css-module",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/19/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/20/options-own-method",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/options-own-method",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/21/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/22/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/23/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/24/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/25/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/26/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/27/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/28/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/29/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/30/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/31/object-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/object-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/32/member-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/member-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/33/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/34/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/35/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/36/callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/37/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/38/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/39/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/40/mixed-loop-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/mixed-loop-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/41/mixed-slot-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/mixed-slot-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/42/destructured-callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/lf/destructured-callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/43/original",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/original",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/44/valid",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/valid",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/45/undeclared-only",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/undeclared-only",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/46/repaired",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/repaired",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/47/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/48/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/49/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/50/v-for-source",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/v-for-source",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/51/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/52/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/53/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/54/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/55/setup-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/setup-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/56/loop-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/loop-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/57/slot-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/slot-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/58/css-module",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/css-module",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/59/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/60/options-own-method",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/options-own-method",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/61/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/62/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/63/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/64/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/65/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/66/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/67/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/68/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/69/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/70/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/71/object-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/object-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/72/member-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/member-key",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/73/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/74/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/75/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/76/callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/77/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/78/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/79/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/80/mixed-loop-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/mixed-loop-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/81/mixed-slot-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/mixed-slot-scope",
+        "outcome": "gap"
+      },
+      {
+        "id": "protocol/82/destructured-callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/destructured-callback-shadow",
+        "outcome": "gap"
+      },
+      {
+        "id": "geometry/mutation-negatives",
+        "outcome": "gap"
+      }
+    ]
+  },
+  "transition": {
+    "packets": 80,
+    "changedPackets": 32,
+    "addedPairs": 36,
+    "onlyFields": [
+      "mappings",
+      "diagnosticDirectives.directives"
+    ],
+    "textDiagnosticsNormalMappingsOpaqueFieldsUnchanged": true
+  },
+  "proofs": [
+    {
+      "label": "lf/original",
+      "pairs": [
+        {
+          "open": 1968,
+          "close": 1970,
+          "owner": [
+            1969,
+            1,
+            143,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "9829ad9cd6ed710c21acf7d3a977de07fe4bc3164b08706209e57ffedafd403d",
+      "currentResultSha256": "5969dae2fc9b614c0bff5a968c28210c69871066969ef1a57944bb3064a16001"
+    },
+    {
+      "label": "lf/valid",
+      "pairs": [
+        {
+          "open": 1961,
+          "close": 1963,
+          "owner": [
+            1962,
+            1,
+            136,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "1b6ee13c6862cc07dc55002b845741f18b1f72a8dec56b7eca244c5c2dbd5b76",
+      "currentResultSha256": "56d341ecdf2bdac93ebe557e2c9f74d437e9703eb1c145d361d61e717798533c"
+    },
+    {
+      "label": "lf/undeclared-only",
+      "pairs": [
+        {
+          "open": 1966,
+          "close": 1968,
+          "owner": [
+            1967,
+            1,
+            141,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "df3bfc8bc64f38d16505bfc80aff4b06ef1f5c5c548e075d4cb30b070a0972b7",
+      "currentResultSha256": "802d3fb9f8cd3a579a5d129ba95f28aa7b470005ed2f1e9eb6a4407388f29903"
+    },
+    {
+      "label": "lf/repaired",
+      "pairs": [
+        {
+          "open": 1961,
+          "close": 1963,
+          "owner": [
+            1962,
+            1,
+            136,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "1b6ee13c6862cc07dc55002b845741f18b1f72a8dec56b7eca244c5c2dbd5b76",
+      "currentResultSha256": "56d341ecdf2bdac93ebe557e2c9f74d437e9703eb1c145d361d61e717798533c"
+    },
+    {
+      "label": "lf/repeated",
+      "pairs": [],
+      "previousResultSha256": "90bf2c289a448a8a0442890b6f9a71f5e43df9445a2bb9168b082b73ff6dd8c1",
+      "currentResultSha256": "90bf2c289a448a8a0442890b6f9a71f5e43df9445a2bb9168b082b73ff6dd8c1"
+    },
+    {
+      "label": "lf/optional",
+      "pairs": [],
+      "previousResultSha256": "fa0b1040b1f54a16fc87803022d0ee4cfb9c01ecec7e40af6b8098c169ae7340",
+      "currentResultSha256": "fa0b1040b1f54a16fc87803022d0ee4cfb9c01ecec7e40af6b8098c169ae7340"
+    },
+    {
+      "label": "lf/call",
+      "pairs": [],
+      "previousResultSha256": "055160768736fee3b3923970ac119dffcc05e079e231df45042ef772795fb798",
+      "currentResultSha256": "055160768736fee3b3923970ac119dffcc05e079e231df45042ef772795fb798"
+    },
+    {
+      "label": "lf/v-for-source",
+      "pairs": [
+        {
+          "open": 1882,
+          "close": 1887,
+          "owner": [
+            1883,
+            4,
+            93,
+            4,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "09eee255ed0c10c56857bbaac291282f83ca2928b1670d2ee78730db830700ad",
+      "currentResultSha256": "2f59f072bcdcb937e4409b02b31d607b8b0aa7e1da996e496bc9d5bdf64c313d"
+    },
+    {
+      "label": "lf/intentional-any",
+      "pairs": [],
+      "previousResultSha256": "38e7e8e8e93a582a66adb09d0c86158bff400ea0da9ae81e5a76c854af5fea64",
+      "currentResultSha256": "38e7e8e8e93a582a66adb09d0c86158bff400ea0da9ae81e5a76c854af5fea64"
+    },
+    {
+      "label": "lf/declared-unknown",
+      "pairs": [],
+      "previousResultSha256": "751f74c23c065dc1a823e2017548bfb279d3d36093bf28f7da9cdacdd09895e3",
+      "currentResultSha256": "751f74c23c065dc1a823e2017548bfb279d3d36093bf28f7da9cdacdd09895e3"
+    },
+    {
+      "label": "lf/plugin-valid",
+      "pairs": [],
+      "previousResultSha256": "dc842197e261decbde7b3ee344838f95869ae5fad7cc87bcfc1b0d9947b2e98f",
+      "currentResultSha256": "dc842197e261decbde7b3ee344838f95869ae5fad7cc87bcfc1b0d9947b2e98f"
+    },
+    {
+      "label": "lf/plugin-invalid",
+      "pairs": [],
+      "previousResultSha256": "50544b55d36d495e0078c9fe44d77345dc0406d744b7217046d7691da48e8684",
+      "currentResultSha256": "50544b55d36d495e0078c9fe44d77345dc0406d744b7217046d7691da48e8684"
+    },
+    {
+      "label": "lf/setup-shadow",
+      "pairs": [
+        {
+          "open": 1745,
+          "close": 1766,
+          "owner": [
+            1746,
+            20,
+            94,
+            20,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "456b7f64cb5503ded80a8ab33a84c5fb419c3ef45bcc6a4838ab65f655520320",
+      "currentResultSha256": "66606d16a0889c00925d1ad82b2963a0058eb223e85b768b459805928abfe6ae"
+    },
+    {
+      "label": "lf/loop-shadow",
+      "pairs": [
+        {
+          "open": 1810,
+          "close": 1815,
+          "owner": [
+            1811,
+            4,
+            100,
+            4,
+            0,
+            1048575
+          ]
+        },
+        {
+          "open": 1894,
+          "close": 1907,
+          "owner": [
+            1895,
+            12,
+            109,
+            12,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "c9121a7f92896441b60d84160ae53f5357f97897de9561ab6f1ce917be7fe372",
+      "currentResultSha256": "f399be836a425feed690ef660a4dfd02c7f27fad2ca868df4268d10bcc2472e3"
+    },
+    {
+      "label": "lf/slot-shadow",
+      "pairs": [
+        {
+          "open": 3258,
+          "close": 3271,
+          "owner": [
+            3259,
+            12,
+            241,
+            12,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "fed3396b70843e9282144d5d9f2aa67ed9e4aa24020be40500b370f13e3ed04b",
+      "currentResultSha256": "e8dfa8fd2355184ee0e5de90505ec98161531905421829b209ad899c1483179f"
+    },
+    {
+      "label": "lf/css-module",
+      "pairs": [
+        {
+          "open": 2168,
+          "close": 2195,
+          "owner": [
+            2169,
+            26,
+            70,
+            26,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "53bc6f4d68eb368d1d40f01ab655c137d0821a848e47cf3bf8b8d40b919a0a9a",
+      "currentResultSha256": "60a9ddcdc55a53c4ff4633f85e8dce44ed9d3ef8779606f43246cfde6e8e28e3"
+    },
+    {
+      "label": "lf/own-props",
+      "pairs": [],
+      "previousResultSha256": "a05e903e35ea99acc9ec955a76a7b48915959334dd9322cc68e1217694d076b2",
+      "currentResultSha256": "a05e903e35ea99acc9ec955a76a7b48915959334dd9322cc68e1217694d076b2"
+    },
+    {
+      "label": "lf/options-own-method",
+      "pairs": [
+        {
+          "open": 2468,
+          "close": 2487,
+          "owner": [
+            2469,
+            18,
+            159,
+            18,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "f9c22a5dc815126c3c51ca495c43dcb1b35908fdb352ac0d21bba13dbf703cb6",
+      "currentResultSha256": "126161520459ecdd71c96085a678ede075a7139ac1f26a296b772dc7f1f3275f"
+    },
+    {
+      "label": "lf/expect-error-opening-child",
+      "pairs": [],
+      "previousResultSha256": "9e771abf0d424bd51d673cfc1c726e760bc403688e44e50b4f03b0ce0a9729f8",
+      "currentResultSha256": "9e771abf0d424bd51d673cfc1c726e760bc403688e44e50b4f03b0ce0a9729f8"
+    },
+    {
+      "label": "lf/ignore-opening-child",
+      "pairs": [],
+      "previousResultSha256": "c87582088799acea0bb29d361f39758867f970b999f7f9b6589424a57e9f6608",
+      "currentResultSha256": "c87582088799acea0bb29d361f39758867f970b999f7f9b6589424a57e9f6608"
+    },
+    {
+      "label": "lf/expect-owned-interpolation",
+      "pairs": [],
+      "previousResultSha256": "c07525f4e4b95f835f063dca3b659628fd799f13b7f2bbd9cfeb6101b253ab87",
+      "currentResultSha256": "c07525f4e4b95f835f063dca3b659628fd799f13b7f2bbd9cfeb6101b253ab87"
+    },
+    {
+      "label": "lf/ignore-owned-interpolation",
+      "pairs": [],
+      "previousResultSha256": "02920eab65be14af868c9b4e35c46b1c56cb03a31a903c8e85c5ac2f3a967524",
+      "currentResultSha256": "02920eab65be14af868c9b4e35c46b1c56cb03a31a903c8e85c5ac2f3a967524"
+    },
+    {
+      "label": "lf/expect-owned-attribute",
+      "pairs": [],
+      "previousResultSha256": "ae0f9cba9226476ff8423dbec1884953b2e32b3225a859aa4751e4b33a4b0366",
+      "currentResultSha256": "ae0f9cba9226476ff8423dbec1884953b2e32b3225a859aa4751e4b33a4b0366"
+    },
+    {
+      "label": "lf/ignore-owned-attribute",
+      "pairs": [],
+      "previousResultSha256": "7b20a122923eaf33bfabcc1f0a98b98e2f2e78d8ba3c7a9479ac66c138dc49f4",
+      "currentResultSha256": "7b20a122923eaf33bfabcc1f0a98b98e2f2e78d8ba3c7a9479ac66c138dc49f4"
+    },
+    {
+      "label": "lf/expect-owned-foreign-sibling",
+      "pairs": [],
+      "previousResultSha256": "60f71ddabb5bf6d643192cf39bb5aa0baefc0d40a0a1eeb19c9b5f9db67a02a9",
+      "currentResultSha256": "60f71ddabb5bf6d643192cf39bb5aa0baefc0d40a0a1eeb19c9b5f9db67a02a9"
+    },
+    {
+      "label": "lf/ignore-owned-foreign-sibling",
+      "pairs": [],
+      "previousResultSha256": "2a91fe29822a42759e58f272af386bd3c6a6c31e9d9d5f2d5d9df7791455b8f5",
+      "currentResultSha256": "2a91fe29822a42759e58f272af386bd3c6a6c31e9d9d5f2d5d9df7791455b8f5"
+    },
+    {
+      "label": "lf/shorthand-free",
+      "pairs": [],
+      "previousResultSha256": "bcad00ab24c402d1eab97afc91115c66b79b65dadc96b5d40f3d1951e760d96b",
+      "currentResultSha256": "bcad00ab24c402d1eab97afc91115c66b79b65dadc96b5d40f3d1951e760d96b"
+    },
+    {
+      "label": "lf/typeof-value-free",
+      "pairs": [],
+      "previousResultSha256": "7f23ab7660af8573649264fba0d70b7e69e0f850c99852a9d2179c2334d3c416",
+      "currentResultSha256": "7f23ab7660af8573649264fba0d70b7e69e0f850c99852a9d2179c2334d3c416"
+    },
+    {
+      "label": "lf/object-key",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1754,
+          "owner": [
+            1722,
+            32,
+            70,
+            32,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "f668c26c6d0da49fd39cb47077835194ffb1c85903e11f21cc3c49df942d3d9d",
+      "currentResultSha256": "2fb10e365748e8c70eca1876dd4821c693784d8a92493c2749791384518c4863"
+    },
+    {
+      "label": "lf/member-key",
+      "pairs": [
+        {
+          "open": 1738,
+          "close": 1762,
+          "owner": [
+            1739,
+            23,
+            87,
+            23,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "b121b5e300f5c92258a4cd07048567d7b27059af81c73571651baf8bdce1d095",
+      "currentResultSha256": "0ab48039fbd53a6a4f12f61d2cf11243510e0fdef850ea232f12fecd5eb2f294"
+    },
+    {
+      "label": "lf/string-comment-role",
+      "pairs": [],
+      "previousResultSha256": "7114115df3c757185d91f7877c7f39c1991ecde9034bc70900ad0ded4cc3fa70",
+      "currentResultSha256": "7114115df3c757185d91f7877c7f39c1991ecde9034bc70900ad0ded4cc3fa70"
+    },
+    {
+      "label": "lf/template-literal-raw",
+      "pairs": [],
+      "previousResultSha256": "4b4e14b793df5b9113e25054fff95bc2b487cfc34fe36c73757033c5beb05a5b",
+      "currentResultSha256": "4b4e14b793df5b9113e25054fff95bc2b487cfc34fe36c73757033c5beb05a5b"
+    },
+    {
+      "label": "lf/template-literal-value",
+      "pairs": [],
+      "previousResultSha256": "1ab449847198bbd1c247a75747be1be4f2c04aebeff7da26665edbd10e20d2b8",
+      "currentResultSha256": "1ab449847198bbd1c247a75747be1be4f2c04aebeff7da26665edbd10e20d2b8"
+    },
+    {
+      "label": "lf/callback-shadow",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1766,
+          "owner": [
+            1722,
+            44,
+            70,
+            44,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "30aa4002992d625bc0f4ea610fceccbaa55a6e4227e9635b7ac1cc8affe6d9e4",
+      "currentResultSha256": "5647df8844b6d317318644851cc49be8ab0c3fec06b07fbe083efc35f38908dc"
+    },
+    {
+      "label": "lf/callback-mixed",
+      "pairs": [],
+      "previousResultSha256": "5adf37809aa1207c94b48ab3fdda16f92cdb2834c0a1dfe2cf3ec567a599d810",
+      "currentResultSha256": "5adf37809aa1207c94b48ab3fdda16f92cdb2834c0a1dfe2cf3ec567a599d810"
+    },
+    {
+      "label": "lf/callback-free",
+      "pairs": [],
+      "previousResultSha256": "9b70cc36ad5870a88202ba68e86f88939bdb41eefe0f323424b27e65311ecaa7",
+      "currentResultSha256": "9b70cc36ad5870a88202ba68e86f88939bdb41eefe0f323424b27e65311ecaa7"
+    },
+    {
+      "label": "lf/computed-key-free",
+      "pairs": [],
+      "previousResultSha256": "1ed9b64c99684259bacd3942059dfd75d0be1771dd168deff5b44a5637d61d89",
+      "currentResultSha256": "1ed9b64c99684259bacd3942059dfd75d0be1771dd168deff5b44a5637d61d89"
+    },
+    {
+      "label": "lf/mixed-loop-scope",
+      "pairs": [
+        {
+          "open": 1888,
+          "close": 1893,
+          "owner": [
+            1889,
+            4,
+            100,
+            4,
+            0,
+            1048575
+          ]
+        },
+        {
+          "open": 1972,
+          "close": 1985,
+          "owner": [
+            1973,
+            12,
+            109,
+            12,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "ab5a4739e2d2e07103bd8195a8556958ef382a91c7c7c07abb133343d47f327d",
+      "currentResultSha256": "585e610cba82a87e44248cddd529fa2c6da461f400247f3a6e5cd23a7e8ac1b0"
+    },
+    {
+      "label": "lf/mixed-slot-scope",
+      "pairs": [
+        {
+          "open": 3336,
+          "close": 3349,
+          "owner": [
+            3337,
+            12,
+            241,
+            12,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "aa4f3189868f54f33b3b843025c6bd0823e983d675977e3fa6c16102f15eaff3",
+      "currentResultSha256": "3699adc6540a0e09051966f67e43cd881dafdfd87a7ab0a52dd98f9abbc9a3ca"
+    },
+    {
+      "label": "lf/destructured-callback-shadow",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1788,
+          "owner": [
+            1722,
+            66,
+            70,
+            66,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "d282f56d8bbdbe02097f3d3284b2653967f9f49922c6883c54bc1860e310e4b9",
+      "currentResultSha256": "429bfff4d88eba0b24be816408679d35df37ec628afa3475759f884fc5e35bcb"
+    },
+    {
+      "label": "crlf-unicode/original",
+      "pairs": [
+        {
+          "open": 1988,
+          "close": 1990,
+          "owner": [
+            1989,
+            1,
+            166,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "3cfe6c75fbebf713428ce451764ab7cd7f5e3ad6c0510435d70052420ce49a06",
+      "currentResultSha256": "585d0781fa4df60d7909f8d611788b3eb29054749a247dd620a4510006f4d3a3"
+    },
+    {
+      "label": "crlf-unicode/valid",
+      "pairs": [
+        {
+          "open": 1981,
+          "close": 1983,
+          "owner": [
+            1982,
+            1,
+            159,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "0a967e22ce452387552df3b24d5605ba97a47125ffc3536ce2e2c2a1284a8233",
+      "currentResultSha256": "eb2acec3fc1e9628c62bb1e88ae7fb6c4e3425841c2756d8838cae7fb83e850f"
+    },
+    {
+      "label": "crlf-unicode/undeclared-only",
+      "pairs": [
+        {
+          "open": 1986,
+          "close": 1988,
+          "owner": [
+            1987,
+            1,
+            164,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "0a00deb780dd086511e8bbfd23adb4d9dee97427eb31b81809035ba7a5d5b5d8",
+      "currentResultSha256": "2f81850a9e117bb48088aceca143651a02b478fa39daf5229fa51db51dbc1672"
+    },
+    {
+      "label": "crlf-unicode/repaired",
+      "pairs": [
+        {
+          "open": 1981,
+          "close": 1983,
+          "owner": [
+            1982,
+            1,
+            159,
+            1,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "0a967e22ce452387552df3b24d5605ba97a47125ffc3536ce2e2c2a1284a8233",
+      "currentResultSha256": "eb2acec3fc1e9628c62bb1e88ae7fb6c4e3425841c2756d8838cae7fb83e850f"
+    },
+    {
+      "label": "crlf-unicode/repeated",
+      "pairs": [],
+      "previousResultSha256": "69fd0580fcb69f643b74c970a175529960b1a0df8aadfedb8f5c4934b8afef9f",
+      "currentResultSha256": "69fd0580fcb69f643b74c970a175529960b1a0df8aadfedb8f5c4934b8afef9f"
+    },
+    {
+      "label": "crlf-unicode/optional",
+      "pairs": [],
+      "previousResultSha256": "bb708fad1fcc4c4ddb01cd5a694b092e9e3eeec325c270719a8429b55f8ba159",
+      "currentResultSha256": "bb708fad1fcc4c4ddb01cd5a694b092e9e3eeec325c270719a8429b55f8ba159"
+    },
+    {
+      "label": "crlf-unicode/call",
+      "pairs": [],
+      "previousResultSha256": "dafed935014c10b5cbb9b1953f65640d4241e4bad9dc15277bb6c69ffd211701",
+      "currentResultSha256": "dafed935014c10b5cbb9b1953f65640d4241e4bad9dc15277bb6c69ffd211701"
+    },
+    {
+      "label": "crlf-unicode/v-for-source",
+      "pairs": [
+        {
+          "open": 1882,
+          "close": 1905,
+          "owner": [
+            1883,
+            22,
+            98,
+            22,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "f3630a4a93e94715b54db87a7707513a13b389e1ebeceb5261da16567c942f67",
+      "currentResultSha256": "22719249a8365a28042cd0a77d92ac75523b50190b2b41b3bc5ff89049d0bcf7"
+    },
+    {
+      "label": "crlf-unicode/intentional-any",
+      "pairs": [],
+      "previousResultSha256": "b7cbd8bd2765c901b323e35304c24519fbb76ed02c302fc139afc469a33ec802",
+      "currentResultSha256": "b7cbd8bd2765c901b323e35304c24519fbb76ed02c302fc139afc469a33ec802"
+    },
+    {
+      "label": "crlf-unicode/declared-unknown",
+      "pairs": [],
+      "previousResultSha256": "d976aa50806c4b167e5e5e6308032e253eba80e71692a8dcc7c17a921a070c87",
+      "currentResultSha256": "d976aa50806c4b167e5e5e6308032e253eba80e71692a8dcc7c17a921a070c87"
+    },
+    {
+      "label": "crlf-unicode/plugin-valid",
+      "pairs": [],
+      "previousResultSha256": "9c72e570a9ba17811733819bec90c6dd6d54d583de60188aaca5712539f95c65",
+      "currentResultSha256": "9c72e570a9ba17811733819bec90c6dd6d54d583de60188aaca5712539f95c65"
+    },
+    {
+      "label": "crlf-unicode/plugin-invalid",
+      "pairs": [],
+      "previousResultSha256": "1e28a545f42c2af58c8808b632dc3c6754740639731b9f4cc67a76124db51bbc",
+      "currentResultSha256": "1e28a545f42c2af58c8808b632dc3c6754740639731b9f4cc67a76124db51bbc"
+    },
+    {
+      "label": "crlf-unicode/setup-shadow",
+      "pairs": [
+        {
+          "open": 1745,
+          "close": 1784,
+          "owner": [
+            1746,
+            38,
+            99,
+            38,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "bad60e8e56274135715d8e6fb921662c10681fe72f0e4f3697d9afdf186581cb",
+      "currentResultSha256": "c2f6f779365648a7d05e36f1f0f46730705ba56cf7bddc63f05d3beaf2a00c5d"
+    },
+    {
+      "label": "crlf-unicode/loop-shadow",
+      "pairs": [
+        {
+          "open": 1810,
+          "close": 1815,
+          "owner": [
+            1811,
+            4,
+            105,
+            4,
+            0,
+            1048575
+          ]
+        },
+        {
+          "open": 1894,
+          "close": 1925,
+          "owner": [
+            1895,
+            30,
+            114,
+            30,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "2108946460278d164d7dbff1e6ee2ff6450a50624c5ce01778fdd055cb03306e",
+      "currentResultSha256": "5a3bb68d02b7b19596ac8ce9391c64253ba9ab143cbbc015463f1c09bfa0343e"
+    },
+    {
+      "label": "crlf-unicode/slot-shadow",
+      "pairs": [
+        {
+          "open": 3258,
+          "close": 3289,
+          "owner": [
+            3259,
+            30,
+            247,
+            30,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "ed10d570ebf9ec231c9c43aab8dfeabe448d126ddf85785240dea79923b18535",
+      "currentResultSha256": "c0306c29079e64283877034251335931824b74f90415d79755277535630ad3f0"
+    },
+    {
+      "label": "crlf-unicode/css-module",
+      "pairs": [
+        {
+          "open": 2168,
+          "close": 2213,
+          "owner": [
+            2169,
+            44,
+            75,
+            44,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "86fa8a6529402e94b486d86c82d52464f3bfc636d77c6ac387a0df1032e52c8d",
+      "currentResultSha256": "6845c4cf2bbc31bd7d44c2c2f5fd4d7f5f9fd07a94aa92d9552e2b67b4b0876e"
+    },
+    {
+      "label": "crlf-unicode/own-props",
+      "pairs": [],
+      "previousResultSha256": "f6fdf58320986578a2cab706b9fa2ac681f7e8f9965f0f47c93f983890565ef6",
+      "currentResultSha256": "f6fdf58320986578a2cab706b9fa2ac681f7e8f9965f0f47c93f983890565ef6"
+    },
+    {
+      "label": "crlf-unicode/options-own-method",
+      "pairs": [
+        {
+          "open": 2468,
+          "close": 2505,
+          "owner": [
+            2469,
+            36,
+            163,
+            36,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "f0df34bcb150df6d455f71eb3d505dba5ba0b2a2222627c24637f9f2504af379",
+      "currentResultSha256": "d466649824c9fd29e160abf7c71a52568ba507840da6af8169c7525b78df0f96"
+    },
+    {
+      "label": "crlf-unicode/expect-error-opening-child",
+      "pairs": [],
+      "previousResultSha256": "77dbdba7d62e4bc3960797890894ed036f3db8226509a9a9d730ce67f4895e81",
+      "currentResultSha256": "77dbdba7d62e4bc3960797890894ed036f3db8226509a9a9d730ce67f4895e81"
+    },
+    {
+      "label": "crlf-unicode/ignore-opening-child",
+      "pairs": [],
+      "previousResultSha256": "f544640c004b0717a035c17033f3e38f84bcd5989bf2fcd9dc4b914e83eed3c6",
+      "currentResultSha256": "f544640c004b0717a035c17033f3e38f84bcd5989bf2fcd9dc4b914e83eed3c6"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-interpolation",
+      "pairs": [],
+      "previousResultSha256": "0ad0c07c75f2d273cc438f2513f95f14881c0eee7ee680f146f2d1ebe9499b3a",
+      "currentResultSha256": "0ad0c07c75f2d273cc438f2513f95f14881c0eee7ee680f146f2d1ebe9499b3a"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-interpolation",
+      "pairs": [],
+      "previousResultSha256": "e7a8f388d6e024d86cf4faafae60ce137fe525dd7534b2e461ddfd8e6e6e7534",
+      "currentResultSha256": "e7a8f388d6e024d86cf4faafae60ce137fe525dd7534b2e461ddfd8e6e6e7534"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-attribute",
+      "pairs": [],
+      "previousResultSha256": "9770967f94086692c185020afe6a838f680cf97ab3e625b1f792e123f9f3e511",
+      "currentResultSha256": "9770967f94086692c185020afe6a838f680cf97ab3e625b1f792e123f9f3e511"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-attribute",
+      "pairs": [],
+      "previousResultSha256": "d7d33d7f985d84543ab625c7ed7b24fce895eb5bb2daacbdcdda47c0ff3015de",
+      "currentResultSha256": "d7d33d7f985d84543ab625c7ed7b24fce895eb5bb2daacbdcdda47c0ff3015de"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-foreign-sibling",
+      "pairs": [],
+      "previousResultSha256": "7c873622e5f2c41f693b2b269c9c5c337bfc6860e0d0f27072b4d6137ecf116f",
+      "currentResultSha256": "7c873622e5f2c41f693b2b269c9c5c337bfc6860e0d0f27072b4d6137ecf116f"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-foreign-sibling",
+      "pairs": [],
+      "previousResultSha256": "ab58906e9a1b315f56962a91ce0864de5964a972cf5f7c8164a8c4e8c8fe2ca8",
+      "currentResultSha256": "ab58906e9a1b315f56962a91ce0864de5964a972cf5f7c8164a8c4e8c8fe2ca8"
+    },
+    {
+      "label": "crlf-unicode/shorthand-free",
+      "pairs": [],
+      "previousResultSha256": "096499cafb44a8d51cc02c1ad23ae029353f442c74241c1d6201dca5ee06def3",
+      "currentResultSha256": "096499cafb44a8d51cc02c1ad23ae029353f442c74241c1d6201dca5ee06def3"
+    },
+    {
+      "label": "crlf-unicode/typeof-value-free",
+      "pairs": [],
+      "previousResultSha256": "ced8b4f345a07615a28aeefb5f89704fefb90c0d9fd3c06ba69ac3e0cd7cd875",
+      "currentResultSha256": "ced8b4f345a07615a28aeefb5f89704fefb90c0d9fd3c06ba69ac3e0cd7cd875"
+    },
+    {
+      "label": "crlf-unicode/object-key",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1772,
+          "owner": [
+            1722,
+            50,
+            75,
+            50,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "5b5804e55e690b86f2cc838d585af009ce93e79c4b98175b00d489f60ef364e3",
+      "currentResultSha256": "3bae27e476350edcd26e0eb56ad9a124fa47cc587e5040968517a0bbee0953aa"
+    },
+    {
+      "label": "crlf-unicode/member-key",
+      "pairs": [
+        {
+          "open": 1738,
+          "close": 1780,
+          "owner": [
+            1739,
+            41,
+            92,
+            41,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "bfca9a199234a97f47d2dacd73e2b940f8f51ee5965fa6ddf08249742e05bd45",
+      "currentResultSha256": "e00eea02a895dcb0f6abe2938e1453299ef8c10a18906e83c85f1b510bba8b96"
+    },
+    {
+      "label": "crlf-unicode/string-comment-role",
+      "pairs": [],
+      "previousResultSha256": "0402a8341be8cb3104c00e29212c9c78d088ad854f20960f5dad4a20e3887000",
+      "currentResultSha256": "0402a8341be8cb3104c00e29212c9c78d088ad854f20960f5dad4a20e3887000"
+    },
+    {
+      "label": "crlf-unicode/template-literal-raw",
+      "pairs": [],
+      "previousResultSha256": "5390dbc49b76e3ce1619505e20da810080db6351996a9c9496c924af75f5cd06",
+      "currentResultSha256": "5390dbc49b76e3ce1619505e20da810080db6351996a9c9496c924af75f5cd06"
+    },
+    {
+      "label": "crlf-unicode/template-literal-value",
+      "pairs": [],
+      "previousResultSha256": "b552416a517e54da59ced795769605b88ab85ca02d2f195d1436d992703100b0",
+      "currentResultSha256": "b552416a517e54da59ced795769605b88ab85ca02d2f195d1436d992703100b0"
+    },
+    {
+      "label": "crlf-unicode/callback-shadow",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1784,
+          "owner": [
+            1722,
+            62,
+            75,
+            62,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "ab558951097d61f3ff1cde09c74e5fa797a229bbe2f4d9a6600e17d1f4ec3128",
+      "currentResultSha256": "c33e49fecd06495f6cae166e96a74477a4824683191f2037bb4c6f4cd2ef6c63"
+    },
+    {
+      "label": "crlf-unicode/callback-mixed",
+      "pairs": [],
+      "previousResultSha256": "eaf2edff49b07d90cb99dc7c4982508f59d6daeb82aaecf472ca956fadadd820",
+      "currentResultSha256": "eaf2edff49b07d90cb99dc7c4982508f59d6daeb82aaecf472ca956fadadd820"
+    },
+    {
+      "label": "crlf-unicode/callback-free",
+      "pairs": [],
+      "previousResultSha256": "7c1e74b171ce2bfb56de00901b03c3fd4448bc6dacf60402be05c08e42662ec0",
+      "currentResultSha256": "7c1e74b171ce2bfb56de00901b03c3fd4448bc6dacf60402be05c08e42662ec0"
+    },
+    {
+      "label": "crlf-unicode/computed-key-free",
+      "pairs": [],
+      "previousResultSha256": "5726ef52ddfac99ab4cc64e45d4758f6106ffa5bc83dc40be5eb1ea41dcf2334",
+      "currentResultSha256": "5726ef52ddfac99ab4cc64e45d4758f6106ffa5bc83dc40be5eb1ea41dcf2334"
+    },
+    {
+      "label": "crlf-unicode/mixed-loop-scope",
+      "pairs": [
+        {
+          "open": 1888,
+          "close": 1893,
+          "owner": [
+            1889,
+            4,
+            105,
+            4,
+            0,
+            1048575
+          ]
+        },
+        {
+          "open": 1972,
+          "close": 2003,
+          "owner": [
+            1973,
+            30,
+            114,
+            30,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "b88b2a424af4afc8358b59a7dbdf706368f7509d3dd7d8e4b5c2b257a264ae98",
+      "currentResultSha256": "e14ef940e2c1dc5129193fb926aa7dbc6819c8cb743773901e90a34d9253650d"
+    },
+    {
+      "label": "crlf-unicode/mixed-slot-scope",
+      "pairs": [
+        {
+          "open": 3336,
+          "close": 3367,
+          "owner": [
+            3337,
+            30,
+            247,
+            30,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "9e6bed3ace6c3f732ce1a9073d48dc01f4ed3be327863bfd851c4e458fd1dce9",
+      "currentResultSha256": "56cf42fecd2027739f042dac9a7818cff07ecf3fb0b944adab791aef31f62352"
+    },
+    {
+      "label": "crlf-unicode/destructured-callback-shadow",
+      "pairs": [
+        {
+          "open": 1721,
+          "close": 1806,
+          "owner": [
+            1722,
+            84,
+            75,
+            84,
+            0,
+            1048575
+          ]
+        }
+      ],
+      "previousResultSha256": "2b3a8c1cd5679baf837232a4c158222e15dd31ca695798904e36015ea95269f3",
+      "currentResultSha256": "fbcda45b615facebcb1366bdd91152798fee246b820ed0e29f7edea44460fb6e"
+    }
+  ]
+}

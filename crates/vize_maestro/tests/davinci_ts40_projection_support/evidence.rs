@@ -136,6 +136,16 @@ fn public_instance_slot_packets_remain_authenticated() {
         extra_keys_successor,
         runtime_prop_successor,
     );
+    let delimiter_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11675/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!("fixtures/public-instance-options-api-slots/successor-11675/receipt.json"),
+        "28553b0312ddd3033f2fcd80337f0bb28cdc6454e8db4753eca75c6e9f666f7b",
+        11815,
+        runtime_prop_successor,
+        delimiter_successor,
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
@@ -144,7 +154,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        runtime_prop_successor
+        delimiter_successor
     );
 }
 
@@ -239,9 +249,20 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             runtime_prop_successor,
         );
 
+        let delimiter_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11675/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11675/receipt.json"),
+            "d8776fa2cb87ecca00a6da5bf65121f7decb1e1eca86da46d195250245c0d843",
+            11815,
+            runtime_prop_successor,
+            delimiter_successor,
+        );
+
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            runtime_prop_successor
+            delimiter_successor
         );
     }
 }
@@ -298,6 +319,28 @@ fn authenticate_successor_receipt(
                     - generated_text_bytes(predecessor, section),
                 "generatedTextBytesPerProjection must match {section}"
             );
+        }
+    }
+    for (field, key) in [
+        ("contentMapperMappings", "mappings="),
+        ("contentMapperAuthoredHits", "authored-hits="),
+    ] {
+        if let Some(expected) = receipt["delta"][field].as_i64() {
+            let count = |record: &str| -> i64 {
+                record
+                    .split_once("[content-mapper]\n")
+                    .expect("content mapper section")
+                    .1
+                    .lines()
+                    .find_map(|line| line.strip_prefix(key))
+                    .expect("content mapper count")
+                    .split_once(':')
+                    .expect("count/hash separator")
+                    .0
+                    .parse()
+                    .expect("content mapper count")
+            };
+            assert_eq!(count(successor) - count(predecessor), expected, "{field}");
         }
     }
     if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {

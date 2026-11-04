@@ -1,6 +1,6 @@
 /** Keep the public emit resolver on the same canonical policy as the producer. */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { format } from "oxfmt";
@@ -15,6 +15,21 @@ const names = [
 const previous = `
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
 export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
+`;
+const leaf = "npm/cli/virtual-ts-emits.d.ts";
+const namespaceImport =
+  'import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };';
+const forwards = `
+type $NativeEmitPropsFactory<C> = __vizeEmitTypes.$NativeEmitPropsFactory<C>;
+export type $EmitPropsFactory<C> = __vizeEmitTypes.$EmitPropsFactory<C>;
+`;
+const leafHeader = `// Generated from the canonical emit-inference helpers. Do not edit.
+import type {
+  IsAny as $IsAny,
+  $ConstructorEmitPropsFactory,
+  $EmitOwnedKeys,
+  __vizeConstructorEmitProps,
+} from "./virtual-ts.js" with { "resolution-mode": "import" };
 `;
 const printer = ts.createPrinter({ removeComments: true });
 function family(text: string, label: string) {
@@ -79,21 +94,35 @@ export async function emitInferenceExports(
       );
     }
   }
+  // The public entry deliberately retains its legacy implicit exports. Keep
+  // the new private names in a separate module with an explicit export boundary.
   const canonical = await format(
-    "virtual-ts.d.ts",
-    shared.nodes.map((node) => node.getText(shared.source)).join("\n") + "\n",
+    leaf,
+    leafHeader +
+      shared.nodes
+        .map((node) => node.getText(shared.source).replace(/^export\s+/u, ""))
+        .join("\n") +
+      "\nexport type { $NativeEmitPropsFactory, $EmitPropsFactory };\n",
     { printWidth: 100 },
   );
   assert.deepEqual(canonical.errors, []);
   const old = family(previous, "known previous public emit factory");
+  const forwarded = family(forwards, "known public namespace forwarders");
   const outputs = new Map<string, string>();
+  if (pending.has(leaf) || existsSync(path.join(root, leaf))) {
+    assert.equal(read(leaf), canonical.code, `${leaf} refuses noncanonical helper content`);
+  }
+  outputs.set(leaf, canonical.code);
   for (const extension of ["ts", "mts", "cts"]) {
     const file = `npm/cli/virtual-ts.d.${extension}`;
     const text = read(file);
     const actual = family(text, file);
     const first = actual.nodes[0]!;
     const last = actual.nodes.at(-1)!;
-    const expected = actual.nodes.length === 2 ? old : shared;
+    const isForwarded =
+      actual.nodes.length === 2 &&
+      identity(actual.nodes[0]!, actual.source) === identity(forwarded.nodes[0]!, forwarded.source);
+    const expected = actual.nodes.length === 2 ? (isForwarded ? forwarded : old) : shared;
     assert.deepEqual(
       actual.nodes.map((node) => node.name.text),
       expected.nodes.map((node) => node.name.text),
@@ -124,12 +153,22 @@ export async function emitInferenceExports(
       spans(actual.nodes),
       `${file} refuses foreign statements in the factory family`,
     );
-    outputs.set(
-      file,
-      text.slice(0, first.getStart(actual.source)) +
-        canonical.code.trimEnd() +
-        text.slice(last.end),
+    const imports = actual.source.statements.filter(
+      (node): node is ts.ImportDeclaration =>
+        ts.isImportDeclaration(node) &&
+        node.importClause?.namedBindings !== undefined &&
+        ts.isNamespaceImport(node.importClause.namedBindings) &&
+        node.importClause.namedBindings.name.text === "__vizeEmitTypes",
     );
+    assert.equal(imports.length, isForwarded ? 1 : 0, `${file} keeps the private import boundary`);
+    const start = isForwarded ? imports[0]!.getStart(actual.source) : first.getStart(actual.source);
+    if (isForwarded) {
+      assert.equal(imports[0]!.getText(actual.source), namespaceImport);
+      assert.ok(text.slice(imports[0]!.end, first.getStart(actual.source)).trim() === "");
+    }
+    const replacement = await format(file, namespaceImport + forwards, { printWidth: 100 });
+    assert.deepEqual(replacement.errors, []);
+    outputs.set(file, text.slice(0, start) + replacement.code.trimEnd() + text.slice(last.end));
   }
   return outputs;
 }
