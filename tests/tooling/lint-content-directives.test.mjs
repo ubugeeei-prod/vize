@@ -1,4 +1,7 @@
-import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -121,7 +124,10 @@ await test("source-built lint matches complete original and configured content-d
     assert.equal(plain.status, 1);
     assert.equal(
       plain.stdout,
-      "Patina lint report: 1 error in 1 file\n\nNotice.vue\n  Notice.vue:10:5 error html/no-empty-palpable-content <p> element is empty but expects visible content\n    Reference: docs/content/rules/html.md\n",
+      currentRuleDocumentationPlain(
+        "Patina lint report: 1 error in 1 file\n\nNotice.vue\n  Notice.vue:10:5 error html/no-empty-palpable-content <p> element is empty but expects visible content\n    Reference: docs/content/rules/html.md\n",
+        "html/no-empty-palpable-content",
+      ),
     );
     for (const row of source.inputs) {
       if (row.path !== "vize.config.json")

@@ -45,6 +45,8 @@ const pages = new Map<string, readonly [string, string]>([
   ["vue/no-unused-properties", ["vue", "vue-no-unused-properties"]],
   ["vue/no-unused-vars", ["vue", "vue-no-unused-vars"]],
   ["vue/require-component-registration", ["vue", "vue-require-component-registration"]],
+  ["vue/require-scoped-style", ["vue", "vue-require-scoped-style"]],
+  ["vue/sfc-element-order", ["vue", "vue-sfc-element-order"]],
   ["vue/require-v-for-key", ["vue", "vue-require-v-for-key"]],
   ["vue/v-slot-style", ["vue", "vue-v-slot-style"]],
   ["nuxt/nuxt-config-keys-order", ["index", "nuxt-nuxt-config-keys-order"]],
@@ -54,7 +56,7 @@ const pages = new Map<string, readonly [string, string]>([
 
 function documentation(rule: string): { before: string; after: string } {
   const page = pages.get(rule);
-  assert.ok(page, "finite authored documentation rule");
+  assert.ok(page, `finite authored documentation rule: ${rule}`);
   const target =
     rule === "vue/comment-directive"
       ? "guide/lint-execution.md"

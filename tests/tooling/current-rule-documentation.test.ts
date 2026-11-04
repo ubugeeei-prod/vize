@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { asArray, asRecord, asString } from "../../tools/support/json-value.ts";
+import { wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import {
   currentRuleDocumentationMessage,
   currentRuleDocumentationMessages,
@@ -45,6 +47,8 @@ const histories = [
   ["vue/no-unused-properties", "vue"],
   ["vue/no-unused-vars", "vue"],
   ["vue/require-component-registration", "vue"],
+  ["vue/require-scoped-style", "vue"],
+  ["vue/sfc-element-order", "vue"],
   ["vue/require-v-for-key", "vue"],
   ["vue/v-slot-style", "vue"],
   ["nuxt/nuxt-config-keys-order", "index"],
@@ -187,4 +191,89 @@ void test("unknown rules, old/current URLs, severity, packet fields and counter 
     [{ file: "Clean.vue", messages: [], errorCount: 0, warningCount: 0 }],
   );
   assert.equal(asString(original.ruleDocsPath), "docs/content/rules/type-and-script.md");
+});
+
+void test("every authored public-import and reserved-suppression route projects without losing fields", () => {
+  const read = (path: string) =>
+    asRecord(
+      JSON.parse(
+        fs.readFileSync(new URL(`../_fixtures/differential/lint/${path}`, import.meta.url), "utf8"),
+      ),
+    );
+  const verify = (entry: Record<string, unknown>, findings: unknown) => {
+    const before = withoutHelp(wholeJson(entry, findings));
+    const after = currentRuleDocumentationPacket(before);
+    const oldMessages = asArray(asRecord(asArray(before)[0]).messages);
+    const newMessages = after[0]!.messages;
+    assert.equal(newMessages.length, oldMessages.length);
+    for (let i = 0; i < newMessages.length; i++)
+      newMessages[i]!.ruleDocsPath = asRecord(oldMessages[i]).ruleDocsPath;
+    assert.deepEqual(after, before);
+  };
+  const publicCorpus = read("public-vue-imports-8090/cases.json");
+  const entries = asArray(publicCorpus.cases).map((value) => asRecord(value));
+  let publicRoutes = 0;
+  for (const entry of entries) {
+    verify(entry, entry.diagnostics);
+    publicRoutes++;
+  }
+  const controls = read("public-vue-imports-8090/default-route-controls.json");
+  const routeMap = asRecord(
+    read("public-vue-imports-8090/default-route-controls-successor.json").routes,
+  );
+  for (const raw of asArray(controls.cases)) {
+    const control = asRecord(raw);
+    const entry = entries.find((candidate) => candidate.id === control.id)!;
+    const routes = asArray(control.routes).map((value) => asRecord(value));
+    for (const route of routes) {
+      const selected = routeMap[asString(route.id)] ?? route.id;
+      verify(entry, routes.find((candidate) => candidate.id === selected)!.diagnostics);
+      publicRoutes++;
+    }
+  }
+  for (const id of [
+    "original-element-plus",
+    "public-ref",
+    "mixed-named",
+    "namespace",
+    "default-import",
+    "private-alias",
+  ]) {
+    const entry = entries.find((candidate) => candidate.id === id)!;
+    verify({ ...entry, source: entry.fixedSource }, entry.fixedDiagnostics);
+    publicRoutes++;
+  }
+  assert.equal(publicRoutes, 63);
+  const reserved = read("reserved-suppression-8090/cases.json");
+  const successors = asArray(
+    read("reserved-suppression-8090/default-route-successors.json").cases,
+  ).map((value) => asRecord(value));
+  let reservedRoutes = 0;
+  for (const [index, raw] of asArray(reserved.cases).entries()) {
+    const entry = asRecord(raw),
+      successor = successors[index]!;
+    assert.equal(successor.id, entry.id);
+    for (const field of [
+      "defaultDiagnostics",
+      "defaultDiagnostics",
+      "essentialDiagnostics",
+      "defaultDiagnostics",
+      "incrementalDiagnostics",
+      "offDiagnostics",
+      "projectionDiagnostics",
+    ]) {
+      verify(entry, successor[field]);
+      reservedRoutes++;
+    }
+  }
+  const original = read("reserved-suppression-8090/original-vue-select-successor.json");
+  original.source = fs.readFileSync(
+    new URL(
+      `../_fixtures/differential/lint/reserved-suppression-8090/${asString(original.sourceFile)}`,
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  verify(original, original.diagnostics);
+  assert.equal(reservedRoutes + 1, 169);
 });
