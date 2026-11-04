@@ -98,7 +98,10 @@ function observe(directory: string, extension: string, direct: boolean) {
   assert.ok(source);
   const diagnostics = ts
     .getPreEmitDiagnostics(program)
-    .filter((diagnostic) => diagnostic.file?.fileName === input)
+    .filter(
+      (diagnostic) =>
+        diagnostic.file && path.resolve(diagnostic.file.fileName) === path.resolve(input),
+    )
     .map((diagnostic) => ({
       code: diagnostic.code,
       start: diagnostic.start,
@@ -114,10 +117,15 @@ function observe(directory: string, extension: string, direct: boolean) {
   };
 }
 
+function isPackageMember(pkg: string, file: string): boolean {
+  const relative = path.relative(pkg, file);
+  return relative !== ".." && !relative.startsWith(".." + path.sep) && !path.isAbsolute(relative);
+}
+
 function requireDeclarationClosure(observation: ReturnType<typeof observe>, pkg: string) {
   const dependencies = new Set<string>();
   for (const source of observation.program.getSourceFiles()) {
-    if (!source.fileName.startsWith(pkg + path.sep)) continue;
+    if (!isPackageMember(pkg, source.fileName)) continue;
     const visit = (node: ts.Node): void => {
       const specifier =
         ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
@@ -143,7 +151,7 @@ function requireDeclarationClosure(observation: ReturnType<typeof observe>, pkg:
         assert.ok(observation.program.getSourceFile(resolved.resolvedFileName));
         if (specifier.text.startsWith(".")) {
           assert.ok(
-            resolved.resolvedFileName.startsWith(pkg + path.sep),
+            isPackageMember(pkg, resolved.resolvedFileName),
             "relative declarations stay in the staged published package",
           );
         }
@@ -208,7 +216,7 @@ export function verifyEmitExportSurface(
     );
     const physicalDeclarations = current.program
       .getSourceFiles()
-      .filter((source) => source.fileName.startsWith(pkg + path.sep))
+      .filter((source) => isPackageMember(pkg, source.fileName))
       .map((source) => ({
         path: path.relative(pkg, source.fileName),
         sha256: sha256(fs.readFileSync(source.fileName)),
