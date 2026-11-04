@@ -56,6 +56,12 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install unchanged builders dependencies
         run: node tools/support/compat/github/install-js-checks.ts builders
+      - name: Require the process-only diagnostic tracer
+        run: |
+          if ! command -v strace; then
+            sudo apt-get update -qq
+            sudo apt-get install --yes --no-install-recommends --no-upgrade strace
+          fi
       - name: Observe the original command once and preserve its exit status
         env:
           TEST_CASES_JOB: PR JS package tests (builders)
