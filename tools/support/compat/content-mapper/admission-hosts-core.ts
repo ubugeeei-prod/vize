@@ -193,6 +193,6 @@ export function semanticPacket(
   project: string,
   expectedErrors: readonly number[],
 ) {
-  assert.equal(status, expectedErrors.length ? 1 : 0, "normal noEmit semantic status changed");
+  assert.equal(status, expectedErrors.length ? 2 : 0, "pinned noEmit semantic status changed");
   return diagnosticPacket(stdout, stderr, project, expectedErrors);
 }

@@ -121,10 +121,21 @@ void test("normal positive and complete authored negative diagnostic packets are
         `src/File${index}.vue(2,7): error TS2322: Type 'string' is not assignable to type 'number'.`,
     ).join("\n") + "\n";
   assert.equal(diagnosticPacket(text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
-  assert.equal(semanticPacket(1, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
+  assert.equal(semanticPacket(2, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
   assert.throws(
-    () => semanticPacket(2, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]),
+    () => semanticPacket(1, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]),
     /semantic status/u,
+  );
+  assert.throws(
+    () =>
+      semanticPacket(
+        2,
+        "error TS18003: No inputs were found.\ntsconfig.json(9,5): error TS5023: Unknown compiler option 'contentMappers'.\n",
+        "",
+        "/project",
+        [1, 3, 5, 7],
+      ),
+    /unexpected diagnostic/u,
   );
   assert.throws(() => diagnosticPacket("", "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]));
   assert.throws(() =>
