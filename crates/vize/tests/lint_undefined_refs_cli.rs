@@ -73,7 +73,7 @@ const known = 1
             "file": "src/App.vue",
             "messages": [{
                 "ruleId": "vue/no-undefined-refs",
-                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
                 "severity": 1,
                 "message": "[vize:vue/no-undefined-refs] Variable 'missing' is not defined",
                 "line": 5,

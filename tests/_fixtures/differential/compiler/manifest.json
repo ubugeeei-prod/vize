@@ -2368,6 +2368,60 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-v-for-erasure-mode-11815",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-v-for-erasure-mode-11815",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "81858c1e940af1af590309805e6a37ee00b0226ab46fdadc39a4669ad8edefad"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-v-for-erasure-mode-11815/module.expected.txt",
+        "sha256": "9b59e55248e63cafcbd4f9aa25937e46765269e00e06333c2d9dae94552d454d",
+        "source": "Independent public @vizejs/native 0.680.0 untyped control: complete SSR module. This JavaScript-mode v-for input exercises the unchanged-output erasure path; l4::tests::type_annotated_v_for_aliases_stay_in_scope separately compares both typed SSR lanes to the same complete renderer and helper-import oracle. Current source CLI execution remains an Actions qualification."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler equivalence is not established by this source-CLI fixture; the independent published SDK control supplies the frozen output oracle."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "js"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-asset-markup-10761",
       "state": "active",
       "targets": ["ssr"],

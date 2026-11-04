@@ -15,6 +15,7 @@ use super::ts_view::ts_view;
 pub(in crate::emit) fn handler_is_constant(
     file: &str,
     on: &vize_l2::op::OnOp<'_>,
+    is_ts: bool,
     constant: &dyn Fn(&str) -> bool,
 ) -> bool {
     let Some(handler) = on.expression() else {
@@ -26,6 +27,14 @@ pub(in crate::emit) fn handler_is_constant(
         vize_l2::expr::ExprRef::Foreign(_) | vize_l2::expr::ExprRef::Filter(_) => return false,
     };
     let content = super::super::prefix::node_content(file, source, handler.span());
+    if is_ts && let vize_l2::expr::ExprRef::Js(js) = handler {
+        let proven_js =
+            content.offset.is_some() && super::super::prefix::retained_expression_is_js(js);
+        let erased = super::super::prefix::shared_erasure(content.text.as_str(), proven_js);
+        if erased.as_str() != content.text.as_str() {
+            return constant(erased.as_str());
+        }
+    }
     content.text.as_str() == source && constant(source)
 }
 

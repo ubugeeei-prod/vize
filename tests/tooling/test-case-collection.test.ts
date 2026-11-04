@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import {
+  spawnSync,
+  type SpawnSyncOptions,
+  type SpawnSyncOptionsWithBufferEncoding,
+  type SpawnSyncOptionsWithStringEncoding,
+  type SpawnSyncReturns,
+} from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -18,6 +24,62 @@ function withDirectory(check: (directory: string) => void) {
       rmSync(directory, { recursive: true, force: true });
     }
   };
+}
+
+function successfulSpawnRecorder(calls: Array<{ command: string; args: readonly string[] }>) {
+  function run(command: string): SpawnSyncReturns<NonSharedBuffer>;
+  function run(
+    command: string,
+    options: SpawnSyncOptionsWithStringEncoding,
+  ): SpawnSyncReturns<string>;
+  function run(
+    command: string,
+    options: SpawnSyncOptionsWithBufferEncoding,
+  ): SpawnSyncReturns<NonSharedBuffer>;
+  function run(
+    command: string,
+    options?: SpawnSyncOptions,
+  ): SpawnSyncReturns<string | NonSharedBuffer>;
+  function run(command: string, args: readonly string[]): SpawnSyncReturns<NonSharedBuffer>;
+  function run(
+    command: string,
+    args: readonly string[],
+    options: SpawnSyncOptionsWithStringEncoding,
+  ): SpawnSyncReturns<string>;
+  function run(
+    command: string,
+    args: readonly string[],
+    options: SpawnSyncOptionsWithBufferEncoding,
+  ): SpawnSyncReturns<NonSharedBuffer>;
+  function run(
+    command: string,
+    args?: readonly string[],
+    options?: SpawnSyncOptions,
+  ): SpawnSyncReturns<string | NonSharedBuffer>;
+  function run(
+    command: string,
+    argsOrOptions?: readonly string[] | SpawnSyncOptions,
+    options?: SpawnSyncOptions,
+  ): SpawnSyncReturns<string | NonSharedBuffer> {
+    const args: string[] = [];
+    let selectedOptions = options;
+    if (argsOrOptions !== undefined) {
+      if ("length" in argsOrOptions) args.push(...argsOrOptions);
+      else selectedOptions = argsOrOptions;
+    }
+    calls.push({ command, args });
+    const encoding = selectedOptions?.encoding;
+    const output = encoding && encoding !== "buffer" ? "" : Buffer.alloc(0);
+    return {
+      pid: 0,
+      output: [null, output, output],
+      stdout: output,
+      stderr: output,
+      status: 0,
+      signal: null,
+    };
+  }
+  return run;
 }
 
 void test(
@@ -181,10 +243,7 @@ void test(
           "--native-test-owner=00000000-0000-0000-0000-000000000000",
           "vp",
           ["run", "test"],
-          (command, args) => {
-            calls.push({ command, args });
-            return { status: 0 };
-          },
+          successfulSpawnRecorder(calls),
         ),
         0,
       );

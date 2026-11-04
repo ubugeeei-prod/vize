@@ -130,7 +130,7 @@ const dispatch = defineEmits<(event: string, payload: unknown) => void>()
             "file": "App.vue",
             "messages": [{
                 "ruleId": RULE,
-                "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                "ruleDocsPath": "docs/content/rules/reference/script-prefer-define-emits-binding.md",
                 "severity": 1,
                 "message": "[vize:script/prefer-define-emits-binding] Use the function returned by defineEmits() instead of template `$emit`.",
                 "line": 6,

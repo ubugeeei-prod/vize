@@ -16,6 +16,8 @@ use super::context::ScopeGenerationOptions;
 
 mod authored_ranges;
 mod instance;
+mod instance_check;
+use instance_check::emit_strict_template_context_ref;
 mod loop_sources;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
@@ -207,6 +209,7 @@ pub(super) fn generate_undefined_refs(
                 src_start,
                 src_end,
                 already_declared,
+                options.diagnostic_ownership,
             );
             continue;
         }
@@ -237,6 +240,7 @@ pub(super) fn generate_undefined_refs(
                 src_start,
                 src_end,
                 true,
+                options.diagnostic_ownership,
             );
             continue;
         }
@@ -280,6 +284,11 @@ pub(super) fn generate_undefined_refs(
         };
         let gen_name_start = gen_start + name_offset;
         let gen_name_end = gen_name_start + undef.name.len();
+        if on_instance && let Some(collector) = options.diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .record_diagnostic_primary(gen_name_start..gen_name_end, src_start..src_end);
+        }
 
         ts.push_str(&expr_code);
         mappings.push(VizeMapping {
@@ -311,6 +320,7 @@ pub(super) fn generate_undefined_refs(
             &mut seen_names,
             &mut seen_strict_occurrences,
             &mut emitted_header,
+            options.diagnostic_ownership,
         );
     }
 }
@@ -369,35 +379,6 @@ pub(super) fn strict_receiver(keyed_prop: bool) -> &'static str {
     } else {
         "__vize_strict_template_context"
     }
-}
-
-pub(super) fn emit_strict_template_context_ref(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    (receiver, name): (&str, &str),
-    src_start: usize,
-    src_end: usize,
-    already_declared: bool,
-) {
-    let expr_code = if already_declared {
-        cstr!("  void ({receiver}.{name});\n")
-    } else {
-        cstr!("  var {name}: any = undefined; void ({name});\n  void ({receiver}.{name});\n")
-    };
-    let gen_start = ts.len();
-    let name_offset = expr_code.rfind(name).unwrap_or(0);
-    let gen_name_start = gen_start + name_offset;
-    let gen_name_end = gen_name_start + name.len();
-    ts.push_str(&expr_code);
-    mappings.push(VizeMapping {
-        gen_range: gen_name_start..gen_name_end,
-        src_range: src_start..src_end,
-        sub_spans: Vec::new(),
-    });
-    append!(
-        *ts,
-        "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
-    );
 }
 
 /// Whether template names resolve on the authored default export's instance:

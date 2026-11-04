@@ -66,6 +66,7 @@ pub(crate) fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count:
     let mut failures = Vec::new();
     let mut captured = 0;
     for (index, (case, provider)) in cases.iter().zip(sources).enumerate() {
+        let expected = crate::support::current_rule_documentation::packet(case["expected"].clone());
         let id = case["id"].as_str().unwrap();
         let source = provider["source"].as_str().unwrap().as_bytes();
         let directory = project.path().join(format!("{index:02}-{id}"));
@@ -116,7 +117,8 @@ pub(crate) fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count:
                 "configAfterError": config_after.as_ref().err().map(|error| format!("{error}")),
                 "expectedStatus": case["status"],
                 "expectedStderrBytes": case["stderrBytes"],
-                "expected": case["expected"],
+                "historicalFormatterExpected": case["expected"],
+                "expected": expected,
             })
         );
         captured += 1;
@@ -142,7 +144,7 @@ pub(crate) fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count:
             failures.push(format!("{id}: complete CLI stderr differs"));
         }
         match serde_json::from_slice::<Value>(&output.stdout) {
-            Ok(actual) if actual == case["expected"] => {}
+            Ok(actual) if actual == expected => {}
             Ok(_) => failures.push(format!("{id}: complete JSON formatter packet differs")),
             Err(error) => failures.push(format!("{id}: complete stdout is not JSON: {error}")),
         }

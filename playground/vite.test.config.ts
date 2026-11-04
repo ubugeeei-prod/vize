@@ -39,7 +39,7 @@ export default defineConfig({
     dedupe: ["vue"],
   },
   optimizeDeps: {
-    include: ["vue"],
+    include: ["vue", "shiki"],
   },
   test: {
     browser: {
