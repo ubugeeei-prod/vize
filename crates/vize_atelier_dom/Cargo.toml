@@ -87,6 +87,11 @@ required-features = ["legacy-differential"]
 name = "element_v_once"
 required-features = ["legacy-differential"]
 
+# Authored `pick<Item>` / `pick as T` stay dynamic after type erasure (#11580).
+[[test]]
+name = "typed_const_text_flag"
+required-features = ["legacy-differential"]
+
 # These read process-global walk and selector counters, so each keeps its own process under cargo test.
 [[test]]
 name = "davinci_expr_reparse_floor"
