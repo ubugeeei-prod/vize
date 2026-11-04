@@ -135,11 +135,9 @@ const plan = {
 };
 
 const stepName = "Build and run the affected Rust test cohort";
-for (const [event, profile] of [
-  ["merge_group", "full"],
-  ["pull_request", "pr"],
-] as const) {
-  test(`${profile} cohort shell keeps its semantic filter with the exclusive runtime flag`, () => {
+for (const event of ["merge_group", "pull_request"] as const) {
+  const profile = "full";
+  test(`${event} typechecker cohort requires tsgo and keeps the full filter`, () => {
     const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
     try {
       const bin = join(cwd, "bin");
@@ -152,7 +150,7 @@ for (const [event, profile] of [
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(process.env.CORSA_PATH!==process.env.EXPECTED_CORSA_PATH)process.exit(94);try{fs.accessSync(process.env.CORSA_PATH,fs.constants.X_OK)}catch{process.exit(95)}if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO"))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(process.env.CORSA_PATH!==process.env.EXPECTED_CORSA_PATH)process.exit(94);try{fs.accessSync(process.env.CORSA_PATH,fs.constants.X_OK)}catch{process.exit(95)}if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
@@ -167,6 +165,10 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
       assert.equal(
         Object.hasOwn(workflow.jobs["pr-rust-shard"].env, "VIZE_TEST_DISABLE_TSGO"),
         false,
+      );
+      assert.equal(
+        workflow.jobs["pr-rust-shard"].env.NEXTEST_PROFILE,
+        "${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && 'full' || 'pr' }}",
       );
       const environment: Record<string, string | undefined> = {
         ...process.env,
@@ -242,3 +244,62 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
     }
   });
 }
+
+test("only the typechecker cohort requires tsgo on pull_request", () => {
+  const runtime = workflow.jobs["pr-rust-shard"].steps.find(
+    (candidate) => candidate.name === "Select Rust runtime envelope",
+  );
+  const script = runtime?.run;
+  assert.ok(script);
+  const cases = [
+    ["pull_request", "typechecker", "require"],
+    ["merge_group", "typechecker", "require"],
+    ["pull_request", "compiler", "disable"],
+    ["merge_group", "compiler", "require"],
+    ["pull_request", "language-server", "disable"],
+    ["merge_group", "language-server", "require"],
+  ] as const;
+  for (const [event, cohort, mode] of cases) {
+    const cwd = mkdtempSync(join(tmpdir(), "vize-tsgo-envelope-"));
+    try {
+      const runtimeDir = join(cwd, "node_modules/@typescript/typescript-linux-x64/lib");
+      mkdirSync(runtimeDir, { recursive: true });
+      const nativeRuntime = join(runtimeDir, "tsc");
+      writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      const githubEnv = join(cwd, "github-env");
+      const result = spawnSync(
+        "/bin/bash",
+        ["--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        {
+          cwd,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            GITHUB_WORKSPACE: cwd,
+            GITHUB_ENV: githubEnv,
+            GITHUB_EVENT_NAME: event,
+            COHORT: cohort,
+            NEXTEST_PROFILE: cohort === "typechecker" || event === "merge_group" ? "full" : "pr",
+            GITHUB_RUN_ID: "1",
+            GITHUB_RUN_ATTEMPT: "1",
+            GITHUB_SHA: "abc",
+            INSTA_FORCE_PASS: "0",
+          },
+        },
+      );
+      assert.equal(result.status, 0, `${event} ${cohort}\n${result.stderr}`);
+      const text = readFileSync(githubEnv, "utf8");
+      if (mode === "require") {
+        assert.match(text, /^VIZE_TEST_REQUIRE_TSGO=1$/m, `${event} ${cohort}`);
+        assert.doesNotMatch(text, /VIZE_TEST_DISABLE_TSGO/, `${event} ${cohort}`);
+      } else {
+        assert.match(text, /^VIZE_TEST_DISABLE_TSGO=1$/m, `${event} ${cohort}`);
+        assert.doesNotMatch(text, /VIZE_TEST_REQUIRE_TSGO/, `${event} ${cohort}`);
+      }
+      if (cohort === "typechecker") assert.match(text, /^CORSA_PATH=.*\/tsc$/m);
+      else assert.doesNotMatch(text, /CORSA_PATH/);
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  }
+});

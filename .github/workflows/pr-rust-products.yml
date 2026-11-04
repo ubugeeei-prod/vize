@@ -31,7 +31,9 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
-      NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
+      # Type checker PRs use the full profile so they select the same tests as
+      # the merge group. The PR filter still drops audited cases in other cohorts.
+      NEXTEST_PROFILE: ${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && 'full' || 'pr' }}
       VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ github.workspace }}/target/nextest/${{ github.event_name == 'merge_group' && 'full' || 'pr' }}/template-emit-ts40-projection
       COHORT: ${{ matrix.cohort }}
       NEXTEST_FILTER: ${{ matrix.filter }}
@@ -70,10 +72,16 @@ jobs:
       - name: Select Rust runtime envelope
         run: |
           case "$GITHUB_EVENT_NAME" in
-            pull_request) printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV" ;;
-            merge_group) printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
+            pull_request|merge_group) ;;
             *) exit 1 ;;
           esac
+          # Disabling tsgo makes the typechecker batch return in a few milliseconds.
+          # That cohort requires the same runtime on pull_request and merge_group.
+          if [[ "$COHORT" == "typechecker" || "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
+            printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV"
+          else
+            printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV"
+          fi
           if [[ "$COHORT" == "typechecker" ]]; then
             runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
             test -x "$runtime"
@@ -90,7 +98,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Hydrate the required ElementPlus projection fixture
-        if: ${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
+        if: ${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         uses: ./.github/actions/hydrate-pinned-fixture
         with: { fixture: tests/_fixtures/_git/element-plus }
       - name: Build and run the affected Rust test cohort
