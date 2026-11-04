@@ -9,7 +9,7 @@ import { componentNameSource, componentNameSuccessorPath } from "./component-nam
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const read = (path: string) => readFileSync(join(root, path));
 
-test("the casing source keeps the complete original and its exact two-URL current successor", () => {
+void test("the casing source keeps the complete original and its exact two-URL current successor", () => {
   const source = componentNameSource(root);
   assert.equal(source.historical.length, 16768);
   assert.equal(source.current.length, 16838);
@@ -49,7 +49,7 @@ test("the casing source keeps the complete original and its exact two-URL curren
   }
 });
 
-test("casing source custody rejects wrong original/current, unknown successors, and missing history", () => {
+void test("casing source custody rejects wrong original/current, unknown successors, and missing history", () => {
   const source = componentNameSource(root);
   const originalPath = asString(asRecord(source.successor.historical).snapshot);
   const currentPath = asString(source.successor.path);

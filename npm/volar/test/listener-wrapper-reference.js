@@ -54,3 +54,15 @@ export function listenerWrapperReference(packets, source = fs.readFileSync(fixtu
   assert.equal(digest(JSON.stringify(out)), after, "closed current packet image");
   return out;
 }
+
+export function assertListenerStarts(errors, eventParent) {
+  // The wrong listener parameter and the wrong prop both survive (#11657).
+  const anchors = [
+    eventParent.indexOf("(value: number) => undefined"),
+    eventParent.indexOf("foo-bar"),
+  ];
+  assert.deepEqual(
+    errors.map((diagnostic) => [diagnostic.code, diagnostic.start]),
+    anchors.map((start) => [2322, start]),
+  );
+}
