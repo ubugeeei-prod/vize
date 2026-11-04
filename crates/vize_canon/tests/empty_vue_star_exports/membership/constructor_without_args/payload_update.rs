@@ -7,6 +7,7 @@ mod emit_overload_stall;
 mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
+mod loose_emit_sdk;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
@@ -158,6 +159,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     required_keys_short_circuit::retain_provenance(manifest);
     extra_keys_policy::retain_provenance(manifest);
     runtime_prop_call::retain_provenance(manifest);
+    loose_emit_sdk::retain_provenance(manifest);
 }
 
 #[cfg(test)]
