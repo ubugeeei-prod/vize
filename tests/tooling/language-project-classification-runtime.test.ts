@@ -24,6 +24,7 @@ const record = () => JSON.parse(read("head", custodyPath)!.toString());
 const require = createRequire(import.meta.url);
 const probe = require("../typescript-plugin/classification-probe.cjs");
 const provider = require("../../editors/vscode/test/suite/classification-provider.cjs");
+const retainedEntry = /require\(\s*(["'])\.\/classifications\.test\.cjs\1\s*\)/;
 
 test("live runtime successors preserve seven original consumers and leave base and unrelated reads actual", () => {
   const metadata = record();
@@ -135,6 +136,7 @@ test("new helper and input paths select the existing jobs and cannot be removed 
       [
         "tests/_fixtures/tooling/typescript-classification-*/**",
         "editors/vscode/test/suite/classification-provider.cjs",
+        "npm/native/language-projection.js",
       ],
     ],
   ] as const;
@@ -176,11 +178,25 @@ test("explicit test Promise disposition preserves the whole original assertions 
   assert.equal(current.match(/void test\(/g)?.length, 3);
   assert.match(
     read("head", "tests/typescript-plugin/mapped-language-service.test.cjs")!.toString(),
-    /require\("\.\/classifications\.test\.cjs"\)/,
+    retainedEntry,
   );
   const historical = historicalClassificationConsumers(read);
   assert.equal(historical("head", source)!.toString(), original);
   authenticateClassificationRuntime(read);
+});
+
+test("the separate retained-entry check accepts quote styles and rejects a different module", () => {
+  for (const source of [
+    `require("./classifications.test.cjs")`,
+    `require( './classifications.test.cjs' )`,
+  ])
+    assert.match(source, retainedEntry);
+  for (const source of [
+    `require("./different.test.cjs")`,
+    `require("./classifications.test.cjs.bak")`,
+    `require('./classifications.test.cjs")`,
+  ])
+    assert.doesNotMatch(source, retainedEntry);
 });
 
 test("whole authored packets reject empty, reordered, mistyped, modifier-losing and escaping triples", () => {

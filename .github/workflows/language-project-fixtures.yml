@@ -7,6 +7,7 @@ on:
       - .github/workflows/typescript-provider-vsix.yml
       - crates/vize_vitrine/src/napi/language_code.rs
       - npm/typescript-plugin/**
+      - npm/native/language-projection.js
       - editors/vscode/test/run-typescript-provider-host.mjs
       - editors/vscode/test/suite/typescript-provider-host.cjs
       - tests/typescript-plugin/**
@@ -37,4 +38,4 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Check original source pairs and complete language project registration
-        run: node --test tests/tooling/language-project-fixtures.test.ts tests/tooling/language-project-registration.test.ts tests/tooling/language-project-classification-successor.test.ts tests/tooling/language-project-classification-runtime.test.ts tests/tooling/language-project-classification-position.test.ts
+        run: node --test tests/tooling/language-project-fixtures.test.ts tests/tooling/language-project-registration.test.ts tests/tooling/language-project-classification-successor.test.ts tests/tooling/language-project-classification-runtime.test.ts tests/tooling/language-project-classification-position.test.ts tests/tooling/language-project-classification-records.test.ts

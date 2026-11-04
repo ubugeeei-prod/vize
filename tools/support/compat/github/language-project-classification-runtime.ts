@@ -6,7 +6,7 @@ export const CLASSIFICATION_RUNTIME_ROOT =
   "tests/_fixtures/tooling/typescript-classification-runtime-11664/";
 export const CLASSIFICATION_RUNTIME_ID =
   "typechecker/language-project/classification-runtime-11664";
-const custodyHash = "622d03c3f61f2607d5cb03fc21d6c6e34cb448473da04bba642551ce3e910d0c";
+const custodyHash = "35807f226e92800f21f58193a1858240b79563da36abab65fc291fd71bb23d83";
 const predecessorPath =
   "tests/_fixtures/tooling/typescript-classification-successor-11664/custody.json";
 const predecessorHash = "04628e3b129e38c7ee0cc721848a428fa34518993a4646ea7bef806827c68005";
@@ -32,6 +32,7 @@ const consumers = [
   "editors/vscode/test/suite/classification-provider.cjs",
   "tests/tooling/language-project-classification-runtime.test.ts",
   "tests/tooling/language-project-classification-position.test.ts",
+  "tests/tooling/language-project-classification-records.test.ts",
   "tools/support/compat/github/language-project-classification-successor.ts",
   "tools/support/compat/github/language-project-fixtures.ts",
   "npm/typescript-plugin/language-service.cjs",
@@ -63,7 +64,15 @@ function pinned(read: ReadFile, raw: unknown, path: string): Buffer {
 export function authenticateClassificationRuntime(read: ReadFile): Map<string, Buffer> {
   const custody = read("head", CLASSIFICATION_RUNTIME_ROOT + "custody.json");
   requireCustody(custody && digest(custody) === custodyHash, "custody missing or changed");
-  const record = object(JSON.parse(custody.toString("utf8")), [
+  return validateClassificationRuntimeRecord(read, JSON.parse(custody.toString("utf8")));
+}
+
+/** Schema and body checks after authenticateClassificationRuntime verifies exact custody bytes. */
+export function validateClassificationRuntimeRecord(
+  read: ReadFile,
+  value: unknown,
+): Map<string, Buffer> {
+  const record = object(value, [
     "schema",
     "id",
     "predecessor",

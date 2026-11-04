@@ -66,8 +66,8 @@
       },
       "after": {
         "path": ".github/workflows/language-project-fixtures.yml",
-        "sha256": "c0835197ac4f2ec68b73cbd87519730aa9c27b8dbb59b86d603d216f000686b9",
-        "bytes": 1962
+        "sha256": "51dbe610c42f2dbb065792591d50319c0be5f42b4af8caa01c1c95d7f73a7227",
+        "bytes": 2066
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/language-project-fixtures.before.yml.gz",
@@ -155,8 +155,8 @@
     },
     {
       "path": "tests/tooling/language-project-classification-runtime.test.ts",
-      "sha256": "c7291c688f2733e8052316d2a89d2c64f9a63b311ecac28ed196fbab087ab611",
-      "bytes": 14210
+      "sha256": "3a6630dfa7e31f10320eca59637d1deb37ff411bc5a0ad65f2aa853863bebd22",
+      "bytes": 14785
     },
     {
       "path": "tests/tooling/language-project-classification-position.test.ts",
@@ -164,9 +164,14 @@
       "bytes": 1603
     },
     {
+      "path": "tests/tooling/language-project-classification-records.test.ts",
+      "sha256": "bf362f54c15392b7f0394e5eddbbab7415f22433ef2b4cb38487d89613b307d3",
+      "bytes": 11837
+    },
+    {
       "path": "tools/support/compat/github/language-project-classification-successor.ts",
-      "sha256": "fcfd6e6dec9fb66ff8dd99b7e49a95d9a4e6afb7972b6821370a53738296c1b2",
-      "bytes": 4930
+      "sha256": "2262cebdcfb4dd7f8019017527d19447c40b81cedcb892424c8c471d19c9bdd6",
+      "bytes": 5309
     },
     {
       "path": "tools/support/compat/github/language-project-fixtures.ts",

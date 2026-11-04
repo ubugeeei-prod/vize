@@ -59,7 +59,21 @@ export function historicalClassificationProducer(
 
   const custody = read("head", CLASSIFICATION_CUSTODY_ROOT + "custody.json");
   requireCustody(custody && digest(custody) === custodyHash, "custody missing or changed");
-  const record = object(JSON.parse(custody.toString("utf8")), [
+  return validateClassificationSuccessorRecord(
+    rawRead,
+    JSON.parse(custody.toString("utf8")),
+    historicalRow,
+  );
+}
+
+/** Validate an already integrity-checked record; authenticated intake remains above. */
+export function validateClassificationSuccessorRecord(
+  rawRead: ReadFile,
+  value: unknown,
+  historicalRow: unknown,
+): Buffer {
+  const read = historicalClassificationConsumers(rawRead);
+  const record = object(value, [
     "schema",
     "id",
     "predecessor",
