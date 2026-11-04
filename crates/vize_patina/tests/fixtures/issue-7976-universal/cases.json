@@ -221,7 +221,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -255,7 +255,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -289,7 +289,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -323,7 +323,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -357,7 +357,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -391,7 +391,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -425,7 +425,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -459,7 +459,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -493,7 +493,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -527,7 +527,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -561,7 +561,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -595,7 +595,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -629,7 +629,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -663,7 +663,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -697,7 +697,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -731,7 +731,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -765,7 +765,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -799,7 +799,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -833,7 +833,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -867,7 +867,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -901,7 +901,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -935,7 +935,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -969,7 +969,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1003,7 +1003,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1037,7 +1037,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1071,7 +1071,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1105,7 +1105,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1139,7 +1139,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1173,7 +1173,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1207,7 +1207,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1241,7 +1241,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
@@ -1295,7 +1295,7 @@
           "messages": [
             {
               "ruleId": "css/no-display-none",
-              "ruleDocsPath": "docs/content/rules/reference/css-no-display-none.md",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 6,
