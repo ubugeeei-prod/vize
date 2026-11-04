@@ -22,17 +22,34 @@ fs.writeFileSync(dir + '/identity-before.json', JSON.stringify({
   node, nodeSha256: crypto.createHash('sha256').update(fs.readFileSync(node)).digest('hex'),
   command: ['node', '.github/actions/test-js-packages-with-history/native-fault-evidence.ts', '--', 'vp', 'run', '--workspace-root', 'test:js:builders'],
 }, null, 2));
+const manifest = 'npm/builder/unplugin/package.json';
+const original = fs.readFileSync(manifest, 'utf8');
+const from = '"test": "node --test src/*.test.ts src/**/*.test.ts"';
+const to = '"test": "node --trace-exit --trace-uncaught --test src/*.test.ts src/**/*.test.ts"';
+if (original.split(from).length !== 2) throw new Error('Unexpected original unplugin test command');
+fs.writeFileSync(dir + '/unplugin-package-original.json', original);
+fs.writeFileSync(manifest, original.replace(from, to));
+fs.writeFileSync(dir + '/trace-command.json', JSON.stringify({
+  diagnosticOnly:true, qualified:false, manifest, originalCommand:JSON.parse(original).scripts.test,
+  observedCommand:JSON.parse(fs.readFileSync(manifest,'utf8')).scripts.test,
+  originalSha256:crypto.createHash('sha256').update(original).digest('hex'),
+  observedSha256:crypto.createHash('sha256').update(fs.readFileSync(manifest)).digest('hex'),
+  nodeOptionsPropagation:false,
+}, null, 2));
 fs.writeFileSync(dir + '/bin/node', `#!/usr/bin/env bash
 set +e
 printf '%s\\t%s\\t%s\\t%s\\n' "$$" "$PPID" start "$PWD" >> ${quote(dir + '/node-processes.tsv')}
-${quote(node)} --trace-exit --trace-uncaught "$@"
+${quote(node)} "$@"
 status=$?
 printf '%s\\t%s\\t%s\\t%s\\n' "$$" "$PPID" "$status" "$PWD" >> ${quote(dir + '/node-processes.tsv')}
 exit "$status"
 `, {mode:0o755});
 NODE
+restore_manifest() {
+  cp "$observation/unplugin-package-original.json" npm/builder/unplugin/package.json
+}
+trap restore_manifest EXIT
 export PATH="$observation/bin:$PATH"
-export NODE_OPTIONS="${NODE_OPTIONS:-} --trace-exit --trace-uncaught"
 set +e
 node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js:builders 2>&1 | tee "$observation/command.log"
 original_status=${PIPESTATUS[0]}
@@ -40,6 +57,7 @@ printf '%s\n' "$original_status" > "$observation/original-exit-code.txt"
 vp run --last-details > "$observation/vp-last-details.txt" 2>&1
 printf '%s\n' "$?" > "$observation/details-exit-code.txt"
 set -e
+restore_manifest
 "$real_node" - <<'NODE'
 const fs = require('node:fs');
 const cp = require('node:child_process');
