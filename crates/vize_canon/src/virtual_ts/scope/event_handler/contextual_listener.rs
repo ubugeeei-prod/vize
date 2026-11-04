@@ -9,7 +9,6 @@ pub(super) struct Listener<'a> {
     pub(super) content: &'a str,
     pub(super) annotation: &'a str,
     pub(super) contextless: &'a str,
-    pub(super) listener_type: &'a str,
     pub(super) indent: &'a str,
     pub(super) source: Range<usize>,
     pub(super) event_name: Option<Range<usize>>,
@@ -25,7 +24,6 @@ pub(super) fn emit(
         content,
         annotation,
         contextless,
-        listener_type,
         indent,
         source,
         event_name,
@@ -60,13 +58,9 @@ pub(super) fn emit(
         event_name.unwrap_or_else(|| source.clone()),
     ));
     diagnostics.push(VizeMapping::new(check, source));
-    // The original declared listener owns the synthetic invocation shape.
-    // Bad values/payloads have already been checked above; replaying an
-    // inferred callback directly would add a spurious zero-argument error.
-    append!(
-        *ts,
-        "{indent}if (typeof {name} === \"function\") ({name} as {listener_type})(...__vize_args);  // handler expression\n"
-    );
+    // The initializer checks authored bodies and declared listener signatures;
+    // the assignment checks callability. Replaying the value would add a
+    // second synthetic error for an already rejected constructor.
     expression
 }
 
