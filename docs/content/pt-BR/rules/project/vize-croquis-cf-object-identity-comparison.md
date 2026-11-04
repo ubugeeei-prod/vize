@@ -14,7 +14,7 @@ Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 Este é um contrato de diagnóstico publicado sem produtor atual. O cenário incorreto e correto abaixo explica o risco e a correção; nenhuma opção atualmente faz este código ser emitido.
 
-O exemplo pressupõe que os IDs identifiquem os registros de forma única. Comparar duas referências ao mesmo proxy reativo continua válido; este contrato não tem produtor atual.
+O exemplo pressupõe que os IDs identifiquem os registros de forma única. Comparar duas referências ao mesmo proxy reativo continua válido; este contrato não tem produtor atual. Um objeto bruto e seu proxy reativo têm identidades distintas, e toRaw() devolve o objeto original.
 
 ## Arquivos compartilhados do projeto
 
@@ -51,7 +51,7 @@ export function makeUser() {
 
 ## Incorreto
 
-`proxy === raw` compara a identidade do invólucro, portanto é falso mesmo que ambos representem o mesmo registro de usuário. A aplicação pretendia comparar a identidade do registro, não a do invólucro do objeto.
+Este contrato ilustra a comparação de IDs estáveis quando a identidade pretendida é a do registro. `proxy === raw` compara a identidade do invólucro, portanto é falso mesmo que ambos representem o mesmo registro de usuário. A aplicação pretendia comparar a identidade do registro, não a do invólucro do objeto.
 
 `App.vue`
 

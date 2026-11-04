@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-O parâmetro obrigatório postId está ausente; depender da rota atual é frágil.
+Relata uma navegação nomeada que omite um parâmetro obrigatório da rota.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Incorreto
 
-A navegação omite o parâmetro obrigatório `postId` do caminho `user-post`. Isso é um aviso porque o Vue Router pode herdar um valor da rota atual.
+O parâmetro obrigatório postId está ausente; depender da rota atual é frágil. A navegação omite o parâmetro obrigatório `postId` do caminho `user-post`. Isso é um aviso porque o Vue Router pode herdar um valor da rota atual.
 
 `src/UserPost.vue`
 

@@ -4,13 +4,15 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.
+`watchEffect` starts an async task and cannot clean up the previous run.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
 | error | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
 
 Applies to: Analyzed component graph and the supported facts described below
+
+Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.
 
 ## Shared project files
 
@@ -43,7 +45,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## Bad
 
-The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.
+The async watchEffect shown here has no invalidation cleanup or stale-response guard. The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.
 
 `SearchPage.vue`
 

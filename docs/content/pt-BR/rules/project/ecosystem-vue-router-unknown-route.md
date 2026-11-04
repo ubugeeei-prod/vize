@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-O nome está ausente do roteador completo instalado.
+Relata um nome de navegação que o roteador instalado não declara.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Incorreto
 
-O roteador instalado alcançável declara `user-post`, mas a navegação usa o nome incorreto `user-posts`.
+O nome está ausente do roteador completo instalado. O roteador instalado alcançável declara `user-post`, mas a navegação usa o nome incorreto `user-posts`.
 
 `src/UserPost.vue`
 

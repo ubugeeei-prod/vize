@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-param-type"
 
 # `ecosystem/vue-router-param-type`
 
-postId 不是可重复参数，因此数组无效。
+报告路由参数值不被所声明的路径段接受。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 错误示例
 
-`postId` 是标量路径参数，但导航传入了数组 `["2"]`。
+postId 不是可重复参数，因此数组无效。`postId` 是标量路径参数，但导航传入了数组 `["2"]`。
 
 `src/UserPost.vue`
 

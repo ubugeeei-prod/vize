@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-Le paramètre obligatoire postId manque ; dépendre de la route actuelle est fragile.
+Signale une navigation nommée qui omet un paramètre de route obligatoire.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Mauvais
 
-La navigation omet le paramètre obligatoire `postId` du chemin `user-post`. Il s’agit d’un avertissement, car Vue Router peut hériter d’une valeur de la route actuelle.
+Le paramètre obligatoire postId manque ; dépendre de la route actuelle est fragile. La navigation omet le paramètre obligatoire `postId` du chemin `user-post`. Il s’agit d’un avertissement, car Vue Router peut hériter d’une valeur de la route actuelle.
 
 `src/UserPost.vue`
 

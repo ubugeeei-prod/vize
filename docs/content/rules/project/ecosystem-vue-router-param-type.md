@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-param-type"
 
 # `ecosystem/vue-router-param-type`
 
-postId is not repeatable, so an array is invalid.
+Reports a route param value the declared segment does not accept.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Bad
 
-`postId` is a scalar path parameter, but the navigation gives it the array `["2"]`.
+postId is not repeatable, so an array is invalid. `postId` is a scalar path parameter, but the navigation gives it the array `["2"]`.
 
 `src/UserPost.vue`
 

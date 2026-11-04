@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-パスにない tab は Vue Router に破棄されます。
+対象のルートが宣言していないナビゲーションパラメーターを報告します。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 悪い例
 
-`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
+パスにない tab は Vue Router に破棄されます。`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
 
 `src/UserPost.vue`
 

@@ -12,6 +12,8 @@ title: "vize:croquis/cf/watcheffect-async"
 
 适用范围: 已分析的组件图，以及下方说明的受支持事实
 
+Vue 支持 watchEffect 的清理；正确示例使用显式的 watch 来源，并取消已失效的工作。
+
 ## 共享项目文件
 
 错误和正确示例都使用这些不变的文件。在项目中安装导入的包：Vue，以及示例中出现的 vue-router 或 Pinia。遵循版本特定的支持说明。入口根文件显式展示组件关系。
@@ -43,7 +45,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## 错误示例
 
-异步 `watchEffect` 将隐式依赖收集与等待请求混合，且没有失效保护。
+此处的异步 watchEffect 没有失效清理，也没有防止过期响应的保护。异步 `watchEffect` 将隐式依赖收集与等待请求混合，且没有失效保护。
 
 `SearchPage.vue`
 

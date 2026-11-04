@@ -14,7 +14,7 @@ import { extra, composed } from "./cross-extra.ts";
 import { crossMetadata, explanation } from "./project-metadata.ts";
 import { routerExamples } from "./router-project.ts";
 import { projectExplanations } from "./project-explanations.ts";
-import { qualifiedProjectPurpose } from "./project-purposes.ts";
+import { projectDocumentationNote } from "./project-purposes.ts";
 import { contractExamples } from "./project-contracts.ts";
 import { reactiveCycleExample } from "./reactive-cycle-project.ts";
 const examples: Record<string, ProjectExample> = {
@@ -90,12 +90,6 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   const { code, name, status, severity, producer } = rule;
   const label = (en: string, jp: string) => (ja ? jp : en);
   const info = explanation(root, code, ja);
-  info.purpose = qualifiedProjectPurpose(name, info.purpose, ja);
-  if (name === "hydration-risk")
-    info.purpose = label(
-      "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.",
-      "この診断コードは、prop を ref にコピーする操作など、リアクティビティに関する複数の検出結果をまとめています。ファイル間検査がすべての `Date.now()` 式を検出するという意味ではありません。",
-    );
   const lines = [
     "---",
     `title: "${code}"`,
@@ -177,7 +171,9 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     contractExamples[name] ??
     (name === "circular-reactive-dependency" ? reactiveCycleExample : undefined);
   const contractNote = contractExamples[name]?.note?.[ja ? "ja" : "en"];
+  const qualification = projectDocumentationNote(name, ja);
   if (contractNote) lines.push(contractNote, "");
+  if (qualification) lines.push(qualification, "");
   if (example) lines.push(...fixture({ ...example, ...projectExplanations.get(name) }, ja));
   else throw new Error(`Missing complete project scenario: ${code}`);
   lines.push(

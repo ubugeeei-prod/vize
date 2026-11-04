@@ -93,9 +93,9 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
   ],
   [
     "watcheffect-async",
-    "The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.",
+    "The async watchEffect shown here has no invalidation cleanup or stale-response guard. The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.",
     "An explicit `watch(() => props.query, ...)` declares the source, registers request cleanup, and refuses a stale response after invalidation.",
-    "非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。",
+    "この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。",
     "`watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。",
   ],
   [

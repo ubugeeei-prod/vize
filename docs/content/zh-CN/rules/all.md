@@ -327,10 +327,10 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 | 规则 | 检查内容 | 状态 |
 | --- | --- | --- |
-| <span id="ecosystem-vue-router-extra-param"></span>[`ecosystem/vue-router-extra-param`](./project/ecosystem-vue-router-extra-param.md) | 路由未声明 tab；Vue Router 会丢弃它。 | 由 `vp run lint` 报告 |
-| <span id="ecosystem-vue-router-missing-param"></span>[`ecosystem/vue-router-missing-param`](./project/ecosystem-vue-router-missing-param.md) | 缺少必需的 postId；依赖当前路由并不稳健。 | 由 `vp run lint` 报告 |
-| <span id="ecosystem-vue-router-param-type"></span>[`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | postId 不是可重复参数，因此数组无效。 | 由 `vp run lint` 报告 |
-| <span id="ecosystem-vue-router-unknown-route"></span>[`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | 名称不在完整且已安装的路由器中。 | 由 `vp run lint` 报告 |
+| <span id="ecosystem-vue-router-extra-param"></span>[`ecosystem/vue-router-extra-param`](./project/ecosystem-vue-router-extra-param.md) | 报告目标路由未声明的导航参数。 | 由 `vp run lint` 报告 |
+| <span id="ecosystem-vue-router-missing-param"></span>[`ecosystem/vue-router-missing-param`](./project/ecosystem-vue-router-missing-param.md) | 报告具名导航省略了必需的路由参数。 | 由 `vp run lint` 报告 |
+| <span id="ecosystem-vue-router-param-type"></span>[`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | 报告路由参数值不被所声明的路径段接受。 | 由 `vp run lint` 报告 |
+| <span id="ecosystem-vue-router-unknown-route"></span>[`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | 报告已安装路由器未声明的导航名称。 | 由 `vp run lint` 报告 |
 | <span id="html-cross-component-nesting"></span>[`html/cross-component-nesting`](./project/html-cross-component-nesting.md) | 检查导入组件组合后的实际 HTML 嵌套。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 通过索引修改数组，无法被该响应式数组跟踪。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-async-boundary"></span>[`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | 响应式状态跨越异步边界，可能被观察为过期值。 | 由 `vp run lint` 报告 |
@@ -348,7 +348,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-duplicate-id"></span>[`vize:croquis/cf/duplicate-id`](./project/vize-croquis-cf-duplicate-id.md) | 多个组件使用同一个元素 id。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-event-listener-leak"></span>[`vize:croquis/cf/event-listener-leak`](./project/vize-croquis-cf-event-listener-leak.md) | 注册了事件监听器，却从未移除。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-event-modifier"></span>[`vize:croquis/cf/event-modifier`](./project/vize-croquis-cf-event-modifier.md) | 事件监听器使用了发出事件不支持的修饰符。 | 实验性；CLI 尚未报告 |
-| <span id="vize-croquis-cf-hydration-risk"></span>[`vize:croquis/cf/hydration-risk`](./project/vize-croquis-cf-hydration-risk.md) | 此诊断代码归类多种响应性问题，包括将 prop 复制到 ref。它并不表示跨文件分析遍会检测所有 Date.now() 表达式。 | 由 `vp run lint` 报告 |
+| <span id="vize-croquis-cf-hydration-risk"></span>[`vize:croquis/cf/hydration-risk`](./project/vize-croquis-cf-hydration-risk.md) | 服务器与客户端的渲染结果可能不一致。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-inherit-attrs-unused"></span>[`vize:croquis/cf/inherit-attrs-unused`](./project/vize-croquis-cf-inherit-attrs-unused.md) | 设置了 `inheritAttrs: false`，但组件从不读取属性。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-inject-without-symbol"></span>[`vize:croquis/cf/inject-without-symbol`](./project/vize-croquis-cf-inject-without-symbol.md) | `inject` 使用普通键，而不是 `InjectionKey` symbol。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-injected-async-mutation-race"></span>[`vize:croquis/cf/injected-async-mutation-race`](./project/vize-croquis-cf-injected-async-mutation-race.md) | 注入值被可能发生竞态的异步任务修改。 | 由 `vp run lint` 报告 |

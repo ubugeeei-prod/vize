@@ -4,13 +4,15 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.
+The render can disagree between the server and the client.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
 | error | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
 
 Applies to: Analyzed component graph and the supported facts described below
+
+This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.
 
 ## Shared project files
 
