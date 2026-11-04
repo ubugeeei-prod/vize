@@ -87,7 +87,35 @@ export function sameCpuConditions(
     value.widthEnvironment,
     value.cpus.map(({ model }) => model),
   ];
-  return JSON.stringify(stable(before)) === JSON.stringify(stable(after));
+  const knownQuotaChanged = before.controller.files.some((file) => {
+    if (
+      !/(?:cpu\.max|cpu\.cfs_quota_us|cpu\.cfs_period_us|cpuset\.cpus\.effective)$/u.test(
+        file.path,
+      ) ||
+      file.text === null
+    )
+      return false;
+    const current = after.controller.files.find((value) => value.path === file.path);
+    return current?.text !== null && current?.text !== undefined && current.text !== file.text;
+  });
+  return !knownQuotaChanged && JSON.stringify(stable(before)) === JSON.stringify(stable(after));
+}
+
+export function retainCpuAfter(
+  observe: () => void,
+  recordFailure: (error: unknown) => void,
+  hasPrimaryFailure: boolean,
+) {
+  try {
+    observe();
+  } catch (error) {
+    try {
+      recordFailure(error);
+    } catch (recordError) {
+      if (!hasPrimaryFailure) throw recordError;
+    }
+    if (!hasPrimaryFailure) throw error;
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   cpuControllerEvidence,
   sameCpuConditions,
+  retainCpuAfter,
   type runtimeCpuEvidence,
 } from "./template-alias-paired-11822-cpu.ts";
 
@@ -77,4 +78,55 @@ void test("stable CPU conditions compare runner and affinity while dynamic CPU s
   after.affinity.value = "0-31";
   after.hostname = "other";
   assert.equal(sameCpuConditions(before, after), false);
+  after.hostname = "host";
+  before.controller = cpuControllerEvidence((path) =>
+    path === "/sys/fs/cgroup/cpu.max" ? "3200000 100000\n" : absent(),
+  );
+  after.controller = cpuControllerEvidence((path) =>
+    path === "/sys/fs/cgroup/cpu.max" ? "100000 100000\n" : absent(),
+  );
+  assert.equal(sameCpuConditions(before, after), false);
+  after.controller = cpuControllerEvidence(absent);
+  assert.equal(
+    sameCpuConditions(before, after),
+    true,
+    "unavailable quota alone cannot reject the observation",
+  );
+});
+
+void test("a late CPU read failure is recorded without replacing the original measurement failure", () => {
+  const primary = new Error("original semantic failure"),
+    telemetry = new Error("CPU EIO");
+  const recorded: unknown[] = [];
+  let result: unknown;
+  try {
+    try {
+      throw primary;
+    } finally {
+      retainCpuAfter(
+        () => {
+          throw telemetry;
+        },
+        (error) => {
+          recorded.push(error);
+        },
+        true,
+      );
+    }
+  } catch (error) {
+    result = error;
+  }
+  assert.equal(result, primary);
+  assert.deepEqual(recorded, [telemetry]);
+  assert.throws(
+    () =>
+      retainCpuAfter(
+        () => {
+          throw telemetry;
+        },
+        () => {},
+        false,
+      ),
+    (error) => error === telemetry,
+  );
 });

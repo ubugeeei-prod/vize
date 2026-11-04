@@ -1,5 +1,9 @@
 import { normalHostArguments } from "./template-alias-paired-11822-hosts.ts";
-import { runtimeCpuEvidence, sameCpuConditions } from "./template-alias-paired-11822-cpu.ts";
+import {
+  runtimeCpuEvidence,
+  sameCpuConditions,
+  retainCpuAfter,
+} from "./template-alias-paired-11822-cpu.ts";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { cpus, availableParallelism, release, totalmem } from "node:os";
@@ -223,6 +227,7 @@ export async function main() {
   };
   write(join(output, "context.json"), context);
   let cpuAfterRecorded = false;
+  let hasMeasurementFailure = false;
   try {
     const rows: Record<string, Observation[]> = {};
     const packets = new Map<string, ReturnType<typeof emittedPacket>>();
@@ -447,8 +452,20 @@ export async function main() {
         "raw results require source-bound peer review; persistent warm-process and real-project scope remain separate",
       coldWarmScope: "fresh processes; unmanaged OS caches; no persistent warm cohort",
     });
+  } catch (error) {
+    hasMeasurementFailure = true;
+    throw error;
   } finally {
-    if (!cpuAfterRecorded) write(join(output, "cpu-after.json"), runtimeCpuEvidence());
+    if (!cpuAfterRecorded)
+      retainCpuAfter(
+        () => write(join(output, "cpu-after.json"), runtimeCpuEvidence()),
+        (error) =>
+          write(join(output, "cpu-after-error.json"), {
+            observationError: String(error),
+            primaryFailurePreserved: hasMeasurementFailure,
+          }),
+        hasMeasurementFailure,
+      );
   }
 }
 
