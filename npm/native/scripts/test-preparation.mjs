@@ -94,6 +94,18 @@ export function withPreparedNative(directory, ownerArgument, command, args, run 
     stdio: "inherit",
     shell: process.platform === "win32" && command === "vp",
   };
+  // CI sets VIZE_TEST_CASES. Package tests share this wrapper, so node, tsx, and
+  // vitest write the same packet the Rust jobs upload. The command itself is unchanged.
+  const runCommand = (runCommandName, runArgs) => {
+    if (!process.env.VIZE_TEST_CASES) return run(runCommandName, runArgs, options);
+    const helper = fileURLToPath(
+      new URL("../../../tools/support/compat/github/js-test-cases.ts", import.meta.url),
+    );
+    return run(process.execPath, [helper, "capture", "--", runCommandName, ...runArgs], {
+      ...options,
+      shell: false,
+    });
+  };
   if (!ownerIsAlive(owner)) {
     if (existsSync(file)) {
       try {
@@ -113,7 +125,7 @@ export function withPreparedNative(directory, ownerArgument, command, args, run 
     console.log(
       "Native reuse is unavailable: running the original package tests with standalone Vite preparation.",
     );
-    return run(command, args, options).status ?? 1;
+    return runCommand(command, args).status ?? 1;
   }
   const receipt = {
     schemaVersion: 1,
@@ -134,7 +146,7 @@ export function withPreparedNative(directory, ownerArgument, command, args, run 
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, `${JSON.stringify(receipt)}\n`, { flag: "wx" });
   try {
-    return run(command, args, options).status ?? 1;
+    return runCommand(command, args).status ?? 1;
   } finally {
     if (existsSync(file) && JSON.parse(readFileSync(file, "utf8")).id === receipt.id) rmSync(file);
   }

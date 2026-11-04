@@ -3,10 +3,17 @@
  * A packet names the job that ran the cases and its run attempt, and lists every
  * case with the repository path that owns it. Producers know only their runner.
  */
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { asArray, asNumber, asRecord, asString, parseJson } from "../../json-value.ts";
+import {
+  asArray,
+  asNumber,
+  asRecord,
+  asString,
+  asStringArray,
+  parseJson,
+} from "../../json-value.ts";
 
 export type Outcome = "passed" | "failed" | "skipped";
 const OUTCOMES: readonly Outcome[] = ["passed", "failed", "skipped"];
@@ -111,6 +118,109 @@ function decode(text: string): string {
   });
 }
 
+export interface NodeTestEvent {
+  readonly type: string;
+  readonly data?: {
+    readonly name?: string;
+    readonly file?: string;
+    readonly skip?: boolean | string;
+    readonly todo?: boolean | string;
+    readonly details?: { readonly type?: string };
+  };
+}
+
+function canonical(file: string): string {
+  const resolved = path.resolve(file);
+  try {
+    return realpathSync(resolved);
+  } catch {
+    return resolved;
+  }
+}
+
+/** Repository path of a test file. A file outside `root` is refused. */
+export function ownedPath(file: string, root: string): string {
+  const direct = path.relative(root, file).split("\\").join("/");
+  const rel =
+    direct && !direct.startsWith("../") && !path.isAbsolute(direct)
+      ? direct
+      : path.relative(canonical(root), canonical(file)).split("\\").join("/");
+  if (!rel || rel.startsWith("../") || path.isAbsolute(rel))
+    throw new Error(`test file ${file} is outside ${root}`);
+  return rel;
+}
+
+// Node's own summary counts tests, not suites. A file that fails to load is one
+// failed test whose name is that file.
+export function nodeTestCases(events: readonly NodeTestEvent[], root = process.cwd()): TestCase[] {
+  const cases: TestCase[] = [];
+  for (const { type, data } of events) {
+    if ((type !== "test:pass" && type !== "test:fail") || data?.details?.type !== "test") continue;
+    if (!data.file || !data.name) throw new Error(`A ${type} event has no file or name`);
+    const file = ownedPath(data.file, root);
+    const reported = data.name.split("\\").join("/");
+    const outcome: Outcome =
+      data.skip || data.todo ? "skipped" : type === "test:fail" ? "failed" : "passed";
+    // A load failure is named after the file, absolutely or relative to the root.
+    const name =
+      reported === file || reported === data.file.split("\\").join("/")
+        ? file
+        : `${file} › ${data.name}`;
+    cases.push({ path: file, name, outcome });
+  }
+  return cases;
+}
+
+const VITEST_OUTCOMES: Readonly<Record<string, Outcome>> = {
+  passed: "passed",
+  failed: "failed",
+  pending: "skipped",
+  skipped: "skipped",
+  todo: "skipped",
+};
+
+function vitestName(file: string, ancestors: readonly string[], title: string): string {
+  const base = path.posix.basename(file);
+  const parts = [...ancestors, title]
+    .map((part) => part.trim())
+    .filter((part) => part && part !== file && part !== base);
+  return parts.length === 0 ? file : `${file} › ${parts.join(" › ")}`;
+}
+
+/** Cases of a Vitest JSON report. Pending and todo tests are skipped. */
+export function vitestCases(report: unknown, root: string): TestCase[] {
+  const record = asRecord(report, "vitest report");
+  const files = asArray(record.testResults, "vitest report.testResults");
+  const cases: TestCase[] = [];
+  for (const [index, entry] of files.entries()) {
+    const label = `vitest report.testResults[${index}]`;
+    const fileRecord = asRecord(entry, label);
+    const file = ownedPath(asString(fileRecord.name, `${label}.name`), root);
+    const assertions = asArray(fileRecord.assertionResults, `${label}.assertionResults`);
+    if (assertions.length === 0) {
+      if (fileRecord.status === "failed") cases.push({ path: file, name: file, outcome: "failed" });
+      continue;
+    }
+    for (const [caseIndex, assertion] of assertions.entries()) {
+      const caseLabel = `${label}.assertionResults[${caseIndex}]`;
+      const item = asRecord(assertion, caseLabel);
+      const status = asString(item.status, `${caseLabel}.status`);
+      const outcome = VITEST_OUTCOMES[status];
+      if (!outcome) throw new Error(`${caseLabel} has status ${status}`);
+      cases.push({
+        path: file,
+        name: vitestName(
+          file,
+          asStringArray(item.ancestorTitles, `${caseLabel}.ancestorTitles`),
+          asString(item.title, `${caseLabel}.title`),
+        ),
+        outcome,
+      });
+    }
+  }
+  return cases;
+}
+
 /** Cases of a nextest JUnit report; the binary id's crate gives each case's path. */
 export function nextestCases(junit: string, crates: ReadonlyMap<string, string>): TestCase[] {
   // Stored output can hold XML-looking text in CDATA.
@@ -141,11 +251,25 @@ const entrypoint = process.argv[1]
   ? fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
   : false;
 if (entrypoint) {
-  const [mode, junit, out, ...rest] = process.argv.slice(2);
-  if (mode !== "nextest" || !junit || !out || rest.length)
-    throw new Error("Usage: test-cases.ts nextest <junit.xml> <packet.json>");
+  const [mode, report, out, ...rest] = process.argv.slice(2);
+  const usage = "Usage: test-cases.ts <nextest|vitest|node> <report> <packet.json>";
+  if (!report || !out || rest.length) throw new Error(usage);
   const root = fileURLToPath(new URL("../../../../", import.meta.url));
-  const cases = nextestCases(readFileSync(junit, "utf8"), workspaceCrates(root));
+  const cases =
+    mode === "nextest"
+      ? nextestCases(readFileSync(report, "utf8"), workspaceCrates(root))
+      : mode === "vitest"
+        ? vitestCases(parseJson(readFileSync(report, "utf8")), root)
+        : mode === "node"
+          ? nodeTestCases(
+              readFileSync(report, "utf8")
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((line) => parseJson(line) as NodeTestEvent),
+              root,
+            )
+          : null;
+  if (!cases) throw new Error(usage);
   writeFileSync(out, `${JSON.stringify(packet(process.env, cases))}\n`);
   console.log(`Recorded ${cases.length} test cases in ${out}`);
 }
