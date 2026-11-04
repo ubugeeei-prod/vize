@@ -13,6 +13,7 @@ import { lexical, save, sha } from "./javascript-workspace-project.ts";
 import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.ts";
 import { packageDeclarations } from "./javascript-workspace-declarations.ts";
+import { currentNoDupeKeysPacket } from "./javascript-workspace-lint.ts";
 import {
   configuredHiddenMembership,
   probeHiddenMembership,
@@ -148,8 +149,10 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
       },
     ];
     save(context.artifacts, "lint-negative-expected.json", expected);
+    const currentExpected = currentNoDupeKeysPacket(expected);
+    save(context.artifacts, "lint-negative-current-expected.json", currentExpected);
     assert.equal(negative.status, 1);
-    assert.deepEqual(parseJson(negative.stdout), expected);
+    assert.deepEqual(parseJson(negative.stdout), currentExpected);
   } finally {
     fs.unlinkSync(lintFile);
   }

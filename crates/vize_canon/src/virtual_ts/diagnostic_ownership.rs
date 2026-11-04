@@ -20,6 +20,7 @@ pub(crate) enum InputRole {
     Value,
     Name,
     IndependentRead,
+    DiagnosticPrimary,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -105,6 +106,40 @@ impl DiagnosticOwnership {
     pub(crate) fn take_callback_primaries(&mut self) -> Vec<Range<usize>> {
         std::mem::take(&mut self.callback_primaries)
     }
+    /// A typed instance check is an emitter-proven primary for this authored occurrence.
+    pub(crate) fn record_diagnostic_primary(
+        &mut self,
+        generated: Range<usize>,
+        authored: Range<usize>,
+    ) {
+        let (Ok(start), Ok(end)) = (u32::try_from(authored.start), u32::try_from(authored.end))
+        else {
+            return;
+        };
+        self.record_projection(
+            InputOwner {
+                usage: start,
+                scope: 0,
+                start,
+                end,
+                role: InputRole::DiagnosticPrimary,
+            },
+            generated,
+            authored,
+            false,
+            false,
+        );
+    }
+
+    /// Unproved edits revoke this selection authority, while retaining diagnostics.
+    pub(crate) fn diagnostic_primaries(&self) -> Vec<Range<usize>> {
+        self.rows
+            .iter()
+            .filter(|row| row.valid && row.owner.role == InputRole::DiagnosticPrimary)
+            .map(|row| row.generated.clone())
+            .collect()
+    }
+
     pub(crate) fn refuse_owner(&mut self, owner: InputOwner) {
         self.unproven.insert(owner.with_role(InputRole::Value));
         self.refuse_independent_reads(owner);

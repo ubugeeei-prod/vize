@@ -508,7 +508,7 @@ a11y/alt-text · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-alt-text.md
 
 错误示例:
   <img src="photo.jpg" />
@@ -530,7 +530,7 @@ a11y/anchor-has-content · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-anchor-has-content.md
 
 帮助:
   修复选项:
@@ -551,7 +551,7 @@ a11y/anchor-is-valid · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-anchor-is-valid.md
 
 错误示例:
   <a href="">Link</a>
@@ -581,7 +581,7 @@ a11y/aria-props · lint 规则
 严重级别: 错误
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-aria-props.md
 
 帮助:
   原因: 无效的ARIA属性会阻止辅助技术向用户传达预期含义。
@@ -609,7 +609,7 @@ a11y/aria-role · lint 规则
 严重级别: 错误
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-aria-role.md
 
 帮助:
   原因: 无效的ARIA role会阻止辅助技术向用户传达预期含义。
@@ -638,7 +638,7 @@ a11y/aria-unsupported-elements · lint 规则
 严重级别: 错误
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-aria-unsupported-elements.md
 
 帮助:
   删除ARIA属性或role。<meta>、<html>、<script>和<style>等元素不会渲染，不支持ARIA
@@ -651,7 +651,7 @@ a11y/click-events-have-key-events · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-click-events-have-key-events.md
 
 帮助:
   原因: 键盘用户无法触发仅有click的处理程序。
@@ -676,7 +676,7 @@ a11y/form-control-has-label · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-form-control-has-label.md
 
 帮助:
   方案1: 使用<label>和for:
@@ -699,7 +699,7 @@ a11y/heading-has-content · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-heading-has-content.md
 
 帮助:
   原因: 空标题会使屏幕阅读器用户困惑，破坏文档结构。
@@ -718,7 +718,7 @@ a11y/heading-levels · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-heading-levels.md
 
 错误示例:
   <template>
@@ -744,7 +744,7 @@ a11y/iframe-has-title · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-iframe-has-title.md
 
 帮助:
   原因: 屏幕阅读器会朗读title帮助用户理解iframe内容。
@@ -763,7 +763,7 @@ a11y/img-alt · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-img-alt.md
 
 帮助:
   原因: 屏幕阅读器使用alt文本向视障用户描述图片。
@@ -783,7 +783,7 @@ a11y/interactive-supports-focus · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-interactive-supports-focus.md
 
 错误示例:
   <div role="button" @click="handle">Click</div>
@@ -809,7 +809,7 @@ a11y/label-has-for · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-label-has-for.md
 
 错误示例:
   <label>Name</label>
@@ -835,7 +835,7 @@ a11y/landmark-roles · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-landmark-roles.md
 
 错误示例:
   <template>
@@ -858,7 +858,7 @@ a11y/media-has-caption · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-media-has-caption.md
 
 错误示例:
   <video src="movie.mp4"></video>
@@ -886,7 +886,7 @@ a11y/mouse-events-have-key-events · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-mouse-events-have-key-events.md
 
 错误示例:
   <div @mouseenter="show">...</div>
@@ -915,7 +915,7 @@ a11y/no-access-key · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-access-key.md
 
 帮助:
   删除accesskey属性。访问键在不同平台上创建不一致的键盘快捷键，并与辅助技术快捷键冲突
@@ -928,7 +928,7 @@ a11y/no-aria-hidden-on-focusable · lint 规则
 严重级别: 错误
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-aria-hidden-on-focusable.md
 
 帮助:
   删除 aria-hidden="true"。tabindex="-1" 仍然可以通过程序聚焦
@@ -941,7 +941,7 @@ a11y/no-autofocus · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-autofocus.md
 
 帮助:
   删除autofocus属性。需要时使用ref和focus()以编程方式管理焦点
@@ -954,7 +954,7 @@ a11y/no-distracting-elements · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-distracting-elements.md
 
 帮助:
   问题: 这些元素对认知障碍用户造成困扰。
@@ -971,7 +971,7 @@ a11y/no-i-for-icon · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-i-for-icon.md
 
 错误示例:
   <template>
@@ -1001,7 +1001,7 @@ a11y/no-redundant-roles · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 错误示例:
   <nav role="navigation">...</nav>
@@ -1022,7 +1022,7 @@ a11y/no-refer-to-non-existent-id · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-refer-to-non-existent-id.md
 
 错误示例:
   <template>
@@ -1050,7 +1050,7 @@ a11y/no-role-presentation-on-focusable · lint 规则
 严重级别: 错误
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-role-presentation-on-focusable.md
 
 帮助:
   删除role属性或使元素不可聚焦。presentation角色在元素仍可聚焦的情况下删除了语义含义
@@ -1063,7 +1063,7 @@ a11y/no-static-element-interactions · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-no-static-element-interactions.md
 
 错误示例:
   <div @click="handleClick">Click</div>
@@ -1090,7 +1090,7 @@ a11y/placeholder-label-option · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-placeholder-label-option.md
 
 错误示例:
   <template>
@@ -1121,7 +1121,7 @@ a11y/role-has-required-aria-props · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-role-has-required-aria-props.md
 
 错误示例:
   <div role="checkbox">Check</div>
@@ -1146,7 +1146,7 @@ a11y/tabindex-no-positive · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-tabindex-no-positive.md
 
 帮助:
   问题: 正数tabindex会打乱自然的Tab顺序。
@@ -1168,7 +1168,7 @@ a11y/use-list · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/accessibility.md
+文档: docs/content/rules/reference/a11y-use-list.md
 
 错误示例:
   <template>
@@ -1196,7 +1196,7 @@ css/no-display-none · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-display-none.md
 === css/no-hardcoded-values
 css/no-hardcoded-values · lint 规则
 建议使用 CSS 变量代替硬编码的值
@@ -1206,7 +1206,7 @@ css/no-hardcoded-values · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-hardcoded-values.md
 === css/no-id-selectors
 css/no-id-selectors · lint 规则
 不建议在 CSS 中使用 ID 选择器
@@ -1216,7 +1216,7 @@ css/no-id-selectors · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-id-selectors.md
 === css/no-important
 css/no-important · lint 规则
 不建议在 CSS 中使用 !important
@@ -1226,7 +1226,7 @@ css/no-important · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-important.md
 === css/no-utility-classes
 css/no-utility-classes · lint 规则
 对在组件样式中实现工具类发出警告
@@ -1236,7 +1236,7 @@ css/no-utility-classes · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-utility-classes.md
 
 错误示例:
   .flex { display: flex; }
@@ -1254,7 +1254,7 @@ css/no-v-bind-performance · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-no-v-bind-performance.md
 === css/prefer-logical-properties
 css/prefer-logical-properties · lint 规则
 推荐使用 CSS 逻辑属性，以更好地支持国际化
@@ -1264,7 +1264,7 @@ css/prefer-logical-properties · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-prefer-logical-properties.md
 === css/prefer-nested-selectors
 css/prefer-nested-selectors · lint 规则
 推荐对后代选择器使用 CSS 嵌套
@@ -1274,7 +1274,7 @@ css/prefer-nested-selectors · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-prefer-nested-selectors.md
 === css/prefer-slotted
 css/prefer-slotted · lint 规则
 推荐使用 ::v-slotted() 为插槽内容设置样式
@@ -1284,7 +1284,7 @@ css/prefer-slotted · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-prefer-slotted.md
 === css/require-font-display
 css/require-font-display · lint 规则
 要求在 @font-face 规则中指定 font-display
@@ -1294,7 +1294,7 @@ css/require-font-display · lint 规则
 严重级别: 警告
 类别: css
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/css-require-font-display.md
 === ecosystem/nuxt-prefer-nuxt-link
 ecosystem/nuxt-prefer-nuxt-link · lint 规则
 应用内部链接优先使用 NuxtLink
@@ -1304,7 +1304,7 @@ ecosystem/nuxt-prefer-nuxt-link · lint 规则
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-nuxt-prefer-nuxt-link.md
 === ecosystem/pinia-prefer-store-to-refs
 ecosystem/pinia-prefer-store-to-refs · lint 规则
 解构 Pinia store 时优先使用 storeToRefs()
@@ -1314,7 +1314,7 @@ ecosystem/pinia-prefer-store-to-refs · lint 规则
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-pinia-prefer-store-to-refs.md
 === ecosystem/router-link-require-to
 ecosystem/router-link-require-to · lint 规则
 要求 RouterLink 和 NuxtLink 组件提供 `to` 目标
@@ -1324,7 +1324,7 @@ ecosystem/router-link-require-to · lint 规则
 严重级别: 错误
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-router-link-require-to.md
 === ecosystem/void-link-require-href
 ecosystem/void-link-require-href · lint 规则
 要求 Void Vue 的 Link 组件提供 `href`
@@ -1334,7 +1334,7 @@ ecosystem/void-link-require-href · lint 规则
 严重级别: 错误
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-void-link-require-href.md
 === ecosystem/void-link-valid-method
 ecosystem/void-link-valid-method · lint 规则
 校验 Void Vue Link 组件的静态 method 属性
@@ -1344,7 +1344,7 @@ ecosystem/void-link-valid-method · lint 规则
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-void-link-valid-method.md
 === ecosystem/vue-i18n-no-missing-key
 ecosystem/vue-i18n-no-missing-key · lint 规则
 报告在 SFC 本地消息中不存在的静态 vue-i18n 键
@@ -1354,7 +1354,7 @@ ecosystem/vue-i18n-no-missing-key · lint 规则
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-vue-i18n-no-missing-key.md
 === ecosystem/vue-router-prefer-named-link
 ecosystem/vue-router-prefer-named-link · lint 规则
 RouterLink 中优先使用命名路由对象，而不是静态路径字符串
@@ -1364,7 +1364,7 @@ RouterLink 中优先使用命名路由对象，而不是静态路径字符串
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-vue-router-prefer-named-link.md
 === ecosystem/vue-router-prefer-named-push
 ecosystem/vue-router-prefer-named-push · lint 规则
 Vue Router 编程式导航优先使用命名路由对象
@@ -1374,7 +1374,7 @@ Vue Router 编程式导航优先使用命名路由对象
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-vue-router-prefer-named-push.md
 === ecosystem/vue-test-utils-no-html-snapshot
 ecosystem/vue-test-utils-no-html-snapshot · lint 规则
 避免在 Vue Test Utils 测试中对 wrapper.html() 做快照
@@ -1384,7 +1384,7 @@ ecosystem/vue-test-utils-no-html-snapshot · lint 规则
 严重级别: 警告
 类别: ecosystem
 自动修复: 不支持
-文档: docs/content/rules/ecosystem.md
+文档: docs/content/rules/reference/ecosystem-vue-test-utils-no-html-snapshot.md
 === html/deprecated-attr
 html/deprecated-attr · lint 规则
 禁止使用已弃用的 HTML 属性
@@ -1394,7 +1394,7 @@ html/deprecated-attr · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-deprecated-attr.md
 
 错误示例:
   <template>
@@ -1419,7 +1419,7 @@ html/deprecated-element · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-deprecated-element.md
 
 错误示例:
   <template>
@@ -1445,7 +1445,7 @@ html/id-duplication · lint 规则
 严重级别: 错误
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-id-duplication.md
 
 错误示例:
   <template>
@@ -1470,7 +1470,7 @@ html/no-consecutive-br · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-no-consecutive-br.md
 
 错误示例:
   <template>
@@ -1494,7 +1494,7 @@ html/no-dupe-style-properties · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-no-dupe-style-properties.md
 
 错误示例:
   <template>
@@ -1519,7 +1519,7 @@ html/no-duplicate-class · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-no-duplicate-class.md
 
 错误示例:
   <template>
@@ -1542,7 +1542,7 @@ html/no-duplicate-dt · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-no-duplicate-dt.md
 
 错误示例:
   <template>
@@ -1575,7 +1575,7 @@ html/no-empty-palpable-content · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-no-empty-palpable-content.md
 
 错误示例:
   <template>
@@ -1602,7 +1602,7 @@ html/require-datetime · lint 规则
 严重级别: 警告
 类别: html-conformance
 自动修复: 不支持
-文档: docs/content/rules/html.md
+文档: docs/content/rules/reference/html-require-datetime.md
 
 错误示例:
   <template>
@@ -1627,7 +1627,7 @@ musea/no-empty-variant · lint 规则
 严重级别: 警告
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-no-empty-variant.md
 === musea/prefer-design-tokens
 musea/prefer-design-tokens · lint 规则
 优先使用设计令牌 CSS 变量，而不是硬编码的原始值
@@ -1637,7 +1637,7 @@ musea/prefer-design-tokens · lint 规则
 严重级别: 警告
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-prefer-design-tokens.md
 
 错误示例:
   .button {
@@ -1657,7 +1657,7 @@ musea/require-component · lint 规则
 严重级别: 警告
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-require-component.md
 === musea/require-title
 musea/require-title · lint 规则
 要求art块有title属性
@@ -1667,7 +1667,7 @@ musea/require-title · lint 规则
 严重级别: 错误
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-require-title.md
 
 错误示例:
   <art component="./Button.vue">
@@ -1693,7 +1693,7 @@ musea/unique-variant-names · lint 规则
 严重级别: 错误
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-unique-variant-names.md
 === musea/valid-variant
 musea/valid-variant · lint 规则
 要求 <variant> 块带有 name 属性
@@ -1703,7 +1703,7 @@ musea/valid-variant · lint 规则
 严重级别: 错误
 类别: musea
 自动修复: 不支持
-文档: docs/content/rules/musea-and-css.md
+文档: docs/content/rules/reference/musea-valid-variant.md
 === nuxt/no-nuxt-config-test-key
 nuxt/no-nuxt-config-test-key · lint 规则
 禁止在 Nuxt 配置中设置 `test` 键
@@ -1713,7 +1713,7 @@ nuxt/no-nuxt-config-test-key · lint 规则
 严重级别: 错误
 类别: nuxt
 自动修复: 不支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/nuxt-no-nuxt-config-test-key.md
 === nuxt/no-page-meta-runtime-values
 nuxt/no-page-meta-runtime-values · lint 规则
 禁止在 `definePageMeta` 顶层使用运行时上下文的值（它在构建时被提取到单独的 chunk，并在组件 setup 之前执行）
@@ -1723,7 +1723,7 @@ nuxt/no-page-meta-runtime-values · lint 规则
 严重级别: 错误
 类别: nuxt
 自动修复: 不支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/nuxt-no-page-meta-runtime-values.md
 === nuxt/nuxt-config-keys-order
 nuxt/nuxt-config-keys-order · lint 规则
 推荐按照建议的顺序编写 Nuxt 配置属性
@@ -1733,7 +1733,7 @@ nuxt/nuxt-config-keys-order · lint 规则
 严重级别: 错误
 类别: nuxt
 自动修复: 支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/nuxt-nuxt-config-keys-order.md
 === nuxt/prefer-import-meta
 nuxt/prefer-import-meta · lint 规则
 优先使用 `import.meta.*`，而不是 `process.*`
@@ -1743,7 +1743,7 @@ nuxt/prefer-import-meta · lint 规则
 严重级别: 错误
 类别: nuxt
 自动修复: 支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/nuxt-prefer-import-meta.md
 === petite-vue/no-unsupported-directive
 petite-vue/no-unsupported-directive · lint 规则
 禁止petite-vue不支持的指令
@@ -1753,7 +1753,7 @@ petite-vue/no-unsupported-directive · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/petite-vue-no-unsupported-directive.md
 
 错误示例:
   <div v-memo="[a, b]"></div>
@@ -1775,7 +1775,7 @@ petite-vue/valid-v-effect · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/petite-vue-valid-v-effect.md
 
 错误示例:
   <div v-effect></div>
@@ -1797,7 +1797,7 @@ petite-vue/valid-v-scope · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/index.md
+文档: docs/content/rules/reference/petite-vue-valid-v-scope.md
 
 错误示例:
   <div v-scope="count"></div>
@@ -1822,7 +1822,7 @@ script/component-options-name-casing · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-component-options-name-casing.md
 
 错误示例:
   export default {
@@ -1842,7 +1842,7 @@ script/custom-event-name-casing · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-custom-event-name-casing.md
 
 错误示例:
   const emit = defineEmits(['my-event'])
@@ -1860,7 +1860,7 @@ script/define-emits-declaration · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-define-emits-declaration.md
 
 错误示例:
   // Runtime array form
@@ -1886,7 +1886,7 @@ script/define-macros-order · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-define-macros-order.md
 
 错误示例:
   // defineEmits before defineProps
@@ -1908,7 +1908,7 @@ script/define-props-declaration · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-define-props-declaration.md
 
 错误示例:
   // Runtime / object form
@@ -1935,7 +1935,7 @@ script/define-props-destructuring · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-define-props-destructuring.md
 
 错误示例:
   const props = defineProps<{ foo: string }>()
@@ -1951,7 +1951,7 @@ script/no-arrow-functions-in-watch · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-arrow-functions-in-watch.md
 
 错误示例:
   export default {
@@ -1987,7 +1987,7 @@ script/no-async-in-computed · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-async-in-computed.md
 
 错误示例:
   const data = computed(async () => {
@@ -2036,7 +2036,7 @@ script/no-boolean-default · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-boolean-default.md
 
 错误示例:
   export default {
@@ -2068,7 +2068,7 @@ script/no-computed-properties-in-data · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-computed-properties-in-data.md
 
 错误示例:
   export default {
@@ -2098,7 +2098,7 @@ script/no-deep-destructure-in-props · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deep-destructure-in-props.md
 
 错误示例:
   // Deep nested destructuring
@@ -2133,7 +2133,7 @@ script/no-deprecated-data-object-declaration · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-data-object-declaration.md
 
 错误示例:
   export default {
@@ -2158,7 +2158,7 @@ script/no-deprecated-delete-set · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-delete-set.md
 
 错误示例:
   export default {
@@ -2182,7 +2182,7 @@ script/no-deprecated-destroyed-lifecycle · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-destroyed-lifecycle.md
 === script/no-deprecated-dollar-listeners-api
 script/no-deprecated-dollar-listeners-api · lint 规则
 禁止使用 Vue 3 中已移除的 $listeners 实例属性（已并入 $attrs）
@@ -2192,7 +2192,7 @@ script/no-deprecated-dollar-listeners-api · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-dollar-listeners-api.md
 
 错误示例:
   <script>
@@ -2223,7 +2223,7 @@ script/no-deprecated-dollar-scopedslots-api · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.md
 
 错误示例:
   const header = this.$scopedSlots.header
@@ -2243,7 +2243,7 @@ script/no-deprecated-events-api · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-events-api.md
 
 错误示例:
   <script>
@@ -2277,7 +2277,7 @@ script/no-deprecated-model-definition · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-model-definition.md
 
 错误示例:
   export default {
@@ -2301,7 +2301,7 @@ script/no-deprecated-props-default-this · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-props-default-this.md
 
 错误示例:
   export default {
@@ -2349,7 +2349,7 @@ script/no-deprecated-vue-config-keycodes · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-deprecated-vue-config-keycodes.md
 
 错误示例:
   Vue.config.keyCodes.enter = 13
@@ -2365,7 +2365,7 @@ script/no-dupe-keys · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-dupe-keys.md
 
 错误示例:
   export default {
@@ -2400,7 +2400,7 @@ script/no-duplicate-attr-inheritance · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-duplicate-attr-inheritance.md
 
 错误示例:
   <script setup></script>
@@ -2418,7 +2418,7 @@ script/no-export-in-script-setup · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-export-in-script-setup.md
 === script/no-expose-after-await
 script/no-expose-after-await · lint 规则
 禁止在 await 之后调用 expose() 和 defineExpose()
@@ -2428,7 +2428,7 @@ script/no-expose-after-await · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-expose-after-await.md
 
 错误示例:
   await loadData()
@@ -2446,7 +2446,7 @@ script/no-get-current-instance · lint 规则
 严重级别: 错误
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-get-current-instance.md
 
 错误示例:
   import { getCurrentInstance } from 'vue'
@@ -2482,7 +2482,7 @@ script/no-import-compiler-macros · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-import-compiler-macros.md
 
 错误示例:
   import { defineProps, defineEmits } from 'vue'
@@ -2506,7 +2506,7 @@ script/no-internal-imports · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-internal-imports.md
 
 错误示例:
   import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
@@ -2523,7 +2523,7 @@ script/no-lifecycle-after-await · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-lifecycle-after-await.md
 
 错误示例:
   import { onMounted } from 'vue'
@@ -2551,7 +2551,7 @@ script/no-multiple-slot-args · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-multiple-slot-args.md
 
 错误示例:
   slots.default(foo, bar)
@@ -2573,7 +2573,7 @@ script/no-next-tick · lint 规则
 严重级别: 错误
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-next-tick.md
 
 错误示例:
   import { nextTick } from 'vue'
@@ -2596,7 +2596,7 @@ script/no-options-api · lint 规则
 严重级别: 错误
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-options-api.md
 
 错误示例:
   export default {
@@ -2639,7 +2639,7 @@ script/no-potential-component-option-typo · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-potential-component-option-typo.md
 === script/no-reactive-destructure
 script/no-reactive-destructure · lint 规则
 禁止解构响应式对象（会丢失响应性）
@@ -2649,7 +2649,7 @@ script/no-reactive-destructure · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-reactive-destructure.md
 
 错误示例:
   const state = reactive({ count: 0, name: 'foo' })
@@ -2679,7 +2679,7 @@ script/no-ref-as-operand · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-ref-as-operand.md
 === script/no-required-prop-with-default
 script/no-required-prop-with-default · lint 规则
 禁止 prop 同时设置 required: true 和默认值
@@ -2689,7 +2689,7 @@ script/no-required-prop-with-default · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-required-prop-with-default.md
 === script/no-reserved-identifiers
 script/no-reserved-identifiers · lint 规则
 禁止使用 Vue 编译器保留的标识符
@@ -2699,7 +2699,7 @@ script/no-reserved-identifiers · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-reserved-identifiers.md
 
 错误示例:
   const __props = { name: 'test' }
@@ -2719,7 +2719,7 @@ script/no-reserved-keys · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-reserved-keys.md
 
 错误示例:
   export default {
@@ -2736,7 +2736,7 @@ script/no-reserved-props · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-reserved-props.md
 
 错误示例:
   export default {
@@ -2766,7 +2766,7 @@ script/no-restricted-globals · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-restricted-globals.md
 
 错误示例:
   const flag = process.env.FEATURE_FLAG
@@ -2789,7 +2789,7 @@ script/no-restricted-members · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-restricted-members.md
 
 错误示例:
   const token = window.localStorage.getItem('auth.token')
@@ -2806,7 +2806,7 @@ script/no-side-effects-in-computed-properties · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-side-effects-in-computed-properties.md
 
 错误示例:
   export default {
@@ -2847,7 +2847,7 @@ script/no-top-level-ref-in-script · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-top-level-ref-in-script.md
 
 错误示例:
   <script>
@@ -2894,7 +2894,7 @@ script/no-unstable-nested-components · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-unstable-nested-components.md
 === script/no-unused-emit-declarations
 script/no-unused-emit-declarations · lint 规则
 标记已声明但从未触发的事件
@@ -2904,7 +2904,7 @@ script/no-unused-emit-declarations · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-unused-emit-declarations.md
 
 错误示例:
   const emit = defineEmits(['change', 'unused'])
@@ -2923,7 +2923,7 @@ script/no-use-computed-property-like-method · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-use-computed-property-like-method.md
 === script/no-watch-after-await
 script/no-watch-after-await · lint 规则
 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器
@@ -2933,7 +2933,7 @@ script/no-watch-after-await · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-watch-after-await.md
 
 错误示例:
   import { watch } from 'vue'
@@ -2961,7 +2961,7 @@ script/no-with-defaults · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-no-with-defaults.md
 
 错误示例:
   // Using withDefaults (verbose)
@@ -2991,7 +2991,7 @@ script/one-component-per-file · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-one-component-per-file.md
 
 错误示例:
   export default {
@@ -3014,7 +3014,7 @@ script/order-in-components · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-order-in-components.md
 
 错误示例:
   export default {
@@ -3040,7 +3040,7 @@ script/prefer-computed · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-computed.md
 === script/prefer-define-emits-binding
 script/prefer-define-emits-binding · lint 规则
 优先使用从 defineEmits 捕获的函数而不是模板 $emit
@@ -3050,7 +3050,7 @@ script/prefer-define-emits-binding · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-define-emits-binding.md
 === script/prefer-define-options
 script/prefer-define-options · lint 规则
 优先使用 defineOptions()，而不是只设置 name/inheritAttrs 的普通 <script>
@@ -3060,7 +3060,7 @@ script/prefer-define-options · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-define-options.md
 
 错误示例:
   export default { name: 'MyComponent', inheritAttrs: false }
@@ -3080,7 +3080,7 @@ script/prefer-import-from-vue · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-import-from-vue.md
 
 错误示例:
   import { ref } from '@vue/runtime-core'
@@ -3098,7 +3098,7 @@ script/prefer-ref-over-reactive · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-ref-over-reactive.md
 
 错误示例:
   // reactive requires careful handling to avoid losing reactivity
@@ -3127,7 +3127,7 @@ script/prefer-use-attrs · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-use-attrs.md
 
 错误示例:
   // In Options API style
@@ -3153,7 +3153,7 @@ script/prefer-use-id · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-use-id.md
 
 错误示例:
   // Manual ID generation (not SSR-safe)
@@ -3177,7 +3177,7 @@ script/prefer-use-slots · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-use-slots.md
 
 错误示例:
   // In Options API style
@@ -3203,7 +3203,7 @@ script/prefer-use-template-ref · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-prefer-use-template-ref.md
 
 错误示例:
   <script setup lang="ts">
@@ -3235,7 +3235,7 @@ script/require-default-prop · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-default-prop.md
 
 错误示例:
   export default {
@@ -3263,7 +3263,7 @@ script/require-explicit-emits · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-explicit-emits.md
 === script/require-explicit-slots
 script/require-explicit-slots · lint 规则
 要求通过 useSlots() 使用的插槽用 defineSlots<...>() 显式声明类型
@@ -3273,7 +3273,7 @@ script/require-explicit-slots · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-explicit-slots.md
 
 错误示例:
   const props = defineProps<{ id: number }>()
@@ -3291,7 +3291,7 @@ script/require-function-return-type · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-function-return-type.md
 
 错误示例:
   const add = (a: number, b: number) => {
@@ -3319,7 +3319,7 @@ script/require-prop-type-constructor · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-prop-type-constructor.md
 
 错误示例:
   export default {
@@ -3348,7 +3348,7 @@ script/require-prop-types · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-prop-types.md
 
 错误示例:
   export default {
@@ -3378,7 +3378,7 @@ script/require-render-return · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-render-return.md
 
 错误示例:
   export default {
@@ -3404,7 +3404,7 @@ script/require-slots-as-functions · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-slots-as-functions.md
 
 错误示例:
   export default {
@@ -3428,7 +3428,7 @@ script/require-symbol-provide · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-symbol-provide.md
 
 错误示例:
   // String keys can collide
@@ -3456,7 +3456,7 @@ script/require-typed-object-prop · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-typed-object-prop.md
 
 错误示例:
   const props = defineProps({
@@ -3481,7 +3481,7 @@ script/require-typed-ref · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-typed-ref.md
 
 错误示例:
   import { ref } from 'vue'
@@ -3505,7 +3505,7 @@ script/require-valid-default-prop · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-require-valid-default-prop.md
 
 错误示例:
   export default {
@@ -3536,7 +3536,7 @@ script/return-in-computed-property · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-return-in-computed-property.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint 规则
 要求 Vue 的每个 emits 校验函数都有返回值
@@ -3546,7 +3546,7 @@ script/return-in-emits-validator · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-return-in-emits-validator.md
 
 错误示例:
   export default {
@@ -3576,7 +3576,7 @@ script/valid-define-emits · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-valid-define-emits.md
 
 错误示例:
   const local = ['change']
@@ -3597,7 +3597,7 @@ script/valid-define-options · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-valid-define-options.md
 
 错误示例:
   defineOptions({ props: ['foo'] })   // use defineProps instead
@@ -3616,7 +3616,7 @@ script/valid-define-props · lint 规则
 严重级别: 错误
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-valid-define-props.md
 
 错误示例:
   defineProps<{ foo: string }>({ foo: String }) // both type and runtime args
@@ -3637,7 +3637,7 @@ script/valid-next-tick · lint 规则
 严重级别: 警告
 类别: script
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/script-valid-next-tick.md
 
 错误示例:
   import { nextTick } from 'vue'
@@ -3662,7 +3662,7 @@ ssr/no-browser-globals-in-ssr · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/ssr.md
+文档: docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md
 
 帮助:
   问题: 浏览器API（如window、document）在服务器端不存在。
@@ -3688,7 +3688,7 @@ ssr/no-hydration-mismatch · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/ssr.md
+文档: docs/content/rules/reference/ssr-no-hydration-mismatch.md
 
 帮助:
   问题: 服务器和客户端渲染的值不同会导致hydration错误。
@@ -3713,7 +3713,7 @@ type/no-floating-promises · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-no-floating-promises.md
 === type/no-reactivity-loss
 type/no-reactivity-loss · lint 规则
 禁止在赋值和调用中把响应式值变成普通快照
@@ -3723,7 +3723,7 @@ type/no-reactivity-loss · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-no-reactivity-loss.md
 === type/no-unsafe-template-binding
 type/no-unsafe-template-binding · lint 规则
 禁止解析为不安全类型的模板绑定
@@ -3733,7 +3733,7 @@ type/no-unsafe-template-binding · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-no-unsafe-template-binding.md
 === type/require-typed-emits
 type/require-typed-emits · lint 规则
 要求 defineEmits 带有类型定义
@@ -3743,7 +3743,7 @@ type/require-typed-emits · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-require-typed-emits.md
 
 错误示例:
   <script setup>
@@ -3768,7 +3768,7 @@ type/require-typed-props · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-require-typed-props.md
 
 错误示例:
   <script setup>
@@ -3793,7 +3793,7 @@ type/strict-boolean-expressions · lint 规则
 严重级别: 警告
 类别: type-aware
 自动修复: 不支持
-文档: docs/content/rules/type-and-script.md
+文档: docs/content/rules/reference/type-strict-boolean-expressions.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint 规则
 禁止已弃用的inline-template属性
@@ -3803,7 +3803,7 @@ vapor/no-inline-template · lint 规则
 严重级别: 错误
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/vapor.md
+文档: docs/content/rules/reference/vapor-no-inline-template.md
 
 错误示例:
   <my-component inline-template>
@@ -3839,7 +3839,7 @@ vapor/no-vue-lifecycle-events · lint 规则
 严重级别: 错误
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/vapor.md
+文档: docs/content/rules/reference/vapor-no-vue-lifecycle-events.md
 
 错误示例:
   <div @vue:mounted="handler"></div>
@@ -3876,7 +3876,7 @@ vapor/prefer-static-class · lint 规则
 严重级别: 警告
 类别: vapor
 自动修复: 支持
-文档: docs/content/rules/vapor.md
+文档: docs/content/rules/reference/vapor-prefer-static-class.md
 
 错误示例:
   <div :class="'static-class'"></div>
@@ -3904,7 +3904,7 @@ vapor/require-vapor-attribute · lint 规则
 严重级别: 警告
 类别: vapor
 自动修复: 不支持
-文档: docs/content/rules/vapor.md
+文档: docs/content/rules/reference/vapor-require-vapor-attribute.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint 规则
 要求图片有alt属性以确保无障碍
@@ -3914,7 +3914,7 @@ vue/a11y-img-alt · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-a11y-img-alt.md
 
 错误示例:
   <img src="/photo.jpg" />
@@ -3941,7 +3941,7 @@ vue/attribute-hyphenation · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-attribute-hyphenation.md
 
 错误示例:
   <MyComponent myProp="value" />
@@ -3963,7 +3963,7 @@ vue/attribute-order · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-attribute-order.md
 
 错误示例:
   <div @click="onClick" v-if="show" id="main"></div>
@@ -3982,7 +3982,7 @@ vue/component-definition-name-casing · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-component-definition-name-casing.md
 
 错误示例:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
@@ -4008,7 +4008,7 @@ vue/component-name-in-template-casing · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-component-name-in-template-casing.md
 
 错误示例:
   <script setup>import MyComponent from "./MyComponent.vue";</script>
@@ -4027,7 +4027,7 @@ vue/html-button-has-type · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-html-button-has-type.md
 
 错误示例:
   <button>Click</button>
@@ -4050,7 +4050,7 @@ vue/html-quotes · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-html-quotes.md
 
 错误示例:
   <div class='foo'></div>
@@ -4071,7 +4071,7 @@ vue/html-self-closing · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-html-self-closing.md
 
 错误示例:
   <div></div>  <!-- should be <div /> when empty -->
@@ -4095,7 +4095,7 @@ vue/max-template-complexity · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-max-template-complexity.md
 
 错误示例:
   <template>
@@ -4120,7 +4120,7 @@ vue/multi-word-component-names · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-multi-word-component-names.md
 
 错误示例:
   Item.vue
@@ -4152,7 +4152,7 @@ vue/mustache-interpolation-spacing · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-mustache-interpolation-spacing.md
 
 错误示例:
   <div>{{text}}</div>
@@ -4172,7 +4172,7 @@ vue/no-array-index-key · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-array-index-key.md
 
 错误示例:
   <li v-for="(item, index) in list" :key="index">{{ item }}</li>
@@ -4194,7 +4194,7 @@ vue/no-bare-strings-in-template · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-bare-strings-in-template.md
 
 错误示例:
   <div>hello</div>
@@ -4220,7 +4220,7 @@ vue/no-boolean-attr-value · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-boolean-attr-value.md
 
 错误示例:
   <template>
@@ -4247,7 +4247,7 @@ vue/no-child-content · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-child-content.md
 
 错误示例:
   <div v-html="content">child</div>
@@ -4269,7 +4269,7 @@ vue/no-deprecated-filter · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-filter.md
 
 错误示例:
   {{ message | capitalize }}
@@ -4293,7 +4293,7 @@ vue/no-deprecated-functional-template · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-functional-template.md
 
 错误示例:
   <template functional>
@@ -4316,7 +4316,7 @@ vue/no-deprecated-html-element-is · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-html-element-is.md
 
 错误示例:
   <template>
@@ -4340,7 +4340,7 @@ vue/no-deprecated-inline-template · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-inline-template.md
 
 帮助:
   请将标记移入子组件，或通过插槽传递，而不是使用inline-template。
@@ -4353,7 +4353,7 @@ vue/no-deprecated-router-link-tag-prop · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-router-link-tag-prop.md
 
 错误示例:
   <template>
@@ -4378,7 +4378,7 @@ vue/no-deprecated-scope-attribute · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-scope-attribute.md
 
 错误示例:
   <Foo>
@@ -4402,7 +4402,7 @@ vue/no-deprecated-slot-attribute · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-slot-attribute.md
 
 错误示例:
   <template>
@@ -4430,7 +4430,7 @@ vue/no-deprecated-slot-scope-attribute · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-slot-scope-attribute.md
 
 错误示例:
   <Foo>
@@ -4453,7 +4453,7 @@ vue/no-deprecated-v-bind-sync · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-v-bind-sync.md
 
 错误示例:
   <MyComponent :title.sync="title" />
@@ -4475,7 +4475,7 @@ vue/no-deprecated-v-is · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-v-is.md
 
 错误示例:
   <tr v-is="'MyRow'"></tr>
@@ -4495,7 +4495,7 @@ vue/no-deprecated-v-on-native-modifier · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-v-on-native-modifier.md
 
 错误示例:
   <MyComponent @click.native="handler" />
@@ -4517,7 +4517,7 @@ vue/no-deprecated-v-on-number-modifiers · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-deprecated-v-on-number-modifiers.md
 
 错误示例:
   <input @keyup.13="submit" />
@@ -4539,7 +4539,7 @@ vue/no-dupe-v-else-if · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-dupe-v-else-if.md
 
 错误示例:
   <div v-if="foo"></div>
@@ -4573,7 +4573,7 @@ vue/no-duplicate-attributes · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-duplicate-attributes.md
 
 错误示例:
   <div id="foo" id="bar"></div>
@@ -4600,7 +4600,7 @@ vue/no-empty-component-block · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-empty-component-block.md
 
 错误示例:
   <template></template>
@@ -4634,7 +4634,7 @@ vue/no-inline-style · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-inline-style.md
 
 错误示例:
   <div style="color: red">text</div>
@@ -4665,7 +4665,7 @@ vue/no-invalid-html-attribute · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-invalid-html-attribute.md
 
 帮助:
   请只使用此元素允许的标准rel标记，例如链接上的noopener noreferrer或link元素上的stylesheet。
@@ -4678,7 +4678,7 @@ vue/no-lone-template · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-lone-template.md
 
 错误示例:
   <template>
@@ -4707,7 +4707,7 @@ vue/no-multi-spaces · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-multi-spaces.md
 
 错误示例:
   <div  class="foo"></div>
@@ -4733,7 +4733,7 @@ vue/no-multiple-objects-in-class · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-multiple-objects-in-class.md
 
 错误示例:
   <div :class="[{ a }, { b }]"></div>
@@ -4755,7 +4755,7 @@ vue/no-multiple-template-root · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-multiple-template-root.md
 
 帮助:
   请用一个渲染元素包裹模板，并将条件分支保留在同一个v-if链中。
@@ -4768,7 +4768,7 @@ vue/no-mutating-props · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-mutating-props.md
 === vue/no-negated-v-if-condition
 vue/no-negated-v-if-condition · lint 规则
 当存在v-else分支时，禁止使用取反的v-if条件
@@ -4778,7 +4778,7 @@ vue/no-negated-v-if-condition · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-negated-v-if-condition.md
 
 错误示例:
   <div v-if="!ok">A</div>
@@ -4804,7 +4804,7 @@ vue/no-non-component-keep-alive-child · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-non-component-keep-alive-child.md
 
 帮助:
   将条件或 key 移到组件子节点上，或使用 <component :is="..."> 直接渲染动态组件
@@ -4817,7 +4817,7 @@ vue/no-preprocessor-lang · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-preprocessor-lang.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint 规则
 禁止使用保留的组件名
@@ -4827,7 +4827,7 @@ vue/no-reserved-component-names · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-reserved-component-names.md
 
 错误示例:
   export default {
@@ -4860,7 +4860,7 @@ vue/no-root-v-if · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-root-v-if.md
 
 错误示例:
   <template>
@@ -4885,7 +4885,7 @@ vue/no-script-non-standard-lang · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-script-non-standard-lang.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint 规则
 不建议在 SFC 块上使用 src 属性
@@ -4895,7 +4895,7 @@ vue/no-src-attribute · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-src-attribute.md
 === vue/no-static-inline-styles
 vue/no-static-inline-styles · lint 规则
 禁止使用静态的内联 style 属性
@@ -4905,7 +4905,7 @@ vue/no-static-inline-styles · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-static-inline-styles.md
 === vue/no-template-key
 vue/no-template-key · lint 规则
 禁止在template元素上使用key属性
@@ -4915,7 +4915,7 @@ vue/no-template-key · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-template-key.md
 
 错误示例:
   <template :key="section">
@@ -4947,7 +4947,7 @@ vue/no-template-lang · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-template-lang.md
 === vue/no-template-shadow
 vue/no-template-shadow · lint 规则
 禁止v-for中的变量遮蔽
@@ -4957,7 +4957,7 @@ vue/no-template-shadow · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-template-shadow.md
 
 错误示例:
   <!-- Nested v-for with same variable name -->
@@ -4991,7 +4991,7 @@ vue/no-template-target-blank · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-template-target-blank.md
 
 错误示例:
   <a href="https://example.com" target="_blank">x</a>
@@ -5010,7 +5010,7 @@ vue/no-textarea-mustache · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-textarea-mustache.md
 
 错误示例:
   <textarea>{{ message }}</textarea>
@@ -5035,7 +5035,7 @@ vue/no-undefined-refs · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-undefined-refs.md
 
 帮助:
   确保变量已导入或在<script setup>中定义
@@ -5048,7 +5048,7 @@ vue/no-unsafe-url · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unsafe-url.md
 
 帮助:
   在绑定前净化URL以防止通过javascript:协议的XSS攻击
@@ -5061,7 +5061,7 @@ vue/no-unsandboxed-iframe · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unsandboxed-iframe.md
 
 错误示例:
   <iframe src="/embed"></iframe>
@@ -5081,7 +5081,7 @@ vue/no-unused-components · lint 规则
 严重级别: 警告
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unused-components.md
 
 错误示例:
   <script setup>
@@ -5109,7 +5109,7 @@ vue/no-unused-properties · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unused-properties.md
 
 错误示例:
   <script setup lang="ts">
@@ -5143,7 +5143,7 @@ vue/no-unused-refs · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unused-refs.md
 
 错误示例:
   <template><input ref="unused" /></template>
@@ -5166,7 +5166,7 @@ vue/no-unused-setup-bindings · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unused-setup-bindings.md
 === vue/no-unused-vars
 vue/no-unused-vars · lint 规则
 禁止v-for指令中未使用的变量定义
@@ -5176,7 +5176,7 @@ vue/no-unused-vars · lint 规则
 严重级别: 警告
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-unused-vars.md
 
 错误示例:
   <!-- 'index' is defined but never used -->
@@ -5218,7 +5218,7 @@ vue/no-use-v-else-with-v-for · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-use-v-else-with-v-for.md
 
 帮助:
   请将条件指令移到包裹v-for元素的包装元素上。
@@ -5231,7 +5231,7 @@ vue/no-use-v-if-with-v-for · lint 规则
 严重级别: 警告
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-use-v-if-with-v-for.md
 
 错误示例:
   <li v-for="item in items" v-if="item.active">{{ item }}</li>
@@ -5269,7 +5269,7 @@ vue/no-useless-mustaches · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-useless-mustaches.md
 
 错误示例:
   <div>{{ 'x' }}</div>
@@ -5293,7 +5293,7 @@ vue/no-useless-template-attributes · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-useless-template-attributes.md
 
 错误示例:
   <template v-if="show" class="foo"><div /></template>
@@ -5316,7 +5316,7 @@ vue/no-useless-v-bind · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-useless-v-bind.md
 
 错误示例:
   <div :foo="'bar'"></div>
@@ -5338,7 +5338,7 @@ vue/no-v-for-template-key-on-child · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-v-for-template-key-on-child.md
 
 错误示例:
   <template v-for="item in items">
@@ -5361,7 +5361,7 @@ vue/no-v-html · lint 规则
 严重级别: 警告
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-v-html.md
 
 错误示例:
   <div v-html="userContent"></div>
@@ -5399,7 +5399,7 @@ vue/no-v-text · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-v-text.md
 
 错误示例:
   <div v-text="message"></div>
@@ -5418,7 +5418,7 @@ vue/no-v-text-v-html-on-component · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-no-v-text-v-html-on-component.md
 
 错误示例:
   <MyComponent v-html="content" />
@@ -5440,7 +5440,7 @@ vue/permitted-contents · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-permitted-contents.md
 
 错误示例:
   <template>
@@ -5473,7 +5473,7 @@ vue/prefer-props-shorthand · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-prefer-props-shorthand.md
 
 错误示例:
   <MyComponent :foo="foo" />
@@ -5505,7 +5505,7 @@ vue/prefer-true-attribute-shorthand · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md
 
 错误示例:
   <input :disabled="true" />
@@ -5527,7 +5527,7 @@ vue/prop-name-casing · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-prop-name-casing.md
 
 错误示例:
   <script setup>
@@ -5555,7 +5555,7 @@ vue/require-component-is · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-require-component-is.md
 
 错误示例:
   <component />
@@ -5576,7 +5576,7 @@ vue/require-component-registration · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-require-component-registration.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint 规则
 要求style块使用scoped或module属性
@@ -5586,7 +5586,7 @@ vue/require-scoped-style · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-require-scoped-style.md
 
 错误示例:
   <style>
@@ -5622,7 +5622,7 @@ vue/require-toggle-inside-transition · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-require-toggle-inside-transition.md
 
 错误示例:
   <transition>
@@ -5645,7 +5645,7 @@ vue/require-v-for-key · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-require-v-for-key.md
 
 错误示例:
   <li v-for="item in items">{{ item }}</li>
@@ -5672,7 +5672,7 @@ vue/scoped-event-names · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-scoped-event-names.md
 
 帮助:
   使用'update:modelValue'这样的有作用域的事件名代替通用名称
@@ -5685,7 +5685,7 @@ vue/sfc-element-order · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-sfc-element-order.md
 
 错误示例:
   <style>...</style>
@@ -5704,7 +5704,7 @@ vue/single-style-block · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint 规则
 强制通过v-slot使用的具名插槽采用短横线命名
@@ -5714,7 +5714,7 @@ vue/slot-name-casing · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-slot-name-casing.md
 
 错误示例:
   <MyComponent>
@@ -5739,7 +5739,7 @@ vue/this-in-template · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-this-in-template.md
 
 错误示例:
   <div>{{ this.message }}</div>
@@ -5763,7 +5763,7 @@ vue/use-unique-element-ids · lint 规则
 严重级别: 警告
 类别: accessibility
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-use-unique-element-ids.md
 
 错误示例:
   <template>
@@ -5809,7 +5809,7 @@ vue/use-v-on-exact · lint 规则
 严重级别: 警告
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-use-v-on-exact.md
 
 错误示例:
   <button @click="handleClick" @click.ctrl="handleCtrlClick">Click</button>
@@ -5829,7 +5829,7 @@ vue/v-bind-style · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-v-bind-style.md
 
 错误示例:
   <div v-bind:class="foo"></div>
@@ -5851,7 +5851,7 @@ vue/v-on-event-hyphenation · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-v-on-event-hyphenation.md
 
 错误示例:
   <MyComponent @myEvent="handler" />
@@ -5874,7 +5874,7 @@ vue/v-on-handler-style · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-v-on-handler-style.md
 
 错误示例:
   <button @click="count++"></button>
@@ -5898,7 +5898,7 @@ vue/v-on-style · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-v-on-style.md
 
 错误示例:
   <div v-on:click="handleClick"></div>
@@ -5920,7 +5920,7 @@ vue/v-slot-style · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-v-slot-style.md
 
 错误示例:
   <template v-slot:header>...</template>
@@ -5943,7 +5943,7 @@ vue/valid-attribute-name · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-attribute-name.md
 
 错误示例:
   <div my"attr="value"></div>
@@ -5964,7 +5964,7 @@ vue/valid-template-root · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-template-root.md
 
 错误示例:
   <template>
@@ -5987,7 +5987,7 @@ vue/valid-v-bind · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-bind.md
 
 错误示例:
   <div v-bind></div>
@@ -6018,7 +6018,7 @@ vue/valid-v-cloak · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-cloak.md
 
 错误示例:
   <div v-cloak="foo"></div>
@@ -6039,7 +6039,7 @@ vue/valid-v-else · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-else.md
 
 错误示例:
   <div v-else="foo"></div>
@@ -6068,7 +6068,7 @@ vue/valid-v-else-if · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-else-if.md
 
 错误示例:
   <div v-else-if="foo"></div> <!-- without preceding v-if -->
@@ -6091,7 +6091,7 @@ vue/valid-v-for · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-for.md
 
 错误示例:
   <div v-for></div>
@@ -6123,7 +6123,7 @@ vue/valid-v-html · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-html.md
 
 错误示例:
   <div v-html></div>
@@ -6144,7 +6144,7 @@ vue/valid-v-if · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-if.md
 
 错误示例:
   <div v-if></div>
@@ -6169,7 +6169,7 @@ vue/valid-v-is · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-is.md
 
 错误示例:
   <tr v-is:arg="'MyRow'"></tr>
@@ -6191,7 +6191,7 @@ vue/valid-v-memo · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-memo.md
 
 错误示例:
   <div v-memo></div>
@@ -6210,7 +6210,7 @@ vue/valid-v-model · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-model.md
 
 错误示例:
   <div v-model="foo"></div>
@@ -6242,7 +6242,7 @@ vue/valid-v-on · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-on.md
 
 错误示例:
   <div v-on></div>
@@ -6274,7 +6274,7 @@ vue/valid-v-once · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-once.md
 
 错误示例:
   <div v-once="foo"></div>
@@ -6295,7 +6295,7 @@ vue/valid-v-pre · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-pre.md
 
 错误示例:
   <div v-pre:arg></div>
@@ -6316,7 +6316,7 @@ vue/valid-v-show · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-show.md
 
 错误示例:
   <div v-show></div>
@@ -6341,7 +6341,7 @@ vue/valid-v-slot · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-slot.md
 
 错误示例:
   <div v-slot:header></div>                 <!-- not on component -->
@@ -6374,7 +6374,7 @@ vue/valid-v-text · lint 规则
 严重级别: 错误
 类别: essential
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-valid-v-text.md
 
 错误示例:
   <div v-text></div>
@@ -6395,7 +6395,7 @@ vue/warn-custom-block · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-warn-custom-block.md
 === vue/warn-custom-directive
 vue/warn-custom-directive · lint 规则
 对需要注册的自定义指令发出警告
@@ -6405,7 +6405,7 @@ vue/warn-custom-directive · lint 规则
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
-文档: docs/content/rules/vue.md
+文档: docs/content/rules/reference/vue-warn-custom-directive.md
 
 正确示例:
   <div v-if="show"></div>

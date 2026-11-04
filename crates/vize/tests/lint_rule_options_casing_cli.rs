@@ -105,7 +105,7 @@ emit('keepOriginal');
                 "messages": [
                     {
                         "ruleId": "vue/component-name-in-template-casing",
-                        "ruleDocsPath": "docs/content/rules/vue.md",
+                        "ruleDocsPath": "docs/content/rules/reference/vue-component-name-in-template-casing.md",
                         "severity": 2,
                         "message": "[vize:vue/component-name-in-template-casing] Component should use kebab-case",
                         "line": 3,
@@ -116,7 +116,7 @@ emit('keepOriginal');
                     },
                     {
                         "ruleId": "script/custom-event-name-casing",
-                        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                        "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
                         "severity": 2,
                         "message": "[vize:script/custom-event-name-casing] Custom event name 'keepOriginal' is not kebab-case.",
                         "line": 12,

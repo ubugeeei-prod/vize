@@ -259,7 +259,7 @@ fn corrected_root_and_custom_entry_rules_preserve_the_complete_warning() -> Test
         )?;
         assert_eq!(output.status.code(), Some(0));
         assert_eq!(output.stderr, Vec::<u8>::new());
-        let mut wanted = expected.clone();
+        let mut wanted = crate::support::current_rule_documentation::packet(expected.clone());
         let record = wanted
             .as_array_mut()
             .and_then(|rows| rows.first_mut())

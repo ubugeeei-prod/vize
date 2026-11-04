@@ -11,6 +11,7 @@ import {
   validateNativeHistoryBuild,
 } from "../../native/scripts/formatter-history-build.mts";
 import { asRecord, asString, parseJson } from "../../../tools/support/json-value.ts";
+import { componentNameSource } from "./component-name-source.ts";
 
 interface Host {
   verify(source: string, config: unknown[], options: { filename: string }): unknown[];
@@ -29,9 +30,15 @@ const pins = {
   "tests/_fixtures/n8n-adoption.json":
     "b54df7b9100ce00e815a734589476649a0a41bb47ac6e286c89b89c03fa98b4f",
 };
-for (const [name, expected] of Object.entries(pins))
-  assert.equal(hash(readFileSync(join(root, name))), expected);
-const rust = readFileSync(join(root, Object.keys(pins)[0]!), "utf8");
+const sourceHistory = componentNameSource(root);
+for (const [name, expected] of Object.entries(pins)) {
+  const originalBytes =
+    name === sourceHistory.successor.path
+      ? sourceHistory.historical
+      : readFileSync(join(root, name));
+  assert.equal(hash(originalBytes), expected);
+}
+const rust = sourceHistory.historical.toString("utf8");
 const prefix = '"src/Casing.vue",\n        r#"';
 const start = rust.indexOf(prefix);
 assert(start >= 0);
@@ -140,6 +147,7 @@ try {
     originalSource: { source: original, sha256: hash(original) },
     templateOnlyControl: { source: template, sha256: hash(template) },
     pins,
+    sourceConsumerSuccessor: sourceHistory.successor,
     officialRule: { path: rulePath, bytes: ruleBytes.length, sha256: hash(ruleBytes) },
     officialRegexp: { path: regexpPath, sha256: hash(readFileSync(regexpPath)) },
     sourceFiles: Object.fromEntries(

@@ -16,7 +16,10 @@ type Step = {
 };
 type Job = { if?: string; steps: Step[] };
 type Workflow = {
-  on: { workflow_dispatch: { inputs: Record<string, unknown> } };
+  on: {
+    pull_request?: { paths: string[] };
+    workflow_dispatch: { inputs: Record<string, unknown> };
+  };
   jobs: Record<string, Job>;
 };
 const files = ["public-native-events.yml", "release-contracts.yml"] as const;
@@ -88,38 +91,63 @@ function withoutSDK(source: Job): Job {
   return result;
 }
 
-test("optional observers retain every original core workflow contract", () => {
-  for (const { file, current, before } of workflows) {
-    const retained = structuredClone(current);
-    delete retained.on.workflow_dispatch.inputs.additional_observers;
-    delete retained.on.workflow_dispatch.inputs.type_admission;
-    const standard = withoutTypeAdmission(job(retained, "public-release-contracts"));
-    retained.jobs["public-release-contracts"] = standard;
-    assert.ok(standard.if);
-    assert.ok(standard.if.endsWith(guardSuffix));
-    standard.if = standard.if.slice(0, -guardSuffix.length);
-    standard.steps = standard.steps.filter(
-      (step) => step.name !== iconStep && step.name !== iconProof,
+function retainedCore(file: (typeof files)[number], current: Workflow): Workflow {
+  const retained = structuredClone(current);
+  delete retained.on.workflow_dispatch.inputs.additional_observers;
+  delete retained.on.workflow_dispatch.inputs.type_admission;
+  const standard = withoutTypeAdmission(job(retained, "public-release-contracts"));
+  retained.jobs["public-release-contracts"] = standard;
+  assert.ok(standard.if);
+  assert.ok(standard.if.endsWith(guardSuffix));
+  standard.if = standard.if.slice(0, -guardSuffix.length);
+  standard.steps = standard.steps.filter(
+    (step) => step.name !== iconStep && step.name !== iconProof,
+  );
+  if (file === "release-contracts.yml") {
+    delete retained.on.workflow_dispatch.inputs.custom_properties;
+    delete retained.jobs["public-custom-properties"];
+    delete retained.jobs["type-admission-source-capability"];
+    const contracts = job(retained, "contracts");
+    assert.ok(contracts.if?.endsWith(" && inputs.phase != 'type-admission-capability'"));
+    contracts.if = contracts.if?.replace(" && inputs.phase != 'type-admission-capability'", "");
+    const unit = job(retained, "contracts").steps.find((step) => step.run?.includes(testPath));
+    assert.ok(unit?.run);
+    unit.run = unit.run
+      .replace(testPath + " ", "")
+      .replace("tests/tooling/release/public-type-admission.test.ts ", "")
+      .replace("tests/tooling/release/public-type-admission-capability.test.ts ", "");
+  } else {
+    retained.jobs["public-custom-properties"] = withoutSDK(
+      job(retained, "public-custom-properties"),
     );
-    if (file === "release-contracts.yml") {
-      delete retained.on.workflow_dispatch.inputs.custom_properties;
-      delete retained.jobs["public-custom-properties"];
-      delete retained.jobs["type-admission-source-capability"];
-      const contracts = job(retained, "contracts");
-      assert.ok(contracts.if?.endsWith(" && inputs.phase != 'type-admission-capability'"));
-      contracts.if = contracts.if?.replace(" && inputs.phase != 'type-admission-capability'", "");
-      const unit = job(retained, "contracts").steps.find((step) => step.run?.includes(testPath));
-      assert.ok(unit?.run);
-      unit.run = unit.run
-        .replace(testPath + " ", "")
-        .replace("tests/tooling/release/public-type-admission.test.ts ", "")
-        .replace("tests/tooling/release/public-type-admission-capability.test.ts ", "");
-    } else {
-      retained.jobs["public-custom-properties"] = withoutSDK(
-        job(retained, "public-custom-properties"),
-      );
-    }
-    assert.deepEqual(retained, before, file);
+  }
+  return retained;
+}
+
+// The frozen observer transition predates the independently reviewed JSR check.
+// Keep that history intact while requiring its exact additive current contract.
+function currentCore(file: (typeof files)[number], before: Workflow): Workflow {
+  const expected = structuredClone(before);
+  if (file === "release-contracts.yml") {
+    const paths = expected.on.pull_request?.paths;
+    assert.ok(paths);
+    const anchorPath = "tests/tooling/release-jsr-workflow.test.ts";
+    assert.equal(paths.filter((entry) => entry === anchorPath).length, 1);
+    paths.splice(paths.indexOf(anchorPath) + 1, 0, "tests/tooling/jsr-fresh-provenance.test.ts");
+    const unit = job(expected, "contracts").steps.find((step) =>
+      step.run?.includes("tests/tooling/release-jsr-workflow.test.ts"),
+    );
+    assert.ok(unit?.run);
+    const anchor = "tests/tooling/release-jsr-workflow.test.ts ";
+    assert.equal(unit.run.split(anchor).length, 2);
+    unit.run = unit.run.replace(anchor, anchor + "tests/tooling/jsr-fresh-provenance.test.ts ");
+  }
+  return expected;
+}
+
+test("optional observers retain every original and current core workflow contract", () => {
+  for (const { file, current, before } of workflows) {
+    assert.deepEqual(retainedCore(file, current), currentCore(file, before), file);
   }
   const wrapper = workflows[1];
   const events = workflows[0];
@@ -262,4 +290,32 @@ test("the actual embedded icon-source validator rejects unrelated comparisons", 
       ]);
     }
   }
+});
+
+test("current core rejects missing, duplicated, or unrelated publication checks", () => {
+  const fixture = workflows[1];
+  assert.ok(fixture);
+  const { file, current, before } = fixture;
+  for (const mutation of [
+    (run: string) => run.replace("tests/tooling/jsr-fresh-provenance.test.ts ", ""),
+    (run: string) =>
+      run.replace(
+        "tests/tooling/jsr-fresh-provenance.test.ts ",
+        "tests/tooling/jsr-fresh-provenance.test.ts tests/tooling/jsr-fresh-provenance.test.ts ",
+      ),
+    (run: string) => run.replace("tests/tooling/release-jsr-workflow.test.ts ", ""),
+    (run: string) => run + " tests/tooling/unreviewed.test.ts",
+  ]) {
+    const changed = structuredClone(current);
+    const unit = job(changed, "contracts").steps.find((step) => step.run?.includes(testPath));
+    assert.ok(unit?.run);
+    unit.run = mutation(unit.run);
+    assert.throws(() => assert.deepEqual(retainedCore(file, changed), currentCore(file, before)));
+  }
+  const missingPath = structuredClone(current);
+  assert.ok(missingPath.on.pull_request);
+  missingPath.on.pull_request.paths = missingPath.on.pull_request.paths.filter(
+    (entry) => entry !== "tests/tooling/jsr-fresh-provenance.test.ts",
+  );
+  assert.throws(() => assert.deepEqual(retainedCore(file, missingPath), currentCore(file, before)));
 });

@@ -51,7 +51,7 @@ fn message(source: &str, setup: &str, name: &str, severity: &str) -> Value {
     let line = before.bytes().filter(|byte| *byte == b'\n').count() + 1;
     let column = before.rsplit('\n').next().unwrap().encode_utf16().count() + 1;
     json!({
-        "ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md",
+        "ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-no-unused-setup-bindings.md",
         "severity":if severity == "error" {2} else {1},
         "message":format!("[vize:{RULE}] Setup binding '{name}' is never read"),
         "line":line,"column":column,"endLine":line,"endColumn":column+name.encode_utf16().count(),

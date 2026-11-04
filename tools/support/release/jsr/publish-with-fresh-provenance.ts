@@ -12,13 +12,21 @@
  * URL has to already contain `?`. This does not vendor Deno.
  */
 import { spawn } from "node:child_process";
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import type { AddressInfo } from "node:net";
 import { pathToFileURL } from "node:url";
+import type {
+  JwtPayload,
+  PermissionBinding,
+  ProvenanceRoute,
+  ProvenanceReceipt,
+  PublishOptions,
+  PublishResult,
+} from "./provenance-types.ts";
 
 const issuer = "https://token.actions.githubusercontent.com";
 const minimumRemainingSeconds = 30;
-const provenancePath =
-  /^\/api\/scopes\/([^/]+)\/packages\/([^/]+)\/versions\/([^/]+)\/provenance$/;
+const provenancePath = /^\/api\/scopes\/([^/]+)\/packages\/([^/]+)\/versions\/([^/]+)\/provenance$/;
 const skippedHeaders = new Set([
   "host",
   "connection",
@@ -52,7 +60,7 @@ const identityClaims = [
   "check_run_id",
 ];
 
-function segment(value) {
+function segment(value: string): string | null {
   try {
     return decodeURIComponent(value);
   } catch {
@@ -61,11 +69,11 @@ function segment(value) {
 }
 
 /** The single `package/publish` binding Deno puts in the OIDC audience. */
-export function parsePermissionAudience(audience) {
+export function parsePermissionAudience(audience: unknown): PermissionBinding | null {
   if (typeof audience !== "string" || audience.length === 0 || audience.length > 4096) return null;
-  let parsed;
+  let parsed: Record<string, unknown> | null;
   try {
-    parsed = JSON.parse(audience);
+    parsed = JSON.parse(audience) as Record<string, unknown> | null;
   } catch {
     return null;
   }
@@ -79,8 +87,9 @@ export function parsePermissionAudience(audience) {
   ) {
     return null;
   }
-  const permission = parsed.permissions[0];
-  if (permission === null || typeof permission !== "object" || Array.isArray(permission)) return null;
+  const permission = parsed.permissions[0] as Record<string, unknown> | null;
+  if (permission === null || typeof permission !== "object" || Array.isArray(permission))
+    return null;
   const keys = Object.keys(permission).sort().join(",");
   if (keys !== "package,permission,scope,tarballHash,version") return null;
   const { permission: name, scope, package: packageName, version, tarballHash } = permission;
@@ -104,7 +113,7 @@ export function parsePermissionAudience(audience) {
   return { scope, packageName, version, tarballHash };
 }
 
-function audienceClaim(payload) {
+function audienceClaim(payload: JwtPayload | null | undefined): string | null {
   const audience = payload?.aud;
   if (typeof audience === "string") return audience;
   if (Array.isArray(audience) && audience.length === 1 && typeof audience[0] === "string") {
@@ -113,12 +122,14 @@ function audienceClaim(payload) {
   return null;
 }
 
-export function decodeJwtPayload(token) {
+export function decodeJwtPayload(token: unknown): JwtPayload | null {
   if (typeof token !== "string") return null;
   const parts = token.split(".");
   if (parts.length !== 3 || parts.some((part) => part.length === 0)) return null;
   try {
-    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+    const payload = JSON.parse(
+      Buffer.from(parts[1], "base64url").toString("utf8"),
+    ) as JwtPayload | null;
     if (payload === null || typeof payload !== "object" || Array.isArray(payload)) return null;
     return payload;
   } catch {
@@ -126,13 +137,13 @@ export function decodeJwtPayload(token) {
   }
 }
 
-function githubOidc(header) {
+function githubOidc(header: unknown): string | null {
   if (typeof header !== "string") return null;
   const match = /^githuboidc (\S+)$/.exec(header);
   return match ? match[1] : null;
 }
 
-function sameIdentity(presented, fresh) {
+function sameIdentity(presented: JwtPayload, fresh: JwtPayload): boolean {
   if (presented.iss !== issuer || fresh.iss !== issuer) return false;
   return identityClaims.every(
     (claim) => JSON.stringify(presented[claim] ?? null) === JSON.stringify(fresh[claim] ?? null),
@@ -143,14 +154,28 @@ function sameIdentity(presented, fresh) {
  * Accept a credential only when it is a new token for this job and the exact
  * permission audience captured from Deno's original OIDC request.
  */
-export function freshCredentialFailure({ presented, fresh, audience, now }) {
+export function freshCredentialFailure({
+  presented,
+  fresh,
+  audience,
+  now,
+}: {
+  presented: JwtPayload;
+  fresh: JwtPayload;
+  audience: string;
+  now: number;
+}): string | null {
   if (audienceClaim(presented) !== audience || audienceClaim(fresh) !== audience) {
     return "permission-audience";
   }
   const binding = parsePermissionAudience(audience);
   if (!binding) return "permission-audience";
   if (!sameIdentity(presented, fresh)) return "workflow-identity";
-  if (typeof presented.jti !== "string" || typeof fresh.jti !== "string" || fresh.jti === presented.jti) {
+  if (
+    typeof presented.jti !== "string" ||
+    typeof fresh.jti !== "string" ||
+    fresh.jti === presented.jti
+  ) {
     return "not-fresh";
   }
   if (
@@ -168,7 +193,15 @@ export function freshCredentialFailure({ presented, fresh, audience, now }) {
 }
 
 /** A zero exit is acceptance only when provenance was not rejected or skipped. */
-export function exitCodeForPublish({ childCode, output, receipt }) {
+export function exitCodeForPublish({
+  childCode,
+  output,
+  receipt,
+}: {
+  childCode: number | null;
+  output?: string;
+  receipt?: Partial<ProvenanceReceipt> | null;
+}): number {
   const text = output ?? "";
   if (receipt?.attempted === true && receipt.accepted !== true) return 1;
   if (/did not accept the provenance/i.test(text)) return 1;
@@ -176,26 +209,30 @@ export function exitCodeForPublish({ childCode, output, receipt }) {
   return childCode === 0 ? 0 : (childCode ?? 1);
 }
 
-function readBody(request) {
+function readBody(request: IncomingMessage): Promise<Buffer<ArrayBuffer>> {
   return new Promise((resolve, reject) => {
-    const chunks = [];
-    request.on("data", (chunk) => chunks.push(chunk));
+    const chunks: Buffer[] = [];
+    request.on("data", (chunk: Buffer) => chunks.push(chunk));
     request.on("end", () => resolve(Buffer.concat(chunks)));
     request.on("error", reject);
   });
 }
 
-function listen(server) {
+function listen(server: Server): Promise<string> {
   return new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
+      const address = server.address() as AddressInfo;
       resolve(`http://127.0.0.1:${address.port}`);
     });
   });
 }
 
-async function requestOidc(oidcUpstream, requestToken, audience) {
+async function requestOidc(
+  oidcUpstream: string,
+  requestToken: string,
+  audience: string,
+): Promise<string | null> {
   const url = new URL(oidcUpstream);
   url.searchParams.set("audience", audience);
   const response = await fetch(url, {
@@ -203,9 +240,9 @@ async function requestOidc(oidcUpstream, requestToken, audience) {
   });
   const text = await response.text();
   if (!response.ok) return null;
-  let parsed;
+  let parsed: { value?: unknown } | null;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(text) as { value?: unknown } | null;
   } catch {
     return null;
   }
@@ -221,7 +258,7 @@ async function requestOidc(oidcUpstream, requestToken, audience) {
  * @param {() => number} [options.now]
  * @param {boolean} [options.signals]
  */
-export async function publishWithFreshProvenance(options) {
+export async function publishWithFreshProvenance(options: PublishOptions): Promise<PublishResult> {
   const command = options.command ?? [];
   if (command.length === 0) return { code: 2, receipt: emptyReceipt() };
   const env = options.env ?? process.env;
@@ -229,7 +266,7 @@ export async function publishWithFreshProvenance(options) {
   const now = options.now ?? (() => Date.now() / 1000);
   const oidcUpstream = env.ACTIONS_ID_TOKEN_REQUEST_URL;
   const oidcRequestToken = env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
-  const captured = [];
+  const captured: { audience: string; binding: PermissionBinding }[] = [];
   const receipt = emptyReceipt();
   let output = "";
 
@@ -240,7 +277,7 @@ export async function publishWithFreshProvenance(options) {
     });
   });
 
-  async function handle(request, response) {
+  async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const requestUrl = new URL(request.url ?? "/", "http://127.0.0.1");
     if (requestUrl.pathname === "/github-oidc") {
       const audience = requestUrl.searchParams.get("audience") ?? "";
@@ -256,7 +293,7 @@ export async function publishWithFreshProvenance(options) {
         headers: { authorization: `Bearer ${oidcRequestToken}` },
       });
       const body = Buffer.from(await upstreamResponse.arrayBuffer());
-      const headers = {};
+      const headers: Record<string, string> = {};
       const contentType = upstreamResponse.headers.get("content-type");
       if (contentType) headers["content-type"] = contentType;
       response.writeHead(upstreamResponse.status, headers).end(body);
@@ -290,7 +327,10 @@ export async function publishWithFreshProvenance(options) {
         return;
       }
     }
-    const target = new URL(requestUrl.pathname + requestUrl.search, upstream.endsWith("/") ? upstream : `${upstream}/`);
+    const target = new URL(
+      requestUrl.pathname + requestUrl.search,
+      upstream.endsWith("/") ? upstream : `${upstream}/`,
+    );
     const upstreamResponse = await fetch(target, {
       method: request.method,
       headers,
@@ -311,14 +351,18 @@ export async function publishWithFreshProvenance(options) {
       );
       receipt.binding = match?.binding ?? null;
     }
-    const responseHeaders = {};
+    const responseHeaders: Record<string, string> = {};
     const contentType = upstreamResponse.headers.get("content-type");
     if (contentType) responseHeaders["content-type"] = contentType;
     response.writeHead(upstreamResponse.status, responseHeaders).end(upstreamBody);
   }
 
-  async function authorizeProvenance(provenance, headers) {
-    if (!provenance.scope || !provenance.packageName || !provenance.version) return "missing-binding";
+  async function authorizeProvenance(
+    provenance: ProvenanceRoute,
+    headers: Headers,
+  ): Promise<string | null> {
+    if (!provenance.scope || !provenance.packageName || !provenance.version)
+      return "missing-binding";
     const match = captured.findLast(
       (item) =>
         item.binding.scope === provenance.scope &&
@@ -355,7 +399,7 @@ export async function publishWithFreshProvenance(options) {
     env: childEnv,
     stdio: ["inherit", "pipe", "pipe"],
   });
-  const onOutput = (chunk, stream) => {
+  const onOutput = (chunk: Buffer, stream: NodeJS.WriteStream) => {
     output += chunk;
     stream.write(chunk);
   };
@@ -375,13 +419,13 @@ export async function publishWithFreshProvenance(options) {
       process.off("SIGTERM", onSignal);
     };
   }
-  const childCode = await new Promise((resolve) => {
+  const childCode = await new Promise<number | null>((resolve) => {
     child.once("error", () => resolve(127));
     child.once("close", (code) => resolve(code));
   });
   stopSignals();
   server.closeAllConnections?.();
-  await new Promise((resolve) => server.close(() => resolve()));
+  await new Promise<void>((resolve) => server.close(() => resolve()));
   const code = exitCodeForPublish({ childCode, output, receipt });
   if (code === 1 && receipt.attempted && receipt.accepted !== true) {
     console.error(`JSR provenance was not accepted (${receipt.reason ?? "rejected"})`);
@@ -391,7 +435,7 @@ export async function publishWithFreshProvenance(options) {
   return { code, receipt };
 }
 
-function emptyReceipt() {
+function emptyReceipt(): ProvenanceReceipt {
   return {
     attempted: false,
     accepted: false,
@@ -406,7 +450,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const command = separator === -1 ? [] : process.argv.slice(separator + 1);
   if (command.length === 0) {
     console.error(
-      "Usage: publish-with-fresh-provenance.mjs -- <command...>\nExample: publish-with-fresh-provenance.mjs -- deno publish --config jsr.json",
+      "Usage: publish-with-fresh-provenance.ts -- <command...>\nExample: publish-with-fresh-provenance.ts -- deno publish --config jsr.json",
     );
     process.exit(2);
   }
