@@ -131,7 +131,7 @@ pub(super) fn generate_event_handler_expressions(
                         annotation: ctx.event_handler_type.unwrap_or(listener_type),
                         contextless,
                         listener_type,
-                        indent: handler_indent,
+                        indent: &handler_indent,
                         source: src_start..src_end,
                         event_name: ctx.event_name_src_range.clone(),
                     },
