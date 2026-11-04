@@ -15,7 +15,13 @@ import { createRequire } from "node:module";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { fileImage, type FileImage } from "../../release/computed_event_custody.ts";
-import { linuxIdentity, OwnedProcesses, ownerVariable } from "./admission-hosts-owned.ts";
+import {
+  captureProcessBaseline,
+  linuxIdentity,
+  OwnedProcesses,
+  ownerVariable,
+  type ProcessIdentity,
+} from "./admission-hosts-owned.ts";
 import { childEnvironment } from "../../release/constructor_original27_public/capture.ts";
 const self = fileURLToPath(import.meta.url);
 export const save = (path: string, value: unknown) =>
@@ -67,6 +73,20 @@ export async function run(
     error: string | null = null;
   const observedHosts = new Map<string, unknown>(),
     observedNatives = new Map<string, unknown>();
+  let baseline: ProcessIdentity[];
+  try {
+    baseline = captureProcessBaseline();
+    save(join(directory, "baseline.json"), baseline);
+  } catch (value) {
+    save(join(directory, "result.json"), {
+      spawned: false,
+      stage: "pre-spawn baseline",
+      error: String(value),
+    });
+    closeSync(stdout);
+    closeSync(stderr);
+    throw value;
+  }
   const child = spawn(argv[0], argv.slice(1), {
     cwd,
     env,
@@ -76,7 +96,7 @@ export async function run(
   child.once("error", (value) => {
     error = value.message;
   });
-  const owned = new OwnedProcesses(child.pid, ownerNonce);
+  const owned = new OwnedProcesses(child.pid, ownerNonce, baseline);
   const inspectHost = () => {
     for (const row of owned.scan()) {
       if (!expectedHost && !expectedNative) continue;
@@ -184,7 +204,7 @@ export async function run(
     remaining = owned.scan();
   }
   const survivors = remaining.length > 0;
-  const cleanup = survivors ? owned.killAll() : [];
+  const cleanup = survivors || error || owned.error || !closeObserved ? owned.killAll() : [];
   error ??= owned.error;
   const result = {
     pid: child.pid ?? null,
@@ -196,6 +216,7 @@ export async function run(
     survivors,
     remaining,
     cleanup,
+    baseline: fileImage(join(directory, "baseline.json")),
     observedProcesses: [...owned.identities.values()],
     observationIssues: [...owned.observationIssues.values()],
     observedHosts: [...observedHosts.values()],

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 export const ownerVariable = "ADMISSION_PROCESS_OWNER";
 export type ProcessIdentity = {
   pid: number;
@@ -11,6 +11,24 @@ export type ProcessIdentity = {
   ownerMarker: boolean;
 };
 const key = (row: ProcessIdentity) => row.pid + ":" + row.startTicks;
+export function observationDisposition(
+  identity: ProcessIdentity | undefined,
+  baseline: ReadonlySet<string>,
+  owned: ReadonlySet<string>,
+  code: string | undefined,
+) {
+  const scope = !identity
+    ? "identity-unverified"
+    : identity.ownerMarker || owned.has(key(identity))
+      ? "known-owned"
+      : baseline.has(key(identity))
+        ? "preexisting-unrelated"
+        : "ownership-unclassified";
+  return {
+    scope,
+    excluded: scope === "preexisting-unrelated" && ["EACCES", "EPERM"].includes(code ?? ""),
+  };
+}
 export function linuxIdentity(name: string) {
   const stat = readFileSync("/proc/" + name + "/stat", "utf8");
   const fields = stat
@@ -29,31 +47,35 @@ export function linuxIdentity(name: string) {
 }
 function processes(
   nonce: string,
-  unknown: (error: unknown, pid?: number) => void,
+  unknown: (error: unknown, pid?: number, identity?: ProcessIdentity) => void,
 ): ProcessIdentity[] {
   const marker = ownerVariable + "=" + nonce;
   if (process.platform === "linux")
     return readdirSync("/proc")
       .filter((name) => /^[0-9]+$/u.test(name))
       .flatMap((name) => {
+        let before: ProcessIdentity | undefined;
         try {
-          const before = linuxIdentity(name);
-          try {
-            // Discard all environment bytes after testing this nonsecret owner marker.
-            const environment = readFileSync("/proc/" + name + "/environ");
-            before.ownerMarker = Buffer.concat([Buffer.from([0]), environment]).includes(
-              Buffer.from("\0" + marker + "\0"),
-            );
-          } catch (value) {
-            const code = (value as NodeJS.ErrnoException).code;
-            if (code !== "EACCES" || statSync("/proc/" + name).uid === process.getuid?.())
-              throw value;
-          }
+          before = linuxIdentity(name);
+          // Discard all environment bytes after testing this nonsecret owner marker.
+          const environment = readFileSync("/proc/" + name + "/environ");
+          before.ownerMarker = Buffer.concat([Buffer.from([0]), environment]).includes(
+            Buffer.from("\0" + marker + "\0"),
+          );
           const after = linuxIdentity(name);
           return key(before) === key(after) ? [{ ...after, ownerMarker: before.ownerMarker }] : [];
         } catch (value) {
           if (["ENOENT", "ESRCH"].includes((value as NodeJS.ErrnoException).code ?? "")) return [];
-          unknown(value, Number(name));
+          let stable: ProcessIdentity | undefined;
+          try {
+            const after = linuxIdentity(name);
+            if (before && key(before) === key(after))
+              stable = { ...after, ownerMarker: before.ownerMarker };
+          } catch (identityError) {
+            if (!["ENOENT", "ESRCH"].includes((identityError as NodeJS.ErrnoException).code ?? ""))
+              unknown(identityError, Number(name));
+          }
+          unknown(value, Number(name), stable);
           return [];
         }
       });
@@ -83,45 +105,77 @@ function processes(
       };
     });
 }
+/** Capture identities before spawning; non-exit observation failures abort the invocation. */
+export function captureProcessBaseline(): ProcessIdentity[] {
+  if (process.platform !== "linux")
+    return processes("", (value) => {
+      throw value;
+    });
+  return readdirSync("/proc")
+    .filter((name) => /^[0-9]+$/u.test(name))
+    .flatMap((name) => {
+      try {
+        return [linuxIdentity(name)];
+      } catch (value) {
+        if (["ENOENT", "ESRCH"].includes((value as NodeJS.ErrnoException).code ?? "")) return [];
+        throw value;
+      }
+    });
+}
 /** Identity plus a per-invocation owner marker survives setsid and immediate reparenting. */
 export class OwnedProcesses {
   readonly identities = new Map<string, ProcessIdentity>();
   readonly observationIssues = new Map<
     string,
-    { pid: number | null; scope: string; code: string | null; error: string }
+    {
+      pid: number | null;
+      startTicks: string | null;
+      scope: string;
+      code: string | null;
+      excluded: boolean;
+      error: string;
+    }
   >();
   error: string | null = null;
   readonly rootPid: number | undefined;
   readonly nonce: string;
-  recordIssue(value: unknown, pid?: number) {
-    const scope =
-      pid === undefined
-        ? "inventory-unavailable"
-        : [...this.identities.values()].some((row) => row.pid === pid)
-          ? "known-owned"
-          : "ownership-unclassified";
+  readonly baseline: ReadonlySet<string>;
+  recordIssue(value: unknown, pid?: number, processIdentity?: ProcessIdentity) {
+    const { scope, excluded } = observationDisposition(
+      processIdentity,
+      this.baseline,
+      new Set(this.identities.keys()),
+      (value as NodeJS.ErrnoException).code,
+    );
     const issue = {
       pid: pid ?? null,
+      startTicks: processIdentity?.startTicks ?? null,
       scope,
+      excluded,
       code: (value as NodeJS.ErrnoException).code ?? null,
       error: String(value),
     };
     const identity = JSON.stringify(issue);
     if (this.observationIssues.size < 4096 || this.observationIssues.has(identity))
       this.observationIssues.set(identity, issue);
-    this.error ??= "process inventory incomplete (" + scope + "): " + String(value);
+    if (!excluded) this.error ??= "process inventory incomplete (" + scope + "): " + String(value);
   }
-  constructor(rootPid: number | undefined, nonce: string) {
+  constructor(
+    rootPid: number | undefined,
+    nonce: string,
+    baseline: readonly ProcessIdentity[] = [],
+  ) {
     this.rootPid = rootPid;
     this.nonce = nonce;
+    this.baseline = new Set(baseline.map(key));
     if (rootPid) {
       try {
         const root =
           process.platform === "linux"
             ? linuxIdentity(String(rootPid))
-            : processes(nonce, (value, pid) => this.recordIssue(value, pid)).find(
-                (row) => row.pid === rootPid,
-              );
+            : processes(nonce, (value, pid, identity) =>
+                this.recordIssue(value, pid, identity),
+              ).find((row) => row.pid === rootPid);
         if (root) this.identities.set(key(root), root);
         else this.error = "root start identity was not observed";
       } catch (value) {
@@ -131,7 +185,9 @@ export class OwnedProcesses {
   }
   scan(): ProcessIdentity[] {
     try {
-      const rows = processes(this.nonce, (value, pid) => this.recordIssue(value, pid));
+      const rows = processes(this.nonce, (value, pid, identity) =>
+        this.recordIssue(value, pid, identity),
+      );
       for (const row of rows) if (row.ownerMarker) this.identities.set(key(row), row);
       let changed = true;
       while (changed) {
@@ -160,9 +216,9 @@ export class OwnedProcesses {
         const current =
           process.platform === "linux"
             ? linuxIdentity(String(row.pid))
-            : processes(this.nonce, (value, pid) => this.recordIssue(value, pid)).find(
-                (current) => current.pid === row.pid,
-              );
+            : processes(this.nonce, (value, pid, identity) =>
+                this.recordIssue(value, pid, identity),
+              ).find((current) => current.pid === row.pid);
         if (!current || key(current) !== key(row)) continue;
         process.kill(row.pid, "SIGKILL");
         signaled.push(row);

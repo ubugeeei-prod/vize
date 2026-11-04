@@ -137,7 +137,7 @@ void test("host raw descriptors and argv are durable before a controlled Node ch
   try {
     process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 10_000);
     const output = join(root, "process");
-    const code = `const fs=require('node:fs');const p=${JSON.stringify(output)};for(const name of ['stdout.raw','stderr.raw','spawn.json'])if(!fs.existsSync(p+'/'+name))process.exit(9);process.stdout.write('full output');process.exit(2);`;
+    const code = `const fs=require('node:fs');const p=${JSON.stringify(output)};for(const name of ['stdout.raw','stderr.raw','spawn.json','baseline.json'])if(!fs.existsSync(p+'/'+name))process.exit(9);process.stdout.write('full output');process.exit(2);`;
     const result = await run(output, [process.execPath, "-e", code], root);
     assert.equal(result.status, 2);
     assert.equal(result.text, "full output");
@@ -148,6 +148,53 @@ void test("host raw descriptors and argv are durable before a controlled Node ch
     else process.env.ADMISSION_DEADLINE_MS = previous;
     if (!process.env.ADMISSION_RETAIN_CONTROLS) rmSync(root, { recursive: true });
   }
+});
+
+void test("only exact pre-spawn protected identities can be excluded from ownership errors", async () => {
+  const { observationDisposition } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
+  const identity = {
+    pid: 42,
+    ppid: 1,
+    group: 1,
+    startTicks: "100",
+    state: "S",
+    ownerMarker: false,
+  };
+  const baseline = new Set(["42:100"]),
+    owned = new Set<string>();
+  assert.deepEqual(observationDisposition(identity, baseline, owned, "EACCES"), {
+    scope: "preexisting-unrelated",
+    excluded: true,
+  });
+  assert.equal(
+    observationDisposition({ ...identity, startTicks: "101" }, baseline, owned, "EACCES").excluded,
+    false,
+    "PID reuse must not inherit baseline authority",
+  );
+  assert.equal(
+    observationDisposition({ ...identity, pid: 43 }, baseline, owned, "EACCES").excluded,
+    false,
+    "post-spawn identity is unknown",
+  );
+  assert.deepEqual(observationDisposition(identity, baseline, new Set(["42:100"]), "EACCES"), {
+    scope: "known-owned",
+    excluded: false,
+  });
+  assert.deepEqual(
+    observationDisposition({ ...identity, ownerMarker: true }, baseline, owned, "EACCES"),
+    { scope: "known-owned", excluded: false },
+  );
+  assert.equal(
+    observationDisposition(undefined, baseline, owned, "EACCES").excluded,
+    false,
+    "missing kernel identity cannot establish preexistence",
+  );
+  assert.equal(
+    observationDisposition(identity, baseline, owned, "EIO").excluded,
+    false,
+    "non-permission observation failures remain fatal",
+  );
 });
 
 void test("a process deadline retains partial raw output and fails outside semantic diagnostics", async () => {
