@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { authoredDirectives } from "../../support/compat/content-mapper/producer-unmapped-ignores.ts";
 import { isRecord, jsonValue, type PacketObservation } from "./canon-instance-directives-model.ts";
 import { save } from "./canon-instance-directives-io.ts";
 
@@ -78,6 +79,22 @@ function mappingContract(result: Record<string, unknown>) {
       features,
     }),
   );
+}
+
+function certifiedDirectives(result: Record<string, unknown>, requireComplete: boolean) {
+  const authored = authoredDirectives(
+    {
+      text: text(result),
+      mappings: tuples(result.mappings),
+      diagnosticDirectives: result.diagnosticDirectives,
+    },
+    requireComplete,
+  );
+  if (authored == null) {
+    const { diagnosticDirectives: _removed, ...rest } = result;
+    return rest;
+  }
+  return { ...result, diagnosticDirectives: authored };
 }
 
 function directiveContract(result: Record<string, unknown>) {
@@ -160,8 +177,8 @@ export function auditPackets(
     "all mapped authored bytes and feature contracts survive",
   );
   assert.deepEqual(
-    directiveContract(after),
-    directiveContract(before),
+    directiveContract(certifiedDirectives(after, true)),
+    directiveContract(certifiedDirectives(before, false)),
     "no code-agnostic diagnostic suppression may be added",
   );
   assert.deepEqual(
