@@ -10,6 +10,9 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
+      - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
+      - tools/support/compat/nuxt/nuxt5-runtime-build.ts
+      - tests/tooling/nuxt5-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -47,6 +50,9 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
+      - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
+      - tools/support/compat/nuxt/nuxt5-runtime-build.ts
+      - tests/tooling/nuxt5-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -237,6 +243,30 @@ jobs:
       - name: Verify real JavaScript Nuxt and Vite workspace products
         if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Capture the source producer Node executable
+        id: nuxt-source-runtime
+        run: |
+          vp env exec node -e 'const fs = require("node:fs"); const crypto = require("node:crypto"); fs.appendFileSync(process.env.GITHUB_OUTPUT, "path=" + process.execPath + "\nsha256=" + crypto.createHash("sha256").update(fs.readFileSync(process.execPath)).digest("hex") + "\n");'
+      - name: Use the reported Node version for the additional Nuxt 5 consumer
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "26.13.0"
+          package-manager-cache: false
+      - name: Verify SSR environment ownership and original Nuxt 5 inputs
+        run: node --test npm/framework/nuxt/src/ssr-runtime.test.ts tests/tooling/nuxt5-runtime.test.ts tests/tooling/nuxt-source-binding.test.mjs
+      # The peer declaration and Nitro dev compatibility remain separate #11795 gates.
+      - name: Install the frozen Nuxt 5 production reproduction
+        working-directory: tools/support/compat/nuxt/fixtures/nuxt5-runtime-build
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/nuxt5-runtime-proof"
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,execPath:process.execPath})' > "$RUNNER_TEMP/nuxt5-runtime-proof/runtime.json"
+          npm ci --legacy-peer-deps --no-audit --no-fund 2>&1 | tee "$RUNNER_TEMP/nuxt5-runtime-proof/install.log"
+      - name: Verify source-bound Nuxt 5 browser and isolated server output
+        env:
+          VIZE_NUXT_SOURCE_NODE: ${{ steps.nuxt-source-runtime.outputs.path }}
+          VIZE_NUXT_SOURCE_NODE_SHA256: ${{ steps.nuxt-source-runtime.outputs.sha256 }}
+        run: '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance" "$(command -v node)"'
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -249,4 +279,5 @@ jobs:
             ${{ runner.temp }}/nuxt-compiler-defaults-proof
             ${{ runner.temp }}/vite-relative-glob-proof
             ${{ runner.temp }}/javascript-workspace-proof
+            ${{ runner.temp }}/nuxt5-runtime-proof
           if-no-files-found: ignore

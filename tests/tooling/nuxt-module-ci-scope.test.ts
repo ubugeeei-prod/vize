@@ -32,8 +32,8 @@ function runsOn(step: Step, event: string) {
   return condition[1] === "==" ? event === "pull_request" : event !== "pull_request";
 }
 
-const campaigns = (event: string) =>
-  steps
+const campaigns = (event: string, source: Step[] = steps) =>
+  source
     .filter((step) => runsOn(step, event))
     .flatMap((step) => step.run?.match(/compat\/nuxt\/([\w-]+-build\.(?:mjs|ts))/)?.[1] ?? []);
 
@@ -43,7 +43,7 @@ test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigatio
   assert.ok(workflow.on.pull_request.paths?.includes("npm/framework/nuxt/**"));
   assert.equal(job.if, undefined);
   assert.notEqual(job["continue-on-error"], true);
-  assert.deepEqual(campaigns("pull_request"), ["nuxt3-module-build.ts"]);
+  assert.deepEqual(campaigns("pull_request"), ["nuxt3-module-build.ts", "nuxt5-runtime-build.ts"]);
   const native = steps.findIndex(
     (step) => step.name === "Build and capture the actual source native compiler",
   );
@@ -94,6 +94,7 @@ test("merge, main and manual runs retain every extended campaign and source rece
       "compiler-defaults-build.ts",
       "relative-glob-build.ts",
       "javascript-workspace-build.ts",
+      "nuxt5-runtime-build.ts",
     ]);
     for (const step of steps.filter((item) => item.run?.includes("compat/nuxt/"))) {
       assert.notEqual(step["continue-on-error"], true);
@@ -106,6 +107,28 @@ test("merge, main and manual runs retain every extended campaign and source rece
           step.run.includes('"$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"'),
         );
       }
+    }
+  }
+});
+
+test("closed Nuxt campaign inventory rejects missing original or new runtime lanes", () => {
+  for (const event of ["pull_request", "merge_group", "push", "workflow_dispatch"]) {
+    const expected =
+      event === "pull_request"
+        ? ["nuxt3-module-build.ts", "nuxt5-runtime-build.ts"]
+        : [
+            "nuxt3-module-build.ts",
+            "prefetch-manifest-build.mjs",
+            "lint-config-build.ts",
+            "compiler-defaults-build.ts",
+            "relative-glob-build.ts",
+            "javascript-workspace-build.ts",
+            "nuxt5-runtime-build.ts",
+          ];
+    assert.deepEqual(campaigns(event), expected);
+    for (const missing of expected) {
+      const without = steps.filter((entry) => !entry.run?.includes(missing));
+      assert.throws(() => assert.deepEqual(campaigns(event, without), expected));
     }
   }
 });

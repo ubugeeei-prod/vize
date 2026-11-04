@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "nuxt build" },
+  "dependencies": { "@vizejs/nuxt": "0.676.0", "nuxt": "npm:nuxt-nightly@5.0.0-2611031025-9496b7e", "vue": "3.5.44" }
+}

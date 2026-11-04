@@ -19,16 +19,39 @@ export function dedupeVueRuntimePackages(vite: { resolve?: { dedupe?: string[] }
   vite.resolve.dedupe = [...dedupe];
 }
 
-type NuxtServerViteConfig = {
-  build?: {
-    rolldownOptions?: {
-      external?: unknown;
-    };
+type NuxtViteBuild = {
+  rollupOptions?: unknown;
+  rolldownOptions?: {
+    external?: unknown;
   };
 };
 
+type NuxtServerViteConfig = {
+  build?: NuxtViteBuild;
+  environments?: Record<string, { build?: NuxtViteBuild }>;
+};
+
+function ssrRolldownOptions(config: NuxtServerViteConfig): NuxtViteBuild["rolldownOptions"] {
+  if (!config.environments) return config.build?.rolldownOptions;
+
+  const ssr = config.environments.ssr;
+  if (!ssr) return;
+
+  const sharedOptions = config.build?.rolldownOptions;
+  const serverOptions = ssr.build?.rolldownOptions;
+  if (!sharedOptions && !serverOptions) return;
+
+  // Nuxt's environment hook shares the root build with client and Nitro builds.
+  // Own both nested objects before adding rules that belong only to SSR.
+  ssr.build = {
+    ...ssr.build,
+    rolldownOptions: { ...sharedOptions, ...serverOptions },
+  };
+  return ssr.build.rolldownOptions;
+}
+
 export function externalizeVueRuntimeForNuxtSsr(config: NuxtServerViteConfig): void {
-  const rolldownOptions = config.build?.rolldownOptions;
+  const rolldownOptions = ssrRolldownOptions(config);
   if (!rolldownOptions) return;
 
   const previous = rolldownOptions.external;

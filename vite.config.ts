@@ -60,6 +60,8 @@ const formatterSensitiveContentIgnorePatterns = [
   "tests/tooling/fixtures/musea/variant-binding-collision/**",
   // Original #7999 source/hash custody must survive repository formatting.
   "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**",
+  // The exact #11793 package input is authenticated before the Nuxt 5 consumer runs.
+  "tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/package.json",
 ];
 
 /**
