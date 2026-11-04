@@ -109,6 +109,7 @@ const props = {
 <template>
   <QSlider :modelValue="props.qSliderProps.modelValue" @update:modelValue="props.qSliderProps['onUpdate:modelValue']" />
   <QSlider :modelValue="props.qSliderProps.modelValue" @update:modelValue="props.qSliderProps.stringOnly" />
+  <QSlider :modelValue="props.qSliderProps.modelValue" @update:modelValue="(value: number | null) => { value?.toFixed() }" />
 </template>
 "#,
             ),
