@@ -30,4 +30,4 @@ expression: strip_ansi(&output)
  17 │           </em>
     ╰────
   help: Move the deepest branches or loops into child components: a child's complexity never counts toward this component's own score
-        Reference: docs/content/rules/vue.md
+        Reference: docs/content/rules/reference/vue-max-template-complexity.md

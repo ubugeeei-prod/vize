@@ -16,7 +16,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `absent`",
         "line": 4,
@@ -45,7 +45,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `absent`",
         "line": 4,
@@ -62,7 +62,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `absent`",
         "line": 4,

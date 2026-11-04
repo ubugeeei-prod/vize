@@ -11,7 +11,7 @@
       "messages": [
         {
           "ruleId": "script/no-deprecated-dollar-scopedslots-api",
-          "ruleDocsPath": "docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.md",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
           "severity": 2,
           "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
           "line": 4,
