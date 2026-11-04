@@ -422,7 +422,19 @@ export function provisionStarSourceCounterpart(owner, source, names) {
   const pool = fs.realpathSync(path.resolve(owned.root, common, "objects"));
   assert(fs.lstatSync(pool).isDirectory() && !/[\r\n]/u.test(pool), "physical owner object pool");
   const root = ownedCounterpartDirectory(owned.root);
-  const cleanup = () => fs.rmSync(root, { recursive: true, force: true });
+  const registrations = [];
+  const cleanup = () => {
+    try {
+      fs.rmSync(root, { recursive: true, force: true });
+    } finally {
+      for (const dispose of registrations.splice(0)) dispose();
+    }
+  };
+  const register = async (callback) => {
+    const retained = await registerWithOwnedTemporaryDirectory(owned.root, callback);
+    registrations.push(retained.cleanup);
+    return retained.value;
+  };
   try {
     fs.mkdirSync(path.join(root, ".git/objects/info"), { recursive: true, mode: 0o700 });
     fs.mkdirSync(path.join(root, ".git/refs"), { mode: 0o700 });
@@ -448,7 +460,7 @@ export function provisionStarSourceCounterpart(owner, source, names) {
     assert.equal(git(root, ["rev-parse", "HEAD"]).toString().trim(), source);
     assert.equal(git(root, ["rev-parse", "HEAD^{tree}"]).toString().trim(), owned.tree);
     assert.equal(object("commit", git(root, ["cat-file", "commit", source])), source);
-    return Object.freeze({ root, cleanup });
+    return Object.freeze({ root, cleanup, register });
   } catch (error) {
     cleanup();
     throw error;

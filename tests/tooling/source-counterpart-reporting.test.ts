@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -108,5 +108,64 @@ void test("historical imports use owned temporary output and restore every envir
     assert.deepEqual(fs.readdirSync(path.join(root, "target/tooling-source-counterparts")), []);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("nested literal registrations retain report ownership without changing the reporter", async () => {
+  const { provisionStarSourceCounterpart } =
+    await import("../../tools/support/compat/github/source-counterpart-snapshot.mjs");
+  const repoRoot = fs.realpathSync(new URL("../../", import.meta.url));
+  const fixture = provisionStarSourceCounterpart(
+    repoRoot,
+    "bd5702c0a4d5fb3bb64487794fc45f6f876e6e38",
+    ["package.json"],
+  );
+  const reporter = new URL(
+    "../../tools/support/compat/github/test-case-reporter.ts",
+    import.meta.url,
+  ).pathname;
+  const directories: string[] = [];
+  const register = async () => {
+    const directory = fs.mkdtempSync(path.join(tmpdir(), "vize-star-counterpart-nested-"));
+    directories.push(directory);
+    const file = path.join(directory, "literal.test.mjs");
+    fs.writeFileSync(
+      file,
+      'import { test } from "node:test"; test("nested original case", () => {});\n',
+    );
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      VIZE_TEST_CASES_ROOT: repoRoot,
+      TEST_CASES_JOB: "nested ownership control",
+      GITHUB_RUN_ATTEMPT: "1",
+    };
+    delete env.NODE_TEST_CONTEXT;
+    const observed = spawnSync(process.execPath, ["--test", "--test-reporter", reporter, file], {
+      cwd: fixture.root,
+      encoding: "utf8",
+      env,
+    });
+    return { file, observed };
+  };
+  try {
+    const before = await register();
+    assert.equal(before.observed.status, 1);
+    assert.match(before.observed.stderr, /is outside/);
+    const after = await fixture.register(register);
+    assert.equal(after.observed.status, 0, after.observed.stderr);
+    assert.equal(after.observed.stderr, "");
+    const relative = ownedPath(after.file, repoRoot);
+    assert.deepEqual(JSON.parse(after.observed.stdout), {
+      version: 1,
+      job: "nested ownership control",
+      attempt: 1,
+      cases: [{ path: relative, name: `${relative} › nested original case`, outcome: "passed" }],
+    });
+    assert.ok(fs.existsSync(after.file), "registered source remains available until cleanup");
+    fixture.cleanup();
+    assert.equal(fs.existsSync(after.file), false);
+  } finally {
+    fixture.cleanup();
+    for (const directory of directories) fs.rmSync(directory, { recursive: true, force: true });
   }
 });
