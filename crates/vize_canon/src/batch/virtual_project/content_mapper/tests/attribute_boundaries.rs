@@ -35,6 +35,15 @@ fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
         .text
         .replace(spaced_marker.as_str(), original_marker.as_str())
         .into();
+    let template_start = source.find("<template>").expect("authored template") + "<template>".len();
+    let attribute = boundary - template_start;
+    let original_name = cstr!("__vize_native_key_{attribute}");
+    let spaced_name = cstr!("__vize_native_key_{}", attribute + 1);
+    assert_eq!(expected.text.matches(spaced_name.as_str()).count(), 2);
+    expected.text = expected
+        .text
+        .replace(spaced_name.as_str(), original_name.as_str())
+        .into();
     for span in &mut expected.mappings {
         let start = span.0[2];
         let end = start + span.0[3];
