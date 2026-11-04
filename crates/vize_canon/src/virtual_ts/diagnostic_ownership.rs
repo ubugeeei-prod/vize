@@ -33,6 +33,18 @@ pub(crate) struct InputOwner {
 }
 
 impl InputOwner {
+    /// An actual reference-valued listener read and its deferred typed check
+    /// share the same Croquis expression identity. Callback bodies are excluded.
+    pub(crate) fn for_listener_reference(scope: u32, start: u32, end: u32) -> Self {
+        Self {
+            usage: start,
+            scope,
+            start,
+            end,
+            role: InputRole::Value,
+        }
+    }
+
     pub(crate) fn for_prop(usage: &ComponentUsage, prop: &PassedProp) -> Option<Self> {
         if prop.value.as_ref().is_some_and(|value| {
             crate::virtual_ts::scope::contains_inline_function_prop_value(value.as_str())
@@ -378,5 +390,7 @@ impl DiagnosticOwnership {
     }
 }
 
+#[cfg(test)]
+mod listener_tests;
 #[cfg(test)]
 mod tests;
