@@ -24,7 +24,8 @@ const items = [1]
     assert!(output.contains(r#""line": 6"#), "{output}");
     assert!(output.contains(r#""column": 3"#), "{output}");
     assert!(
-        output.contains(r#""ruleDocsPath": "docs/content/rules/vue.md""#),
+        output
+            .contains(r#""ruleDocsPath": "docs/content/rules/reference/vue-require-v-for-key.md""#),
         "{output}"
     );
 }
@@ -167,19 +168,31 @@ const url = ""
 fn rule_docs_path_maps_namespaces_to_reference_pages() {
     assert_eq!(
         rule_docs_path("vue/require-v-for-key"),
-        "docs/content/rules/vue.md"
+        "docs/content/rules/reference/vue-require-v-for-key.md"
     );
     assert_eq!(
         rule_docs_path("a11y/img-alt"),
-        "docs/content/rules/accessibility.md"
+        "docs/content/rules/reference/a11y-img-alt.md"
     );
     assert_eq!(
         rule_docs_path("script/no-options-api"),
-        "docs/content/rules/type-and-script.md"
+        "docs/content/rules/reference/script-no-options-api.md"
     );
     assert_eq!(
-        rule_docs_path("cross-file"),
-        "docs/content/rules/cross-file.md"
+        rule_docs_path("nuxt/prefer-import-meta"),
+        "docs/content/rules/reference/nuxt-prefer-import-meta.md"
+    );
+    assert_eq!(
+        rule_docs_path("petite-vue/valid-v-scope"),
+        "docs/content/rules/reference/petite-vue-valid-v-scope.md"
+    );
+    assert_eq!(
+        rule_docs_path("vize:croquis/cf/array-mutation"),
+        "docs/content/rules/project/vize-croquis-cf-array-mutation.md"
+    );
+    assert_eq!(
+        rule_docs_path("vue/cross-file-attrs-fallthrough"),
+        "docs/content/rules/project/vue-cross-file-attrs-fallthrough.md"
     );
 }
 
@@ -196,7 +209,10 @@ fn stylish_output_includes_reference_paths() {
 
     assert!(output.contains("Component.vue"), "{output}");
     assert!(output.contains("vue/require-v-for-key"), "{output}");
-    assert!(output.contains("docs/content/rules/vue.md"), "{output}");
+    assert!(
+        output.contains("docs/content/rules/reference/vue-require-v-for-key.md"),
+        "{output}"
+    );
 }
 
 #[test]
@@ -221,7 +237,10 @@ fn text_output_includes_reference_paths() {
         OutputFormat::Text,
     );
 
-    assert!(output.contains("docs/content/rules/vue.md"), "{output}");
+    assert!(
+        output.contains("docs/content/rules/reference/vue-no-v-html.md"),
+        "{output}"
+    );
 }
 
 #[test]
@@ -244,7 +263,10 @@ fn ansi_output_includes_summary_and_ansi_help() {
         OutputFormat::Ansi,
     );
 
-    assert!(output.contains("docs/content/rules/vue.md"), "{output}");
+    assert!(
+        output.contains("docs/content/rules/reference/vue-no-v-html.md"),
+        "{output}"
+    );
     assert!(output.contains("1 warning in 1 file"), "{output}");
     assert!(output.contains("\x1b["), "{output}");
 }
@@ -274,7 +296,7 @@ fn plain_output_includes_reference_paths_without_ansi() {
         "{output}"
     );
     assert!(
-        output.contains("docs/content/rules/accessibility.md"),
+        output.contains("docs/content/rules/reference/a11y-img-alt.md"),
         "{output}"
     );
     assert!(output.contains("Add an alt attribute."), "{output}");
@@ -303,7 +325,7 @@ fn markdown_output_keeps_help_and_reference_paths() {
 
     assert!(output.contains("# Patina Lint Report"), "{output}");
     assert!(
-        output.contains("Reference: `docs/content/rules/vue.md`"),
+        output.contains("Reference: `docs/content/rules/reference/vue-no-v-html.md`"),
         "{output}"
     );
     assert!(
@@ -335,7 +357,10 @@ fn html_output_escapes_messages() {
     );
 
     assert!(output.contains("&lt;center&gt; &amp; friends"), "{output}");
-    assert!(output.contains("docs/content/rules/html.md"), "{output}");
+    assert!(
+        output.contains("docs/content/rules/reference/html-deprecated-element.md"),
+        "{output}"
+    );
 }
 
 #[test]
@@ -365,8 +390,65 @@ fn agent_output_is_line_oriented() {
         "{output}"
     );
     assert!(
-        output.contains("docs=\"docs/content/rules/ssr.md\""),
+        output.contains("docs=\"docs/content/rules/reference/ssr-no-hydration-mismatch.md\""),
         "{output}"
     );
     assert!(output.contains("message: SSR risk"), "{output}");
+}
+
+/// Rule ids and catalogue links from `docs/content/rules/all.md`.
+fn published_rule_pages(catalogue: &str) -> Vec<(&str, &str)> {
+    let mut pages = Vec::new();
+    let mut rest = catalogue;
+    while let Some(start) = rest.find("[`") {
+        rest = &rest[start + 2..];
+        let Some(id_end) = rest.find("`](./") else {
+            break;
+        };
+        let id = &rest[..id_end];
+        rest = &rest[id_end + 5..];
+        let Some(path_end) = rest.find(')') else {
+            break;
+        };
+        let relative = &rest[..path_end];
+        rest = &rest[path_end + 1..];
+        if relative.starts_with("reference/") || relative.starts_with("project/") {
+            pages.push((id, relative));
+        }
+    }
+    pages
+}
+
+#[test]
+fn rule_docs_path_exists_for_every_published_rule() {
+    const CATALOGUE: &str = include_str!("../../../../docs/content/rules/all.md");
+    let pages = published_rule_pages(CATALOGUE);
+    let reference = pages
+        .iter()
+        .filter(|(_, relative)| relative.starts_with("reference/"))
+        .count();
+    let project = pages.len() - reference;
+    assert!(
+        reference >= 200 && project >= 60,
+        "published catalogue was not read: reference={reference} project={project}"
+    );
+
+    let rules_dir =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/content/rules");
+    let mut missing = vize_l0::String::new("");
+    for (id, relative) in pages {
+        let path = rule_docs_path(id);
+        let expected = vize_l0::cstr!("docs/content/rules/{relative}");
+        assert_eq!(path, expected, "{id}");
+        if !rules_dir.join(relative).is_file() {
+            if !missing.is_empty() {
+                missing.push('\n');
+            }
+            vize_l0::append!(missing, "{id} -> {path}");
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "published rules with no page:\n{missing}"
+    );
 }

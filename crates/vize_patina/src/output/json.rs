@@ -23,7 +23,7 @@ pub struct JsonMessage {
     #[serde(rename = "ruleId")]
     pub rule_id: &'static str,
     #[serde(rename = "ruleDocsPath")]
-    pub rule_docs_path: &'static str,
+    pub rule_docs_path: String,
     pub severity: u8,
     pub message: String,
     pub line: u32,

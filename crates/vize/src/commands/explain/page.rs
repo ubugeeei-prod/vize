@@ -153,13 +153,8 @@ fn rule_page(out: &mut String, paint: Paint, catalog: &LocaleCatalog, rule: &Rul
         &[],
     );
     field(out, paint, catalog, "explain.autofix", &autofix);
-    field(
-        out,
-        paint,
-        catalog,
-        "explain.docs",
-        rule_docs_path(rule.name),
-    );
+    let docs = rule_docs_path(rule.name);
+    field(out, paint, catalog, "explain.docs", &docs);
     if let Some(fixtures) = examples::get(rule.name) {
         if let Some(invalid) = &fixtures.invalid {
             example(out, paint, catalog, "explain.example.invalid", invalid);
