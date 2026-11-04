@@ -257,12 +257,15 @@ export function moduleExports(file: string): readonly ModuleExport[] {
           examples: examples(statement),
         });
       }
-    } else if (ts.isClassDeclaration(statement) && statement.name != null && exported(statement)) {
-      const signature = classDeclarations(source).get(statement.name.text);
-      if (signature == null)
-        throw new Error(`Missing public class declaration: ${statement.name.text}`);
+    } else if (ts.isClassDeclaration(statement) && exported(statement)) {
+      const localName = statement.name?.text ?? "default";
+      const signature = classDeclarations(source).get(localName);
+      if (signature == null) throw new Error(`Missing public class declaration: ${localName}`);
+      const isDefault = ts
+        .getModifiers(statement)
+        ?.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword);
       exports.push({
-        name: statement.name.text,
+        name: isDefault ? "default" : localName,
         signature,
         description: readDoc(statement).description,
         examples: examples(statement),

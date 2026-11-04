@@ -66,26 +66,30 @@ export function classDeclarations(source: ts.SourceFile): ReadonlyMap<string, st
   const classes = new Map<string, string>();
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   for (const statement of emitted.statements) {
-    if (!ts.isClassDeclaration(statement) || statement.name == null) continue;
-    const declaration = ts.factory.updateClassDeclaration(
-      statement,
-      [
-        ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword),
-        ...(statement.modifiers ?? []).filter(
-          (modifier) =>
-            modifier.kind !== ts.SyntaxKind.ExportKeyword &&
-            modifier.kind !== ts.SyntaxKind.DefaultKeyword &&
-            modifier.kind !== ts.SyntaxKind.DeclareKeyword,
-        ),
-      ],
-      statement.name,
-      statement.typeParameters,
-      statement.heritageClauses,
-      statement.members,
-    );
+    if (!ts.isClassDeclaration(statement)) continue;
+    // Anonymous declarations retain their emitted export form because they have no local name.
+    const declaration =
+      statement.name == null
+        ? statement
+        : ts.factory.updateClassDeclaration(
+            statement,
+            [
+              ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword),
+              ...(statement.modifiers ?? []).filter(
+                (modifier) =>
+                  modifier.kind !== ts.SyntaxKind.ExportKeyword &&
+                  modifier.kind !== ts.SyntaxKind.DefaultKeyword &&
+                  modifier.kind !== ts.SyntaxKind.DeclareKeyword,
+              ),
+            ],
+            statement.name,
+            statement.typeParameters,
+            statement.heritageClauses,
+            statement.members,
+          );
     ts.setEmitFlags(declaration, ts.EmitFlags.NoLeadingComments);
     classes.set(
-      statement.name.text,
+      statement.name?.text ?? "default",
       printer.printNode(ts.EmitHint.Unspecified, declaration, emitted),
     );
   }

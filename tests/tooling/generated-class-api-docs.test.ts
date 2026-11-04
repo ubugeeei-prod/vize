@@ -8,6 +8,7 @@ import { test } from "node:test";
 
 import { renderReferenceDocs } from "../../npm/ui/scripts/generate-reference-docs.ts";
 import { moduleExports } from "../../npm/ui/scripts/reference-docs/extract.ts";
+import { renderComposablePage } from "../../npm/ui/scripts/reference-docs/composables.ts";
 
 const ts = createRequire(new URL("../package.json", import.meta.url))(
   "typescript",
@@ -131,12 +132,74 @@ test("a named default abstract class retains its ambient public declaration", (t
   );
   const [item] = moduleExports(file);
   assert(item);
+  assert.equal(item.name, "default");
   assert.equal(
     shape(item.signature),
     "declare abstract class Example<T> { readonly name: string; abstract current: T; constructor(name: string); abstract read(): T; }",
   );
   assert.deepEqual(parse(item.signature).parseDiagnostics, []);
 });
+
+test("an anonymous default class retains its exported identity and complete declaration", (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vize-reference-class-anonymous-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const file = path.join(directory, "entry.ts");
+  writeFileSync(
+    file,
+    `export default class<T extends string> extends Error {
+  #token = 0;
+  readonly code = "ANONYMOUS";
+  constructor(public readonly value: T) { super(value); }
+  read(): T { return this.value; }
+}
+`,
+  );
+  const [item] = moduleExports(file);
+  assert(item);
+  assert.equal(item.name, "default");
+  assert.equal(
+    shape(item.signature),
+    'export default class<T extends string> extends Error { #private; readonly value: T; readonly code = "ANONYMOUS"; constructor(value: T); read(): T; }',
+  );
+  assert.deepEqual(parse(item.signature).parseDiagnostics, []);
+});
+
+for (const name of ["Example", ""]) {
+  test(`a catalog entry renders a complete default class API and valid imports (${name || "anonymous"})`, (t) => {
+    const directory = mkdtempSync(path.join(tmpdir(), "vize-reference-default-catalog-"));
+    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    mkdirSync(path.join(directory, "src"));
+    writeFileSync(
+      path.join(directory, "src/default-class.ts"),
+      `export default class ${name} { constructor(public readonly value: string) {} read(): string { return this.value; } }\n`,
+    );
+    const page = renderComposablePage(
+      directory,
+      {
+        subpath: "./default-class",
+        source: "src/default-class.ts",
+        gzipBudgetBytes: 1024,
+        runtimeExports: ["default"],
+        utilities: [],
+      },
+      [],
+    );
+    assert(page.includes("### `default`"));
+    assert(page.includes("constructor(value: string)"));
+    assert(page.includes("read(): string"));
+    const code = [...page.matchAll(/^```ts[^\n]*\n([\s\S]*?)^```/gm)];
+    assert.equal(code.length, 2);
+    for (const [, source] of code) {
+      assert.deepEqual(
+        parse(source).parseDiagnostics.map((diagnostic) => ({
+          code: diagnostic.code,
+          message: ts.flattenDiagnosticMessageText(diagnostic.messageText, " "),
+        })),
+        [],
+      );
+    }
+  });
+}
 
 test("every complete generated TypeScript reference fence parses without rewriting its source", () => {
   const failures: string[] = [];
