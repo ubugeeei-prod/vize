@@ -33,30 +33,36 @@ pub(super) fn process_classified_handler(
 ) -> (RewriteResult, bool) {
     let content = js.authored;
     let retained = js.retained;
-    // The function shape is read off the erased text; the retained AST
-    // still applies only while that text is the node's own bytes.
+    // Both shapes are read off the erased text. The retained AST still
+    // applies only while that text is the node's own bytes: `onPick!`
+    // erases to the identifier `onPick`, which Vue passes through as a
+    // reference rather than `$event => (onPick)`.
+    let shape = js.js();
     let is_function = if js.changed() {
-        is_function_expression(js.js())
+        is_function_expression(shape)
     } else {
         is_function_expression_node(content, retained)
     };
     if is_function {
         return (process(js, scope), false);
     }
-    // Only the function check reads the stripped text; the reference check
-    // is the shipped lane's, over the node's own bytes.
-    if is_reference(content, retained) {
+    let reference = if js.changed() {
+        is_reference(shape, None)
+    } else {
+        is_reference(content, retained)
+    };
+    if reference {
         // Inline render functions read setup bindings directly, so an
         // identifier still needs its `_unref` / `.value` access.
-        if is_simple_identifier(content) && !scope.inline() {
-            let code = match scope.identifier_prefix(content) {
+        if is_simple_identifier(shape) && !scope.inline() {
+            let code = match scope.identifier_prefix(shape) {
                 Some(prefix) => {
-                    let mut code = String::with_capacity(prefix.len() + content.len());
+                    let mut code = String::with_capacity(prefix.len() + shape.len());
                     code.push_str(prefix);
-                    code.push_str(content);
+                    code.push_str(shape);
                     code
                 }
-                None => String::from(content),
+                None => String::from(shape),
             };
             let result = RewriteResult {
                 code,
@@ -95,7 +101,13 @@ pub(super) fn process_classified_handler(
     (result, false)
 }
 
-/// A method reference over the node's own bytes (Vue's `isMemberExpression`).
+/// A method reference (Vue's `isMemberExpression`) over `content`.
+///
+/// Callers pass the erased spelling once TypeScript changed the bytes, and
+/// `None` for the retained AST: that AST still describes the authored text.
+/// `TSNonNullExpression` / `TSAsExpression` therefore unwrap to the same
+/// identifier or member reference Vue forwards, instead of a parenthesized
+/// value the click never calls.
 pub(super) fn is_reference(content: &str, retained: Option<Retained<'_, '_>>) -> bool {
     is_simple_identifier(content) || is_event_handler_reference_node(content, retained)
 }
