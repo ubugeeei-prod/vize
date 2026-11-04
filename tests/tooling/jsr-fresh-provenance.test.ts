@@ -66,7 +66,7 @@ const binding = {
 const audience = audienceFor(binding);
 
 function claims(tokenAudience, overrides = {}) {
-  return {
+  const payload = {
     iss: issuer,
     sub: "repo:ubugeeei-prod/vize:ref:refs/heads/main",
     repository: "ubugeeei-prod/vize",
@@ -89,8 +89,9 @@ function claims(tokenAudience, overrides = {}) {
     runner_environment: "github-hosted",
     ...overrides,
     aud: tokenAudience,
-    iss: issuer,
   };
+  payload.iss = issuer;
+  return payload;
 }
 
 function jwt(payload) {
