@@ -6,7 +6,7 @@ import {
   watchTypeProject,
 } from "./type-project-watches.ts";
 
-test("one project registers its shared configuration inputs once per revision", () => {
+void test("one project registers its shared configuration inputs once per revision", () => {
   const cache = new Map();
   const watched: string[] = [];
   let reads = 0;
@@ -56,7 +56,7 @@ test("one project registers its shared configuration inputs once per revision", 
   assert.equal(reads, 3, "a new build must register watches again");
 });
 
-test("a known cached revision is still rejected after its authority changes", () => {
+void test("a known cached revision is still rejected after its authority changes", () => {
   const cache = new Map();
   let current = "1";
   const api = {
@@ -76,7 +76,7 @@ test("a known cached revision is still rejected after its authority changes", ()
   );
 });
 
-test("runtime-only modules make no project query and stale revisions fail closed", () => {
+void test("runtime-only modules make no project query and stale revisions fail closed", () => {
   const cache = new Map();
   const api = {
     typeProjectInputs() {
