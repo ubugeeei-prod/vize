@@ -146,7 +146,7 @@ void test("host raw descriptors and argv are durable before a controlled Node ch
   } finally {
     if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
     else process.env.ADMISSION_DEADLINE_MS = previous;
-    rmSync(root, { recursive: true });
+    if (!process.env.ADMISSION_RETAIN_CONTROLS) rmSync(root, { recursive: true });
   }
 });
 
@@ -176,7 +176,7 @@ void test("a process deadline retains partial raw output and fails outside seman
   } finally {
     if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
     else process.env.ADMISSION_DEADLINE_MS = previous;
-    rmSync(root, { recursive: true });
+    if (!process.env.ADMISSION_RETAIN_CONTROLS) rmSync(root, { recursive: true });
   }
 });
 
@@ -311,6 +311,100 @@ void test("a detached immediate orphan remains owned after its parent exits", as
     }
     if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
     else process.env.ADMISSION_DEADLINE_MS = previous;
-    rmSync(root, { recursive: true });
+    if (!process.env.ADMISSION_RETAIN_CONTROLS) rmSync(root, { recursive: true });
+  }
+});
+
+void test("known child cleanup survives a failed whole-process inventory", async () => {
+  const { spawn } = await import("node:child_process");
+  const { randomUUID } = await import("node:crypto");
+  const { OwnedProcesses, ownerVariable } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
+  const nonce = randomUUID();
+  const child = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)"], {
+    env: { ...process.env, [ownerVariable]: nonce },
+    stdio: "ignore",
+  });
+  const closed = new Promise((resolve) =>
+    child.once("close", (status, signal) => resolve({ status, signal })),
+  );
+  const owned = new OwnedProcesses(child.pid, nonce);
+  const original = owned.scan.bind(owned);
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    owned.scan = () => {
+      owned.error = "controlled process inventory unavailable";
+      return [];
+    };
+    const cleanup = owned.killAll();
+    assert.ok(
+      cleanup.some((row) => row.pid === child.pid && row.startTicks),
+      "retained owned identity was not terminated",
+    );
+    const result = await Promise.race([
+      closed,
+      new Promise((_resolve, reject) => {
+        deadline = setTimeout(() => reject(new Error("known child remained alive")), 2000);
+      }),
+    ]);
+    assert.deepEqual(result, { status: null, signal: "SIGKILL" });
+    assert.equal(
+      owned.error,
+      "controlled process inventory unavailable",
+      "observation errors must not acquire qualification",
+    );
+  } finally {
+    if (deadline) clearTimeout(deadline);
+    owned.scan = original;
+    owned.killAll();
+  }
+});
+
+void test("missing child close is bounded and keeps an incomplete raw result", async () => {
+  const { existsSync, mkdtempSync, readFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { OwnedProcesses } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
+  const { run } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-process.ts");
+  const root = mkdtempSync(join(tmpdir(), "mapper-admission-missing-close-"));
+  const output = join(root, "process");
+  const previous = process.env.ADMISSION_DEADLINE_MS;
+  const original = Object.getOwnPropertyDescriptor(OwnedProcesses.prototype, "killAll")!;
+  try {
+    process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 500);
+    OwnedProcesses.prototype.killAll = () => [];
+    await assert.rejects(
+      run(
+        output,
+        [process.execPath, "-e", "process.stdout.write('partial');setInterval(()=>{},1000)"],
+        root,
+      ),
+      /timeout\/crash\/survivor/u,
+    );
+    const result = JSON.parse(readFileSync(join(output, "result.json"), "utf8"));
+    assert.equal(result.closeObserved, false);
+    assert.equal(result.timedOut, true);
+    assert.equal(result.status, null);
+    assert.equal(result.signal, null, "an unobserved exit must not invent a signal");
+    assert.equal(readFileSync(join(output, "stdout.raw"), "utf8"), "partial");
+  } finally {
+    Object.defineProperty(OwnedProcesses.prototype, "killAll", original);
+    if (existsSync(join(output, "spawn.json"))) {
+      const { ownerNonce } = JSON.parse(readFileSync(join(output, "spawn.json"), "utf8"));
+      const pid = existsSync(join(output, "result.json"))
+        ? JSON.parse(readFileSync(join(output, "result.json"), "utf8")).pid
+        : undefined;
+      const owned = new OwnedProcesses(pid, ownerNonce);
+      owned.killAll();
+      const until = Date.now() + 2000;
+      while (owned.scan().length && Date.now() < until)
+        await new Promise((done) => setTimeout(done, 20));
+      assert.equal(owned.scan().length, 0, "owned control child remains after cleanup");
+    }
+    if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
+    else process.env.ADMISSION_DEADLINE_MS = previous;
+    if (!process.env.ADMISSION_RETAIN_CONTROLS) rmSync(root, { recursive: true });
   }
 });

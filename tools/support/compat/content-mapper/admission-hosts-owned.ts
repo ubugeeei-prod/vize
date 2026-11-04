@@ -27,7 +27,10 @@ export function linuxIdentity(name: string) {
     ownerMarker: false,
   };
 }
-function processes(nonce: string): ProcessIdentity[] {
+function processes(
+  nonce: string,
+  unknown: (error: unknown, pid?: number) => void,
+): ProcessIdentity[] {
   const marker = ownerVariable + "=" + nonce;
   if (process.platform === "linux")
     return readdirSync("/proc")
@@ -50,7 +53,8 @@ function processes(nonce: string): ProcessIdentity[] {
           return key(before) === key(after) ? [{ ...after, ownerMarker: before.ownerMarker }] : [];
         } catch (value) {
           if (["ENOENT", "ESRCH"].includes((value as NodeJS.ErrnoException).code ?? "")) return [];
-          throw value;
+          unknown(value, Number(name));
+          return [];
         }
       });
   assert.equal(process.platform, "darwin", "unsupported process ownership observer");
@@ -82,15 +86,42 @@ function processes(nonce: string): ProcessIdentity[] {
 /** Identity plus a per-invocation owner marker survives setsid and immediate reparenting. */
 export class OwnedProcesses {
   readonly identities = new Map<string, ProcessIdentity>();
+  readonly observationIssues = new Map<
+    string,
+    { pid: number | null; scope: string; code: string | null; error: string }
+  >();
   error: string | null = null;
   readonly rootPid: number | undefined;
   readonly nonce: string;
+  recordIssue(value: unknown, pid?: number) {
+    const scope =
+      pid === undefined
+        ? "inventory-unavailable"
+        : [...this.identities.values()].some((row) => row.pid === pid)
+          ? "known-owned"
+          : "ownership-unclassified";
+    const issue = {
+      pid: pid ?? null,
+      scope,
+      code: (value as NodeJS.ErrnoException).code ?? null,
+      error: String(value),
+    };
+    const identity = JSON.stringify(issue);
+    if (this.observationIssues.size < 4096 || this.observationIssues.has(identity))
+      this.observationIssues.set(identity, issue);
+    this.error ??= "process inventory incomplete (" + scope + "): " + String(value);
+  }
   constructor(rootPid: number | undefined, nonce: string) {
     this.rootPid = rootPid;
     this.nonce = nonce;
     if (rootPid) {
       try {
-        const root = processes(nonce).find((row) => row.pid === rootPid);
+        const root =
+          process.platform === "linux"
+            ? linuxIdentity(String(rootPid))
+            : processes(nonce, (value, pid) => this.recordIssue(value, pid)).find(
+                (row) => row.pid === rootPid,
+              );
         if (root) this.identities.set(key(root), root);
         else this.error = "root start identity was not observed";
       } catch (value) {
@@ -100,7 +131,7 @@ export class OwnedProcesses {
   }
   scan(): ProcessIdentity[] {
     try {
-      const rows = processes(this.nonce);
+      const rows = processes(this.nonce, (value, pid) => this.recordIssue(value, pid));
       for (const row of rows) if (row.ownerMarker) this.identities.set(key(row), row);
       let changed = true;
       while (changed) {
@@ -116,21 +147,28 @@ export class OwnedProcesses {
       }
       return rows.filter((row) => this.identities.has(key(row)));
     } catch (value) {
-      this.error = String(value);
+      this.recordIssue(value);
       return [];
     }
   }
   killAll() {
     const signaled = [];
-    for (const row of this.scan()) {
+    this.scan();
+    for (const row of this.identities.values()) {
       try {
         // Recheck start identity and ownership immediately before touching the PID.
-        const current = processes(this.nonce).find((current) => current.pid === row.pid);
+        const current =
+          process.platform === "linux"
+            ? linuxIdentity(String(row.pid))
+            : processes(this.nonce, (value, pid) => this.recordIssue(value, pid)).find(
+                (current) => current.pid === row.pid,
+              );
         if (!current || key(current) !== key(row)) continue;
         process.kill(row.pid, "SIGKILL");
         signaled.push(row);
       } catch (value) {
-        if ((value as NodeJS.ErrnoException).code !== "ESRCH") this.error = String(value);
+        if (!["ENOENT", "ESRCH"].includes((value as NodeJS.ErrnoException).code ?? ""))
+          this.error = String(value);
       }
     }
     return signaled;

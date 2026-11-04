@@ -145,23 +145,35 @@ export async function run(
   };
   inspectHost();
   const observer = setInterval(inspectHost, 20);
-  const timer = setTimeout(
-    () => {
-      timedOut = true;
-      inspectHost();
-      owned.killAll();
-    },
-    Math.max(1, Math.min(75_000, deadline - Date.now())),
-  );
+  const allowance = Math.max(1, Math.min(75_000, deadline - Date.now()));
+  let closeObserved = false;
+  let finish: (result: [number | null, NodeJS.Signals | null]) => void;
+  const closed = new Promise<[number | null, NodeJS.Signals | null]>((done) => {
+    finish = done;
+    child.once("close", (code, reason) => {
+      closeObserved = true;
+      done([code, reason]);
+    });
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    inspectHost();
+    owned.killAll();
+  }, allowance);
+  const closeDeadline = setTimeout(() => {
+    timedOut = true;
+    owned.killAll();
+    child.unref();
+    finish([null, null]);
+  }, allowance + 5000);
   let status: number | null, signal: NodeJS.Signals | null;
   try {
-    [status, signal] = await new Promise<[number | null, NodeJS.Signals | null]>((done) =>
-      child.once("close", (code, reason) => done([code, reason])),
-    );
+    [status, signal] = await closed;
   } finally {
     inspectHost();
     clearInterval(observer);
     clearTimeout(timer);
+    clearTimeout(closeDeadline);
     closeSync(stdout);
     closeSync(stderr);
   }
@@ -180,10 +192,12 @@ export async function run(
     signal,
     error,
     timedOut,
+    closeObserved,
     survivors,
     remaining,
     cleanup,
     observedProcesses: [...owned.identities.values()],
+    observationIssues: [...owned.observationIssues.values()],
     observedHosts: [...observedHosts.values()],
     observedNatives: [...observedNatives.values()],
     stdout: fileImage(join(directory, "stdout.raw")),
@@ -191,8 +205,9 @@ export async function run(
   };
   save(join(directory, "result.json"), result);
   assert.ok(
-    !timedOut && !survivors && !signal && !error,
-    "host timeout/crash/survivor is a functional failure",
+    closeObserved && !timedOut && !survivors && !signal && !error,
+    "host timeout/crash/survivor is a functional failure: " +
+      JSON.stringify({ timedOut, closeObserved, survivors, signal, error }),
   );
   assert.ok(
     !expectedHost || observedHosts.size > 0,

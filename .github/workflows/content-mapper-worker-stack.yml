@@ -186,7 +186,8 @@ jobs:
           rustc -Vv >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
           cargo -V >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
           vp --version >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
-          within_budget node --test tests/tooling/content-mapper-admission-hosts.test.ts > "$RUNNER_TEMP/mapper-admission/pure.log" 2>&1
+          mkdir "$RUNNER_TEMP/mapper-admission/controls"
+          ADMISSION_RETAIN_CONTROLS=1 TMPDIR="$RUNNER_TEMP/mapper-admission/controls" within_budget timeout --signal=TERM --kill-after=5s 120s node --test tests/tooling/content-mapper-admission-hosts.test.ts > "$RUNNER_TEMP/mapper-admission/pure.log" 2>&1
           within_budget vp install --frozen-lockfile --prefer-offline > "$RUNNER_TEMP/mapper-admission/source-install.log" 2>&1
           provider_fixture=tests/_fixtures/tooling/content-mapper-admission-provider
           mkdir "$RUNNER_TEMP/admission-provider"
