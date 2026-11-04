@@ -131,6 +131,14 @@ export async function main() {
     base: pristine(base, values["base-sha"]!),
     head: pristine(head, values["head-sha"]!),
   };
+  const requireCurrentMain = () =>
+    assert.equal(
+      git(base, "ls-remote", "origin", "refs/heads/main").split(/\s+/u)[0],
+      sources.base.sha,
+      "public main advanced: rebind source tuple before dispatch",
+    );
+  requireCurrentMain();
+  git(head, "merge-base", "--is-ancestor", sources.base.sha, sources.head.sha);
   const driverIdentity = pristine(driver, values["driver-sha"]!);
   // This campaign isolates dispatcher admission. Projection/checker/SDK changes require a new qualification design.
   const changed = git(head, "diff", "--name-only", sources.base.sha, sources.head.sha)
@@ -401,6 +409,7 @@ export async function main() {
   );
   assert.deepEqual(closureSnapshot([provider]), providerBefore);
   verifiedSourcePair(base, head, sources);
+  requireCurrentMain();
   assert.deepEqual(inventory(join(corpus, "src")), authored);
   copyFileSync(join(provider, "package-lock.json"), join(output, "public-provider-lock.json"));
   write(join(output, "primary-summary.json"), {
