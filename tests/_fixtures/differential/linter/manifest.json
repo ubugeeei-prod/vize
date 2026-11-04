@@ -2102,6 +2102,42 @@
       }
     },
     {
+      "id": "linter/diagnostic-documentation-11818",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "diagnostic-documentation-11818",
+        "files": [
+          {
+            "path": "routes.json",
+            "role": "synthetic-diagnostic-documentation-contract",
+            "sha256": "7aa8605f17c6bbbaeda4acfb1c7ac5ffb925f8df782259d21f8ce62e75f0008a"
+          },
+          {
+            "path": "DocumentationControl.vue.txt",
+            "role": "native-linter-source-control",
+            "sha256": "2589ffe6a5aaf687c3c2d9166a049845b1950ba8833da1dd71d6addb4d8f2a56"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/dynamic-event-owner-11728",
       "state": "active",
       "targets": ["lint"],
