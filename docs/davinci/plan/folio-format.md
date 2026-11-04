@@ -32,6 +32,8 @@ normalizes, and `parse` itself returns normalized values, so the
 structural law quantifies over normalized values (`CroquisFolio::normalize`
 canonicalizes hand-built ones). The typed Croquis dump fixture test checks
 the byte-identity law; `vize dump --roundtrip` covers supported L1–L3 pages.
+L0 is the Dump substrate rather than a page, and L4 emission is not a folio,
+so neither level is a roundtrip target.
 
 ## Normalization rules (both modes)
 
