@@ -86,6 +86,36 @@ export class CapacityNativeCoverage {
       };
     });
   }
+  /** Drain one immutable cohort; only a newly completed owned URI refreshes its watchdog. */
+  async waitForComplete(
+    version: number,
+    repaired: boolean,
+    idleMilliseconds: number,
+    clock = {
+      now: () => performance.now(),
+      sleep: (milliseconds: number) =>
+        new Promise<void>((resolve) => setTimeout(resolve, milliseconds)),
+    },
+    signal?: AbortSignal,
+  ): Promise<boolean> {
+    assert.ok(this.coverage.probes.length > 0);
+    assert.ok(Number.isFinite(idleMilliseconds) && idleMilliseconds > 0);
+    const completed = new Set<string>();
+    let deadline = clock.now() + idleMilliseconds;
+    for (;;) {
+      if (signal?.aborted) return false;
+      const rows = this.rows(version, repaired);
+      if (rows.every((row) => row.complete)) return true;
+      const now = clock.now();
+      for (const row of rows)
+        if (row.complete && !completed.has(row.uri)) {
+          completed.add(row.uri);
+          deadline = now + idleMilliseconds;
+        }
+      if (now >= deadline) return false;
+      await clock.sleep(Math.min(50, deadline - now));
+    }
+  }
   idle(): boolean {
     this.refresh();
     return (
