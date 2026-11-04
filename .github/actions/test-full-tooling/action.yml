@@ -32,6 +32,20 @@ runs:
     - name: Check configured Router page CLI and editor types
       if: ${{ inputs.shard == '1' }}
       uses: ./.github/actions/check-router-page-types
+    - name: Keep raw Router packets and source receipts
+      if: ${{ always() && inputs.shard == '1' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: full-tooling-router-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/experimental-router-check/
+          target/differential/router-page-types/
+          target/differential/router-page-types-secondary/
+          target/ci/vize.differential-build.json
+          target/ci/vize.source-build.json
+          target/ci/vize.source-use.json
+        if-no-files-found: error
+        retention-days: 7
     - name: Prepare the pinned plugin isolation runtime for other workers
       if: ${{ !cancelled() && inputs.shard != '1' }}
       shell: bash

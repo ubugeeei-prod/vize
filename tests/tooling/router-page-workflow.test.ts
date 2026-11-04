@@ -159,3 +159,48 @@ void test("all raw packet families and source receipts survive oracle failure", 
       job.steps.findIndex((step) => step.uses === "./.github/actions/check-router-page-types"),
   );
 });
+
+void test("full tooling retains Router failure evidence on its original source shard", () => {
+  const full = parse(
+    readFileSync(new URL(".github/actions/test-full-tooling/action.yml", root), "utf8"),
+  ) as { runs: { steps: Step[] } };
+  const steps = full.runs.steps;
+  const oracle = steps.filter((step) => step.uses === "./.github/actions/check-router-page-types");
+  assert.equal(oracle.length, 1);
+  assert.equal(oracle[0].if, "${{ inputs.shard == '1' }}");
+  assert.equal(oracle[0]["continue-on-error"], undefined);
+  const restore = steps.filter((step) => step.uses === "./.github/actions/restore-source-cli");
+  assert.equal(restore.length, 1);
+  assert.deepEqual(restore[0].with, { producer: "${{ inputs.producer }}" });
+  assert.ok(steps.indexOf(restore[0]) < steps.indexOf(oracle[0]));
+  const uploads = steps.filter((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(uploads.length, 1, "the full worker must preserve raw Router evidence");
+  const upload = uploads[0];
+  assert.equal(upload.if, "${{ always() && inputs.shard == '1' }}");
+  assert.equal(upload["continue-on-error"], undefined);
+  assert.ok(steps.indexOf(upload) > steps.indexOf(oracle[0]));
+  assert.ok(upload.with);
+  assert.equal(upload.with["if-no-files-found"], "error");
+  const expected = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  assert.ok(expected?.with);
+  const paths = upload.with.path;
+  assert.equal(typeof paths, "string");
+  assert.deepEqual(
+    (paths as string)
+      .trim()
+      .split("\n")
+      .map((line) => line.trim())
+      .sort(),
+    (expected.with.path as string)
+      .trim()
+      .split("\n")
+      .map((line) => line.trim())
+      .sort(),
+  );
+  const formatter = steps.filter(
+    (step) => step.uses === "./.github/actions/upload-formatter-api-corpus-evidence",
+  );
+  assert.equal(formatter.length, 1);
+  assert.equal(formatter[0].if, "${{ always() }}");
+  assert.deepEqual(formatter[0].with, { shard: "${{ inputs.shard }}" });
+});
