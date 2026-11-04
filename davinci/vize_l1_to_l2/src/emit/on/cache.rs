@@ -30,8 +30,7 @@ pub(in crate::emit) fn caches_owned_handler(
 /// cached wrapper cannot hide its arity. Options API refs keep their
 /// live-lookup wrapper.
 pub(in crate::emit) fn bypasses_component_cache(cx: &EmitCx<'_>, expr: &ExprRef<'_>) -> bool {
-    super::wrapped::options_api_handler_name(cx, expr).is_none()
-        && super::super::prefix::handler_is_reference(cx.source, expr)
+    super::super::prefix::handler_bypasses_component_cache(&cx.scope, cx.source, expr)
 }
 
 /// `is_setup_const_handler`: the processed handler text is a simple
