@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import fs from "node:fs";
+import os from "node:os";
+import ts from "typescript";
 import { contentMapperHelperAbi } from "../../npm/cli/scripts/content-mapper-helper-abi.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -75,3 +78,79 @@ void test("ambient implicit exports are qualified by TypeScript rather than modi
   );
   assert.doesNotThrow(() => contentMapperHelperAbi(root, pending));
 });
+
+for (const [name, samePeer, preserveSymlinks] of [
+  ["different physical peer", false, false],
+  ["same physical peer", true, false],
+  ["preserved logical peer", false, true],
+] as const) {
+  void test(`pnpm SDK resolution uses the ${name} Vue authority`, () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-abi-peer-"));
+    try {
+      const project = path.join(directory, "app");
+      const store = path.join(directory, "store/vize/node_modules");
+      const sdk = path.join(store, "vize");
+      fs.mkdirSync(path.join(project, "node_modules"), { recursive: true });
+      fs.mkdirSync(sdk, { recursive: true });
+      const sdkSource = path.join(root, "npm/cli");
+      const manifest = JSON.parse(source("npm/cli/package.json")) as { files: string[] };
+      fs.copyFileSync(path.join(sdkSource, "package.json"), path.join(sdk, "package.json"));
+      for (const file of manifest.files.filter((file) => /\.d\.(?:ts|mts|cts)$/u.test(file))) {
+        fs.mkdirSync(path.dirname(path.join(sdk, file)), { recursive: true });
+        fs.copyFileSync(path.join(sdkSource, file), path.join(sdk, file));
+      }
+      const link = (target: string, file: string) =>
+        fs.symlinkSync(target, file, process.platform === "win32" ? "junction" : "dir");
+      link(sdk, path.join(project, "node_modules/vize"));
+      const projectVue = path.join(project, "node_modules/vue");
+      const installVue = (directory: string) => {
+        fs.mkdirSync(directory);
+        fs.writeFileSync(
+          path.join(directory, "package.json"),
+          JSON.stringify({
+            name: "vue",
+            version: "3.5.44",
+            types: "index.d.ts",
+          }),
+        );
+        fs.writeFileSync(path.join(directory, "index.d.ts"), "export {};\n");
+      };
+      installVue(projectVue);
+      if (samePeer) link(projectVue, path.join(store, "vue"));
+      else installVue(path.join(store, "vue"));
+      const options: ts.CompilerOptions = {
+        module: ts.ModuleKind.Preserve,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        preserveSymlinks,
+      };
+      const resolve = (name: string, from: string) => {
+        const resolved = ts.resolveModuleName(
+          name,
+          from,
+          options,
+          ts.sys,
+          undefined,
+          undefined,
+          ts.ModuleKind.ESNext,
+        ).resolvedModule;
+        assert.ok(resolved, name);
+        return resolved.resolvedFileName;
+      };
+      const helper = resolve("vize/virtual-ts", path.join(project, "input.ts"));
+      const actual = fs.realpathSync(resolve("vue", helper));
+      const authored = fs.realpathSync(resolve("vue", path.join(project, "input.ts")));
+      assert.equal(actual === authored, samePeer || preserveSymlinks);
+      assert.equal(
+        actual,
+        fs.realpathSync(
+          path.join(
+            samePeer || preserveSymlinks ? projectVue : path.join(store, "vue"),
+            "index.d.ts",
+          ),
+        ),
+      );
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
