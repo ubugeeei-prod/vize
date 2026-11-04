@@ -3,7 +3,13 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertPackageOutput, digest, stageProvider, targets } from "./artifacts.ts";
+import {
+  assertPackageOutput,
+  digest,
+  pinnedReleaseCandidate,
+  stageProvider,
+  targets,
+} from "./artifacts.ts";
 import { assertPlatformVsix } from "./assert.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -24,11 +30,12 @@ assert(
 );
 const lock = path.join(root, "editors/.typescript-provider-package.lock");
 const descriptor = fs.openSync(lock, "wx");
-const source = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 const run = (command: string, args: string[]) =>
   execFileSync(command, args, { cwd: extension, stdio: "inherit" });
 try {
-  const receipt = stageProvider(root, artifactDir, staging, source, target);
+  const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const pinned = pinnedReleaseCandidate();
+  const receipt = stageProvider(root, artifactDir, staging, head, target, pinned);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   run("rust-script", [
     path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.rs"),
@@ -50,10 +57,10 @@ try {
     "inject",
     output,
   ]);
-  assertPlatformVsix(root, output, receipt);
+  assertPlatformVsix(root, output, receipt, pinned);
   fs.writeFileSync(
     `${output}.receipt.json`,
-    `${JSON.stringify({ schema: "vize.platformVsix.v1", source, version: receipt.releaseVersion, target: receipt.targetPlatform, vsix: path.basename(output), bytes: fs.statSync(output).size, sha256: digest(fs.readFileSync(output)), provider: receipt }, null, 2)}\n`,
+    `${JSON.stringify({ schema: "vize.platformVsix.v1", source: receipt.source, version: receipt.releaseVersion, target: receipt.targetPlatform, vsix: path.basename(output), bytes: fs.statSync(output).size, sha256: digest(fs.readFileSync(output)), provider: receipt }, null, 2)}\n`,
   );
 } finally {
   fs.closeSync(descriptor);

@@ -57,6 +57,22 @@ export interface ProviderReceipt {
 export const compareNames = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 export const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 export const readJson = (file: string) => JSON.parse(fs.readFileSync(file, "utf8"));
+const commitSha = /^[0-9a-f]{40}$/;
+
+/** The release attempt's candidate. Absent when the checkout itself built the native image. */
+export function pinnedReleaseCandidate(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  const pinned = env.VIZE_RELEASE_CANDIDATE_SHA;
+  if (pinned === undefined || pinned === "") return undefined;
+  assert.match(pinned, commitSha, "Pinned release candidate is not a full commit SHA");
+  return pinned;
+}
+
+/** Prefer the attempt pin over a candidate ref that a later force-push moved. */
+export function providerSource(resolvedHead: string, pinnedSource?: string): string {
+  if (pinnedSource === undefined) return resolvedHead;
+  assert.match(pinnedSource, commitSha, "Pinned release candidate is not a full commit SHA");
+  return pinnedSource;
+}
 export function assertPackageOutput(root: string, output: string): void {
   const relative = path.relative(path.join(root, "editors/vscode"), path.resolve(output));
   assert(
@@ -76,11 +92,21 @@ export function checkBuildReceipt(
   source: string,
   version: string,
   target: string,
+  pinnedSource?: string,
 ): void {
   assert(Object.hasOwn(targets, target), `Unknown native Rust target: ${target}`);
   assert.equal(value.schema, "vize.nativeBuildReceipt.v1", "Unknown native build receipt schema");
-  assert.equal(value.source, source, "Native provider was not built from this exact checkout");
-  assert.match(value.source, /^[0-9a-f]{40}$/);
+  // A failed-job rerun can resolve a force-pushed candidate ref. The attempt pin
+  // is the SHA the native artifacts were built for; any other SHA still fails.
+  const expected = providerSource(source, pinnedSource);
+  assert.equal(
+    value.source,
+    expected,
+    expected === source
+      ? "Native provider was not built from this exact checkout"
+      : "Native provider was not built for this release attempt's pinned candidate",
+  );
+  assert.match(value.source, commitSha);
   assert.equal(value.releaseVersion, version, "Native provider release differs from the adapter");
   assert.equal(value.rustTarget, target, "Native provider Rust target mismatch");
   assert.equal(value.nodeFile, targets[target].node, "Unexpected native image basename");
@@ -98,6 +124,7 @@ export function stageProvider(
   destination: string,
   source: string,
   target: string,
+  pinnedSource?: string,
 ): ProviderReceipt {
   assert(Object.hasOwn(targets, target), `Unknown native Rust target: ${target}`);
   const knownArtifacts = new Set(
@@ -115,7 +142,8 @@ export function stageProvider(
   );
   const build = readJson(path.join(artifactDir, `build-receipt.${target}.json`)) as BuildReceipt;
   const image = regularBytes(path.join(artifactDir, targets[target].node));
-  checkBuildReceipt(build, image, source, version, target);
+  const recorded = providerSource(source, pinnedSource);
+  checkBuildReceipt(build, image, source, version, target, pinnedSource);
   const fileBytes: Array<readonly [string, Buffer]> = providerFiles.map((file) => [
     file,
     regularBytes(path.join(root, "npm/native", file), 2_000_000),
@@ -130,7 +158,7 @@ export function stageProvider(
   );
   const receipt: ProviderReceipt = {
     schema: providerSchema,
-    source,
+    source: recorded,
     releaseVersion: version,
     rustTarget: target,
     targetPlatform: targets[target].platform,

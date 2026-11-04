@@ -10,6 +10,7 @@ import {
   providerFiles,
   providerPrefix,
   providerSchema,
+  providerSource,
   readJson,
   targets,
   type BuildReceipt,
@@ -32,8 +33,10 @@ export function assertPlatformVsix(
   root: string,
   vsix: string,
   expected?: ProviderReceipt,
+  pinnedSource?: string,
 ): ProviderReceipt {
-  const source = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const source = providerSource(head, pinnedSource);
   const version = readJson(path.join(root, "npm/typescript-plugin/package.json")).version;
   assert(
     fs.statSync(vsix).size <= 50_000_000,
@@ -50,7 +53,13 @@ export function assertPlatformVsix(
     zipBytes(vsix, `${providerPrefix}provider.json`, 1_000_000).toString(),
   ) as ProviderReceipt;
   assert.equal(receipt.schema, providerSchema);
-  assert.equal(receipt.source, source, "VSIX provider source differs from this checkout");
+  assert.equal(
+    receipt.source,
+    source,
+    source === head
+      ? "VSIX provider source differs from this checkout"
+      : "VSIX provider source differs from this release attempt's pinned candidate",
+  );
   assert.equal(receipt.releaseVersion, version);
   assert(Object.hasOwn(targets, receipt.rustTarget));
   assert.equal(receipt.targetPlatform, targets[receipt.rustTarget].platform);
@@ -82,7 +91,7 @@ export function assertPlatformVsix(
   const build = JSON.parse(
     zipBytes(vsix, `${providerPrefix}build.json`, 1_000_000).toString(),
   ) as BuildReceipt;
-  checkBuildReceipt(build, image, source, version, receipt.rustTarget);
+  checkBuildReceipt(build, image, head, version, receipt.rustTarget, pinnedSource);
   assert.equal(receipt.nativeBuildToken, build.nativeBuildToken);
   const manifest = zipBytes(vsix, "extension.vsixmanifest", 1_000_000).toString();
   assert(
