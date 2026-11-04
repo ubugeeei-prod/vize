@@ -172,13 +172,13 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       const brokenSecond = runBuild(fixture.workspaceDir, ".vize-compiler-broken-second");
       const compilerFirst = observe();
       const compilerSecond = observe();
-      assertBrokenBuild(brokenFirst, compilerFirst);
-      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(
         compilerSecond.outputText,
         compilerFirst.outputText,
         "broken API output must be byte-stable",
       );
+      assertBrokenBuild(brokenFirst, compilerFirst);
+      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(fixture.read(appPath), brokenSource, "compiler must preserve the broken source");
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
 
