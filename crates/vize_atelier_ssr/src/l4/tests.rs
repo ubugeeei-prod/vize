@@ -232,18 +232,24 @@ fn type_annotated_v_for_aliases_stay_in_scope() {
             lane,
         );
         assert!(errors.is_empty(), "{errors:?}\n{}", result.code);
-        assert!(
-            result.code.contains("(row, index) =>"),
-            "type annotations must leave the callback:\n{}",
-            result.code
+        // Type annotations change neither the renderer nor its helper imports.
+        assert_eq!(
+            result.code.as_str(),
+            concat!(
+                "function ssrRender(_ctx, _push, _parent, _attrs) {\n",
+                "  _push(`<!--[-->`)\n",
+                "  _ssrRenderList(_ctx.rows, (row, index) => {\n",
+                "    _push(`<li>${_ssrInterpolate(index)} ${_ssrInterpolate(row.id)}</li>`)\n",
+                "  })\n",
+                "  _push(`<!--]-->`)\n",
+                "}\n",
+            ),
+            "{lane:?}",
         );
-        assert!(
-            result.code.contains("_ssrInterpolate(index)")
-                && result.code.contains("_ssrInterpolate(row.id)")
-                && !result.code.contains("_ctx.index")
-                && !result.code.contains("_ctx.row."),
-            "annotated aliases must be scoped:\n{}",
-            result.code
+        assert_eq!(
+            result.preamble.as_str(),
+            "import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n",
+            "{lane:?}",
         );
     }
 }

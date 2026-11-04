@@ -29,11 +29,24 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const read = (file) =>
   fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file)) : null;
 
-await test("closed actual CSS API inputs remain separate from all SSR execution and native rates", () => {
+await test("closed actual CSS API inputs remain separate from compiler execution and native rates", () => {
   const loaded = loadCompilerManifest(manifestPath);
   assert.equal(loaded.cases.length, manifest.cases.length);
   assert.equal(loaded.cssApiCases.length, manifest.cssApiCases.length);
-  assert.ok(loaded.cases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
+  const domId = "compiler/dom/typed-handler-runtime-spelling-11815";
+  const projectId = "compiler/project/imported-props-path-alias-11794";
+  assert.deepEqual(
+    loaded.cases
+      .filter((row) => row.id === domId || row.id === projectId)
+      .map(({ id, targets }) => ({ id, targets })),
+    [
+      { id: domId, targets: ["dom"] },
+      { id: projectId, targets: ["ssr"] },
+    ],
+  );
+  const ssrCases = loaded.cases.filter((row) => row.id !== domId && row.id !== projectId);
+  assert.equal(ssrCases.length, 68);
+  assert.ok(ssrCases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
   const report = compilerCssApiReport(loaded.cssApiCases);
   assert.deepEqual(
     { ...report, rows: report.rows.slice(0, 1) },

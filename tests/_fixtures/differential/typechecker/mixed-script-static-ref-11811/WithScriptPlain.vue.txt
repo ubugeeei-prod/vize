@@ -1,0 +1,13 @@
+<script lang="ts">
+export const LABEL = "box";
+</script>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const el = ref<HTMLDivElement | null>(null);
+</script>
+
+<template>
+  <div ref="el">{{ LABEL }}</div>
+</template>

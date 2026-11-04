@@ -2102,6 +2102,74 @@
       }
     },
     {
+      "id": "linter/diagnostic-documentation-11818",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "diagnostic-documentation-11818",
+        "files": [
+          {
+            "path": "routes.json",
+            "role": "synthetic-diagnostic-documentation-contract",
+            "sha256": "7aa8605f17c6bbbaeda4acfb1c7ac5ffb925f8df782259d21f8ce62e75f0008a"
+          },
+          {
+            "path": "DocumentationControl.vue.txt",
+            "role": "native-linter-source-control",
+            "sha256": "2589ffe6a5aaf687c3c2d9166a049845b1950ba8833da1dd71d6addb4d8f2a56"
+          },
+          {
+            "path": "original-line-columns.report.txt",
+            "role": "whole-current-report-oracle",
+            "sha256": "35c374fb355e6f67e080b0f82f1c58fce64ccd6dd018f3f39ff1728ddd94c44c"
+          },
+          {
+            "path": "unicode-crlf-columns.report.txt",
+            "role": "whole-current-report-oracle",
+            "sha256": "2d8fd0eb3211193aeea73bc80057a0c74ad4ed2ab56eb525dd814d685946e6f3"
+          },
+          {
+            "path": "source-map-order-and-missing.report.txt",
+            "role": "whole-current-report-oracle",
+            "sha256": "415145418a9c2231e826520c1f31090bfcd4f26cc6cbf6a0682e0aa13ca2ade6"
+          },
+          {
+            "path": "explain-en.txt",
+            "role": "whole-current-explain-oracle",
+            "sha256": "dcdb4ac548beca136993b131fa2055890434809b5f3ba208b97052712726a6d8"
+          },
+          {
+            "path": "explain-ja.txt",
+            "role": "whole-current-explain-oracle",
+            "sha256": "98bf9bc1dbafc6b531bcaecbb9530e477c560a8bc2e8b5699676c456b99826bf"
+          },
+          {
+            "path": "explain-zh.txt",
+            "role": "whole-current-explain-oracle",
+            "sha256": "beeb2672222925fef644c0305cb2340f682b12bfd669b1ba86eca7d88c8eb0a9"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/dynamic-event-owner-11728",
       "state": "active",
       "targets": ["lint"],

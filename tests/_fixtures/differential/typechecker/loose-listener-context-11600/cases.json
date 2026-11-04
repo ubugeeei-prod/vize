@@ -1,0 +1,30 @@
+[
+  {
+    "file": "LooseTargets.vue",
+    "contract": "exact five TS7006 at authored v; inline event forwarding/member access, typed rest forwarding and generic/overload references stay valid with unknown runtime arity"
+  },
+  {
+    "file": "HandlerValues.vue",
+    "contract": "reject first four noncallables at authored expressions; accept named/method/readonly callable array/null/undefined"
+  },
+  {
+    "file": "RefAndNames.vue",
+    "contract": "Ref handler remains callable; no new Function/globalThis/Pick capture"
+  },
+  {
+    "file": "TypedChild.vue",
+    "contract": "typed string emit remains exact"
+  },
+  {
+    "file": "ZeroChild.vue",
+    "contract": "declared zero-arity emit is not loose"
+  },
+  {
+    "file": "GenericChild.vue",
+    "contract": "generic prop and emitted payload keep the same string type parameter"
+  },
+  {
+    "file": "TypedParent.vue",
+    "contract": "typed/generic good and realzero good0; typed/generic wrong string payload2345 and realzero arity2322 preserved"
+  }
+]

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const emit = defineEmits<{ pick: [] }>()
+</script>
+<template>
+<button @click="emit('pick')" />
+</template>

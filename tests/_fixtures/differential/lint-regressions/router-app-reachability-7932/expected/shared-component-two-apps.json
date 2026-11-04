@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-param-type",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-param-type.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-param-type] param `id` of route `alpha-home` is an array, but `:id` is not repeatable",
         "line": 6,
@@ -15,7 +15,7 @@
       },
       {
         "ruleId": "ecosystem/vue-router-extra-param",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-extra-param.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-extra-param] route `beta-home` has no param `extra`",
         "line": 7,

@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.",
         "line": 16,

@@ -238,7 +238,7 @@ emit("step-changed", 1)
             "file": "src/components/Card.vue",
             "messages": [{
               "ruleId": "script/custom-event-name-casing",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 2,
               "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
@@ -254,7 +254,7 @@ emit("step-changed", 1)
             "file": "src/pages/ignored.vue",
             "messages": [{
               "ruleId": "script/custom-event-name-casing",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 2,
               "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
@@ -270,7 +270,7 @@ emit("step-changed", 1)
             "file": "src/pages/index.vue",
             "messages": [{
               "ruleId": "script/custom-event-name-casing",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 1,
               "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
