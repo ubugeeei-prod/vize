@@ -7,6 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use sha2::{Digest, Sha256};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 use crate::parse_sfc;
@@ -42,25 +43,44 @@ pub(super) struct FileTypeSummary {
 }
 
 /// Metadata hints for configuration discovery. Imported module summaries below
-/// validate their exact source bytes instead of treating metadata as identity.
+/// validate strong source fingerprints instead of treating metadata as identity.
 type FileStamp = (Option<SystemTime>, u64);
 
-/// A parsed summary and the exact bytes that produced it. A batch reuses
-/// validated bytes; every new single-file request observes the file again.
+/// One transient read. Changed bytes and their digest move to the parser together.
+struct FileTypeSource {
+    text: String,
+    fingerprint: [u8; 32],
+}
+
+impl FileTypeSource {
+    fn read(path: &Path) -> Option<Self> {
+        let text = std::fs::read_to_string(path).ok()?;
+        let fingerprint = Sha256::digest(text.as_bytes()).into();
+        Some(Self {
+            text: text.into(),
+            fingerprint,
+        })
+    }
+}
+
+/// A parsed summary and a strong source digest, without retaining the whole file.
 struct CachedFileSummary {
-    source: String,
+    fingerprint: [u8; 32],
     validated_epoch: AtomicU64,
     summary: FileTypeSummary,
 }
 
 impl CachedFileSummary {
     /// A changed read is returned to the parser so it is never read twice.
-    fn revalidate(&self, path: &Path, epoch: u64) -> Result<(), Option<String>> {
+    fn revalidate(&self, path: &Path, epoch: u64) -> Result<(), Option<FileTypeSource>> {
         if epoch != NO_EPOCH && self.validated_epoch.load(Ordering::Relaxed) == epoch {
             return Ok(());
         }
-        let source = std::fs::read_to_string(path).ok().map(String::from);
-        if source.as_ref() == Some(&self.source) {
+        let source = FileTypeSource::read(path);
+        if source
+            .as_ref()
+            .is_some_and(|source| source.fingerprint == self.fingerprint)
+        {
             self.validated_epoch.store(epoch, Ordering::Relaxed);
             Ok(())
         } else {
@@ -71,12 +91,12 @@ impl CachedFileSummary {
 
 enum SummaryLookup {
     Cached(Vec<String>),
-    Reload(Option<String>),
+    Reload(Option<FileTypeSource>),
     Miss,
 }
 
 /// Shared AST summaries, revalidated once per file in each batch. Standalone
-/// compiles compare bytes on each request; metadata alone cannot prove that a
+/// compiles compare source digests on each request; metadata cannot prove that a
 /// same-length edit within filesystem timestamp granularity is unchanged.
 static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, CachedFileSummary>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
@@ -361,9 +381,7 @@ impl ScriptCompileContext {
                 specifiers
             }
             SummaryLookup::Miss => {
-                let source = std::fs::read_to_string(&resolved_path)
-                    .ok()
-                    .map(String::from);
+                let source = FileTypeSource::read(&resolved_path);
                 let Some(specifiers) =
                     self.merge_file_source(&resolved_path, source, epoch, imports)
                 else {
@@ -403,12 +421,12 @@ impl ScriptCompileContext {
     fn merge_file_source(
         &mut self,
         path: &Path,
-        source: Option<String>,
+        source: Option<FileTypeSource>,
         epoch: u64,
         imports: &mut Vec<(String, String)>,
     ) -> Option<Vec<String>> {
         let source = source?;
-        let summary = file_summary_from_source(path, &source);
+        let summary = file_summary_from_source(path, &source.text);
         self.merge_file_summary(&summary);
         imports.extend(summary.imports.iter().cloned());
         let specifiers = summary.specifiers.clone();
@@ -416,7 +434,7 @@ impl ScriptCompileContext {
             cache.insert(
                 path.to_path_buf(),
                 CachedFileSummary {
-                    source,
+                    fingerprint: source.fingerprint,
                     validated_epoch: AtomicU64::new(epoch),
                     summary,
                 },
