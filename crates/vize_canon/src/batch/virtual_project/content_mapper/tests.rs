@@ -13,6 +13,7 @@ use crate::batch::{
     generate_vue_content_mapper_transform_with_options,
 };
 
+mod attribute_boundaries;
 mod diagnostic_origin;
 mod diagnostic_ownership;
 mod helper_modes;
