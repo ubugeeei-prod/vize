@@ -2927,6 +2927,56 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/unicode-script-line-comments-11798",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "unicode-script-line-comments-11798",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "unicode-script-line-comments-11798/module.expected.txt",
+        "sha256": "7158113bffc492ee142391b5a01fe2a71bdaf59cf530b135b70a9322364817c8",
+        "source": "Authored script-only JavaScript identity oracle, independently parsed by Node. The source CLI, NAPI 36-case shape test and real WASM 36-case packet test qualify separate adapters; published676/678 reject this existing LS comment input."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "No full native compiler differential adapter is registered for this case; separate real NAPI and WASM entry-point tests do not establish native/legacy product parity."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

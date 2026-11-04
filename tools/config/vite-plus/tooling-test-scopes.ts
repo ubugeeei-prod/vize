@@ -163,6 +163,7 @@ export const toolingTestScopes = [
     tests: [
       "tests/tooling/art-lint-public-boundaries.test.mjs",
       "tests/tooling/cli-build-enum-bindings-7893.test.mjs",
+      "tests/tooling/cli-unicode-script-line-comments.test.mjs",
     ],
   },
   {
