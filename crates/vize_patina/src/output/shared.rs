@@ -23,6 +23,12 @@ const PROJECT_RULES: &[&str] = &[
 /// ASCII letters are lowercased, and leading or trailing hyphens are dropped.
 /// `vue/require-v-for-key` is `docs/content/rules/reference/vue-require-v-for-key.md`.
 pub fn rule_docs_path(rule_name: &str) -> String {
+    // These diagnostic routes describe an aggregate or runtime, rather than a rule.
+    match rule_name {
+        "cross-file" => return String::from("docs/content/rules/cross-file.md"),
+        "type/corsa-runtime" => return String::from("docs/content/rules/type-and-script.md"),
+        _ => {}
+    }
     let directory = if is_project_rule(rule_name) {
         "project"
     } else {

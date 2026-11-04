@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable object value in conditional. Please handle the nullish case explicitly.",
         "line": 6,
@@ -14,7 +14,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.",
         "line": 7,
@@ -24,7 +24,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
         "line": 8,
@@ -34,7 +34,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly.",
         "line": 9,
@@ -44,7 +44,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected any value in conditional. Use a more specific type to ensure type safety.",
         "line": 10,
@@ -54,7 +54,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected any value in conditional. Use a more specific type to ensure type safety.",
         "line": 11,
@@ -64,7 +64,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected value in conditional. A union of different types has inconsistent truthiness.",
         "line": 12,
@@ -74,7 +74,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable enum value in conditional. Please handle the nullish and falsy enum cases explicitly.",
         "line": 13,
@@ -84,7 +84,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullish value in conditional. The expression is always falsy.",
         "line": 15,
@@ -94,7 +94,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullish value in conditional. The expression is always falsy.",
         "line": 16,
@@ -104,7 +104,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 17,
@@ -114,7 +114,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected object value in conditional. An object is always truthy.",
         "line": 18,

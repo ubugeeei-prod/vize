@@ -21,7 +21,7 @@ use super::super::walk::{walk_call_arguments, walk_expression_with_closure_name}
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
     add_binding_pattern_names, classify_const_initializer, get_binding_pattern_name,
-    infer_destructure_binding_type, push_binding_pattern_names,
+    infer_destructure_binding_type, push_binding_pattern_names, record_binding_pattern_spans,
 };
 
 mod define_model_destructure;
@@ -37,16 +37,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
     kind: VariableDeclarationKind,
     source: &str,
 ) {
+    record_binding_pattern_spans(&mut result.binding_spans, &declarator.id);
     result.record_ref_value_declaration(declarator);
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
             let at = id.span.start;
             let mut keeps_reactivity_alias = false;
-            result
-                .binding_spans
-                .insert(CompactString::new(name), (id.span.start, id.span.end));
-
             let call_extracted = if let Some(call) =
                 declarator.init.as_ref().and_then(extract_call_expression)
             {

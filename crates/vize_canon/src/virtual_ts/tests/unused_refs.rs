@@ -3,6 +3,8 @@ use crate::virtual_ts::{
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+mod mixed_scripts;
+
 #[test]
 fn test_preserve_unused_diagnostics_does_not_mark_static_template_refs_used() {
     let script = r#"const activatorRef = null

@@ -1,3 +1,4 @@
+import { currentCssCases } from "./support/current-css-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -9,7 +10,8 @@ import { fixture, frozenCorpus, root, sha256 } from "./css-external-target-refer
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 await test("source CLI preserves both CSS originals and complete subject-owned reports", () => {
-  const { source, cases } = frozenCorpus();
+  const { source, cases: historicalCases } = frozenCorpus();
+  const cases = currentCssCases(historicalCases);
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8"));

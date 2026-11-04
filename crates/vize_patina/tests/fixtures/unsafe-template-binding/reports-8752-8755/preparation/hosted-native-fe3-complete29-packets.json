@@ -282,7 +282,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -326,7 +326,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -370,7 +370,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template directive expression resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -414,7 +414,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template directive expression calls a value with an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -458,7 +458,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -502,7 +502,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -546,7 +546,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -590,7 +590,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 5,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -634,7 +634,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 6,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -678,7 +678,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 7,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -722,7 +722,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 7,
               "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -766,7 +766,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 7,
               "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }
@@ -810,7 +810,7 @@
               "help": "Give the value a concrete type in <script setup> or narrow it before using it in the template.",
               "line": 7,
               "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "ruleId": "type/no-unsafe-template-binding",
               "severity": 1
             }

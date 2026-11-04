@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected object value in conditional. An object is always truthy.",
         "line": 5,
@@ -14,7 +14,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected object value in conditional. An object is always truthy.",
         "line": 6,

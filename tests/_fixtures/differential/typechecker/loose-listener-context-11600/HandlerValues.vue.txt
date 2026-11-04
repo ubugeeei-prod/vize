@@ -1,0 +1,23 @@
+<script setup lang="ts">
+declare const loose: any
+const primitive = 123
+const object = {}
+class ConstructorOnly {}
+const named = (value: string) => value
+const methods = { run: named }
+const handlers = [named] as const
+const invalidHandlers = [primitive] as const
+const nil = null
+const absent = undefined
+</script>
+<template>
+<component :is="loose" @pick="primitive" />
+<component :is="loose" @pick="object" />
+<component :is="loose" @pick="ConstructorOnly" />
+<component :is="loose" @pick="invalidHandlers" />
+<component :is="loose" @pick="named" />
+<component :is="loose" @pick="methods.run" />
+<component :is="loose" @pick="handlers" />
+<component :is="loose" @pick="nil" />
+<component :is="loose" @pick="absent" />
+</template>

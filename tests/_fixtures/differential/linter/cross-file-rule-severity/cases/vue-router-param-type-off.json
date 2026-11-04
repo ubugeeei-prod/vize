@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `absent`",
         "line": 4,
@@ -14,7 +14,7 @@
       },
       {
         "ruleId": "ecosystem/vue-router-missing-param",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-missing-param.md",
         "severity": 1,
         "message": "[vize:ecosystem/vue-router-missing-param] navigation to `user` does not pass required param `id`",
         "line": 5,
@@ -24,7 +24,7 @@
       },
       {
         "ruleId": "ecosystem/vue-router-extra-param",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-extra-param.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-extra-param] route `user` has no param `extra`",
         "line": 6,

@@ -5,6 +5,7 @@ import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { slotPayloadExports } from "./slot-payload-exports.ts";
+import { emitInferenceExports } from "./emit-inference-exports.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const helperRoot = "crates/vize_canon/src/virtual_ts/helpers";
@@ -446,6 +447,8 @@ for (const extension of ["ts", "mts", "cts"]) {
     );
   }
 }
+for (const [file, contents] of await emitInferenceExports(root, outputs))
+  outputs.set(file, contents);
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {
   const filePath = path.join(root, relativePath);

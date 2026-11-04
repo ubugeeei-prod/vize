@@ -24,10 +24,10 @@ const HELP: &str = "Shorthand: <template #header> (default)\nLongform: <template
 
 fn target_messages(severity: u8) -> Value {
     json!([
-        {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":severity,
+        {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-v-slot-style.md","severity":severity,
             "message":"[vize:vue/v-slot-style] Expected 'v-slot:default' instead of '#default'",
             "line":2,"column":12,"endLine":2,"endColumn":27,"help":HELP},
-        {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":severity,
+        {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-v-slot-style.md","severity":severity,
             "message":"[vize:vue/v-slot-style] Expected 'v-slot:header' instead of '#header'",
             "line":3,"column":22,"endLine":3,"endColumn":29,"help":HELP}
     ])

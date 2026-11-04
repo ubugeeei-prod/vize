@@ -35,7 +35,7 @@ fn css_no_important_message(file: &str) -> serde_json::Value {
       "file": file,
       "messages": [{
         "ruleId": "css/no-important",
-        "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+        "ruleDocsPath": "docs/content/rules/reference/css-no-important.md",
         "severity": 2,
         "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
         "line": 2,

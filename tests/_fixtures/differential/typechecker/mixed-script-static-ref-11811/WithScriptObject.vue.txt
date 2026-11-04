@@ -1,0 +1,13 @@
+<script lang="ts">
+export const LABEL = "box";
+</script>
+
+<script setup lang="ts">
+import { useBoxObject } from "./useBoxObject";
+
+const { el } = useBoxObject();
+</script>
+
+<template>
+  <div ref="el">{{ LABEL }}</div>
+</template>
