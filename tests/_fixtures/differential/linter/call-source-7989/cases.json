@@ -207,7 +207,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -251,7 +251,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -295,7 +295,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -339,7 +339,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -383,7 +383,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -437,7 +437,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -448,7 +448,7 @@
             },
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -492,7 +492,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -557,7 +557,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -937,7 +937,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 5,
@@ -981,7 +981,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 1,
@@ -1025,7 +1025,7 @@
           "messages": [
             {
               "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
               "severity": 1,
               "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
               "line": 3,
@@ -1079,7 +1079,7 @@
           "messages": [
             {
               "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "ruleDocsPath": "docs/content/rules/reference/css-no-v-bind-performance.md",
               "severity": 1,
               "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
               "line": 2,
@@ -1090,7 +1090,7 @@
             },
             {
               "ruleId": "css/no-important",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "ruleDocsPath": "docs/content/rules/reference/css-no-important.md",
               "severity": 1,
               "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
               "line": 2,

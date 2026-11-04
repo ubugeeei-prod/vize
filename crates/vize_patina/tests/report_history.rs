@@ -110,6 +110,23 @@ fn complete_actual_public_reports_and_requeries() {
         let repeat = observe(&case);
         let bytes = format!("{case:#?}\n{first:#?}");
         assert_eq!(bytes, format!("{case:#?}\n{repeat:#?}"), "{}", case.id);
-        insta::assert_snapshot!(case.id.as_str(), bytes);
+        let current = match case.id.as_str() {
+            "original-line-columns" => Some(include_str!(
+                "../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/original-line-columns.report.txt"
+            )),
+            "unicode-crlf-columns" => Some(include_str!(
+                "../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/unicode-crlf-columns.report.txt"
+            )),
+            "source-map-order-and-missing" => Some(include_str!(
+                "../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/source-map-order-and-missing.report.txt"
+            )),
+            "no-findings-output-control" => None,
+            _ => panic!("unknown reviewed report case: {}", case.id),
+        };
+        if let Some(expected) = current {
+            assert_eq!(format!("{bytes}\n"), expected, "{}", case.id);
+        } else {
+            insta::assert_snapshot!(case.id.as_str(), bytes);
+        }
     }
 }

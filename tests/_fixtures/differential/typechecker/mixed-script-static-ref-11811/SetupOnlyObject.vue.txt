@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { useBoxObject } from "./useBoxObject";
+
+const { el } = useBoxObject();
+</script>
+
+<template>
+  <div ref="el" />
+</template>

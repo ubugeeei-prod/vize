@@ -1,0 +1,10 @@
+const onPick = () => 1;
+const _sfc_main = { setup: () => ({ onPick }) };
+
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClick: _ctx.onPick }, null, 8 /* PROPS */, ["onClick"]))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

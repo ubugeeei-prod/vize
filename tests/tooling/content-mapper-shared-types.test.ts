@@ -76,6 +76,9 @@ function generatorFixture() {
   const files = [
     "npm/cli/scripts/generate-content-mapper-types.ts",
     "npm/cli/scripts/slot-payload-exports.ts",
+    "npm/cli/scripts/emit-inference-exports.ts",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt",
     "npm/cli/package.json",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt",

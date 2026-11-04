@@ -2,6 +2,8 @@
 
 use std::path::PathBuf;
 
+mod mixed_scripts;
+
 use serde::Deserialize;
 
 use super::{

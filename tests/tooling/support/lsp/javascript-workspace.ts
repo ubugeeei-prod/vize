@@ -197,7 +197,9 @@ export async function editorProducts(root: string, context: Context, binary: str
         stderr: session?.stderrText ?? null,
       });
     }
-    const added = fs.readdirSync(captures).filter((name) => !before.includes(name));
+    const added = fs
+      .readdirSync(captures)
+      .filter((name) => name.startsWith(`${process.pid}-`) && !before.includes(name));
     assert.equal(added.length, 1, "exactly one owned real stdio session");
     const directory = path.join(captures, added[0]);
     let observation;

@@ -28,7 +28,7 @@
           "endLine": 1,
           "line": 1,
           "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleDocsPath": "docs/content/rules/reference/vue-no-v-html.md",
           "ruleId": "vue/no-v-html",
           "severity": 2
         }

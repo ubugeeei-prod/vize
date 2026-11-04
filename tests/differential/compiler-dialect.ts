@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { compilerDomArgv } from "./compiler-dom.ts";
 import { LEGACY_BUILD_RECIPE } from "./build-receipt.ts";
 import { readPinnedArtifact } from "./harness.mjs";
 
@@ -20,6 +21,10 @@ export interface RegisteredDialectInput {
 }
 
 interface CompilerArgvFixture {
+  readonly id?: unknown;
+  readonly targets?: readonly string[];
+  readonly argv?: unknown;
+  readonly inputs?: { readonly dialectInput?: unknown };
   readonly dialectInput?: { readonly selector: DialectSelector };
 }
 
@@ -81,6 +86,12 @@ const TEMPLATE_SUFFIX = Buffer.from("</template>\n");
 export const DIALECT_VITE_CONFIG_PATH = "vite.config.mjs";
 
 export function compilerArgv(fixture: CompilerArgvFixture): string[] {
+  if (
+    fixture.targets !== undefined &&
+    JSON.stringify(fixture.targets) !== JSON.stringify(["ssr"])
+  ) {
+    return compilerDomArgv(fixture);
+  }
   if (!fixture.dialectInput) return [...COMPILER_ARGV];
   const argv = [
     ...COMPILER_ARGV.slice(0, -1),

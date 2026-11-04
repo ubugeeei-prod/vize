@@ -44,7 +44,7 @@ fn lint_keeps_its_complete_report_when_a_types_only_vite_stub_is_present() {
             "message":"[vize:a11y/alt-text] <img> elements must have an alt attribute",
             "line":2,"column":3,"endLine":2,"endColumn":28,
             "help":"Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images",
-            "ruleDocsPath":"docs/content/rules/accessibility.md"
+            "ruleDocsPath":"docs/content/rules/reference/a11y-alt-text.md"
         }]
     }]);
     let lint = || {

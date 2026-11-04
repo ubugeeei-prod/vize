@@ -12,6 +12,10 @@ import {
   validateModelBindingSourceUnit,
 } from "./lsp-model-binding-source-unit.ts";
 import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
+import {
+  FORMATTER_WARNING_CAPTURE_ID,
+  loadFormatterWarningCapture,
+} from "./lsp-formatter-warning-capture.ts";
 import { FORMATTER_ON_POLICY_ID, loadFormatterOnPolicy } from "./lsp-formatter-on-policy.ts";
 import { FORMATTER_SLOT_POLICY_ID, loadFormatterSlotPolicy } from "./lsp-formatter-slot-policy.ts";
 import { AUTO_IMPORT_SYMLINK_ID, loadAutoImportSymlink } from "./lsp-auto-import-manifest.ts";
@@ -143,6 +147,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = loadAutoImportSymlink(data, files, expected);
     } else if (data.id === FORMATTER_BIND_POLICY_ID) {
       requests = loadFormatterBindPolicy(data, files, expected);
+    } else if (data.id === FORMATTER_WARNING_CAPTURE_ID) {
+      requests = loadFormatterWarningCapture(packRoot, data, files, expected);
     } else if (data.id === FORMATTER_ON_POLICY_ID) {
       requests = loadFormatterOnPolicy(data, files, expected);
     } else if (data.id === FORMATTER_SLOT_POLICY_ID) {

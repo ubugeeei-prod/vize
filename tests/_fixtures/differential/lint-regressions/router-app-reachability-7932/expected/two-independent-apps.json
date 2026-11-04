@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `beta-home`",
         "line": 5,
@@ -40,7 +40,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `alpha-home`",
         "line": 5,

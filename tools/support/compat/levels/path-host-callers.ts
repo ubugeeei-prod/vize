@@ -45,6 +45,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize/src/commands/fmt/files.rs": [4, 0, 0, 0],
   "crates/vize/src/commands/inspector/input_files.rs": [6, 2, 0, 0],
   "crates/vize/src/commands/lint/collect.rs": [4, 1, 0, 0],
+  "crates/vize/src/commands/musea/files.rs": [5, 0, 0, 0],
   "crates/vize/tests/check_cli.rs": [0, 1, 0, 0],
   "crates/vize/tests/check_declaration_emit_cli/workspace_package_vue_exports.rs": [0, 2, 0, 0],
   "crates/vize/tests/check_default_imports_cli.rs": [0, 1, 0, 0],

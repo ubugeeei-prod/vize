@@ -28,7 +28,7 @@
           "endLine": 1,
           "line": 1,
           "message": "[vize:vue/no-child-content] Child content of element with v-text will be overwritten",
-          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleDocsPath": "docs/content/rules/reference/vue-no-child-content.md",
           "ruleId": "vue/no-child-content",
           "severity": 2
         }

@@ -22,7 +22,7 @@
       "messages": [
         {
           "ruleId": "css/no-id-selectors",
-          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "ruleDocsPath": "docs/content/rules/reference/css-no-id-selectors.md",
           "severity": 1,
           "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
           "line": 2,

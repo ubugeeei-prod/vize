@@ -438,7 +438,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -509,7 +509,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -559,7 +559,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -609,7 +609,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -659,7 +659,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -709,7 +709,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -759,7 +759,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 2,
@@ -809,7 +809,7 @@
           "messages": [
             {
               "ruleId": "script/require-typed-ref",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-require-typed-ref.md",
               "severity": 1,
               "message": "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
               "line": 3,
@@ -859,7 +859,7 @@
           "messages": [
             {
               "ruleId": "script/no-export-in-script-setup",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
               "severity": 1,
               "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
               "line": 2,
@@ -909,7 +909,7 @@
           "messages": [
             {
               "ruleId": "script/no-export-in-script-setup",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
               "severity": 1,
               "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
               "line": 3,
@@ -959,7 +959,7 @@
           "messages": [
             {
               "ruleId": "script/no-export-in-script-setup",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
               "severity": 1,
               "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
               "line": 2,
@@ -1009,7 +1009,7 @@
           "messages": [
             {
               "ruleId": "script/no-export-in-script-setup",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
               "severity": 1,
               "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
               "line": 3,
