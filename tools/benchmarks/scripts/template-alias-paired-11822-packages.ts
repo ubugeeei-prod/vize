@@ -17,6 +17,7 @@ import {
 import { createHash } from "node:crypto";
 import { dirname, join, relative } from "node:path";
 import { assertPublishFiles } from "./template-alias-paired-11822-declarations.ts";
+import { mapperCaptureAsset } from "./template-alias-paired-11822-capture.ts";
 
 export function copyPublishedPackage(source: string, destination: string): PackageManifest {
   const manifest = JSON.parse(
@@ -159,10 +160,11 @@ export function archiveCampaignInputs(options: {
   for (const name of readdirSync(scriptDirectory).filter(
     (name) =>
       name.startsWith("template-alias-paired-11822") &&
-      (name.endsWith(".ts") || name.endsWith("-tee.mjs") || name.endsWith(".README.md")),
+      (name.endsWith(".ts") || name.endsWith(".README.md")),
   )) {
     copyFileSync(join(scriptDirectory, name), join(output, "inputs", name));
   }
+  copyFileSync(mapperCaptureAsset, join(output, "inputs/mapper-capture.mjs"));
   copyFileSync(
     join(head, ".github/workflows/template-alias-paired-11822.yml"),
     join(output, "inputs/workflow.yml"),
