@@ -12,7 +12,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use vize_canon::virtual_ts::SHARED_VIRTUAL_TYPE_EXPORTS;
-use vize_l0::{FxHashMap, String as CompactString, cstr};
+use vize_l0::{FxHashMap, String as CompactString, append};
 
 #[derive(Default)]
 pub(super) struct HelperCapability {
@@ -74,7 +74,7 @@ pub(super) fn installed_helpers(
         &mut capability.watched_files,
         &mut fingerprint,
     ) {
-        capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
+        capability.fingerprint = digest_hex(&fingerprint.finalize());
         return capability;
     }
     let Some((manifest_path, package_identity)) = locate_node_package(
@@ -83,7 +83,7 @@ pub(super) fn installed_helpers(
         &mut capability.watched_files,
         &mut fingerprint,
     ) else {
-        capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
+        capability.fingerprint = digest_hex(&fingerprint.finalize());
         return capability;
     };
     let Some(package) = manifest_path.parent() else {
@@ -112,7 +112,7 @@ pub(super) fn installed_helpers(
                         Ok(contents) => {
                             let digest = Sha256::digest(contents);
                             fingerprint.update(digest);
-                            cstr!("{digest:x}") == declaration.sha256
+                            digest_hex(&digest) == declaration.sha256
                         }
                         Err(_) => {
                             fingerprint.update(b"missing");
@@ -173,8 +173,16 @@ pub(super) fn installed_helpers(
         u8::from(capability.core_types),
         u8::from(capability.virtual_module),
     ]);
-    capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
+    capability.fingerprint = digest_hex(&fingerprint.finalize());
     capability
+}
+
+fn digest_hex(bytes: &[u8]) -> CompactString {
+    let mut hex = CompactString::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        append!(hex, "{byte:02x}");
+    }
+    hex
 }
 
 /// Qualify only resolution profiles represented by the generated contract.

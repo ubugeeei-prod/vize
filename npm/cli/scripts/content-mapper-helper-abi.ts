@@ -48,12 +48,12 @@ export function contentMapperHelperAbi(root: string, pending: ReadonlyMap<string
     types: [],
   };
   const host = ts.createCompilerHost(options);
-  const originalRead = host.readFile;
+  const originalRead = host.readFile.bind(host);
   host.readFile = (file) => {
     const relative = path.relative(root, file).split(path.sep).join("/");
     return pending.get(relative) ?? originalRead(file);
   };
-  const originalExists = host.fileExists;
+  const originalExists = host.fileExists.bind(host);
   host.fileExists = (file) =>
     pending.has(path.relative(root, file).split(path.sep).join("/")) || originalExists(file);
 
