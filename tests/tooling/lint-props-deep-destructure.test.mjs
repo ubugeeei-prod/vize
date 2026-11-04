@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -22,7 +23,7 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
     entry,
     route: "scoped",
     config: JSON.stringify({ linter: entry.config }, null, 2) + "\n",
-    expected: withoutHelp(entry.afterCli),
+    expected: currentRuleDocumentationPacket(withoutHelp(entry.afterCli)),
     expectedStatus: entry.afterStatus,
   }));
   for (const id of ["vue35-nested-object", "vue35-nested-array", "standalone-local-function"]) {

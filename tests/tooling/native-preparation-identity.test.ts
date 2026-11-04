@@ -20,6 +20,15 @@ function inspectPreparedFixture(
     mkdirSync(join(native, "scripts"), { recursive: true });
     mkdirSync(join(fixture, "node_modules/@vizejs"), { recursive: true });
     copyFileSync(join(root, helper), join(fixture, helper));
+    for (const source of [
+      "tools/support/compat/github/js-test-cases.ts",
+      "tools/support/compat/github/test-case-reporter.ts",
+      "tools/support/compat/github/test-cases.ts",
+      "tools/support/json-value.ts",
+    ]) {
+      mkdirSync(dirname(join(fixture, source)), { recursive: true });
+      copyFileSync(join(root, source), join(fixture, source));
+    }
     writeFileSync(join(fixture, "package.json"), '{"type":"module"}\n');
     writeFileSync(
       join(fixture, ".gitignore"),

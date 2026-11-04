@@ -66,3 +66,25 @@ test("native capacity admission requires real source, nonzero laws, both native 
       "target/differential/lsp-sessions/\n",
   );
 });
+
+test("ordinary source tooling retains failed capacity packets without collecting unrelated workspaces", () => {
+  const action = parse(readRepoFile(".github/actions/test-affected-tooling/action.yml")) as {
+    runs: { steps: Step[] };
+  };
+  const step = action.runs.steps.find(
+    (step) => step.name === "Retain failed native capacity packets and source send trace",
+  );
+  assert.ok(step);
+  assert.equal(
+    step.if,
+    "${{ failure() && hashFiles('target/vize-tests/diagnostic-capacity-*/result.json') != '' }}",
+  );
+  assert.ok(step.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(
+    step.with?.path,
+    "target/vize-tests/diagnostic-capacity-*/result.json\n" +
+      "target/ci/vize.differential-build.json\n",
+  );
+  assert.equal(step.with?.["if-no-files-found"], "error");
+  assert.equal(step.with?.["retention-days"], 7);
+});

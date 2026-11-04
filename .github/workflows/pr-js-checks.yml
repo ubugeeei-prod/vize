@@ -263,6 +263,22 @@ jobs:
           VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
           VIZE_CSS_MAP_SOURCE_SHA: ${{ github.sha }}
         run: node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs
+      - name: Preserve UI conformance native fault diagnostics
+        if: ${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ui-native-fault-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Retain every actual CSS API result and source identity
+        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-css-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/css-compile-source-maps/
+          if-no-files-found: error
+          retention-days: 14
       - name: Verify packaged direct-child props with source native on Node 22
         if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         shell: bash
@@ -282,21 +298,5 @@ jobs:
             ${{ runner.temp }}/direct-child-props-source-11809/
             !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules
             !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules/**
-          if-no-files-found: error
-          retention-days: 14
-      - name: Preserve UI conformance native fault diagnostics
-        if: ${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ui-native-fault-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
-          if-no-files-found: warn
-          retention-days: 14
-      - name: Retain every actual CSS API result and source identity
-        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: source-css-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: target/css-compile-source-maps/
           if-no-files-found: error
           retention-days: 14

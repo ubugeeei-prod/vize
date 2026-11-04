@@ -23,10 +23,13 @@ const PROJECT_RULES: &[&str] = &[
 /// ASCII letters are lowercased, and leading or trailing hyphens are dropped.
 /// `vue/require-v-for-key` is `docs/content/rules/reference/vue-require-v-for-key.md`.
 pub fn rule_docs_path(rule_name: &str) -> String {
-    // These diagnostic routes describe an aggregate or runtime, rather than a rule.
+    // Operational diagnostics own documentation outside the ordinary rule catalogue.
     match rule_name {
         "cross-file" => return String::from("docs/content/rules/cross-file.md"),
         "type/corsa-runtime" => return String::from("docs/content/rules/type-and-script.md"),
+        "vue/comment-directive" => {
+            return String::from("docs/content/guide/lint-execution.md");
+        }
         _ => {}
     }
     let directory = if is_project_rule(rule_name) {
@@ -265,5 +268,28 @@ impl SourceLineIndex {
             .and_then(|index| self.multibyte_adjustments.get(index))
             .map(|&(_, extra)| extra)
             .unwrap_or(0)
+    }
+}
+
+#[cfg(test)]
+mod documentation_authority_tests {
+    #[test]
+    fn unused_disable_diagnostics_use_the_existing_execution_guide() {
+        assert_eq!(
+            super::rule_docs_path("vue/comment-directive"),
+            "docs/content/guide/lint-execution.md"
+        );
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for path in [
+            "docs/content/guide/lint-execution.md",
+            "docs/content/ja/guide/lint-execution.md",
+        ] {
+            assert!(root.join(path).is_file(), "owned guide: {path}");
+        }
+        assert!(!crate::rule::RuleRegistry::with_all().has_rule("vue/comment-directive"));
+        assert_eq!(
+            super::rule_docs_path("vue/comment-directive-host-control"),
+            "docs/content/rules/reference/vue-comment-directive-host-control.md"
+        );
     }
 }
