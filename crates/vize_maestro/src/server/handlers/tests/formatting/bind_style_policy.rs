@@ -116,7 +116,11 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
     let project = tempfile::tempdir().unwrap();
     let root = project.path();
     let file = root.join("VBindProp.vue");
-    let source = original_fixed();
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/formatter-warning-capture-11815/Fixed.vue.txt"
+    ));
+    assert_eq!(source, original_fixed());
     std::fs::write(&file, source).unwrap();
     let uri = Url::from_file_path(&file).unwrap();
     let service = server_with(&uri, source, "vue");
@@ -131,6 +135,13 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
                     "/../../tests/_fixtures/differential/lsp/formatter-bind-style-policy-6098/vite.config.mjs.txt"
                 ))
             );
+            assert_eq!(
+                std::fs::read(root.join("vite.config.mjs")).unwrap(),
+                include_bytes!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/lsp/formatter-warning-capture-11815/vite.config.mjs.txt"
+                ))
+            );
         }
         let config_before = std::fs::read(root.join("vite.config.mjs")).unwrap();
         let (events, captured) = mpsc::channel();
@@ -143,6 +154,22 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
         let logs = captured.try_iter().collect::<Vec<_>>();
         println!("bind-style formatter capture: {normalize:?} {result:?} {logs:?}");
         assert_eq!(result, [None, None, None]);
+        let responses: Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/lsp/formatter-warning-capture-11815/response.expected.json"
+        )))
+        .unwrap();
+        assert_eq!(
+            serde_json::to_value(&result).unwrap(),
+            Value::Array(
+                responses
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|row| row["result"].clone())
+                    .collect()
+            )
+        );
         let expected = (
             CompactString::from("WARN"),
             vec![(
@@ -154,6 +181,37 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
             )],
         );
         assert_eq!(logs, vec![expected; 3]);
+        let warnings: Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/lsp/formatter-warning-capture-11815/warnings.expected.json"
+        )))
+        .unwrap();
+        let file_name = cstr!("{}", file.display());
+        let expected_logs = warnings
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                let fields = row["fields"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|field| {
+                        (
+                            CompactString::from(field[0].as_str().unwrap()),
+                            CompactString::from(
+                                field[1]
+                                    .as_str()
+                                    .unwrap()
+                                    .replace("${file}", file_name.as_str()),
+                            ),
+                        )
+                    })
+                    .collect();
+                (CompactString::from(row["level"].as_str().unwrap()), fields)
+            })
+            .collect::<Vec<CapturedEvent>>();
+        assert_eq!(logs, expected_logs);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
         assert_eq!(
             std::fs::read(root.join("vite.config.mjs")).unwrap(),

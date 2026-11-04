@@ -1,0 +1,1 @@
+export default { vue: {"formatter":{"normalizeDirectiveShorthands":true},"linter":{"preset":"incremental","ruleOptions":{"vue/v-bind-style":"longform"},"rules":{"vue/v-bind-style":"error"}}} };
