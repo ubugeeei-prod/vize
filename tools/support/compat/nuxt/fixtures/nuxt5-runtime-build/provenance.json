@@ -1,0 +1,22 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/11793",
+  "reporter": "Q16solver",
+  "input": "The three reported source files are unchanged; package-lock.json freezes an npm consumer of the same exact packages.",
+  "reported": {
+    "node": "26.13.0",
+    "packageManager": "pnpm12.16.1",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "ciInstall": {
+    "packageManager": "npm",
+    "peerResolution": "--legacy-peer-deps",
+    "reason": "Nuxt5 peer declaration is a separate #11795 gate; this test qualifies the runtime fix only."
+  },
+  "files": {
+    "package.json": "5bc71d5ee6e499ecc9a6e7f94b6311dcedf914d02797c08ac2a2be3d9af255db",
+    "nuxt.config.ts": "cf2d4a7e3878d9f9459685aae99c0317c51cfb51a55ac699c21d4153df17e133",
+    "app/app.vue": "9907bbf1071a1117ecb79ae03090464078685f3dad3ef574d028c4f45fc6291d",
+    "package-lock.json": "24350323b034f09c82e747aae7c5f0149e4b0799a92569e0099f4ab16e718442"
+  }
+}
