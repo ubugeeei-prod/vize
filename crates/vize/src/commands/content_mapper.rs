@@ -154,6 +154,9 @@ mod shared_helper_tests;
 mod helper_abi_tests;
 
 #[cfg(test)]
+mod helper_abi_fixture;
+
+#[cfg(test)]
 mod frame_tests;
 
 #[cfg(test)]
