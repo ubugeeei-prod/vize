@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import {
   newNativeIdentitySuccessor,
   NATIVE_IDENTITY_SUCCESSOR_ID,
+  NATIVE_OPEN_OWNER_SUCCESSOR_ID,
 } from "../../tools/support/compat/github/native-document-identity-successor.ts";
 import { newNativeDocumentIdentityCases } from "../../tools/support/compat/github/native-document-identity-fixtures.ts";
 import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
@@ -14,6 +16,9 @@ const base = "372e7db0513254cefab44efbc048f86d3c9a74d8";
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const originals = manifest.nativeDocumentIdentityCases;
 const rows = manifest.nativeDocumentIdentitySuccessors;
+const firstImage = JSON.parse(gunzipSync(fs.readFileSync(rows[0].image.path)).toString("utf8")) as {
+  headImages: Record<string, string>;
+};
 type Read = (side: "base" | "head", path: string) => Buffer | null;
 const baseCache = new Map<string, Buffer | null>();
 const read: Read = (side, path) => {
@@ -43,9 +48,10 @@ const changed =
 
 test("the corrective transition authenticates actual source bytes and preserves the original actor", () => {
   const result = validate();
-  assert.deepEqual(result.ids, [NATIVE_IDENTITY_SUCCESSOR_ID]);
+  assert.deepEqual(result.ids, [NATIVE_IDENTITY_SUCCESSOR_ID, NATIVE_OPEN_OWNER_SUCCESSOR_ID]);
   assert.equal(result.sources.size, 19);
   assert.equal(rows[0].nativeQualification, false);
+  assert.equal(rows[1].nativeQualification, false);
   const original = newNativeDocumentIdentityCases(undefined, originals, result.historyRead);
   assert.equal(original.sources.size, 17);
   assert.deepEqual(original.ids, [originals[0].id]);
@@ -77,7 +83,14 @@ test("every actual base and head source is required with no unknown-image fallba
 
 test("the current and original immutable images all refuse tampering", () => {
   for (const [path, message] of [
-    [rows[0].image.path, /changed native identity successor image/],
+    [
+      rows[0].image.path,
+      new RegExp(`changed native identity successor image: ${NATIVE_IDENTITY_SUCCESSOR_ID}`),
+    ],
+    [
+      rows[1].image.path,
+      new RegExp(`changed native identity successor image: ${NATIVE_OPEN_OWNER_SUCCESSOR_ID}`),
+    ],
     [originals[0].sourceArchive.path, /changed original identity preimage archive/],
     [
       "tests/_fixtures/differential/typechecker/native-document-identity-11586/after-source.json.gz",
@@ -131,7 +144,7 @@ test("registered successor history cannot disappear, mutate or admit later sourc
   );
   assert.throws(
     () => validate(read, undefined, [...rows, ...rows]),
-    /one registered identity successor required/,
+    /one or two registered identity successors required/,
   );
   const unknown = structuredClone(rows);
   unknown[0].unreviewed = true;
@@ -144,10 +157,62 @@ test("registered successor history cannot disappear, mutate or admit later sourc
     ["tree", "0".repeat(40), /unregistered identity successor source tree/],
     ["targets", ["unreviewed"], /identity successor target differs/],
   ] as const) {
-    const altered = structuredClone(rows);
-    altered[0][field] = value;
-    assert.throws(() => validate(read, undefined, altered), message);
+    for (const index of [0, 1]) {
+      const altered = structuredClone(rows);
+      altered[index][field] = value;
+      assert.throws(() => validate(read, undefined, altered), message);
+    }
   }
+});
+
+test("the original successor stays immutable and the second image extends its exact source state", () => {
+  const first = rows.slice(0, 1);
+  const firstReader: Read = (side, path) =>
+    side === "head" && Object.hasOwn(firstImage.headImages, path)
+      ? Buffer.from(firstImage.headImages[path]!, "base64")
+      : read(side, path);
+  assert.deepEqual(validate(firstReader, undefined, first).ids, [NATIVE_IDENTITY_SUCCESSOR_ID]);
+  assert.throws(
+    () => validate(read, undefined, first),
+    /changed head native identity successor source:/,
+  );
+  const appendedReader: Read = (side, path) =>
+    side === "base" && Object.hasOwn(firstImage.headImages, path)
+      ? Buffer.from(firstImage.headImages[path]!, "base64")
+      : read(side, path);
+  const appended = validate(appendedReader, first);
+  assert.deepEqual(appended.ids, [NATIVE_OPEN_OWNER_SUCCESSOR_ID]);
+  assert.equal(appended.sources.size, 19);
+  const path = "crates/vize_canon/src/lsp_client/session.rs";
+  assert.throws(
+    () =>
+      validate(
+        (side, file) =>
+          side === "base" && file === path
+            ? Buffer.from("unregistered intermediate source")
+            : appendedReader(side, file),
+        first,
+      ),
+    /changed base native identity successor source:/,
+  );
+  assert.throws(
+    () => validate(read, undefined, [rows[0], rows[0]]),
+    /unregistered identity successor profile/,
+  );
+  assert.throws(
+    () => validate(read, undefined, [rows[1], rows[0]]),
+    /unregistered identity successor profile/,
+  );
+  assert.throws(
+    () => validate(read, rows, first),
+    /registered identity successor must remain unchanged/,
+  );
+  const changedPrefix = structuredClone(rows);
+  changedPrefix[0].tree = "0".repeat(40);
+  assert.throws(
+    () => validate(appendedReader, first, changedPrefix),
+    /registered identity successor must remain unchanged/,
+  );
 });
 
 test("the mandatory source gate admits only the complete current corrective transition", () => {
@@ -169,6 +234,7 @@ test("the mandatory source gate admits only the complete current corrective tran
   const admitted = report(true);
   assert.equal(admitted?.state, "new-inputs-registered", admitted?.reason);
   assert.ok(admitted?.cases.includes(NATIVE_IDENTITY_SUCCESSOR_ID));
+  assert.ok(admitted?.cases.includes(NATIVE_OPEN_OWNER_SUCCESSOR_ID));
   const unrelated = analyzeLegacyFix({
     title: "fix(lsp): retain URI owners and every remapped edit",
     paths: [...paths, "crates/vize_canon/src/lsp_client/unrelated.rs"],

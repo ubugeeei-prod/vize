@@ -17481,6 +17481,20 @@
         "native-document-identity"
       ],
       "nativeQualification": false
+    },
+    {
+      "id": "typechecker/protocol/native-document-open-owners-11586",
+      "state": "active",
+      "source": "d7f0daf8a1516afe27fcc79e665a94b3b3bf02e4",
+      "tree": "ecd9ff968a2d164a04b0060184220f68a88cc678",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/open-owner-source.json.gz",
+        "sha256": "582f0bb255321010869031568d814713b5d0829a4d67690eed13b7347ed72924"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
     }
   ]
 }
