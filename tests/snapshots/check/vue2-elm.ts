@@ -22,6 +22,11 @@ const CLEAN_IMPORT = "\timport svgIcon from './components/common/svg';\n";
 const BROKEN_IMPORT = `${CLEAN_IMPORT}\tconst vizeLegacyProbe = missingVizeLegacyProbe;\n`;
 const BROKEN_DIAGNOSTIC =
   "error:17:26 [TS2552] Cannot find name 'missingVizeLegacyProbe'. Did you mean 'vizeLegacyProbe'?";
+const PROFILE_PATH = "src/page/profile/profile.vue";
+const DEFINED_MIXIN_CALL = "path = this.getImgPath(this.avatar)";
+const MISSPELLED_MIXIN_CALL = "path = this.getImgPat(this.avatar)";
+const MISSPELLED_MIXIN_DIAGNOSTIC =
+  "error:179:29 [TS2551] Property 'getImgPat' does not exist on type '$This'. Did you mean 'getImgPath'?";
 
 // First suite to exercise the pinned vue2-elm fixture (#2971 audit item 7).
 // The snapshot pins the exact `vize check` surface over the untouched Vue 2
@@ -63,8 +68,8 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
       assertDiagnosticsStayInAuthoredBlocks(fixture.workspaceDir, first.report.files);
 
       // The two historical packets remain frozen. The additive display
-      // successor retains all 408 diagnostics and changes only the 170 reviewed
-      // `__VizeThis` type names, with exact Actions custody in display-successor.json.
+      // successor changes the 170 reviewed `__VizeThis` names. Its sole later
+      // removal is the real inherited getImgPath method's false positive (#11780).
       assertSnapshot(
         SNAPSHOT_DIR,
         "vue2-elm-display-check",
@@ -75,6 +80,53 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
 }
 
 test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", verifyVue2ElmSnapshot);
+
+test("vue2-elm accepts the defined JS mixin method and rejects a misspelled call", async () => {
+  const corsaPath = resolveTsgoBinary();
+
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue2-elm", includePaths: ["src"] },
+    async (fixture) => {
+      configureVue2Workspace(fixture, corsaPath);
+      const pinnedSource = fixture.read(PROFILE_PATH);
+      const clean = runVizeCheck(fixture.workspaceDir, corsaPath, [PROFILE_PATH]);
+      assert.equal(clean.status, 1, clean.stderr || clean.stdout);
+      assert.equal(clean.stderr, "");
+      const cleanDiagnostics = diagnosticsFor(clean.report.files, PROFILE_PATH);
+      assert.deepEqual(
+        cleanDiagnostics.filter((diagnostic) => diagnostic.startsWith("error:179:29 ")),
+        [],
+        "the imported mixin provides getImgPath",
+      );
+
+      fixture.applyExactPatch(PROFILE_PATH, DEFINED_MIXIN_CALL, MISSPELLED_MIXIN_CALL);
+      const broken = runVizeCheck(fixture.workspaceDir, corsaPath, [PROFILE_PATH]);
+      assert.equal(broken.status, 1, broken.stderr || broken.stdout);
+      assert.equal(broken.stderr, "");
+      const brokenDiagnostics = diagnosticsFor(broken.report.files, PROFILE_PATH);
+      assert.deepEqual(
+        brokenDiagnostics.filter((diagnostic) => !cleanDiagnostics.includes(diagnostic)),
+        [MISSPELLED_MIXIN_DIAGNOSTIC],
+      );
+      assert.deepEqual(
+        brokenDiagnostics.filter((diagnostic) => diagnostic !== MISSPELLED_MIXIN_DIAGNOSTIC),
+        cleanDiagnostics,
+        "the typo must preserve every other diagnostic",
+      );
+      const repairedSource = fixture.applyExactPatch(
+        PROFILE_PATH,
+        MISSPELLED_MIXIN_CALL,
+        DEFINED_MIXIN_CALL,
+      );
+      assert.equal(repairedSource, pinnedSource);
+      const repaired = runVizeCheck(fixture.workspaceDir, corsaPath, [PROFILE_PATH]);
+      assert.equal(repaired.status, 1, repaired.stderr || repaired.stdout);
+      assert.equal(repaired.stderr, "");
+      assert.deepEqual(repaired.report, clean.report);
+      assert.equal(repaired.stdout, clean.stdout);
+    },
+  );
+});
 
 test("vue2-elm detects and repairs an exact authored JavaScript type error", async () => {
   const corsaPath = resolveTsgoBinary();
