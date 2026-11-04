@@ -219,6 +219,15 @@ impl Profiler {
         self.enabled.load(Ordering::Relaxed)
     }
 
+    /// Set the enabled flag without process-wide allocation tracking.
+    ///
+    /// [`Profiler::enable`] also resets and arms the process allocation
+    /// counters. A profiler installed for one compile must not do that, or the
+    /// allocation flag races with every other test in the process.
+    pub fn set_enabled(&self, enabled: bool) {
+        self.enabled.store(enabled, Ordering::Relaxed);
+    }
+
     /// Start a timer for the given operation.
     #[inline]
     pub fn timer(&self, name: &'static str) -> Option<Timer> {
