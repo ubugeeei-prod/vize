@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type * as globalThis from "./authored";
+type Pick = globalThis.Authored;
+const marker: Pick = { id: 1 };
+defineProps<{ count: number }>();
+defineExpose({ marker });
+</script>
+<template>{{ $typedGlobal(count) }} {{ marker.id }}</template>

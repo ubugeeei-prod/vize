@@ -59,3 +59,58 @@ export const valid = h(Counter, { count: 3 });
         "only the missing and wrong h() calls may report diagnostics: {snapshot:#?}"
     );
 }
+
+#[test]
+fn capture_free_instance_keeps_authored_names_and_public_member_types() {
+    if resolve_test_tsgo_binary().is_none() {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required capture-free instance control cannot skip the native runtime"
+        );
+        return;
+    }
+    macro_rules! fixture {
+        ($name:literal) => {
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/typechecker/",
+                "capture-free-component-instance-11699/",
+                $name,
+                ".txt"
+            ))
+        };
+    }
+    let project_root = create_project_case(
+        "capture-free-instance",
+        &[
+            ("src/Capture.vue", fixture!("Capture.vue")),
+            ("src/authored.ts", fixture!("authored.ts")),
+            ("src/globals.d.ts", fixture!("globals.d.ts")),
+            ("src/render.ts", fixture!("render.ts")),
+            ("tsconfig.json", fixture!("tsconfig.json")),
+        ],
+    );
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let snapshot = snapshot.expect("native capture-free instance control must return diagnostics");
+    let diagnostics: Vec<_> = snapshot
+        .iter()
+        .map(|(file, code, message)| (file.as_str(), *code, message.as_str()))
+        .collect();
+    assert_eq!(
+        diagnostics,
+        vec![
+            (
+                "src/render.ts",
+                Some(2322),
+                "7:14:error Type 'number' is not assignable to type 'boolean'.",
+            ),
+            (
+                "src/render.ts",
+                Some(2345),
+                "8:50:error Argument of type 'string' is not assignable to parameter of type 'number'.",
+            ),
+        ],
+        "valid authored names, exposed members, globals and h() calls must remain diagnostic-free: {snapshot:#?}"
+    );
+}

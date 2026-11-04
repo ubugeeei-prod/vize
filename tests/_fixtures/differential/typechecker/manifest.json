@@ -9629,6 +9629,55 @@
       }
     },
     {
+      "id": "typechecker/regression/capture-free-component-instance-11699",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "capture-free-component-instance-11699/Capture.vue.txt",
+          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/authored.ts.txt",
+          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
+          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/render.ts.txt",
+          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
       "state": "active",
       "targets": [

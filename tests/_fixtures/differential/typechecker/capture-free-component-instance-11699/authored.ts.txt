@@ -1,0 +1,1 @@
+export interface Authored { id: number }
