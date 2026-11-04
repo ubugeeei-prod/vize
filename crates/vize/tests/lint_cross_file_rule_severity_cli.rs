@@ -129,7 +129,9 @@ fn configured_cross_file_findings_keep_complete_reports_and_input_bytes() {
         let name = case["name"].as_str().unwrap();
         let project = case["project"].as_str().unwrap();
         let supplied = read_json(&corpus.join(format!("inputs/{project}.json")));
-        let expected = read_json(&corpus.join(format!("cases/{name}.json")));
+        let expected = crate::support::current_rule_documentation::packet(read_json(
+            &corpus.join(format!("cases/{name}.json")),
+        ));
         assert_eq!(json!(expected.as_array().unwrap().len()), case["files"]);
         let errors: u64 = expected
             .as_array()
