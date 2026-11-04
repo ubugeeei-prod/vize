@@ -10,6 +10,10 @@ import {
   emptyCompileSourceBlobs,
   validateEmptyCompileSources,
 } from "../native/sfc-parse-attributes-empty-component.ts";
+import {
+  emptyCompileSourcesForReference,
+  emptyProjectContextSupportingBlobs,
+} from "../native/sfc-empty-project-context-source.ts";
 
 const captured = JSON.parse(
   readFileSync(
@@ -96,11 +100,14 @@ await test("only the original empty compile packet advances by the authenticated
 });
 
 await test("empty compile references reject altered or incomplete complete product source laws", () => {
-  const sources = Object.fromEntries(
-    Object.keys(emptyCompileSourceBlobs).map((file) => [
-      file,
-      readFileSync(new URL(`../../${file}`, import.meta.url)),
-    ]),
+  const sources = emptyCompileSourcesForReference(
+    Object.fromEntries(
+      Object.keys(emptyCompileSourceBlobs).map((file) => [
+        file,
+        readFileSync(new URL(`../../${file}`, import.meta.url)),
+      ]),
+    ),
+    emptyCompileSourceBlobs,
   );
   validateEmptyCompileSources(sources);
   for (const file of Object.keys(sources)) {
@@ -115,4 +122,41 @@ await test("empty compile references reject altered or incomplete complete produ
     assert.throws(() => validateEmptyCompileSources(missing));
   }
   assert.throws(() => validateEmptyCompileSources({ ...sources, unknown: Buffer.from("") }));
+});
+
+test("the project-context successor rejects unknown, incomplete and mixed source bundles", () => {
+  const read = (blobs: Readonly<Record<string, string>>) =>
+    Object.fromEntries(
+      Object.keys(blobs).map((file) => [
+        file,
+        readFileSync(new URL(`../../${file}`, import.meta.url)),
+      ]),
+    );
+  const sources = read(emptyCompileSourceBlobs);
+  const supporting = read(emptyProjectContextSupportingBlobs);
+  const original = emptyCompileSourcesForReference(sources, emptyCompileSourceBlobs, supporting);
+  validateEmptyCompileSources(original);
+  assert.equal(emptyCompileSourcesForReference(original, emptyCompileSourceBlobs), original);
+  for (const [group, input] of [
+    ["sources", sources],
+    ["supporting", supporting],
+  ] as const) {
+    const validate = (changed: Record<string, Uint8Array>) =>
+      emptyCompileSourcesForReference(
+        group === "sources" ? changed : sources,
+        emptyCompileSourceBlobs,
+        group === "supporting" ? changed : supporting,
+      );
+    for (const file of Object.keys(input)) {
+      assert.throws(() =>
+        validate({ ...input, [file]: Buffer.concat([input[file], Buffer.from("\n")]) }),
+      );
+      const missing = { ...input };
+      delete missing[file];
+      assert.throws(() => validate(missing));
+    }
+    assert.throws(() => validate({ ...input, unknown: Buffer.from("") }));
+  }
+  const mixed = { ...sources, [Object.keys(original)[0]]: Object.values(original)[0] };
+  assert.throws(() => emptyCompileSourcesForReference(mixed, emptyCompileSourceBlobs, supporting));
 });
