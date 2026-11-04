@@ -17495,6 +17495,20 @@
         "native-document-identity"
       ],
       "nativeQualification": false
+    },
+    {
+      "id": "typechecker/protocol/native-document-project-imports-11586",
+      "state": "active",
+      "source": "0d49c54d229b4a7dbf660275bf00beb5b71e21a9",
+      "tree": "2786efae7e9be8ed7e7d66b9e6b805be32cd0226",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/project-import-source.json.gz",
+        "sha256": "af5a7832685b8d2e0f887abae9a2fd8bc3c655df6d7ce3ede231cdab52d45f28"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
     }
   ]
 }

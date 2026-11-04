@@ -7,6 +7,7 @@ import {
   newNativeIdentitySuccessor,
   NATIVE_IDENTITY_SUCCESSOR_ID,
   NATIVE_OPEN_OWNER_SUCCESSOR_ID,
+  NATIVE_PROJECT_IMPORT_SUCCESSOR_ID,
 } from "../../tools/support/compat/github/native-document-identity-successor.ts";
 import { newNativeDocumentIdentityCases } from "../../tools/support/compat/github/native-document-identity-fixtures.ts";
 import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
@@ -48,10 +49,15 @@ const changed =
 
 test("the corrective transition authenticates actual source bytes and preserves the original actor", () => {
   const result = validate();
-  assert.deepEqual(result.ids, [NATIVE_IDENTITY_SUCCESSOR_ID, NATIVE_OPEN_OWNER_SUCCESSOR_ID]);
-  assert.equal(result.sources.size, 19);
+  assert.deepEqual(result.ids, [
+    NATIVE_IDENTITY_SUCCESSOR_ID,
+    NATIVE_OPEN_OWNER_SUCCESSOR_ID,
+    NATIVE_PROJECT_IMPORT_SUCCESSOR_ID,
+  ]);
+  assert.equal(result.sources.size, 21);
   assert.equal(rows[0].nativeQualification, false);
   assert.equal(rows[1].nativeQualification, false);
+  assert.equal(rows[2].nativeQualification, false);
   const original = newNativeDocumentIdentityCases(undefined, originals, result.historyRead);
   assert.equal(original.sources.size, 17);
   assert.deepEqual(original.ids, [originals[0].id]);
@@ -90,6 +96,10 @@ test("the current and original immutable images all refuse tampering", () => {
     [
       rows[1].image.path,
       new RegExp(`changed native identity successor image: ${NATIVE_OPEN_OWNER_SUCCESSOR_ID}`),
+    ],
+    [
+      rows[2].image.path,
+      new RegExp(`changed native identity successor image: ${NATIVE_PROJECT_IMPORT_SUCCESSOR_ID}`),
     ],
     [originals[0].sourceArchive.path, /changed original identity preimage archive/],
     [
@@ -144,7 +154,7 @@ test("registered successor history cannot disappear, mutate or admit later sourc
   );
   assert.throws(
     () => validate(read, undefined, [...rows, ...rows]),
-    /one or two registered identity successors required/,
+    /one to three registered identity successors required/,
   );
   const unknown = structuredClone(rows);
   unknown[0].unreviewed = true;
@@ -157,7 +167,7 @@ test("registered successor history cannot disappear, mutate or admit later sourc
     ["tree", "0".repeat(40), /unregistered identity successor source tree/],
     ["targets", ["unreviewed"], /identity successor target differs/],
   ] as const) {
-    for (const index of [0, 1]) {
+    for (const index of [0, 1, 2]) {
       const altered = structuredClone(rows);
       altered[index][field] = value;
       assert.throws(() => validate(read, undefined, altered), message);
@@ -181,8 +191,11 @@ test("the original successor stays immutable and the second image extends its ex
       ? Buffer.from(firstImage.headImages[path]!, "base64")
       : read(side, path);
   const appended = validate(appendedReader, first);
-  assert.deepEqual(appended.ids, [NATIVE_OPEN_OWNER_SUCCESSOR_ID]);
-  assert.equal(appended.sources.size, 19);
+  assert.deepEqual(appended.ids, [
+    NATIVE_OPEN_OWNER_SUCCESSOR_ID,
+    NATIVE_PROJECT_IMPORT_SUCCESSOR_ID,
+  ]);
+  assert.equal(appended.sources.size, 21);
   const path = "crates/vize_canon/src/lsp_client/session.rs";
   assert.throws(
     () =>
@@ -215,6 +228,50 @@ test("the original successor stays immutable and the second image extends its ex
   );
 });
 
+test("the project-import successor extends the published pair and authenticates newly registered base files", () => {
+  const retained = rows.slice(0, 2);
+  const image = JSON.parse(gunzipSync(fs.readFileSync(rows[1].image.path)).toString("utf8")) as {
+    headImages: Record<string, string>;
+  };
+  const priorHead: Read = (side, path) =>
+    side === "head" && Object.hasOwn(image.headImages, path)
+      ? Buffer.from(image.headImages[path]!, "base64")
+      : read(side, path);
+  assert.deepEqual(validate(priorHead, undefined, retained).ids, [
+    NATIVE_IDENTITY_SUCCESSOR_ID,
+    NATIVE_OPEN_OWNER_SUCCESSOR_ID,
+  ]);
+  assert.throws(
+    () => validate(read, undefined, retained),
+    /changed head native identity successor source:/,
+  );
+  const appendedReader: Read = (side, path) =>
+    side === "base" && Object.hasOwn(image.headImages, path)
+      ? Buffer.from(image.headImages[path]!, "base64")
+      : read(side, path);
+  assert.deepEqual(validate(appendedReader, retained).ids, [NATIVE_PROJECT_IMPORT_SUCCESSOR_ID]);
+  for (const path of [
+    "crates/vize_canon/src/lsp_client/lifecycle_setup.rs",
+    "crates/vize_canon/src/lsp_client/lifecycle/workspace/initial_project_tests.rs",
+  ]) {
+    assert.throws(
+      () => validate(changed("base", path)),
+      new RegExp(`changed base native identity successor source: ${path}`),
+    );
+    assert.throws(
+      () =>
+        validate(
+          (side, file) =>
+            side === "base" && file === path
+              ? Buffer.from("unregistered newly covered preimage")
+              : appendedReader(side, file),
+          retained,
+        ),
+      /changed base native identity successor source:/,
+    );
+  }
+});
+
 test("the mandatory source gate admits only the complete current corrective transition", () => {
   const paths = [...validate().sources];
   const report = (registered: boolean) =>
@@ -235,6 +292,7 @@ test("the mandatory source gate admits only the complete current corrective tran
   assert.equal(admitted?.state, "new-inputs-registered", admitted?.reason);
   assert.ok(admitted?.cases.includes(NATIVE_IDENTITY_SUCCESSOR_ID));
   assert.ok(admitted?.cases.includes(NATIVE_OPEN_OWNER_SUCCESSOR_ID));
+  assert.ok(admitted?.cases.includes(NATIVE_PROJECT_IMPORT_SUCCESSOR_ID));
   const unrelated = analyzeLegacyFix({
     title: "fix(lsp): retain URI owners and every remapped edit",
     paths: [...paths, "crates/vize_canon/src/lsp_client/unrelated.rs"],

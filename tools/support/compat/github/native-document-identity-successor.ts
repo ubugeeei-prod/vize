@@ -12,6 +12,8 @@ export const NATIVE_IDENTITY_SUCCESSOR_ID =
   "typechecker/protocol/native-document-identity-review-11586";
 export const NATIVE_OPEN_OWNER_SUCCESSOR_ID =
   "typechecker/protocol/native-document-open-owners-11586";
+export const NATIVE_PROJECT_IMPORT_SUCCESSOR_ID =
+  "typechecker/protocol/native-document-project-imports-11586";
 type Profile = {
   id: string;
   source: string;
@@ -37,7 +39,19 @@ const profiles: readonly Profile[] = [
     path: "tests/_fixtures/differential/typechecker/native-document-identity-11586/open-owner-source.json.gz",
     sha256: "582f0bb255321010869031568d814713b5d0829a4d67690eed13b7347ed72924",
   },
+  {
+    id: NATIVE_PROJECT_IMPORT_SUCCESSOR_ID,
+    source: "0d49c54d229b4a7dbf660275bf00beb5b71e21a9",
+    tree: "2786efae7e9be8ed7e7d66b9e6b805be32cd0226",
+    base: "d7f0daf8a1516afe27fcc79e665a94b3b3bf02e4",
+    path: "tests/_fixtures/differential/typechecker/native-document-identity-11586/project-import-source.json.gz",
+    sha256: "af5a7832685b8d2e0f887abae9a2fd8bc3c655df6d7ce3ede231cdab52d45f28",
+  },
 ];
+const projectImportPaths = [
+  "crates/vize_canon/src/lsp_client/lifecycle_setup.rs",
+  "crates/vize_canon/src/lsp_client/lifecycle/workspace/initial_project_tests.rs",
+] as const;
 const hash = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
 function object(value: unknown): Record<string, unknown> {
   assert.ok(
@@ -149,7 +163,7 @@ export function newNativeIdentitySuccessor(
   }
   assert.ok(
     Array.isArray(current) && current.length >= 1 && current.length <= profiles.length,
-    "one or two registered identity successors required",
+    "one to three registered identity successors required",
   );
   const retained = Array.isArray(previous) ? previous.length : 0;
   assert.ok(retained <= current.length, "registered identity successor must remain unchanged");
@@ -169,7 +183,7 @@ export function newNativeIdentitySuccessor(
     assert.ok(typeof path === "string");
     return path;
   });
-  const currentPaths = [
+  const reviewPaths = [
     ...originalPaths,
     "crates/vize_canon/src/lsp_client/editor_lsp/client/tests.rs",
     "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
@@ -177,25 +191,45 @@ export function newNativeIdentitySuccessor(
   const images = current.map((value: unknown, index: number) => {
     const profile = profiles[index];
     assert.ok(profile);
-    return sourceImage(
-      value,
-      profile,
-      index === 0 ? originalPaths : currentPaths,
-      currentPaths,
-      read,
-    );
+    const paths = index === 2 ? [...reviewPaths, ...projectImportPaths] : reviewPaths;
+    return sourceImage(value, profile, index === 0 ? originalPaths : paths, paths, read);
   });
   for (let index = 1; index < images.length; index += 1) {
+    const previousHead = images[index - 1]!.head;
+    const entries = Object.entries(images[index]!.base);
     assert.deepEqual(
-      images[index]!.base,
-      images[index - 1]!.head,
+      Object.fromEntries(entries.filter(([path]) => Object.hasOwn(previousHead, path))),
+      previousHead,
       "identity successor source chain is not contiguous",
+    );
+    actualSources(
+      read,
+      "base",
+      Object.fromEntries(entries.filter(([path]) => !Object.hasOwn(previousHead, path))),
     );
   }
   actualSources(read, "base", images[retained]!.base);
   actualSources(read, "head", images.at(-1)!.head);
   for (const [path, selector] of consumers) {
     assertCompiledIdentityConsumer(bytes(read, "head", path).toString("utf8"), selector, null);
+  }
+  if (current.length === 3) {
+    for (const [path, selectors] of [
+      [
+        projectImportPaths[0],
+        [
+          "materialized_root_dirs_keep_the_selected_chain_order_and_authored_paths",
+          "invalid_authored_root_dirs_are_not_replaced_by_a_valid_fallback",
+        ],
+      ],
+      [
+        projectImportPaths[1],
+        ["native_first_materialized_editor_matches_existing_activation_and_delta"],
+      ],
+    ] as const) {
+      for (const selector of selectors)
+        assertCompiledIdentityConsumer(bytes(read, "head", path).toString("utf8"), selector, null);
+    }
   }
   // Historical replay never substitutes for actual current ABI/producer custody.
   assertNativeDocumentIdentityAbi(read, original.legacyProtocol);
@@ -222,6 +256,6 @@ export function newNativeIdentitySuccessor(
   result.historyRead = (side, path) =>
     (side === "base" ? before : after).get(path) ?? read(side, path);
   result.ids.push(...profiles.slice(retained, current.length).map((profile) => profile.id));
-  result.sources = new Set(currentPaths);
+  result.sources = new Set(Object.keys(images.at(-1)!.head));
   return result;
 }
