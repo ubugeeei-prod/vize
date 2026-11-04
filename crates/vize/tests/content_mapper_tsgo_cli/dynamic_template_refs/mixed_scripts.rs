@@ -2,8 +2,10 @@
 
 use super::{install_vue_package, output_text, workspace_root};
 use serde_json::{Value, json};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+
+mod protocol;
 
 const ROOT: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -11,10 +13,10 @@ const ROOT: &str = concat!(
 );
 
 #[test]
+#[ignore = "requires the exact source CLI and native checker Actions lane"]
 fn native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused() {
-    let Some(runtime) = crate::support::corsa_requirement::required_or_skip::<PathBuf>(None) else {
-        return;
-    };
+    let runtime = crate::support::corsa_requirement::required_or_skip::<PathBuf>(None)
+        .expect("this explicitly selected regression requires the native checker");
     let parent = workspace_root().join("target/vize-tests/tests");
     std::fs::create_dir_all(&parent).unwrap();
     let project = tempfile::Builder::new()
@@ -24,18 +26,7 @@ fn native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused()
     std::fs::create_dir(project.path().join("node_modules")).unwrap();
     install_vue_package(project.path());
     std::fs::create_dir(project.path().join("src")).unwrap();
-    let inputs = [
-        ("tsconfig.json", "tsconfig.json.txt"),
-        ("src/useBoxObject.ts", "useBoxObject.ts.txt"),
-        ("src/SetupOnlyObject.vue", "SetupOnlyObject.vue.txt"),
-        ("src/WithScriptObject.vue", "WithScriptObject.vue.txt"),
-        ("src/WithScriptPlain.vue", "WithScriptPlain.vue.txt"),
-    ]
-    .map(|(file, fixture)| {
-        let contents = std::fs::read_to_string(format!("{ROOT}{fixture}")).unwrap();
-        std::fs::write(project.path().join(file), &contents).unwrap();
-        (file, contents)
-    });
+    let inputs = materialize_inputs(project.path());
     let config: Value = serde_json::from_str(&inputs[0].1).unwrap();
     let original = &inputs[3].1;
     let unused = original.replace(
@@ -114,4 +105,19 @@ fn native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused()
             output_text(&output),
         );
     }
+}
+
+fn materialize_inputs(project: &Path) -> [(&'static str, String); 5] {
+    [
+        ("tsconfig.json", "tsconfig.json.txt"),
+        ("src/useBoxObject.ts", "useBoxObject.ts.txt"),
+        ("src/SetupOnlyObject.vue", "SetupOnlyObject.vue.txt"),
+        ("src/WithScriptObject.vue", "WithScriptObject.vue.txt"),
+        ("src/WithScriptPlain.vue", "WithScriptPlain.vue.txt"),
+    ]
+    .map(|(file, fixture)| {
+        let contents = std::fs::read_to_string(format!("{ROOT}{fixture}")).unwrap();
+        std::fs::write(project.join(file), &contents).unwrap();
+        (file, contents)
+    })
 }
