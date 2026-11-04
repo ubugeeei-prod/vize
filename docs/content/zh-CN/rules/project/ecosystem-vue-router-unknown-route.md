@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-名称不在完整且已安装的路由器中。
+报告已安装路由器未声明的导航名称。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 错误示例
 
-可达且已安装的路由器声明了 `user-post`，但导航使用拼写错误的 `user-posts`。
+名称不在完整且已安装的路由器中。可达且已安装的路由器声明了 `user-post`，但导航使用拼写错误的 `user-posts`。
 
 `src/UserPost.vue`
 

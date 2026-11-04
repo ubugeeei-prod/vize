@@ -4,7 +4,7 @@ title: "vize:croquis/cf/object-identity-comparison"
 
 # `vize:croquis/cf/object-identity-comparison`
 
-A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.
+A reactive object is compared by identity, which changes across unwraps.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ Applies to: Analyzed component graph and the supported facts described below
 
 This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
 
-The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.
+The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer. A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object.
 
 ## Shared project files
 
@@ -51,7 +51,7 @@ export function makeUser() {
 
 ## Bad
 
-`proxy === raw` compares wrapper identity, so it is false even though both represent the same user record. The application intended record identity, not object-wrapper identity.
+This contract illustrates comparing stable record IDs when record identity is intended. `proxy === raw` compares wrapper identity, so it is false even though both represent the same user record. The application intended record identity, not object-wrapper identity.
 
 `App.vue`
 

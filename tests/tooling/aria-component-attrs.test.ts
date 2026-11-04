@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   ariaComponentProjects,
   ariaPropReference,
@@ -8,6 +11,12 @@ import {
   reportedAriaConfig,
   reportedAriaParent,
 } from "../../tools/support/compat/content-mapper/aria-component-projects.ts";
+import {
+  CHECKER_SDK_ENTRY,
+  PUBLISHED_SDK_ENTRY,
+  assertShippedDeclarationModule,
+  sharedDeclarationEntry,
+} from "../../tools/support/compat/content-mapper/aria-sdk-entry.ts";
 
 test("the package regression retains the original reporter inputs", () => {
   const original = ariaComponentProjects().find((project) => project.id === "original");
@@ -113,4 +122,106 @@ test("the negative reference is an independent plain TypeScript prop assignment"
     "reference.ts(2,10): error TS2322: Type 'false' is not assignable to type 'string | number | undefined'.\n",
   );
   assert.equal(ariaPropReference.split("\n")[1].slice(9, 13), "size");
+});
+
+const checkerExport = {
+  "./virtual-ts-checker": { types: "./virtual-ts-checker.d.ts" },
+  "./virtual-ts": { types: "./virtual-ts.d.ts" },
+};
+const publishedExport = { "./virtual-ts": { types: "./virtual-ts.d.ts" } };
+const checkerText = 'import type {} from "vize/virtual-ts-checker";\nexport type Props = {};\n';
+const publishedText = 'import type {} from "vize/virtual-ts";\nexport type Props = {};\n';
+const shippedModule = /exercise the actual shipped shared declaration module/u;
+
+test("source and published packages bind their own declaration entry", () => {
+  const packageRoot = fileURLToPath(new URL("../../npm/cli/", import.meta.url));
+  const manifest = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8"));
+  const files = ["virtual-ts-checker.d.ts", "virtual-ts.d.ts"].filter((file) =>
+    existsSync(path.join(packageRoot, file)),
+  );
+  assert.deepEqual(files, ["virtual-ts-checker.d.ts", "virtual-ts.d.ts"]);
+  assert.equal(
+    sharedDeclarationEntry({ mode: "source", exports: manifest.exports, files }),
+    CHECKER_SDK_ENTRY,
+  );
+  assert.equal(
+    sharedDeclarationEntry({ mode: "published", exports: manifest.exports, files }),
+    CHECKER_SDK_ENTRY,
+  );
+  assert.equal(
+    sharedDeclarationEntry({
+      mode: "published",
+      exports: publishedExport,
+      files: ["virtual-ts.d.ts"],
+    }),
+    PUBLISHED_SDK_ENTRY,
+  );
+  assert.equal(
+    sharedDeclarationEntry({
+      mode: "source",
+      exports: checkerExport,
+      files: ["virtual-ts-checker.d.ts", "virtual-ts.d.ts"],
+    }),
+    CHECKER_SDK_ENTRY,
+  );
+  for (const contract of [
+    { mode: "source" as const, exports: publishedExport, files: ["virtual-ts.d.ts"] },
+    { mode: "published" as const, exports: {}, files: [] },
+    {
+      mode: "published" as const,
+      exports: { "./virtual-ts-checker": { types: "./other.d.ts" } },
+      files: ["virtual-ts-checker.d.ts"],
+    },
+    {
+      mode: "published" as const,
+      exports: { "./virtual-ts": { types: "./not-virtual-ts.d.ts" } },
+      files: ["virtual-ts.d.ts"],
+    },
+    {
+      mode: "source" as const,
+      exports: { "./not-an-sdk": { types: "./virtual-ts-checker.d.ts" } },
+      files: ["virtual-ts-checker.d.ts"],
+    },
+  ])
+    assert.throws(() => sharedDeclarationEntry(contract), shippedModule);
+});
+
+test("a missing or incorrect SDK entry cannot satisfy the shipped module", () => {
+  assertShippedDeclarationModule(checkerText, CHECKER_SDK_ENTRY);
+  assertShippedDeclarationModule(publishedText, PUBLISHED_SDK_ENTRY);
+  for (const [text, entry] of [
+    ["export type Props = {};\n", CHECKER_SDK_ENTRY],
+    [publishedText, CHECKER_SDK_ENTRY],
+    [checkerText, PUBLISHED_SDK_ENTRY],
+    ['import type {} from "vize/not-the-sdk";\n', CHECKER_SDK_ENTRY],
+    [`${checkerText}import type {} from "vize/not-the-sdk";\n`, CHECKER_SDK_ENTRY],
+    [`${checkerText}${checkerText}`, CHECKER_SDK_ENTRY],
+    ['import type {} from "vize:virtual-ts";\n', PUBLISHED_SDK_ENTRY],
+    [`${checkerText}import type {} from "vize:virtual-ts";\n`, CHECKER_SDK_ENTRY],
+    [`${checkerText}// leftover vize:virtual-ts\n`, CHECKER_SDK_ENTRY],
+  ] as const)
+    assert.throws(() => assertShippedDeclarationModule(text, entry), shippedModule);
+  for (const [text, entry] of [
+    [`${checkerText}type $PropValue<P> = P;\n`, CHECKER_SDK_ENTRY],
+    [`${publishedText}type $PropValue<P> = P;\n`, PUBLISHED_SDK_ENTRY],
+  ] as const)
+    assert.throws(
+      () => assertShippedDeclarationModule(text, entry),
+      /embedded helpers would hide the published regression/u,
+    );
+  assert.throws(
+    () => assertShippedDeclarationModule(checkerText, "vize/not-the-sdk"),
+    shippedModule,
+  );
+});
+
+test("package qualification asks each packet for that SDK entry", () => {
+  const runner = readFileSync(
+    new URL("../../tools/support/compat/content-mapper/aria-component-attrs.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(runner, /sharedDeclarationEntry\(/u);
+  assert.match(runner, /assertShippedDeclarationModule\(text, declarationEntry\)/u);
+  assert.match(runner, /virtual-ts-checker\.d\.ts/u);
+  assert.doesNotMatch(runner, /from "vize\/virtual-ts(?:-checker)?";/u);
 });

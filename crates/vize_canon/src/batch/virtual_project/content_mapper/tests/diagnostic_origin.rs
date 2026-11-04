@@ -143,3 +143,42 @@ import Child from './Child.vue'
         authored(source, "<template>", "Child", 0)
     );
 }
+
+/// #11675: TypeScript anchors the listener check at the synthetic `(` of
+/// `= ((value: number) => undefined)`. That gap used to resolve to the
+/// attribute `=`; the wrapper is a diagnostics-only span on the authored value.
+#[test]
+fn listener_wrapper_paren_anchors_on_the_authored_value() {
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template>
+<Child foo-bar="ok" @save-item="(value: number) => undefined" />
+</template>
+"#;
+    let value = "(value: number) => undefined";
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let marker = result
+        .text
+        .find("= ((value: number) => undefined)")
+        .unwrap_or_else(|| panic!("wrapped listener:\n{}", result.text));
+    let synthetic = marker + "= ".len();
+    assert_eq!(&result.text[synthetic..synthetic + 2], "((");
+    let origin = diagnostic_origin(&result.mappings, synthetic..synthetic + 1);
+    let authored_value = authored(source, "@save-item", value, 0);
+    let equals = authored_value.start - 2;
+    assert_eq!(
+        &source[equals..equals + 1],
+        "=",
+        "the column before the value must be the attribute '='"
+    );
+    assert_ne!(
+        origin.start, equals,
+        "the listener check must not land on the attribute '='"
+    );
+    assert_eq!(
+        origin, authored_value,
+        "the wrapping '(' must report the authored listener, which starts at '('"
+    );
+}

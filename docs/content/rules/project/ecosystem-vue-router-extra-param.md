@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-The route does not declare tab; Vue Router discards it.
+Reports navigation params that the target route does not declare.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Bad
 
-The `user-post` path declares `userId` and `postId`, but the navigation also supplies undeclared `tab` as a path parameter.
+The route does not declare tab; Vue Router discards it. The `user-post` path declares `userId` and `postId`, but the navigation also supplies undeclared `tab` as a path parameter.
 
 `src/UserPost.vue`
 

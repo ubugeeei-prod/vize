@@ -14,6 +14,8 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 
 L’analyseur Rust expérimental CrossFileAnalyzer possède un producteur pour ce code. La passe CLI n’émet pas ce code individuel ; configurer son identifiant n’active pas cette passe Rust. Ces scénarios décrivent le graphe et les faits pris en charge par l’analyseur, sans constituer une promesse de Vite+.
 
+Vue autorise cet état réactif ; l’exemple exige que chaque instance de composant possède son propre décompte.
+
 ## Fichiers communs du projet
 
 Utilisez ces fichiers inchangés dans les exemples Mauvais et Bon. Installez les packages importés dans le projet : Vue, ainsi que vue-router ou Pinia lorsqu’ils sont indiqués. Respectez toute note de prise en charge propre à une version. Le point d’entrée racine rend explicite la relation entre les composants.

@@ -4,7 +4,7 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.
+Setup context is used in a way Vue does not allow.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -13,6 +13,8 @@ This experimental analyzer scenario places ref(0) at normal script module scope 
 Applies to: Analyzed component graph and the supported facts described below
 
 The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
+
+Vue permits this reactive state; the example requires each component instance to own its own count.
 
 ## Shared project files
 

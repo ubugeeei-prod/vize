@@ -1,3 +1,4 @@
+pub(in crate::linter::native_type_aware) mod assertion;
 mod severity;
 
 mod opt_in;
@@ -8,11 +9,10 @@ use super::{
 };
 use crate::{LintPreset, Linter};
 
-fn has_floating_promise(diagnostics: &[crate::diagnostic::LintDiagnostic]) -> bool {
-    diagnostics
-        .iter()
-        .any(|d| d.rule_name == RULE_NO_FLOATING_PROMISES)
-}
+use assertion::{
+    assert_absent, assert_absent_note, assert_absent_rules, assert_reports, assert_reports_message,
+    assert_reports_note, failure_context,
+};
 
 pub(super) fn corsa_available() -> bool {
     let mut session =
@@ -42,12 +42,7 @@ fn require_typed_props_uses_corsa() {
 defineProps(['msg', 'count'])
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_PROPS)
-    );
+    assert_reports(&result, RULE_REQUIRE_TYPED_PROPS);
 }
 
 #[test]
@@ -61,12 +56,7 @@ fn require_typed_emits_uses_corsa() {
 defineEmits(['save'])
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_EMITS)
-    );
+    assert_reports(&result, RULE_REQUIRE_TYPED_EMITS);
 }
 
 #[test]
@@ -80,26 +70,20 @@ fn require_typed_emits_accepts_quoted_colon_key_and_reports_runtime_array() {
 defineEmits<{ "update:open": [value: boolean] }>()
 </script>"#;
     let typed_result = lint_sfc_with_corsa(&linter, typed_source, "TypedDialog.vue");
-    assert!(
-        !typed_result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_EMITS),
-        "quoted colon emit keys should be treated as typed: {:?}",
-        typed_result.diagnostics
+    assert_absent_note(
+        &typed_result,
+        RULE_REQUIRE_TYPED_EMITS,
+        "quoted colon emit keys should be treated as typed",
     );
 
     let runtime_source = r#"<script setup lang="ts">
 defineEmits(["update:open"])
 </script>"#;
     let runtime_result = lint_sfc_with_corsa(&linter, runtime_source, "RuntimeDialog.vue");
-    assert!(
-        runtime_result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_EMITS),
-        "runtime-only emits should still be reported: {:?}",
-        runtime_result.diagnostics
+    assert_reports_note(
+        &runtime_result,
+        RULE_REQUIRE_TYPED_EMITS,
+        "runtime-only emits should still be reported",
     );
 }
 
@@ -118,12 +102,7 @@ async function loadData(): Promise<number> {
 loadData()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_reports(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -144,12 +123,7 @@ if (enabled) {
 }
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_reports(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -168,12 +142,7 @@ function cleanup() {}
 loadData().finally(cleanup)
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_reports(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -195,12 +164,7 @@ function report(error: unknown) {
 loadData().catch(report).finally(cleanup)
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -218,12 +182,7 @@ async function loadData(): Promise<number> {
 loadData().then((value) => console.log(value))
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_reports(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -244,12 +203,7 @@ function report(error: unknown) {
 loadData().then((value) => console.log(value), report)
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -267,12 +221,7 @@ async function loadData(): Promise<number> {
 loadData().catch()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_reports(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -290,7 +239,7 @@ async function save(): Promise<void> {}
   <button @click="save()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -305,7 +254,7 @@ async function save(): Promise<void> {}
 </script>
 <template><button @click="() => save()">Save</button></template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -323,13 +272,10 @@ async function save(): Promise<void> {}
   <button @click="save(">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES),
-        "malformed template event should not emit floating-promise noise: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_FLOATING_PROMISES,
+        "malformed template event should not emit floating-promise noise",
     );
 }
 
@@ -348,7 +294,7 @@ async function save(): Promise<void> {}
   <button @click="save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -368,7 +314,7 @@ const actions = {
   <button @click="actions.save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -388,12 +334,7 @@ const actions = {
   <button @click="actions.save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -416,7 +357,7 @@ const actions: Actions | undefined = {
   <button @click="actions?.save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -437,7 +378,7 @@ const actions = {
   <button @click="actions[method]">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -458,12 +399,7 @@ const actions = {
   <button @click="actions[method]">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -487,7 +423,7 @@ const actions: Actions | undefined = {
   <button @click="actions?.[method]">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -507,10 +443,7 @@ async function loadLabel(): Promise<string> {
   <p>{{ loadLabel() }}</p>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template interpolation")
-    }));
+    assert_reports_message(&result, RULE_NO_FLOATING_PROMISES, "Template interpolation");
 }
 
 #[test]
@@ -529,7 +462,7 @@ async function save(): Promise<void> {}
   <button @click="enabled && save()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -548,10 +481,7 @@ async function save(): Promise<void> {}
   <button @click="if (enabled) { save() }">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert_reports_message(&result, RULE_NO_FLOATING_PROMISES, "Template event handler");
 }
 
 #[test]
@@ -572,10 +502,7 @@ async function loadLabel(): Promise<string> {
   <p>{{ enabled ? loadLabel() : 'idle' }}</p>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template interpolation")
-    }));
+    assert_reports_message(&result, RULE_NO_FLOATING_PROMISES, "Template interpolation");
 }
 
 #[test]
@@ -594,7 +521,7 @@ function cleanup() {}
   <button @click="save().finally(cleanup)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -616,12 +543,7 @@ function report(error: unknown) {
   <button @click="enabled && save().catch(report)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -641,12 +563,7 @@ const anyHandler: any = () => {}
   <button @click="anyHandler()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_reports(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -674,7 +591,8 @@ const unsafeValue: any = 'unsafe'
     assert_eq!(
         warnings.len(),
         1,
-        "unexpected unsafe bindings: {warnings:?}"
+        "unexpected unsafe bindings\n{}",
+        failure_context(&result)
     );
     assert_eq!(warnings[0].start, unsafe_start);
 }
@@ -696,13 +614,10 @@ function getNames(): string[] { return ['safe'] }
   <span v-for="name in getNames()" :key="name" />
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypedForSources.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "typed v-for sources should stay safe: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "typed v-for sources should stay safe",
     );
 }
 
@@ -737,7 +652,8 @@ function pick(index: number): string[] { return pages[index] ?? [] }
         .collect();
     assert!(
         warnings.is_empty(),
-        "typed multiline v-for sources should stay safe: {warnings:?}"
+        "typed multiline v-for sources should stay safe\n{}",
+        failure_context(&result)
     );
 }
 
@@ -753,13 +669,10 @@ const items: any = ['unsafe']
 </script>
 <template><span v-for="item in items" /></template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "UnsafeForSource.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "an explicit any iterable must remain unsafe: {:?}",
-        result.diagnostics
+    assert_reports_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "an explicit any iterable must remain unsafe",
     );
 }
 
@@ -788,7 +701,8 @@ function unsafe(): any { return { label: 'unsafe' } }
     assert_eq!(
         warnings.len(),
         1,
-        "unexpected slot spread warnings: {warnings:?}"
+        "unexpected slot spread warnings\n{}",
+        failure_context(&result)
     );
     assert_eq!(
         warnings[0].start,
@@ -851,8 +765,8 @@ fn relative_imports_keep_template_bindings_typed_across_source_directories() {
                 && diag.start >= unsafe_offset
                 && diag.end <= unsafe_offset + "unsafe.message".len() as u32
         }),
-        "explicit any should remain unsafe: {:?}",
-        first_result.diagnostics
+        "explicit any should remain unsafe\n{}",
+        failure_context(&first_result)
     );
     assert!(
         !first_result.diagnostics.iter().any(|diag| {
@@ -860,8 +774,8 @@ fn relative_imports_keep_template_bindings_typed_across_source_directories() {
                 && diag.start >= safe_offset
                 && diag.start < unsafe_offset
         }),
-        "a typed relative import must not become any: {:?}",
-        first_result.diagnostics
+        "a typed relative import must not become any\n{}",
+        failure_context(&first_result)
     );
 
     let second_source = "<script setup lang=\"ts\">\nimport { safe } from './model.ts'\n</script>\n<template><p>{{ safe.message }}</p></template>";
@@ -875,8 +789,8 @@ fn relative_imports_keep_template_bindings_typed_across_source_directories() {
             .diagnostics
             .iter()
             .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "moving the virtual file must preserve the second import: {:?}",
-        second_result.diagnostics
+        "moving the virtual file must preserve the second import\n{}",
+        failure_context(&second_result)
     );
     drop(linter);
     std::fs::remove_dir_all(package).unwrap();
@@ -899,12 +813,7 @@ const anyHandler: any = () => {}
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
 
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_reports(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -924,12 +833,7 @@ const payload: Record<string, any> = { label: 'unsafe' }
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
 
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_reports(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -947,13 +851,10 @@ const payload: any = { label: 'unsafe' }
   <div>{{ payload. }}</div>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "malformed interpolation should not emit unsafe-binding noise: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "malformed interpolation should not emit unsafe-binding noise",
     );
 }
 
@@ -974,12 +875,7 @@ const payload: { label: string } = { label: 'safe' }
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
 
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_absent(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -998,23 +894,8 @@ const ctx2 = useMyComposable(() => count)
 const a = ctx2.count()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    let messages = result
-        .diagnostics
-        .iter()
-        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
-        .map(|diag| diag.message.as_str())
-        .collect::<Vec<_>>();
-
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("useMyComposable"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("ctx2.count()"))
-    );
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "useMyComposable");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "ctx2.count()");
 }
 
 #[test]
@@ -1028,12 +909,7 @@ fn no_reactivity_loss_allows_direct_define_props_destructure() {
 const { count } = defineProps<{ count: number }>()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
-    );
+    assert_absent(&result, RULE_NO_REACTIVITY_LOSS);
 }
 
 #[test]
@@ -1052,12 +928,7 @@ const alias = count
 useMyComposable(alias)
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
-    );
+    assert_absent(&result, RULE_NO_REACTIVITY_LOSS);
 }
 
 #[test]
@@ -1083,53 +954,26 @@ const ctx = useMyComposable(() => second)
 const a = ctx.second()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    let messages = result
-        .diagnostics
-        .iter()
-        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
-        .map(|diag| diag.message.as_str())
-        .collect::<Vec<_>>();
-
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("plain snapshot 'count' to 'alias'"))
+    assert_reports_message(
+        &result,
+        RULE_NO_REACTIVITY_LOSS,
+        "plain snapshot 'count' to 'alias'",
     );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("plain snapshot 'alias' to 'second'"))
+    assert_reports_message(
+        &result,
+        RULE_NO_REACTIVITY_LOSS,
+        "plain snapshot 'alias' to 'second'",
     );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("plain snapshot 'second' to 'assigned'"))
+    assert_reports_message(
+        &result,
+        RULE_NO_REACTIVITY_LOSS,
+        "plain snapshot 'second' to 'assigned'",
     );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("Passing 'second'"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("Passing 'assigned'"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("ctx.second()"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("Mutating 'assigned'"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("Passing 'second'"))
-    );
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "Passing 'second'");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "Passing 'assigned'");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "ctx.second()");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "Mutating 'assigned'");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "Passing 'second'");
 }
 
 #[test]
@@ -1149,23 +993,8 @@ const state = reactive({ user: { name: 'Ada' } })
 const user = state.user
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    let messages = result
-        .diagnostics
-        .iter()
-        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
-        .map(|diag| diag.message.as_str())
-        .collect::<Vec<_>>();
-
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("countRef.value"))
-    );
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("state.user"))
-    );
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "countRef.value");
+    assert_reports_message(&result, RULE_NO_REACTIVITY_LOSS, "state.user");
 }
 
 #[test]
@@ -1183,12 +1012,7 @@ async function loadData(): Promise<number> {
 void loadData()
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -1206,12 +1030,7 @@ async function save(): Promise<void> {}
   <button @click="void save()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -1229,7 +1048,7 @@ async function save(): Promise<void> {}
   <button @click="save().then(() => {})">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!has_floating_promise(&result.diagnostics));
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -1250,12 +1069,7 @@ function report(error: unknown) {
   <button @click="save().catch(report)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -1277,12 +1091,7 @@ function report(error: unknown) {
   <button @click="save().catch(report).finally(cleanup)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]
@@ -1303,10 +1112,10 @@ defineEmits({
 })
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(!result.diagnostics.iter().any(|diag| matches!(
-        diag.rule_name,
-        RULE_REQUIRE_TYPED_PROPS | RULE_REQUIRE_TYPED_EMITS
-    )));
+    assert_absent_rules(
+        &result,
+        &[RULE_REQUIRE_TYPED_PROPS, RULE_REQUIRE_TYPED_EMITS],
+    );
 }
 
 #[test]
@@ -1326,12 +1135,7 @@ const onSave = () => {}
   <button @click="onSave">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_absent(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -1349,12 +1153,7 @@ const items: Array<{ label: string }> = [{ label: 'safe' }]
   <p v-for="item in items" :key="item.label">{{ item.label }}</p>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
-    );
+    assert_absent(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
 }
 
 #[test]
@@ -1374,13 +1173,10 @@ const items: Array<{ id: number; meta: { label: string } }> = [
   <p v-for="{ id, meta: { label } } in items" :key="id">{{ label.toUpperCase() }}</p>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "destructured v-for bindings should stay typed: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "destructured v-for bindings should stay typed",
     );
 }
 
@@ -1402,10 +1198,10 @@ const actions = {
   <button :title="payload.label" @click="actions.save">{{ payload.label }}</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "SafePanel.vue");
-    assert!(!result.diagnostics.iter().any(|diag| matches!(
-        diag.rule_name,
-        RULE_NO_UNSAFE_TEMPLATE_BINDING | RULE_NO_FLOATING_PROMISES
-    )));
+    assert_absent_rules(
+        &result,
+        &[RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_NO_FLOATING_PROMISES],
+    );
 }
 
 #[test]
@@ -1424,12 +1220,9 @@ const payload: unknown = 'safe'
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "NarrowedTemplate.vue");
 
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "v-if narrowing should keep template binding safe: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "v-if narrowing should keep template binding safe",
     );
 }

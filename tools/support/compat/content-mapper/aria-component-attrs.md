@@ -21,8 +21,10 @@ independent three-argument reference. Status, signal, error, stdout and stderr
 must match exactly, including all three native errors. This preserves raw
 inference alongside the required four-argument contract for diagnostic literals.
 
-The runner requires the actual `vize/virtual-ts` package import and the shipped
-declaration export conditions. An embedded-helper fixture would miss this bug.
+The runner requires the exact shipped declaration import for that SDK: the
+checker entry when the package ships `vize/virtual-ts-checker`, otherwise the
+published `vize/virtual-ts` module. An embedded helper or any other import
+misses this bug.
 Source mode copies all shipped declaration files and the actual CLI manifest,
 changing only its mapper command to the supplied source CLI. Installed mode uses
 the installed package and its mapper command without modifications.

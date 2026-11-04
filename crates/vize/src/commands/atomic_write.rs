@@ -3,9 +3,11 @@
 use std::borrow::Cow;
 use std::fs::{self, File, Permissions};
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 use tempfile::NamedTempFile;
+use vize_l0::FxHashMap;
 
 /// Replace an existing file only after its successor is fully written.
 ///
@@ -16,6 +18,11 @@ use tempfile::NamedTempFile;
 /// existing file or symlink can never redirect writes. Its persist operation
 /// uses an overwriting rename on Unix and `MoveFileExW(REPLACE_EXISTING)` on
 /// Windows, without deleting the destination first.
+///
+/// Sibling create, rename, and unlink take a userspace mutex keyed by the
+/// destination directory. Those namespace operations share that directory's
+/// kernel inode lock; waiting here parks instead of spinning on it. The
+/// payload write stays outside the mutex.
 pub fn atomic_write(path: &Path, contents: &[u8]) -> io::Result<()> {
     atomic_write_with(path, contents, &mut OsOperations)
 }
@@ -31,15 +38,57 @@ fn atomic_write_with<O: AtomicWriteOperations>(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let mut temporary = tempfile::Builder::new()
-        .prefix(".vize-write-")
-        .suffix(".tmp")
-        .tempfile_in(directory)?;
+    let directory_lock = directory_write_lock(directory);
+    let mut temporary = {
+        let _guard = lock_directory(directory_lock);
+        tempfile::Builder::new()
+            .prefix(".vize-write-")
+            .suffix(".tmp")
+            .tempfile_in(directory)?
+    };
 
+    let prepared = write_temporary(&mut temporary, contents, permissions, operations);
+    let _guard = lock_directory(directory_lock);
+    if let Err(error) = prepared {
+        drop(temporary);
+        return Err(error);
+    }
+    operations.replace(temporary, path)
+}
+
+fn write_temporary<O: AtomicWriteOperations>(
+    temporary: &mut NamedTempFile,
+    contents: &[u8],
+    permissions: Permissions,
+    operations: &mut O,
+) -> io::Result<()> {
     operations.write_all(temporary.as_file_mut(), contents)?;
     operations.flush(temporary.as_file_mut())?;
-    temporary.as_file().set_permissions(permissions)?;
-    operations.replace(temporary, path)
+    temporary.as_file().set_permissions(permissions)
+}
+
+type DirectoryLockMap = FxHashMap<PathBuf, &'static Mutex<()>>;
+
+fn directory_write_lock(directory: &Path) -> &'static Mutex<()> {
+    static LOCKS: OnceLock<Mutex<DirectoryLockMap>> = OnceLock::new();
+    let registry = LOCKS.get_or_init(|| Mutex::new(FxHashMap::default()));
+    let mut guard = registry.lock().unwrap_or_else(|error| error.into_inner());
+    if let Some(lock) = guard.get(directory) {
+        return *lock;
+    }
+    let lock = Box::leak(Box::new(Mutex::new(())));
+    guard.insert(directory.to_path_buf(), lock);
+    lock
+}
+
+struct DirectoryGuard<'a> {
+    _guard: MutexGuard<'a, ()>,
+}
+
+fn lock_directory(mutex: &Mutex<()>) -> DirectoryGuard<'_> {
+    DirectoryGuard {
+        _guard: mutex.lock().unwrap_or_else(|error| error.into_inner()),
+    }
 }
 
 fn resolve_write_target(path: &Path) -> io::Result<(Cow<'_, Path>, Permissions)> {
@@ -379,3 +428,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod directory_contention;

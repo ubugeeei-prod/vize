@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-必須の postId がありません。現在のルートに依存する遷移になります。
+必須のルートパラメーターを省略した名前付き遷移を報告します。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 悪い例
 
-`user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
+必須の postId がありません。現在のルートに依存する遷移になります。`user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
 
 `src/UserPost.vue`
 

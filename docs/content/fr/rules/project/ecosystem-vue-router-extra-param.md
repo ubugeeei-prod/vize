@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-La route ne déclare pas tab ; Vue Router l’ignore.
+Signale les paramètres de navigation que la route cible ne déclare pas.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Mauvais
 
-Le chemin `user-post` déclare `userId` et `postId`, mais la navigation fournit également `tab`, non déclaré, comme paramètre de chemin.
+La route ne déclare pas tab ; Vue Router l’ignore. Le chemin `user-post` déclare `userId` et `postId`, mais la navigation fournit également `tab`, non déclaré, comme paramètre de chemin.
 
 `src/UserPost.vue`
 

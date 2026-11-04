@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-登録済み router に存在しない名前です。
+インストール済みのルーターにない遷移名を報告します。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 悪い例
 
-解析で参照できる登録済みルーターには `user-post` が登録されていますが、遷移時のルート名を `user-posts` と誤記しています。
+登録済み router に存在しない名前です。解析で参照できる登録済みルーターには `user-post` が登録されていますが、遷移時のルート名を `user-posts` と誤記しています。
 
 `src/UserPost.vue`
 

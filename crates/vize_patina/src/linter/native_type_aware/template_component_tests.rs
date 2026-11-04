@@ -1,3 +1,4 @@
+use super::tests::assertion::{assert_absent_note, failure_context};
 use super::{RULE_NO_UNSAFE_TEMPLATE_BINDING, lint_sfc_with_corsa, tests::corsa_available};
 use crate::{LintPreset, Linter};
 
@@ -18,7 +19,8 @@ fn camelized_native_shorthand_retains_safe_and_unsafe_types() {
     assert_eq!(
         warnings.len(),
         1,
-        "unexpected unsafe bindings: {warnings:?}"
+        "unexpected unsafe bindings\n{}",
+        failure_context(&result)
     );
     let unsafe_start = source.find(":aria-description").unwrap() as u32 + 1;
     assert_eq!(warnings[0].start, unsafe_start);
@@ -51,12 +53,9 @@ const props = defineProps<{
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "DynamicFixture.vue");
 
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "a typed render target should retain a safe template type: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "a typed render target should retain a safe template type",
     );
 }

@@ -4,13 +4,15 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-Ce code regroupe plusieurs diagnostics de réactivité, dont une prop copiée dans une ref. Il ne signifie pas que chaque expression Date.now() est détectée par la passe inter-fichiers.
+Le rendu peut diverger entre le serveur et le client.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
 | error | Aucune ; examinez les fichiers concernés et appliquez la correction | Aucune option propre à un code ; les diagnostics CLI pris en charge acceptent des changements de gravité |
 
 Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
+
+Ce code regroupe plusieurs diagnostics de réactivité, dont une prop copiée dans une ref. Il ne signifie pas que chaque expression Date.now() est détectée par la passe inter-fichiers.
 
 ## Fichiers communs du projet
 

@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-param-type"
 
 # `ecosystem/vue-router-param-type`
 
-postId n’est pas répétable ; un tableau est donc invalide.
+Signale une valeur de paramètre de route que le segment déclaré n’accepte pas.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Mauvais
 
-`postId` est un paramètre de chemin scalaire, mais la navigation lui donne le tableau `["2"]`.
+postId n’est pas répétable ; un tableau est donc invalide. `postId` est un paramètre de chemin scalaire, mais la navigation lui donne le tableau `["2"]`.
 
 `src/UserPost.vue`
 

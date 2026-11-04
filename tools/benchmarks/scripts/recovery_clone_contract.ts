@@ -63,14 +63,9 @@ export function profilePair(left: RecordValue, right: RecordValue) {
     head = record(right.allocation);
   const callsSaved = integer(base.calls) - integer(head.calls);
   const bytesSaved = integer(base.requestedBytes) - integer(head.requestedBytes);
-  if (left.scenario === "irreparable") {
-    assert.equal(callsSaved, iterations);
-    assert(bytesSaved >= iterations * bytes);
-    assert.equal(bytesSaved % iterations, 0n);
-  } else {
-    assert.equal(callsSaved, 0n);
-    assert.equal(bytesSaved, 0n);
-  }
+  // Pull-request base-vs-head runs keep a ceiling, not the one-time removal delta.
+  assert(callsSaved >= 0n, "allocation calls increased");
+  assert(bytesSaved >= 0n, "requested bytes increased");
   return {
     scope:
       "instrumented successful Rust allocation requests; cumulative layout traffic, not copied/live/RSS bytes",
@@ -110,10 +105,16 @@ export function selfTest(): void {
   type Pair = [RecordValue, RecordValue];
   const irreparable: Pair = [fixture("irreparable", 10n, 1000n), fixture("irreparable", 6n, 600n)];
   assert.equal(profilePair(...irreparable).callsSaved, 4n);
+  const unchanged = fixture("irreparable", 10n, 1000n);
+  assert.equal(profilePair(unchanged, structuredClone(unchanged)).callsSaved, 0n);
   for (const scenario of ["valid", "repairable"]) {
     const row = fixture(scenario, 10n, 1000n);
     assert.equal(profilePair(row, structuredClone(row)).callsSaved, 0n);
   }
+  assert.equal(
+    profilePair(fixture("valid", 10n, 1000n), fixture("valid", 9n, 999n)).callsSaved,
+    1n,
+  );
   const cases: [string, Pair][] = [];
   const add = (name: string, pair: Pair, mutate: (row: Pair) => void) => {
     const row = structuredClone(pair);
@@ -130,20 +131,17 @@ export function selfTest(): void {
       list(row[1].micro).splice(1, 1);
     },
   );
-  add("no-removed-copy", irreparable, (row) => {
-    record(row[1].allocation).calls = 10n;
+  add("added-allocation-call", irreparable, (row) => {
+    record(row[1].allocation).calls = 11n;
   });
-  add("two-removed-copies", irreparable, (row) => {
-    record(row[1].allocation).calls = 2n;
-  });
-  add("too-few-removed-bytes", irreparable, (row) => {
-    record(row[1].allocation).requestedBytes = 999n;
+  add("added-allocation-bytes", irreparable, (row) => {
+    record(row[1].allocation).requestedBytes = 1001n;
   });
   add(
-    "valid-allocation-changed",
+    "valid-allocation-increased",
     [fixture("valid", 10n, 1000n), fixture("valid", 10n, 1000n)],
     (row) => {
-      record(row[1].allocation).calls = 9n;
+      record(row[1].allocation).calls = 11n;
     },
   );
   add("source-mismatch", irreparable, (row) => {
@@ -160,6 +158,6 @@ export function selfTest(): void {
   });
   for (const [name, pair] of cases) assert.throws(() => profilePair(...pair), Error, name);
   console.log(
-    "clone-contract-controls=" + render({ positive: 3n, rejected: cases.map(([name]) => name) }),
+    "clone-contract-controls=" + render({ positive: 5n, rejected: cases.map(([name]) => name) }),
   );
 }

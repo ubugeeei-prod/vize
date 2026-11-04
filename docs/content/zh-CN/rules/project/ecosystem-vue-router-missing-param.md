@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-缺少必需的 postId；依赖当前路由并不稳健。
+报告具名导航省略了必需的路由参数。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 错误示例
 
-导航省略了 `user-post` 路径必需的 `postId`。这是警告，因为 Vue Router 可能从当前路由继承该值。
+缺少必需的 postId；依赖当前路由并不稳健。导航省略了 `user-post` 路径必需的 `postId`。这是警告，因为 Vue Router 可能从当前路由继承该值。
 
 `src/UserPost.vue`
 

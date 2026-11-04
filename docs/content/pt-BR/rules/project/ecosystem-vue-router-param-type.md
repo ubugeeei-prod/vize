@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-param-type"
 
 # `ecosystem/vue-router-param-type`
 
-postId não é repetível, portanto um array é inválido.
+Relata um valor de parâmetro de rota que o segmento declarado não aceita.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Incorreto
 
-`postId` é um parâmetro escalar do caminho, mas a navegação fornece a ele o array `["2"]`.
+postId não é repetível, portanto um array é inválido. `postId` é um parâmetro escalar do caminho, mas a navegação fornece a ele o array `["2"]`.
 
 `src/UserPost.vue`
 

@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-路由未声明 tab；Vue Router 会丢弃它。
+报告目标路由未声明的导航参数。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 错误示例
 
-`user-post` 路径声明 `userId` 和 `postId`，但导航还将未声明的 `tab` 作为路径参数传入。
+路由未声明 tab；Vue Router 会丢弃它。`user-post` 路径声明 `userId` 和 `postId`，但导航还将未声明的 `tab` 作为路径参数传入。
 
 `src/UserPost.vue`
 

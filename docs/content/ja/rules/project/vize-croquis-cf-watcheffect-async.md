@@ -4,13 +4,15 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
+`watchEffect` が async タスクを始め、前回の実行を片付けられません。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
 | error | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
+
+Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
 
 ## 共通のプロジェクト ファイル
 
@@ -43,7 +45,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## 悪い例
 
-非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。
+この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。
 
 `SearchPage.vue`
 

@@ -311,6 +311,9 @@ jobs:
         env:
           RUST_TARGET: ${{ matrix.settings.rustTarget }}
           VSIX_ARCHIVE: ${{ matrix.settings.archive }}
+          # A failed-job rerun may resolve a force-pushed candidate ref. The
+          # receipt must match the attempt SHA the native artifacts were built for.
+          VIZE_RELEASE_CANDIDATE_SHA: ${{ needs.version.outputs.sha }}
         run: >-
           rust-script tools/commands/editors/vscode/package-typescript-provider.rs
           "$RUST_TARGET" "$RUNNER_TEMP/native-provider"

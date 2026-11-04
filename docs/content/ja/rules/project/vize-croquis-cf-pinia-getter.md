@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。
+Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |

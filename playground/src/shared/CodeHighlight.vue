@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { useTemplateRef, watch } from "vue";
+import { onBeforeUnmount, useTemplateRef, watch } from "vue";
 import {
-  codeToThemedHtmlLines,
+  codeTokensToHtml,
   normalizePlainHtmlLines,
   type CodeHighlightLanguage,
 } from "./codeHighlighting";
+import { createCodeHighlighter } from "./codeHighlightingClient";
 
 const props = defineProps<{
   code: string;
@@ -15,7 +16,8 @@ const props = defineProps<{
 
 const codeContentEl = useTemplateRef<HTMLDivElement>("codeContentEl");
 const lineNumbersEl = useTemplateRef<HTMLDivElement>("lineNumbersEl");
-let latestRenderId = 0;
+const highlighter = createCodeHighlighter();
+onBeforeUnmount(highlighter.cancel);
 
 function renderLineNumbers(count: number) {
   if (!lineNumbersEl.value) {
@@ -44,20 +46,11 @@ function renderCodeLines(lines: string[]) {
   renderLineNumbers(lines.length);
 }
 
-async function highlight(renderId: number) {
-  const nextLines = await codeToThemedHtmlLines(props.code, props.language);
-
-  if (renderId !== latestRenderId) {
-    return;
-  }
-
-  renderCodeLines(nextLines);
-}
-
 function render() {
-  const renderId = ++latestRenderId;
   renderCodeLines(normalizePlainHtmlLines(props.code));
-  void highlight(renderId);
+  highlighter.highlight(props.code, props.language, (lines) => {
+    renderCodeLines(lines.map(codeTokensToHtml));
+  });
 }
 
 function renderWhenReady() {

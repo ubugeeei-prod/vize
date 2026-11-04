@@ -72,14 +72,16 @@ export const frenchShared = {
     "Le problème concerne ce composable dépendant du cycle de vie ; il ne s’agit pas d’une interdiction générale des fonctions utilitaires ordinaires ou de tous les appels à la Composition API en dehors du setup. Ce contrat n’a actuellement aucun producteur de diagnostics.",
   "The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.":
     "Le producteur actuel analyse les expressions de template telles que JSON.parse(input). Il ne signale pas une instruction throw présente uniquement dans le bloc script.",
-  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.":
-    "L’exemple suppose que les identifiants distinguent les enregistrements de façon unique. Comparer deux références au même proxy réactif reste valide ; ce contrat n’a actuellement aucun producteur de diagnostics.",
+  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer. A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object.":
+    "L’exemple suppose que les identifiants distinguent les enregistrements de façon unique. Comparer deux références au même proxy réactif reste valide ; ce contrat n’a actuellement aucun producteur de diagnostics. Un objet brut et son proxy réactif ont des identités distinctes, et toRaw() renvoie l’objet d’origine.",
   "The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.":
     "L’analyseur Rust expérimental CrossFileAnalyzer possède un producteur pour ce code. La passe CLI n’émet pas ce code individuel ; configurer son identifiant n’active pas cette passe Rust. Ces scénarios décrivent le graphe et les faits pris en charge par l’analyseur, sans constituer une promesse de Vite+.",
   "The watcher must only derive the destination. Editable copies and callbacks with other side effects are allowed.":
     "Le watcher doit uniquement dériver la destination. Les copies modifiables et les callbacks ayant d’autres effets de bord sont autorisés.",
   "This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.":
     "Ce contrôle compare les annotations de type explicites du fournisseur et du consommateur, et non les types de valeurs littérales inférés. Conservez l’annotation `as string` du fournisseur dans cet exemple.",
+  "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.":
+    "Ce code regroupe plusieurs diagnostics de réactivité, dont une prop copiée dans une ref. Il ne signifie pas que chaque expression Date.now() est détectée par la passe inter-fichiers.",
   "This example configures window.localStorage. The rule has no default deny list; enabling it alone does not report a member.":
     "Cet exemple configure window.localStorage. La règle n’a aucune liste d’interdiction par défaut ; son activation seule ne signale pas de membre.",
   "This example uses component provide/inject. `app.provide` and supported `app.runWithContext` injection are different valid ownership surfaces, not prohibited by this scenario. No current producer emits this contract code.":
@@ -104,4 +106,8 @@ export const frenchShared = {
     "Utilisez ces fichiers inchangés dans les exemples Mauvais et Bon. Installez les packages importés dans le projet : Vue, ainsi que vue-router ou Pinia lorsqu’ils sont indiqués. Respectez toute note de prise en charge propre à une version. Le point d’entrée racine rend explicite la relation entre les composants.",
   "Vue permits ref/reactive/computed outside component setup. The risk here is unwanted ownership/sharing under an explicit instance-isolation policy, not API illegality. This contract has no current producer.":
     "Vue autorise ref/reactive/computed en dehors du setup des composants. Le risque concerne ici une propriété ou un partage indésirable dans le cadre d’une politique explicite d’isolation des instances, et non un usage interdit de l’API. Ce contrat n’a actuellement aucun producteur de diagnostics.",
+  "Vue permits this reactive state; the example requires each component instance to own its own count.":
+    "Vue autorise cet état réactif ; l’exemple exige que chaque instance de composant possède son propre décompte.",
+  "Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.":
+    "Vue prend en charge le nettoyage de watchEffect ; l’exemple Bon utilise une source de watch explicite et annule le travail invalidé.",
 } satisfies Record<string, string>;

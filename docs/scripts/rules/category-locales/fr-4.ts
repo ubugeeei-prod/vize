@@ -35,23 +35,23 @@ export const frenchRules4 = {
     "L’ajout de vapor sélectionne la compilation Vapor. Il illustre la correction prévue et ne signifie pas que le linter actuel émet cette règle du catalogue.",
   ],
   "ecosystem/vue-router-extra-param": [
-    "La route ne déclare pas tab ; Vue Router l’ignore.",
-    "Le chemin `user-post` déclare `userId` et `postId`, mais la navigation fournit également `tab`, non déclaré, comme paramètre de chemin.",
+    "Signale les paramètres de navigation que la route cible ne déclare pas.",
+    "La route ne déclare pas tab ; Vue Router l’ignore. Le chemin `user-post` déclare `userId` et `postId`, mais la navigation fournit également `tab`, non déclaré, comme paramètre de chemin.",
     "Supprimer `tab` de params et conserver uniquement les clés présentes dans le chemin de la route. Utiliser query séparément si l’application a besoin de sélectionner un onglet.",
   ],
   "ecosystem/vue-router-missing-param": [
-    "Le paramètre obligatoire postId manque ; dépendre de la route actuelle est fragile.",
-    "La navigation omet le paramètre obligatoire `postId` du chemin `user-post`. Il s’agit d’un avertissement, car Vue Router peut hériter d’une valeur de la route actuelle.",
+    "Signale une navigation nommée qui omet un paramètre de route obligatoire.",
+    "Le paramètre obligatoire postId manque ; dépendre de la route actuelle est fragile. La navigation omet le paramètre obligatoire `postId` du chemin `user-post`. Il s’agit d’un avertissement, car Vue Router peut hériter d’une valeur de la route actuelle.",
     "Passer explicitement `userId` et `postId` pour que la navigation ne dépende pas de l’état des paramètres de la route actuelle.",
   ],
   "ecosystem/vue-router-param-type": [
-    "postId n’est pas répétable ; un tableau est donc invalide.",
-    '`postId` est un paramètre de chemin scalaire, mais la navigation lui donne le tableau `["2"]`.',
+    "Signale une valeur de paramètre de route que le segment déclaré n’accepte pas.",
+    'postId n’est pas répétable ; un tableau est donc invalide. `postId` est un paramètre de chemin scalaire, mais la navigation lui donne le tableau `["2"]`.',
     'Passer la valeur scalaire `"2"` pour le segment `postId` non répétable.',
   ],
   "ecosystem/vue-router-unknown-route": [
-    "Le nom est absent du routeur installé complet.",
-    "Le routeur installé accessible déclare `user-post`, mais la navigation utilise le nom mal orthographié `user-posts`.",
+    "Signale un nom de navigation que le routeur installé ne déclare pas.",
+    "Le nom est absent du routeur installé complet. Le routeur installé accessible déclare `user-post`, mais la navigation utilise le nom mal orthographié `user-posts`.",
     "Utiliser le nom enregistré `user-post` tout en conservant les deux paramètres de chemin déclarés.",
   ],
   "html/cross-component-nesting": [
@@ -140,7 +140,7 @@ export const frenchRules4 = {
     "Supprimer `.stop` de l’écouteur d’événement personnalisé ; gérer la propagation native au niveau de l’écouteur DOM réel lorsque nécessaire.",
   ],
   "vize:croquis/cf/hydration-risk": [
-    "Ce code regroupe plusieurs diagnostics de réactivité, dont une prop copiée dans une ref. Il ne signifie pas que chaque expression Date.now() est détectée par la passe inter-fichiers.",
+    "Le rendu peut diverger entre le serveur et le client.",
     "L’enfant initialise `ref(props.count)` une seule fois ; son décompte local ne suit donc plus les changements ultérieurs de la prop du parent. Il s’agit du producteur actuel pour la copie d’une prop dans une ref, et non d’un exemple général de SSR non déterministe.",
     '`toRef(props, "count")` pointe vers la prop au lieu de copier sa valeur initiale dans un état indépendant.',
   ],

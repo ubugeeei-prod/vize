@@ -6,7 +6,7 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
   ],
   "vize:croquis/cf/object-identity-comparison": [
     "Um objeto reativo é comparado por identidade, que muda ao remover os invólucros.",
-    "`proxy === raw` compara a identidade do invólucro, portanto é falso mesmo que ambos representem o mesmo registro de usuário. A aplicação pretendia comparar a identidade do registro, não a do invólucro do objeto.",
+    "Este contrato ilustra a comparação de IDs estáveis quando a identidade pretendida é a do registro. `proxy === raw` compara a identidade do invólucro, portanto é falso mesmo que ambos representem o mesmo registro de usuário. A aplicação pretendia comparar a identidade do registro, não a do invólucro do objeto.",
     "Comparar o `id` estável do registro responde à pergunta pretendida sem depender de o objeto ser bruto ou estar envolvido por um proxy.",
   ],
   "vize:croquis/cf/pinia-getter": [
@@ -151,7 +151,7 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
   ],
   "vize:croquis/cf/watcheffect-async": [
     "`watchEffect` inicia uma tarefa assíncrona e não consegue limpar a execução anterior.",
-    "O `watchEffect` assíncrono mistura a coleta implícita de dependências com uma requisição aguardada e sem uma proteção contra invalidação.",
+    "O watchEffect assíncrono mostrado aqui não tem limpeza na invalidação nem proteção contra uma resposta desatualizada. O `watchEffect` assíncrono mistura a coleta implícita de dependências com uma requisição aguardada e sem uma proteção contra invalidação.",
     "Um `watch(() => props.query, ...)` explícito declara a origem, registra a limpeza da requisição e recusa uma resposta desatualizada após a invalidação.",
   ],
   "vize:croquis/cf/watcher-outside-setup": [

@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-param-type"
 
 # `ecosystem/vue-router-param-type`
 
-postId は繰り返しパラメーターではないため配列を渡せません。
+宣言されたパスが受け付けないルートパラメーター値を報告します。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## 悪い例
 
-`postId` は単一の値を取るパスパラメーターですが、配列 `["2"]` を渡しています。
+postId は繰り返しパラメーターではないため配列を渡せません。`postId` は単一の値を取るパスパラメーターですが、配列 `["2"]` を渡しています。
 
 `src/UserPost.vue`
 
