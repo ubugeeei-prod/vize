@@ -6,24 +6,83 @@ use super::{
 use serde_json::json;
 use std::path::PathBuf;
 
+const MEMO_TSGO_ENV: &str = "VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO";
+
 /// A missing host is an unexecuted cohort. `VIZE_TEST_REQUIRE_TSGO` makes that a failure.
 fn memo_host() -> Option<PathBuf> {
-    let required = std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some();
-    let Some(host) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+    select_memo_host(
+        std::env::var_os(MEMO_TSGO_ENV).map(PathBuf::from),
+        std::env::var_os(TSGO_ENV).map(PathBuf::from),
+        std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some(),
+    )
+}
+
+fn select_memo_host(
+    memo: Option<PathBuf>,
+    conformance: Option<PathBuf>,
+    required: bool,
+) -> Option<PathBuf> {
+    let Some(host) = memo.or(conformance) else {
         assert!(
             !required,
-            "unexecuted memo cohort: VIZE_TEST_REQUIRE_TSGO is set and {TSGO_ENV} is absent"
+            "unexecuted memo cohort: VIZE_TEST_REQUIRE_TSGO is set and both {MEMO_TSGO_ENV} and {TSGO_ENV} are absent"
         );
-        eprintln!("unexecuted memo cohort: {TSGO_ENV} is not set");
+        eprintln!("unexecuted memo cohort: neither {MEMO_TSGO_ENV} nor {TSGO_ENV} is set");
         return None;
     };
     assert!(
         host.is_file(),
-        "{TSGO_ENV} is not a file: {}",
+        "selected memo Content Mapper host is not a file: {}",
         host.display()
     );
     eprintln!("memo cohort provider={} require={required}", host.display());
     Some(host)
+}
+
+#[test]
+fn memo_host_prefers_its_explicit_provider_over_the_conformance_provider() {
+    let memo = tempfile::NamedTempFile::new().unwrap();
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    assert_eq!(
+        select_memo_host(
+            Some(memo.path().to_path_buf()),
+            Some(conformance.path().to_path_buf()),
+            true,
+        ),
+        Some(memo.path().to_path_buf())
+    );
+}
+
+#[test]
+fn memo_host_keeps_the_existing_conformance_provider_as_a_fallback() {
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    assert_eq!(
+        select_memo_host(None, Some(conformance.path().to_path_buf()), true),
+        Some(conformance.path().to_path_buf())
+    );
+}
+
+#[test]
+fn optional_memo_without_either_provider_remains_unexecuted() {
+    assert_eq!(select_memo_host(None, None, false), None);
+}
+
+#[test]
+#[should_panic(expected = "unexecuted memo cohort: VIZE_TEST_REQUIRE_TSGO is set")]
+fn required_memo_without_either_provider_fails_closed() {
+    select_memo_host(None, None, true);
+}
+
+#[test]
+#[should_panic(expected = "selected memo Content Mapper host is not a file")]
+fn invalid_explicit_memo_provider_does_not_fall_back_to_another_host() {
+    let root = tempfile::tempdir().unwrap();
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    select_memo_host(
+        Some(root.path().join("missing-tsgo")),
+        Some(conformance.path().to_path_buf()),
+        true,
+    );
 }
 
 #[test]
