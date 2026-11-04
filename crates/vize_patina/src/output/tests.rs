@@ -452,3 +452,23 @@ fn rule_docs_path_exists_for_every_published_rule() {
         "published rules with no page:\n{missing}"
     );
 }
+
+#[test]
+fn synthetic_diagnostic_routes_keep_their_owned_documentation() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for (id, page) in [
+        ("cross-file", "cross-file.md"),
+        ("type/corsa-runtime", "type-and-script.md"),
+    ] {
+        let expected = vize_l0::cstr!("docs/content/rules/{page}");
+        assert_eq!(rule_docs_path(id), expected, "{id}");
+        for locale in ["", "ja/"] {
+            let path = vize_l0::cstr!("docs/content/{locale}rules/{page}");
+            assert!(root.join(path.as_str()).is_file(), "{id}: {path}");
+        }
+    }
+    assert_eq!(
+        rule_docs_path("unknown/synthetic-route"),
+        "docs/content/rules/reference/unknown-synthetic-route.md"
+    );
+}

@@ -79,7 +79,7 @@ function publicNativeReport(after) {
   // Preserve its complete finding instead of suppressing or fixing reporter input.
   report[0].messages.splice(after ? 0 : 3, 0, {
     ruleId: "a11y/form-control-has-label",
-    ruleDocsPath: "docs/content/rules/accessibility.md",
+    ruleDocsPath: "docs/content/rules/reference/a11y-form-control-has-label.md",
     severity: 1,
     message: "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
     line: from.line,

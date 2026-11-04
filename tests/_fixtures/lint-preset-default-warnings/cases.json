@@ -22,7 +22,7 @@
       },
       "cliMessage": {
         "ruleId": "vue/no-use-v-else-with-v-for",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-use-v-else-with-v-for.md",
         "severity": 1,
         "message": "[vize:vue/no-use-v-else-with-v-for] Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
         "line": 1,
@@ -55,7 +55,7 @@
       },
       "cliMessage": {
         "ruleId": "script/no-deep-destructure-in-props",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-deep-destructure-in-props.md",
         "severity": 1,
         "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
         "line": 2,
@@ -81,7 +81,7 @@
       "baselineCliMessages": [
         {
           "ruleId": "vue/no-unused-properties",
-          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
           "severity": 1,
           "message": "[vize:vue/no-unused-properties] Prop 'user' is defined but never used",
           "line": 2,
@@ -112,7 +112,7 @@
       },
       "cliMessage": {
         "ruleId": "vue/no-non-component-keep-alive-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-non-component-keep-alive-child.md",
         "severity": 1,
         "message": "[vize:vue/no-non-component-keep-alive-child] <KeepAlive> can only cache component children; this direct child is a plain element",
         "line": 4,
@@ -159,7 +159,7 @@
       },
       "cliMessage": {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 3,
@@ -192,7 +192,7 @@
       "baselineCliMessages": [
         {
           "ruleId": "vue/no-empty-component-block",
-          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleDocsPath": "docs/content/rules/reference/vue-no-empty-component-block.md",
           "severity": 1,
           "message": "[vize:vue/no-empty-component-block] The <script> block is empty",
           "line": 1,

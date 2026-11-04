@@ -57,7 +57,7 @@
         "messages": [
           {
             "ruleId": "script/require-slots-as-functions",
-            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "ruleDocsPath": "docs/content/rules/reference/script-require-slots-as-functions.md",
             "severity": 2,
             "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
             "line": 34,

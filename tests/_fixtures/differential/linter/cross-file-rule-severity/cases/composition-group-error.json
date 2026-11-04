@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "html/cross-component-nesting",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/project/html-cross-component-nesting.md",
         "severity": 2,
         "message": "[vize:html/cross-component-nesting] <div> (rendered by <Child> at src/Child.vue:2:3) closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
         "line": 5,
