@@ -10,11 +10,15 @@ mod bridge;
 pub(crate) mod constructor_vue_proof;
 mod diagnosing_configuration;
 mod editor_session;
+#[cfg(test)]
+mod host_edit_import_tests;
 mod native_vue;
 mod original_program;
 #[cfg(test)]
 mod outside_import_editor_tests;
 pub(crate) mod preparation_trace;
+#[cfg(test)]
+mod retirement_tests;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;

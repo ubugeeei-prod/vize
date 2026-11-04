@@ -132,6 +132,12 @@ impl VirtualProject {
         files
     }
 
+    /// Sources registered since this project was created.
+    #[cfg(test)]
+    pub(crate) fn source_registrations(&self) -> usize {
+        self.incremental_source_nodes_rebuilt
+    }
+
     /// Original paths registered in this project, in deterministic order.
     pub(crate) fn registered_original_paths_sorted(&self) -> Vec<PathBuf> {
         let mut paths: Vec<_> = self.original_index.keys().cloned().collect();

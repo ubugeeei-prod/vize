@@ -151,6 +151,12 @@ impl CorsaBridge {
         .await
     }
 
+    /// A retired backend's prepared revisions serve no later request. A worker
+    /// still finishing its last call keeps the session, not these projects.
+    pub fn release_editor_projects(&self) {
+        self.editor_session.cache().clear();
+    }
+
     /// Record an external disk project-shape change without touching the
     /// backend on the foreground LSP notification path.
     pub fn mark_disk_project_state_dirty(&self) {

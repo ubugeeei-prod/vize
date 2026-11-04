@@ -74,8 +74,21 @@ impl AliasContext {
                 .editor_session
                 .cache()
                 .take_prebuilt(source_path, &fingerprint, overlays);
+        let revised = if prebuilt.is_none() {
+            Self::revise_cached(
+                source_path,
+                content,
+                overlays,
+                &mut fingerprint,
+                environment,
+            )?
+        } else {
+            None
+        };
         let mut context = if let Some((context, stamped)) = prebuilt {
             fingerprint = stamped;
+            context
+        } else if let Some(context) = revised {
             context
         } else {
             // Pure syntax facts live through build and its immediate stamp only.

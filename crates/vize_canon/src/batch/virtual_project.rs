@@ -49,6 +49,10 @@ mod declaration_emit;
 pub(crate) mod dependency_scan;
 mod document;
 mod editor_projection;
+mod editor_source_facts;
+#[cfg(test)]
+pub(crate) mod live_projects;
+pub(crate) use editor_source_facts::EditorSourceFacts;
 mod incremental_graph;
 mod module_projection;
 mod star_exports;
@@ -392,6 +396,9 @@ pub struct VirtualProject {
 
     /// Import rewriter for `.vue` specifiers inside TypeScript sources.
     rewriter: ImportRewriter,
+
+    #[cfg(test)]
+    _live: live_projects::LiveProject,
 }
 
 #[derive(Default)]
