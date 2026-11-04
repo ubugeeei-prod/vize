@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { LspSession } from "./session.ts";
+import { ownedSessionDirectory } from "./javascript-workspace-captures.ts";
 import { decodeFrames } from "../../../differential/lsp-wire.ts";
 import {
   argumentMessage,
@@ -197,9 +198,10 @@ export async function editorProducts(root: string, context: Context, binary: str
         stderr: session?.stderrText ?? null,
       });
     }
-    const added = fs.readdirSync(captures).filter((name) => !before.includes(name));
-    assert.equal(added.length, 1, "exactly one owned real stdio session");
-    const directory = path.join(captures, added[0]);
+    const directory = path.join(
+      captures,
+      ownedSessionDirectory(before, fs.readdirSync(captures), process.pid),
+    );
     let observation;
     for (let attempt = 0; attempt < 100; attempt++) {
       observation = JSON.parse(fs.readFileSync(path.join(directory, "observation.json"), "utf8"));
