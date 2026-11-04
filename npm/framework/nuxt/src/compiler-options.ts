@@ -8,7 +8,7 @@ export interface VizeNuxtCompilerCompatibilityOptions {
   hostCompiler?: boolean;
   scriptSetupInStandalone?: boolean;
   optionsApiVapor?: boolean;
-  nuxtVersion?: 2 | 3 | 4;
+  nuxtVersion?: 2 | 3 | 4 | 5;
   webpackVersion?: 4 | 5;
 }
 
