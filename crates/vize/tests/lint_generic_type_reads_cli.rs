@@ -88,7 +88,12 @@ fn original_exact_argv_and_all_whole_configured_json_vectors_are_checked() {
             case["id"].as_str().unwrap(),
         );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
-        assert_eq!(actual, case["cli"], "{}: {output:?}", case["id"]);
+        assert_eq!(
+            actual,
+            crate::support::current_rule_documentation::packet(case["cli"].clone()),
+            "{}: {output:?}",
+            case["id"]
+        );
         unchanged(root, source);
     }
 }

@@ -93,7 +93,7 @@ fn entry_rule_options_enable_project_local_rules_for_matching_files() {
             "file": "src/admin/App.vue",
             "messages": [{
               "ruleId": "script/no-restricted-members",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/script-no-restricted-members.md",
               "severity": 2,
               "message": "[vize:script/no-restricted-members] Use adminStorage.",
               "line": 2,

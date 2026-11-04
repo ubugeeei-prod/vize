@@ -32,7 +32,16 @@ fn original_and_authored_cases_preserve_entire_findings_and_public_reports() {
     let corpus: Corpus =
         serde_json::from_str(include_str!("fixtures/issue-8018/references.json")).unwrap();
     assert_eq!(corpus.scenarios.len(), 11);
-    for case in corpus.scenarios {
+    for mut case in corpus.scenarios {
+        for row in case.expected_cli.as_array_mut().unwrap() {
+            for message in row["messages"].as_array_mut().unwrap() {
+                assert_eq!(message["ruleId"], RULE);
+                assert_eq!(message["ruleDocsPath"], "docs/content/rules/html.md");
+                message["ruleDocsPath"] = serde_json::Value::String(
+                    "docs/content/rules/reference/html-no-empty-palpable-content.md".to_owned(),
+                );
+            }
+        }
         let source = if case.file == "Notice.vue" {
             NOTICE
         } else {

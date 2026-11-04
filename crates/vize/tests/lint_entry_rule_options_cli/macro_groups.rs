@@ -98,7 +98,7 @@ fn check(order: Option<Value>, severity: &str, cases: &[Case], newline: &str, pr
         if let Some((index, message)) = case.violation {
             let statement = case.body.get(index).unwrap();
             messages.push(json!({
-                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/type-and-script.md",
+                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/script-define-macros-order.md",
                 "severity":if severity == "error" {2} else {1},
                 "message":format!("[vize:{RULE}] {message}"),
                 "line":index+3,"column":1,"endLine":index+3,"endColumn":statement.len()+1,

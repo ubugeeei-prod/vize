@@ -65,7 +65,7 @@ fn registered_authored_inputs_keep_macro_group_and_ambient_barrier_diagnostics()
         assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
         let expected = if let Some((end_column, message)) = violation {
             json!([{
-                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/type-and-script.md",
+                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/script-define-macros-order.md",
                 "severity":1,"message":format!("[vize:{RULE}] {message}"),
                 "line":4,"column":1,"endLine":4,"endColumn":end_column,
                 "help":"Declare defineProps and then defineEmits first in <script setup>, right after imports and type declarations."

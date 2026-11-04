@@ -75,7 +75,7 @@ await nextTick()
           "file": "index.html",
           "messages": [{
             "ruleId": "script/no-next-tick",
-            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "ruleDocsPath": "docs/content/rules/reference/script-no-next-tick.md",
             "severity": 2,
             "message": "[vize:script/no-next-tick] nextTick import is not supported in Vapor-oriented components",
             "line": 6,
@@ -85,7 +85,7 @@ await nextTick()
             "help": "Remove nextTick() usage and rely on explicit lifecycle boundaries like onMounted() or direct reactive flow instead."
           }, {
             "ruleId": "script/no-next-tick",
-            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "ruleDocsPath": "docs/content/rules/reference/script-no-next-tick.md",
             "severity": 2,
             "message": "[vize:script/no-next-tick] nextTick() is not supported in Vapor-oriented components",
             "line": 7,

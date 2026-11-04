@@ -36,7 +36,7 @@ fn expected(reference: &Value) -> Value {
             "cannotBeHyphenated" => ("Attribute should not be hyphenated","Use camelCase or a single-word attribute name instead of kebab-case."),
             _ => panic!("unknown independent attribute finding"),
         };
-        json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":2,
+        json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-attribute-hyphenation.md","severity":2,
         "message":format!("[vize:{RULE}] {message}"),"help":help,
         "line":finding["line"],"column":finding["column"],"endLine":finding["endLine"],"endColumn":finding["endColumn"]})
     }).collect::<Vec<_>>();
