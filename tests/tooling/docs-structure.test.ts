@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { test } from "node:test";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -28,6 +28,28 @@ const withoutFences = (source: string) => source.replace(/^```[\s\S]*?^```/gm, "
 /** Pages produced during the docs build rather than authored in `docs/content`. */
 const generatedTarget = (path: string) =>
   /\/guide\/(?:ui|composables)(?:\.md|\/)|\/reference\/|\/component-previews\//.test(path);
+
+/**
+ * Map a Markdown href onto a file under `docs/content` or `docs/public`.
+ * A trailing slash is the built route for both a flat `page.md` and `page/index.md`;
+ * stripping it avoids looking up `page/.md`.
+ */
+const resolveDocsSourceLink = (fromPage: string, target: string): string | undefined => {
+  const located = (
+    target.startsWith("/") ? join(content, target) : resolve(dirname(fromPage), target)
+  ).replace(/[/\\]+$/u, "");
+  const candidates = [
+    located,
+    `${located}.md`,
+    join(located, "index.md"),
+    join(root, "docs/public", target),
+  ];
+  for (const candidate of candidates) {
+    if (!existsSync(candidate) || !statSync(candidate).isFile()) continue;
+    return relative(root, candidate).replaceAll("\\", "/");
+  }
+  return undefined;
+};
 
 test("Japanese pages keep the English heading structure", () => {
   const headings = (path: string) =>
@@ -107,13 +129,24 @@ test("relative links point at existing pages and assets", () => {
       const file = target.startsWith("/") ? join(content, target) : resolve(dirname(path), target);
       checked += 1;
       if (generatedTarget(file)) continue;
-      const exists =
-        existsSync(file) ||
-        existsSync(`${file}.md`) ||
-        existsSync(join(file, "index.md")) ||
-        existsSync(join(root, "docs/public", target));
-      assert.ok(exists, `${path.slice(root.length + 1)} links to missing ${href}`);
+      assert.ok(
+        resolveDocsSourceLink(path, target),
+        `${path.slice(root.length + 1)} links to missing ${href}`,
+      );
     }
   }
   assert.ok(checked > 1000, `links were checked (${checked})`);
+});
+
+test("trailing-slash routes resolve flat pages and directory indexes", () => {
+  const fromPage = join(content, "ja/guide/ui/index.md");
+  assert.equal(
+    resolveDocsSourceLink(fromPage, "/ja/guide/vite-plus/"),
+    "docs/content/ja/guide/vite-plus.md",
+  );
+  assert.equal(
+    resolveDocsSourceLink(fromPage, "/ja/blog/releases/"),
+    "docs/content/ja/blog/releases/index.md",
+  );
+  assert.equal(resolveDocsSourceLink(fromPage, "/ja/guide/does-not-exist/"), undefined);
 });
