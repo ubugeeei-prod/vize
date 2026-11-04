@@ -28,6 +28,11 @@ import {
   writeFiles,
 } from "./smoke-release-init-project.ts";
 import { run } from "./smoke-process.ts";
+import {
+  packedDownloadBytes,
+  readLspDiagnosticSettle,
+  recordPackedSmokeTiming,
+} from "./smoke-release-init-timing.ts";
 
 interface SmokeContext {
   readonly freshRoot: string;
@@ -93,14 +98,18 @@ export function runWorkspacePackageCheck(context: SmokeContext): void {
   const specs = shape.plannedDependencies.map(
     (name: string) => `${name}@${packedFileSpec(context.packed.get(name))}`,
   );
+  const installStarted = performance.now();
   runManager(manager, [...manager.installArgs, ...specs, ...manager.installFlags], {
     cwd: project,
   });
+  const installMs = performance.now() - installStarted;
   const vize = fs.realpathSync(path.join(project, "node_modules", "vize"));
   assert.ok(vize.startsWith(workspace), `vize resolved outside the workspace: ${vize}`);
   assert.equal(readJson(path.join(vize, "package.json")).version, context.versions.get("vize"));
 
+  const checkStarted = performance.now();
   const clean = checkReport(project);
+  const firstCheckMs = performance.now() - checkStarted;
   assert.equal(clean.status, 0, `clean workspace package failed vize check\n${clean.rendered}`);
   assert.deepEqual(reportedDiagnostics(clean.report, project), []);
   const scripted = runGeneratedCheck(project, manager, []);
@@ -116,5 +125,19 @@ export function runWorkspacePackageCheck(context: SmokeContext): void {
   const repaired = checkReport(project);
   assert.equal(repaired.status, 0, `repaired workspace package failed\n${repaired.rendered}`);
   runProjectLspSession(project);
+  const lsp = readLspDiagnosticSettle(project);
+  recordPackedSmokeTiming({
+    projectShape: shape.id,
+    packageManager: manager.id,
+    host: `${process.platform}-${process.arch}`,
+    installMs,
+    firstCheckMs,
+    ...packedDownloadBytes(context.packed, shape.plannedDependencies),
+    lspSession: true,
+    lspDiagnosticsNotifications: lsp.notifications,
+    lspDiagnosticsSettled: lsp.settled,
+    lspDiagnosticsSettleMs: lsp.settleMs,
+    diagnosticQuietMs: lsp.diagnosticQuietMs,
+  });
   console.log("runtime: fresh pnpm workspace package (init, install, check triple, LSP)");
 }
