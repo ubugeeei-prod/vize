@@ -67,12 +67,11 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
       assert.ok(first.report.errorCount > 0, "the legacy surface is intentionally not clean");
       assertDiagnosticsStayInAuthoredBlocks(fixture.workspaceDir, first.report.files);
 
-      // The two historical packets remain frozen. The additive display
-      // successor changes the 170 reviewed `__VizeThis` names. Its sole later
-      // removal is the real inherited getImgPath method's false positive (#11780).
+      // Keep all historical packets frozen. The JS-mixin successor removes only
+      // the real inherited getImgPath method's false positive (#11780).
       assertSnapshot(
         SNAPSHOT_DIR,
-        "vue2-elm-display-check",
+        "vue2-elm-js-mixin-check",
         `${JSON.stringify(omitProgramEvidence(first.report), null, 2)}\n`,
       );
     },
