@@ -1,20 +1,19 @@
 //! Authored URI spelling shared by native and import-alias navigation.
 
 use crate::ide::IdeContext;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 use tower_lsp::lsp_types::Url;
 
 pub(crate) struct AuthoredUriResolver {
-    open: vize_l0::FxHashMap<PathBuf, Url>,
+    open_uris: Arc<[Url]>,
+    open_by_physical_path: vize_l0::FxHashMap<PathBuf, Url>,
     workspace: Option<(PathBuf, PathBuf)>,
 }
 
 impl AuthoredUriResolver {
     pub(crate) fn new(ctx: &IdeContext<'_>) -> Self {
-        let open = ctx
-            .state
-            .documents
-            .uris()
+        let open_uris = ctx.state.documents.uris();
+        let open_by_physical_path = open_uris
             .iter()
             .filter_map(|uri| {
                 let path = uri.to_file_path().ok()?;
@@ -25,7 +24,11 @@ impl AuthoredUriResolver {
             let physical = ctx.state.canonical_editor_path(&root);
             (root, physical)
         });
-        Self { open, workspace }
+        Self {
+            open_uris,
+            open_by_physical_path,
+            workspace,
+        }
     }
 
     pub(crate) fn resolve(
@@ -33,8 +36,14 @@ impl AuthoredUriResolver {
         ctx: &IdeContext<'_>,
         source_path: &std::path::Path,
     ) -> Option<Url> {
+        let source_uri = Url::from_file_path(source_path).ok();
+        if let Some(uri) = &source_uri
+            && self.open_uris.binary_search(uri).is_ok()
+        {
+            return source_uri;
+        }
         let physical_path = ctx.state.canonical_editor_path(source_path);
-        self.open
+        self.open_by_physical_path
             .get(&physical_path)
             .cloned()
             .or_else(|| {
@@ -42,7 +51,7 @@ impl AuthoredUriResolver {
                 let relative = physical_path.strip_prefix(physical_root).ok()?;
                 Url::from_file_path(logical_root.join(relative)).ok()
             })
-            .or_else(|| Url::from_file_path(source_path).ok())
+            .or(source_uri)
     }
 }
 
