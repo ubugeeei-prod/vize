@@ -124,3 +124,9 @@ pub mod key;
 pub mod level;
 pub mod pass;
 pub mod side_table;
+
+/// Portable filesystem path identities.
+pub mod path;
+
+/// Shared selected-project TypeScript compiler-option loading.
+pub mod typescript_project;

@@ -34,6 +34,8 @@ import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
 import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
 
+import { checkCompilerCase } from "./compiler-project-fixture-contract.ts";
+
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
 
@@ -99,7 +101,6 @@ interface Manifest {
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
-const COMPILER_FACETS = ["code", "css", "errors", "warnings", "macro_artifacts"];
 
 export function legacyProducts(paths: readonly string[]): Product[] {
   const products = new Set<Product>();
@@ -145,41 +146,6 @@ function requirePinned(readFile: ReadFile, path: string, expected: string, label
   if (bytes === null || sha256(bytes) !== expected) {
     throw new Error(`missing or mismatched pinned ${label}: ${path}`);
   }
-}
-
-// Compiler cases compare whole SSR modules, so they also pin the expected module.
-function checkCompilerCase(
-  entry: ManifestCase,
-  root: string,
-  files: PinnedInput[],
-  readFile: ReadFile,
-): void {
-  const reference = entry.reference;
-  const expectedPath = `${root}/module.expected.txt`;
-  if (
-    entry.id !== `compiler/sfc/${root}` ||
-    JSON.stringify(entry.targets) !== JSON.stringify(["ssr"]) ||
-    files.length !== 1 ||
-    files[0]?.path !== "Layout.vue.txt" ||
-    files[0]?.role !== "entry" ||
-    entry.adapters?.legacy !== "compiler-cli-ssr-v1" ||
-    entry.adapters?.native !== null ||
-    typeof entry.adapters?.reasons?.native !== "string" ||
-    entry.comparison?.contract !== "compiler-ssr-module-bytes-v1" ||
-    JSON.stringify(entry.comparison?.requiredFacets) !== JSON.stringify(COMPILER_FACETS) ||
-    reference?.path !== expectedPath ||
-    !/^[a-f0-9]{64}$/.test(reference.sha256 ?? "") ||
-    typeof reference.source !== "string" ||
-    reference.source.length === 0
-  ) {
-    throw new Error(`invalid pinned compiler reference: ${entry.id}`);
-  }
-  requirePinned(
-    readFile,
-    `tests/_fixtures/differential/compiler/${expectedPath}`,
-    reference.sha256 ?? "",
-    "compiler reference",
-  );
 }
 
 function checkProduct(

@@ -50,6 +50,11 @@ const module: CompiledModule = {
 
 assert.equal(isPersistablePrecompileModule(module), true);
 assert.equal(isPersistablePrecompileModule({ ...module, dependencies: ["/x.js"] }), false);
+const projectModule: CompiledModule = {
+  ...module,
+  typeProject: { root: "/work/tsconfig.json", revision: "previous-process" },
+};
+assert.equal(isPersistablePrecompileModule(projectModule), false);
 
 const disabled = createDisabledPrecompileCache();
 disabled.set("/a.vue", "hash", module);
@@ -102,6 +107,16 @@ assert.equal(reopened.get("/b.vue", "hash-a"), undefined, "an unknown path must 
 // A module with `src` dependencies is refused, and evicts any prior entry.
 reopened.set("/a.vue", "hash-a", { ...module, dependencies: ["/dep.js"] });
 assert.equal(reopened.get("/a.vue", "hash-a"), undefined);
+
+// Process-local project captures cannot survive a native process restart.
+reopened.set("/b.vue", "hash-b", module);
+reopened.set("/a.vue", "hash-a", module);
+reopened.set("/a.vue", "hash-a", projectModule);
+assert.equal(reopened.get("/a.vue", "hash-a"), undefined);
+assert.equal(reopened.flush(), true);
+const projectReopened = openPrecompileCache({ root, compileOptions: options });
+assert.equal(projectReopened.get("/a.vue", "hash-a"), undefined);
+assert.deepEqual(projectReopened.get("/b.vue", "hash-b"), module);
 
 // Different compile options must land in a different manifest.
 assert.notEqual(

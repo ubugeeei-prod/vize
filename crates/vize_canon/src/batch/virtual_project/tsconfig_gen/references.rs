@@ -11,10 +11,12 @@ use rayon::prelude::*;
 
 pub(super) mod graph;
 mod ownership;
+mod snapshot;
 mod spec;
 mod wildcard;
 
 pub use ownership::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
+pub use snapshot::TsconfigOwnershipSnapshot;
 pub use wildcard::{TsconfigWildcard, TsconfigWildcardUsage};
 
 use super::super::tsconfig_paths::{
@@ -124,6 +126,8 @@ pub(in super::super) fn effective_config_for_source(
     )
 }
 
+#[cfg(test)]
+mod snapshot_tests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]

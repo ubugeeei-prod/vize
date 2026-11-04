@@ -12946,6 +12946,35 @@
       }
     },
     {
+      "id": "typechecker/regression/imported-project-ownership-11794",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "imported-project-ownership-11794/case.json",
+          "sha256": "7347ddc4f6c847efc131a473daef792648abd38b1e8988e54026d43b3b5bcfdd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "type_projects::tests::pinned_reference_project_is_selected_once_and_configuration_changes_reach_compilation; physically consumes all pinned project inputs through Canon ownership snapshot and SFC compile. First unrelated and later owning references, runtime bar:Object/required:false, changed config and snapshot reuse are checked. Input-only registration; no native SDK, diagnostic pack or timing qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/legacy-external-component-props",
       "state": "active",
       "targets": [

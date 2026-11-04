@@ -1,3 +1,4 @@
+import { originalNativeLoaderModule } from "./support/native-project-export-source.ts";
 import { isDeepStrictEqual } from "node:util";
 import { retainFinalCustody } from "../../tools/benchmarks/scripts/public-typechecker-11317/run.ts";
 import assert from "node:assert/strict";
@@ -203,7 +204,8 @@ test("authenticated loader prerequisites execute zero probes for a local native 
     };
     const corePackage = materialize(core, "@vizejs/native", "index.js");
     for (const member of nativeLoaderProgram.modules) {
-      const body = execFileSync("git", ["show", ":npm/native/" + member.name], { cwd: repo });
+      const current = execFileSync("git", ["show", ":npm/native/" + member.name], { cwd: repo });
+      const body = originalNativeLoaderModule(member.name, current);
       assert.equal(body.length, member.bytes);
       assert.equal(sha256(body), member.sha256);
       write(join(core, member.name), body);

@@ -1,6 +1,11 @@
 import type { ExperimentalCompileFlags } from "./experimental-options.ts";
 import type { ModuleOutputInfo } from "./utils/module-output.js";
 
+export interface TypeProjectContext {
+  root: string;
+  revision: string;
+}
+
 export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
   filename?: string;
@@ -10,6 +15,8 @@ export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   vapor?: boolean;
   /** Extract Nuxt page metadata; enabled by the Nuxt integration only. */
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   customRenderer?: boolean;
   customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";
@@ -58,6 +65,7 @@ export interface NativeStyleBlockInfo {
 }
 
 export interface SfcCompileResultNapi {
+  typeProject?: TypeProjectContext;
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, present only when
@@ -98,6 +106,8 @@ export interface StyleBlockInfo {
 }
 
 export interface CompiledModule {
+  /** Shared configuration authority; its watch inputs are registered once. */
+  typeProject?: TypeProjectContext;
   /**
    * The SFC text this module was compiled from. A module answers only for this
    * text; the pre-compile cache stores its hash instead.

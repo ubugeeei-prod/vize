@@ -33,7 +33,7 @@ function createState(root: string, options: StateOptions = {}): VizePluginState 
     root,
     clientViteBase: "/",
     serverViteBase: "/",
-    server: {} as never,
+    server: { watcher: { add() {} } } as never,
     filter: options.filter ?? ((id) => !id.includes("node_modules") && id.endsWith(".vue")),
     scanPatterns: [],
     precompileBatchSize: 128,

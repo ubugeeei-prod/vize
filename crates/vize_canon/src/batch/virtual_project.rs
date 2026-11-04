@@ -125,8 +125,8 @@ mod tsconfig_gen;
 pub use tsconfig_gen::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, CompilerOptionsSnapshot,
     ConfigurationObservations, TsconfigOwnershipCache, TsconfigOwnershipOptions,
-    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage, UnresolvedExtends,
-    snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
+    TsconfigOwnershipSnapshot, TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
+    UnresolvedExtends, snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
     snapshot_tsconfig_vue_target,
 };
 mod tsconfig_paths;
