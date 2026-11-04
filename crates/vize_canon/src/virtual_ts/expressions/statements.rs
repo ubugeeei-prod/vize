@@ -212,7 +212,9 @@ pub(super) fn generate_expression_statement(
         indent,
         checks,
     );
-    super::read_ownership::record(expr, &mappings[first_mapping..], template_offset, checks);
+    if let Some(rows) = mappings.get(first_mapping..) {
+        super::read_ownership::record(expr, rows, template_offset, checks);
+    }
     if !template_binding_access.is_empty() {
         let expression = expression_source_for_typecheck(expr.content.as_str());
         // The same stripped text was emitted above. Retain its original byte

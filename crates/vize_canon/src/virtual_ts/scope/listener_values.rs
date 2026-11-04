@@ -65,10 +65,7 @@ fn merge_values<'a>(
     mut values: Vec<&'a TemplateExpression>,
 ) {
     // Unknown source recovery must not reorder the existing expression stream.
-    if expressions
-        .windows(2)
-        .any(|pair| pair[0].start > pair[1].start)
-    {
+    if !expressions.is_sorted_by_key(|expression| expression.start) {
         return;
     }
     values.sort_by_key(|value| (value.start, value.end));
