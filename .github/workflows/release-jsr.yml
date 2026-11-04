@@ -40,11 +40,12 @@ jobs:
     name: Publish the JSR package
     needs: channel
     runs-on: ubuntu-24.04
-    # The registry accepted 0.496.0-0.504.0 but `deno publish` kept polling
-    # until this job's old 75-minute limit cancelled it. Those versions became
-    # public 5-18 minutes later. Bound the CLI poll, then own the public wait so
-    # an accepted publication reaches the consumer jobs.
-    timeout-minutes: 110
+    # 0.496.0-0.504.0 were accepted while `deno publish` kept polling until the
+    # old 75-minute job limit. Bound the CLI below that, but long enough for the
+    # provenance POST after an acceptance that takes about ten minutes. A killed
+    # poll (124) still continues into the public wait; a provenance rejection
+    # does not.
+    timeout-minutes: 140
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -70,7 +71,7 @@ jobs:
             exit 0
           fi
           set +e
-          timeout --signal=INT --kill-after=30s 5m deno publish --config jsr.json
+          timeout --signal=INT --kill-after=30s 20m node "$GITHUB_WORKSPACE/tools/support/release/jsr/publish-with-fresh-provenance.mjs" -- deno publish --config jsr.json
           status=$?
           set -e
           if [[ $status -ne 0 && $status -ne 124 ]]; then
