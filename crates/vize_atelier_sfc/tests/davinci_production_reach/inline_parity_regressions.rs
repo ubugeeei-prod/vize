@@ -90,6 +90,32 @@ fn typed_component_method_references_preserve_callable_identity() {
 }
 
 #[test]
+fn typed_options_method_handlers_keep_their_live_cache() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "typed-options-component-handlers.vue",
+        r#"<script lang="ts">
+export default { methods: { method(value: unknown) { return value } } }
+</script>
+<script setup lang="ts">
+import Child from './Child.vue'
+type Fn = (value: unknown) => unknown
+</script>
+<template><Child @pick="method" /><Child @pick="method!" /><Child @pick="method as Fn" /><Child @pick="method($event)" /></template>"#,
+    );
+    assert_inline_parity(
+        "js-options-component-handlers.vue",
+        r#"<script>
+export default { methods: { method(value) { return value } } }
+</script>
+<script setup>
+import Child from './Child.vue'
+</script>
+<template><Child @pick="method" /><Child @pick="method($event)" /></template>"#,
+    );
+}
+
+#[test]
 fn maybe_ref_model_writes_match_shipped_compiler() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
