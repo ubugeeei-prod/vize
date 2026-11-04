@@ -105,9 +105,10 @@ jobs:
             node tools/support/release/type-admission-mapper-host.ts "$provider" "$proof"
           runtime="$provider/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           test -x "$runtime"
-          # The published beta is qualified for memo; other conformance roles
-          # retain their independently configured checker and companion closure.
+          # Memo and adjacent-attribute cases use this qualified published beta.
+          # Other conformance roles keep their own checker and companion closure.
           printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
+          printf 'VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Hydrate the required ElementPlus projection fixture

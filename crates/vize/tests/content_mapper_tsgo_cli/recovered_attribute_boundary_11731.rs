@@ -5,17 +5,93 @@ use super::{
 };
 use std::path::PathBuf;
 
+const BOUNDARY_TSGO_ENV: &str = "VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO";
+
+/// A missing host is an unexecuted cohort. `VIZE_TEST_REQUIRE_TSGO` makes that a failure.
+fn attribute_boundary_host() -> Option<PathBuf> {
+    select_attribute_boundary_host(
+        std::env::var_os(BOUNDARY_TSGO_ENV).map(PathBuf::from),
+        std::env::var_os(TSGO_ENV).map(PathBuf::from),
+        std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some(),
+    )
+}
+
+fn select_attribute_boundary_host(
+    attribute_boundary: Option<PathBuf>,
+    conformance: Option<PathBuf>,
+    required: bool,
+) -> Option<PathBuf> {
+    let Some(host) = attribute_boundary.or(conformance) else {
+        assert!(
+            !required,
+            "unexecuted #11731 cohort: VIZE_TEST_REQUIRE_TSGO is set and both {BOUNDARY_TSGO_ENV} and {TSGO_ENV} are absent"
+        );
+        eprintln!("unexecuted #11731 cohort: neither {BOUNDARY_TSGO_ENV} nor {TSGO_ENV} is set");
+        return None;
+    };
+    assert!(
+        host.is_file(),
+        "selected #11731 Content Mapper host is not a file: {}",
+        host.display()
+    );
+    eprintln!(
+        "#11731 cohort provider={} require={required}",
+        host.display()
+    );
+    Some(host)
+}
+
+#[test]
+fn attribute_boundary_host_prefers_its_explicit_provider_over_the_conformance_provider() {
+    let attribute_boundary = tempfile::NamedTempFile::new().unwrap();
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    assert_eq!(
+        select_attribute_boundary_host(
+            Some(attribute_boundary.path().to_path_buf()),
+            Some(conformance.path().to_path_buf()),
+            true,
+        ),
+        Some(attribute_boundary.path().to_path_buf())
+    );
+}
+
+#[test]
+fn attribute_boundary_host_keeps_the_existing_conformance_provider_as_a_fallback() {
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    assert_eq!(
+        select_attribute_boundary_host(None, Some(conformance.path().to_path_buf()), true),
+        Some(conformance.path().to_path_buf())
+    );
+}
+
+#[test]
+fn optional_attribute_boundary_without_either_provider_remains_unexecuted() {
+    assert_eq!(select_attribute_boundary_host(None, None, false), None);
+}
+
+#[test]
+#[should_panic(expected = "unexecuted #11731 cohort: VIZE_TEST_REQUIRE_TSGO is set")]
+fn required_attribute_boundary_without_either_provider_fails_closed() {
+    let _ = select_attribute_boundary_host(None, None, true);
+}
+
+#[test]
+#[should_panic(expected = "selected #11731 Content Mapper host is not a file")]
+fn invalid_explicit_attribute_boundary_provider_does_not_fall_back_to_another_host() {
+    let root = tempfile::tempdir().unwrap();
+    let conformance = tempfile::NamedTempFile::new().unwrap();
+    let _ = select_attribute_boundary_host(
+        Some(root.path().join("missing-tsgo")),
+        Some(conformance.path().to_path_buf()),
+        true,
+    );
+}
+
 #[test]
 fn legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics() {
-    let Some(host) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
-        assert!(
-            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
-            "unexecuted #11731 cohort: required real host is absent"
-        );
-        eprintln!("unexecuted #11731 cohort: {TSGO_ENV} is absent");
+    let Some(host) = attribute_boundary_host() else {
         return;
     };
-    assert!(host.is_file(), "{TSGO_ENV} must identify a real host");
     let fixture = workspace_root()
         .join("tests/_fixtures/differential/typechecker/recovered-attribute-boundary-11731");
     let original = std::fs::read_to_string(fixture.join("Gap.vue.txt")).unwrap();

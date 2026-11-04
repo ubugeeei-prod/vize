@@ -391,7 +391,11 @@ fi
         assert.equal(result.status, 0, result.stderr);
         assert.equal(
           readFileSync(githubEnv, "utf8"),
-          `VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc\n`,
+          [
+            `VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc`,
+            `VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc`,
+            "",
+          ].join("\n"),
         );
       } else {
         assert.equal(result.status, mode === "bootstrap-failure" ? 23 : 1, result.stderr);
