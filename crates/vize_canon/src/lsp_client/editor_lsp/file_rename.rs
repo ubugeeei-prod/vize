@@ -130,14 +130,13 @@ mod tests {
         let new_first = path_to_file_uri(&linked.join("first-renamed.ts"));
         let old_second = path_to_file_uri(&workspace.join("second.ts"));
         let new_second = path_to_file_uri(&workspace.join("second-renamed.ts"));
-        let native = [&old_first, &new_first, &old_second, &new_second].map(|uri| {
-            crate::lsp_client::session_paths::build_materialized_session_document_uri(
-                uri,
-                &workspace,
-                client.overlay_storage.root(),
-            )
-            .unwrap()
-        });
+        let native = [
+            "first.ts",
+            "first-renamed.ts",
+            "second.ts",
+            "second-renamed.ts",
+        ]
+        .map(|name| path_to_file_uri(&client.overlay_storage.root().join(name)));
         let edit = client
             .will_rename_files_via_editor_lsp(&[
                 (&old_first, &new_first),

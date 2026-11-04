@@ -71,7 +71,10 @@ test("identity registration cannot cover another source, input, consumer or repe
     assert.throws(() => validate(corrupt("head", target)), changedSource("head", target));
   }
   assert.deepEqual([...validate(read, rows, rows).sources], []);
-  assert.throws(() => validate(read, [row, row]));
+  assert.throws(
+    () => validate(read, [row, row]),
+    /identity transition requires one registered row/,
+  );
   for (const field of ["sources", "tests", "inputs"] as const) {
     const altered = structuredClone(row);
     altered[field] = altered[field].slice(1);
@@ -129,12 +132,14 @@ test("four historical inputs, all five current consumers and actual A/B producer
     altered.protocolCases
       .find((entry: { id: string }) => entry.id === row.legacyProtocol.id)
       .tests.pop();
-    assert.throws(() =>
-      validate((world, path) =>
-        world === side && path === manifestPath
-          ? Buffer.from(JSON.stringify(altered))
-          : read(world, path),
-      ),
+    assert.throws(
+      () =>
+        validate((world, path) =>
+          world === side && path === manifestPath
+            ? Buffer.from(JSON.stringify(altered))
+            : read(world, path),
+        ),
+      new RegExp(`${side} historical ABI registration changed`),
     );
   }
 });
@@ -213,7 +218,10 @@ test("the immutable actor refuses missing, altered and unregistered source image
   }
   const changed = structuredClone(rows);
   changed[0].sources[0].after = "0".repeat(64);
-  assert.throws(() => nativeDocumentIdentityActor(read, changed), { name: "AssertionError" });
+  assert.throws(
+    () => nativeDocumentIdentityActor(read, changed),
+    /unregistered historical identity actor/,
+  );
 });
 
 test("historical actor replay does not qualify a changed initial source registration", () => {

@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -46,7 +47,7 @@ type Read = (side: "base" | "head", file: string) => Buffer | null;
 function historicalComponent(readCurrent: Read): Buffer {
   const identity = manifest.nativeDocumentIdentityCases[0];
   const archive = readCurrent("head", identity.sourceArchive.path);
-  assert.ok(archive);
+  assert.ok(archive, "missing identity before archive");
   const originals: Record<string, string> = JSON.parse(gunzipSync(archive).toString("utf8"));
   const prior = structuredClone(manifest);
   delete prior.nativeDocumentIdentityCases;
@@ -106,18 +107,14 @@ function read(side: "base" | "head", file: string): Buffer | null {
 
 void test("historical component reconstruction requires immutable actor custody and preserves explicit readers", () => {
   assert.notDeepEqual(headSource(componentSource, root), componentHistory);
-  assert.deepEqual(
-    headSource(authority.consumer.observer.path),
-    readCurrent("head", authority.consumer.observer.path),
-  );
-  assert.deepEqual(
-    headSource(authority.consumer.helper.path),
-    readCurrent("head", authority.consumer.helper.path),
-  );
-  assert.deepEqual(
-    headSource(authority.production.files[5].path),
-    readCurrent("head", authority.production.files[5].path),
-  );
+  const selectedRoot = process.env.VIZE_LOGICAL_PROTOCOL_SOURCE_ROOT ?? root;
+  for (const file of [
+    authority.consumer.observer.path,
+    authority.consumer.helper.path,
+    authority.production.files[5].path,
+  ]) {
+    assert.deepEqual(headSource(file), fs.readFileSync(path.join(selectedRoot, file)));
+  }
   const identity = manifest.nativeDocumentIdentityCases[0];
   const actorSources = new Set(identity.sources.map((source: { path: string }) => source.path));
   assert.deepEqual(
@@ -131,9 +128,39 @@ void test("historical component reconstruction requires immutable actor custody 
     "tests/_fixtures/differential/typechecker/native-document-identity-11586/after-source.json.gz",
     ...identity.inputs.map((input: { path: string }) => input.path),
   ]) {
-    assert.throws(() =>
-      historicalComponent((side, target) => (target === file ? null : readCurrent(side, target))),
+    const message =
+      file === identity.sourceArchive.path
+        ? "missing identity before archive"
+        : `missing head identity source: ${file}`;
+    assert.throws(
+      () =>
+        historicalComponent((side, target) => (target === file ? null : readCurrent(side, target))),
+      (error: unknown) => error instanceof assert.AssertionError && error.message.includes(message),
     );
+  }
+});
+
+void test("explicit source roots supply different authored bytes while fixture inputs stay owned", () => {
+  const selectedRoot = fs.mkdtempSync(path.join(tmpdir(), "vize-identity-reader-"));
+  try {
+    for (const file of [
+      authority.consumer.observer.path,
+      authority.consumer.helper.path,
+      authority.production.files[5].path,
+    ]) {
+      const bytes = Buffer.from(`explicit reader: ${file}\n`);
+      const destination = path.join(selectedRoot, file);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.writeFileSync(destination, bytes);
+      assert.notDeepEqual(bytes, readCurrent("head", file));
+      assert.deepEqual(headSource(file, selectedRoot), bytes);
+    }
+    assert.deepEqual(
+      headSource(authority.consumer.input.path, selectedRoot),
+      readCurrent("head", authority.consumer.input.path),
+    );
+  } finally {
+    fs.rmSync(selectedRoot, { recursive: true, force: true });
   }
 });
 type Overrides = Record<string, Buffer | null>;

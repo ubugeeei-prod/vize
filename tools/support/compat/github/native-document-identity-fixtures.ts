@@ -57,7 +57,11 @@ function preserveHistoricalAbi(read: ReadFile, value: unknown) {
     const manifest = JSON.parse(read(side, manifestPath)!.toString("utf8"));
     const rows = manifest.protocolCases.filter((row: { id: string }) => row.id === legacy.id);
     assert.equal(rows.length, 1);
-    assert.equal(hash(Buffer.from(canonical(rows[0]))), legacy.registrationSha256);
+    assert.equal(
+      hash(Buffer.from(canonical(rows[0]))),
+      legacy.registrationSha256,
+      `${side} historical ABI registration changed`,
+    );
     return rows[0];
   });
   assert.deepEqual(registrations[0], registrations[1], "historical ABI row must remain unchanged");
@@ -101,7 +105,11 @@ function preserveHistoricalAbi(read: ReadFile, value: unknown) {
 export function nativeDocumentIdentityActor(read: ReadFile, current: unknown) {
   assert.ok(Array.isArray(current) && current.length === 1);
   const row = object(current[0]);
-  assert.equal(hash(Buffer.from(canonical(row))), registrationSha256);
+  assert.equal(
+    hash(Buffer.from(canonical(row))),
+    registrationSha256,
+    "unregistered historical identity actor",
+  );
   const image = JSON.parse(
     gunzipSync(
       pinned(
@@ -144,7 +152,10 @@ export function newNativeDocumentIdentityCases(
     );
     return result;
   }
-  assert.ok(Array.isArray(current) && current.length === 1);
+  assert.ok(
+    Array.isArray(current) && current.length === 1,
+    "identity transition requires one registered row",
+  );
   const row = object(current[0]);
   assert.equal(row.id, NATIVE_DOCUMENT_IDENTITY_ID);
   if (Array.isArray(previous) && previous.length) {
