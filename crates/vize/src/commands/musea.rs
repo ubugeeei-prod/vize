@@ -1,3 +1,4 @@
+mod files;
 mod migrate;
 mod new;
 mod serve_plan;
