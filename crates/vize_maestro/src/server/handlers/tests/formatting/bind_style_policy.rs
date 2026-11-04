@@ -2,7 +2,10 @@
 
 use super::*;
 use serde_json::{Value, json};
-use std::{cell::RefCell, path::Path};
+use std::{
+    path::Path,
+    sync::{Arc, Mutex, mpsc},
+};
 use tower_lsp::lsp_types::NumberOrString;
 use tracing_subscriber::{Layer, layer::SubscriberExt};
 use vize_l0::{String as CompactString, cstr};
@@ -69,11 +72,9 @@ fn requests(server: &MaestroServer, uri: &Url) -> [Option<Vec<TextEdit>>; 3] {
 
 type CapturedEvent = (CompactString, Vec<(CompactString, CompactString)>);
 
-thread_local! {
-    static CAPTURED_LOGS: RefCell<Vec<CapturedEvent>> = const { RefCell::new(Vec::new()) };
+struct CapturedWarnings {
+    rows: Arc<Mutex<Vec<CapturedEvent>>>,
 }
-
-struct CapturedWarnings;
 struct Fields(Vec<(CompactString, CompactString)>);
 
 impl tracing::field::Visit for Fields {
@@ -88,12 +89,30 @@ impl<S: tracing::Subscriber> Layer<S> for CapturedWarnings {
         event: &tracing::Event<'_>,
         _context: tracing_subscriber::layer::Context<'_, S>,
     ) {
+        // Same admission as `LevelFilter::WARN`: keep WARN and more severe.
+        if event.metadata().level() > &tracing::Level::WARN {
+            return;
+        }
         let mut fields = Fields(Vec::new());
         event.record(&mut fields);
-        CAPTURED_LOGS.with_borrow_mut(|rows| {
-            rows.push((cstr!("{}", event.metadata().level()), fields.0));
-        });
+        self.rows
+            .lock()
+            .unwrap()
+            .push((cstr!("{}", event.metadata().level()), fields.0));
     }
+}
+
+/// Rebuild callsite interest on a thread with no subscriber.
+///
+/// With one registered dispatcher, that rebuild stores `Interest::never` for
+/// every callsite. The three refusal warnings must still be captured.
+fn rebuild_interest_from_unsubscribed_thread() {
+    let (done_tx, done_rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        tracing::callsite::rebuild_interest_cache();
+        let _ = done_tx.send(());
+    });
+    done_rx.recv().unwrap();
 }
 
 #[test]
@@ -118,11 +137,15 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
             );
         }
         let config_before = std::fs::read(root.join("vite.config.mjs")).unwrap();
-        CAPTURED_LOGS.with_borrow_mut(Vec::clear);
-        let subscriber = tracing_subscriber::registry()
-            .with(CapturedWarnings.with_filter(tracing_subscriber::filter::LevelFilter::WARN));
-        let result = tracing::subscriber::with_default(subscriber, || requests(server, &uri));
-        let logs = CAPTURED_LOGS.with_borrow(Clone::clone);
+        let captured = Arc::new(Mutex::new(Vec::new()));
+        let subscriber = tracing_subscriber::registry().with(CapturedWarnings {
+            rows: Arc::clone(&captured),
+        });
+        let result = tracing::subscriber::with_default(subscriber, || {
+            rebuild_interest_from_unsubscribed_thread();
+            requests(server, &uri)
+        });
+        let logs = captured.lock().unwrap().clone();
         println!("bind-style formatter capture: {normalize:?} {result:?} {logs:?}");
         assert_eq!(result, [None, None, None]);
         let expected = (
