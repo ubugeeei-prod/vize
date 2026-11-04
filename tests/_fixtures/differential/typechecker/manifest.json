@@ -13271,6 +13271,55 @@
       }
     },
     {
+      "id": "typechecker/regression/recovered-attribute-boundary-11731",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "recovered-attribute-boundary-11731/Gap.vue.txt",
+          "sha256": "5597c24ffb988da8f4973909aac7323619ace55df9eb9023100d35e183f972ec",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/Other.vue.txt",
+          "sha256": "239ff0361622141495129b38a19246e7fa7d27e7afda612eeafd4af39071c00b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/package.json.txt",
+          "sha256": "d1279343e83de908139ab4e6fa5e3f1d32c95f395629162b117162a6413928ad",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/Unused.vue.txt",
+          "sha256": "f80814d9348efa42651b7bcfaa143cdc5dcc6a3b498b3fdde383a7f938c2cd62",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics; original reported Gap/Other project, valid repair, independent same-file error and noUnusedLocals false/true under a required real host, LF/CRLF. Native Component/Document token packets and whole mapper packet have separate regression tests. Input-only registration; source-host after qualification is required."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-commented-vif-11378",
       "state": "active",
       "targets": [
