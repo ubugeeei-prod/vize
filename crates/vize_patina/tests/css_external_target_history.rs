@@ -43,7 +43,8 @@ fn both_originals_and_subject_controls_preserve_complete_api_and_cli_reports() {
         .with_help_level(HelpLevel::Full);
     let mut css_linter = CssLinter::new();
     css_linter.add_rule(Box::new(NoDisplayNone));
-    for case in corpus.cases {
+    for mut case in corpus.cases {
+        case.expected_cli = crate::current_css_documentation::packet(case.expected_cli);
         let css = case.source.get(case.style_start..case.style_end).unwrap();
         // Empty results must not be an accidental stylesheet-parse fallback.
         let stylesheet = lightningcss::stylesheet::StyleSheet::parse(

@@ -1,5 +1,6 @@
 //! Strict template-context refs discovered from template expression AST scans.
 
+use crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, analyzer::extract_identifier_refs_oxc};
@@ -29,6 +30,7 @@ pub(super) fn generate_strict_expression_refs(
     seen_names: &mut FxHashSet<String>,
     seen_strict_occurrences: &mut FxHashSet<(String, usize)>,
     emitted_header: &mut bool,
+    ownership: Option<&DiagnosticOwnershipCollector>,
 ) {
     for expr in &summary.template_expressions {
         for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
@@ -80,6 +82,7 @@ pub(super) fn generate_strict_expression_refs(
                 src_start,
                 src_start + name.len(),
                 already_declared,
+                ownership,
             );
         }
     }

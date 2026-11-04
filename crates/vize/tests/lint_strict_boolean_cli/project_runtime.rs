@@ -42,7 +42,7 @@ fn project_tsrs_discovery_preserves_nullable_boolean_findings() {
         project.path().join("node_modules/vue"),
     )
     .unwrap();
-    let expected = json!([{
+    let expected = crate::support::current_rule_documentation::packet(json!([{
         "file":"App.vue",
         "messages":[{
             "ruleId":RULE,
@@ -52,7 +52,7 @@ fn project_tsrs_discovery_preserves_nullable_boolean_findings() {
             "line":6,"column":12,"endLine":6,"endColumn":17
         }],
         "errorCount":1,"warningCount":0
-    }]);
+    }]));
     assert_eq!(lint(project.path()), (Some(1), expected.clone()));
 
     let config_path = project.path().join("vite.config.mjs");

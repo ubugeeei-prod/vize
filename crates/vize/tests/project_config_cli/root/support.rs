@@ -27,13 +27,16 @@ pub(super) static IGNORE_SETTINGS: LazyLock<String> = LazyLock::new(|| {
 
 macro_rules! oracle {
     ($name:literal) => {
-        $crate::project_config_cli::root::support::canonical_oracle(
-            serde_json::from_str::<Value>(include_str!(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/../../tests/_fixtures/differential/config/vite-root-8371/oracles/",
-                $name
-            )))
-            .unwrap(),
+        $crate::project_config_cli::root::support::current_oracle(
+            $name,
+            $crate::project_config_cli::root::support::canonical_oracle(
+                serde_json::from_str::<Value>(include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/config/vite-root-8371/oracles/",
+                    $name
+                )))
+                .unwrap(),
+            ),
         )
     };
 }
@@ -220,3 +223,15 @@ pub(super) fn lint_report(root: &Path, args: &[&str]) -> (std::process::Output, 
 }
 
 pub(super) use oracle;
+
+pub(super) fn current_oracle(name: &str, expected: Value) -> Value {
+    match name {
+        "lint-configured.json"
+        | "lint-explicit.json"
+        | "lint-defaults.json"
+        | "lint-array.json"
+        | "lint-dedicated.json"
+        | "lint-ignore-syntax.json" => crate::support::current_rule_documentation::packet(expected),
+        _ => expected,
+    }
+}

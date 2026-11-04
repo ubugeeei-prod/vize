@@ -52,7 +52,7 @@ impl super::EmitCx<'_> {
             &|bind| !self.scope.inline() && self.literal_const_identifier(bind),
             &|model| !self.scope.inline() && self.literal_const_model(model),
             &|on| {
-                super::props::handler_is_constant(self.source, on, &|name| {
+                super::props::handler_is_constant(self.source, on, self.is_ts, &|name| {
                     // The shipped patch gate looks up raw handler names in SFC
                     // binding metadata even when a slot/loop parameter shadows
                     // the script binding. Module-mode reads otherwise carry a

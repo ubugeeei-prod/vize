@@ -247,11 +247,12 @@ fn transform_with_shared_sources(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
-    let (mut diagnostic_echoes, callback_primaries) = diagnostic_ownership
+    let (mut diagnostic_echoes, callback_primaries, diagnostic_primaries) = diagnostic_ownership
         .map(|collector| {
             let mut ownership = collector.into_inner();
-            let primaries = ownership.take_callback_primaries();
-            (ownership.into_echoes(), primaries)
+            let callback_primaries = ownership.take_callback_primaries();
+            let primaries = ownership.diagnostic_primaries();
+            (ownership.into_echoes(), callback_primaries, primaries)
         })
         .unwrap_or_default();
     for echo in &mut diagnostic_echoes {
@@ -270,6 +271,7 @@ fn transform_with_shared_sources(
                             &descriptor,
                             &spans,
                             &diagnostic_echoes,
+                            &diagnostic_primaries,
                         ),
                         generic_copies.as_ref(),
                     );

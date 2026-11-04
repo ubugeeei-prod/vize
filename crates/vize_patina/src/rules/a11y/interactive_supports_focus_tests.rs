@@ -36,6 +36,56 @@ fn packet(result: LintResult, source: &str, filename: &str) -> Value {
     .expect("complete lint JSON")
 }
 
+fn current_expected_packet(route: &Value) -> Value {
+    let mut expected = route["afterPacket"].clone();
+    for file in expected.as_array_mut().expect("complete pinned report") {
+        for message in file["messages"].as_array_mut().expect("complete messages") {
+            assert_eq!(message["ruleId"], "a11y/interactive-supports-focus");
+            assert_eq!(
+                message["ruleDocsPath"],
+                "docs/content/rules/accessibility.md"
+            );
+            message["ruleDocsPath"] =
+                "docs/content/rules/reference/a11y-interactive-supports-focus.md".into();
+        }
+    }
+    expected
+}
+
+#[test]
+fn current_documentation_oracle_rejects_invalid_frozen_urls_and_foreign_rules() {
+    let corpus: Value = serde_json::from_str(CASES).unwrap();
+    let case = corpus["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "empty-listbox")
+        .expect("the authored single-warning control");
+    let route = &case["routes"]["vue"];
+    let expected = current_expected_packet(route);
+    assert_eq!(expected[0]["messages"].as_array().unwrap().len(), 1);
+    for page in [
+        "docs/content/rules/vue.md",
+        "docs/content/rules/reference/missing-page.md",
+        "docs/content/rules/reference/a11y-alt-text.md",
+    ] {
+        let mut invalid = route.clone();
+        invalid["afterPacket"][0]["messages"][0]["ruleDocsPath"] = page.into();
+        std::panic::catch_unwind(|| current_expected_packet(&invalid))
+            .expect_err("invalid frozen documentation must fail the owned projection");
+    }
+    let mut foreign = route.clone();
+    foreign["afterPacket"][0]["messages"][0]["ruleId"] = "a11y/alt-text".into();
+    std::panic::catch_unwind(|| current_expected_packet(&foreign))
+        .expect_err("the pinned consumer owns exactly its declared rule");
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for locale in ["", "ja/"] {
+        let page =
+            format!("docs/content/{locale}rules/reference/a11y-interactive-supports-focus.md");
+        assert!(root.join(&page).is_file(), "{page}");
+    }
+}
+
 #[test]
 fn original_composite_widgets_keeps_children_as_the_focus_owner() {
     let source = include_str!(concat!(
@@ -81,7 +131,7 @@ fn listbox_ownership_controls_keep_complete_packets_on_native_and_legacy_hosts()
                 };
                 assert_eq!(
                     packet(result, &source, filename),
-                    route["afterPacket"],
+                    current_expected_packet(route),
                     "{}/{route_name}/{repetition}",
                     case["id"]
                 );
@@ -93,7 +143,7 @@ fn listbox_ownership_controls_keep_complete_packets_on_native_and_legacy_hosts()
                     };
                     assert_eq!(
                         packet(result, &source, filename),
-                        route["afterPacket"],
+                        current_expected_packet(route),
                         "legacy {}/{route_name}/{repetition}",
                         case["id"]
                     );

@@ -171,13 +171,16 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
 fn ts_erased_handler_references_are_called_like_identifiers() {
     for prefix in [false, true] {
         let plain = assembled_prefixed(r#"<div @click="onPick"></div>"#, prefix, true);
-        let needle = if prefix {
-            "onClick: _ctx.onPick"
-        } else {
-            "onClick: onPick"
-        };
-        assert!(plain.contains(needle), "{plain}");
-        assert!(!plain.contains("$event =>"), "{plain}");
+        let reference = if prefix { "_ctx.onPick" } else { "onPick" };
+        let expected = format!(
+            "const {{ openBlock: _openBlock, createElementBlock: _createElementBlock }} = Vue\n\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {{\n  return (_openBlock(), _createElementBlock(\"div\", {{ onClick: {reference} }}, null, 8 /* PROPS */, [\"onClick\"]))\n}}"
+        );
+        assert_eq!(plain, expected, "untyped control prefix={prefix}");
+        assert_eq!(
+            assembled_prefixed(r#"<div @click="onPick"></div>"#, prefix, false),
+            expected,
+            "JavaScript control prefix={prefix}",
+        );
         for source in [
             r#"<div @click="onPick!"></div>"#,
             r#"<div @click="onPick as any"></div>"#,
@@ -190,6 +193,16 @@ fn ts_erased_handler_references_are_called_like_identifiers() {
                 "prefix={prefix} {source}"
             );
         }
+    }
+}
+
+#[test]
+fn unchanged_js_handler_padding_keeps_legacy_layout_in_typescript_mode() {
+    let source = r#"<div @click=" onPick "></div>"#;
+    for prefix in [false, true] {
+        let emitted = assembled_prefixed(source, prefix, true);
+        assert_eq!(emitted, shipped_prefixed(source, prefix, true));
+        assert_eq!(emitted, assembled_prefixed(source, prefix, false));
     }
 }
 
