@@ -222,6 +222,7 @@ export async function capture(
   args: string[],
   cwd: string,
   env: NodeJS.ProcessEnv = {},
+  reuseOwnedCache = false,
 ): Promise<Observation> {
   mkdirSync(directory, { recursive: false });
   const stdoutPath = join(directory, "stdout.bin");
@@ -233,8 +234,13 @@ export async function capture(
   const started = new Date().toISOString();
   const cache = join(cwd, ".empty-cache");
   const temporary = join(cwd, ".empty-tmp");
-  mkdirSync(cache);
-  mkdirSync(temporary);
+  if (!reuseOwnedCache) {
+    mkdirSync(cache);
+    mkdirSync(temporary);
+  } else {
+    assert.ok(existsSync(cache));
+    assert.ok(existsSync(temporary));
+  }
   const explicitEnvironment = { ...env, NO_COLOR: "1", XDG_CACHE_HOME: cache, TMPDIR: temporary };
   let timedOut = false;
   write(join(directory, "process-start.json"), {
@@ -360,6 +366,7 @@ export function prepareWorkspace(
   directory: string,
   variant: Variant,
   captureDirectory?: string,
+  expectedComponents = 2500,
 ): WorkspaceClosure {
   mkdirSync(directory);
   cpSync(join(upstream, "src"), join(directory, "src"), { recursive: true });
@@ -399,7 +406,7 @@ export function prepareWorkspace(
   write(join(directory, configFile), config);
   assert.equal(
     inventory(join(directory, "src")).filter(({ path }) => path.endsWith(".vue")).length,
-    2500,
+    expectedComponents,
   );
   assert.equal(
     inventory(join(directory, "src")).filter(({ path }) => path.endsWith(".tsbuildinfo")).length,

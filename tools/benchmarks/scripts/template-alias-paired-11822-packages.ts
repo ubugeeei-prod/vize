@@ -1,23 +1,9 @@
-import type {
-  PackageManifest,
-  Variant,
-  SourceReceipt,
-} from "./template-alias-paired-11822-types.ts";
+import type { PackageManifest } from "./template-alias-paired-11822-types.ts";
 import assert from "node:assert/strict";
-import {
-  copyFileSync,
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  symlinkSync,
-} from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, symlinkSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join, relative } from "node:path";
 import { assertPublishFiles } from "./template-alias-paired-11822-declarations.ts";
-import { mapperCaptureAsset } from "./template-alias-paired-11822-capture.ts";
 
 export function copyPublishedPackage(source: string, destination: string): PackageManifest {
   const manifest = JSON.parse(
@@ -115,58 +101,4 @@ export function manifestChanges(original: PackageManifest, derived: PackageManif
       );
     }
   return changes;
-}
-
-export function archiveCampaignInputs(options: {
-  upstream: string;
-  output: string;
-  provider: string;
-  variants: Variant[];
-  builds: Record<string, SourceReceipt>;
-  scriptDirectory: string;
-  head: string;
-}): void {
-  const { upstream, output, provider, variants, builds, scriptDirectory, head } = options;
-  cpSync(join(upstream, "src"), join(output, "inputs/src"), { recursive: true });
-  for (const name of [
-    "package.json",
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-    "tsconfig.base.json",
-    "tsconfig.vize-content-mapper.json",
-    "tsconfig.vue-content-mapper.json",
-    "scripts/diagnostics.mjs",
-  ]) {
-    mkdirSync(dirname(join(output, "inputs", name)), { recursive: true });
-    copyFileSync(join(upstream, name), join(output, "inputs", name));
-  }
-  for (const variant of variants) {
-    const packageRoot =
-      variant.id === "vue"
-        ? realpathSync(join(provider, "node_modules/@vue/content-mapper"))
-        : variant.package;
-    if (variant.id === "vue")
-      cpSync(packageRoot, join(output, "inputs/packages", variant.id), {
-        recursive: true,
-        dereference: false,
-      });
-    else copyPublishedPackage(packageRoot, join(output, "inputs/packages", variant.id));
-  }
-  for (const [id, build] of Object.entries(builds))
-    cpSync(dirname(dirname(build.cliPackage)), join(output, "inputs/capsule-" + id), {
-      recursive: true,
-      dereference: false,
-    });
-  for (const name of readdirSync(scriptDirectory).filter(
-    (name) =>
-      name.startsWith("template-alias-paired-11822") &&
-      (name.endsWith(".ts") || name.endsWith(".README.md")),
-  )) {
-    copyFileSync(join(scriptDirectory, name), join(output, "inputs", name));
-  }
-  copyFileSync(mapperCaptureAsset, join(output, "inputs/mapper-capture.mjs"));
-  copyFileSync(
-    join(head, ".github/workflows/template-alias-paired-11822.yml"),
-    join(output, "inputs/workflow.yml"),
-  );
 }

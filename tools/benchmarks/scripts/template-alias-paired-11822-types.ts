@@ -93,7 +93,7 @@ export interface GitIdentity {
   sha: string;
   tree: string;
 }
-export type VariantId = "published679" | "currentmain" | "candidate" | "vue";
+export type VariantId = "currentmain" | "candidate" | "vue";
 export type Variant = { id: "vue" } | { id: Exclude<VariantId, "vue">; package: string };
 export interface MapperConfig {
   compilerOptions?: Record<string, unknown>;
@@ -154,19 +154,4 @@ export interface ProbeRecord {
   nativeDeclarations:
     | import("./template-alias-paired-11822-declarations.ts").DeclarationClosure
     | null;
-}
-export interface CampaignContext {
-  output: string;
-  provider: string;
-  sources: Record<string, GitIdentity>;
-  probes: Record<string, ProbeRecord>;
-  cpuWidth: {
-    availableParallelism: number;
-    affinity: string | undefined;
-    quota: string | null;
-    cpuset: string | null;
-  };
-  builds: Record<string, SourceReceipt>;
-  inputFiles: InventoryEntry[];
-  native: Record<string, NativeReceipt>;
 }

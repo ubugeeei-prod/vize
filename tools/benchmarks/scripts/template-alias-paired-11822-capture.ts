@@ -1,27 +1,83 @@
-import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync, writeSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Consumer Node cannot strip TypeScript from node_modules. Keep this byte-for-byte
-// runtime asset with consumer fixtures, outside repository-tool retirement.
-export const mapperCaptureAsset = fileURLToPath(
-  new URL("tests/fixtures/mapper-protocol/capture.mjs", new URL("../../../", import.meta.url)),
-);
+// Keep the executable outside node_modules so Node can strip its TypeScript.
+export const mapperCaptureAsset = fileURLToPath(import.meta.url);
 
 export function installMapperCapture(
   packageRoot: string,
   captureDirectory: string,
   command: readonly string[],
 ): string[] {
+  assert.ok(command.length > 0 && command.every((part) => typeof part === "string"));
   mkdirSync(captureDirectory);
-  const runtime = join(packageRoot, "capture.mjs");
-  copyFileSync(mapperCaptureAsset, runtime);
-  writeFileSync(
-    join(packageRoot, "capture-command.json"),
-    JSON.stringify(command, null, 2) + "\n",
-    {
-      flag: "wx",
-    },
+  const configuration = join(captureDirectory, "command.json");
+  writeFileSync(configuration, JSON.stringify({ command, packageRoot }, null, 2) + "\n", {
+    flag: "wx",
+  });
+  return [process.execPath, mapperCaptureAsset, "--capture", captureDirectory, configuration];
+}
+
+async function capture(directory: string, configuration: string) {
+  const { command, packageRoot } = JSON.parse(readFileSync(configuration, "utf8")) as {
+    command: string[];
+    packageRoot: string;
+  };
+  assert.ok(command.length > 0 && command.every((part) => typeof part === "string"));
+  const input = openSync(join(directory, `in-${process.pid}.bin`), "wx");
+  const output = openSync(join(directory, `out-${process.pid}.bin`), "wx");
+  const errors = openSync(join(directory, `err-${process.pid}.bin`), "wx");
+  const child = spawn(command[0], command.slice(1), { stdio: ["pipe", "pipe", "pipe"] });
+  let error: string | null = null;
+  const recordInput = (bytes: Buffer) => writeSync(input, bytes);
+  child.once("error", (cause) => {
+    error = cause.message;
+  });
+  child.stdin.on("error", (cause) => {
+    error = cause.message;
+  });
+  process.stdin.on("data", recordInput);
+  child.stdout.on("data", (bytes: Buffer) => writeSync(output, bytes));
+  child.stderr.on("data", (bytes: Buffer) => writeSync(errors, bytes));
+  process.stdin.pipe(child.stdin);
+  child.stdout.pipe(process.stdout);
+  child.stderr.pipe(process.stderr);
+  const [status, signal] = await new Promise<[number | null, NodeJS.Signals | null]>((done) =>
+    child.once("close", (code, reason) => done([code, reason])),
   );
-  return [process.execPath, runtime];
+  process.stdin.unpipe(child.stdin);
+  process.stdin.removeListener("data", recordInput);
+  process.stdin.pause();
+  for (const fd of [input, output, errors]) closeSync(fd);
+  writeFileSync(
+    join(directory, `process-${process.pid}.json`),
+    JSON.stringify(
+      {
+        command,
+        cwd: process.cwd(),
+        packageRoot,
+        pid: child.pid ?? null,
+        status,
+        signal,
+        error,
+      },
+      null,
+      2,
+    ) + "\n",
+    { flag: "wx" },
+  );
+  process.exitCode = error || signal ? 1 : (status ?? 1);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === mapperCaptureAsset) {
+  assert.equal(process.argv[2], "--capture");
+  const [directory, configuration] = process.argv.slice(3);
+  assert.ok(directory && configuration);
+  capture(directory, configuration).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }

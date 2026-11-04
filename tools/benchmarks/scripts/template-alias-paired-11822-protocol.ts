@@ -15,6 +15,70 @@ import { declarationClosure } from "./template-alias-paired-11822-declarations.t
 
 const order = (a: unknown, b: unknown) => JSON.stringify(a).localeCompare(JSON.stringify(b));
 
+export function qualifyLifecycle(requests: ProtocolMessage[], responses: ProtocolMessage[]) {
+  assert.ok(requests.length > 0);
+  assert.deepEqual(
+    responses.map((row) => row.id),
+    requests.map((row) => row.id),
+    "whole mapper response order changed",
+  );
+  assert.equal(new Set(requests.map((row) => row.id)).size, requests.length);
+  let initialized = false;
+  const opened = new Set<string>();
+  for (const [index, request] of requests.entries()) {
+    const response = responses[index];
+    const raw = response as Record<string, unknown>;
+    assert.equal(raw.jsonrpc, "2.0");
+    assert.ok(!Object.hasOwn(raw, "error") && Object.hasOwn(raw, "result"));
+    assert.ok(request.id !== undefined && request.id !== null);
+    if (Object.hasOwn(request, "jsonrpc"))
+      assert.equal((request as Record<string, unknown>).jsonrpc, "2.0");
+    const params = request.params as Record<string, unknown> | undefined;
+    assert.ok(params);
+    if (request.method === "initialize") {
+      assert.ok(
+        Array.isArray(params.positionEncodings) && params.positionEncodings.includes("utf-8"),
+      );
+      assert.equal((raw.result as Record<string, unknown>).positionEncoding, "utf-8");
+      initialized = true;
+      continue;
+    }
+    assert.ok(initialized);
+    assert.equal(typeof params.projectHandle, "string");
+    const handle = params.projectHandle as string;
+    if (request.method === "openProject") {
+      const result = raw.result as Record<string, unknown>;
+      assert.ok(result && typeof result.configIdentity === "string");
+      if (Object.hasOwn(result, "optionDiagnostics"))
+        assert.deepEqual(result.optionDiagnostics, []);
+      opened.add(handle);
+    } else if (request.method === "closeProject") {
+      assert.equal(raw.result, null);
+      opened.delete(handle);
+    } else {
+      assert.equal(request.method, "transform", "unexpected mapper operation");
+      assert.ok(opened.has(handle), "transform without successful matching project open");
+      assert.ok(raw.result && typeof (raw.result as Record<string, unknown>).text === "string");
+    }
+  }
+  return {
+    requests: requests.length,
+    transforms: requests.filter((row) => row.method === "transform").length,
+  };
+}
+
+export function qualifyCapturedLifecycle(directory: string) {
+  return readdirSync(directory)
+    .filter((name) => name.startsWith("in-"))
+    .sort()
+    .map((name) =>
+      qualifyLifecycle(
+        decodeFrames(readFileSync(join(directory, name))),
+        decodeFrames(readFileSync(join(directory, "out-" + name.slice(3)))),
+      ),
+    );
+}
+
 export function directiveAuthority(
   packet: DirectivePacket | null | undefined,
   authoredBytes: number,

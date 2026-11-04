@@ -1,11 +1,22 @@
-name: Mapper campaign functional contracts
+name: Public mapper comparison
 
 on:
+  workflow_dispatch:
+    inputs:
+      base-sha:
+        description: Exact public main comparison source SHA
+        required: true
+        type: string
+      head-sha:
+        description: Exact public dispatcher candidate source SHA
+        required: true
+        type: string
   pull_request:
     paths:
       - .github/workflows/template-alias-paired-11822.yml
       - tools/benchmarks/scripts/template-alias-paired-11822*
       - tests/_helpers/template-alias-typescript-11822.ts
+      - tests/_fixtures/tooling/public-mapper-provider/**
 
 permissions: { contents: read }
 concurrency:
@@ -35,3 +46,101 @@ jobs:
         run: vp install --frozen-lockfile --filter . --filter @vize/tests --filter ./npm/cli...
       - name: Require strict harness types, complete declarations and negative controls
         run: node tools/benchmarks/scripts/template-alias-paired-11822-contracts.ts
+  paired:
+    name: Public dispatcher comparison
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      BASE_SHA: ${{ inputs.base-sha }}
+      HEAD_SHA: ${{ inputs.head-sha }}
+      DRIVER_SHA: ${{ github.sha }}
+      TEMPLATE_ALIAS_RUNNER: blacksmith-32vcpu-ubuntu-2404
+      CARGO_BUILD_JOBS: "32"
+    steps:
+      - name: Establish shared processing deadline and original artifact directory
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          started="$(date +%s%3N)"
+          echo "TEMPLATE_ALIAS_STARTED_MS=$started" >> "$GITHUB_ENV"
+          echo "TEMPLATE_ALIAS_DEADLINE_MS=$((started + 53 * 60000))" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/mapper-public-stages"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          path: driver
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base-sha }}
+          path: base
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head-sha }}
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          version: "1.3.0"
+          node-version: "26.12.1"
+          run-install: false
+          cache: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - name: Qualify public driver and install independent public provider
+        working-directory: driver
+        run: |
+          set -euo pipefail
+          within_budget() {
+            local remaining=$((TEMPLATE_ALIAS_DEADLINE_MS - $(date +%s%3N)))
+            test "$remaining" -gt 0
+            local seconds=$(((remaining + 999) / 1000))
+            if [ "$seconds" -gt 300 ]; then seconds=300; fi
+            timeout --signal=TERM --kill-after=5s "${seconds}s" "$@"
+          }
+          within_budget vp install --frozen-lockfile --filter . --filter ./npm/cli... > "$RUNNER_TEMP/mapper-public-stages/driver-install.log" 2>&1
+          within_budget node tools/benchmarks/scripts/template-alias-paired-11822-contracts.ts > "$RUNNER_TEMP/mapper-public-stages/contracts.log" 2>&1
+          mkdir "$RUNNER_TEMP/mapper-public-provider"
+          cp tests/_fixtures/tooling/public-mapper-provider/package.json.txt "$RUNNER_TEMP/mapper-public-provider/package.json"
+          cp tests/_fixtures/tooling/public-mapper-provider/package-lock.json.txt "$RUNNER_TEMP/mapper-public-provider/package-lock.json"
+          (cd "$RUNNER_TEMP/mapper-public-provider" && within_budget npm ci --ignore-scripts --no-audit --no-fund) > "$RUNNER_TEMP/mapper-public-stages/provider-install.log" 2>&1
+      - name: Build independent normal Node CLI and NAPI source capsules
+        working-directory: driver
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/template-alias-paired-11822-source.ts --source "$GITHUB_WORKSPACE/base" --sha "$BASE_SHA" > "$RUNNER_TEMP/mapper-public-stages/base.log" 2>&1
+          node tools/benchmarks/scripts/template-alias-paired-11822-source.ts --source "$GITHUB_WORKSPACE/candidate" --sha "$HEAD_SHA" > "$RUNNER_TEMP/mapper-public-stages/candidate.log" 2>&1
+      - name: Run normal paired cohorts, separate full protocol and sampled tree memory populations
+        working-directory: driver
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/template-alias-paired-11822-public.ts \
+            --base "$GITHUB_WORKSPACE/base" --base-sha "$BASE_SHA" \
+            --head "$GITHUB_WORKSPACE/candidate" --head-sha "$HEAD_SHA" \
+            --driver-sha "$DRIVER_SHA" --provider "$RUNNER_TEMP/mapper-public-provider" \
+            --output "$RUNNER_TEMP/mapper-public-output" > "$RUNNER_TEMP/mapper-public-stages/controller.log" 2>&1
+      - name: Retain source-bound stages and original observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-mapper-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/mapper-public-stages/
+            ${{ runner.temp }}/mapper-public-output/
+            !${{ runner.temp }}/mapper-public-output/**/node_modules/**
+            !${{ runner.temp }}/mapper-public-output/**/.empty-cache/**
+            !${{ runner.temp }}/mapper-public-output/**/.empty-tmp/**
+            base/target/template-alias-11822/*.json
+            base/target/template-alias-11822/*.stdout
+            base/target/template-alias-11822/*.stderr
+            candidate/target/template-alias-11822/*.json
+            candidate/target/template-alias-11822/*.stdout
+            candidate/target/template-alias-11822/*.stderr
