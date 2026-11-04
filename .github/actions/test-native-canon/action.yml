@@ -317,6 +317,71 @@ runs:
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused --ignored --exact --nocapture || mixed_ref_status=1
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::protocol::standard_tsgo_mixed_script_static_refs_keep_runtime_reads_and_authored_errors --ignored --exact --nocapture || mixed_ref_status=1
         exit "$mixed_ref_status"
+    - name: Test legal SFC attribute boundaries with the existing beta checker
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_RECOVERED_ATTRIBUTE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/recovered-attribute-boundary-11731
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        capture="$VIZE_RECOVERED_ATTRIBUTE_CAPTURE_DIR"
+        mkdir -p "$capture"
+        set +e
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics --exact --nocapture --color never >"$capture/test.stdout" 2>"$capture/test.stderr"
+        status=$?
+        set -e
+        printf '%s\n' "$status" >"$capture/test.status"
+        cat "$capture/test.stdout"
+        cat "$capture/test.stderr" >&2
+        node --input-type=module - "$capture" <<'NODE'
+        import assert from 'node:assert/strict';
+        import fs from 'node:fs';
+        import path from 'node:path';
+        import {createHash} from 'node:crypto';
+        import {execFileSync} from 'node:child_process';
+        const dir = process.argv[2];
+        const name = 'content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics';
+        const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+        const stdout = fs.readFileSync(path.join(dir, 'test.stdout'));
+        const stderr = fs.readFileSync(path.join(dir, 'test.stderr'));
+        const status = fs.readFileSync(path.join(dir, 'test.status'), 'utf8');
+        const wanted = new Set(['reported', 'valid', 'same-file', 'unused'].flatMap(variant => ['\n', '\r\n'].flatMap(newline => [false, true].map(unused => JSON.stringify([variant, newline, unused])))));
+        const seen = new Set();
+        let failure = null;
+        let provider = null;
+        try {
+          assert.equal(status, '0\n');
+          assert.equal(stdout.toString().split('\n').filter(line => line === `test ${name} ... ok`).length, 1);
+          assert.equal([...stdout.toString().matchAll(/^test result: ok\. 1 passed; 0 failed; 0 ignored; /gm)].length, 1);
+          const program = fs.realpathSync(process.env.VIZE_TEST_CONTENT_MAPPER_TSGO);
+          const manifest = JSON.parse(fs.readFileSync(path.join(path.dirname(path.dirname(program)), 'package.json'), 'utf8'));
+          assert.equal(manifest.name, '@typescript/typescript-linux-x64');
+          assert.equal(manifest.version, '7.1.0-beta');
+          provider = {program, sha256: digest(fs.readFileSync(program)), package: manifest.name, version: manifest.version};
+          for (const line of stderr.toString().split('\n').filter(line => line.startsWith('11731 cell '))) {
+            const row = /^11731 cell variant=(\S+) newline=("(?:\\.|[^"])*") noUnusedLocals=(false|true) provider=(.+) status=exit status: (\d+) stdout=/.exec(line);
+            assert.ok(row, line);
+            const key = JSON.stringify([row[1], JSON.parse(row[2]), row[3] === 'true']);
+            assert.ok(wanted.has(key) && !seen.has(key), key);
+            assert.equal(row[4], process.env.VIZE_TEST_CONTENT_MAPPER_TSGO);
+            assert.equal(Number(row[5]), row[1] === 'valid' ? 0 : 2);
+            seen.add(key);
+          }
+          assert.deepEqual(seen, wanted);
+        } catch (error) {
+          failure = String(error);
+        }
+        fs.writeFileSync(path.join(dir, 'test-run.json'), JSON.stringify({
+          source: execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(),
+          githubSha: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT,
+          name, status, cellCount: seen.size, inventory: [...seen], provider,
+          stdoutSha256: digest(stdout), stderrSha256: digest(stderr), qualified: failure === null, failure
+        }, null, 2) + '\n');
+        if (failure !== null) throw new Error(failure);
+        NODE
     - name: Test inherited Options API calls with the authenticated beta checker
       if: ${{ !cancelled() }}
       shell: bash

@@ -73,9 +73,10 @@ fn legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics() {
                     Some(if expected.is_empty() { 0 } else { 2 })
                 );
                 eprintln!(
-                    "11731 cell variant={variant} newline={newline:?} noUnusedLocals={no_unused} provider={} status={} stdout={expected:?}",
+                    "11731 cell variant={variant} newline={newline:?} noUnusedLocals={no_unused} provider={} status={} stdout={:?}",
                     host.display(),
                     output.status,
+                    std::str::from_utf8(&output.stdout).unwrap(),
                 );
             }
         }

@@ -1674,10 +1674,9 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
-            "selector": "compiler-cli-ssr-v1 Standard renderer positive control uses only the independent one-space repair of the reported Gap input. Standard/Strict parser negatives and explicit ParseMode::Sfc positive/error-preservation cases remain separate; no broader Quirks mode is selected."
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
       }
