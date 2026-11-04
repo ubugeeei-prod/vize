@@ -8,7 +8,7 @@ import {
   freshCredentialFailure,
   parsePermissionAudience,
   publishWithFreshProvenance,
-} from "../../tools/support/release/jsr/publish-with-fresh-provenance.mjs";
+} from "../../tools/support/release/jsr/publish-with-fresh-provenance.ts";
 
 const now = 1_700_000_000;
 const hash = `sha256-${"ab".repeat(32)}`;

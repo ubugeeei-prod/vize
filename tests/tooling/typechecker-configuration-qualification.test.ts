@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { typecheckerRunStatus } from "../../tools/support/compat/fixtures/typechecker-qualification.mjs";
+import { typecheckerRunStatus } from "../../tools/support/compat/fixtures/typechecker-qualification.ts";
 
 const configFile = "packages/frontend/editor-ui/tsconfig.json";
 
-function parsed(files) {
+function parsed(files: readonly { file: string; diagnostics: readonly string[] }[]) {
   return { files };
 }
 
