@@ -75,14 +75,16 @@ export const portugueseShared: Record<string, string> = {
     "A preocupação é este composable dependente do ciclo de vida, e não uma proibição geral de funções utilitárias comuns ou de todas as chamadas da Composition API fora de setup. Este contrato não tem produtor atual.",
   "The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.":
     "O produtor atual examina expressões de template, como JSON.parse(input). Não reporta uma instrução throw que exista apenas no bloco script.",
-  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.":
-    "O exemplo pressupõe que os IDs identifiquem os registros de forma única. Comparar duas referências ao mesmo proxy reativo continua válido; este contrato não tem produtor atual.",
+  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer. A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object.":
+    "O exemplo pressupõe que os IDs identifiquem os registros de forma única. Comparar duas referências ao mesmo proxy reativo continua válido; este contrato não tem produtor atual. Um objeto bruto e seu proxy reativo têm identidades distintas, e toRaw() devolve o objeto original.",
   "The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.":
     "O CrossFileAnalyzer experimental em Rust tem um produtor para este código. A etapa da CLI não emite este código individualmente; configurar seu ID não ativa essa etapa Rust. Estes cenários descrevem o grafo e os fatos suportados pelo analisador, e não uma promessa do Vite+.",
   "The watcher must only derive the destination. Editable copies and callbacks with other side effects are allowed.":
     "O watcher deve apenas derivar o destino. Cópias editáveis e callbacks com outros efeitos colaterais são permitidos.",
   "This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.":
     "Esta verificação compara anotações explícitas de tipos do provedor e do consumidor, e não tipos inferidos de valores literais. Mantenha a anotação `as string` do provedor neste exemplo.",
+  "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.":
+    "Este código de diagnóstico agrupa várias ocorrências de reatividade, incluindo uma prop copiada para uma ref. Ele não implica que toda expressão Date.now() seja detectada pela passagem de análise entre arquivos.",
   "This example configures window.localStorage. The rule has no default deny list; enabling it alone does not report a member.":
     "Este exemplo configura window.localStorage. A regra não tem uma lista padrão de bloqueio; ativá-la sozinha não reporta um membro.",
   "This example uses component provide/inject. `app.provide` and supported `app.runWithContext` injection are different valid ownership surfaces, not prohibited by this scenario. No current producer emits this contract code.":
@@ -107,4 +109,8 @@ export const portugueseShared: Record<string, string> = {
     "Use estes arquivos sem alterações nos exemplos incorreto e correto. Instale os pacotes importados no projeto: Vue, além de vue-router ou Pinia onde indicado. Siga as notas de suporte específicas de versão. A raiz de entrada torna explícita a relação entre os componentes.",
   "Vue permits ref/reactive/computed outside component setup. The risk here is unwanted ownership/sharing under an explicit instance-isolation policy, not API illegality. This contract has no current producer.":
     "O Vue permite ref/reactive/computed fora do setup de componente. O risco aqui é a propriedade ou o compartilhamento indesejados sob uma política explícita de isolamento de instâncias, e não um uso inválido da API. Este contrato não tem produtor atual.",
+  "Vue permits this reactive state; the example requires each component instance to own its own count.":
+    "O Vue permite este estado reativo; o exemplo exige que cada instância de componente possua sua própria contagem.",
+  "Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.":
+    "O Vue oferece limpeza para watchEffect; o exemplo correto usa uma origem de watch explícita e cancela o trabalho invalidado.",
 };

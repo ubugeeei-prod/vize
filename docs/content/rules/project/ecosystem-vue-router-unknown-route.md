@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-The name is absent from the complete installed router.
+Reports a navigation name that the installed router does not declare.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Bad
 
-The reachable installed router declares `user-post`, but navigation uses the misspelled `user-posts` name.
+The name is absent from the complete installed router. The reachable installed router declares `user-post`, but navigation uses the misspelled `user-posts` name.
 
 `src/UserPost.vue`
 

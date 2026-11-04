@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-Le nom est absent du routeur installé complet.
+Signale un nom de navigation que le routeur installé ne déclare pas.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Mauvais
 
-Le routeur installé accessible déclare `user-post`, mais la navigation utilise le nom mal orthographié `user-posts`.
+Le nom est absent du routeur installé complet. Le routeur installé accessible déclare `user-post`, mais la navigation utilise le nom mal orthographié `user-posts`.
 
 `src/UserPost.vue`
 

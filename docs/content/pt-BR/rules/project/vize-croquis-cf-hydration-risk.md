@@ -4,13 +4,15 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-Este código de diagnóstico agrupa várias ocorrências de reatividade, incluindo uma prop copiada para uma ref. Ele não implica que toda expressão Date.now() seja detectada pela passagem de análise entre arquivos.
+A renderização pode divergir entre o servidor e o cliente.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
 | error | Nenhuma; revise os arquivos relacionados e aplique a correção | Sem opções por código; os diagnósticos suportados pela CLI aceitam substituições de severidade |
 
 Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
+
+Este código de diagnóstico agrupa várias ocorrências de reatividade, incluindo uma prop copiada para uma ref. Ele não implica que toda expressão Date.now() seja detectada pela passagem de análise entre arquivos.
 
 ## Arquivos compartilhados do projeto
 

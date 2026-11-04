@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-A rota não declara tab; o Vue Router o descarta.
+Relata parâmetros de navegação que a rota de destino não declara.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Incorreto
 
-O caminho `user-post` declara `userId` e `postId`, mas a navegação também fornece `tab`, que não foi declarado, como parâmetro do caminho.
+A rota não declara tab; o Vue Router o descarta. O caminho `user-post` declara `userId` e `postId`, mas a navegação também fornece `tab`, que não foi declarado, como parâmetro do caminho.
 
 `src/UserPost.vue`
 

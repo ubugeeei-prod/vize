@@ -12,6 +12,8 @@ title: "vize:croquis/cf/watcheffect-async"
 
 Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
 
+Vue prend en charge le nettoyage de watchEffect ; l’exemple Bon utilise une source de watch explicite et annule le travail invalidé.
+
 ## Fichiers communs du projet
 
 Utilisez ces fichiers inchangés dans les exemples Mauvais et Bon. Installez les packages importés dans le projet : Vue, ainsi que vue-router ou Pinia lorsqu’ils sont indiqués. Respectez toute note de prise en charge propre à une version. Le point d’entrée racine rend explicite la relation entre les composants.
@@ -43,7 +45,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## Mauvais
 
-Le `watchEffect` asynchrone mêle la collecte implicite des dépendances à une requête dont il attend le résultat, sans garde contre l’invalidation.
+Le watchEffect asynchrone présenté ici n’a ni nettoyage lors de l’invalidation ni garde contre une réponse périmée. Le `watchEffect` asynchrone mêle la collecte implicite des dépendances à une requête dont il attend le résultat, sans garde contre l’invalidation.
 
 `SearchPage.vue`
 

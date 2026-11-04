@@ -14,6 +14,8 @@ Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 O CrossFileAnalyzer experimental em Rust tem um produtor para este código. A etapa da CLI não emite este código individualmente; configurar seu ID não ativa essa etapa Rust. Estes cenários descrevem o grafo e os fatos suportados pelo analisador, e não uma promessa do Vite+.
 
+O Vue permite este estado reativo; o exemplo exige que cada instância de componente possua sua própria contagem.
+
 ## Arquivos compartilhados do projeto
 
 Use estes arquivos sem alterações nos exemplos incorreto e correto. Instale os pacotes importados no projeto: Vue, além de vue-router ou Pinia onde indicado. Siga as notas de suporte específicas de versão. A raiz de entrada torna explícita a relação entre os componentes.

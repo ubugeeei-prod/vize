@@ -4,7 +4,7 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-Required postId is missing; relying on the current route is fragile.
+Reports a named navigation that omits a required route param.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ export const router = createRouter({
 
 ## Bad
 
-The navigation omits required `postId` from the `user-post` path. This is a warning because Vue Router may inherit a value from the current route.
+Required postId is missing; relying on the current route is fragile. The navigation omits required `postId` from the `user-post` path. This is a warning because Vue Router may inherit a value from the current route.
 
 `src/UserPost.vue`
 

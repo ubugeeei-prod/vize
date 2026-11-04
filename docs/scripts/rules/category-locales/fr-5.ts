@@ -31,7 +31,7 @@ export const frenchRules5 = {
   ],
   "vize:croquis/cf/object-identity-comparison": [
     "Un objet réactif est comparé par identité, laquelle change lorsque l’enveloppe est retirée.",
-    "`proxy === raw` compare l’identité de l’enveloppe ; le résultat est donc faux même si les deux représentent le même enregistrement utilisateur. L’application visait l’identité de l’enregistrement, et non celle de l’enveloppe de l’objet.",
+    "Ce contrat illustre la comparaison d’identifiants stables d’enregistrement lorsque c’est l’identité de l’enregistrement qui est voulue. `proxy === raw` compare l’identité de l’enveloppe ; le résultat est donc faux même si les deux représentent le même enregistrement utilisateur. L’application visait l’identité de l’enregistrement, et non celle de l’enveloppe de l’objet.",
     "Comparer le `id` stable de l’enregistrement répond à la question voulue sans dépendre du fait que l’objet soit brut ou enveloppé dans un proxy.",
   ],
   "vize:croquis/cf/pinia-getter": [

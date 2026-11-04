@@ -12,6 +12,8 @@ title: "vize:croquis/cf/watcheffect-async"
 
 Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
+O Vue oferece limpeza para watchEffect; o exemplo correto usa uma origem de watch explícita e cancela o trabalho invalidado.
+
 ## Arquivos compartilhados do projeto
 
 Use estes arquivos sem alterações nos exemplos incorreto e correto. Instale os pacotes importados no projeto: Vue, além de vue-router ou Pinia onde indicado. Siga as notas de suporte específicas de versão. A raiz de entrada torna explícita a relação entre os componentes.
@@ -43,7 +45,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## Incorreto
 
-O `watchEffect` assíncrono mistura a coleta implícita de dependências com uma requisição aguardada e sem uma proteção contra invalidação.
+O watchEffect assíncrono mostrado aqui não tem limpeza na invalidação nem proteção contra uma resposta desatualizada. O `watchEffect` assíncrono mistura a coleta implícita de dependências com uma requisição aguardada e sem uma proteção contra invalidação.
 
 `SearchPage.vue`
 

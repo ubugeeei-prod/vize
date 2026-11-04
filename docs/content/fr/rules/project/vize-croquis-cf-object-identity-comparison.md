@@ -14,7 +14,7 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 
 Il s’agit d’un contrat de diagnostic publié sans producteur actuel. Le scénario Mauvais/Bon ci-dessous explique le risque et la correction ; aucune option ne permet actuellement de déclencher ce code.
 
-L’exemple suppose que les identifiants distinguent les enregistrements de façon unique. Comparer deux références au même proxy réactif reste valide ; ce contrat n’a actuellement aucun producteur de diagnostics.
+L’exemple suppose que les identifiants distinguent les enregistrements de façon unique. Comparer deux références au même proxy réactif reste valide ; ce contrat n’a actuellement aucun producteur de diagnostics. Un objet brut et son proxy réactif ont des identités distinctes, et toRaw() renvoie l’objet d’origine.
 
 ## Fichiers communs du projet
 
@@ -51,7 +51,7 @@ export function makeUser() {
 
 ## Mauvais
 
-`proxy === raw` compare l’identité de l’enveloppe ; le résultat est donc faux même si les deux représentent le même enregistrement utilisateur. L’application visait l’identité de l’enregistrement, et non celle de l’enveloppe de l’objet.
+Ce contrat illustre la comparaison d’identifiants stables d’enregistrement lorsque c’est l’identité de l’enregistrement qui est voulue. `proxy === raw` compare l’identité de l’enveloppe ; le résultat est donc faux même si les deux représentent le même enregistrement utilisateur. L’application visait l’identité de l’enregistrement, et non celle de l’enveloppe de l’objet.
 
 `App.vue`
 
