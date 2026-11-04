@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
 import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
 import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
@@ -30,6 +31,7 @@ import {
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 /** The actual didOpen profile is authored evidence, independent of a filename. */
 export function fixtureLanguageId(data: FixtureData): string {
@@ -148,7 +150,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     } else if (data.id === FORMATTER_BIND_POLICY_ID) {
       requests = loadFormatterBindPolicy(data, files, expected);
     } else if (data.id === FORMATTER_WARNING_CAPTURE_ID) {
-      requests = loadFormatterWarningCapture(packRoot, data, files, expected);
+      requests = loadFormatterWarningCapture(repositoryRoot, data, files, expected);
     } else if (data.id === FORMATTER_ON_POLICY_ID) {
       requests = loadFormatterOnPolicy(data, files, expected);
     } else if (data.id === FORMATTER_SLOT_POLICY_ID) {
