@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { beforeStaticListenerSource } from "./static-listener-prop-source.ts";
 import { beforeGenericEventSpecialization } from "./generic-event-specialization-source.ts";
 
 interface Routes {
@@ -33,7 +34,13 @@ export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
   assert.equal(sha256(oracle.historical.inference), oracle.historical.inferenceSha256);
   for (const [path, expected] of Object.entries(oracle.current.sourceHashes)) {
     assert.equal(
-      sha256(beforeGenericEventSpecialization(read, path, read(path))),
+      sha256(
+        beforeGenericEventSpecialization(
+          read,
+          path,
+          beforeStaticListenerSource(read, path, read(path)),
+        ),
+      ),
       expected,
       `selected emit gate producer: ${path}`,
     );

@@ -59,7 +59,7 @@ const TEMPLATES = {
     gate,
     "const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
   ],
-  inferred: [generic, oracle.current.inferred],
+  inferred: [generic, oracle.current.inferred.replace("? __L :", "? {loose_args} :")],
 } as const;
 
 const aliasSource = gate.match(/const GATE_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
@@ -186,7 +186,13 @@ function usage(
   ];
   const direct = `${component_ref}_direct`;
   const gated = `${component_ref}_gated`;
-  const values = { component_ref, library, resolver_type, emit_props_factory: "$EmitPropsFactory" };
+  const values = {
+    component_ref,
+    library,
+    resolver_type,
+    emit_props_factory: "$EmitPropsFactory",
+    loose_args: "__L",
+  };
   const inferred = (emit_props: string, prop_key: string, alias: string) =>
     format(inferredTemplate, { ...values, emit_props, prop_key, inferred_args: alias });
   return [
