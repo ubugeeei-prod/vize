@@ -20,6 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { renderOutput, run } from "./smoke-process.ts";
+import { runInitFailureChecks } from "./smoke-release-init-failures.ts";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.ts";
 import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
@@ -269,6 +270,7 @@ function runFreshProjectCell(context, cell) {
  * failed, so the narrower native-only release job stays green.
  */
 export function runFreshProjectInitChecks(context) {
+  runInitFailureChecks(context);
   const freshRootPath = path.join(context.tempDir, "fresh");
   fs.mkdirSync(freshRootPath, { recursive: true });
   const freshRoot = fs.realpathSync.native(freshRootPath);
