@@ -85,7 +85,13 @@ function validateInputs() {
         content,
         "materialized input differs from authored fixture",
       );
-      return { path: file, sha256: createHash("sha256").update(bytes).digest("hex") };
+      const metadata = fs.statSync(path.join(root, file), { bigint: true });
+      return {
+        path: file,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+        bytes: metadata.size.toString(),
+        mtimeNs: metadata.mtimeNs.toString(),
+      };
     });
     return { root, files };
   });
@@ -230,6 +236,11 @@ export function captureProjectUpdates(native: Native, root: string) {
   write(root, "first/next/FooProps.ts", "export interface FooProps { bar?: number }");
   const typeEdit = compile();
   assert.deepEqual(runtimeProps(typeEdit), { bar: { type: "Number", required: false } });
+  assert.deepEqual(
+    context(typeEdit),
+    context(configured),
+    "type bytes do not replace configuration authority",
+  );
   write(
     root,
     "first/tsconfig.json",
