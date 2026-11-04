@@ -1,4 +1,24 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+
+function currentRuleDocumentation(rule) {
+  const pages = {
+    "vue/no-unused-setup-bindings": "vue-no-unused-setup-bindings",
+    "vue/require-component-registration": "vue-require-component-registration",
+    "ssr/no-browser-globals-in-ssr": "ssr-no-browser-globals-in-ssr",
+  };
+  assert.ok(Object.hasOwn(pages, rule), "finite authored Art rule");
+  const page = pages[rule];
+  for (const locale of ["", "ja/"]) {
+    assert.ok(
+      fs.existsSync(
+        new URL(`../../../docs/content/${locale}rules/reference/${page}.md`, import.meta.url),
+      ),
+      "independent committed Art documentation page",
+    );
+  }
+  return `docs/content/rules/reference/${page}.md`;
+}
 
 // Project the preserved hand-authored service oracle, never observed output.
 export function position(source, offset) {
@@ -26,7 +46,7 @@ export function cliExpected(row) {
       file: row.filename,
       messages: native.diagnostics.map((d) => ({
         ruleId: d.rule,
-        ruleDocsPath: `docs/content/rules/${d.rule.startsWith("ssr/") ? "ssr" : "vue"}.md`,
+        ruleDocsPath: currentRuleDocumentation(d.rule),
         severity: d.severity === "error" ? 2 : 1,
         message: `[vize:${d.rule}] ${d.message}`,
         line: d.location.start.line,
