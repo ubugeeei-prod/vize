@@ -67,25 +67,33 @@ pub(super) fn installed_helpers(
     let Some(project_directory) = config_file_name.parent() else {
         return capability;
     };
-    if !supports_sdk_resolution(project_directory, compiler_options) {
+    let mut fingerprint = Sha256::new();
+    if !supports_sdk_resolution(
+        config_file_name,
+        compiler_options,
+        &mut capability.watched_files,
+        &mut fingerprint,
+    ) {
+        capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
         return capability;
     }
-    let Some(package) = project_directory.ancestors().find_map(|directory| {
-        let package = directory.join("node_modules/vize");
-        package.join("package.json").is_file().then_some(package)
-    }) else {
+    let Some((manifest_path, package_manifest)) = locate_node_package(
+        project_directory,
+        "vize",
+        &mut capability.watched_files,
+        &mut fingerprint,
+    ) else {
+        capability.fingerprint = cstr!("{:x}", fingerprint.finalize());
         return capability;
     };
-    let manifest_path = package.join("package.json");
-    capability.watched_files.push(CompactString::from(
-        manifest_path.to_string_lossy().as_ref(),
-    ));
+    let Some(package) = manifest_path.parent() else {
+        return capability;
+    };
     let Some(contract) = contract() else {
         return capability;
     };
     let manifest_bytes = std::fs::read(&manifest_path).ok();
-    let mut fingerprint = Sha256::new();
-    let Ok(package_identity) = std::fs::canonicalize(&package) else {
+    let Some(package_identity) = package_manifest.parent() else {
         return capability;
     };
     fingerprint.update(package_identity.to_string_lossy().as_bytes());
@@ -122,9 +130,9 @@ pub(super) fn installed_helpers(
     // to the project's logical node_modules symlink. preserveSymlinks opts in
     // to the latter authority for both TypeScript and this capability gate.
     let helper_root = if compiler_options.get("preserveSymlinks") == Some(&Value::Bool(true)) {
-        &package
+        package
     } else {
-        &package_identity
+        package_identity
     };
     let project_vue = resolve_node_package(
         project_directory,
@@ -174,7 +182,12 @@ pub(super) fn installed_helpers(
 
 /// Qualify only resolution profiles represented by the generated contract.
 /// User aliases must not redirect generated imports to an unchecked module.
-fn supports_sdk_resolution(project_directory: &Path, compiler_options: &Value) -> bool {
+fn supports_sdk_resolution(
+    config_file_name: &Path,
+    compiler_options: &Value,
+    watched_files: &mut Vec<CompactString>,
+    fingerprint: &mut Sha256,
+) -> bool {
     const IMPORTS: &[&str] = &[
         "vize/content-mapper-helpers",
         "vize/virtual-ts",
@@ -188,20 +201,33 @@ fn supports_sdk_resolution(project_directory: &Path, compiler_options: &Value) -
     {
         return false;
     }
-    if let Some(paths) = compiler_options.get("paths").and_then(Value::as_object)
-        && paths.keys().any(|pattern| {
-            IMPORTS.iter().any(|name| match pattern.split_once('*') {
-                Some((prefix, suffix)) => name.starts_with(prefix) && name.ends_with(suffix),
-                None => pattern.as_str() == *name,
-            })
-        })
-    {
-        return false;
-    }
-    if let Some(base_url) = compiler_options.get("baseUrl").and_then(Value::as_str) {
-        let base = project_directory.join(base_url);
-        if base.join("vize").exists() {
-            return false;
+    if compiler_options.get("paths").is_some() || compiler_options.get("baseUrl").is_some() {
+        for specifier in IMPORTS {
+            let Some(candidates) = super::super::check::imports_aliases::mapper_override_candidates(
+                config_file_name,
+                compiler_options,
+                specifier,
+            ) else {
+                return false;
+            };
+            for candidate in candidates {
+                let Some(parent) = candidate.parent() else {
+                    return false;
+                };
+                watched_files.push(CompactString::from(candidate.to_string_lossy().as_ref()));
+                watched_files.push(CompactString::from(parent.to_string_lossy().as_ref()));
+                fingerprint.update(candidate.to_string_lossy().as_bytes());
+                fingerprint.update(b"\0");
+                // A missing parent excludes every TypeScript file/extension and
+                // package condition. An existing parent remains unqualified;
+                // this is a negative proof, not another module resolver.
+                match std::fs::metadata(parent) {
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                        fingerprint.update(b"missing-parent\0");
+                    }
+                    _ => return false,
+                }
+            }
         }
     }
     true
@@ -213,6 +239,15 @@ fn resolve_node_package(
     watched_files: &mut Vec<CompactString>,
     fingerprint: &mut Sha256,
 ) -> Option<PathBuf> {
+    locate_node_package(from, package, watched_files, fingerprint).map(|(_, canonical)| canonical)
+}
+
+fn locate_node_package(
+    from: &Path,
+    package: &str,
+    watched_files: &mut Vec<CompactString>,
+    fingerprint: &mut Sha256,
+) -> Option<(PathBuf, PathBuf)> {
     from.ancestors().find_map(|directory| {
         let candidate = directory
             .join("node_modules")
@@ -221,7 +256,7 @@ fn resolve_node_package(
         watched_files.push(CompactString::from(candidate.to_string_lossy().as_ref()));
         fingerprint.update(candidate.to_string_lossy().as_bytes());
         fingerprint.update(b"\0");
-        let Ok(manifest) = std::fs::canonicalize(candidate) else {
+        let Ok(manifest) = std::fs::canonicalize(&candidate) else {
             fingerprint.update(b"missing\0");
             return None;
         };
@@ -231,6 +266,6 @@ fn resolve_node_package(
         if let Ok(contents) = std::fs::read(&manifest) {
             fingerprint.update(Sha256::digest(contents));
         }
-        Some(manifest)
+        Some((candidate, manifest))
     })
 }

@@ -42,7 +42,11 @@ impl InstalledSdk {
     }
 
     fn open_result(&self) -> Value {
-        let mut open = open_project_request(2, Value::Null, json!({}));
+        self.open_result_with_options(json!({}))
+    }
+
+    fn open_result_with_options(&self, compiler_options: Value) -> Value {
+        let mut open = open_project_request(2, Value::Null, compiler_options);
         open["params"]["configFileName"] = json!(self.config);
         let responses = exchange(&frames(&[initialize_request(), open]));
         responses[1]["result"].clone()
@@ -267,4 +271,83 @@ fn a_new_closer_vue_installation_is_watched_before_it_exists() {
         sdk.open_result()["configIdentity"]
     );
     assert_self_contained(&sdk.transform());
+}
+
+#[test]
+fn absent_wildcard_targets_keep_sharing_until_a_redirect_can_exist() {
+    let sdk = InstalledSdk::new();
+    let options = json!({"baseUrl": ".", "paths": {"*": ["types/*"]}});
+    std::fs::write(
+        &sdk.config,
+        serde_json::to_vec(&json!({"compilerOptions": options})).unwrap(),
+    )
+    .unwrap();
+    let types = sdk.config.parent().unwrap().join("types");
+    std::fs::create_dir_all(&types).unwrap();
+    let before = sdk.open_result_with_options(options.clone());
+    assert!(
+        before["watchedFiles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|file| { Path::new(file.as_str().unwrap()).ends_with("types/vize") })
+    );
+    assert!(
+        sdk.transform_with_options(options.clone())
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
+    std::fs::create_dir_all(types.join("vize")).unwrap();
+    std::fs::write(types.join("vize/virtual-ts.d.ts"), "export {};\n").unwrap();
+    assert_ne!(
+        before["configIdentity"],
+        sdk.open_result_with_options(options.clone())["configIdentity"]
+    );
+    assert_self_contained(&sdk.transform_with_options(options));
+}
+
+#[test]
+fn first_sdk_installation_is_in_the_missing_lookup_watch_closure() {
+    let sdk = InstalledSdk::new();
+    let held = sdk._directory.path().join("held-sdk");
+    std::fs::rename(&sdk.package, &held).unwrap();
+    let before = sdk.open_result();
+    assert!(
+        before["watchedFiles"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(sdk.package.join("package.json")))
+    );
+    std::fs::rename(held, &sdk.package).unwrap();
+    assert_ne!(
+        before["configIdentity"],
+        sdk.open_result()["configIdentity"]
+    );
+    assert!(
+        sdk.transform()
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn closer_sdk_candidates_are_watched_before_an_installed_parent() {
+    let sdk = InstalledSdk::new();
+    let closer = sdk.config.parent().unwrap().join("node_modules/vize");
+    let before = sdk.open_result();
+    assert!(
+        before["watchedFiles"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(closer.join("package.json")))
+    );
+    std::fs::create_dir_all(closer.parent().unwrap()).unwrap();
+    std::os::unix::fs::symlink(&sdk.package, closer).unwrap();
+    assert_ne!(
+        before["configIdentity"],
+        sdk.open_result()["configIdentity"]
+    );
+    assert!(
+        sdk.transform()
+            .contains("import type {} from \"vize/virtual-ts-checker\";")
+    );
 }

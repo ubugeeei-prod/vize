@@ -5,6 +5,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { preparePublishManifest } from "../../release/smoke_release_install/prepare.ts";
+import { verifyHelperAbiFallbacks } from "./direct-child-helper-abi-11809.ts";
 import {
   roles,
   props,
@@ -429,6 +430,7 @@ export function main(args = process.argv.slice(2)) {
             );
           }
     assertInventory(cells);
+    verifyHelperAbiFallbacks(install, output, hosts, childEnv);
     assert.deepEqual(
       helpers.map((file) => identity(file.path)),
       helpers,
