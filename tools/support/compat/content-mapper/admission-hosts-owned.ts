@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 export const ownerVariable = "ADMISSION_PROCESS_OWNER";
+export type KernelIdentity = { pid: number; startTicks: string; state: string };
 export type ProcessIdentity = {
   pid: number;
   ppid: number;
@@ -9,24 +10,46 @@ export type ProcessIdentity = {
   startTicks: string;
   state: string;
   ownerMarker: boolean;
+  kernelBefore?: KernelIdentity;
+  kernelAfter?: KernelIdentity;
 };
-const key = (row: ProcessIdentity) => row.pid + ":" + row.startTicks;
+const key = (row: KernelIdentity) => row.pid + ":" + row.startTicks;
+export function hasTerminalProof(
+  identity: KernelIdentity | undefined,
+  before: KernelIdentity | undefined,
+  after: KernelIdentity | undefined,
+) {
+  return Boolean(
+    identity &&
+    before &&
+    after &&
+    key(identity) === key(before) &&
+    key(before) === key(after) &&
+    ["Z", "X"].includes(after.state),
+  );
+}
 export function observationDisposition(
   identity: ProcessIdentity | undefined,
   baseline: ReadonlySet<string>,
   owned: ReadonlySet<string>,
   code: string | undefined,
+  before?: KernelIdentity,
+  after?: KernelIdentity,
 ) {
   const scope = !identity
     ? "identity-unverified"
     : identity.ownerMarker || owned.has(key(identity))
-      ? "known-owned"
+      ? hasTerminalProof(identity, before, after)
+        ? "known-terminal"
+        : "known-owned"
       : baseline.has(key(identity))
         ? "preexisting-unrelated"
         : "ownership-unclassified";
   return {
     scope,
-    excluded: scope === "preexisting-unrelated" && ["EACCES", "EPERM"].includes(code ?? ""),
+    excluded:
+      ["preexisting-unrelated", "known-terminal"].includes(scope) &&
+      ["EACCES", "EPERM"].includes(code ?? ""),
   };
 }
 export function linuxIdentity(name: string) {
@@ -47,7 +70,13 @@ export function linuxIdentity(name: string) {
 }
 function processes(
   nonce: string,
-  unknown: (error: unknown, pid?: number, identity?: ProcessIdentity) => void,
+  unknown: (
+    error: unknown,
+    pid?: number,
+    identity?: ProcessIdentity,
+    before?: KernelIdentity,
+    after?: KernelIdentity,
+  ) => void,
 ): ProcessIdentity[] {
   const marker = ownerVariable + "=" + nonce;
   if (process.platform === "linux")
@@ -63,19 +92,34 @@ function processes(
             Buffer.from("\0" + marker + "\0"),
           );
           const after = linuxIdentity(name);
-          return key(before) === key(after) ? [{ ...after, ownerMarker: before.ownerMarker }] : [];
+          return key(before) === key(after)
+            ? [
+                {
+                  ...after,
+                  ownerMarker: before.ownerMarker,
+                  kernelBefore: before,
+                  kernelAfter: after,
+                },
+              ]
+            : [];
         } catch (value) {
           if (["ENOENT", "ESRCH"].includes((value as NodeJS.ErrnoException).code ?? "")) return [];
           let stable: ProcessIdentity | undefined;
+          let after: ProcessIdentity | undefined;
           try {
-            const after = linuxIdentity(name);
+            after = linuxIdentity(name);
             if (before && key(before) === key(after))
-              stable = { ...after, ownerMarker: before.ownerMarker };
+              stable = {
+                ...after,
+                ownerMarker: before.ownerMarker,
+                kernelBefore: before,
+                kernelAfter: after,
+              };
           } catch (identityError) {
             if (!["ENOENT", "ESRCH"].includes((identityError as NodeJS.ErrnoException).code ?? ""))
               unknown(identityError, Number(name));
           }
-          unknown(value, Number(name), stable);
+          unknown(value, Number(name), stable, before, after);
           return [];
         }
       });
@@ -125,6 +169,10 @@ export function captureProcessBaseline(): ProcessIdentity[] {
 /** Identity plus a per-invocation owner marker survives setsid and immediate reparenting. */
 export class OwnedProcesses {
   readonly identities = new Map<string, ProcessIdentity>();
+  readonly terminatedProcesses = new Map<
+    string,
+    { before: KernelIdentity; after: KernelIdentity }
+  >();
   readonly observationIssues = new Map<
     string,
     {
@@ -134,18 +182,28 @@ export class OwnedProcesses {
       code: string | null;
       excluded: boolean;
       error: string;
+      before: KernelIdentity | null;
+      after: KernelIdentity | null;
     }
   >();
   error: string | null = null;
   readonly rootPid: number | undefined;
   readonly nonce: string;
   readonly baseline: ReadonlySet<string>;
-  recordIssue(value: unknown, pid?: number, processIdentity?: ProcessIdentity) {
+  recordIssue(
+    value: unknown,
+    pid?: number,
+    processIdentity?: ProcessIdentity,
+    before?: KernelIdentity,
+    after?: KernelIdentity,
+  ) {
     const { scope, excluded } = observationDisposition(
       processIdentity,
       this.baseline,
       new Set(this.identities.keys()),
       (value as NodeJS.ErrnoException).code,
+      before,
+      after,
     );
     const issue = {
       pid: pid ?? null,
@@ -154,11 +212,17 @@ export class OwnedProcesses {
       excluded,
       code: (value as NodeJS.ErrnoException).code ?? null,
       error: String(value),
+      before: before ?? null,
+      after: after ?? null,
     };
     const identity = JSON.stringify(issue);
     if (this.observationIssues.size < 4096 || this.observationIssues.has(identity))
       this.observationIssues.set(identity, issue);
     if (!excluded) this.error ??= "process inventory incomplete (" + scope + "): " + String(value);
+    if (scope === "known-terminal" && excluded && processIdentity && before && after) {
+      this.identities.set(key(processIdentity), processIdentity);
+      this.terminatedProcesses.set(key(processIdentity), { before, after });
+    }
   }
   constructor(
     rootPid: number | undefined,
@@ -173,8 +237,8 @@ export class OwnedProcesses {
         const root =
           process.platform === "linux"
             ? linuxIdentity(String(rootPid))
-            : processes(nonce, (value, pid, identity) =>
-                this.recordIssue(value, pid, identity),
+            : processes(nonce, (value, pid, identity, before, after) =>
+                this.recordIssue(value, pid, identity, before, after),
               ).find((row) => row.pid === rootPid);
         if (root) this.identities.set(key(root), root);
         else this.error = "root start identity was not observed";
@@ -185,8 +249,8 @@ export class OwnedProcesses {
   }
   scan(): ProcessIdentity[] {
     try {
-      const rows = processes(this.nonce, (value, pid, identity) =>
-        this.recordIssue(value, pid, identity),
+      const rows = processes(this.nonce, (value, pid, identity, before, after) =>
+        this.recordIssue(value, pid, identity, before, after),
       );
       for (const row of rows) if (row.ownerMarker) this.identities.set(key(row), row);
       let changed = true;
@@ -201,7 +265,22 @@ export class OwnedProcesses {
             changed = true;
           }
       }
-      return rows.filter((row) => this.identities.has(key(row)));
+      for (const row of rows)
+        if (
+          this.identities.has(key(row)) &&
+          row.kernelBefore &&
+          row.kernelAfter &&
+          hasTerminalProof(row, row.kernelBefore, row.kernelAfter)
+        ) {
+          this.identities.set(key(row), row);
+          this.terminatedProcesses.set(key(row), {
+            before: row.kernelBefore,
+            after: row.kernelAfter,
+          });
+        }
+      return rows.filter(
+        (row) => this.identities.has(key(row)) && !this.terminatedProcesses.has(key(row)),
+      );
     } catch (value) {
       this.recordIssue(value);
       return [];
@@ -216,10 +295,11 @@ export class OwnedProcesses {
         const current =
           process.platform === "linux"
             ? linuxIdentity(String(row.pid))
-            : processes(this.nonce, (value, pid, identity) =>
-                this.recordIssue(value, pid, identity),
+            : processes(this.nonce, (value, pid, identity, before, after) =>
+                this.recordIssue(value, pid, identity, before, after),
               ).find((current) => current.pid === row.pid);
         if (!current || key(current) !== key(row)) continue;
+        if (["Z", "X"].includes(current.state)) continue;
         process.kill(row.pid, "SIGKILL");
         signaled.push(row);
       } catch (value) {

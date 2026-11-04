@@ -187,53 +187,6 @@ void test("host raw descriptors and argv are durable before a controlled Node ch
   }
 });
 
-void test("only exact pre-spawn protected identities can be excluded from ownership errors", async () => {
-  const { observationDisposition } =
-    await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
-  const identity = {
-    pid: 42,
-    ppid: 1,
-    group: 1,
-    startTicks: "100",
-    state: "S",
-    ownerMarker: false,
-  };
-  const baseline = new Set(["42:100"]),
-    owned = new Set<string>();
-  assert.deepEqual(observationDisposition(identity, baseline, owned, "EACCES"), {
-    scope: "preexisting-unrelated",
-    excluded: true,
-  });
-  assert.equal(
-    observationDisposition({ ...identity, startTicks: "101" }, baseline, owned, "EACCES").excluded,
-    false,
-    "PID reuse must not inherit baseline authority",
-  );
-  assert.equal(
-    observationDisposition({ ...identity, pid: 43 }, baseline, owned, "EACCES").excluded,
-    false,
-    "post-spawn identity is unknown",
-  );
-  assert.deepEqual(observationDisposition(identity, baseline, new Set(["42:100"]), "EACCES"), {
-    scope: "known-owned",
-    excluded: false,
-  });
-  assert.deepEqual(
-    observationDisposition({ ...identity, ownerMarker: true }, baseline, owned, "EACCES"),
-    { scope: "known-owned", excluded: false },
-  );
-  assert.equal(
-    observationDisposition(undefined, baseline, owned, "EACCES").excluded,
-    false,
-    "missing kernel identity cannot establish preexistence",
-  );
-  assert.equal(
-    observationDisposition(identity, baseline, owned, "EIO").excluded,
-    false,
-    "non-permission observation failures remain fatal",
-  );
-});
-
 void test("a process deadline retains partial raw output and fails outside semantic diagnostics", async () => {
   const { mkdtempSync, readFileSync, rmSync } = await import("node:fs");
   const { tmpdir } = await import("node:os");

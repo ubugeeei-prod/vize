@@ -219,6 +219,7 @@ export async function run(
     baseline: fileImage(join(directory, "baseline.json")),
     observedProcesses: [...owned.identities.values()],
     observationIssues: [...owned.observationIssues.values()],
+    terminatedProcesses: [...owned.terminatedProcesses.values()],
     observedHosts: [...observedHosts.values()],
     observedNatives: [...observedNatives.values()],
     stdout: fileImage(join(directory, "stdout.raw")),
