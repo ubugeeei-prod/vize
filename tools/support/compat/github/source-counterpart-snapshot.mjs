@@ -389,6 +389,31 @@ export function ownedCounterpartDirectory(owner) {
   return fs.realpathSync(fs.mkdtempSync(path.join(directory, "vize-star-counterpart-")));
 }
 
+/** Literal historical modules also create temporary children during their tests. */
+export function ownedCounterpartTemporaryRoot(owner) {
+  const directory = ownedCounterpartDirectory(owner);
+  const key = process.platform === "win32" ? "TEMP" : "TMPDIR";
+  const previous = process.env[key];
+  process.env[key] = directory;
+  let released = false;
+  return {
+    directory,
+    release() {
+      assert(!released, "temporary source owner releases once");
+      released = true;
+      try {
+        assert.equal(process.env[key], directory, "temporary source owner remains explicit");
+        assert(fs.lstatSync(directory).isDirectory() && !fs.lstatSync(directory).isSymbolicLink());
+        assert.equal(fs.realpathSync(directory), directory);
+        fs.rmSync(directory, { recursive: true, force: true });
+      } finally {
+        if (previous === undefined) delete process.env[key];
+        else process.env[key] = previous;
+      }
+    },
+  };
+}
+
 /** Raw literal files in a disposable private Git repository; no authentication credit. */
 export function provisionStarSourceCounterpart(owner, source, names) {
   names = selectedNames(names);

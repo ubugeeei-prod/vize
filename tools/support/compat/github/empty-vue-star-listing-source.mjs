@@ -9,6 +9,7 @@ import { gunzipSync } from "node:zlib";
 import { parse } from "yaml";
 import {
   listStarCounterpartFiles,
+  ownedCounterpartTemporaryRoot,
   provisionStarSourceCounterpart,
   primeStarCounterpartHistory,
 } from "./source-counterpart-snapshot.mjs";
@@ -443,20 +444,32 @@ export async function runStarListingOriginalTest(root, file) {
         : [file];
   const files = listStarCounterpartFiles(value.root, source, initial);
   const fixture = provisionStarSourceCounterpart(value.root, source, files);
+  let temporary;
   let retained = false;
   try {
+    temporary = ownedCounterpartTemporaryRoot(value.root);
     await import(pathToFileURL(path.join(fixture.root, file)).href);
     after(() => {
       try {
         owned(packet);
       } finally {
-        fixture.cleanup();
+        try {
+          fixture.cleanup();
+        } finally {
+          temporary.release();
+        }
       }
     });
     retained = true;
     return packet;
   } finally {
-    if (!retained) fixture.cleanup();
+    if (!retained) {
+      try {
+        fixture.cleanup();
+      } finally {
+        temporary?.release();
+      }
+    }
   }
 }
 /** The original lexical tables retain their recorded bodies after current source verification. */

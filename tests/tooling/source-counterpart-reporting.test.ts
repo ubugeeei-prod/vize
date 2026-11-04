@@ -4,7 +4,10 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { ownedCounterpartDirectory } from "../../tools/support/compat/github/source-counterpart-snapshot.mjs";
+import {
+  ownedCounterpartDirectory,
+  ownedCounterpartTemporaryRoot,
+} from "../../tools/support/compat/github/source-counterpart-snapshot.mjs";
 import {
   nodeTestCases,
   ownedPath,
@@ -51,6 +54,32 @@ void test("counterparts require an ignored output boundary", () => {
     assert.throws(() => ownedCounterpartDirectory(root));
     assert.equal(fs.existsSync(path.join(root, "target")), false);
   }, false);
+});
+
+void test("nested literal temporary files remain owned without changing the reporting environment", () => {
+  owner((root) => {
+    const initial = tmpdir();
+    const key = process.platform === "win32" ? "TEMP" : "TMPDIR";
+    const preserved = Object.entries(process.env).filter(([name]) => name !== key);
+    const temporary = ownedCounterpartTemporaryRoot(root);
+    try {
+      assert.equal(tmpdir(), temporary.directory);
+      const child = fs.mkdtempSync(path.join(tmpdir(), "literal-original-"));
+      const file = path.join(child, "source.test.mjs");
+      fs.writeFileSync(file, "// unchanged literal source body\n");
+      assert.ok(ownedPath(file, root).startsWith("target/tooling-source-counterparts/"));
+      assert.ok(
+        preserved.every(([name, value]) => process.env[name] === value),
+        "reporting environment preserved",
+      );
+      assert.throws(() => ownedPath(path.join(initial, "foreign.test.mjs"), root), /outside/);
+    } finally {
+      temporary.release();
+    }
+    assert.equal(tmpdir(), initial);
+    assert.equal(fs.existsSync(temporary.directory), false);
+    assert.ok(preserved.every(([name, value]) => process.env[name] === value));
+  });
 });
 
 void test("counterparts cannot follow an output symlink outside their owner", () => {
