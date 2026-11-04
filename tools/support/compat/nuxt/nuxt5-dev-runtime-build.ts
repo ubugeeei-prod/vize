@@ -1,7 +1,7 @@
 // #11795: the Nitro 3 development hook must retain the stylesheet behavior.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawn, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,7 @@ import { at, readJson } from "../../json-value.ts";
 import { closeConsumer, freePort, loadChromium, type BrowserGlobals } from "./host-types.ts";
 import { prepareNuxtSourceBinding } from "./source-binding.ts";
 import { waitForDevelopmentSsr } from "./development-response.ts";
+import { verifyDevelopmentProcesses } from "./development-processes.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const relative = "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime";
@@ -182,10 +183,14 @@ try {
   assert.equal(sha256(node), nodeHash);
   const binding = source.verify();
   const events = fs.readFileSync(source.custody.calls, "utf8").trim().split("\n");
-  for (const event of events) {
-    const packet: unknown = JSON.parse(event);
-    assert.equal(at(packet, "pid"), server.pid, "the observed Node 26 server compiled the SFC");
-  }
+  const processes = execFileSync("ps", ["-axo", "pid=,ppid="], { encoding: "utf8" });
+  fs.writeFileSync(path.join(output, "process-tree.txt"), processes);
+  assert.ok(server.pid);
+  verifyDevelopmentProcesses(
+    server.pid,
+    events.map((event) => at(JSON.parse(event), "pid")),
+    processes,
+  );
   write("report.json", {
     passed: true,
     source: binding,

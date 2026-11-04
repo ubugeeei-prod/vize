@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawn, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import fs from "node:fs";
 import { createServer } from "node:http";
@@ -14,6 +14,7 @@ import observeNitro2 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-ru
 import observeNitro3 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts";
 import { closeConsumer } from "../../tools/support/compat/nuxt/host-types.ts";
 import { waitForDevelopmentSsr } from "../../tools/support/compat/nuxt/development-response.ts";
+import { verifyDevelopmentProcesses } from "../../tools/support/compat/nuxt/development-processes.ts";
 
 type Step = {
   name?: string;
@@ -25,6 +26,29 @@ type Step = {
   with?: { path?: string };
   "continue-on-error"?: boolean;
 };
+
+void test("the default Nuxt fork may compile only inside the launched process tree", () => {
+  const snapshot = "1 0\n100 1\n101 100\n102 101\n200 1\n";
+  verifyDevelopmentProcesses(100, [100, 101, 102], snapshot);
+  for (const pids of [[200], [999], ["101"]])
+    assert.throws(() => verifyDevelopmentProcesses(100, pids, snapshot));
+  assert.throws(() => verifyDevelopmentProcesses(100, [101], "100 1\n101 102\n102 101\n"));
+  assert.throws(() => verifyDevelopmentProcesses(100, [100], "101 100\n"));
+  assert.throws(() => verifyDevelopmentProcesses(100, [101], "100 1\n101 100\n101 1\n"));
+});
+
+void test("the process snapshot authenticates a real child and refuses its parent", async () => {
+  const child = spawn(process.execPath, ["--eval", "setInterval(() => {}, 1000)"]);
+  await once(child, "spawn");
+  try {
+    assert.ok(child.pid);
+    const snapshot = execFileSync("ps", ["-axo", "pid=,ppid="], { encoding: "utf8" });
+    verifyDevelopmentProcesses(process.pid, [child.pid], snapshot);
+    assert.throws(() => verifyDevelopmentProcesses(child.pid!, [process.pid], snapshot));
+  } finally {
+    await closeConsumer(undefined, child, () => {});
+  }
+});
 
 for (const [name, statuses, expected] of [
   ["startup 503 followed by rendered SSR", [503, 200], 200],
@@ -217,10 +241,6 @@ void test("the existing source job appends development qualification after produ
     development.env?.VIZE_NUXT_SOURCE_NODE_SHA256,
     "${{ steps.nuxt-source-runtime.outputs.sha256 }}",
   );
-  assert.equal(
-    development.run,
-    '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts "$RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance" "$(command -v node)"',
-  );
   assert.notEqual(development["continue-on-error"], true);
   const artifact = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
   assert.ok(artifact);
@@ -233,12 +253,71 @@ void test("the existing source job appends development qualification after produ
       "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts",
       "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts",
       "tools/support/compat/nuxt/development-response.ts",
+      "tools/support/compat/nuxt/development-processes.ts",
       "tests/tooling/nuxt5-dev-runtime.test.ts",
     ])
       assert.ok(
         trigger.paths.some((pattern) => matchesGlob(file, pattern)),
         file,
       );
+  }
+});
+
+void test("the development command uses the captured producer and forwards the consumer", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt5-dev-controller space-"));
+  try {
+    const bin = path.join(directory, "bin");
+    fs.mkdirSync(bin);
+    fs.writeFileSync(path.join(bin, "node"), '#!/bin/sh\nprintf "ambient" > "$AMBIENT_LOG"\n', {
+      mode: 0o755,
+    });
+    const runner = path.join(directory, "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts");
+    fs.mkdirSync(path.dirname(runner), { recursive: true });
+    fs.writeFileSync(
+      runner,
+      'require("node:fs").writeFileSync(process.env.PROBE_LOG, JSON.stringify({producer:process.execPath,args:process.argv.slice(2)}));\n',
+    );
+    const current = find("Verify source-bound Nuxt 5 development stylesheets and hydration").run;
+    assert.ok(current);
+    for (const [name, command] of [
+      ["captured", current],
+      [
+        "ambient-before",
+        'node tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts "$RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance"',
+      ],
+    ]) {
+      const probe = path.join(directory, name + ".json");
+      const ambient = path.join(directory, name + ".log");
+      const result = spawnSync("/bin/bash", ["-e", "-c", command], {
+        cwd: directory,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+          RUNNER_TEMP: directory,
+          VIZE_NUXT_SOURCE_NODE: process.execPath,
+          PROBE_LOG: probe,
+          AMBIENT_LOG: ambient,
+        },
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0);
+      if (name === "captured") {
+        assert.equal(fs.existsSync(ambient), false);
+        assert.deepEqual(JSON.parse(fs.readFileSync(probe, "utf8")), {
+          producer: process.execPath,
+          args: [
+            path.join(directory, "nuxt5-dev-runtime-proof/acceptance"),
+            path.join(bin, "node"),
+          ],
+        });
+      } else {
+        assert.equal(fs.existsSync(probe), false);
+        assert.equal(fs.readFileSync(ambient, "utf8"), "ambient");
+      }
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true });
   }
 });
 
