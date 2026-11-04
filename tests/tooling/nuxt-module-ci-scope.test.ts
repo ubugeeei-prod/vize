@@ -43,7 +43,11 @@ test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigatio
   assert.ok(workflow.on.pull_request.paths?.includes("npm/framework/nuxt/**"));
   assert.equal(job.if, undefined);
   assert.notEqual(job["continue-on-error"], true);
-  assert.deepEqual(campaigns("pull_request"), ["nuxt3-module-build.ts", "nuxt5-runtime-build.ts"]);
+  assert.deepEqual(campaigns("pull_request"), [
+    "nuxt3-module-build.ts",
+    "nuxt5-runtime-build.ts",
+    "nuxt5-dev-runtime-build.ts",
+  ]);
   const native = steps.findIndex(
     (step) => step.name === "Build and capture the actual source native compiler",
   );
@@ -95,6 +99,7 @@ test("merge, main and manual runs retain every extended campaign and source rece
       "relative-glob-build.ts",
       "javascript-workspace-build.ts",
       "nuxt5-runtime-build.ts",
+      "nuxt5-dev-runtime-build.ts",
     ]);
     for (const step of steps.filter((item) => item.run?.includes("compat/nuxt/"))) {
       assert.notEqual(step["continue-on-error"], true);
@@ -115,7 +120,7 @@ test("closed Nuxt campaign inventory rejects missing original or new runtime lan
   for (const event of ["pull_request", "merge_group", "push", "workflow_dispatch"]) {
     const expected =
       event === "pull_request"
-        ? ["nuxt3-module-build.ts", "nuxt5-runtime-build.ts"]
+        ? ["nuxt3-module-build.ts", "nuxt5-runtime-build.ts", "nuxt5-dev-runtime-build.ts"]
         : [
             "nuxt3-module-build.ts",
             "prefetch-manifest-build.mjs",
@@ -124,6 +129,7 @@ test("closed Nuxt campaign inventory rejects missing original or new runtime lan
             "relative-glob-build.ts",
             "javascript-workspace-build.ts",
             "nuxt5-runtime-build.ts",
+            "nuxt5-dev-runtime-build.ts",
           ];
     assert.deepEqual(campaigns(event), expected);
     for (const missing of expected) {

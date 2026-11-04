@@ -154,6 +154,7 @@ void test("Nuxt 5 failures remain failures while the original and additional raw
       "vite-relative-glob-proof",
       "javascript-workspace-proof",
       "nuxt5-runtime-proof",
+      "nuxt5-dev-runtime-proof",
     ].map((name) => `\${{ runner.temp }}/${name}`),
   );
   const install = step("Install the frozen Nuxt 5 production reproduction");

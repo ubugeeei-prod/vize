@@ -40,6 +40,7 @@ import {
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 import { dedupeVueRuntimePackages, externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
+import { registerNuxtServerPlugin, type NuxtNitroPluginVariants } from "./server-plugins";
 const VIZE_NUXT_AUTO_IMPORT_PATCHED = "__vizeNuxtAutoImportPatched";
 type VitePluginWithTransform = {
   name?: string;
@@ -96,8 +97,12 @@ function loadNuxtKit(): Promise<NuxtKit> {
   return nuxtKitPromise;
 }
 
-async function addNuxtServerPlugin(plugin: string): Promise<void> {
-  (await loadNuxtKit()).addServerPlugin(plugin);
+async function addNuxtServerPlugin(
+  rootDir: string,
+  variants: NuxtNitroPluginVariants,
+): Promise<void> {
+  const kit = await loadNuxtKit();
+  await registerNuxtServerPlugin(rootDir, variants, (plugin) => kit.addServerPlugin(plugin));
 }
 
 async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
@@ -322,7 +327,10 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
       if (nuxt.options.nitro.virtual) {
         nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
           `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
-        await addNuxtServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+        await addNuxtServerPlugin(nuxt.options.rootDir, {
+          nitro2: resolver.resolve("./runtime/server/dev-stylesheet-links"),
+          nitro3: resolver.resolve("./runtime/server/dev-stylesheet-links-nitro3"),
+        });
       }
     }
 
