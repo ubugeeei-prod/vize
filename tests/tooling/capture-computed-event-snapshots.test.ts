@@ -41,7 +41,7 @@ if (process.argv.includes('--list')) {
   assert.equal(process.env.INSTA_UPDATE, 'new');
   assert.equal(process.env.INSTA_FORCE_PASS, '1');
   fs.writeFileSync(${JSON.stringify(pending)}, ${JSON.stringify("fresh observed body\n")});
-  console.log('test result: ok. 1 passed; 0 failed;');
+  console.log('test result: ok. 1 passed; 0 failed; 0 ignored;');
 }
 `,
   );
@@ -146,5 +146,39 @@ void test("an artifact-only execution cannot modify a checked-in snapshot", () =
     );
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+void test("ignored filters and a changed HEAD cannot become complete observations", () => {
+  for (const change of [
+    (source: string) =>
+      source.replace("1 passed; 0 failed; 0 ignored;", "0 passed; 0 failed; 1 ignored;"),
+    (source: string) =>
+      source.replace(
+        "console.log('test result:",
+        "require('node:child_process').execFileSync('git', ['commit', '--allow-empty', '-qm', 'changed source']); console.log('test result:",
+      ),
+  ]) {
+    const f = fixture();
+    try {
+      fs.writeFileSync(f.binary, change(fs.readFileSync(f.binary, "utf8")));
+      assert.throws(
+        () => captureComputedEvents(f.root, f.evidence, f.source),
+        /non-ignored|source changed/,
+      );
+      const receipt = parseJson(
+        fs.readFileSync(path.join(f.evidence, "computed-event-observations/receipt.json"), "utf8"),
+      );
+      const observations = at(receipt, "observations");
+      assert(Array.isArray(observations));
+      assert.equal(at(receipt, "qualified"), false);
+      assert.equal(
+        observations.filter((item) => at(item, "origin") === "reference-matched-by-complete-filter")
+          .length,
+        0,
+      );
+    } finally {
+      fs.rmSync(f.root, { recursive: true, force: true });
+    }
   }
 });

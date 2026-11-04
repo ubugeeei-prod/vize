@@ -70,8 +70,10 @@ export function captureComputedEvents(
   const git = (...args: string[]) =>
     execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
   const source = git("rev-parse", "HEAD");
+  const tree = git("rev-parse", "HEAD^{tree}");
   if (expectedSource) assert.equal(source, expectedSource, "source changed after build");
   const originalDiff = git("diff", "--name-only", "HEAD");
+  assert.equal(originalDiff, "", "capture requires unchanged tracked source");
   const metadata = path.join(evidence, "cargo.jsonl");
   const binary = selectCanonTestBinary(fs.readFileSync(metadata, "utf8"), root);
   const beforeBinary = digest(binary);
@@ -96,12 +98,22 @@ export function captureComputedEvents(
   fs.writeFileSync(path.join(output, "stdout.bin"), result.stdout ?? Buffer.alloc(0));
   fs.writeFileSync(path.join(output, "stderr.bin"), result.stderr ?? Buffer.alloc(0));
   const binaryUnchanged = digest(binary) === beforeBinary;
-  const sourceUnchanged = git("diff", "--name-only", "HEAD") === originalDiff;
+  const sourceUnchanged =
+    git("diff", "--name-only", "HEAD") === "" &&
+    git("rev-parse", "HEAD") === source &&
+    git("rev-parse", "HEAD^{tree}") === tree;
   const formalSnapshotsUnchanged = formal.every(
     (item) => digest(path.join(root, item.file)) === item.sha256,
   );
+  const executedOneTest = /test result: ok\. 1 passed; 0 failed; 0 ignored;/u.test(
+    result.stdout?.toString() ?? "",
+  );
   const complete =
-    result.status === 0 && binaryUnchanged && sourceUnchanged && formalSnapshotsUnchanged;
+    result.status === 0 &&
+    executedOneTest &&
+    binaryUnchanged &&
+    sourceUnchanged &&
+    formalSnapshotsUnchanged;
   const observations = formal.map((item) => {
     const pending = path.join(root, `${item.file}.new`);
     const generated = fs.existsSync(pending);
@@ -123,7 +135,7 @@ export function captureComputedEvents(
   });
   const receipt = {
     source,
-    tree: git("rev-parse", "HEAD^{tree}"),
+    tree,
     binary,
     binarySha256: beforeBinary,
     metadataSha256: digest(metadata),
@@ -143,6 +155,7 @@ export function captureComputedEvents(
     formalSnapshotsUnchanged,
     sourceUnchanged,
     binaryUnchanged,
+    executedOneTest,
     observations,
   };
   const receiptBytes = `${JSON.stringify(receipt, null, 2)}\n`;
@@ -152,6 +165,7 @@ export function captureComputedEvents(
   assert(binaryUnchanged, "binary changed during observation");
   assert(sourceUnchanged, "source changed during observation");
   assert(formalSnapshotsUnchanged, "formal snapshot changed");
+  assert(executedOneTest, "artifact-only filter must execute one non-ignored test");
   assert.equal(
     result.status,
     0,
