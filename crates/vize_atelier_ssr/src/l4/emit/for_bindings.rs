@@ -1,5 +1,6 @@
 //! Source-owned binder facts shared with the native expression transformer.
 
+use vize_atelier_core::steps::erase_typescript_params;
 use vize_l0::{FxHashSet, String, id::NodeId};
 use vize_l1_to_l2::{
     TransformScopeMark, exceptional_for_binding_names, rewrite_for_alias_expressions,
@@ -53,8 +54,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         let [value, key, index] = aliases.map(|alias| {
             alias
                 .map(|alias| {
-                    rewrite_for_alias_expressions(alias, |expr| self.text_expr(expr))
-                        .map(|text| text.unwrap_or_else(|| String::from(alias)))
+                    rewrite_for_alias_expressions(alias, |expr| self.text_expr(expr)).map(|text| {
+                        let authored = text.unwrap_or_else(|| String::from(alias));
+                        erase_typescript_params(authored.as_str()).unwrap_or(authored)
+                    })
                 })
                 .transpose()
         });
