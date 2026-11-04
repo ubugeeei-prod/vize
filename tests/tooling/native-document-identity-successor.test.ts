@@ -139,6 +139,15 @@ test("registered successor history cannot disappear, mutate or admit later sourc
     () => validate(read, undefined, unknown),
     /closed identity successor fields differ/,
   );
+  for (const [field, value, message] of [
+    ["nativeQualification", true, /source registration cannot claim native qualification/],
+    ["tree", "0".repeat(40), /unregistered identity successor source tree/],
+    ["targets", ["unreviewed"], /identity successor target differs/],
+  ] as const) {
+    const altered = structuredClone(rows);
+    altered[0][field] = value;
+    assert.throws(() => validate(read, undefined, altered), message);
+  }
 });
 
 test("the mandatory source gate admits only the complete current corrective transition", () => {

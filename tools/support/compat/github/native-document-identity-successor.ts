@@ -88,8 +88,12 @@ export function newNativeIdentitySuccessor(
   );
   assert.equal(row.id, NATIVE_IDENTITY_SUCCESSOR_ID);
   assert.equal(row.state, "active");
-  assert.equal(row.nativeQualification, false);
-  assert.deepEqual(row.targets, ["native-document-identity"]);
+  assert.equal(
+    row.nativeQualification,
+    false,
+    "source registration cannot claim native qualification",
+  );
+  assert.deepEqual(row.targets, ["native-document-identity"], "identity successor target differs");
   assert.equal(row.source, source, "unregistered identity successor source revision");
   assert.equal(row.tree, tree, "unregistered identity successor source tree");
   assert.deepEqual(row.image, { path: imagePath, sha256: imageSha });
