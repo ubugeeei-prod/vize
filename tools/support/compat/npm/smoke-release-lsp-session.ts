@@ -16,6 +16,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import {
+  DIAGNOSTIC_QUIET_MS,
+  writeLspDiagnosticSettle,
+} from "./smoke-release-init-timing.ts";
+
 const [projectRoot, projectShape = "vite"] = process.argv.slice(2);
 assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root> [vite|nuxt]");
 assert.ok(
@@ -35,6 +40,9 @@ const appText = fs.readFileSync(appPath, "utf8");
 // so a host-only failure such as the typeless Windows hover (#8940) shows
 // where the checker path gave up.
 const logDir = process.env.VIZE_SMOKE_LSP_LOG_DIR;
+const lspStarted = performance.now();
+let diagnosticNotifications = 0;
+let lastDiagnosticAt = 0;
 const server = spawn(process.execPath, [path.join(root, "node_modules/vize/bin/vize"), "lsp"], {
   cwd: root,
   stdio: ["pipe", "pipe", "pipe"],
@@ -91,7 +99,13 @@ server.stdout.on("data", (chunk: Buffer) => {
     buffer = buffer.subarray(header + 4 + length);
     if (message.id !== undefined && message.method === undefined)
       pending.get(message.id)?.(message);
-    else if (message.method !== undefined) notifications.push(message);
+    else if (message.method !== undefined) {
+      if (message.method === "textDocument/publishDiagnostics") {
+        diagnosticNotifications += 1;
+        lastDiagnosticAt = performance.now();
+      }
+      notifications.push(message);
+    }
   }
 });
 
@@ -239,7 +253,41 @@ await expectFeature(
   { ...at("const title", 6), newName: "heading" },
   (result) => mentions(result, appPath),
 );
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Quiet window after the last publishDiagnostics. No publication stays unset
+// rather than looking like a finished diagnostic pass.
+async function diagnosticSettle() {
+  const graceDeadline = performance.now() + 250;
+  const deadline = performance.now() + 5_000;
+  while (performance.now() < deadline) {
+    if (
+      diagnosticNotifications > 0 &&
+      performance.now() - lastDiagnosticAt >= DIAGNOSTIC_QUIET_MS
+    ) {
+      return {
+        notifications: diagnosticNotifications,
+        settleMs: performance.now() - lspStarted,
+        settled: true,
+        diagnosticQuietMs: DIAGNOSTIC_QUIET_MS,
+      };
+    }
+    if (diagnosticNotifications === 0 && performance.now() >= graceDeadline) break;
+    await sleep(25);
+  }
+  return {
+    notifications: diagnosticNotifications,
+    settleMs: null,
+    settled: false,
+    diagnosticQuietMs: DIAGNOSTIC_QUIET_MS,
+  };
+}
+
 writeSessionLog();
+const settle = await diagnosticSettle();
+writeLspDiagnosticSettle(root, settle);
 assert.deepEqual(failures, [], `project-local vize lsp failed in ${root}\n${serverEvidence()}`);
 
 await request("shutdown", undefined);

@@ -340,10 +340,20 @@ jobs:
         with: { node-version-file: "package.json" }
       - uses: ./.github/actions/release-npm-artifacts
       - name: Smoke install release package tarballs
+        env:
+          VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         run: |
           read -ra js <<< "$RELEASE_JS_PACKAGES"
           node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
+      - name: Retain packed smoke timing
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: packed-smoke-timing
+          path: ${{ runner.temp }}/packed-smoke-timing.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   # Every artifact exists: only now does the version become real.
   tag:

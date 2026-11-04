@@ -239,6 +239,8 @@ jobs:
         uses: ./.github/actions/release-build-packages
       - name: Fresh install and runtime smoke published tarballs
         if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
+        env:
+          VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
         run: |
           rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
@@ -246,11 +248,21 @@ jobs:
             npm/cli npm/builder/vite
       - name: Fresh packed Nuxt init, check, and LSP smoke
         if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
+        env:
+          VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
         run: |
           read -ra js <<< "$RELEASE_JS_PACKAGES"
           rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* "${js[@]}"
+      - name: Retain packed smoke timing
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packed-smoke-timing-${{ matrix.platform.target }}-node${{ matrix.node-version }}
+          path: ${{ runner.temp }}/packed-smoke-timing.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   selected-host-native-producer:
     if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
