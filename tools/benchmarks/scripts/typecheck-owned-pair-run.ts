@@ -18,9 +18,12 @@ import {
 } from "./typecheck-owned-pair-evidence.ts";
 
 const hook = join(dirname(fileURLToPath(import.meta.url)), "typecheck-owned-pair-native.cjs");
+export function requireLinuxActionsRunner(env = process.env, platform = process.platform) {
+  assert.equal(platform, "linux", "the raw runner requires Linux");
+  assert.equal(env.GITHUB_ACTIONS, "true", "the raw runner requires Actions");
+}
 export function requireMeasurementRunner(env = process.env, platform = process.platform) {
-  assert.equal(platform, "linux", "measurements run only on Blacksmith Linux");
-  assert.equal(env.GITHUB_ACTIONS, "true");
+  requireLinuxActionsRunner(env, platform);
   assert.equal(env.VIZE_PAIR_RUNNER_LABEL, "blacksmith-32vcpu-ubuntu-2404");
   for (const key of [
     "NODE_OPTIONS",
@@ -79,6 +82,13 @@ function nativeEvidence(directory: string, expected: NativeAuthority | null) {
 /** Every launched command gets fresh user cache; no output is parsed before raw files close. */
 export async function runOwnedInvocation(invocation: Invocation) {
   requireMeasurementRunner();
+  return runLinuxInvocation(invocation);
+}
+
+/** The same raw execution primitive used by finite Actions integration tests.
+ * Measurement entry points retain the stricter Blacksmith wrapper above. */
+export async function runLinuxInvocation(invocation: Invocation) {
+  requireLinuxActionsRunner();
   if (invocation.memory) requireTreeSamplerUnits();
   for (const key of Object.keys(invocation.probeEnv ?? {}))
     assert.ok(key.startsWith("VIZE_MAPPER_PROBE_"), "only byte-probe environment may be added");

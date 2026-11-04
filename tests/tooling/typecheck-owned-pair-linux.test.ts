@@ -4,19 +4,16 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { runOwnedInvocation } from "../../tools/benchmarks/scripts/typecheck-owned-pair-run.ts";
+import { runLinuxInvocation } from "../../tools/benchmarks/scripts/typecheck-owned-pair-run.ts";
 
-const enabled =
-  process.platform === "linux" &&
-  process.env.GITHUB_ACTIONS === "true" &&
-  process.env.VIZE_PAIR_RUNNER_LABEL === "blacksmith-32vcpu-ubuntu-2404";
+const enabled = process.platform === "linux" && process.env.GITHUB_ACTIONS === "true";
 test(
   "Linux runner closes raw files, GNU time, fresh cache and separate live tree memory",
   { skip: !enabled },
   async () => {
     const out = mkdtempSync(join(tmpdir(), "owned-pair-linux-test-"));
     try {
-      const run = await runOwnedInvocation({
+      const run = await runLinuxInvocation({
         command: [
           process.execPath,
           "-e",
@@ -50,7 +47,7 @@ test(
   async () => {
     const out = mkdtempSync(join(tmpdir(), "owned-pair-linux-failure-"));
     try {
-      const run = await runOwnedInvocation({
+      const run = await runLinuxInvocation({
         command: [
           process.execPath,
           "-e",

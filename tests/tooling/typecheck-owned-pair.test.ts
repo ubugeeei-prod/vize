@@ -177,10 +177,19 @@ test("native custody rejects fallback, other role, changed image and missing run
 });
 
 test("measurement admission refuses Mac, non-Actions and ambient provider or width overrides", async () => {
-  const { requireMeasurementRunner } =
+  const { requireMeasurementRunner, requireLinuxActionsRunner } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-run.ts");
   const env = { GITHUB_ACTIONS: "true", VIZE_PAIR_RUNNER_LABEL: "blacksmith-32vcpu-ubuntu-2404" };
   requireMeasurementRunner(env, "linux");
+  requireLinuxActionsRunner({ GITHUB_ACTIONS: "true" }, "linux");
+  assert.throws(() => requireLinuxActionsRunner(env, "darwin"));
+  assert.throws(() => requireLinuxActionsRunner({ GITHUB_ACTIONS: "false" }, "linux"));
+  assert.throws(() =>
+    requireMeasurementRunner(
+      { ...env, VIZE_PAIR_RUNNER_LABEL: "blacksmith-8vcpu-ubuntu-2404" },
+      "linux",
+    ),
+  );
   assert.throws(() => requireMeasurementRunner(env, "darwin"));
   assert.throws(() => requireMeasurementRunner({ ...env, GITHUB_ACTIONS: "false" }, "linux"));
   for (const key of [
