@@ -6,6 +6,8 @@ Pull requests run strict TypeScript and finite negative controls. The manual Bla
 
 The driver builds two independent source capsules with identical ci-opt features and compiler versions, verifies physical declarations and native build tokens, and rejects production differences outside dispatcher admission. Public provider, source, helper and wrapper closures must remain unchanged. Artifacts retain original streams, source/image/lock hashes, commands, statuses and generated inputs. External commands receive a restricted environment without CI credentials or loader overrides.
 
+Runtime preflight records the runner, CPU models, affinity, available parallelism and exposed CPU controller files before the two source builds. v1/v2 hierarchy observations and file availability are distinct; missing or denied quota values stay explicitly unavailable with their cause. They never mean zero or unlimited CPU. Measurement records CPU conditions before and after, including partial failures, and rejects a changed runner, affinity or width. Dynamic CPU frequency and tick counters are evidence rather than equality conditions; unavailable controller telemetry alone does not reject the measurement.
+
 Execution has separate populations:
 
 - Forty primary calls: five alternating source pairs per host and cache policy. Every call starts a fresh process with normal checker defaults and incremental output disabled. Empty owned cache/temp directories are compared with an immediate repeat reusing those directories and workspace. OS page caches remain unmanaged; neither policy measures a persistent warm process or a controlled cold OS.

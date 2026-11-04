@@ -1,4 +1,5 @@
 import { normalHostArguments } from "./template-alias-paired-11822-hosts.ts";
+import { runtimeCpuEvidence, sameCpuConditions } from "./template-alias-paired-11822-cpu.ts";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { cpus, availableParallelism, release, totalmem } from "node:os";
@@ -168,6 +169,7 @@ export async function main() {
     host(provider, "tsrs", "0.21.0-ts7.1.0-beta"),
   ];
   assert.equal(json(join(provider, "node_modules/vue/package.json")).version, "3.5.44");
+  const cpuBefore = runtimeCpuEvidence();
   const context = {
     schema: "vize.public-dispatcher-campaign.v1",
     driver: driverIdentity,
@@ -192,7 +194,7 @@ export async function main() {
       cpus: cpus(),
       availableParallelism: availableParallelism(),
       totalmem: totalmem(),
-      cpuMax: readFileSync("/sys/fs/cgroup/cpu.max", "utf8"),
+      cpu: cpuBefore,
       affinity: process.env.TEMPLATE_ALIAS_AFFINITY,
     },
     primary: {
@@ -220,221 +222,234 @@ export async function main() {
     },
   };
   write(join(output, "context.json"), context);
-  const rows: Record<string, Observation[]> = {};
-  const packets = new Map<string, ReturnType<typeof emittedPacket>>();
-  for (let pair = 0; pair < 5; pair++) {
-    const variants = pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"];
-    for (const host of hosts)
-      for (const id of variants) {
-        const directory = join(output, `primary-${host.name}-${id}-${pair}`);
-        const workspace = join(directory, "workspace");
-        mkdirSync(directory);
-        const closure = prepareWorkspace(corpus, provider, workspace, {
-          id: id as "baseline" | "candidate",
-          package: builds[id].cliPackage,
-        });
-        write(join(directory, "workspace.json"), closure);
-        for (const cachePolicy of ["empty-owned-cache", "reused-owned-cache"] as const) {
-          const key = host.name + "/" + id + "/" + cachePolicy;
-          const row = await capture(
-            join(directory, cachePolicy),
-            process.execPath,
-            normalHostArguments(host.command, closure.configFile),
-            workspace,
-            {},
-            cachePolicy === "reused-owned-cache",
-          );
-          const packet = emittedPacket(row, workspace, manifest.expectedErrors);
-          if (packets.has(host.name))
-            assert.deepEqual(
-              packet,
-              packets.get(host.name),
-              "complete same-host emitted diagnostics or order changed",
-            );
-          else packets.set(host.name, packet);
-          (rows[key] ??= []).push(row);
-          write(join(directory, cachePolicy, "qualified.json"), {
-            diagnostic: packet,
-            timingEligible: true,
-            cachePolicy,
-            freshProcess: true,
-            persistentWarmProcess: false,
-            osPageCache: "unmanaged",
+  let cpuAfterRecorded = false;
+  try {
+    const rows: Record<string, Observation[]> = {};
+    const packets = new Map<string, ReturnType<typeof emittedPacket>>();
+    for (let pair = 0; pair < 5; pair++) {
+      const variants = pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"];
+      for (const host of hosts)
+        for (const id of variants) {
+          const directory = join(output, `primary-${host.name}-${id}-${pair}`);
+          const workspace = join(directory, "workspace");
+          mkdirSync(directory);
+          const closure = prepareWorkspace(corpus, provider, workspace, {
+            id: id as "baseline" | "candidate",
+            package: builds[id].cliPackage,
           });
-          assert.deepEqual(inventory(join(workspace, "src")), authored);
+          write(join(directory, "workspace.json"), closure);
+          for (const cachePolicy of ["empty-owned-cache", "reused-owned-cache"] as const) {
+            const key = host.name + "/" + id + "/" + cachePolicy;
+            const row = await capture(
+              join(directory, cachePolicy),
+              process.execPath,
+              normalHostArguments(host.command, closure.configFile),
+              workspace,
+              {},
+              cachePolicy === "reused-owned-cache",
+            );
+            const packet = emittedPacket(row, workspace, manifest.expectedErrors);
+            if (packets.has(host.name))
+              assert.deepEqual(
+                packet,
+                packets.get(host.name),
+                "complete same-host emitted diagnostics or order changed",
+              );
+            else packets.set(host.name, packet);
+            (rows[key] ??= []).push(row);
+            write(join(directory, cachePolicy, "qualified.json"), {
+              diagnostic: packet,
+              timingEligible: true,
+              cachePolicy,
+              freshProcess: true,
+              persistentWarmProcess: false,
+              osPageCache: "unmanaged",
+            });
+            assert.deepEqual(inventory(join(workspace, "src")), authored);
+          }
         }
-      }
-  }
-  const projections = new Map<string, unknown>();
-  for (const host of hosts)
-    for (const id of ["baseline", "candidate"] as const) {
-      const directory = join(output, `capture-${host.name}-${id}`);
-      mkdirSync(directory);
-      const workspace = join(directory, "workspace"),
-        wire = join(directory, "wire");
-      const closure = prepareWorkspace(
-        corpus,
-        provider,
-        workspace,
-        { id, package: builds[id].cliPackage },
-        wire,
-      );
-      const row = await capture(
-        join(directory, "observation"),
-        process.execPath,
-        normalHostArguments(host.command, closure.configFile),
-        workspace,
-      );
-      assert.deepEqual(
-        emittedPacket(row, workspace, manifest.expectedErrors),
-        packets.get(host.name),
-      );
-      collectTransforms(wire, workspace, join(directory, "projections"), paths);
-      write(join(directory, "lifecycle.json"), qualifyCapturedLifecycle(wire));
-      const projection = paths.sort().map((path) => {
-        const matches = [".ts", ".tsx", ".js", ".jsx"]
-          .map((extension) => join(directory, "projections", path + extension))
-          .filter(existsSync);
-        assert.equal(matches.length, 1);
-        const metadata = json<{ result: unknown }>(matches[0] + ".metadata.json").result;
-        return {
-          path,
-          text: readFileSync(matches[0], "utf8").replaceAll(workspace + "/", "$WORKSPACE/"),
-          metadata: JSON.parse(
-            JSON.stringify(metadata).replaceAll(workspace + "/", "$WORKSPACE/"),
-          ) as unknown,
-        };
-      });
-      if (projections.has(host.name))
-        assert.deepEqual(
-          projection,
-          projections.get(host.name),
-          "whole transform text/maps/metadata changed",
-        );
-      else projections.set(host.name, projection);
-      write(join(directory, "qualified.json"), {
-        timingEligible: false,
-        completeTransforms: paths.length,
-        projectionEquality: true,
-      });
     }
-  await qualifySemantics({
-    corpus,
-    provider,
-    output,
-    hosts,
-    packages: Object.fromEntries(
-      Object.entries(builds).map(([id, build]) => [id, build.cliPackage]),
-    ),
-  });
-  for (const host of hosts)
-    for (const id of ["baseline", "candidate"] as const) {
-      const directory = join(output, `phase-${host.name}-${id}`),
-        workspace = join(directory, "workspace");
-      mkdirSync(directory);
-      const closure = prepareWorkspace(corpus, provider, workspace, {
-        id,
-        package: builds[id].cliPackage,
-      });
-      const row = await capture(
-        join(directory, "observation"),
-        process.execPath,
-        [...normalHostArguments(host.command, closure.configFile), "--extendedDiagnostics"],
-        workspace,
-      );
-      assert.equal(row.status, 2);
-      assert.deepEqual(
-        {
-          status: row.status,
-          diagnostics: diagnostics(row.text, workspace, manifest.expectedErrors),
-        },
-        packets.get(host.name)!.packet,
-      );
-      write(join(directory, "qualified.json"), {
-        timingEligible: false,
-        phase: metrics(row.text),
-        note:
-          host.name === "typescript"
-            ? "official extendedDiagnostics performs additional GC; reported memory is terminal Alloc, not peak or RSS"
-            : "TSRS counters are its own implementation; no official GC or memory semantics inferred",
-      });
-    }
-  const memory: Record<string, Awaited<ReturnType<typeof observeMemory>>[]> = {};
-  for (let pair = 0; pair < 3; pair++)
+    const projections = new Map<string, unknown>();
     for (const host of hosts)
-      for (const id of pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"]) {
-        const directory = join(output, `memory-${host.name}-${id}-${pair}`),
+      for (const id of ["baseline", "candidate"] as const) {
+        const directory = join(output, `capture-${host.name}-${id}`);
+        mkdirSync(directory);
+        const workspace = join(directory, "workspace"),
+          wire = join(directory, "wire");
+        const closure = prepareWorkspace(
+          corpus,
+          provider,
+          workspace,
+          { id, package: builds[id].cliPackage },
+          wire,
+        );
+        const row = await capture(
+          join(directory, "observation"),
+          process.execPath,
+          normalHostArguments(host.command, closure.configFile),
+          workspace,
+        );
+        assert.deepEqual(
+          emittedPacket(row, workspace, manifest.expectedErrors),
+          packets.get(host.name),
+        );
+        collectTransforms(wire, workspace, join(directory, "projections"), paths);
+        write(join(directory, "lifecycle.json"), qualifyCapturedLifecycle(wire));
+        const projection = paths.sort().map((path) => {
+          const matches = [".ts", ".tsx", ".js", ".jsx"]
+            .map((extension) => join(directory, "projections", path + extension))
+            .filter(existsSync);
+          assert.equal(matches.length, 1);
+          const metadata = json<{ result: unknown }>(matches[0] + ".metadata.json").result;
+          return {
+            path,
+            text: readFileSync(matches[0], "utf8").replaceAll(workspace + "/", "$WORKSPACE/"),
+            metadata: JSON.parse(
+              JSON.stringify(metadata).replaceAll(workspace + "/", "$WORKSPACE/"),
+            ) as unknown,
+          };
+        });
+        if (projections.has(host.name))
+          assert.deepEqual(
+            projection,
+            projections.get(host.name),
+            "whole transform text/maps/metadata changed",
+          );
+        else projections.set(host.name, projection);
+        write(join(directory, "qualified.json"), {
+          timingEligible: false,
+          completeTransforms: paths.length,
+          projectionEquality: true,
+        });
+      }
+    await qualifySemantics({
+      corpus,
+      provider,
+      output,
+      hosts,
+      packages: Object.fromEntries(
+        Object.entries(builds).map(([id, build]) => [id, build.cliPackage]),
+      ),
+    });
+    for (const host of hosts)
+      for (const id of ["baseline", "candidate"] as const) {
+        const directory = join(output, `phase-${host.name}-${id}`),
           workspace = join(directory, "workspace");
         mkdirSync(directory);
         const closure = prepareWorkspace(corpus, provider, workspace, {
-          id: id as "baseline" | "candidate",
+          id,
           package: builds[id].cliPackage,
         });
-        const cache = join(workspace, ".empty-cache"),
-          temporary = join(workspace, ".empty-tmp");
-        mkdirSync(cache);
-        mkdirSync(temporary);
-        const prefix = join(directory, "observation");
-        const row = await observeMemory({
-          command: [process.execPath, ...normalHostArguments(host.command, closure.configFile)],
-          cwd: workspace,
-          output: prefix,
-          hostImage: host.image.path,
-          mapperImage: builds[id].image.path,
-          timeoutMilliseconds: Math.min(300_000, remainingBudget()),
-          environment: { XDG_CACHE_HOME: cache, TMPDIR: temporary },
-        });
-        const stdout = readFileSync(prefix + ".stdout", "utf8").replaceAll(workspace + "/", ""),
-          stderr = readFileSync(prefix + ".stderr", "utf8").replaceAll(workspace + "/", "");
-        const packet = {
-          packet: {
-            status: row.status,
-            diagnostics: diagnostics(stdout + "\n" + stderr, workspace, manifest.expectedErrors),
-          },
-          stdout,
-          stderr,
-        };
-        assert.deepEqual(
-          packet,
-          packets.get(host.name),
-          "memory run diagnostic/status identity changed",
+        const row = await capture(
+          join(directory, "observation"),
+          process.execPath,
+          [...normalHostArguments(host.command, closure.configFile), "--extendedDiagnostics"],
+          workspace,
         );
-        (memory[host.name + "/" + id] ??= []).push(row);
+        assert.equal(row.status, 2);
+        assert.deepEqual(
+          {
+            status: row.status,
+            diagnostics: diagnostics(row.text, workspace, manifest.expectedErrors),
+          },
+          packets.get(host.name)!.packet,
+        );
         write(join(directory, "qualified.json"), {
           timingEligible: false,
-          fullDiagnosticIdentity: packet,
-          observedTreeMemoryEligible: true,
+          phase: metrics(row.text),
+          note:
+            host.name === "typescript"
+              ? "official extendedDiagnostics performs additional GC; reported memory is terminal Alloc, not peak or RSS"
+              : "TSRS counters are its own implementation; no official GC or memory semantics inferred",
         });
       }
-  const summary = Object.fromEntries(
-    Object.entries(rows).map(([key, observations]) => [key, population(observations, 5)]),
-  );
-  assert.deepEqual(closureSnapshot([provider]), providerBefore);
-  verifiedSourcePair(base, head, sources);
-  assert.deepEqual(inventory(join(corpus, "src")), authored);
-  copyFileSync(join(provider, "package-lock.json"), join(output, "public-provider-lock.json"));
-  write(join(output, "primary-summary.json"), {
-    summary,
-    timingComplete: true,
-    memory: Object.fromEntries(
-      Object.entries(memory).map(([key, observations]) => {
-        assert.equal(observations.length, 3, "incomplete memory population");
-        return [
-          key,
-          {
-            observedTreeRssKiB: median(observations.map((row) => row.maximumObservedTreeRssKiB)),
-            observedTreePssKiB: median(observations.map((row) => row.maximumObservedTreePssKiB)),
-            scope: observations[0].scope,
-          },
-        ];
-      }),
-    ),
-    correctnessComplete: true,
-    acceptedPerformanceConclusion: false,
-    acceptance:
-      "raw results require source-bound peer review; persistent warm-process and real-project scope remain separate",
-    coldWarmScope: "fresh processes; unmanaged OS caches; no persistent warm cohort",
-  });
+    const memory: Record<string, Awaited<ReturnType<typeof observeMemory>>[]> = {};
+    for (let pair = 0; pair < 3; pair++)
+      for (const host of hosts)
+        for (const id of pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"]) {
+          const directory = join(output, `memory-${host.name}-${id}-${pair}`),
+            workspace = join(directory, "workspace");
+          mkdirSync(directory);
+          const closure = prepareWorkspace(corpus, provider, workspace, {
+            id: id as "baseline" | "candidate",
+            package: builds[id].cliPackage,
+          });
+          const cache = join(workspace, ".empty-cache"),
+            temporary = join(workspace, ".empty-tmp");
+          mkdirSync(cache);
+          mkdirSync(temporary);
+          const prefix = join(directory, "observation");
+          const row = await observeMemory({
+            command: [process.execPath, ...normalHostArguments(host.command, closure.configFile)],
+            cwd: workspace,
+            output: prefix,
+            hostImage: host.image.path,
+            mapperImage: builds[id].image.path,
+            timeoutMilliseconds: Math.min(300_000, remainingBudget()),
+            environment: { XDG_CACHE_HOME: cache, TMPDIR: temporary },
+          });
+          const stdout = readFileSync(prefix + ".stdout", "utf8").replaceAll(workspace + "/", ""),
+            stderr = readFileSync(prefix + ".stderr", "utf8").replaceAll(workspace + "/", "");
+          const packet = {
+            packet: {
+              status: row.status,
+              diagnostics: diagnostics(stdout + "\n" + stderr, workspace, manifest.expectedErrors),
+            },
+            stdout,
+            stderr,
+          };
+          assert.deepEqual(
+            packet,
+            packets.get(host.name),
+            "memory run diagnostic/status identity changed",
+          );
+          (memory[host.name + "/" + id] ??= []).push(row);
+          write(join(directory, "qualified.json"), {
+            timingEligible: false,
+            fullDiagnosticIdentity: packet,
+            observedTreeMemoryEligible: true,
+          });
+        }
+    const cpuAfter = runtimeCpuEvidence();
+    write(join(output, "cpu-after.json"), cpuAfter);
+    cpuAfterRecorded = true;
+    assert.equal(
+      sameCpuConditions(cpuBefore, cpuAfter),
+      true,
+      "runner/affinity/CPU width conditions changed; original observations retained",
+    );
+    const summary = Object.fromEntries(
+      Object.entries(rows).map(([key, observations]) => [key, population(observations, 5)]),
+    );
+    assert.deepEqual(closureSnapshot([provider]), providerBefore);
+    verifiedSourcePair(base, head, sources);
+    assert.deepEqual(inventory(join(corpus, "src")), authored);
+    copyFileSync(join(provider, "package-lock.json"), join(output, "public-provider-lock.json"));
+    write(join(output, "primary-summary.json"), {
+      summary,
+      timingComplete: true,
+      memory: Object.fromEntries(
+        Object.entries(memory).map(([key, observations]) => {
+          assert.equal(observations.length, 3, "incomplete memory population");
+          return [
+            key,
+            {
+              observedTreeRssKiB: median(observations.map((row) => row.maximumObservedTreeRssKiB)),
+              observedTreePssKiB: median(observations.map((row) => row.maximumObservedTreePssKiB)),
+              scope: observations[0].scope,
+            },
+          ];
+        }),
+      ),
+      correctnessComplete: true,
+      acceptedPerformanceConclusion: false,
+      acceptance:
+        "raw results require source-bound peer review; persistent warm-process and real-project scope remain separate",
+      coldWarmScope: "fresh processes; unmanaged OS caches; no persistent warm cohort",
+    });
+  } finally {
+    if (!cpuAfterRecorded) write(join(output, "cpu-after.json"), runtimeCpuEvidence());
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
