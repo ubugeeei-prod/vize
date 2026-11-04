@@ -35,8 +35,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             {
                 params.extend(names.map(String::from));
             } else if alias.is_ascii() && !alias.contains('\\') {
-                // Preserve the existing SSR scanner and its ordinary output.
-                extract_destructure_params(alias.trim(), &mut params);
+                // Register the same JavaScript names the callback emits.
+                // `index: number` is `index`; a raw annotation never enters scope.
+                let erased = erase_typescript_params(alias.trim());
+                extract_destructure_params(erased.as_deref().unwrap_or(alias.trim()), &mut params);
             }
         }
         self.scoped_params.push(params);
