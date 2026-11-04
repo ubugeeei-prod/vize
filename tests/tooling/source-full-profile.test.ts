@@ -105,3 +105,19 @@ test("actual Rust envelope permits only explicitly requested manual full executi
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("the nested differential workflow receives the explicit full profile", () => {
+  const caller = parse(readRepoFile(".github/workflows/pr-rust-checks.yml"));
+  const callee = parse(readRepoFile(".github/workflows/pr-rust-differential.yml"));
+  assert.equal(
+    caller.jobs["merge-rust-differential"].with["full-profile"],
+    "${{ inputs.full-profile }}",
+  );
+  assert.equal(callee.on.workflow_call.inputs["full-profile"].default, false);
+  for (const job of Object.values(callee.jobs) as Array<{ if: string }>) {
+    assert.equal(
+      job.if,
+      "${{ (github.event_name == 'merge_group' || inputs.full-profile) && inputs.run-rust }}",
+    );
+  }
+});

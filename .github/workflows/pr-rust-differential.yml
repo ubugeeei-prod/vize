@@ -2,6 +2,7 @@ name: Required Rust differential checks
 on:
   workflow_call:
     inputs:
+      full-profile: { type: boolean, default: false }
       run-rust:
         type: boolean
         required: true
@@ -19,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.rust-plan).differentialMatrix }}
-    if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
+    if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && inputs.run-rust }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:

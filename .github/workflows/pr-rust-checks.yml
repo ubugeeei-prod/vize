@@ -28,6 +28,7 @@ jobs:
     if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && inputs.run-rust }}
     uses: ./.github/workflows/pr-rust-differential.yml
     with:
+      full-profile: ${{ inputs.full-profile }}
       run-rust: ${{ inputs.run-rust }}
       rust-plan: ${{ inputs.rust-plan }}
 
