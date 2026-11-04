@@ -1,7 +1,6 @@
 //! Complete scoped semantic oracles for public reports #8752–#8755.
 //! The original Opinionated/router project has a separate acceptance boundary.
 
-#[path = "../../../tests/current_type_documentation.rs"]
 mod current_type_documentation;
 
 use std::path::{Path, PathBuf};

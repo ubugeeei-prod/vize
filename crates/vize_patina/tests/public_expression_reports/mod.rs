@@ -1,6 +1,5 @@
 //! Complete public expression packets in the already selected required-Corsa lane.
 
-#[path = "../current_type_documentation.rs"]
 mod current_type_documentation;
 
 use std::path::{Path, PathBuf};
