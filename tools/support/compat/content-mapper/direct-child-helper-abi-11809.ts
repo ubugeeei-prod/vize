@@ -37,7 +37,14 @@ export function verifyHelperAbiFallbacks(
     assert.equal(original.split(from).length, 2, `${file} unique mutation boundary`);
     write(file, original.replace(from, to));
   };
-  const emptyFrontends = () => frontends.forEach((file) => write(file, "export {};\n"));
+  const legacyFrontends = () =>
+    frontends.forEach((file) =>
+      replace(
+        file,
+        'export type * from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };\n',
+        "",
+      ),
+    );
   const cases: [string, () => void][] = [
     [
       "missing-public-virtual-alias",
@@ -63,11 +70,11 @@ export function verifyHelperAbiFallbacks(
     [
       "legacy-no-generated-types",
       () => {
-        emptyFrontends();
+        legacyFrontends();
         fs.unlinkSync(path.join(sdk, "generated/content-mapper-types.d.ts"));
       },
     ],
-    ["legacy-unexported-types", emptyFrontends],
+    ["legacy-unexported-types", legacyFrontends],
     [
       "legacy-unexported-package",
       () => {
