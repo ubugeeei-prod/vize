@@ -181,11 +181,56 @@ fn admission_reader(body: &[u8], count: usize) -> (AdmissionReader, mpsc::Receiv
     )
 }
 
-struct FailAdmissionOnDrop<'a>(&'a super::WriteProgress);
+#[derive(Default)]
+struct WriterGate {
+    state: std::sync::Mutex<(usize, bool)>,
+    ready: std::sync::Condvar,
+}
 
-impl Drop for FailAdmissionOnDrop<'_> {
+impl WriterGate {
+    fn release(&self) {
+        self.state.lock().unwrap().0 += 1;
+        self.ready.notify_all();
+    }
+
+    fn close(&self) {
+        self.state.lock().unwrap().1 = true;
+        self.ready.notify_all();
+    }
+}
+
+struct FailWriterOnDrop<'a>(&'a WriterGate);
+
+impl Drop for FailWriterOnDrop<'_> {
     fn drop(&mut self) {
-        self.0.fail();
+        self.0.close();
+    }
+}
+
+struct GatedWriter<'a> {
+    gate: &'a WriterGate,
+    written: mpsc::Sender<Vec<u8>>,
+}
+
+impl io::Write for GatedWriter<'_> {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        let mut state = self.gate.state.lock().unwrap();
+        while state.0 == 0 && !state.1 {
+            state = self.gate.ready.wait(state).unwrap();
+        }
+        if state.1 {
+            return Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "controlled writer failure",
+            ));
+        }
+        state.0 -= 1;
+        self.written.send(bytes.to_vec()).unwrap();
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
     }
 }
 
@@ -198,36 +243,41 @@ fn admission_waits_before_reading_unknown_malformed_or_uninitialized_requests() 
     ] {
         for window in [1, 2, 4] {
             let (mut reader, observed) = admission_reader(body, window + 2);
-            let (jobs, _job_receiver) = mpsc::channel();
-            let (done, replies) = mpsc::channel();
-            let progress = super::WriteProgress::new();
+            let gate = WriterGate::default();
+            let (written, frames) = mpsc::channel();
+            let mut writer = GatedWriter {
+                gate: &gate,
+                written,
+            };
             thread::scope(|scope| {
-                let _wake_on_failure = FailAdmissionOnDrop(&progress);
+                let _wake_on_failure = FailWriterOnDrop(&gate);
                 let read = scope.spawn(|| {
-                    super::read_loop(
+                    serve_with_worker_plan(
                         &mut reader,
-                        &jobs,
-                        &done,
-                        &progress,
-                        std::num::NonZeroUsize::new(window).unwrap(),
+                        &mut writer,
+                        thread::Builder::new(),
+                        std::iter::repeat_n(TRANSFORM_WORKER_STACK_BYTES, window),
                     )
                 });
                 for seq in 0..window {
                     assert_eq!(observed.recv_timeout(Duration::from_secs(5)).unwrap(), seq);
                 }
-                assert!(matches!(
-                    observed.recv_timeout(Duration::from_millis(100)),
-                    Err(mpsc::RecvTimeoutError::Timeout)
-                ));
-                let (first_seq, expected) = replies.recv_timeout(Duration::from_secs(5)).unwrap();
-                assert_eq!(first_seq, 0);
-                for seq in 0..window + 2 {
-                    if seq > 0 {
-                        let (actual, frame) = replies.recv_timeout(Duration::from_secs(5)).unwrap();
-                        assert_eq!(actual, seq as u64);
-                        assert_eq!(frame, expected);
+                assert!(
+                    matches!(
+                        observed.recv_timeout(Duration::from_millis(100)),
+                        Err(mpsc::RecvTimeoutError::Timeout)
+                    ),
+                    "mapper read beyond the effective-worker admission window"
+                );
+                let mut expected = None;
+                for _ in 0..window + 2 {
+                    gate.release();
+                    let frame = frames.recv_timeout(Duration::from_secs(5)).unwrap();
+                    if let Some(expected) = &expected {
+                        assert_eq!(&frame, expected);
+                    } else {
+                        expected = Some(frame);
                     }
-                    progress.record(seq as u64 + 1);
                 }
                 read.join().unwrap().unwrap();
             });
@@ -238,25 +288,27 @@ fn admission_waits_before_reading_unknown_malformed_or_uninitialized_requests() 
 #[test]
 fn writer_failure_wakes_admission_without_reading_another_frame() {
     let (mut reader, observed) = admission_reader(br#"{"id":1,"method":"unknown"}"#, 2);
-    let (jobs, _job_receiver) = mpsc::channel();
-    let (done, replies) = mpsc::channel();
-    let progress = super::WriteProgress::new();
+    let gate = WriterGate::default();
+    let (written, _frames) = mpsc::channel();
+    let mut writer = GatedWriter {
+        gate: &gate,
+        written,
+    };
     thread::scope(|scope| {
-        let _wake_on_failure = FailAdmissionOnDrop(&progress);
+        let _wake_on_failure = FailWriterOnDrop(&gate);
         let read = scope.spawn(|| {
-            super::read_loop(
+            serve_with_worker_plan(
                 &mut reader,
-                &jobs,
-                &done,
-                &progress,
-                std::num::NonZeroUsize::MIN,
+                &mut writer,
+                thread::Builder::new(),
+                std::iter::once(TRANSFORM_WORKER_STACK_BYTES),
             )
         });
         assert_eq!(observed.recv_timeout(Duration::from_secs(5)).unwrap(), 0);
-        assert_eq!(replies.recv_timeout(Duration::from_secs(5)).unwrap().0, 0);
-        progress.fail();
+        gate.close();
         let error = read.join().unwrap().unwrap_err();
-        assert_eq!(error.to_string(), "content-mapper writer stopped");
+        assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
+        assert_eq!(error.to_string(), "controlled writer failure");
         assert!(observed.try_recv().is_err());
     });
 }
