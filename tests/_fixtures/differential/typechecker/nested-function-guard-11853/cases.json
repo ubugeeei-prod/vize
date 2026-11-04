@@ -11,6 +11,7 @@
     "NoOuterGuard.vue",
     "UnusedHandler.vue",
     "WrongPayload.vue",
+    "MissingMember.vue",
     "tsconfig.json"
   ],
   "cases": [
@@ -47,7 +48,14 @@
       "expectedCodes": [
         2322
       ]
+    },
+    {
+      "file": "MissingMember.vue",
+      "contract": "genuine missing member without a duplicate render read diagnostic",
+      "expectedCodes": [
+        2339
+      ]
     }
   ],
-  "expectedStdout": "UnusedHandler.vue(8,29): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?\nWrongPayload.vue(8,84): error TS2322: Type '(action: number) => void' is not assignable to type '(action: string) => any'.\n  Types of parameters 'action' and 'action' are incompatible.\n    Type 'string' is not assignable to type 'number'.\n"
+  "expectedStdout": "MissingMember.vue(8,110): error TS2339: Property 'missing' does not exist on type '(action: string) => void'.\nUnusedHandler.vue(8,29): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?\nWrongPayload.vue(8,84): error TS2322: Type '(action: number) => void' is not assignable to type '(action: string) => any'.\n  Types of parameters 'action' and 'action' are incompatible.\n    Type 'string' is not assignable to type 'number'.\n"
 }

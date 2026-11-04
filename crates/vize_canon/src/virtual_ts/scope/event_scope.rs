@@ -74,6 +74,7 @@ pub(super) fn generate_event_handler_scope(
                 scope_id,
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
+                    diagnostic_ownership: ctx.checks.diagnostic_ownership,
                     data,
                     check_emits: ctx.check_options.check_emits,
                     event_type: "any",
@@ -127,6 +128,7 @@ pub(super) fn generate_event_handler_scope(
                 scope_id,
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
+                    diagnostic_ownership: ctx.checks.diagnostic_ownership,
                     data,
                     check_emits: true,
                     event_type,
@@ -201,6 +203,7 @@ pub(super) fn generate_event_handler_scope(
                 scope_id,
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
+                    diagnostic_ownership: ctx.checks.diagnostic_ownership,
                     data,
                     check_emits: true,
                     event_type,
@@ -254,6 +257,7 @@ pub(super) fn generate_event_handler_scope(
                 scope_id,
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
+                    diagnostic_ownership: ctx.checks.diagnostic_ownership,
                     data,
                     check_emits: true,
                     event_type: "any",
@@ -288,6 +292,7 @@ pub(super) fn generate_event_handler_scope(
                 scope_id,
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
+                    diagnostic_ownership: ctx.checks.diagnostic_ownership,
                     data,
                     check_emits: true,
                     event_type,

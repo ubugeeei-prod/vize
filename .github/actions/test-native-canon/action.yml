@@ -307,6 +307,7 @@ runs:
         VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
         VIZE_MIXED_STATIC_REF_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/mixed-script-static-ref-11811
         VIZE_LOOSE_LISTENER_PACKET_DIR: ${{ runner.temp }}/native-snapshot-source/loose-listener-context-11600
+        VIZE_NESTED_FUNCTION_GUARD_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/nested-function-guard-11853
       run: |
         set -uo pipefail
         unset VIZE_TEST_DISABLE_TSGO
@@ -316,6 +317,7 @@ runs:
         cargo test --locked --profile ci -p vize_canon --features legacy --lib virtual_ts::scope::event_handler::contextual_listener::tests::contextual_listener_complete_projection_and_mapping_packets -- --exact --nocapture || mixed_ref_status=1
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused --ignored --exact --nocapture || mixed_ref_status=1
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::protocol::standard_tsgo_mixed_script_static_refs_keep_runtime_reads_and_authored_errors --ignored --exact --nocapture || mixed_ref_status=1
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::nested_function_guard_11853::standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors --ignored --exact --nocapture || mixed_ref_status=1
         exit "$mixed_ref_status"
     - name: Test inherited Options API calls with the authenticated beta checker
       if: ${{ !cancelled() }}

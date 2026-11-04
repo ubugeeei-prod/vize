@@ -178,6 +178,7 @@ pub(super) fn generate_component_handler_scope(
             scope_id,
             &EventHandlerExprContext {
                 expressions_by_scope: ctx.expressions_by_scope,
+                diagnostic_ownership: ctx.checks.diagnostic_ownership,
                 data,
                 check_emits: true,
                 event_type: event_type.as_str(),

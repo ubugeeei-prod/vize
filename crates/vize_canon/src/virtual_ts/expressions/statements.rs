@@ -212,25 +212,7 @@ pub(super) fn generate_expression_statement(
         indent,
         checks,
     );
-    if expr.kind == TemplateExpressionKind::VBind
-        && let Some(collector) = checks.diagnostic_ownership
-        && let Some(owner) = checks
-            .prop_expression_owners
-            .and_then(|owners| owners.get(&(expr.scope_id.as_u32(), expr.start, expr.end)))
-        && let Some(mapping) = mappings.get(first_mapping..).and_then(|rows| {
-            rows.iter().find(|row| {
-                row.src_range
-                    == (template_offset as usize + expr.start as usize
-                        ..template_offset as usize + expr.end as usize)
-            })
-        })
-    {
-        collector.borrow_mut().record_bare_navigation(
-            *owner,
-            mapping.gen_range.clone(),
-            mapping.src_range.clone(),
-        );
-    }
+    super::read_ownership::record(expr, &mappings[first_mapping..], template_offset, checks);
     if !template_binding_access.is_empty() {
         let expression = expression_source_for_typecheck(expr.content.as_str());
         // The same stripped text was emitted above. Retain its original byte
