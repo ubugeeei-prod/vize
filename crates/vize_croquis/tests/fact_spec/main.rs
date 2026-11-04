@@ -37,7 +37,7 @@ fn matrix_dir() -> PathBuf {
 }
 
 #[test]
-fn the_committed_planes_agree_with_the_specs() -> Result<(), vize_carton::CompactString> {
+fn the_committed_planes_agree_with_the_specs() {
     let mut battery = Planes::default();
     for (name, source) in battery::SOURCES {
         run_source(name, source, &mut battery);
@@ -50,7 +50,7 @@ fn the_committed_planes_agree_with_the_specs() -> Result<(), vize_carton::Compac
             .unwrap();
         // Keep the historical 24 facts and separately require the five exact
         // destructured declarations newly visible through authored spans.
-        let added = destructure_census::assert_added_pattern_witnesses()?;
+        let added = destructure_census::assert_added_pattern_witnesses().unwrap();
         assert_eq!(
             (
                 battery.unused.artifacts,
@@ -62,7 +62,7 @@ fn the_committed_planes_agree_with_the_specs() -> Result<(), vize_carton::Compac
     }
     eprintln!("{}", battery.scope_lines("battery"));
     // Keep the old 88 bindings and separately require the nested span-only local.
-    let added_binding = destructure_census::assert_added_span_only_binding()?;
+    let added_binding = destructure_census::assert_added_span_only_binding().unwrap();
     assert_census(&battery, (9, 9, 88 + added_binding), (9, 9, 11), "battery");
 
     let mut ladder = Planes::default();
@@ -133,7 +133,6 @@ fn the_committed_planes_agree_with_the_specs() -> Result<(), vize_carton::Compac
             plane.divergences
         );
     }
-    Ok(())
 }
 
 #[test]

@@ -26,11 +26,18 @@ fn analyze_battery(name: &str) -> Result<(Croquis, CompactString), CompactString
     let descriptor = parse_sfc(source, SfcParseOptions::default())
         .map_err(|error| cstr!("{name}: {error:?}"))?;
     let allocator = Allocator::new();
-    let template = descriptor.template.as_ref().map(|block| {
-        let (root, errors) = Parser::new(&allocator, block.content.as_ref()).parse();
-        assert!(errors.is_empty());
-        root
-    });
+    let template = descriptor
+        .template
+        .as_ref()
+        .map(|block| {
+            let (root, errors) = Parser::new(&allocator, block.content.as_ref()).parse();
+            if errors.is_empty() {
+                Ok(root)
+            } else {
+                Err(cstr!("{name}: invalid template: {errors:?}"))
+            }
+        })
+        .transpose()?;
     let croquis = analyze_sfc_descriptor(
         &descriptor,
         template.as_ref(),
@@ -53,7 +60,11 @@ fn leaf_span(
         .find(anchor)
         .ok_or_else(|| cstr!("missing authored declaration anchor {anchor}"))?
         + prefix;
-    assert_eq!(script.get(start..start + name.len()), Some(name));
+    if script.get(start..start + name.len()) != Some(name) {
+        return Err(cstr!(
+            "{name}: declaration anchor does not select its identifier"
+        ));
+    }
     Ok((
         u32::try_from(start).map_err(|error| cstr!("{error}"))?,
         u32::try_from(start + name.len()).map_err(|error| cstr!("{error}"))?,
@@ -83,10 +94,11 @@ pub(super) fn assert_added_pattern_witnesses() -> Result<u64, CompactString> {
     }
     expected.sort_unstable();
     eprintln!("TS-34 added destructure unused witnesses: {observed:?}");
-    assert_eq!(
-        observed, expected,
-        "only these five pattern declarations supplement the old census"
-    );
+    if observed != expected {
+        return Err(cstr!(
+            "only these five pattern declarations supplement the old census: actual {observed:?}, expected {expected:?}"
+        ));
+    }
     u64::try_from(expected.len()).map_err(|error| cstr!("{error}"))
 }
 
@@ -95,7 +107,9 @@ pub(super) fn assert_added_span_only_binding() -> Result<u64, CompactString> {
     let mut facts = CroquisFacts::new(&croquis);
     let view = facts.prepare::<DestructureReader>();
     let table = view.get::<Bindings>().map_err(|error| cstr!("{error:?}"))?;
-    assert!(table.is_script_setup());
+    if !table.is_script_setup() {
+        return Err(cstr!("the nested props local must belong to setup"));
+    }
     let observed = table
         .iter()
         .filter_map(|(key, fact)| match key {
@@ -112,9 +126,10 @@ pub(super) fn assert_added_span_only_binding() -> Result<u64, CompactString> {
         },
     )];
     eprintln!("TS-34 added span-only binding witness: {observed:?}");
-    assert_eq!(
-        observed, expected,
-        "the nested props local owns only its span"
-    );
+    if observed != expected {
+        return Err(cstr!(
+            "the nested props local owns only its span: actual {observed:?}, expected {expected:?}"
+        ));
+    }
     u64::try_from(observed.len()).map_err(|error| cstr!("{error}"))
 }
