@@ -2,7 +2,7 @@
 //! session.
 
 use serde_json::Value;
-use vize_l0::String;
+use vize_l0::{String, cstr};
 
 use super::CorsaProjectClient;
 
@@ -22,8 +22,13 @@ impl CorsaProjectClient {
 
         let native = renames
             .iter()
-            .map(|(old, new)| (self.editor_document_uri(old), self.editor_document_uri(new)))
-            .collect::<Vec<_>>();
+            .map(|(old, new)| {
+                Ok((
+                    self.rename_document_uri(old)?,
+                    self.rename_document_uri(new)?,
+                ))
+            })
+            .collect::<Result<Vec<_>, String>>()?;
         let native_renames = native
             .iter()
             .map(|(old, new)| (old.as_str(), new.as_str()))
@@ -32,10 +37,8 @@ impl CorsaProjectClient {
             .request_with_editor_lsp_recovery(|session| session.will_rename_files(&native_renames));
         match result {
             Ok(mut edit) => {
-                if let Some(value) = &mut edit
-                    && let Some((request, _)) = renames.first()
-                {
-                    self.remap_query_uris(value, request);
+                if let Some(value) = &mut edit {
+                    self.remap_result_uris(value);
                 }
                 self.editor_lsp_will_rename_supported = Some(true);
                 Ok(edit)
@@ -45,6 +48,15 @@ impl CorsaProjectClient {
                 Ok(None)
             }
             Err(error) => Err(error),
+        }
+    }
+
+    fn rename_document_uri(&mut self, uri: &str) -> Result<String, String> {
+        if self.materialized_project_session {
+            self.materialized_session_document_uri(uri)
+                .ok_or_else(|| cstr!("Cannot materialize rename document: {uri}"))
+        } else {
+            Ok(self.editor_document_uri(uri))
         }
     }
 }

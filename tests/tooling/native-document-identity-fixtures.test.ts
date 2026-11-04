@@ -27,8 +27,11 @@ const actor = nativeDocumentIdentityActor(
 );
 const read: Read = (side, path) => {
   if (side === "base" && path === manifestPath) return Buffer.from(JSON.stringify(beforeManifest));
-  if (side === "base" && Object.hasOwn(originals, path))
-    return Buffer.from(originals[path], "base64");
+  if (side === "base" && Object.hasOwn(originals, path)) {
+    const original = originals[path];
+    assert.ok(typeof original === "string");
+    return Buffer.from(original, "base64");
+  }
   if (side === "head" && actor.has(path)) return actor.get(path)!;
   return fs.existsSync(path) ? fs.readFileSync(path) : null;
 };
@@ -158,7 +161,9 @@ test("the LSP input materializes a complete authored import definition without n
   );
   assert.ok(fixture);
   assert.equal(fixture.requests.length, 1);
-  assert.deepEqual(fixture.requests[0].result, {
+  const [request] = fixture.requests;
+  assert.ok(request);
+  assert.deepEqual(request.result, {
     uri: "${workspace}/src/format.ts",
     range: { start: { line: 0, character: 16 }, end: { line: 0, character: 22 } },
   });

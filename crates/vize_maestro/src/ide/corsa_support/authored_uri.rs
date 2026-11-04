@@ -33,13 +33,13 @@ impl AuthoredUriResolver {
         ctx: &IdeContext<'_>,
         source_path: &std::path::Path,
     ) -> Option<Url> {
-        let source_path = ctx.state.canonical_editor_path(source_path);
+        let physical_path = ctx.state.canonical_editor_path(source_path);
         self.open
-            .get(&source_path)
+            .get(&physical_path)
             .cloned()
             .or_else(|| {
                 let (logical_root, physical_root) = self.workspace.as_ref()?;
-                let relative = source_path.strip_prefix(physical_root).ok()?;
+                let relative = physical_path.strip_prefix(physical_root).ok()?;
                 Url::from_file_path(logical_root.join(relative)).ok()
             })
             .or_else(|| Url::from_file_path(source_path).ok())

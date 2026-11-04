@@ -104,13 +104,22 @@ pub(super) fn remap_protocol_uris(value: &mut Value, mapping: &impl Fn(&str) -> 
                     }
                     "changes" => {
                         if let Some(changes) = item.as_object_mut() {
-                            let replacements = changes
-                                .keys()
-                                .filter_map(|key| mapping(key).map(|mapped| (key.clone(), mapped)))
-                                .collect::<Vec<_>>();
-                            for (old, new) in replacements {
-                                if let Some(edits) = changes.remove(&old) {
-                                    changes.insert(new.as_str().into(), edits);
+                            for (uri, edits) in std::mem::take(changes) {
+                                let target = mapping(&uri)
+                                    .map(|mapped| mapped.as_str().into())
+                                    .unwrap_or(uri);
+                                match changes.entry(target) {
+                                    serde_json::map::Entry::Vacant(entry) => {
+                                        entry.insert(edits);
+                                    }
+                                    serde_json::map::Entry::Occupied(mut entry) => {
+                                        match (entry.get_mut(), edits) {
+                                            (Value::Array(existing), Value::Array(incoming)) => {
+                                                existing.extend(incoming);
+                                            }
+                                            (existing, incoming) => *existing = incoming,
+                                        }
+                                    }
                                 }
                             }
                         }

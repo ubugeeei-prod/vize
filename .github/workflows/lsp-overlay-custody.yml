@@ -131,7 +131,7 @@ jobs:
           mkdir -p "$capture"
           git rev-parse HEAD > "$capture/source.txt"
           set +e
-          cargo test --locked --profile ci -p vize_canon --lib -- lsp_client::editor_lsp::client::tests::hierarchy_items_preserve_unmapped_foreign_documents lsp_client::session::tests::moving_one_spelling_preserves_the_other_native_identity_owner lsp_client::utils::tests::converging_workspace_edit_keys_keep_every_edit_in_each_original_order lsp_client::editor_lsp::file_rename::tests::materialized_renames_share_one_native_namespace_and_keep_each_caller_context --nocapture > "$capture/canon.stdout" 2> "$capture/canon.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib -- lsp_client::editor_lsp::client::tests::hierarchy_items_preserve_unmapped_foreign_documents lsp_client::session::tests::moving_one_spelling_preserves_the_other_native_identity_owner lsp_client::session::tests::releasing_either_normalized_owner_keeps_the_other_until_the_last_close lsp_client::utils::tests::converging_workspace_edit_keys_keep_every_edit_in_each_original_order lsp_client::editor_lsp::file_rename::tests::materialized_renames_share_one_native_namespace_and_keep_each_caller_context --nocapture > "$capture/canon.stdout" 2> "$capture/canon.stderr"
           canon_status=$?
           printf '%s\n' "$canon_status" > "$capture/canon.status"
           cargo test --locked --profile ci -p vize_maestro --lib -- ide::corsa_support::authored_uri::tests::closed_foreign_targets_keep_the_import_path_before_an_open_owner_takes_precedence --nocapture > "$capture/maestro.stdout" 2> "$capture/maestro.stderr"

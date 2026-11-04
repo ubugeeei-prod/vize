@@ -84,10 +84,7 @@ impl CorsaProjectClient {
         self.logical_api_reset_pending |= self.has_project_session();
         self.document_texts.remove(uri);
         self.overlay_versions.remove(uri);
-        if let Some(mapped) = self.session_document_uris.remove(uri) {
-            self.external_document_uris
-                .remove(crate::file_uri::file_uri_identity(&mapped).as_str());
-        }
+        self.forget_session_document_uri(uri);
         // The existing full synchronization sends didClose before the next
         // semantic request. Native readonly fallback then sees the real disk
         // file, or its real absence, without a materialized write or deletion.

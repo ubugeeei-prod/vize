@@ -159,10 +159,11 @@ impl CorsaProjectClient {
             .and_then(Value::as_str)
             .map(String::from)
             .ok_or_else(|| cstr!("Call hierarchy item has no document URI"))?;
-        fields.insert(
-            "uri".into(),
-            Value::String(self.editor_document_uri(&request_uri).as_str().into()),
-        );
+        if self.materialized_project_session
+            && let Some(native) = self.known_editor_document_uri(&request_uri)
+        {
+            fields.insert("uri".into(), Value::String(native.as_str().into()));
+        }
         Ok((request_uri, Value::Object(fields)))
     }
 
@@ -371,17 +372,21 @@ impl CorsaProjectClient {
     /// URI in a materialized project, otherwise the URI itself.
     pub(in crate::lsp_client) fn editor_document_uri(&mut self, uri: &str) -> String {
         if self.materialized_project_session {
-            if let Some(external) = self
-                .external_document_uris
-                .get(crate::file_uri::file_uri_identity(uri).as_str())
-                && let Some(native) = self.session_document_uris.get(external.as_str())
-            {
+            if let Some(native) = self.known_editor_document_uri(uri) {
                 return native.clone();
             }
             self.session_document_uri(uri)
         } else {
             uri.into()
         }
+    }
+
+    fn known_editor_document_uri(&self, uri: &str) -> Option<&String> {
+        self.session_document_uris.get(uri).or_else(|| {
+            self.external_document_uris
+                .get(crate::file_uri::file_uri_identity(uri).as_str())
+                .and_then(|external| self.session_document_uris.get(external.as_str()))
+        })
     }
 
     /// Every retained document under the same identity used by native queries.
