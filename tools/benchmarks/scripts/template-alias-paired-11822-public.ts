@@ -1,3 +1,4 @@
+import { normalHostArguments } from "./template-alias-paired-11822-hosts.ts";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { cpus, availableParallelism, release, totalmem } from "node:os";
@@ -228,16 +229,7 @@ export async function main() {
           const row = await capture(
             join(directory, cachePolicy),
             process.execPath,
-            [
-              host.command,
-              "--project",
-              closure.configFile,
-              "--noEmit",
-              "--incremental",
-              "false",
-              "--pretty",
-              "false",
-            ],
+            normalHostArguments(host.command, closure.configFile),
             workspace,
             {},
             cachePolicy === "reused-owned-cache",
@@ -280,16 +272,7 @@ export async function main() {
       const row = await capture(
         join(directory, "observation"),
         process.execPath,
-        [
-          host.command,
-          "--project",
-          closure.configFile,
-          "--noEmit",
-          "--incremental",
-          "false",
-          "--pretty",
-          "false",
-        ],
+        normalHostArguments(host.command, closure.configFile),
         workspace,
       );
       assert.deepEqual(
@@ -346,17 +329,7 @@ export async function main() {
       const row = await capture(
         join(directory, "observation"),
         process.execPath,
-        [
-          host.command,
-          "--project",
-          closure.configFile,
-          "--noEmit",
-          "--incremental",
-          "false",
-          "--pretty",
-          "false",
-          "--extendedDiagnostics",
-        ],
+        [...normalHostArguments(host.command, closure.configFile), "--extendedDiagnostics"],
         workspace,
       );
       assert.equal(row.status, 1);
@@ -393,17 +366,7 @@ export async function main() {
         mkdirSync(temporary);
         const prefix = join(directory, "observation");
         const row = await observeMemory({
-          command: [
-            process.execPath,
-            host.command,
-            "--project",
-            closure.configFile,
-            "--noEmit",
-            "--incremental",
-            "false",
-            "--pretty",
-            "false",
-          ],
+          command: [process.execPath, ...normalHostArguments(host.command, closure.configFile)],
           cwd: workspace,
           output: prefix,
           hostImage: host.image.path,

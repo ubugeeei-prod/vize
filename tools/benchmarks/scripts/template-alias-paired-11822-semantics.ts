@@ -1,3 +1,4 @@
+import { normalHostArguments } from "./template-alias-paired-11822-hosts.ts";
 import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -91,16 +92,7 @@ export async function qualifySemantics(options: {
       const row = await capture(
         join(directory, "observation"),
         process.execPath,
-        [
-          host.command,
-          "--project",
-          closure.configFile,
-          "--noEmit",
-          "--incremental",
-          "false",
-          "--pretty",
-          "false",
-        ],
+        normalHostArguments(host.command, closure.configFile),
         workspace,
       );
       const packet = semanticPacket(

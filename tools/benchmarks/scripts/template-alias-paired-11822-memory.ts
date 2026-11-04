@@ -215,7 +215,7 @@ export async function observeMemory(options: {
     timingEligible: false,
     requestedIntervalMilliseconds: 25,
     scope:
-      "sampled observed descendants; short-lived processes between samples can be missed; RSS/PSS observed peaks are lower bounds, not continuous maxima",
+      "sampled observed descendants; each RSS/PSS sum is non-atomic across the retained begin/end window; sampling skew, short-lived processes and inter-sample peaks can be missed; neither an exact peak nor a guaranteed bound",
     root,
     known: [...known.values()],
     observedImages: [...images.values()],

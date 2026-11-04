@@ -2,6 +2,27 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { population } from "./template-alias-paired-11822-public.ts";
 import type { Observation } from "./template-alias-paired-11822-types.ts";
+import { normalHostArguments } from "./template-alias-paired-11822-hosts.ts";
+
+void test("normal Go host calls admit the mapper without fast, width or profiling overrides", () => {
+  const args = normalHostArguments("pinned-host", "authored-config.json");
+  assert.deepEqual(args, [
+    "pinned-host",
+    "--project",
+    "authored-config.json",
+    "--runExternalCode",
+    "--noEmit",
+    "--incremental",
+    "false",
+    "--pretty",
+    "false",
+  ]);
+  assert.ok(
+    !args.some((arg) =>
+      /^(?:--fast|--checkers|--extendedDiagnostics|--pprofDir)(?:=|$)/u.test(arg),
+    ),
+  );
+});
 
 void test("incomplete paired populations and invalid resource fields cannot publish medians", () => {
   const rows = [8, 1, 4, 3, 9].map(

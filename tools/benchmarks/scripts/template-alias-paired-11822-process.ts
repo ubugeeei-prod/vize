@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
-import { spawnSync, type SpawnSyncOptions, type SpawnSyncReturns } from "node:child_process";
+import { spawn, spawnSync, type SpawnSyncOptions, type SpawnSyncReturns } from "node:child_process";
 import { closeSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+export function linuxProcessStart(pid: number) {
+  const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
+  const fields = stat
+    .slice(stat.lastIndexOf(")") + 2)
+    .trim()
+    .split(/\s+/u);
+  assert.ok(fields.length >= 20);
+  assert.match(fields[19], /^[0-9]+$/u);
+  return { pid, group: Number(fields[2]), startTicks: fields[19] };
+}
 
 export const campaignBudget = Object.freeze({
   hardMinutes: 60,
@@ -138,4 +149,101 @@ export function assertCampaignEnvironment(): void {
   ]) {
     assert.equal(process.env[key], undefined, `${key} would instrument primary measurements`);
   }
+}
+
+export async function measuredProcess(options: {
+  command: string;
+  args: string[];
+  cwd: string;
+  environment: NodeJS.ProcessEnv;
+  stdout: number;
+  stderr: number;
+  timePath: string;
+  timeoutMilliseconds: number;
+  launch?: typeof spawn;
+  readStart?: typeof linuxProcessStart;
+  signalGroup?: (group: number) => unknown;
+  closeWaitMilliseconds?: number;
+}) {
+  const { command, args, cwd, environment, stdout, stderr, timePath, timeoutMilliseconds } =
+    options;
+  let timedOut = false;
+  const child = (options.launch ?? spawn)(
+    "/usr/bin/time",
+    [
+      "-f",
+      "wall_s=%e\nuser_s=%U\nsystem_s=%S\nmax_rss_kib=%M\nstatus=%x",
+      "-o",
+      timePath,
+      command,
+      ...args,
+    ],
+    {
+      cwd,
+      env: environment,
+      stdio: ["ignore", stdout, stderr],
+      detached: true,
+    },
+  );
+  let status: number | null = null;
+  let signal: NodeJS.Signals | null = null;
+  let error: string | undefined;
+  let root: ReturnType<typeof linuxProcessStart> | undefined;
+  let closeObserved = false;
+  try {
+    assert.ok(child.pid);
+    root = (options.readStart ?? linuxProcessStart)(child.pid);
+    assert.equal(root.group, root.pid);
+  } catch (cause) {
+    error = String(cause);
+  }
+  const killKnownGroup = () => {
+    try {
+      if (!root) {
+        child.kill("SIGKILL");
+        return;
+      }
+      const current = (options.readStart ?? linuxProcessStart)(root.pid);
+      if (current.startTicks === root.startTicks && current.group === root.group)
+        (options.signalGroup ?? ((group: number) => process.kill(group, "SIGKILL")))(-root.group);
+    } catch (cause) {
+      if (!["ENOENT", "ESRCH"].includes((cause as NodeJS.ErrnoException).code ?? ""))
+        error ??= String(cause);
+    }
+  };
+  child.on("error", (cause) => {
+    error ??= String(cause);
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    killKnownGroup();
+  }, timeoutMilliseconds);
+  let fallback: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await new Promise<void>((done) => {
+      child.once("error", () => done());
+      child.once("close", (code, reason) => {
+        closeObserved = true;
+        status = code;
+        signal = reason;
+        done();
+      });
+      fallback = setTimeout(
+        () => {
+          timedOut = true;
+          killKnownGroup();
+          child.unref();
+          done();
+        },
+        timeoutMilliseconds + (options.closeWaitMilliseconds ?? 5000),
+      );
+      if (error) killKnownGroup();
+    });
+  } catch (cause) {
+    error = String(cause);
+  } finally {
+    clearTimeout(timer);
+    clearTimeout(fallback);
+  }
+  return { status, signal, error, timedOut, root, closeObserved };
 }

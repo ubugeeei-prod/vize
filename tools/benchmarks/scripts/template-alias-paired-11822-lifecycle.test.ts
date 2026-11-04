@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { qualifyLifecycle } from "./template-alias-paired-11822-protocol.ts";
 import type { ProtocolMessage } from "./template-alias-paired-11822-types.ts";
+import { decodeFrames } from "./template-alias-paired-11822-custody.ts";
+
+void test("invalid UTF8 protocol bytes cannot be silently replaced before JSON decoding", () => {
+  const body = Buffer.concat([
+    Buffer.from('{"id":1,"result":{"text":"'),
+    Buffer.from([255]),
+    Buffer.from('"}}'),
+  ]);
+  const framed = Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
+  assert.throws(() => decodeFrames(framed));
+});
 
 void test("whole protocol qualification rejects missing initialization, project opens, duplicate and unordered responses", () => {
   const requests = [

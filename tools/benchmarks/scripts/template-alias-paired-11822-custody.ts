@@ -15,8 +15,8 @@ import type {
   Variant,
   WorkspaceClosure,
 } from "./template-alias-paired-11822-types.ts";
-import { remainingBudget } from "./template-alias-paired-11822-process.ts";
-import { spawn, spawnSync } from "node:child_process";
+import { remainingBudget, measuredProcess } from "./template-alias-paired-11822-process.ts";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   closeSync,
@@ -171,7 +171,11 @@ export function decodeFrames(bytes: Buffer): ProtocolMessage[] {
       Number.isSafeInteger(length) && start + length <= bytes.length,
       "truncated protocol body",
     );
-    result.push(JSON.parse(bytes.subarray(start, start + length).toString("utf8")));
+    result.push(
+      JSON.parse(
+        new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(start, start + length)),
+      ),
+    );
     offset = start + length;
   }
   return result;
@@ -242,7 +246,6 @@ export async function capture(
     assert.ok(existsSync(temporary));
   }
   const explicitEnvironment = { ...env, NO_COLOR: "1", XDG_CACHE_HOME: cache, TMPDIR: temporary };
-  let timedOut = false;
   write(join(directory, "process-start.json"), {
     command,
     args,
@@ -252,42 +255,28 @@ export async function capture(
     timeoutMilliseconds,
     sourceHead: process.env.HEAD_SHA,
   });
-  const child = spawn(
-    "/usr/bin/time",
-    [
-      "-f",
-      "wall_s=%e\nuser_s=%U\nsystem_s=%S\nmax_rss_kib=%M\nstatus=%x",
-      "-o",
-      timePath,
-      command,
-      ...args,
-    ],
-    {
-      cwd,
-      env: childEnvironment(explicitEnvironment),
-      stdio: ["ignore", stdout, stderr],
-      detached: true,
-    },
-  );
-  const timer = setTimeout(() => {
-    timedOut = true;
-    if (child.pid) process.kill(-child.pid, "SIGKILL");
-  }, timeoutMilliseconds);
-  let status: number | null = null;
-  let signal: NodeJS.Signals | null = null;
-  let error: string | undefined;
-  try {
-    [status, signal] = await new Promise<[number | null, NodeJS.Signals | null]>((done, fail) => {
-      child.on("error", fail);
-      child.on("close", (...values) => done(values));
+  const { status, signal, error, timedOut, root, closeObserved } = await measuredProcess({
+    command,
+    args,
+    cwd,
+    environment: childEnvironment(explicitEnvironment),
+    stdout,
+    stderr,
+    timePath,
+    timeoutMilliseconds,
+  })
+    .catch((cause: unknown) => ({
+      status: null,
+      signal: null,
+      error: String(cause),
+      timedOut: false,
+      root: undefined,
+      closeObserved: false,
+    }))
+    .finally(() => {
+      closeSync(stdout);
+      closeSync(stderr);
     });
-  } catch (cause) {
-    error = String(cause);
-  } finally {
-    clearTimeout(timer);
-    closeSync(stdout);
-    closeSync(stderr);
-  }
   const observation = {
     command,
     args,
@@ -299,12 +288,15 @@ export async function capture(
     signal,
     timedOut,
     error,
+    root,
+    closeObserved,
     stdout: evidence(stdoutPath),
     stderr: evidence(stderrPath),
     time: existsSync(timePath) ? evidence(timePath) : null,
   };
   write(join(directory, "process.json"), observation);
   assert.equal(error, undefined, "spawn failed; raw process evidence retained");
+  assert.equal(closeObserved, true, "process close unobserved; original status remains unknown");
   assert.equal(signal, null, "process terminated; raw evidence retained");
   assert.equal(timedOut, false);
   const usage = resourceUsage(readFileSync(timePath, "utf8"));
