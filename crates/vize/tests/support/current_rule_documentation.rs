@@ -54,6 +54,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
             "docs/content/rules/type-and-script.md",
             "docs/content/rules/reference/script-no-deprecated-events-api.md",
         ),
+        "script/no-deprecated-dollar-scopedslots-api" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.md",
+        ),
         "a11y/alt-text" => (
             "docs/content/rules/accessibility.md",
             "docs/content/rules/reference/a11y-alt-text.md",
