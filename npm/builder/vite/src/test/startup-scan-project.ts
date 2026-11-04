@@ -97,10 +97,17 @@ export async function startupHost(
   const plugin = resolved.plugins.find((value) => value.name === "vite-plugin-vize");
   const sfcPlugin = resolved.plugins.find((value) => value.name === "vite-plugin-vize:sfc");
   assert.ok(plugin && sfcPlugin);
-  const context = { environment: { getTopLevelConfig: () => resolved } };
+  const watchedFiles: string[] = [];
+  const context = {
+    environment: { getTopLevelConfig: () => resolved },
+    addWatchFile(file: string) {
+      watchedFiles.push(file);
+    },
+  };
   return {
     resolved,
     candidates,
+    watchedFiles,
     start: () => hook(plugin.buildStart).call(context as never, {} as never),
     load: async (file: string, ssr = false) => {
       const id = toVirtualId(file, ssr);

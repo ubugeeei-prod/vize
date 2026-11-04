@@ -36,7 +36,7 @@ use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
     SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
     compile_sfc_for_adapter_with_project, compile_sfc_for_adapter_with_project_and_stage_capture,
-    parse_sfc,
+    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
 };
 use vize_l0::cstr;
 use vize_l0::profile;
@@ -301,6 +301,17 @@ fn compile_file_inner(
                             Some(BuildCapture::from_descriptor(stages, &descriptor)),
                         )
                     })
+                } else if type_project.as_deref().is_none() {
+                    // Keep the ordinary compatibility route when no project authority is needed.
+                    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
+                        &descriptor,
+                        compile_opts,
+                        compiler.template_syntax,
+                        custom_elements,
+                        CodegenOptions::default(),
+                        experimental,
+                    )
+                    .map(|result| (type_project.track(result), None))
                 } else {
                     compile_sfc_for_adapter_with_project(
                         &descriptor,

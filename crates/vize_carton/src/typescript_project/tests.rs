@@ -127,17 +127,17 @@ fn strict_admission_keeps_malformed_and_cycle_failures_distinct_from_absence() {
         ("/project/bad.json", "{"),
     ]);
     let context = CompilerOptionsContext::observed(Path::new("/project"));
-    assert!(
+    assert_eq!(
         context
             .load_flattened(Some(Path::new("/project/invalid.json")), &host)
-            .unwrap_err()
-            .contains("extends must be")
+            .unwrap_err(),
+        "cannot admit tsconfig /project/invalid.json: extends must be a string or an array of strings"
     );
-    assert!(
+    assert_eq!(
         context
             .load_flattened(Some(Path::new("/project/cycle.json")), &host)
-            .unwrap_err()
-            .contains("cycle includes")
+            .unwrap_err(),
+        "compiler configuration cycle includes /project/cycle.json"
     );
     assert!(
         context
@@ -193,21 +193,18 @@ fn default_extends_resolver_observes_package_selection_with_a_pure_reader() {
         .load_flattened(Some(&selected), &host)
         .unwrap();
     assert_eq!(options.options["strict"], true);
-    let observations = host.0.borrow();
-    assert!(
-        observations.contains(&package.join("package.json")),
-        "the winning package.json must invalidate config selection"
-    );
-    assert!(
-        observations.contains(&project.join("node_modules/@scope/config/package.json")),
-        "a nearer previously absent package.json must invalidate config selection"
-    );
-    assert!(
-        observations.contains(&selected),
-        "selected config reads use the explicit observation boundary"
-    );
-    assert!(observations.contains(&package.join("selected.json")));
-    drop(observations);
+    let mut observations = host.0.borrow().clone();
+    observations.sort();
+    observations.dedup();
+    let mut expected = vec![
+        selected.clone(),
+        project.join("node_modules/@scope/config/package.json"),
+        project.join("node_modules/@scope/config/tsconfig.json"),
+        package.join("package.json"),
+        package.join("selected.json"),
+    ];
+    expected.sort();
+    assert_eq!(observations, expected);
     std::fs::write(
         package.join("package.json"),
         r#"{"tsconfig":"replacement.json"}"#,
@@ -234,14 +231,7 @@ fn default_extends_resolver_observes_package_selection_with_a_pure_reader() {
         .load_flattened(Some(&selected), &host)
         .unwrap();
     assert_eq!(nearer_options.options["strict"], true);
-    assert!(
-        nearer_options
-            .input_paths
-            .contains(&nearer.join("nearer.json"))
-    );
-    assert!(
-        !nearer_options
-            .input_paths
-            .contains(&package.join("replacement.json"))
-    );
+    let mut expected_inputs = vec![selected, nearer.join("nearer.json")];
+    expected_inputs.sort();
+    assert_eq!(nearer_options.input_paths, expected_inputs);
 }

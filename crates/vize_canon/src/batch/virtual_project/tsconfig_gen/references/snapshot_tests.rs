@@ -98,18 +98,24 @@ fn ownership_snapshot_options_preserve_read_and_parse_failures_after_repair() {
         if malformed {
             std::fs::write(&config, "{\n").unwrap();
         }
+        let expected = if malformed {
+            format!(
+                "cannot parse tsconfig {}: EOF while parsing an object at line 2 column 0",
+                config.display()
+            )
+        } else {
+            format!(
+                "cannot read tsconfig {}: {}",
+                config.display(),
+                std::fs::read_to_string(&config).unwrap_err()
+            )
+        };
         let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
         let original = snapshot.compiler_options(&config).unwrap_err();
-        assert!(
-            matches!(&original, CorsaError::Configuration(message) if message.starts_with(if malformed { "cannot parse tsconfig " } else { "cannot read tsconfig " }))
-        );
-        if malformed {
-            assert!(
-                original
-                    .to_string()
-                    .ends_with("EOF while parsing an object at line 2 column 0")
-            );
-        }
+        let CorsaError::Configuration(message) = &original else {
+            panic!("expected configuration error: {original}")
+        };
+        assert_eq!(message.as_str(), expected);
         std::fs::write(&config, r#"{"compilerOptions":{"strict":true}}"#).unwrap();
         let frozen = snapshot.compiler_options(&config).unwrap_err();
         assert!(matches!(frozen, CorsaError::Configuration(_)));
@@ -283,20 +289,16 @@ fn ownership_snapshot_observes_inherited_specs_and_package_selection() {
     let source = write(&root, "app/src/App.vue", "<template />");
     let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
     assert_eq!(snapshot.select(&source, TsconfigSourceKind::Typed), app);
-    let observations = snapshot.observations().paths();
-    assert!(
-        observations.contains(&package),
-        "winning package selection must be observed"
-    );
-    assert!(
-        observations.contains(&selected),
-        "inherited membership bytes must be observed"
-    );
-    let nearer = root.join("app/node_modules/@scope/config/package.json");
-    assert!(
-        observations.contains(&nearer),
-        "nearer package absence must be observed"
-    );
+    let mut expected_observations = vec![
+        config.clone(),
+        app.clone(),
+        package,
+        selected,
+        root.join("app/node_modules/@scope/config/package.json"),
+        root.join("app/node_modules/@scope/config/tsconfig.json"),
+    ];
+    expected_observations.sort();
+    assert_eq!(snapshot.observations().paths(), expected_observations);
     assert!(!snapshot.observations().needs_confirmation());
 
     write(
@@ -341,7 +343,9 @@ fn ownership_snapshot_keeps_legacy_invalid_spec_fallback_and_tracks_repairs() {
     let source = write(&root, "src/App.vue", "<template />");
     let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
     assert_eq!(snapshot.select(&source, TsconfigSourceKind::Typed), config);
-    assert!(snapshot.observations().paths().contains(&bad));
+    let mut expected_observations = vec![config.clone(), bad.clone()];
+    expected_observations.sort();
+    assert_eq!(snapshot.observations().paths(), expected_observations);
     write(&root, "bad.json", r#"{"include":["src/**/*"]}"#);
     assert!(snapshot.observations().needs_confirmation());
     let repaired = TsconfigOwnershipSnapshot::capture(&config).unwrap();
@@ -362,12 +366,9 @@ fn ownership_snapshot_retains_absent_reference_observations() {
     let source = write(&root, "src/App.vue", "<template />");
     let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
     assert_eq!(snapshot.select(&source, TsconfigSourceKind::Typed), app);
-    assert!(
-        snapshot
-            .observations()
-            .paths()
-            .contains(&root.join("future.json"))
-    );
+    let mut expected_observations = vec![config.clone(), app.clone(), root.join("future.json")];
+    expected_observations.sort();
+    assert_eq!(snapshot.observations().paths(), expected_observations);
     write(&root, "future.json", r#"{"include":["src/**/*"]}"#);
     assert!(snapshot.observations().needs_confirmation());
     assert!(snapshot.observations().needs_confirmation());

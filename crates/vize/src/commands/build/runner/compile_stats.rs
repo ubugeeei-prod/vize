@@ -10,7 +10,8 @@ use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
     SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc_for_adapter_with_project, parse_sfc,
+    compile_sfc_for_adapter_with_project,
+    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
 };
 use vize_l0::cstr;
 use vize_l0::hash::hash_str;
@@ -249,19 +250,32 @@ pub(super) fn compile_file_stats_with_cache(
         .with_whitespace(path, || {
             profile!(
                 "atelier.sfc.compile",
-                compile_sfc_for_adapter_with_project(
-                    &descriptor,
-                    compile_opts,
-                    compiler.template_syntax,
-                    custom_elements,
-                    CodegenOptions::default(),
-                    SfcScriptOutputMode::InlineTemplate,
-                    SfcCompileExperimentalOptions {
-                        self_component: settings.experimental_self_component,
-                    },
-                    false,
-                    type_project.as_deref(),
-                )
+                if type_project.as_deref().is_none() {
+                    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
+                        &descriptor,
+                        compile_opts,
+                        compiler.template_syntax,
+                        custom_elements,
+                        CodegenOptions::default(),
+                        SfcCompileExperimentalOptions {
+                            self_component: settings.experimental_self_component,
+                        },
+                    )
+                } else {
+                    compile_sfc_for_adapter_with_project(
+                        &descriptor,
+                        compile_opts,
+                        compiler.template_syntax,
+                        custom_elements,
+                        CodegenOptions::default(),
+                        SfcScriptOutputMode::InlineTemplate,
+                        SfcCompileExperimentalOptions {
+                            self_component: settings.experimental_self_component,
+                        },
+                        false,
+                        type_project.as_deref(),
+                    )
+                }
             )
         })
         .and_then(super::compile::check_compile_result)
