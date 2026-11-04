@@ -27,7 +27,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -118,7 +118,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 7,
@@ -129,7 +129,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 8,
@@ -140,7 +140,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 9,
@@ -151,7 +151,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -162,7 +162,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -173,7 +173,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -184,7 +184,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -195,7 +195,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -206,7 +206,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -217,7 +217,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -464,7 +464,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -475,7 +475,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -486,7 +486,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -497,7 +497,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -508,7 +508,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -519,7 +519,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -530,7 +530,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -721,7 +721,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -732,7 +732,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -743,7 +743,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -754,7 +754,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -765,7 +765,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -914,7 +914,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 7,
@@ -925,7 +925,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 8,
@@ -936,7 +936,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 9,
@@ -947,7 +947,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -958,7 +958,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -969,7 +969,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -980,7 +980,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -991,7 +991,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -1002,7 +1002,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -1013,7 +1013,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -1256,7 +1256,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 7,
@@ -1267,7 +1267,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 8,
@@ -1278,7 +1278,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 9,
@@ -1289,7 +1289,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -1300,7 +1300,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -1311,7 +1311,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -1322,7 +1322,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -1333,7 +1333,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -1344,7 +1344,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -1355,7 +1355,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -1653,7 +1653,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -1664,7 +1664,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -1675,7 +1675,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -1686,7 +1686,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -1697,7 +1697,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -1708,7 +1708,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -1719,7 +1719,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,
@@ -1918,7 +1918,7 @@
           "messages": [
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 7,
@@ -1929,7 +1929,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 8,
@@ -1940,7 +1940,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 9,
@@ -1951,7 +1951,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 10,
@@ -1962,7 +1962,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 11,
@@ -1973,7 +1973,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 12,
@@ -1984,7 +1984,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 13,
@@ -1995,7 +1995,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 14,
@@ -2006,7 +2006,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 15,
@@ -2017,7 +2017,7 @@
             },
             {
               "ruleId": "html/no-empty-palpable-content",
-              "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+              "ruleDocsPath": "docs/content/rules/html.md",
               "severity": 2,
               "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
               "line": 16,

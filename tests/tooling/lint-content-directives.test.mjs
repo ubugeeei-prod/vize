@@ -1,4 +1,5 @@
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
+import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -70,7 +71,11 @@ await test("source-built lint matches complete original and configured content-d
       path.join(fixture, "Controls.vue.fixture"),
       path.join(directory, "Controls.vue"),
     );
-    for (const scenario of references.scenarios) {
+    for (const original of references.scenarios) {
+      const scenario = {
+        ...original,
+        expectedCli: currentContentDirectivePacket(original.expectedCli),
+      };
       writeVueConfigFixture(directory, scenario.config);
       for (let pass = 0; pass < 3; pass++) {
         const raw = run([

@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
-import { currentCssCases, currentCssPacket } from "./support/current-css-documentation.ts";
+import { fileURLToPath } from "node:url";
+import {
+  currentCssCases,
+  currentCssPacket,
+  currentCssReport,
+} from "./support/current-css-documentation.ts";
+import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
+import { currentBooleanStylePacket } from "./support/current-boolean-style-documentation.ts";
+import { loadCases, wholeJson } from "./boolean-attribute-fix-reference.mjs";
 import { cliExpected } from "./support/art-lint-public-expectations.mjs";
 
 const oldUrl = "docs/content/rules/musea-and-css.md";
@@ -108,4 +117,170 @@ await test("Art CLI expectations use only the three independently authored docum
     },
   };
   assert.throws(() => cliExpected(foreign), /finite authored Art rule/u);
+});
+
+await test("CSS ID and utility corpora retain every frozen report byte before current-only projection", () => {
+  let count = 0;
+  for (const name of ["css-id-selector-ranges", "css-utility-literal-tokens"]) {
+    const fixture = new URL(`../../crates/vize_patina/tests/fixtures/${name}/`, import.meta.url);
+    const manifest = JSON.parse(fs.readFileSync(new URL("cases.json", fixture), "utf8"));
+    for (const entry of manifest.cases) {
+      const raw = fs.readFileSync(new URL(entry.cliExpected ?? entry.expected, fixture));
+      if (entry.expectedBytes !== undefined) assert.equal(raw.length, entry.expectedBytes);
+      if (entry.expectedSha256 !== undefined) {
+        assert.equal(createHash("sha256").update(raw).digest("hex"), entry.expectedSha256);
+      }
+      const original = JSON.parse(raw.toString("utf8"));
+      const saved = JSON.stringify(original);
+      const authoredCurrent =
+        name === "css-id-selector-ranges" && entry.id === "repeated-compound-ids";
+      if (authoredCurrent) {
+        assert.equal(entry.cliExpected, "repeated-compound-ids.cli.expected.json");
+        assert.equal(raw.length, 2451);
+        assert.equal(
+          createHash("sha256").update(raw).digest("hex"),
+          "5cc3f4660cc685b4a25450a08ff8481f2834494a9dfe9194f70f531740c33337",
+        );
+      }
+      const current = authoredCurrent ? original : currentCssReport(original);
+      assert.equal(JSON.stringify(original), saved);
+      assert.equal(
+        JSON.stringify(current).replaceAll(
+          /docs\/content\/rules\/reference\/css-(?:no-id-selectors|no-utility-classes)\.md/gu,
+          oldUrl,
+        ),
+        authoredCurrent
+          ? saved.replaceAll("docs/content/rules/reference/css-no-id-selectors.md", oldUrl)
+          : saved,
+      );
+      for (const file of current.json) {
+        for (const message of file.messages) {
+          const page =
+            name === "css-id-selector-ranges" ? "css-no-id-selectors" : "css-no-utility-classes";
+          assert.equal(message.ruleDocsPath, `docs/content/rules/reference/${page}.md`);
+        }
+      }
+      count++;
+    }
+  }
+  assert.equal(count, 27);
+});
+
+await test("content directive projection retains the complete authored CLI and LSP corpus", () => {
+  const root = new URL("../../crates/vize_patina/tests/fixtures/issue-8018/", import.meta.url);
+  const source = JSON.parse(fs.readFileSync(new URL("source.json", root), "utf8"));
+  const bytes = fs.readFileSync(new URL("references.json", root));
+  const pin = source.authored.find((entry: { file: string }) => entry.file === "references.json");
+  assert.equal(bytes.length, pin.bytes);
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), pin.sha256);
+  const reference = JSON.parse(bytes.toString("utf8"));
+  const saved = JSON.stringify(reference);
+  assert.equal(reference.scenarios.length, 11);
+  for (const scenario of reference.scenarios) {
+    const current = currentContentDirectivePacket(scenario.expectedCli);
+    for (const file of current) {
+      assert.ok(
+        file !== null &&
+          typeof file === "object" &&
+          "messages" in file &&
+          Array.isArray(file.messages),
+      );
+      for (const message of file.messages) {
+        assert.equal(
+          message.ruleDocsPath,
+          "docs/content/rules/reference/html-no-empty-palpable-content.md",
+        );
+      }
+    }
+    assert.equal(
+      JSON.stringify(current).replaceAll(
+        "docs/content/rules/reference/html-no-empty-palpable-content.md",
+        "docs/content/rules/html.md",
+      ),
+      JSON.stringify(scenario.expectedCli),
+    );
+  }
+  assert.equal(JSON.stringify(reference), saved);
+  for (const ruleDocsPath of [
+    undefined,
+    "docs/content/rules/vue.md",
+    "docs/content/rules/reference/html-no-empty-palpable-content.md",
+  ]) {
+    assert.throws(
+      () =>
+        currentContentDirectivePacket([
+          { messages: [{ ruleId: "html/no-empty-palpable-content", ruleDocsPath }] },
+        ]),
+      /frozen content-directive documentation/u,
+    );
+  }
+  assert.throws(
+    () =>
+      currentContentDirectivePacket([
+        { messages: [{ ruleId: "html/foreign", ruleDocsPath: "docs/content/rules/html.md" }] },
+      ]),
+    /authored content-directive rule/u,
+  );
+});
+
+await test("current boolean/style expectations preserve the whole historical oracle", () => {
+  const { cases } = loadCases(fileURLToPath(new URL("../../", import.meta.url)));
+  const pages = new Map([
+    ["vue/html-self-closing", "vue-html-self-closing"],
+    ["vue/component-name-in-template-casing", "vue-component-name-in-template-casing"],
+    ["vue/v-slot-style", "vue-v-slot-style"],
+    ["vue/no-boolean-attr-value", "vue-no-boolean-attr-value"],
+  ]);
+  const original = currentBooleanStylePacket(wholeJson(cases[0], false, true));
+  const seen = new Set<string>();
+  for (const file of original) {
+    assert.ok(
+      file !== null &&
+        typeof file === "object" &&
+        "messages" in file &&
+        Array.isArray(file.messages),
+    );
+    for (const message of file.messages) {
+      const rule = String(message.ruleId);
+      assert.ok(pages.has(rule));
+      assert.equal(message.ruleDocsPath, `docs/content/rules/reference/${pages.get(rule)}.md`);
+      seen.add(rule);
+    }
+  }
+  assert.equal(seen.size, 4);
+  for (const entry of cases) {
+    for (const after of [false, true]) {
+      const before = wholeJson(entry, after, entry.originalRules);
+      const saved = JSON.stringify(before);
+      const current = currentBooleanStylePacket(before);
+      assert.equal(JSON.stringify(before), saved);
+      assert.equal(
+        JSON.stringify(current).replaceAll(
+          /docs\/content\/rules\/reference\/vue-(?:html-self-closing|component-name-in-template-casing|v-slot-style|no-boolean-attr-value)\.md/gu,
+          "docs/content/rules/vue.md",
+        ),
+        saved,
+      );
+    }
+  }
+  for (const ruleDocsPath of [
+    undefined,
+    "docs/content/rules/html.md",
+    "docs/content/rules/reference/vue-no-boolean-attr-value.md",
+  ]) {
+    assert.throws(
+      () =>
+        currentBooleanStylePacket([
+          { messages: [{ ruleId: "vue/no-boolean-attr-value", ruleDocsPath }] },
+        ]),
+      /frozen boolean\/style documentation/u,
+    );
+  }
+  assert.throws(
+    () =>
+      currentBooleanStylePacket([
+        { messages: [{ ruleId: "vue/foreign", ruleDocsPath: "docs/content/rules/vue.md" }] },
+      ]),
+    /authored boolean\/style rule/u,
+  );
 });
