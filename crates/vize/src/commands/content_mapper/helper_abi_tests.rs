@@ -1,6 +1,6 @@
 //! SDK admission uses complete lowering packets and closed lookup oracles.
 use super::helper_abi_fixture::{InstalledSdk, Mode};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 #[test]
 fn intact_sdk_keeps_the_shared_lowering() {
