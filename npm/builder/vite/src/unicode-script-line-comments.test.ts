@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname } from "node:path";
+import { basename, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
@@ -14,8 +14,20 @@ const root = new URL(
 const nativeEntry = new URL("../../../native/index.js", import.meta.url);
 const fromNative = createRequire(nativeEntry);
 const native = fromNative(fileURLToPath(nativeEntry)) as typeof import("@vizejs/native");
+const { readActiveNativePreparation } = fromNative("./scripts/test-preparation.mjs") as {
+  readActiveNativePreparation(
+    this: void,
+    directory: string,
+  ): {
+    head: string;
+    tree: string;
+    workingDiff: string;
+    binding: string;
+    sha256: string;
+  } | null;
+};
 
-test("#11798 real NAPI preserves all 36 scripts and complete module shapes", () => {
+void test("#11798 real NAPI preserves all 36 scripts and complete module shapes", () => {
   const bindings = Object.values(fromNative.cache).filter(
     (module) =>
       module?.filename.endsWith(".node") && module.exports.compileSfc === native.compileSfc,
@@ -27,14 +39,32 @@ test("#11798 real NAPI preserves all 36 scripts and complete module shapes", () 
     cwd: fileURLToPath(new URL("../../../../", import.meta.url)),
     encoding: "utf8",
   }).trim();
-  if (process.env.GITHUB_SHA) assert.equal(checkout, process.env.GITHUB_SHA);
+  const preparation = readActiveNativePreparation(dirname(binding));
+  // The event may identify a synthetic merge while this job selects the PR head.
+  // The live producer witness verifies the actual checkout, tree and image.
+  if (process.env.GITHUB_ACTIONS === "true") {
+    assert.notEqual(preparation, null, "CI requires the live source-native preparation witness");
+  }
+  const image = readFileSync(binding);
   const custody = {
     checkout,
+    eventSha: process.env.GITHUB_SHA ?? null,
+    preparation,
     binding,
-    binarySha256: createHash("sha256").update(readFileSync(binding)).digest("hex"),
+    binarySha256: createHash("sha256").update(image).digest("hex"),
     token: native.getNativeBuildToken(),
   };
+  if (preparation) {
+    assert.equal(preparation.head, checkout);
+    assert.equal(preparation.binding, basename(binding));
+    assert.equal(preparation.sha256, custody.binarySha256);
+  }
   assert.match(custody.token!, /^[0-9a-f]{32}$/);
+  assert.equal(
+    image.includes(Buffer.from(custody.token!)),
+    true,
+    "loaded token belongs to this image",
+  );
   const registration = JSON.parse(readFileSync(new URL("corpus.json", root), "utf8"));
   const bytes = readFileSync(new URL(registration.path, root));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), registration.sha256);

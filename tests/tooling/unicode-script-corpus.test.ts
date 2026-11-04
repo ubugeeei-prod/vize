@@ -9,7 +9,7 @@ const root = new URL(
   import.meta.url,
 );
 
-test("#11798 physical corpus pins 18 valid JavaScript sources in both targets", () => {
+void test("#11798 physical corpus pins 18 valid JavaScript sources in both targets", () => {
   const registration = JSON.parse(readFileSync(new URL("corpus.json", root), "utf8"));
   const bytes = readFileSync(new URL(registration.path, root));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), registration.sha256);

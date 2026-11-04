@@ -25,7 +25,7 @@ const binary = join(repository, binaryRelativePath());
 const receipt = JSON.parse(readFileSync(`${binary}.differential-build.json`, "utf8"));
 validateBuildReceipt(receipt, expectedBuildIdentity(repository));
 
-test("#11798 actual source CLI preserves all 36 authored script modules", () => {
+void test("#11798 actual source CLI preserves all 36 authored script modules", () => {
   assert.equal(corpus.cases.length, 36);
   const observations = [];
   const project = mkdtempSync(join(tmpdir(), "vize-unicode-comments-11798-"));
