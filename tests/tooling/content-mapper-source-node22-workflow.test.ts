@@ -6,7 +6,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { planAffectedJs } from "../../tools/support/compat/github/plan-affected-js.ts";
+import {
+  planAffectedJs,
+  readJsWorkspace,
+} from "../../tools/support/compat/github/plan-affected-js.ts";
 import { jsInstallFilters } from "../../tools/support/compat/github/install-js-checks.ts";
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
@@ -40,11 +43,7 @@ function required(name: string): Step {
 }
 
 test("source reporter inputs select the existing native UI dependency closure", () => {
-  const workspace = [
-    { name: "@vizejs/native", path: "npm/native", dependencies: [] },
-    { name: "@vizejs/ui", path: "npm/ui", dependencies: ["@vizejs/native"] },
-    { name: "@vizejs/fresco-native", path: "npm/fresco-native", dependencies: [] },
-  ];
+  const workspace = readJsWorkspace(root);
   for (const file of actorInputs) {
     const selected = planAffectedJs(workspace, [file]);
     assert.equal(selected.scope, "affected", file);
@@ -76,8 +75,6 @@ test("one existing UI step builds only CLI JavaScript and calls the strict sourc
     steps.indexOf(proof) >
       steps.indexOf(required("Verify whole source CSS API maps with the built native image")),
   );
-  assert.doesNotMatch(proof.run!, /build:ci|cargo |setup-node|\|\| true/);
-  assert.equal(proof.run!.split("\n").filter((line) => line.includes(".mjs")).length, 1);
 });
 
 test("source reporter raw archives and receipts survive failure and cancellation", () => {
@@ -106,7 +103,7 @@ test("both actor sources and their workflow select this source routing law", () 
   }
 });
 
-test("the actual workflow command preserves a failed pack and a failed consumer", () => {
+test("the actual workflow rejects extra builds and preserves failed phase outputs", () => {
   const proof = required(proofName);
   assert.ok(proof.run);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reporter-route-"));
@@ -116,7 +113,12 @@ test("the actual workflow command preserves a failed pack and a failed consumer"
     fs.mkdirSync(path.join(directory, "npm/cli"), { recursive: true });
     fs.writeFileSync(
       path.join(bin, "vp"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" > "$MOCK_PACK"\nprintf "controlled pack stdout\\n"\nprintf "controlled pack stderr\\n" >&2\nexit "$PACK_STATUS"\n',
+      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_PACK"\nif [ "$#" -ne 1 ] || [ "$1" != "pack" ]; then exit 91; fi\nprintf "controlled pack stdout\\n"\nprintf "controlled pack stderr\\n" >&2\nexit "$PACK_STATUS"\n',
+      { mode: 0o755 },
+    );
+    fs.writeFileSync(
+      path.join(bin, "cargo"),
+      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_CARGO"\nexit 92\n',
       { mode: 0o755 },
     );
     fs.writeFileSync(
@@ -127,6 +129,8 @@ test("the actual workflow command preserves a failed pack and a failed consumer"
     const args = path.join(directory, "args.txt");
     const pack = path.join(directory, "pack.txt");
     const producer = path.join(directory, "producer.txt");
+    const cargo = path.join(directory, "cargo.txt");
+    const output = path.join(directory, "direct-child-props-source-11809");
     const env = {
       ...process.env,
       PATH: `${bin}:/usr/bin:/bin`,
@@ -134,18 +138,56 @@ test("the actual workflow command preserves a failed pack and a failed consumer"
       MOCK_ARGS: args,
       MOCK_PACK: pack,
       MOCK_PRODUCER: producer,
+      MOCK_CARGO: cargo,
       PACK_STATUS: "0",
     };
-    const run = () =>
-      spawnSync("/bin/bash", ["-e", "-o", "pipefail", "-c", proof.run!], {
+    const run = (program: string) => {
+      for (const file of [args, pack, producer, cargo]) fs.rmSync(file, { force: true });
+      fs.rmSync(output, { recursive: true, force: true });
+      return spawnSync("/bin/bash", ["-e", "-o", "pipefail", "-c", program], {
         cwd: directory,
         env,
         encoding: "utf8",
       });
-    assert.equal(run().status, 23);
-    assert.equal(fs.readFileSync(producer, "utf8"), "producer receipt\n");
-    assert.equal(fs.readFileSync(pack, "utf8"), "pack\n");
-    const output = path.join(directory, "direct-child-props-source-11809");
+    };
+    const assertConsumerFailure = (program: string) => {
+      const result = run(program);
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 23);
+      assert.equal(fs.readFileSync(producer, "utf8"), "producer receipt\n");
+      assert.equal(fs.readFileSync(pack, "utf8"), "pack\n");
+      assert.equal(fs.existsSync(cargo), false, "the consumer must not start a Rust build");
+      assert.equal(
+        fs.readFileSync(path.join(output, "cli-pack.stdout"), "utf8"),
+        "controlled pack stdout\n",
+      );
+      assert.equal(
+        fs.readFileSync(path.join(output, "cli-pack.stderr"), "utf8"),
+        "controlled pack stderr\n",
+      );
+      assert.deepEqual(fs.readFileSync(args, "utf8").trim().split("\n"), [
+        actor,
+        "--capture",
+        output,
+      ]);
+      assert.equal(fs.readFileSync(path.join(output, "receipt.json"), "utf8"), "failed outcome\n");
+    };
+    assertConsumerFailure(proof.run);
+    for (const injected of [
+      "vp build:ci",
+      "vp build:ci || true",
+      "vp pack",
+      "cargo build",
+      "cargo build || true",
+    ]) {
+      assert.throws(() => assertConsumerFailure(`${injected}\n${proof.run}`), injected);
+    }
+    env.PACK_STATUS = "17";
+    assert.equal(run(proof.run).status, 17);
+    assert.equal(fs.existsSync(args), false);
+    assert.equal(fs.existsSync(cargo), false);
+    assert.equal(fs.existsSync(path.join(output, "receipt.json")), false);
     assert.equal(
       fs.readFileSync(path.join(output, "cli-pack.stdout"), "utf8"),
       "controlled pack stdout\n",
@@ -154,16 +196,6 @@ test("the actual workflow command preserves a failed pack and a failed consumer"
       fs.readFileSync(path.join(output, "cli-pack.stderr"), "utf8"),
       "controlled pack stderr\n",
     );
-    assert.deepEqual(fs.readFileSync(args, "utf8").trim().split("\n"), [
-      actor,
-      "--capture",
-      output,
-    ]);
-    assert.equal(fs.readFileSync(path.join(output, "receipt.json"), "utf8"), "failed outcome\n");
-    fs.unlinkSync(args);
-    env.PACK_STATUS = "17";
-    assert.equal(run().status, 17);
-    assert.equal(fs.existsSync(args), false);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
