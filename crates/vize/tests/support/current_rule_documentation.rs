@@ -118,6 +118,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
             "docs/content/rules/vue.md",
             "docs/content/rules/reference/vue-no-unused-properties.md",
         ),
+        "vue/no-unused-components" => (
+            "docs/content/rules/vue.md",
+            "docs/content/rules/reference/vue-no-unused-components.md",
+        ),
         "vue/no-use-v-else-with-v-for" => (
             "docs/content/rules/vue.md",
             "docs/content/rules/reference/vue-no-use-v-else-with-v-for.md",
