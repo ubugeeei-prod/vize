@@ -122,3 +122,188 @@ fn partial_worker_pool_preserves_complete_transform_replies() {
     assert!(super::read_frame(&mut reader).unwrap().is_none());
     println!("partial pool: requested=2 effective=1; complete transform replies match normal pool");
 }
+
+struct AdmissionReader {
+    frames: Vec<Cursor<Vec<u8>>>,
+    current: usize,
+    announced: bool,
+    admitted: mpsc::Sender<usize>,
+}
+
+impl io::BufRead for AdmissionReader {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        while self.current < self.frames.len()
+            && self.frames[self.current].position()
+                == self.frames[self.current].get_ref().len() as u64
+        {
+            self.current += 1;
+            self.announced = false;
+        }
+        if self.current == self.frames.len() {
+            return Ok(&[]);
+        }
+        if !self.announced {
+            self.admitted.send(self.current).unwrap();
+            self.announced = true;
+        }
+        io::BufRead::fill_buf(&mut self.frames[self.current])
+    }
+
+    fn consume(&mut self, amount: usize) {
+        if amount > 0 {
+            io::BufRead::consume(&mut self.frames[self.current], amount);
+        }
+    }
+}
+
+impl io::Read for AdmissionReader {
+    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
+        let available = io::BufRead::fill_buf(self)?;
+        let count = available.len().min(output.len());
+        output[..count].copy_from_slice(&available[..count]);
+        io::BufRead::consume(self, count);
+        Ok(count)
+    }
+}
+
+fn admission_reader(body: &[u8], count: usize) -> (AdmissionReader, mpsc::Receiver<usize>) {
+    let mut frame = format!("Content-Length: {}\r\n\r\n", body.len()).into_bytes();
+    frame.extend_from_slice(body);
+    let (admitted, observed) = mpsc::channel();
+    (
+        AdmissionReader {
+            frames: (0..count).map(|_| Cursor::new(frame.clone())).collect(),
+            current: 0,
+            announced: false,
+            admitted,
+        },
+        observed,
+    )
+}
+
+#[test]
+fn admission_waits_before_reading_unknown_malformed_or_uninitialized_requests() {
+    for body in [
+        &br#"{"id":1,"method":"unknown"}"#[..],
+        &b"{"[..],
+        &br#"{"id":1,"method":"transform","params":{}}"#[..],
+    ] {
+        for window in [1, 2, 4] {
+            let (mut reader, observed) = admission_reader(body, window + 2);
+            let (jobs, _job_receiver) = mpsc::channel();
+            let (done, replies) = mpsc::channel();
+            let progress = super::WriteProgress::new();
+            thread::scope(|scope| {
+                let read = scope.spawn(|| {
+                    super::read_loop(
+                        &mut reader,
+                        &jobs,
+                        &done,
+                        &progress,
+                        std::num::NonZeroUsize::new(window).unwrap(),
+                    )
+                });
+                for seq in 0..window {
+                    assert_eq!(observed.recv_timeout(Duration::from_secs(5)).unwrap(), seq);
+                }
+                assert!(matches!(
+                    observed.recv_timeout(Duration::from_millis(100)),
+                    Err(mpsc::RecvTimeoutError::Timeout)
+                ));
+                let (first_seq, expected) = replies.recv_timeout(Duration::from_secs(5)).unwrap();
+                assert_eq!(first_seq, 0);
+                for seq in 0..window + 2 {
+                    if seq > 0 {
+                        let (actual, frame) = replies.recv_timeout(Duration::from_secs(5)).unwrap();
+                        assert_eq!(actual, seq as u64);
+                        assert_eq!(frame, expected);
+                    }
+                    progress.record(seq as u64 + 1);
+                }
+                read.join().unwrap().unwrap();
+            });
+        }
+    }
+}
+
+#[test]
+fn writer_failure_wakes_admission_without_reading_another_frame() {
+    let (mut reader, observed) = admission_reader(br#"{"id":1,"method":"unknown"}"#, 2);
+    let (jobs, _job_receiver) = mpsc::channel();
+    let (done, replies) = mpsc::channel();
+    let progress = super::WriteProgress::new();
+    thread::scope(|scope| {
+        let read = scope.spawn(|| {
+            super::read_loop(
+                &mut reader,
+                &jobs,
+                &done,
+                &progress,
+                std::num::NonZeroUsize::MIN,
+            )
+        });
+        assert_eq!(observed.recv_timeout(Duration::from_secs(5)).unwrap(), 0);
+        assert_eq!(replies.recv_timeout(Duration::from_secs(5)).unwrap().0, 0);
+        progress.fail();
+        let error = read.join().unwrap().unwrap_err();
+        assert_eq!(error.to_string(), "content-mapper writer stopped");
+        assert!(observed.try_recv().is_err());
+    });
+}
+
+#[test]
+fn admission_preserves_metadata_barriers_errors_and_complete_transform_frames() {
+    let packets = [
+        json!({"id":1,"method":"initialize","params":{"positionEncodings":["utf-8"]}}),
+        json!({"id":2,"method":"openProject","params":{"configFileName":"","projectHandle":"bounded"}}),
+        json!({"id":4,"method":"unknown"}),
+        json!({"id":5,"method":"transform","params":{"fileName":"/project/Bounded.vue","projectHandle":"bounded","content":"<template><p>雪🌸</p></template>"}}),
+        json!({"id":6,"method":"closeProject","params":{"projectHandle":"bounded"}}),
+        json!({"id":7,"method":"transform","params":{"fileName":"/project/Bounded.vue","projectHandle":"bounded","content":"<template>closed</template>"}}),
+    ];
+    let mut input = Vec::new();
+    for (index, packet) in packets.iter().enumerate() {
+        if index == 2 {
+            input.extend_from_slice(b"Content-Length: 1\r\n\r\n{");
+        }
+        input.extend(super::encode_frame(packet).unwrap());
+    }
+    let (_, expected) = bounded_plan(
+        thread::Builder::new(),
+        vec![TRANSFORM_WORKER_STACK_BYTES],
+        input.clone(),
+    )
+    .unwrap();
+    let (_, actual) = bounded_plan(
+        thread::Builder::new(),
+        vec![TRANSFORM_WORKER_STACK_BYTES; 2],
+        input,
+    )
+    .unwrap();
+    assert_eq!(actual, expected);
+    let mut reader = Cursor::new(actual);
+    let mut replies = Vec::<Value>::new();
+    while let Some(body) = super::read_frame(&mut reader).unwrap() {
+        replies.push(serde_json::from_slice(&body).unwrap());
+    }
+    assert_eq!(
+        replies
+            .iter()
+            .map(|reply| reply["id"].clone())
+            .collect::<Vec<_>>(),
+        vec![
+            json!(1),
+            json!(2),
+            Value::Null,
+            json!(4),
+            json!(5),
+            json!(6),
+            json!(7)
+        ]
+    );
+    assert_eq!(replies[2]["error"]["code"], -32700);
+    assert_eq!(replies[3]["error"]["code"], -32601);
+    assert!(!replies[4]["result"]["text"].as_str().unwrap().is_empty());
+    assert_eq!(replies[5]["result"], Value::Null);
+    assert_eq!(replies[6]["error"]["code"], -32602);
+}
