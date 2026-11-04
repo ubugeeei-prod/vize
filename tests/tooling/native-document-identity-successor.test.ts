@@ -251,8 +251,8 @@ test("the project-import successor extends the published pair and authenticates 
       : read(side, path);
   assert.deepEqual(validate(appendedReader, retained).ids, [NATIVE_PROJECT_IMPORT_SUCCESSOR_ID]);
   for (const path of [
-    "crates/vize_canon/src/lsp_client/lifecycle_setup.rs",
     "crates/vize_canon/src/lsp_client/lifecycle/workspace/initial_project_tests.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/project_identity.rs",
   ]) {
     assert.throws(
       () => validate(changed("base", path)),

@@ -41,16 +41,16 @@ const profiles: readonly Profile[] = [
   },
   {
     id: NATIVE_PROJECT_IMPORT_SUCCESSOR_ID,
-    source: "0d49c54d229b4a7dbf660275bf00beb5b71e21a9",
-    tree: "2786efae7e9be8ed7e7d66b9e6b805be32cd0226",
+    source: "622262a7448d637ca2f10888c168615c29c950f9",
+    tree: "2c4e59b254e78e3b1b7578b9a463c38b3f3665ca",
     base: "d7f0daf8a1516afe27fcc79e665a94b3b3bf02e4",
     path: "tests/_fixtures/differential/typechecker/native-document-identity-11586/project-import-source.json.gz",
-    sha256: "af5a7832685b8d2e0f887abae9a2fd8bc3c655df6d7ce3ede231cdab52d45f28",
+    sha256: "20bd121b07a9ad03a98d69e2ece9f217702425e79afbb29276cb0b5ef34d1eca",
   },
 ];
 const projectImportPaths = [
-  "crates/vize_canon/src/lsp_client/lifecycle_setup.rs",
   "crates/vize_canon/src/lsp_client/lifecycle/workspace/initial_project_tests.rs",
+  "crates/vize_canon/src/lsp_client/editor_lsp/project_identity.rs",
 ] as const;
 const hash = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
 function object(value: unknown): Record<string, unknown> {
@@ -216,14 +216,14 @@ export function newNativeIdentitySuccessor(
   if (current.length === 3) {
     for (const [path, selectors] of [
       [
-        projectImportPaths[0],
+        "crates/vize_canon/src/lsp_client/session/logical.rs",
         [
-          "materialized_root_dirs_keep_the_selected_chain_order_and_authored_paths",
-          "invalid_authored_root_dirs_are_not_replaced_by_a_valid_fallback",
+          "an_independent_non_authored_owner_is_not_promoted_to_logical_authority",
+          "a_missing_attached_snapshot_is_an_error_not_accepted_logical_authority",
         ],
       ],
       [
-        projectImportPaths[1],
+        projectImportPaths[0],
         ["native_first_materialized_editor_matches_existing_activation_and_delta"],
       ],
     ] as const) {
