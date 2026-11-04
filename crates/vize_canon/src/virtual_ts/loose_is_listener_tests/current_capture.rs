@@ -7,8 +7,12 @@ use std::path::{Path, PathBuf};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 
+fn hex(bytes: &[u8]) -> std::string::String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
 fn digest(bytes: &[u8]) -> std::string::String {
-    format!("{:x}", Sha256::digest(bytes))
+    hex(Sha256::digest(bytes).as_slice())
 }
 
 fn binary_digest(path: &Path) -> io::Result<std::string::String> {
@@ -22,7 +26,7 @@ fn binary_digest(path: &Path) -> io::Result<std::string::String> {
         }
         digest.update(&buffer[..read]);
     }
-    Ok(format!("{:x}", digest.finalize()))
+    Ok(hex(digest.finalize().as_slice()))
 }
 
 fn variable(name: &str) -> io::Result<std::string::String> {
