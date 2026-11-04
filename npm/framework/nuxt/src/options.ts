@@ -16,7 +16,7 @@ export {
   unsupportedNuxtVueCompilerOptions,
 } from "./compiler-option-bridge.ts";
 
-export type VizeNuxtMajorVersion = 2 | 3 | 4;
+export type VizeNuxtMajorVersion = 2 | 3 | 4 | 5;
 
 export interface VizeNuxtCompatibilityOptions {
   /**

@@ -13,6 +13,9 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts
+      - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
+      - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts
+      - tests/tooling/nuxt5-dev-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -53,6 +56,9 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts
+      - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
+      - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts
+      - tests/tooling/nuxt5-dev-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -267,6 +273,19 @@ jobs:
           VIZE_NUXT_SOURCE_NODE: ${{ steps.nuxt-source-runtime.outputs.path }}
           VIZE_NUXT_SOURCE_NODE_SHA256: ${{ steps.nuxt-source-runtime.outputs.sha256 }}
         run: '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance" "$(command -v node)"'
+      - name: Verify Nitro plugin ownership and frozen development inputs
+        run: node --test npm/framework/nuxt/src/server-plugins.test.ts npm/framework/nuxt/src/builder.test.ts tests/tooling/nuxt5-dev-runtime.test.ts
+      - name: Install the frozen Nuxt 5 development reproduction
+        working-directory: tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/nuxt5-dev-runtime-proof"
+          npm ci --legacy-peer-deps --no-audit --no-fund 2>&1 | tee "$RUNNER_TEMP/nuxt5-dev-runtime-proof/install.log"
+      - name: Verify source-bound Nuxt 5 development stylesheets and hydration
+        env:
+          VIZE_NUXT_SOURCE_NODE: ${{ steps.nuxt-source-runtime.outputs.path }}
+          VIZE_NUXT_SOURCE_NODE_SHA256: ${{ steps.nuxt-source-runtime.outputs.sha256 }}
+        run: '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts "$RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance" "$(command -v node)"'
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -280,4 +299,5 @@ jobs:
             ${{ runner.temp }}/vite-relative-glob-proof
             ${{ runner.temp }}/javascript-workspace-proof
             ${{ runner.temp }}/nuxt5-runtime-proof
+            ${{ runner.temp }}/nuxt5-dev-runtime-proof
           if-no-files-found: ignore

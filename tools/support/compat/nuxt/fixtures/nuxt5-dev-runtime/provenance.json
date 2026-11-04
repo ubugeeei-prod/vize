@@ -1,0 +1,27 @@
+{
+  "issue": 11795,
+  "scope": "Derived controlled stylesheet project on the unchanged reported Nightly dependency cohort; source dist/native qualification is separate from published baseline metadata",
+  "reportedNode": "26.13.0",
+  "versions": {
+    "nuxt": "5.0.0-2611031025-9496b7e",
+    "nitro": "3.0.261029-rc",
+    "vite": "8.3.5",
+    "vue": "3.5.44",
+    "@vizejs/nuxt": "0.676.0",
+    "@vizejs/vite-plugin": "0.676.0",
+    "@vizejs/native": "0.676.0",
+    "vize": "0.676.0"
+  },
+  "baselineLock": "../nuxt5-runtime-build/package-lock.json",
+  "baselineLockSha256": "24350323b034f09c82e747aae7c5f0149e4b0799a92569e0099f4ab16e718442",
+  "files": {
+    "app/app.vue": "7ca22725e15f47afd0a4843f126edf5f2f1c600128cda3e72d695d3ca38db12c",
+    "app/assets/stylesheet-control.css": "6df4c489376f24d76aa63349d7890909665f301507bed9afc2ab674a2a2ad689",
+    "modules/runtime/stylesheet-observer.nitro2.ts": "935c29bf43479b964a7f4c9cb7ea71277da29a3d1ca42628433230bafdcd1a8f",
+    "modules/runtime/stylesheet-observer.nitro3.ts": "935c29bf43479b964a7f4c9cb7ea71277da29a3d1ca42628433230bafdcd1a8f",
+    "modules/stylesheet-observer.ts": "4bc95302208b14fdf8d6b3318417c012fddcdcc8ba593532cde9a13e3bf19dc6",
+    "nuxt.config.ts": "49526c51e7686a16543020af3653f0115e829280e4fe2a27cebb96901db02912",
+    "package-lock.json": "24350323b034f09c82e747aae7c5f0149e4b0799a92569e0099f4ab16e718442",
+    "package.json": "51a8434ceade5e1e89fe3f03104d0d0063c41e1b3278e69e8abcf9546152bbd6"
+  }
+}
