@@ -36,6 +36,7 @@ pub(crate) use reference_paths::validate_reference_paths;
 pub(crate) mod generic_parameters;
 pub use generic_parameters::{GenericParameters, authored_generic_range};
 mod helpers;
+pub use helpers::shared_types::SHARED_VIRTUAL_TYPE_EXPORTS;
 mod import_meta;
 pub mod incremental;
 #[cfg(test)]

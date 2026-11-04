@@ -21,6 +21,8 @@ impl SharedTypeRef {
 
 macro_rules! shared_type_refs {
     ($($name:ident => ($embedded:literal, $exported:literal)),+ $(,)?) => {
+        /// Public SDK exports consumed by native shared virtual modules.
+        pub const SHARED_VIRTUAL_TYPE_EXPORTS: &[&str] = &[$($exported),+];
         $(
             pub(crate) const $name: SharedTypeRef = SharedTypeRef {
                 embedded: $embedded,
