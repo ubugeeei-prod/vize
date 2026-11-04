@@ -47,14 +47,22 @@ pub(super) fn generate_inferred_emit_args(
 ) -> Option<String> {
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
-    if usage.spread_props.is_empty()
-        && !usage.props.iter().any(|prop| {
+    let dynamic_alias =
+        crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage);
+    let dynamic_component = dynamic_alias
+        || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
+    // `:is` is not a passed prop. A listener-only `<component :is>` still has
+    // to call the factory: a loose target returns `$LooseEmitProps` (`[]`),
+    // which leaves `(v)` implicitly `any`. Any other component needs a valued
+    // prop or a spread before that call infers anything.
+    let has_inference_prop = !usage.spread_props.is_empty()
+        || usage.props.iter().any(|prop| {
             !prop.name_is_dynamic
                 && prop.name.as_str() != "key"
                 && prop.name.as_str() != "ref"
                 && prop.value.is_some()
-        })
-    {
+        });
+    if !has_inference_prop && !dynamic_component {
         return None;
     }
 
@@ -70,10 +78,6 @@ pub(super) fn generate_inferred_emit_args(
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
     let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
         .select(ctx.hoist_shared_preamble);
-    let dynamic_alias =
-        crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage);
-    let dynamic_component = dynamic_alias
-        || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
     let guard = usage
         .vif_guard
         .as_ref()
@@ -147,7 +151,10 @@ pub(super) fn generate_inferred_emit_args(
     } else {
         Vec::new()
     };
-    let gated = ctx.gated_inference
+    // An empty literal is not a gated candidate: the gate aliases are emitted
+    // only when a valued prop exists, and a loose `:is` must keep the marker.
+    let gated = has_inference_prop
+        && ctx.gated_inference
         && dynamic_alias
         && guard.is_none()
         && usage.spread_props.is_empty()
@@ -307,7 +314,7 @@ pub(super) fn generate_inferred_emit_args(
     let prop_key = ctx.prop_key;
     append!(
         *ts,
-        "{indent}type {inferred_args} = ({library} extends true ? typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}} : typeof {emit_props}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
+        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
     );
     Some(inferred_args)
 }
