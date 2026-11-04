@@ -68,7 +68,7 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
         const expectedBytes = fs.readFileSync(path.join(fixture, entry.expected));
         assert.equal(expectedBytes.length, entry.expectedBytes);
         assert.equal(sha256(expectedBytes), entry.expectedSha256);
-        const expected = JSON.parse(expectedBytes.toString("utf8"));
+        const expected = currentCssReport(JSON.parse(expectedBytes.toString("utf8")));
         const physical = path.join(directory, entry.filename);
         fs.writeFileSync(physical, source);
         const captures = [];
@@ -143,3 +143,4 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+import { currentCssReport } from "./support/current-css-documentation.ts";

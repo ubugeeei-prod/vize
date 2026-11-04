@@ -162,6 +162,77 @@ void test("the oracle rejects a short-circuit that drops required keys", () => {
   assert.ok(diagnostics(equalities(broken), false).some((text) => / TS2344 /u.test(text)));
 });
 
+// Insta JSON snapshots store generated TypeScript as JSON string values. Decode
+// that transport exactly once before applying the same source-context law used
+// for plain snapshots, Rust literals, and declaration files.
+function requiredFieldSources(file: string, text: string): string[] {
+  if (!file.endsWith(".snap")) return [text];
+  const header = /^---\r?\n[\s\S]*?\r?\n---\r?\n/u.exec(text);
+  const body = header ? text.slice(header[0].length) : text;
+  const jsonTransport = /\bserde_json::to_string(?:_pretty)?\b/u.test(header?.[0] ?? "");
+  let packet: unknown;
+  try {
+    packet = JSON.parse(body);
+  } catch (error) {
+    if (jsonTransport) throw error;
+    return [body];
+  }
+  const sources: string[] = [];
+  const collect = (value: unknown): void => {
+    if (typeof value === "string") sources.push(value);
+    else if (Array.isArray(value)) value.forEach(collect);
+    else if (value !== null && typeof value === "object") {
+      for (const [key, member] of Object.entries(value)) {
+        sources.push(key);
+        collect(member);
+      }
+    }
+  };
+  collect(packet);
+  return sources;
+}
+
+function requiredFieldUses(file: string, text: string): string[] {
+  const uses: string[] = [];
+  const name = "$EmitRequiredFields<";
+  for (const source of requiredFieldSources(file, text)) {
+    for (let at = source.indexOf(name); at >= 0; at = source.indexOf(name, at + name.length)) {
+      const before = source.slice(Math.max(0, at - 40), at).trimEnd();
+      uses.push(`${file}: ${before.slice(before.search(/\S+$/u))}`);
+    }
+  }
+  return uses;
+}
+
+const permittedRequiredFieldUse = /: (?:(?:r#)?"?type|&)$/u;
+
+void test("snapshot JSON transport preserves the required-field source-context law", () => {
+  const declaration = "type Before<T> = [T, T];\ntype $EmitRequiredFields<T> = T;";
+  const intersection = "type Combined<T> = T & $EmitRequiredFields<T>;";
+  const snapshot = (packet: unknown): string =>
+    '---\nexpression: "serde_json::to_string_pretty(&packets).unwrap()"\n---\n' +
+    JSON.stringify(packet, null, 2);
+  const controls: readonly (readonly [string, string])[] = [
+    ["plain.snap", declaration + "\n" + intersection],
+    ["packet.snap", snapshot([{ transform: { code: declaration }, helpers: [intersection] }])],
+  ];
+  for (const [file, text] of controls) {
+    const uses = requiredFieldUses(file, text);
+    assert.equal(uses.length, 2);
+    for (const use of uses) assert.match(use, permittedRequiredFieldUse);
+  }
+  for (const text of [
+    "type Keys<T> = keyof $EmitRequiredFields<T>;",
+    "type Key<T> = $EmitRequiredFields<T>['value'];",
+    "type Before<T> = [T, T];\\ntype $EmitRequiredFields<T> = T;",
+  ]) {
+    const uses = requiredFieldUses("packet.snap", snapshot({ nested: [{ code: text }] }));
+    assert.equal(uses.length, 1);
+    assert.doesNotMatch(uses[0], permittedRequiredFieldUse);
+  }
+  assert.throws(() => requiredFieldSources("packet.snap", snapshot({}).slice(0, -1)));
+});
+
 void test("generated code and helpers only intersect $EmitRequiredFields, never read its keys", () => {
   // The short-circuit changes `keyof` of a still-deferred `$EmitRequiredFields<T>`
   // (see above). Every consumer must stay an intersection member so nothing
@@ -178,20 +249,14 @@ void test("generated code and helpers only intersect $EmitRequiredFields, never 
   )
     .split("\0")
     .filter((file) => /\.(?:rs|txt|ts|mts|cts|snap)$/u.test(file));
-  const uses: string[] = [];
-  const name = "$EmitRequiredFields<";
-  for (const file of tracked) {
-    const text = fs.readFileSync(`${root}${file}`, "utf8");
-    for (let at = text.indexOf(name); at >= 0; at = text.indexOf(name, at + name.length)) {
-      const before = text.slice(Math.max(0, at - 40), at).trimEnd();
-      uses.push(`${file}: ${before.slice(before.search(/\S+$/u))}`);
-    }
-  }
+  const uses = tracked.flatMap((file) =>
+    requiredFieldUses(file, fs.readFileSync(`${root}${file}`, "utf8")),
+  );
   assert.ok(uses.length > 0);
   for (const use of uses) {
     assert.match(
       use,
-      /: (?:(?:r#)?"?type|&)$/u,
+      permittedRequiredFieldUse,
       `only definitions and intersection members: ${use}`,
     );
   }

@@ -124,10 +124,15 @@ fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference
             .code
             .contains("declare function __vizeConstructorEmitProps<P, E>")
     );
-    assert!(
+    assert_eq!(
         legacy
             .code
-            .contains("? typeof __vizeConstructorEmitProps :")
+            .lines()
+            .filter(|line| line.starts_with("type $NativeEmitPropsFactory<C> = "))
+            .collect::<Vec<_>>(),
+        [
+            "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? ($EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps) : $LooseEmitPropsFactory<C>;"
+        ]
     );
     assert!(!legacy.code.contains("$EmitOwnedKeys"));
     assert!(!legacy.code.contains("$EmitInput<"));

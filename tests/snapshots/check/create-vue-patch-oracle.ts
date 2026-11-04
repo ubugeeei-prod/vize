@@ -668,7 +668,7 @@ function assertBrokenLint(result: LintResult): void {
       messages: [
         {
           ruleId: "vue/html-quotes",
-          ruleDocsPath: "docs/content/rules/vue.md",
+          ruleDocsPath: "docs/content/rules/reference/vue-html-quotes.md",
           severity: 2,
           message: "[vize:vue/html-quotes] Expected double quotes but found single quotes",
           line: 6,
@@ -736,7 +736,7 @@ function assertFmtResult(result: CommandResult, status: number, stderr: string):
   assert.deepEqual(result, { status, stdout: "", stderr });
 }
 
-function sha256(source: string | Buffer): string {
+function sha256(source: Parameters<ReturnType<typeof createHash>["update"]>[0]): string {
   return createHash("sha256").update(source).digest("hex");
 }
 
