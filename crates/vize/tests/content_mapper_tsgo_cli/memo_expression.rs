@@ -6,10 +6,29 @@ use super::{
 use serde_json::json;
 use std::path::PathBuf;
 
+/// A missing host is an unexecuted cohort. `VIZE_TEST_REQUIRE_TSGO` makes that a failure.
+fn memo_host() -> Option<PathBuf> {
+    let required = std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some();
+    let Some(host) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        assert!(
+            !required,
+            "unexecuted memo cohort: VIZE_TEST_REQUIRE_TSGO is set and {TSGO_ENV} is absent"
+        );
+        eprintln!("unexecuted memo cohort: {TSGO_ENV} is not set");
+        return None;
+    };
+    assert!(
+        host.is_file(),
+        "{TSGO_ENV} is not a file: {}",
+        host.display()
+    );
+    eprintln!("memo cohort provider={} require={required}", host.display());
+    Some(host)
+}
+
 #[test]
 fn memo_dependencies_check_members_and_preserve_unused_controls() {
-    let Some(host) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
-        eprintln!("skipping Content Mapper conformance: {TSGO_ENV} is not set");
+    let Some(host) = memo_host() else {
         return;
     };
     let fixture =
@@ -41,6 +60,13 @@ fn memo_dependencies_check_members_and_preserve_unused_controls() {
             )
             .unwrap();
             let output = check_project(&host, project.path(), "tsconfig.json");
+            eprintln!(
+                "memo cell newline={} noUnusedLocals={} status={} provider={}",
+                if newline == "\n" { "lf" } else { "crlf" },
+                no_unused,
+                output.status,
+                host.display()
+            );
             let mut actual = std::str::from_utf8(&output.stdout)
                 .unwrap()
                 .lines()
