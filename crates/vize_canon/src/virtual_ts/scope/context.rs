@@ -255,6 +255,8 @@ pub(crate) struct VForPropsContext<'a, 'template> {
 
 pub(super) struct EventHandlerExprContext<'a> {
     pub(super) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    pub(super) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) data: &'a EventHandlerScopeData,
     /// Whether handler assignability and payload types should be checked.
     /// When disabled, authored handler bodies are still emitted as statements

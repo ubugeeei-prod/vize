@@ -282,6 +282,7 @@ runs:
         cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1
         cargo test --locked --profile ci -p vize_canon --lib generated_diagnostics:: -- --nocapture --test-threads=1
     - name: Test exact beta editor owner diagnostics and clean EOF shutdown
+      if: ${{ !cancelled() }}
       shell: bash
       env:
         VIZE_TEST_NATIVE_BETA_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
@@ -299,6 +300,16 @@ runs:
         if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install -y strace; fi
         cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >"$capture/build.jsonl"
         node tests/tooling/support/native-beta-shutdown/source.mjs
+    - name: Test guarded listener references with the authenticated beta checker
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_NESTED_FUNCTION_GUARD_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/nested-function-guard-11853
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::nested_function_guard_11853::standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors --ignored --exact --nocapture
     - name: Test inherited Options API calls with the authenticated beta checker
       if: ${{ !cancelled() }}
       shell: bash
