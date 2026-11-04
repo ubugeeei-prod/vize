@@ -13,11 +13,50 @@ const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixtureRelative = "tools/support/compat/nuxt/fixtures/nuxt5-runtime-build";
 const fixture = path.join(root, fixtureRelative);
 const output = path.resolve(process.argv[2] ?? "");
-assert.ok(process.argv[2], "usage: nuxt5-runtime-build.ts OUTPUT");
+assert.ok(process.argv[2] && process.argv[3], "usage: nuxt5-runtime-build.ts OUTPUT RUNTIME_NODE");
+const runtimeNode = fs.realpathSync(process.argv[3]);
 assert.equal(fs.existsSync(output), false, "retain a fresh packet");
-assert.equal(process.version, "v26.13.0", "use the reported Node version");
 fs.mkdirSync(output, { recursive: true });
 const sha256 = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+assert.equal(
+  process.execPath,
+  process.env.VIZE_NUXT_SOURCE_NODE,
+  "use the captured source runtime",
+);
+assert.equal(sha256(process.execPath), process.env.VIZE_NUXT_SOURCE_NODE_SHA256);
+const runtimeProbe = spawnSync(
+  runtimeNode,
+  [
+    "--input-type=module",
+    "--eval",
+    "console.log(JSON.stringify({version:process.version,execPath:process.execPath,platform:process.platform,arch:process.arch}))",
+  ],
+  { encoding: "utf8" },
+);
+assert.equal(runtimeProbe.error, undefined);
+assert.equal(runtimeProbe.status, 0);
+const runtime: unknown = JSON.parse(runtimeProbe.stdout);
+assert.equal(at(runtime, "version"), "v26.13.0", "use the reported consumer Node version");
+assert.equal(at(runtime, "execPath"), runtimeNode);
+assert.equal(at(runtime, "platform"), process.platform);
+assert.equal(at(runtime, "arch"), process.arch);
+const runtimeSha256 = sha256(runtimeNode);
+fs.writeFileSync(
+  path.join(output, "runtime.json"),
+  JSON.stringify(
+    {
+      producer: {
+        version: process.version,
+        execPath: process.execPath,
+        sha256: sha256(process.execPath),
+      },
+      consumer: runtime,
+      sha256: runtimeSha256,
+    },
+    null,
+    2,
+  ) + "\n",
+);
 const pins = readJson(path.join(fixture, "provenance.json"));
 for (const file of ["package.json", "nuxt.config.ts", "app/app.vue", "package-lock.json"]) {
   assert.equal(sha256(path.join(fixture, file)), at(pins, "files", file));
@@ -80,9 +119,14 @@ try {
   const log = fs.openSync(path.join(output, "build.log"), "w");
   let built;
   try {
-    built = spawnSync(process.execPath, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
+    built = spawnSync(runtimeNode, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
       cwd: fixture,
-      env: { ...sourceBinding.environment, NO_COLOR: "1", NUXT_TELEMETRY_DISABLED: "1" },
+      env: {
+        ...sourceBinding.environment,
+        PATH: `${path.dirname(runtimeNode)}${path.delimiter}${process.env.PATH}`,
+        NO_COLOR: "1",
+        NUXT_TELEMETRY_DISABLED: "1",
+      },
       stdio: ["ignore", log, log],
       timeout: 180_000,
     });
@@ -92,6 +136,10 @@ try {
   fs.writeFileSync(
     path.join(output, "build-process.json"),
     JSON.stringify({
+      command: [runtimeNode, "node_modules/nuxt/bin/nuxt.mjs", "build"],
+      cwd: fixture,
+      pid: built.pid,
+      runtimeSha256,
       status: built.status,
       signal: built.signal,
       error: built.error?.message ?? null,
@@ -133,11 +181,29 @@ try {
   );
   const port = await freePort();
   const serverLog = fs.openSync(path.join(output, "server.log"), "w");
-  server = spawn(process.execPath, [path.join(isolated, "server/index.mjs")], {
+  server = spawn(runtimeNode, [path.join(isolated, "server/index.mjs")], {
     cwd: isolated,
-    env: { ...process.env, HOST: "127.0.0.1", PORT: String(port) },
+    env: {
+      ...process.env,
+      PATH: `${path.dirname(runtimeNode)}${path.delimiter}${process.env.PATH}`,
+      HOST: "127.0.0.1",
+      PORT: String(port),
+    },
     stdio: ["ignore", serverLog, serverLog],
   });
+  fs.writeFileSync(
+    path.join(output, "server-process.json"),
+    JSON.stringify(
+      {
+        command: [runtimeNode, path.join(isolated, "server/index.mjs")],
+        cwd: isolated,
+        pid: server.pid,
+        runtimeSha256,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   fs.closeSync(serverLog);
   const url = `http://127.0.0.1:${port}/`;
   let ready = false;
@@ -184,6 +250,7 @@ try {
     JSON.stringify(errors, null, 2) + "\n",
   );
   assert.deepEqual(errors, []);
+  assert.equal(sha256(runtimeNode), runtimeSha256, "consumer Node identity remains unchanged");
   fs.writeFileSync(
     path.join(output, "report.json"),
     JSON.stringify(
@@ -192,7 +259,8 @@ try {
         source: binding,
         dist,
         versions,
-        node: process.version,
+        producerNode: process.version,
+        consumerNode: { identity: runtime, sha256: runtimeSha256 },
         platform: process.platform,
         arch: process.arch,
         browser: browser.version(),

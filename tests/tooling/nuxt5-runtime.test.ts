@@ -8,6 +8,8 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 type Step = {
+  id?: string;
+  env?: Record<string, string>;
   shell?: string;
   name?: string;
   run?: string;
@@ -61,6 +63,10 @@ void test("Nuxt 5 production fixture retains the reporter's complete three sourc
   const lock = JSON.parse(lockBytes.toString()) as {
     packages: Record<string, { version?: string }>;
   };
+  const formatConfig = fs.readFileSync(new URL("vite.config.ts", root), "utf8");
+  assert.ok(
+    formatConfig.includes('"tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/package.json"'),
+  );
   for (const [name, version] of [
     ["nuxt", "5.0.0-2611031025-9496b7e"],
     ["nitro", "3.0.261029-rc"],
@@ -97,6 +103,9 @@ void test("the additional Node 26 consumer follows the unchanged source pack and
   const reportedNode = step("Use the reported Node version for the additional Nuxt 5 consumer");
   assert.equal(reportedNode.uses, "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38");
   assert.equal(reportedNode.with?.["node-version"], "26.13.0");
+  const capture = step("Capture the source producer Node executable");
+  assert.equal(capture.id, "nuxt-source-runtime");
+  assert.ok(job.steps.indexOf(capture) < job.steps.indexOf(reportedNode));
   for (const [name, run] of [
     [
       "Build and capture the actual source native compiler",
@@ -120,8 +129,12 @@ void test("the additional Node 26 consumer follows the unchanged source pack and
   const consumer = step("Verify source-bound Nuxt 5 browser and isolated server output");
   assert.equal(
     consumer.run,
-    'node tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance"',
+    '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance" "$(command -v node)"',
   );
+  assert.deepEqual(consumer.env, {
+    VIZE_NUXT_SOURCE_NODE: "${{ steps.nuxt-source-runtime.outputs.path }}",
+    VIZE_NUXT_SOURCE_NODE_SHA256: "${{ steps.nuxt-source-runtime.outputs.sha256 }}",
+  });
   assert.ok(job.steps.indexOf(reportedNode) < job.steps.indexOf(consumer));
 });
 
@@ -180,6 +193,100 @@ void test("the actual frozen install shell preserves npm failure through raw log
         fs.readFileSync(path.join(temporary, "nuxt5-runtime-proof/install.log"), "utf8"),
         "controlled npm failure\n",
       );
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true });
+  }
+});
+
+void test("the Nuxt controller uses the source runtime while forwarding the consumer executable", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt5-runtime-shell-"));
+  try {
+    const bin = path.join(directory, "bin");
+    fs.mkdirSync(bin);
+    fs.writeFileSync(
+      path.join(bin, "node"),
+      '#!/bin/sh\nprintf "ambient\\n" > "$AMBIENT_NODE_LOG"\n',
+      { mode: 0o755 },
+    );
+    fs.writeFileSync(
+      path.join(bin, "vp"),
+      '#!/bin/sh\ntest "$1" = env && test "$2" = exec && test "$3" = node || exit 19\nshift 3\nexec "$TEST_PRODUCER_NODE" "$@"\n',
+      { mode: 0o755 },
+    );
+    const capture = step("Capture the source producer Node executable").run;
+    assert.ok(capture);
+    const output = path.join(directory, "github-output");
+    const environment = {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      TEST_PRODUCER_NODE: process.execPath,
+      GITHUB_OUTPUT: output,
+      RUNNER_TEMP: directory,
+    };
+    const captured = spawnSync("/bin/bash", ["-e", "-c", capture], {
+      encoding: "utf8",
+      env: environment,
+    });
+    assert.equal(captured.error, undefined);
+    assert.equal(captured.status, 0);
+    const values = Object.fromEntries(
+      fs
+        .readFileSync(output, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => {
+          const split = line.indexOf("=");
+          return [line.slice(0, split), line.slice(split + 1)];
+        }),
+    );
+    assert.equal(values.path, process.execPath);
+    assert.equal(
+      values.sha256,
+      createHash("sha256").update(fs.readFileSync(process.execPath)).digest("hex"),
+    );
+    const probe = path.join(directory, "tools/support/compat/nuxt/nuxt5-runtime-build.ts");
+    fs.mkdirSync(path.dirname(probe), { recursive: true });
+    fs.writeFileSync(
+      probe,
+      'require("node:fs").writeFileSync(process.env.PROBE_LOG, JSON.stringify({producer:process.execPath,args:process.argv.slice(2)}));\n',
+    );
+    const current = step("Verify source-bound Nuxt 5 browser and isolated server output").run;
+    assert.ok(current);
+    const before =
+      'node tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance"';
+    for (const [variant, command] of [
+      ["ambient-node-before", before],
+      ["source-controller", current],
+    ]) {
+      const observation = path.join(directory, variant);
+      fs.mkdirSync(observation);
+      const result = spawnSync("/bin/bash", ["-e", "-c", command], {
+        encoding: "utf8",
+        cwd: directory,
+        env: {
+          ...environment,
+          VIZE_NUXT_SOURCE_NODE: values.path,
+          VIZE_NUXT_SOURCE_NODE_SHA256: values.sha256,
+          PROBE_LOG: path.join(observation, "probe.json"),
+          AMBIENT_NODE_LOG: path.join(observation, "ambient.log"),
+        },
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0);
+      if (variant === "ambient-node-before") {
+        assert.equal(fs.existsSync(path.join(observation, "probe.json")), false);
+        assert.ok(fs.existsSync(path.join(observation, "ambient.log")));
+      } else {
+        assert.equal(fs.existsSync(path.join(observation, "ambient.log")), false);
+        assert.deepEqual(
+          JSON.parse(fs.readFileSync(path.join(observation, "probe.json"), "utf8")),
+          {
+            producer: values.path,
+            args: [path.join(directory, "nuxt5-runtime-proof/acceptance"), path.join(bin, "node")],
+          },
+        );
+      }
     }
   } finally {
     fs.rmSync(directory, { recursive: true });
