@@ -213,7 +213,7 @@ fn binding_values_keep_same_name_shorthand_and_reject_authored_empty_values() {
         let messages = if invalid {
             serde_json::json!([{
                 "ruleId": "vue/valid-v-bind",
-                "ruleDocsPath": "docs/content/rules/vue.md",
+                "ruleDocsPath": "docs/content/rules/reference/vue-valid-v-bind.md",
                 "severity": 2,
                 "message": "[vize:vue/valid-v-bind] v-bind requires an expression",
                 "line": 3,

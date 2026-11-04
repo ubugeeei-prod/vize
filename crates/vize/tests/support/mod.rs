@@ -4,6 +4,7 @@ pub(crate) mod check_output;
 pub(crate) mod config_refusal;
 pub(crate) mod corsa_path;
 pub(crate) mod corsa_requirement;
+pub(crate) mod current_rule_documentation;
 pub(crate) mod indexed_access;
 pub(crate) mod lsp_authored_rename;
 pub(crate) mod lsp_process;

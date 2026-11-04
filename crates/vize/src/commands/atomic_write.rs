@@ -74,7 +74,7 @@ fn directory_write_lock(directory: &Path) -> &'static Mutex<()> {
     let registry = LOCKS.get_or_init(|| Mutex::new(FxHashMap::default()));
     let mut guard = registry.lock().unwrap_or_else(|error| error.into_inner());
     if let Some(lock) = guard.get(directory) {
-        return *lock;
+        return lock;
     }
     let lock = Box::leak(Box::new(Mutex::new(())));
     guard.insert(directory.to_path_buf(), lock);

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11863,
+  "issue": 11675,
+  "predecessor": {
+    "path": "successor-11734/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "641d711aac2e741427d132ebecb6ef4d5d0cb0f41fcb204ec782e9d2c49e54a9"
+  },
+  "successor": {
+    "path": "successor-11675-main-11863/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "64fef1d5892867f04a90b1b7ddb0fad3864153aa92b53d757afd5f992eb26fdd"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 0,
+    "contentMapperMappings": 2,
+    "contentMapperAuthoredHits": 2,
+    "onlyContentMapperGeometryChanged": true
+  },
+  "capture": {
+    "runId": 41864281488,
+    "jobId": 126694670510,
+    "artifactId": 13342495089,
+    "artifactSha256": "97cac6d2e5b9678ec233ae7d8c0d2b8b7956755c6314ad702a9f62af8b7304c9",
+    "sourceRevision": "119674e837054d41940156c074e63f6ec7952e40",
+    "pullRequestHead": "2a008a4656c3bae6cf05104b8e5c000460ebd603",
+    "mainRevision": "869a446d2f07f636a7df7190caeefd3cb463b471",
+    "producerCommit": "46b752b95bd8e2b955148866655e01b58a166fe4",
+    "observedLanes": ["canon", "content-mapper", "maestro"]
+  },
+  "scope": "Only the two diagnostics-only interpolation parenthesis Atom mappings and corresponding authored hits changed. Every other predecessor byte is retained."
+}

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const current = "section"
+function onWheel(ev: WheelEvent) { ev.deltaY }
+</script>
+
+<template>
+  <component :is="current" @headerWheel="onWheel" />
+</template>

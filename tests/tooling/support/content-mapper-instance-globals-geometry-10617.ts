@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { instanceReceiverReads, type Transform } from "./content-mapper-instance-globals-10617.ts";
+import { assertDiagnosticMappingRoster } from "./content-mapper-parenthesis-mappings-11675.ts";
 
 // Public protocol geometry: ordinary property tokens retain all capabilities;
 // synthetic receiver prefixes have atom affinity and diagnostics-only identity.
@@ -42,12 +43,8 @@ export function assertDiagnosticPrefixGeometry(
     );
     expected.push([read.prefixStart, 6, span[2], span[3], 1, 0]);
   }
-  expected.sort((a, b) => a[0] - b[0]);
-  assert.deepEqual(
-    result.mappings.filter((span) => span[5] === 0),
-    expected,
-    "the complete diagnostic-only roster must contain exactly the mapped AST receiver prefixes",
-  );
+  expected.sort((left, right) => left[0] - right[0]);
+  assertDiagnosticMappingRoster(result, expected);
   return expected;
 }
 

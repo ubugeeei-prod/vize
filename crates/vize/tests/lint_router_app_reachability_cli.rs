@@ -198,7 +198,10 @@ fn check_case(case: &Case, capture: &Path) -> Vec<String> {
             Some(fs::read(&target).expect("whole inputs before spawn")),
         ));
     }
-    let expected_bytes = fs::read(root.join(&case.expected_stdout)).expect("authored whole report");
+    let historical_stdout =
+        fs::read_to_string(root.join(&case.expected_stdout)).expect("authored whole report");
+    let expected_bytes =
+        crate::support::current_rule_documentation::json_stdout(&historical_stdout).into_bytes();
     let expected: Value = serde_json::from_slice(&expected_bytes).expect("authored report JSON");
     let reported_files: Vec<_> = expected
         .as_array()

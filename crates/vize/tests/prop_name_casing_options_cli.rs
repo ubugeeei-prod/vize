@@ -80,7 +80,7 @@ fn expected_file(filename: &str, case: &Case) -> Value {
         CAMEL_HELP
     };
     json!({ "file": filename, "messages": case.findings.iter().map(|f| json!({
-        "ruleId":f.rule_id,"ruleDocsPath":"docs/content/rules/vue.md","severity":f.severity,
+        "ruleId":f.rule_id,"ruleDocsPath":"docs/content/rules/reference/vue-prop-name-casing.md","severity":f.severity,
         "message":format!("[vize:{RULE}] {}", f.message.strip_suffix('.').unwrap()),
         "line":f.line,"column":f.column,"endLine":f.end_line,"endColumn":f.end_column,"help":help
     })).collect::<Vec<_>>(),"errorCount":case.findings.len(),"warningCount":0 })

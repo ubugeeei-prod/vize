@@ -1,0 +1,1 @@
+<template><li v-for="(row, index) in rows">{{ index }} {{ row.id }}</li></template>

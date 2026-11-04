@@ -78,6 +78,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: ctx.check_options.check_emits,
                     event_type: "any",
+                    event_handler_contextless: None,
                     event_handler_type: None,
                     event_listener_type: None,
                     event_name_src_range: None,
@@ -131,6 +132,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type,
+                    event_handler_contextless: None,
                     event_handler_type: needs_typed_handler_assignment
                         .then_some(handler_type.as_str()),
                     event_listener_type: Some(listener_type.as_str()),
@@ -205,6 +207,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type,
+                    event_handler_contextless: None,
                     event_handler_type: needs_typed_handler_assignment
                         .then_some(handler_type.as_str()),
                     event_listener_type: Some(listener_type.as_str()),
@@ -258,6 +261,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type: "any",
+                    event_handler_contextless: None,
                     event_handler_type: None,
                     event_listener_type: Some(listener_type.as_str()),
                     event_name_src_range: event_name_source_range(
@@ -292,6 +296,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type,
+                    event_handler_contextless: None,
                     event_handler_type: None,
                     // Native DOM listeners keep the plain-closure shape,
                     // so there is no declared name to anchor at.

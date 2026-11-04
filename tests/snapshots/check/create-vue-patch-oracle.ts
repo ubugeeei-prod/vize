@@ -668,7 +668,7 @@ function assertBrokenLint(result: LintResult): void {
       messages: [
         {
           ruleId: "vue/html-quotes",
-          ruleDocsPath: "docs/content/rules/vue.md",
+          ruleDocsPath: "docs/content/rules/reference/vue-html-quotes.md",
           severity: 2,
           message: "[vize:vue/html-quotes] Expected double quotes but found single quotes",
           line: 6,

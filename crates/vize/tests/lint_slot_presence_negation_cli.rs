@@ -85,7 +85,7 @@ fn original_and_boundaries_keep_complete_cli_json() {
                 let (line, column) = position(start);
                 let (end_line, end_column) = position(end);
                 json!({"ruleId":"script/require-slots-as-functions",
-                    "ruleDocsPath":"docs/content/rules/type-and-script.md","severity":2,
+                    "ruleDocsPath":"docs/content/rules/reference/script-require-slots-as-functions.md","severity":2,
                     "message":"[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
                     "line":line,"column":column,"endLine":end_line,"endColumn":end_column})
             })

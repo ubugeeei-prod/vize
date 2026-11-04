@@ -1,0 +1,10 @@
+export default {
+  vue: {
+    typeChecker: { corsaPath: 'missing-operational-documentation-runtime' },
+    linter: {
+      preset: 'incremental',
+      typeAware: true,
+      rules: { 'type/strict-boolean-expressions': 'error' },
+    },
+  },
+};
