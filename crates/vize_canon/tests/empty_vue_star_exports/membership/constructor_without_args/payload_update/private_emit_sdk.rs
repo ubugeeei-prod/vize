@@ -29,6 +29,7 @@ fn load() -> Value {
     record
 }
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::helper_abi_sdk::source_before(path, current);
     let record = load();
     let Some(entry) = record["files"]
         .as_array()

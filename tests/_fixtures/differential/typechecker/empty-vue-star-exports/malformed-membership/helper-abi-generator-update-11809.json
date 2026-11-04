@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "kind": "exact-helper-abi-generator-source-inverse",
+  "issue": 11809,
+  "nativeAcceptanceCredit": false,
+  "canonicalAssetsChangedByThisFix": false,
+  "files": [
+    {
+      "path": "npm/cli/scripts/generate-content-mapper-types.ts",
+      "before": {
+        "bytes": 17993,
+        "sha256": "51fbffd7dcb834a8476ec9c0da576e9adbb2eb5bbd011b4fcfdd94337f1e93ee"
+      },
+      "after": {
+        "bytes": 18171,
+        "sha256": "1b1bfd8de17c4581ddf150403a6bb124ef6c60ae498c1dd7538ac56d7dc65828"
+      },
+      "edits": [
+        {
+          "before": "",
+          "after": "import { contentMapperHelperAbi } from \"./content-mapper-helper-abi.ts\";\n"
+        },
+        {
+          "before": "",
+          "after": "const [abiFile, abiContents] = contentMapperHelperAbi(root, outputs);\noutputs.set(abiFile, abiContents);\n"
+        }
+      ]
+    }
+  ]
+}

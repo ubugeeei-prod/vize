@@ -75,6 +75,9 @@ function generatorFixture() {
   const cwd = mkdtempSync(path.join(tmpdir(), "vize-slot-export-generator-"));
   const files = [
     "npm/cli/scripts/generate-content-mapper-types.ts",
+    "npm/cli/scripts/content-mapper-helper-abi.ts",
+    "crates/vize/src/commands/content_mapper/helper-abi.json",
+    "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs",
     "npm/cli/scripts/slot-payload-exports.ts",
     "npm/cli/scripts/emit-inference-exports.ts",
     "npm/cli/virtual-ts-emits.d.ts",
@@ -89,6 +92,10 @@ function generatorFixture() {
     "npm/cli/generated/content-mapper-types.d.ts",
     "npm/cli/virtual-ts-globals.d.ts",
     "npm/cli/virtual-ts-patterns.d.ts",
+    "npm/cli/virtual-ts-checker.d.ts",
+    "npm/cli/content-mapper-helpers.d.ts",
+    "npm/cli/content-mapper-helpers.d.mts",
+    "npm/cli/content-mapper-helpers.d.cts",
     embedded,
     shared,
     "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",
