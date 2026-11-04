@@ -22,6 +22,7 @@
 //! run reports that half as not compared instead of passing it.
 
 mod battery;
+mod destructure_census;
 mod runner;
 
 mod generic_reads;
@@ -47,13 +48,16 @@ fn the_committed_planes_agree_with_the_specs() {
             .unused
             .verdict("unused-bindings", "battery")
             .unwrap();
+        // Keep the historical 24 facts and separately require the five exact
+        // destructured declarations newly visible through authored spans.
+        let added = destructure_census::assert_added_pattern_witnesses();
         assert_eq!(
             (
                 battery.unused.artifacts,
                 battery.unused.compared,
                 battery.unused.facts
             ),
-            (9, 9, 24)
+            (9, 9, 24 + added)
         );
     }
     eprintln!("{}", battery.scope_lines("battery"));
