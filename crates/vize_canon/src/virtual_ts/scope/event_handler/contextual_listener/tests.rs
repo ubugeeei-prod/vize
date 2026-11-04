@@ -13,26 +13,33 @@ fn contextual_listener_complete_projection_and_mapping_packets() {
     )))
     .unwrap();
     let mut packets = Vec::new();
-    for case in cases.as_array().unwrap() {
-        let file = case["file"].as_str().unwrap();
-        let source =
-            std::fs::read_to_string(directory.join(vize_carton::cstr!("{file}.txt"))).unwrap();
-        for preserve_unused in [false, true] {
-            let options = ContentMapperTransformOptions::default()
-                .with_preserve_unused_diagnostics(preserve_unused);
-            let transform = generate_vue_content_mapper_transform_with_options(
-                Path::new(file),
-                &source,
-                options,
-            )
-            .unwrap();
-            packets.push(serde_json::json!({
-                "file":file,
-                "source":source,
-                "preserveUnused":preserve_unused,
-                "contract":case["contract"],
-                "transform":transform,
-            }));
+    for shared_module in [false, true] {
+        for case in cases.as_array().unwrap() {
+            let file = case["file"].as_str().unwrap();
+            let source =
+                std::fs::read_to_string(directory.join(vize_carton::cstr!("{file}.txt"))).unwrap();
+            for preserve_unused in [false, true] {
+                let options = ContentMapperTransformOptions::default()
+                    .with_preserve_unused_diagnostics(preserve_unused)
+                    .with_shared_virtual_module(shared_module);
+                let transform = generate_vue_content_mapper_transform_with_options(
+                    Path::new(file),
+                    &source,
+                    options,
+                )
+                .unwrap();
+                let mut packet = serde_json::json!({
+                    "file":file,
+                    "source":source,
+                    "preserveUnused":preserve_unused,
+                    "contract":case["contract"],
+                    "transform":transform,
+                });
+                if shared_module {
+                    packet["sharedModule"] = true.into();
+                }
+                packets.push(packet);
+            }
         }
     }
     if let Some(directory) = std::env::var_os("VIZE_LOOSE_LISTENER_PACKET_DIR") {
