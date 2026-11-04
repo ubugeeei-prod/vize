@@ -6,7 +6,10 @@ use crate::batch::generate_vue_content_mapper_transform;
 
 #[test]
 fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
-    let source = "<script setup lang=\"ts\">\nconst a = 1;\n</script>\n\n<template>\n  <div :title=\"`x`\"status=\"y\">{{ a }}</div>\n</template>\n";
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/recovered-attribute-boundary-11731/Gap.vue.txt"
+    ));
     let boundary = source.find("status").expect("second authored attribute");
     let mut spaced = source.to_owned();
     spaced.insert(boundary, ' ');

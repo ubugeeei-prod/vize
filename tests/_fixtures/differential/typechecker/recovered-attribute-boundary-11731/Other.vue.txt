@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const count: number = 'y';
+</script>
+
+<template><div>{{ count }}</div></template>
