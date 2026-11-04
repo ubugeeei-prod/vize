@@ -18,6 +18,7 @@ import { verifiedSourcePair } from "./template-alias-paired-11822-source.ts";
 import {
   assertCampaignEnvironment,
   remainingBudget,
+  recordedStage,
 } from "./template-alias-paired-11822-process.ts";
 import { observeMemory } from "./template-alias-paired-11822-memory.ts";
 import { qualifySemantics } from "./template-alias-paired-11822-semantics.ts";
@@ -28,6 +29,7 @@ import {
 } from "./template-alias-paired-11822-protocol.ts";
 import {
   capture,
+  childEnvironment,
   closureSnapshot,
   diagnostics,
   evidence,
@@ -135,13 +137,24 @@ export async function main() {
     base: pristine(base, values["base-sha"]!),
     head: pristine(head, values["head-sha"]!),
   };
-  const requireCurrentMain = () =>
+  const requireCurrentMain = (stage: "before" | "after") =>
     assert.equal(
-      git(base, "ls-remote", "origin", "refs/heads/main").split(/\s+/u)[0],
+      recordedStage({
+        directory: join(process.env.RUNNER_TEMP!, "mapper-public-stages"),
+        id: "main-" + stage,
+        command: "git",
+        args: ["-C", base, "ls-remote", "origin", "refs/heads/main"],
+        cwd: base,
+        environment: childEnvironment({ GIT_TERMINAL_PROMPT: "0" }),
+        sourceSha: sources.base.sha,
+        maxMilliseconds: 15_000,
+      })
+        .trim()
+        .split(/\s+/u)[0],
       sources.base.sha,
       "public main advanced: rebind source tuple before dispatch",
     );
-  requireCurrentMain();
+  requireCurrentMain("before");
   git(head, "merge-base", "--is-ancestor", sources.base.sha, sources.head.sha);
   const driverIdentity = pristine(driver, values["driver-sha"]!);
   // This campaign isolates dispatcher admission. Projection/checker/SDK changes require a new qualification design.
@@ -413,7 +426,7 @@ export async function main() {
   );
   assert.deepEqual(closureSnapshot([provider]), providerBefore);
   verifiedSourcePair(base, head, sources);
-  requireCurrentMain();
+  requireCurrentMain("after");
   assert.deepEqual(inventory(join(corpus, "src")), authored);
   copyFileSync(join(provider, "package-lock.json"), join(output, "public-provider-lock.json"));
   write(join(output, "primary-summary.json"), {
