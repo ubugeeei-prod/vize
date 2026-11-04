@@ -67,22 +67,22 @@ test("native capacity admission requires real source, nonzero laws, both native 
   );
 });
 
-test("ordinary source tooling retains failed capacity packets without collecting unrelated workspaces", () => {
+test("ordinary source tooling retains complete capacity packets on success and failure without unrelated workspaces", () => {
   const action = parse(readRepoFile(".github/actions/test-affected-tooling/action.yml")) as {
     runs: { steps: Step[] };
   };
   const step = action.runs.steps.find(
-    (step) => step.name === "Retain failed native capacity packets and source send trace",
+    (step) => step.name === "Retain complete native capacity packets and source send trace",
   );
   assert.ok(step);
   assert.equal(
     step.if,
-    "${{ failure() && hashFiles('target/vize-tests/diagnostic-capacity-*/result.json') != '' }}",
+    "${{ always() && hashFiles('target/vize-tests/diagnostic-capacity-129/result.json') != '' }}",
   );
   assert.ok(step.uses?.startsWith("actions/upload-artifact@"));
   assert.equal(
     step.with?.path,
-    "target/vize-tests/diagnostic-capacity-*/result.json\n" +
+    "target/vize-tests/diagnostic-capacity-129/result.json\n" +
       "target/ci/vize.differential-build.json\n",
   );
   assert.equal(step.with?.["if-no-files-found"], "error");
