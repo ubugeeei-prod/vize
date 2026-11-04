@@ -1,6 +1,6 @@
 //! SDK admission uses complete lowering packets and closed lookup oracles.
 use super::helper_abi_fixture::{InstalledSdk, Mode};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 #[test]
 fn intact_sdk_keeps_the_shared_lowering() {
@@ -24,7 +24,7 @@ fn every_conditional_type_entry_must_supply_the_consumed_helper() {
 #[test]
 fn an_unavailable_private_dependency_cannot_enable_shared_lowering() {
     let sdk = InstalledSdk::new();
-    std::fs::remove_file(sdk.package.join("virtual-ts-emits.d.ts")).unwrap();
+    std::fs::remove_file(sdk.package.join("virtual-ts-slots.d.ts")).unwrap();
     sdk.assert_projection(Mode::Core);
 }
 
@@ -32,9 +32,9 @@ fn an_unavailable_private_dependency_cannot_enable_shared_lowering() {
 fn a_missing_private_binding_invalidates_the_same_dependency_closure() {
     let sdk = InstalledSdk::new();
     sdk.rename(
-        "virtual-ts-emits.d.ts",
-        "type $LooseEmitPropsFactory<",
-        "type $MissingLooseEmitPropsFactory<",
+        "virtual-ts-slots.d.ts",
+        "type $NativeSlotsFactory<",
+        "type $MissingNativeSlotsFactory<",
     );
     sdk.assert_projection(Mode::Core);
 }
@@ -147,7 +147,7 @@ fn absent_wildcard_targets_keep_sharing_until_a_redirect_can_exist() {
     let options = json!({"baseUrl": ".", "paths": {"*": ["types/*"]}});
     std::fs::write(
         &sdk.config,
-        serde_json::to_vec(&json!({"compilerOptions": options})).unwrap(),
+        serde_json::to_vec(&json!({ "compilerOptions": options })).unwrap(),
     )
     .unwrap();
     let types = sdk.config.parent().unwrap().join("types");

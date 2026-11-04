@@ -32,10 +32,10 @@ for (const extension of ["ts", "mts", "cts"]) {
 }
 
 void test("private bindings participate in the same dependency contract", () => {
-  const file = "npm/cli/virtual-ts-emits.d.ts";
+  const file = "npm/cli/virtual-ts-slots.d.ts";
   const changed = source(file).replace(
-    "type $LooseEmitPropsFactory<",
-    "type $MissingLooseEmitPropsFactory<",
+    "type $NativeSlotsFactory<",
+    "type $MissingNativeSlotsFactory<",
   );
   assert.notEqual(changed, source(file));
   assert.throws(
@@ -56,7 +56,7 @@ void test("core imports must be public through every helper frontend", () => {
 
 void test("every relative import must have an installed declaration target", () => {
   const file = "npm/cli/virtual-ts.d.mts";
-  const changed = source(file).replace("./virtual-ts-emits.js", "./absent-emit-dependency.js");
+  const changed = source(file).replace("./virtual-ts-slots.js", "./absent-emit-dependency.js");
   assert.notEqual(changed, source(file));
   assert.throws(
     () => contentMapperHelperAbi(root, new Map([[file, changed]])),

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 
@@ -143,4 +143,13 @@ export function contentMapperHelperAbi(root: string, pending: ReadonlyMap<string
     };
   });
   return [output, `${JSON.stringify({ schema: 1, consumers, modules }, null, 2)}\n`] as const;
+}
+
+// Keep SDK source generation and this native snapshot independently checkable.
+if (path.basename(process.argv[1] ?? "") === "content-mapper-helper-abi.ts") {
+  const root = path.resolve(path.dirname(process.argv[1]!), "../../..");
+  const [file, contents] = contentMapperHelperAbi(root, new Map());
+  if (process.argv.includes("--check"))
+    assert.equal(readFileSync(path.join(root, file), "utf8"), contents, `${file} is stale`);
+  else writeFileSync(path.join(root, file), contents);
 }

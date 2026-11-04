@@ -9652,7 +9652,7 @@
         },
         {
           "path": "content-mapper-helper-abi-11809/cases.json",
-          "sha256": "b931bad060ad9cf2710e0ef0a91c3f98b8f17da595cd3f3de0eee3707349e984",
+          "sha256": "a83fc34aff24e2bad14029a0f58f46e1b219dfe4740f1e2dd0764e91582790a1",
           "role": "sdk-abi-contrasts"
         }
       ],
