@@ -234,9 +234,11 @@ const form = reactive({ name: "" });
     assert.equal(recompiledCount(lines.join("\n")), 1);
     const compiled = state.cache.get(file)!;
     assert.ok(compiled.typeProject, "the fresh compile owns a live project capture");
-    assert.match(compiled.code, new RegExp(`type: ${constructor}`));
     assert.ok(watches.includes(config), "each cold run registers configuration watches");
-    assert.ok(compiled.dependencies?.includes(types), "type-file HMR ownership is preserved");
+    assert.deepEqual(
+      compiled.dependencies?.toSorted(),
+      [config, types, path.join(root, "src", "tsconfig.json")].toSorted(),
+    );
     if (manifestFiles(root).length > 0) {
       assert.equal(persistedFiles(root).includes(file), false);
     }

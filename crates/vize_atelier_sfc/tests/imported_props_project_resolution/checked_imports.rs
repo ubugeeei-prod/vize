@@ -18,8 +18,13 @@ fn unresolved_parents_preserve_relative_imports_and_resolved_aliases() {
         r#"{"compilerOptions":{"paths":{"@lib/*":["./src/*"]}}}"#,
     );
     let captured = SfcTypeProject::from_tsconfig(&project.path().join("tsconfig.json")).unwrap();
-    assert_eq!(captured.configuration_diagnostics().len(), 1);
-    assert!(captured.configuration_diagnostics()[0].contains("./missing.json"));
+    assert_eq!(
+        captured.configuration_diagnostics(),
+        [vize_carton::cstr!(
+            "cannot resolve tsconfig extends \"./missing.json\" from {}",
+            project.path().join("tsconfig.json").display()
+        )]
+    );
     for import in ["./models/FooProps", "@lib/models/FooProps"] {
         assert_eq!(
             compile(project.path(), "src/Partial.vue", import, false),
@@ -40,7 +45,11 @@ fn a_generated_parent_invalidates_the_partial_project_capture() {
         r#"{"extends":"./.nuxt/tsconfig.json"}"#,
     );
     let before = SfcTypeProject::from_tsconfig(&config).unwrap();
-    assert_eq!(before.configuration_diagnostics().len(), 1);
+    let diagnostics = [vize_carton::cstr!(
+        "cannot resolve tsconfig extends \"./.nuxt/tsconfig.json\" from {}",
+        config.display()
+    )];
+    assert_eq!(before.configuration_diagnostics(), diagnostics);
     assert_eq!(
         compile(
             project.path(),
@@ -58,7 +67,7 @@ fn a_generated_parent_invalidates_the_partial_project_capture() {
     let after = SfcTypeProject::from_tsconfig(&config).unwrap();
     assert!(!std::sync::Arc::ptr_eq(&before, &after));
     assert!(after.configuration_diagnostics().is_empty());
-    assert_eq!(before.configuration_diagnostics().len(), 1);
+    assert_eq!(before.configuration_diagnostics(), diagnostics);
     assert_eq!(
         compile(
             project.path(),
