@@ -49,3 +49,36 @@ impl AuthoredUriResolver {
 pub(crate) fn authored_file_uri(ctx: &IdeContext<'_>, path: &std::path::Path) -> Option<Url> {
     AuthoredUriResolver::new(ctx).resolve(ctx, path)
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn closed_foreign_targets_keep_the_import_path_before_an_open_owner_takes_precedence() {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let workspace = root.join("workspace");
+        std::fs::create_dir(&workspace).unwrap();
+        let physical = root.join("foreign.ts");
+        let authored = workspace.join("linked.ts");
+        std::fs::write(&physical, "export const value = 1;").unwrap();
+        std::os::unix::fs::symlink(&physical, &authored).unwrap();
+        let state = crate::server::ServerState::new();
+        state.set_workspace_root(workspace.clone());
+        let request = Url::from_file_path(workspace.join("App.vue")).unwrap();
+        let ctx = IdeContext::testing(&state, &request, 0, "<template />".into());
+        assert_eq!(
+            authored_file_uri(&ctx, &authored),
+            Some(Url::from_file_path(&authored).unwrap())
+        );
+        let open = Url::from_file_path(&physical).unwrap();
+        state.documents.open(
+            open.clone(),
+            "export const value = 2;".into(),
+            1,
+            "typescript".into(),
+        );
+        assert_eq!(authored_file_uri(&ctx, &authored), Some(open));
+    }
+}

@@ -14,7 +14,10 @@ import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legac
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 import { summarizeDialectCoverage } from "../differential/harness.mjs";
 import { readLogicalSourceActor } from "./support/logical-source-actor.ts";
-import { newNativeDocumentIdentityCases } from "../../tools/support/compat/github/native-document-identity-fixtures.ts";
+import {
+  newNativeDocumentIdentityCases,
+  nativeDocumentIdentityActor,
+} from "../../tools/support/compat/github/native-document-identity-fixtures.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
@@ -47,6 +50,7 @@ function historicalComponent(readCurrent: Read): Buffer {
   const originals: Record<string, string> = JSON.parse(gunzipSync(archive).toString("utf8"));
   const prior = structuredClone(manifest);
   delete prior.nativeDocumentIdentityCases;
+  const actor = nativeDocumentIdentityActor(readCurrent, manifest.nativeDocumentIdentityCases);
   const admitted = newNativeDocumentIdentityCases(
     undefined,
     manifest.nativeDocumentIdentityCases,
@@ -54,6 +58,7 @@ function historicalComponent(readCurrent: Read): Buffer {
       if (side === "base" && file === manifestPath) return Buffer.from(JSON.stringify(prior));
       if (side === "base" && Object.hasOwn(originals, file))
         return Buffer.from(originals[file]!, "base64");
+      if (side === "head" && actor.has(file)) return actor.get(file)!;
       return readCurrent(side, file);
     },
   );
@@ -99,7 +104,7 @@ function read(side: "base" | "head", file: string): Buffer | null {
   }
 }
 
-void test("historical component reconstruction requires current source custody and preserves explicit readers", () => {
+void test("historical component reconstruction requires immutable actor custody and preserves explicit readers", () => {
   assert.notDeepEqual(headSource(componentSource, root), componentHistory);
   assert.deepEqual(
     headSource(authority.consumer.observer.path),
@@ -114,11 +119,17 @@ void test("historical component reconstruction requires current source custody a
     readCurrent("head", authority.production.files[5].path),
   );
   const identity = manifest.nativeDocumentIdentityCases[0];
+  const actorSources = new Set(identity.sources.map((source: { path: string }) => source.path));
+  assert.deepEqual(
+    historicalComponent((side, file) =>
+      side === "head" && actorSources.has(file) ? null : readCurrent(side, file),
+    ),
+    componentHistory,
+  );
   for (const file of [
-    componentSource,
     identity.sourceArchive.path,
+    "tests/_fixtures/differential/typechecker/native-document-identity-11586/after-source.json.gz",
     ...identity.inputs.map((input: { path: string }) => input.path),
-    ...identity.tests.map((consumer: { source: string }) => consumer.source),
   ]) {
     assert.throws(() =>
       historicalComponent((side, target) => (target === file ? null : readCurrent(side, target))),

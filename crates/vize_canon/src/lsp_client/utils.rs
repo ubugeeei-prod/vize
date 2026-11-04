@@ -143,6 +143,29 @@ mod tests {
     use vize_l0::{FxHashMap, String};
 
     #[test]
+    fn converging_workspace_edit_keys_keep_every_edit_in_each_original_order() {
+        let authored = "file:///authored/source.ts";
+        let first = "file:///native/first.ts";
+        let second = "file:///native/second.ts";
+        let mappings = FxHashMap::from_iter([
+            (String::from(first), String::from(authored)),
+            (String::from(second), String::from(authored)),
+        ]);
+        let mut response = json!({"changes":{
+            authored:[{"newText":"authored"}],
+            first:[{"newText":first},{"newText":"first-tail"}],
+            second:[{"newText":second}],
+        },"data":{"uri":first}});
+        remap_json_uris(&mut response, &mappings);
+        assert_eq!(
+            response,
+            json!({"changes":{authored:[
+            {"newText":"authored"},{"newText":first},{"newText":"first-tail"},{"newText":second}
+        ]},"data":{"uri":first}})
+        );
+    }
+
+    #[test]
     fn closed_owned_targets_keep_identity_after_their_open_mapping_is_removed() {
         use crate::file_uri::path_to_file_uri;
         let directory = tempfile::tempdir().unwrap();

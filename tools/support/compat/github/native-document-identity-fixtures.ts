@@ -34,12 +34,20 @@ function consumer(read: ReadFile, value: unknown) {
   const test = object(value);
   const source = pinned(read, "head", test.source, test.sha256).toString("utf8");
   assert.ok(typeof test.selector === "string");
-  const name = test.selector.split("::").at(-1)!;
-  assert.match(source, new RegExp(`#\\[test\\][\\s\\S]*?\\bfn ${name}\\(`));
-  if (test.input !== null) {
-    assert.ok(typeof test.input === "string");
+  assertCompiledIdentityConsumer(source, test.selector, test.input);
+}
+
+export function assertCompiledIdentityConsumer(source: string, selector: string, input: unknown) {
+  const name = selector.split("::").at(-1)!;
+  assert.match(
+    source,
+    new RegExp(`#\\[test\\]\\s*(?:#\\[[^\\n\\]]*\\]\\s*)*fn ${name}\\s*\\(`),
+    `test attribute must belong to ${name}`,
+  );
+  if (input !== null) {
+    assert.ok(typeof input === "string");
     assert.ok(source.includes("include_bytes!(concat!("));
-    assert.ok(source.includes(test.input), "compiled consumer must read its pinned input");
+    assert.ok(source.includes(input), "compiled consumer must read its pinned input");
   }
 }
 function preserveHistoricalAbi(read: ReadFile, value: unknown) {
@@ -89,6 +97,38 @@ function preserveHistoricalAbi(read: ReadFile, value: unknown) {
   );
 }
 
+/** Read the registered historical actor without pinning the working tree to it. */
+export function nativeDocumentIdentityActor(read: ReadFile, current: unknown) {
+  assert.ok(Array.isArray(current) && current.length === 1);
+  const row = object(current[0]);
+  assert.equal(hash(Buffer.from(canonical(row))), registrationSha256);
+  const image = JSON.parse(
+    gunzipSync(
+      pinned(
+        read,
+        "head",
+        "tests/_fixtures/differential/typechecker/native-document-identity-11586/after-source.json.gz",
+        "ace8752e10421d6c39fc9a15d8a29a77df8b30cd7e6117ac28c3c092151704b8",
+      ),
+    ).toString("utf8"),
+  );
+  assert.equal(image.revision, "76917ec0be4d2485b4f383660603cdfb9734eb60");
+  assert.ok(Array.isArray(row.sources));
+  assert.deepEqual(
+    Object.keys(image.sources),
+    row.sources.map((value) => object(value).path),
+  );
+  const actor = new Map<string, Buffer>();
+  for (const value of row.sources) {
+    const source = object(value);
+    assert.ok(typeof source.path === "string");
+    const bytes = Buffer.from(image.sources[source.path], "base64");
+    assert.equal(hash(bytes), source.after, `changed historical identity source: ${source.path}`);
+    actor.set(source.path, bytes);
+  }
+  return actor;
+}
+
 /** A finite source/input registration supplies no native or performance qualification. */
 export function newNativeDocumentIdentityCases(
   previous: unknown,
@@ -96,8 +136,14 @@ export function newNativeDocumentIdentityCases(
   read: ReadFile,
 ) {
   const result = { ids: [] as string[], sources: new Set<string>() };
-  if (current === undefined) return result;
   assert.ok(previous === undefined || Array.isArray(previous));
+  if (current === undefined) {
+    assert.ok(
+      previous === undefined || previous.length === 0,
+      "registered identity history must remain unchanged",
+    );
+    return result;
+  }
   assert.ok(Array.isArray(current) && current.length === 1);
   const row = object(current[0]);
   assert.equal(row.id, NATIVE_DOCUMENT_IDENTITY_ID);
@@ -105,6 +151,18 @@ export function newNativeDocumentIdentityCases(
     assert.deepEqual(current, previous, "registered identity history must remain unchanged");
     return result;
   }
+  assert.ok(
+    Array.isArray(row.sources) && row.sources.length === 17,
+    "identity transition requires 17 sources",
+  );
+  assert.ok(
+    Array.isArray(row.inputs) && row.inputs.length === 2,
+    "identity transition requires 2 inputs",
+  );
+  assert.ok(
+    Array.isArray(row.tests) && row.tests.length === 2,
+    "identity transition requires 2 tests",
+  );
   assert.equal(
     hash(Buffer.from(canonical(row))),
     registrationSha256,
@@ -114,7 +172,6 @@ export function newNativeDocumentIdentityCases(
   assert.equal(row.adapter, "native-document-identity-current-v1");
   assert.deepEqual(row.targets, ["native-document-identity"]);
   assert.equal(row.nativeQualification, false);
-  assert.ok(Array.isArray(row.sources) && row.sources.length === 17);
   const archive = object(row.sourceArchive);
   const originals = JSON.parse(
     gunzipSync(pinned(read, "head", archive.path, archive.sha256)).toString("utf8"),
@@ -131,7 +188,6 @@ export function newNativeDocumentIdentityCases(
     result.sources.add(String(source.path));
   }
   assert.ok(result.sources.has(componentSource));
-  assert.ok(Array.isArray(row.inputs) && row.inputs.length === 2);
   for (const [index, value] of row.inputs.entries()) {
     const input = object(value);
     const fixture = JSON.parse(pinned(read, "head", input.path, input.sha256).toString("utf8"));
@@ -157,7 +213,6 @@ export function newNativeDocumentIdentityCases(
       ]);
     }
   }
-  assert.ok(Array.isArray(row.tests) && row.tests.length === 2);
   row.tests.forEach((value) => consumer(read, value));
   preserveHistoricalAbi(read, row.legacyProtocol);
   result.ids.push(NATIVE_DOCUMENT_IDENTITY_ID);

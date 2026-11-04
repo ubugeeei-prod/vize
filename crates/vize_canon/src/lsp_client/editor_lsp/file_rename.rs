@@ -77,6 +77,90 @@ fn editor_lsp_will_rename_error_is_unsupported(error: &str) -> bool {
 mod tests {
     use super::is_script_document_uri;
 
+    #[cfg(unix)]
+    #[test]
+    fn materialized_renames_share_one_native_namespace_and_keep_each_caller_context() {
+        use crate::file_uri::path_to_file_uri;
+        use crate::lsp_client::CorsaProjectClient;
+        use serde_json::{Value, json};
+        use std::{fs, os::unix::fs::PermissionsExt};
+
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let workspace = root.join("workspace");
+        let linked = root.join("linked");
+        fs::create_dir(&workspace).unwrap();
+        std::os::unix::fs::symlink(&workspace, &linked).unwrap();
+        for name in ["first.ts", "second.ts"] {
+            fs::write(workspace.join(name), "export const value = 1;").unwrap();
+        }
+        let peer = root.join("rename-peer.ts");
+        let transcript = root.join("rename-packets.jsonl");
+        let original = include_str!("native_shutdown/peer.ts.txt");
+        let anchor = "} else if (request.method === \"textDocument/hover\") {";
+        assert_eq!(original.matches(anchor).count(), 1);
+        let handler = r#"} else if (request.method === "workspace/willRenameFiles") {
+      const { files } = request.params as { files: Array<{ oldUri: string; newUri: string }> };
+      await respond(request, { changes: Object.fromEntries(files.map(({ oldUri }) => [oldUri, [{ newText: oldUri }]])) });
+    } else if (request.method === "textDocument/hover") {"#;
+        fs::write(
+            &peer,
+            original
+                .replace("LOG_PATH", &serde_json::to_string(&transcript).unwrap())
+                .replace("REPLY_MODE", "\"ok\"")
+                .replace(anchor, handler),
+        )
+        .unwrap();
+        fs::set_permissions(&peer, fs::Permissions::from_mode(0o755)).unwrap();
+        let mut client = CorsaProjectClient::batch_editor_peer_for_test(&peer, &workspace).unwrap();
+        client.materialized_project_session = true;
+        let old_first = path_to_file_uri(&linked.join("first.ts"));
+        let new_first = path_to_file_uri(&linked.join("first-renamed.ts"));
+        let old_second = path_to_file_uri(&workspace.join("second.ts"));
+        let new_second = path_to_file_uri(&workspace.join("second-renamed.ts"));
+        let native = [&old_first, &new_first, &old_second, &new_second].map(|uri| {
+            crate::lsp_client::session_paths::build_materialized_session_document_uri(
+                uri,
+                &workspace,
+                client.overlay_storage.root(),
+            )
+            .unwrap()
+        });
+        let edit = client
+            .will_rename_files_via_editor_lsp(&[
+                (&old_first, &new_first),
+                (&old_second, &new_second),
+            ])
+            .unwrap();
+        client.shutdown().unwrap();
+        let packets = fs::read_to_string(&transcript)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str::<Value>(line).unwrap())
+            .collect::<Vec<_>>();
+        let requests = packets
+            .iter()
+            .filter(|packet| packet["direction"] == "request")
+            .map(|packet| &packet["wholePacket"])
+            .filter(|packet| packet["method"] == "workspace/willRenameFiles")
+            .map(|packet| packet["params"].clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            requests,
+            vec![json!({"files":[
+                {"oldUri":native[0],"newUri":native[1]},
+                {"oldUri":native[2],"newUri":native[3]},
+            ]})]
+        );
+        assert_eq!(
+            edit,
+            Some(json!({"changes":{
+                old_first:[{"newText":native[0]}], old_second:[{"newText":native[2]}],
+            }}))
+        );
+        assert_eq!(packets.last(), Some(&json!({"event":"stdin-eof"})));
+    }
+
     #[test]
     fn script_identities_route_through_the_native_rename() {
         for uri in [

@@ -466,6 +466,22 @@ mod tests {
     use super::{CorsaProjectClient, Value};
 
     #[test]
+    fn hierarchy_items_preserve_unmapped_foreign_documents() {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.join("workspace"));
+        client.materialized_project_session = true;
+        let foreign = crate::file_uri::path_to_file_uri(&root.join("foreign/module.ts"));
+        let item = serde_json::json!({"uri":foreign,"data":{"uri":foreign}});
+        assert_eq!(
+            client.native_call_hierarchy_item(item.clone()).unwrap(),
+            (foreign, item)
+        );
+        assert!(client.session_document_uris.is_empty());
+        assert!(client.external_document_uris.is_empty());
+    }
+
+    #[test]
     fn hierarchy_items_keep_native_identity_and_opaque_data() {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();

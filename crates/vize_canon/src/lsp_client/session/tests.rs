@@ -8,6 +8,31 @@ use crate::file_uri::path_to_file_uri;
 use corsa::CorsaError;
 use corsa::api::{ApiMode, DocumentIdentifier};
 
+#[test]
+fn moving_one_spelling_preserves_the_other_native_identity_owner() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let mut client = super::CorsaProjectClient::empty_for_test(root);
+    let first = "file:///workspace/a.ts";
+    let second = "file:///workspace/a%2Ets";
+    let native = "file:///native/a.ts";
+    client.remember_session_document_uri(first, native.into());
+    client.remember_session_document_uri(second, native.into());
+    client.remember_session_document_uri(first, "file:///native/moved.ts".into());
+    assert_eq!(
+        client
+            .external_document_uris
+            .get(native)
+            .map(|uri| uri.as_str()),
+        Some(second)
+    );
+    assert_eq!(client.session_document_uris.get(second).unwrap(), native);
+    assert_eq!(
+        client.session_document_uris.get(first).unwrap(),
+        "file:///native/moved.ts"
+    );
+}
+
 #[cfg(unix)]
 #[test]
 fn linked_workspace_virtual_documents_keep_their_import_namespace() {
