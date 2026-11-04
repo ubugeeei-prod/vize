@@ -8,6 +8,11 @@ import { fileURLToPath } from "node:url";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import { verifyRawAriaContext } from "./aria-component-raw-context.ts";
 import {
+  copyAriaDeclarations,
+  sourceAriaDeclarationFiles,
+  sourceAriaSharedImport,
+} from "./aria-source-package.ts";
+import {
   ariaComponentProjects,
   ariaPropReference,
   ariaPropReferenceStdout,
@@ -57,9 +62,6 @@ const consumer = fs.realpathSync(required("--consumer")),
     ? fs.realpathSync(required("--candidate-cli"))
     : undefined;
 assert.equal(options.has("--source-sha"), !!candidate);
-// Source-mode packages include the extracted slot and emit-overload modules.
-// Installed release roles retain their separately pinned declaration inventory.
-if (candidate) packageFiles.push("virtual-ts-emit-overloads.d.ts", "virtual-ts-slots.d.ts");
 assert.ok(
   !options.has("--source-package") || candidate,
   "installed mode cannot override package files",
@@ -72,6 +74,9 @@ const sourcePackage = candidate
   : path.join(consumer, "node_modules/vize");
 const manifest = JSON.parse(fs.readFileSync(path.join(sourcePackage, "package.json"), "utf8"));
 assert.equal(manifest.name, "vize");
+// Source packages follow their declared inventory; installed roles retain the frozen release image.
+const declarationFiles = candidate ? sourceAriaDeclarationFiles(manifest) : packageFiles;
+const sharedImport = candidate ? sourceAriaSharedImport : 'import type {} from "vize/virtual-ts";';
 for (const name of ["./virtual-ts", "./content-mapper-helpers"]) assert.ok(manifest.exports[name]);
 const environment = Object.fromEntries(
   Object.entries(process.env).filter(
@@ -208,11 +213,7 @@ for (const project of ariaComponentProjects()) {
         );
     }
     packageRoot = path.join(modules, "vize");
-    for (const file of packageFiles) {
-      const target = path.join(packageRoot, file);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.copyFileSync(path.join(sourcePackage, file), target);
-    }
+    copyAriaDeclarations(sourcePackage, packageRoot, declarationFiles);
     const sourceManifest = structuredClone(manifest);
     sourceManifest.typescript.contentMapper.exec = [candidate, "content-mapper"];
     write(path.join(packageRoot, "package.json"), sourceManifest);
@@ -299,7 +300,7 @@ for (const project of ariaComponentProjects()) {
         assert.equal(typeof packet.text, "string");
         const text = packet.text as string;
         assert.equal(
-          text.split('import type {} from "vize/virtual-ts";').length,
+          text.split(sharedImport).length,
           2,
           "exercise the actual shipped shared declaration module",
         );
