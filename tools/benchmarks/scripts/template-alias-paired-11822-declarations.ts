@@ -4,8 +4,14 @@ export interface DeclarationFile {
   path: string;
   bytes: number;
   sha256: string;
-  relativeImports: { specifier?: string; referencePath?: string; target: string }[];
+  relativeImports: {
+    specifier?: string;
+    referencePath?: string;
+    referenceTypes?: string;
+    target: string;
+  }[];
   externalImports: string[];
+  externalTypeReferences: string[];
 }
 export interface DeclarationClosure {
   parserVersion: string;
@@ -112,6 +118,7 @@ export function declarationClosure(directory: string, ts: TypeScriptApi): Declar
       sha256: createHash("sha256").update(bytes).digest("hex"),
       relativeImports: [],
       externalImports: [],
+      externalTypeReferences: [],
     };
     visited.set(path, receipt);
     const info = ts.preProcessFile(text, true, true);
@@ -146,6 +153,36 @@ export function declarationClosure(directory: string, ts: TypeScriptApi): Declar
       const target = resolve(dirname(path), reference.fileName);
       receipt.relativeImports.push({
         referencePath: reference.fileName,
+        target: relative(root, target),
+      });
+      walk(target);
+    }
+    for (const reference of info.typeReferenceDirectives) {
+      const name = reference.fileName;
+      assert.ok(
+        !isAbsolute(name) && !/^(?:[A-Za-z]:[\\/]|\\\\|[A-Za-z][A-Za-z\d+.-]*:)/.test(name),
+        `absolute type reference is forbidden: ${name}`,
+      );
+      if (!name.startsWith(".")) {
+        receipt.externalTypeReferences.push(name);
+        continue;
+      }
+      const resolved = ts.resolveTypeReferenceDirective(
+        name,
+        path,
+        {
+          module: ts.ModuleKind.NodeNext,
+          moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        },
+        ts.sys,
+      ).resolvedTypeReferenceDirective;
+      const target = resolved?.resolvedFileName;
+      assert.ok(
+        typeof target === "string" && declaration.test(target),
+        `missing relative type reference ${name} from ${receipt.path}`,
+      );
+      receipt.relativeImports.push({
+        referenceTypes: name,
         target: relative(root, target),
       });
       walk(target);

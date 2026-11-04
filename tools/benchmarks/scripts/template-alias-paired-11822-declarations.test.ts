@@ -100,3 +100,42 @@ test("all conditional types exports and recursive relative imports are required 
     writeFileSync(join(root, file), bytes);
   }
 });
+
+test("relative reference types require physical same-package closure while bare types remain external authority", (t) => {
+  const root = fixture(t);
+  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
+  manifest.types = "./entry.d.ts";
+  writeFileSync(join(root, "package.json"), JSON.stringify(manifest));
+  const entry = join(root, "entry.d.ts"),
+    types = join(root, "types.d.ts");
+  const original =
+    '/// <reference types="./types.d.ts" />\n/// <reference types="node" />\n/// <reference types="@fixture/external" />\nexport {};\n';
+  writeFileSync(entry, original);
+  writeFileSync(
+    types,
+    '/// <reference types="./entry.d.ts" />\ninterface LocalTypes { field:string }\n',
+  );
+  const admitted = declarationClosure(root, typescript);
+  assert.ok(admitted.files.some(({ path }) => path === "types.d.ts"));
+  const metadata = admitted.files.find(({ path }) => path === "entry.d.ts");
+  assert.ok(metadata);
+  assert.deepEqual(metadata.externalTypeReferences, ["node", "@fixture/external"]);
+  assert.ok(
+    metadata.relativeImports.some(
+      ({ referenceTypes, target }) => referenceTypes === "./types.d.ts" && target === "types.d.ts",
+    ),
+  );
+  const bytes = readFileSync(types);
+  rmSync(types);
+  assert.throws(() => declarationClosure(root, typescript), /missing relative type reference/);
+  writeFileSync(types, bytes);
+  assert.deepEqual(declarationClosure(root, typescript), admitted);
+  const escaped = join(dirname(root), "escaped.d.ts");
+  writeFileSync(escaped, "interface Escaped {}\n");
+  writeFileSync(entry, '/// <reference types="../escaped.d.ts" />\n');
+  assert.throws(() => declarationClosure(root, typescript), /escaped package/);
+  for (const name of [types, "C:\\outside\\types.d.ts", `file://${types}`]) {
+    writeFileSync(entry, `/// <reference types=${JSON.stringify(name)} />\n`);
+    assert.throws(() => declarationClosure(root, typescript), /absolute type reference/);
+  }
+});
