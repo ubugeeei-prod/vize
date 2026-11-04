@@ -9,6 +9,8 @@ use super::{VirtualTsOptions, generate_virtual_ts_with_offsets};
 use vize_carton::String;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+mod current_capture;
+
 fn generate(script: &str, template: &str) -> String {
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
@@ -16,7 +18,7 @@ fn generate(script: &str, template: &str) -> String {
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
-    generate_virtual_ts_with_offsets(
+    let code = generate_virtual_ts_with_offsets(
         &analyzer.finish(),
         Some(script),
         Some(&root),
@@ -24,7 +26,9 @@ fn generate(script: &str, template: &str) -> String {
         0,
         &VirtualTsOptions::default(),
     )
-    .code
+    .code;
+    current_capture::record(script, template, &code);
+    code
 }
 
 #[test]
