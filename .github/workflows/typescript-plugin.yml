@@ -12,6 +12,7 @@ on:
       - editors/vscode/package.json
       - editors/vscode/.vscodeignore
       - tests/typescript-plugin/**
+      - tests/_fixtures/tooling/typescript-classification-runtime-11664/**
       - tests/tooling/vscode-typescript*
       - tests/tooling/cargo-metadata-observer.test.ts
       - tools/support/ci/cargo-metadata-observer.ts
