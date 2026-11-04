@@ -16,6 +16,15 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
   const text = body.toString("utf8");
   assert.deepEqual(Buffer.from(text), body);
   assert.equal(text.split(addedExports).length, 2, "exact project API export addition");
+  const before =
+    "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
+  const after =
+    "module.exports.validateDesignTokenReference = nativeBinding.validateDesignTokenReference;\n";
+  assert.equal(
+    text.split(before + addedExports + after).length,
+    2,
+    "project API exports retain their canonical initialization position",
+  );
   const original = Buffer.from(text.replace(addedExports, ""));
   assert.equal(original.length, reference.bytes, "complete original native loader length");
   assert.equal(sha256(original), reference.sha256, "complete original native loader program");

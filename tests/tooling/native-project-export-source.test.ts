@@ -31,3 +31,19 @@ test("unknown exports and modules cannot acquire the original loader authority",
   }
   assert.throws(() => originalNativeLoaderModule("unknown.js", body));
 });
+
+test("relocated project API exports cannot inherit the original initialization law", () => {
+  const current = fs.readFileSync(new URL("../../npm/native/index.js", import.meta.url), "utf8");
+  const addition =
+    "module.exports.typeProjectInputs = nativeBinding.typeProjectInputs;\n" +
+    "module.exports.typeProjectOwners = nativeBinding.typeProjectOwners;\n";
+  const original = current.replace(addition, "");
+  assert.notEqual(original, current);
+  for (const relocated of [
+    addition + original,
+    original + addition,
+    original.replace("const ", addition + "const "),
+  ]) {
+    assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(relocated)));
+  }
+});
