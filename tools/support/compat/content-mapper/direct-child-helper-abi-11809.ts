@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   assertOutput,
   expectedOutput,
@@ -27,76 +28,68 @@ export function verifyHelperAbiFallbacks(
   ];
   const originals = new Map(files.map((file) => [file, fs.readFileSync(path.join(sdk, file))]));
   const before = files.map((file) => identity(path.join(sdk, file)));
-  const frontends = ["ts", "mts", "cts"].map(
-    (extension) => `content-mapper-helpers.d.${extension}`,
+  type Mutation =
+    | { kind: "replace"; files: string[]; before: string; after: string }
+    | { kind: "remove"; file: string }
+    | { kind: "remove-helper-export" };
+  const planFile = fileURLToPath(
+    new URL(
+      "../../../../tests/_fixtures/differential/typechecker/content-mapper-helper-abi-11809/cases.json",
+      import.meta.url,
+    ),
   );
-  const variants = ["ts", "mts", "cts"].map((extension) => `virtual-ts.d.${extension}`);
-  const write = (file: string, text: string) => fs.writeFileSync(path.join(sdk, file), text);
-  const replace = (file: string, from: string, to: string) => {
-    const original = originals.get(file)!.toString();
-    assert.equal(original.split(from).length, 2, `${file} unique mutation boundary`);
-    write(file, original.replace(from, to));
+  const planIdentity = identity(planFile);
+  const plan = JSON.parse(fs.readFileSync(planFile, "utf8")) as {
+    version: number;
+    cases: { name: string; mutations: Mutation[] }[];
   };
-  const legacyFrontends = () =>
-    frontends.forEach((file) =>
-      replace(
-        file,
-        'export type * from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };\n',
-        "",
-      ),
-    );
-  const cases: [string, () => void][] = [
-    [
-      "missing-public-virtual-alias",
-      () =>
-        variants.forEach((file) =>
-          replace(file, "type $ComponentRawProps<", "type $MissingComponentRawProps<"),
-        ),
-    ],
-    [
-      "missing-private-binding",
-      () =>
-        replace(
-          "virtual-ts-emits.d.ts",
-          "type $LooseEmitPropsFactory<",
-          "type $MissingLooseEmitPropsFactory<",
-        ),
-    ],
-    ["missing-private-dependency", () => fs.unlinkSync(path.join(sdk, "virtual-ts-emits.d.ts"))],
-    [
-      "missing-core-export",
-      () => replace("generated/content-mapper-types.d.ts", "  $ComponentInput,\n", ""),
-    ],
-    [
-      "legacy-no-generated-types",
-      () => {
-        legacyFrontends();
-        fs.unlinkSync(path.join(sdk, "generated/content-mapper-types.d.ts"));
-      },
-    ],
-    ["legacy-unexported-types", legacyFrontends],
-    [
-      "legacy-unexported-package",
-      () => {
-        const value = JSON.parse(originals.get("package.json")!.toString()) as {
-          exports: Record<string, unknown>;
-        };
-        delete value.exports["./content-mapper-helpers"];
-        write("package.json", JSON.stringify(value, null, 2) + "\n");
-      },
-    ],
-    ["restored-sdk", () => {}],
-  ];
+  assert.equal(plan.version, 1);
+  const cases = plan.cases;
+  assert.equal(cases.length, 8);
+  assert.equal(new Set(cases.map((row) => row.name)).size, 8);
+  const write = (file: string, text: string) => {
+    assert.ok(originals.has(file), "only snapshotted SDK inputs may change");
+    fs.writeFileSync(path.join(sdk, file), text);
+  };
+  const mutate = (mutations: Mutation[]) => {
+    for (const mutation of mutations) {
+      switch (mutation.kind) {
+        case "replace":
+          for (const file of mutation.files) {
+            assert.ok(originals.has(file));
+            const original = originals.get(file)!.toString();
+            assert.ok(mutation.before);
+            assert.equal(original.split(mutation.before).length, 2, file);
+            write(file, original.replace(mutation.before, mutation.after));
+          }
+          break;
+        case "remove":
+          assert.ok(originals.has(mutation.file));
+          fs.unlinkSync(path.join(sdk, mutation.file));
+          break;
+        case "remove-helper-export": {
+          const value = JSON.parse(originals.get("package.json")!.toString()) as {
+            exports: Record<string, unknown>;
+          };
+          delete value.exports["./content-mapper-helpers"];
+          write("package.json", JSON.stringify(value, null, 2) + "\n");
+          break;
+        }
+        default:
+          assert.fail("unknown ABI mutation");
+      }
+    }
+  };
   const capture = path.join(output, "helper-abi");
   fs.mkdirSync(capture, { recursive: true });
   const completed: string[] = [];
   let qualified = false;
   let sdkRestored = true;
   try {
-    for (const [name, mutate] of cases) {
+    for (const { name, mutations } of cases) {
       try {
         sdkRestored = false;
-        mutate();
+        mutate(mutations);
         const directory = path.join(capture, name);
         fs.mkdirSync(directory);
         writeJson(path.join(directory, "sdk-state.json"), {
@@ -136,10 +129,15 @@ export function verifyHelperAbiFallbacks(
         sdkRestored = true;
       }
     }
-    assert.equal(completed.length, 16);
+    assert.deepEqual(
+      completed,
+      cases.flatMap(({ name }) => roles.map((role) => name + ":" + role)),
+    );
+    assert.deepEqual(identity(planFile), planIdentity);
     qualified = true;
   } finally {
     writeJson(path.join(capture, "inventory.json"), {
+      inputPlan: planIdentity,
       completed,
       qualified,
       authoredInputContrastsVerified: completed.length,

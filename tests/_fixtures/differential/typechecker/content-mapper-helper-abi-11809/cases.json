@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "scope": "controlled SDK ABI-gap class; reporter installation cause unknown",
+  "cases": [
+    {
+      "name": "missing-public-virtual-alias",
+      "mutations": [
+        {
+          "kind": "replace",
+          "files": [
+            "virtual-ts.d.ts",
+            "virtual-ts.d.mts",
+            "virtual-ts.d.cts"
+          ],
+          "before": "type $ComponentRawProps<",
+          "after": "type $MissingComponentRawProps<"
+        }
+      ]
+    },
+    {
+      "name": "missing-private-binding",
+      "mutations": [
+        {
+          "kind": "replace",
+          "files": [
+            "virtual-ts-emits.d.ts"
+          ],
+          "before": "type $LooseEmitPropsFactory<",
+          "after": "type $MissingLooseEmitPropsFactory<"
+        }
+      ]
+    },
+    {
+      "name": "missing-private-dependency",
+      "mutations": [
+        {
+          "kind": "remove",
+          "file": "virtual-ts-emits.d.ts"
+        }
+      ]
+    },
+    {
+      "name": "missing-core-export",
+      "mutations": [
+        {
+          "kind": "replace",
+          "files": [
+            "generated/content-mapper-types.d.ts"
+          ],
+          "before": "  $ComponentInput,\n",
+          "after": ""
+        }
+      ]
+    },
+    {
+      "name": "legacy-no-generated-types",
+      "mutations": [
+        {
+          "kind": "replace",
+          "files": [
+            "content-mapper-helpers.d.ts",
+            "content-mapper-helpers.d.mts",
+            "content-mapper-helpers.d.cts"
+          ],
+          "before": "export type * from \"./generated/content-mapper-types.js\" with { \"resolution-mode\": \"import\" };\n",
+          "after": ""
+        },
+        {
+          "kind": "remove",
+          "file": "generated/content-mapper-types.d.ts"
+        }
+      ]
+    },
+    {
+      "name": "legacy-unexported-types",
+      "mutations": [
+        {
+          "kind": "replace",
+          "files": [
+            "content-mapper-helpers.d.ts",
+            "content-mapper-helpers.d.mts",
+            "content-mapper-helpers.d.cts"
+          ],
+          "before": "export type * from \"./generated/content-mapper-types.js\" with { \"resolution-mode\": \"import\" };\n",
+          "after": ""
+        }
+      ]
+    },
+    {
+      "name": "legacy-unexported-package",
+      "mutations": [
+        {
+          "kind": "remove-helper-export"
+        }
+      ]
+    },
+    {
+      "name": "restored-sdk",
+      "mutations": []
+    }
+  ]
+}
