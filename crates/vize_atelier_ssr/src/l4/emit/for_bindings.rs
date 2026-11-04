@@ -64,7 +64,12 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 .map(|alias| {
                     rewrite_for_alias_expressions(alias, |expr| self.text_expr(expr)).map(|text| {
                         let authored = text.unwrap_or_else(|| String::from(alias));
-                        erase_typescript_params(authored.as_str()).unwrap_or(authored)
+                        self.ctx
+                            .options
+                            .is_ts
+                            .then(|| erase_typescript_params(authored.as_str()))
+                            .flatten()
+                            .unwrap_or(authored)
                     })
                 })
                 .transpose()
