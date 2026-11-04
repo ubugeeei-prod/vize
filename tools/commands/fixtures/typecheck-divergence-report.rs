@@ -25,6 +25,7 @@ use std::{
 };
 
 mod baseline_usability;
+mod typechecker_qualification;
 use vize_tool_support::common as common;
 mod project_deadline;
 use project_deadline::ProjectContext;
@@ -43,11 +44,9 @@ struct Args {
     vize_bin: PathBuf,
     vue_tsc_bin: PathBuf,
 }
-
 fn main() -> ExitCode {
     common::main_result(run())
 }
-
 fn run() -> Result<(), String> {
     let root = common::repo_root()?;
     let args = parse_args(env::args().skip(1).collect(), &root)?;
@@ -110,7 +109,6 @@ fn run() -> Result<(), String> {
     }
     Ok(())
 }
-
 fn supervise_project(root: &Path, args: &Args, project: &Value) -> Result<Option<Value>, String> {
     let started = Instant::now();
     validate_performance(project)?;
@@ -171,7 +169,6 @@ fn supervise_project(root: &Path, args: &Args, project: &Value) -> Result<Option
         None => Err("invalid worker result".into()),
     }
 }
-
 fn write_project_artifact(
     root: &Path,
     args: &Args,
@@ -607,7 +604,6 @@ fn write_project_artifact(
     println!("Wrote {}", display_relative(root, &markdown_path));
     Ok(artifact)
 }
-
 /// Reusing a report directory must not leave an earlier accepted comparison at
 /// the live path when this attempt fails. Preserve only this collector's owned
 /// files, under names that cannot be mistaken for current matrix reports.
@@ -766,7 +762,7 @@ fn read_and_validate_vize_run(
     if runs.len() != 1
         || !matches!(
             runs[0].get("status").and_then(Value::as_str),
-            Some("ok" | "findings")
+            Some("ok" | "findings" | "configuration")
         )
     {
         return Err(format!(
@@ -835,11 +831,10 @@ fn read_and_validate_vize_run(
             "Fixture matrix typechecker stdout does not match parsed output for {project_id}"
         ));
     }
-    let expected_status = if payload.get("exitCode").and_then(Value::as_i64) == Some(0) {
-        "ok"
-    } else {
-        "findings"
-    };
+    let expected_status = typechecker_qualification::typechecker_run_status(
+        payload.get("exitCode").and_then(Value::as_i64).unwrap_or(1),
+        &payload["parsed"],
+    );
     if runs[0].get("status").and_then(Value::as_str) != Some(expected_status) {
         return Err(format!(
             "Fixture matrix typechecker status is inconsistent for {project_id}"
@@ -873,6 +868,11 @@ fn read_and_validate_vize_run(
     {
         return Err(format!(
             "Fixture matrix typechecker summary coverage is inconsistent for {project_id}"
+        ));
+    }
+    if expected_status == "configuration" {
+        return Err(format!(
+            "configuration-only typechecker run is not semantic qualification for {project_id}"
         ));
     }
     let source = json!({

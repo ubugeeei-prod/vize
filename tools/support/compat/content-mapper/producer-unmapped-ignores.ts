@@ -91,3 +91,23 @@ export function withoutProducerUnmappedIgnores<T extends Packet>(
   }
   return result;
 }
+
+/** Authored directives after the producer's unmapped IGNORE rows are certified. */
+export function authoredDirectives(packet: Packet, requireComplete = false) {
+  const certified = withoutProducerUnmappedIgnores(packet, { requireComplete });
+  const table = certified.diagnosticDirectives;
+  if (table == null) return null;
+  const { directives, unusedExpectDirectiveDiagnostics } = table as {
+    directives: Tuple[];
+    unusedExpectDirectiveDiagnostics: unknown;
+  };
+  // The current producer sorts the whole table. Historical authored tuples
+  // keep their identity; order is not the comparison key.
+  const sorted = [...directives].sort((left, right) => {
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) return left[index] - right[index];
+    }
+    return 0;
+  });
+  return { directives: sorted, unusedExpectDirectiveDiagnostics };
+}

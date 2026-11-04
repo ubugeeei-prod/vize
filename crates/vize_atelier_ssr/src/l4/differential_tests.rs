@@ -291,3 +291,47 @@ fn conditional_vnode_metadata_matches_both_lanes_in_each_host_build() {
         }
     }
 }
+
+#[test]
+fn typed_v_for_aliases_are_scoped_on_both_lanes() {
+    let typed =
+        r#"<ul><li v-for="(row: Row, index: number) in rows">{{ row }} {{ index }}</li></ul>"#;
+    let plain = r#"<ul><li v-for="(row, index) in rows">{{ row }} {{ index }}</li></ul>"#;
+    let options = SsrCompilerOptions {
+        is_ts: true,
+        ..SsrCompilerOptions::default()
+    };
+    let experimental = SsrCompilerExperimentalOptions::default();
+    assert_parity(typed, &options, &experimental, "typed v-for aliases");
+    let compile = |source| {
+        let allocator = Allocator::new();
+        let (_, errors, result) = compile_ssr_on_lane(
+            &allocator,
+            source,
+            options.clone(),
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            experimental.clone(),
+            true,
+            SsrLane::Selected,
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        result.code
+    };
+    let typed_code = compile(typed);
+    assert_eq!(typed_code, compile(plain), "{typed_code}");
+    assert!(typed_code.contains("(row, index)"), "{typed_code}");
+    assert!(typed_code.contains("_ssrInterpolate(row)"), "{typed_code}");
+    assert!(
+        typed_code.contains("_ssrInterpolate(index)"),
+        "{typed_code}"
+    );
+    assert!(
+        !typed_code.contains("_ssrInterpolate(_ctx.row)"),
+        "{typed_code}"
+    );
+    assert!(
+        !typed_code.contains("_ssrInterpolate(_ctx.index)"),
+        "{typed_code}"
+    );
+}

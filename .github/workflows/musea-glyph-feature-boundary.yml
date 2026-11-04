@@ -1,0 +1,34 @@
+name: Musea glyph feature boundary
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/musea-glyph-feature-boundary.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: musea-glyph-boundary-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  cli-feature-sets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: musea-glyph-boundary, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Check the CLI without default features
+        run: cargo check --locked -p vize --bin vize --no-default-features
+      - name: Check the CLI with glyph
+        run: cargo check --locked -p vize --bin vize --features glyph
