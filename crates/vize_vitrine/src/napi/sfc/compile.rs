@@ -10,7 +10,7 @@ use super::{
     experimentals::ExperimentalTemplateOptions,
     types::{
         SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, dependencies_to_napi,
-        macro_artifacts_to_napi, style_blocks_to_napi,
+        macro_artifacts_to_napi, style_blocks_to_napi, type_project_to_napi,
     },
 };
 use crate::template_syntax::resolve_template_syntax;
@@ -23,18 +23,15 @@ pub fn compile_sfc(
 ) -> Result<SfcCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-        StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter_with_experimental_options,
-        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,
+        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
+        parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
     let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;
-    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {
-        compile_sfc_for_adapter_with_nuxt_page_meta
-    } else {
-        compile_sfc_for_adapter_with_experimental_options
-    };
+    let type_projects = vize::type_projects::ImportedTypeProjects::new(
+        opts.type_resolution_fallback_tsconfig.as_deref(),
+    );
     let filename: vize_l0::CompactString =
         opts.filename.as_deref().unwrap_or("anonymous.vue").into();
     let parse_opts = SfcParseOptions {
@@ -60,6 +57,7 @@ pub fn compile_sfc(
                 macro_artifacts: vec![],
                 dependencies: None,
                 module_shape: None,
+                type_project: None,
             });
         }
     };
@@ -147,29 +145,44 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result = whitespace.apply(|| {
-        sfc_compile_for_adapter(
+    let compile_result = type_projects
+        .for_descriptor(
             &descriptor,
-            compile_opts,
-            template_syntax,
-            custom_elements,
-            // A requested map is the compiler's structured SFC module map.
-            sfc_codegen_options(
-                source_map,
-                opts.runtime_module_name.as_deref(),
-                opts.runtime_global_name.as_deref(),
-            ),
-            if shape.inline_render {
-                SfcScriptOutputMode::InlineTemplate
-            } else {
-                SfcScriptOutputMode::SeparateTemplate
-            },
-            experimentals.sfc_options(),
+            std::path::Path::new(opts.filename.as_deref().unwrap_or("anonymous.vue")),
         )
-    });
+        .and_then(|type_project| {
+            whitespace.apply(|| {
+                compile_sfc_for_adapter_with_project(
+                    &descriptor,
+                    compile_opts,
+                    template_syntax,
+                    custom_elements,
+                    // A requested map is the compiler's structured SFC module map.
+                    sfc_codegen_options(
+                        source_map,
+                        opts.runtime_module_name.as_deref(),
+                        opts.runtime_global_name.as_deref(),
+                    ),
+                    if shape.inline_render {
+                        SfcScriptOutputMode::InlineTemplate
+                    } else {
+                        SfcScriptOutputMode::SeparateTemplate
+                    },
+                    experimentals.sfc_options(),
+                    opts.nuxt_page_meta.unwrap_or(false),
+                    type_project.as_deref(),
+                )
+                .map(|result| {
+                    (
+                        type_project.track(result),
+                        type_project_to_napi(&type_project),
+                    )
+                })
+            })
+        });
 
     match compile_result {
-        Ok(result) => {
+        Ok((result, type_project)) => {
             // The emitter is the last stop before the bundler, so the code
             // crossing this boundary must already be plain JavaScript — the JS
             // plugin no longer re-strips it. `is_ts` callers opted out: they
@@ -205,6 +218,7 @@ pub fn compile_sfc(
                 macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
                 dependencies: dependencies_to_napi(&result.dependencies),
                 module_shape,
+                type_project,
             })
         }
         Err(e) => Ok(SfcCompileResultNapi {
@@ -222,6 +236,7 @@ pub fn compile_sfc(
             macro_artifacts: vec![],
             dependencies: None,
             module_shape: None,
+            type_project: None,
         }),
     }
 }

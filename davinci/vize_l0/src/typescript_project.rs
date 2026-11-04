@@ -1,0 +1,391 @@
+//! Effective TypeScript options shared by compiler and checker consumers.
+
+mod paths;
+mod rebase;
+pub use paths::{
+    normalize_path_lexically, normalize_tsconfig_path_target, parse_jsonc_value,
+    resolve_extended_tsconfig_path, resolve_extended_tsconfig_path_with_dependencies,
+    strip_json_comments,
+};
+pub use rebase::is_url;
+
+use crate::{FxHashMap, FxHashSet};
+use serde_json::{Map, Value};
+use std::path::{Path, PathBuf};
+
+/// Borrowed input authority for one capture. Implementations retain their own
+/// immutable reads, overlay policy, observations and error representation.
+pub trait CompilerConfigHost {
+    type Error;
+    /// Read the selected bytes; the shared loader observes paths explicitly.
+    fn read_jsonc(&self, path: &Path) -> Result<Value, Self::Error>;
+    /// An observed read. The default records selection inputs explicitly;
+    /// hosts with an existing byte-bound read authority may delegate to it.
+    fn read_jsonc_observed(&self, path: &Path) -> Result<Value, Self::Error> {
+        self.observe(path);
+        self.read_jsonc(path)
+    }
+    fn configuration_error(&self, message: crate::String) -> Self::Error;
+    fn observe(&self, _path: &Path) {}
+    fn resolve_extends(&self, path: &Path, specifier: &str) -> Option<PathBuf> {
+        paths::resolve_extended_tsconfig_path(path, specifier, self)
+    }
+}
+
+#[derive(Clone, Copy)]
+enum PathOptions {
+    Rebase,
+    Verbatim,
+}
+
+/// Directories of the configs whose `paths` and `baseUrl` declarations survived
+/// the `extends` merge.
+///
+/// TypeScript resolves a relative `paths` target against the effective
+/// `baseUrl` when one is declared anywhere in the chain, and against the
+/// directory of the config declaring the winning `paths` map otherwise.
+/// `extends` merging replaces whole values, so each anchor is simply the
+/// directory of the config whose declaration won.
+#[derive(Clone, Default)]
+struct DeclarationDirs {
+    paths: Option<PathBuf>,
+    base_url: Option<PathBuf>,
+}
+
+impl DeclarationDirs {
+    fn absorb_overriding(&mut self, overriding: DeclarationDirs) {
+        if overriding.paths.is_some() {
+            self.paths = overriding.paths;
+        }
+        if overriding.base_url.is_some() {
+            self.base_url = overriding.base_url;
+        }
+    }
+}
+
+/// A flattened `extends` chain: the effective options plus the directories the
+/// surviving `paths` and `baseUrl` declarations came from.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+type FlattenedChain = (Map<std::string::String, Value>, DeclarationDirs);
+
+/// The state of one flattening operation.
+struct ChainLoad<'a, H: CompilerConfigHost + ?Sized> {
+    host: &'a H,
+    /// The configs between the entry point and the one being flattened. Only
+    /// these can close a cycle.
+    active: FxHashSet<PathBuf>,
+    /// Chains already flattened during this operation. A config reachable
+    /// through several `extends` paths is read, parsed and merged once instead
+    /// of once per path, which keeps a diamond graph linear rather than
+    /// exponential in its depth.
+    completed: FxHashMap<PathBuf, FlattenedChain>,
+    /// Whether a cycle was cut while flattening the current chain. That result
+    /// depends on which configs happened to be active, so it is not reusable
+    /// from anywhere else in the graph and must not be cached.
+    cycle_cut: bool,
+    /// `extends` entries that did not resolve. TypeScript reports each one
+    /// (TS6053) and keeps checking with the rest of the chain.
+    unresolved: Vec<UnresolvedExtends>,
+}
+
+/// One `extends` entry that names no readable config.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnresolvedExtends {
+    /// The authored config that declares the entry.
+    pub config: PathBuf,
+    /// The entry as written.
+    pub specifier: crate::String,
+}
+
+impl UnresolvedExtends {
+    /// TypeScript's own TS6053 wording.
+    pub fn message(&self) -> crate::String {
+        crate::cstr!("File '{}' not found.", self.specifier)
+    }
+
+    /// Disclosure for editors, which keep typed services running.
+    pub fn configuration_message(&self) -> crate::String {
+        crate::cstr!(
+            "cannot resolve tsconfig extends {:?} from {}",
+            self.specifier,
+            self.config.display()
+        )
+    }
+}
+
+/// Flattened options plus the effective `baseUrl` (#3886).
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct FlattenedCompilerOptions {
+    pub options: Map<std::string::String, Value>,
+    /// The effective `baseUrl` rebased the way `paths` targets are: relative to
+    /// the project root without a `./` prefix (empty for the root itself), or
+    /// absolute when it escapes the root. `None` when no config declares one.
+    pub base_url: Option<crate::String>,
+    /// Every config file actually read while flattening this chain.
+    pub input_paths: Vec<PathBuf>,
+    /// Entries TypeScript would report and skip.
+    pub unresolved_extends: Vec<UnresolvedExtends>,
+}
+
+impl<'a, H: CompilerConfigHost + ?Sized> ChainLoad<'a, H> {
+    fn new(host: &'a H) -> Self {
+        Self {
+            host,
+            active: FxHashSet::default(),
+            completed: FxHashMap::default(),
+            cycle_cut: false,
+            unresolved: Vec::new(),
+        }
+    }
+}
+
+/// Read-only compiler-option authority over an already-selected project root.
+/// This context never constructs a virtual project, acquires its cache lock, or
+/// refreshes unrelated source/emission policies. All chain parsing stays shared.
+pub struct CompilerOptionsContext<'a> {
+    project_root: &'a Path,
+    strict_structure: bool,
+}
+
+impl<'a> CompilerOptionsContext<'a> {
+    pub fn new(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            strict_structure: false,
+        }
+    }
+
+    pub fn observed(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            strict_structure: true,
+        }
+    }
+
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    pub fn load_verbatim<H: CompilerConfigHost + ?Sized>(
+        &self,
+        tsconfig_path: &Path,
+        host: &H,
+    ) -> Result<Map<std::string::String, Value>, H::Error> {
+        let mut load = ChainLoad::new(host);
+        Ok(self
+            .load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Verbatim)?
+            .0)
+    }
+
+    pub fn load_flattened<H: CompilerConfigHost + ?Sized>(
+        &self,
+        tsconfig_path: Option<&Path>,
+        host: &H,
+    ) -> Result<FlattenedCompilerOptions, H::Error> {
+        let Some(tsconfig_path) = tsconfig_path else {
+            return Ok(FlattenedCompilerOptions::default());
+        };
+        let mut load = ChainLoad::new(host);
+        let (mut options, dirs) =
+            self.load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Rebase)?;
+
+        let raw_base_url = options
+            .get("baseUrl")
+            .and_then(Value::as_str)
+            .map(str::to_owned);
+        let base_url = match (&raw_base_url, &dirs.base_url) {
+            (Some(raw), Some(dir)) => {
+                Some(normalize_tsconfig_path_target(dir, self.project_root, raw))
+            }
+            _ => None,
+        };
+
+        let paths_anchor = match (&raw_base_url, &dirs.base_url) {
+            (Some(raw), Some(dir)) => Some(normalize_path_lexically(&dir.join(raw))),
+            _ => dirs.paths,
+        };
+        if let (Some(anchor), Some(paths)) = (
+            paths_anchor.as_deref(),
+            options.get_mut("paths").and_then(Value::as_object_mut),
+        ) {
+            rebase::paths_onto_project_root(paths, anchor, self.project_root);
+        }
+
+        let mut input_paths = load.completed.keys().cloned().collect::<Vec<_>>();
+        input_paths.push(normalize_path_lexically(tsconfig_path));
+        input_paths.sort();
+        input_paths.dedup();
+        Ok(FlattenedCompilerOptions {
+            options,
+            base_url,
+            input_paths,
+            unresolved_extends: load.unresolved,
+        })
+    }
+
+    /// `load.active` is the *active* `extends` path, not a set of everything
+    /// already loaded: each config is removed again once its own chain is
+    /// flattened. Only a config currently being recursed into is a cycle. A
+    /// visited set would also short-circuit an ancestor two sibling `extends`
+    /// entries share, handing the later sibling nothing and leaving the earlier
+    /// one's overrides in place where TypeScript gives the later sibling's
+    /// inherited values. Repeated work is avoided by `load.completed` instead,
+    /// which reuses the flattened chain rather than suppressing it.
+    fn load_compiler_options_inner<H: CompilerConfigHost + ?Sized>(
+        &self,
+        tsconfig_path: &Path,
+        load: &mut ChainLoad<'_, H>,
+        path_options: PathOptions,
+    ) -> Result<FlattenedChain, H::Error> {
+        let normalized = normalize_path_lexically(tsconfig_path);
+        if let Some(cached) = load.completed.get(&normalized) {
+            return Ok(cached.clone());
+        }
+        if !load.active.insert(normalized.clone()) {
+            if self.strict_structure {
+                return Err(load.host.configuration_error(crate::cstr!(
+                    "compiler configuration cycle includes {}",
+                    normalized.display()
+                )));
+            }
+            load.cycle_cut = true;
+            return Ok((Map::new(), DeclarationDirs::default()));
+        }
+        let enclosing_cycle_cut = std::mem::replace(&mut load.cycle_cut, false);
+        let flattened = self.load_extended_compiler_options(&normalized, load, path_options);
+        load.active.remove(&normalized);
+        let chain_cycle_cut = load.cycle_cut;
+        load.cycle_cut = enclosing_cycle_cut || chain_cycle_cut;
+        if !chain_cycle_cut && let Ok(flattened) = &flattened {
+            load.completed.insert(normalized, flattened.clone());
+        }
+        flattened
+    }
+
+    /// The chain rooted at an already-normalized config, with `load.active`
+    /// holding the configs between it and the entry point.
+    fn load_extended_compiler_options<H: CompilerConfigHost + ?Sized>(
+        &self,
+        normalized: &Path,
+        load: &mut ChainLoad<'_, H>,
+        path_options: PathOptions,
+    ) -> Result<FlattenedChain, H::Error> {
+        let config = load.host.read_jsonc_observed(normalized)?;
+        if self.strict_structure {
+            validate_config_structure(&config, normalized, load.host)?;
+        }
+        let mut compiler_options = config
+            .get("compilerOptions")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        // Native TypeScript applies each jsconfig's filename defaults to its
+        // own options before merging them over inherited options.
+        if normalized
+            .file_name()
+            .is_some_and(|name| name == "jsconfig.json")
+        {
+            for (name, value) in [
+                ("allowJs", Value::Bool(true)),
+                ("maxNodeModuleJsDepth", Value::from(2)),
+                ("skipLibCheck", Value::Bool(true)),
+                ("noEmit", Value::Bool(true)),
+            ] {
+                compiler_options.entry(name).or_insert(value);
+            }
+        }
+        let base_dir = normalized.parent().unwrap_or(self.project_root);
+        let mut dirs = DeclarationDirs::default();
+        if compiler_options.contains_key("paths") {
+            dirs.paths = Some(base_dir.to_path_buf());
+        }
+        if compiler_options.contains_key("baseUrl") {
+            dirs.base_url = Some(base_dir.to_path_buf());
+        }
+        if matches!(path_options, PathOptions::Rebase) {
+            rebase::onto_project_root(&mut compiler_options, base_dir, self.project_root);
+        }
+
+        // `extends` may be a single specifier or an array; array entries are
+        // applied in order, with later entries overriding earlier ones, and
+        // the extending file overriding them all.
+        // An entry that does not resolve is recorded for its TS6053 report and
+        // skipped, as TypeScript does: the rest of the chain still applies.
+        let mut inherited = Map::new();
+        let mut inherited_dirs = DeclarationDirs::default();
+        match config.get("extends") {
+            Some(Value::String(extends)) => {
+                if let Some(parent_path) = load.host.resolve_extends(normalized, extends) {
+                    let (parent, parent_dirs) =
+                        self.load_compiler_options_inner(&parent_path, load, path_options)?;
+                    inherited = parent;
+                    inherited_dirs = parent_dirs;
+                } else {
+                    record_unresolved(load, normalized, extends);
+                }
+            }
+            Some(Value::Array(entries)) => {
+                for extends in entries.iter().filter_map(Value::as_str) {
+                    if let Some(parent_path) = load.host.resolve_extends(normalized, extends) {
+                        let (parent, parent_dirs) =
+                            self.load_compiler_options_inner(&parent_path, load, path_options)?;
+                        inherited.extend(parent);
+                        inherited_dirs.absorb_overriding(parent_dirs);
+                    } else {
+                        record_unresolved(load, normalized, extends);
+                    }
+                }
+            }
+            _ => {}
+        }
+        inherited_dirs.absorb_overriding(dirs);
+        if inherited.is_empty() {
+            return Ok((compiler_options, inherited_dirs));
+        }
+
+        inherited.extend(compiler_options);
+        Ok((inherited, inherited_dirs))
+    }
+}
+
+fn record_unresolved<H: CompilerConfigHost + ?Sized>(
+    load: &mut ChainLoad<'_, H>,
+    config: &Path,
+    extends: &str,
+) {
+    let unresolved = UnresolvedExtends {
+        config: config.to_path_buf(),
+        specifier: extends.into(),
+    };
+    if !load.unresolved.contains(&unresolved) {
+        load.unresolved.push(unresolved);
+    }
+}
+
+fn validate_config_structure<H: CompilerConfigHost + ?Sized>(
+    config: &Value,
+    path: &Path,
+    host: &H,
+) -> Result<(), H::Error> {
+    let invalid = if !config.is_object() {
+        Some("the root value must be an object")
+    } else if config
+        .get("compilerOptions")
+        .is_some_and(|value| !value.is_object() && !value.is_null())
+    {
+        Some("compilerOptions must be an object or null")
+    } else if config.get("extends").is_some_and(|value| match value {
+        Value::String(_) => false,
+        Value::Array(entries) => entries.iter().any(|entry| !entry.is_string()),
+        _ => true,
+    }) {
+        Some("extends must be a string or an array of strings")
+    } else {
+        None
+    };
+    if let Some(reason) = invalid {
+        return Err(host.configuration_error(crate::cstr!(
+            "cannot admit tsconfig {}: {reason}",
+            path.display()
+        )));
+    }
+    Ok(())
+}

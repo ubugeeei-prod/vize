@@ -34,6 +34,7 @@ import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
+import { watchTypeProject } from "./type-project-watches.ts";
 
 /** Known SFC diagnostics from speculative startup compilation, without I/O failures. */
 export class PrecompileDiagnosticsError extends Error {
@@ -79,6 +80,7 @@ export async function compileAll(
   state: VizePluginState,
   owners: readonly PrecompileInputOwner[] = [],
   resolve?: HostResolve,
+  addWatchFile?: (path: string) => void,
 ): Promise<void> {
   const startTime = performance.now();
   const files = await glob(state.scanPatterns!, {
@@ -251,6 +253,7 @@ export async function compileAll(
       }
 
       const compiled = state.cache.get(fileResult.path);
+      watchTypeProject(state.cache, fileResult.typeProject, addWatchFile);
       const sourceHash = sourceHashes.get(fileResult.path);
       if (fileResult.warnings.length > 0) {
         // The disk entry does not carry diagnostics. Recompile warned sources

@@ -11,6 +11,10 @@ pub struct TsconfigOwnershipOptions {
 }
 
 impl TsconfigOwnershipOptions {
+    pub(super) const fn case_sensitive(self) -> bool {
+        self.case_sensitive
+    }
+
     /// Build an authority for a host whose file names have the given case
     /// semantics. This is public for remote/virtual hosts and deterministic
     /// cross-platform regression tests.
@@ -137,16 +141,26 @@ impl TsconfigOwnershipCache {
             .cloned()
             .unwrap_or_else(|| graph::normalize_path(tsconfig_path));
         let source_path = graph::normalize_path(source_path);
-        let mut owner = None;
-        for project in projects {
-            if !self.project_owns_normalized_source(&project, &source_path, source_kind) {
-                continue;
-            }
-            if owner.is_some() {
-                return root;
-            }
-            owner = Some(project);
-        }
-        owner.unwrap_or(root)
+        unique_owner(&root, &projects, |project| {
+            self.project_owns_normalized_source(project, &source_path, source_kind)
+        })
     }
+}
+
+pub(super) fn unique_owner<'a>(
+    root: &Path,
+    projects: impl IntoIterator<Item = &'a PathBuf>,
+    mut owns: impl FnMut(&Path) -> bool,
+) -> PathBuf {
+    let mut owner = None;
+    for project in projects {
+        if !owns(project) {
+            continue;
+        }
+        if owner.is_some() {
+            return root.to_path_buf();
+        }
+        owner = Some(project);
+    }
+    owner.cloned().unwrap_or_else(|| root.to_path_buf())
 }

@@ -300,3 +300,25 @@ jobs:
           path: target/css-compile-source-maps/
           if-no-files-found: error
           retention-days: 14
+      - name: Verify imported type projects with the built native image
+        if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        shell: bash
+        env:
+          VIZE_IMPORTED_TYPES_REQUIRE_SOURCE: "1"
+          VIZE_IMPORTED_TYPES_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bindings=("$GITHUB_WORKSPACE"/npm/native/*.node)
+          test "${#bindings[@]}" -eq 1
+          capture="$RUNNER_TEMP/imported-type-project"
+          mkdir -p "$capture"
+          node tests/native/imported-type-project-stats.ts "${bindings[0]}" "$capture/receipt.json"
+      - name: Retain imported type project inputs and source receipts
+        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: imported-type-project-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/imported-type-project/
+          if-no-files-found: error
+          retention-days: 14

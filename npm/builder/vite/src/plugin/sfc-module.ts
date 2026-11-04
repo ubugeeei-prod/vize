@@ -33,6 +33,8 @@ import {
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
+import { watchTypeProject } from "./type-project-watches.ts";
+import { evictCompiledModule } from "./compiled-module-cache.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -164,6 +166,12 @@ export async function transformSfcModule(
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
   // A transform's watch file is a module import; only a legacy `\0` id needs its own file.
+  try {
+    watchTypeProject(state.cache, compiled.typeProject, options.addWatchFile);
+  } catch (error) {
+    evictCompiledModule(cache, realPath);
+    throw error;
+  }
   const dependencies = compiled.dependencies ?? [];
   for (const watchFile of new Set(sfc.nullPrefixed ? [realPath, ...dependencies] : dependencies)) {
     options.addWatchFile?.(watchFile);

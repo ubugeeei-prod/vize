@@ -22,6 +22,9 @@
 extern crate alloc;
 
 pub mod render;
+/// Shared project-selection sessions for native and CLI SFC compilation.
+#[doc(hidden)]
+pub mod type_projects;
 
 mod commands;
 mod config;

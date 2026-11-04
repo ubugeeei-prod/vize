@@ -16,10 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import {
-  DIAGNOSTIC_QUIET_MS,
-  writeLspDiagnosticSettle,
-} from "./smoke-release-init-timing.ts";
+import { DIAGNOSTIC_QUIET_MS, writeLspDiagnosticSettle } from "./smoke-release-init-timing.ts";
 
 const [projectRoot, projectShape = "vite"] = process.argv.slice(2);
 assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root> [vite|nuxt]");

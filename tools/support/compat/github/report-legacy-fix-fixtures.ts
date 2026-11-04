@@ -34,6 +34,11 @@ import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
 import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
 
+import {
+  isCompilerProjectCase,
+  validateCompilerProjectCase,
+} from "../../../../tests/differential/compiler-project.ts";
+
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
 
@@ -156,7 +161,8 @@ function checkCompilerCase(
 ): void {
   const reference = entry.reference;
   const expectedPath = `${root}/module.expected.txt`;
-  if (
+  if (isCompilerProjectCase(entry)) validateCompilerProjectCase(entry);
+  else if (
     entry.id !== `compiler/sfc/${root}` ||
     JSON.stringify(entry.targets) !== JSON.stringify(["ssr"]) ||
     files.length !== 1 ||
@@ -177,7 +183,7 @@ function checkCompilerCase(
   requirePinned(
     readFile,
     `tests/_fixtures/differential/compiler/${expectedPath}`,
-    reference.sha256 ?? "",
+    reference?.sha256 ?? "",
     "compiler reference",
   );
 }

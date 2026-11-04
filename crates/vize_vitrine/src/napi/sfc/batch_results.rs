@@ -17,7 +17,7 @@ use super::{
     types::{
         BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
         BatchFileResultNapi, custom_blocks_to_napi, dependencies_to_napi, macro_artifacts_to_napi,
-        style_blocks_to_napi,
+        style_blocks_to_napi, type_project_to_napi,
     },
 };
 use crate::template_syntax::resolve_template_syntax;
@@ -41,15 +41,12 @@ fn compile_sfc_batch_with_results_inner(
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-        StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter_with_experimental_options,
-        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,
+        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
+        parse_sfc as sfc_parse,
     };
-    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {
-        compile_sfc_for_adapter_with_nuxt_page_meta
-    } else {
-        compile_sfc_for_adapter_with_experimental_options
-    };
+    let type_projects = vize::type_projects::ImportedTypeProjects::new(
+        opts.type_resolution_fallback_tsconfig.as_deref(),
+    );
 
     let total_count = files.len();
     let success_count = AtomicUsize::new(0);
@@ -128,6 +125,7 @@ fn compile_sfc_batch_with_results_inner(
                         macro_artifacts: vec![],
                         dependencies: None,
                         module_shape: None,
+                        type_project: None,
                     };
                 }
             };
@@ -200,25 +198,37 @@ fn compile_sfc_batch_with_results_inner(
                 scope_id: Some(scope_id.clone()),
             };
 
-            let compile_result = whitespace.apply(|| {
-                sfc_compile_for_adapter(
-                    &descriptor,
-                    compile_opts,
-                    template_syntax,
-                    custom_elements.clone(),
-                    // A requested map is the compiler's structured SFC module map.
-                    sfc_codegen_options(
-                        include_source_map,
-                        opts.runtime_module_name.as_deref(),
-                        opts.runtime_global_name.as_deref(),
-                    ),
-                    script_output,
-                    experimentals.sfc_options(),
-                )
-            });
+            let compile_result = type_projects
+                .for_descriptor(&descriptor, std::path::Path::new(&file.path))
+                .and_then(|type_project| {
+                    whitespace.apply(|| {
+                        compile_sfc_for_adapter_with_project(
+                            &descriptor,
+                            compile_opts,
+                            template_syntax,
+                            custom_elements.clone(),
+                            // A requested map is the compiler's structured SFC module map.
+                            sfc_codegen_options(
+                                include_source_map,
+                                opts.runtime_module_name.as_deref(),
+                                opts.runtime_global_name.as_deref(),
+                            ),
+                            script_output,
+                            experimentals.sfc_options(),
+                            opts.nuxt_page_meta.unwrap_or(false),
+                            type_project.as_deref(),
+                        )
+                        .map(|result| {
+                            (
+                                type_project.track(result),
+                                type_project_to_napi(&type_project),
+                            )
+                        })
+                    })
+                });
 
             match compile_result {
-                Ok(result) => {
+                Ok((result, type_project)) => {
                     success_count.fetch_add(1, Ordering::Relaxed);
                     // Empty diagnostic vectors are the common case; skip the
                     // per-element map/collect (and the empty-array boundary
@@ -262,6 +272,7 @@ fn compile_sfc_batch_with_results_inner(
                     BatchFileResultNapi {
                         path: file.path,
                         module_shape,
+                        type_project,
                         code,
                         map,
                         css: result.css.map(Into::into),
@@ -295,6 +306,7 @@ fn compile_sfc_batch_with_results_inner(
                     macro_artifacts: vec![],
                     dependencies: None,
                     module_shape: None,
+                    type_project: None,
                 },
             }
         })
