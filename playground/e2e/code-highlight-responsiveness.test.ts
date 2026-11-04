@@ -9,42 +9,7 @@ function sourceText(host: HTMLElement) {
   ).join("\n");
 }
 
-it("keeps a complete 100k SFC script responsive and replaces it with the latest source", async () => {
-  const host = document.createElement("div");
-  document.body.appendChild(host);
-  const warm = createApp(CodeHighlight, {
-    code: "const warm = 'ready';",
-    language: "typescript",
-  });
-  warm.mount(host);
-  try {
-    await expect.poll(() => host.querySelector(".code-line span[style]")).not.toBeNull();
-  } finally {
-    warm.unmount();
-  }
-
-  const large = `import { ref } from 'vue'; const publicLarge679 = ref<string>(${JSON.stringify("x".repeat(100000))});`;
-  const replacement = 'const current = "日本語😀<&</script>";\n\n// complete current source';
-  const app = createApp(CodeHighlightHarness, { initial: large, replacement });
-  app.mount(host);
-  try {
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    expect(sourceText(host)).toBe(large);
-    host.querySelector("button")!.click();
-    await nextTick();
-    expect(sourceText(host)).toBe(replacement);
-    await expect.poll(() => host.querySelector(".code-line span[style]")).not.toBeNull();
-    expect(sourceText(host)).toBe(replacement);
-    expect(host.querySelector("script")).toBeNull();
-    expect(host.querySelectorAll(".line-number")).toHaveLength(3);
-    expect(host.textContent).not.toContain("publicLarge679");
-  } finally {
-    app.unmount();
-    host.remove();
-  }
-});
-
-it("cancels an actual busy tokenizer while keeping complete source selection and editing available", async () => {
+function observeWorkers() {
   const workers: {
     ready: boolean;
     terminated: boolean;
@@ -98,6 +63,62 @@ it("cancels an actual busy tokenizer while keeping complete source selection and
       },
     }),
   );
+  return workers;
+}
+
+function releaseWorkers(workers: ReturnType<typeof observeWorkers>) {
+  vi.unstubAllGlobals();
+  console.info(
+    "code-highlight-worker-lifecycle",
+    JSON.stringify(workers.map(({ ready, terminated, events }) => ({ ready, terminated, events }))),
+  );
+}
+
+it("keeps a complete 100k SFC script responsive and replaces it with the latest source", async () => {
+  const workers = observeWorkers();
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  try {
+    const warm = createApp(CodeHighlight, {
+      code: "const warm = 'ready';",
+      language: "typescript",
+    });
+    warm.mount(host);
+    try {
+      await nextTick();
+      await workers.at(-1)!.initialized;
+      await expect.poll(() => host.querySelector(".code-line span[style]")).not.toBeNull();
+    } finally {
+      warm.unmount();
+    }
+
+    const large = `import { ref } from 'vue'; const publicLarge679 = ref<string>(${JSON.stringify("x".repeat(100000))});`;
+    const replacement = 'const current = "日本語😀<&</script>";\n\n// complete current source';
+    const app = createApp(CodeHighlightHarness, { initial: large, replacement });
+    app.mount(host);
+    try {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      expect(sourceText(host)).toBe(large);
+      host.querySelector("button")!.click();
+      await nextTick();
+      expect(sourceText(host)).toBe(replacement);
+      await workers.at(-1)!.initialized;
+      await expect.poll(() => host.querySelector(".code-line span[style]")).not.toBeNull();
+      expect(sourceText(host)).toBe(replacement);
+      expect(host.querySelector("script")).toBeNull();
+      expect(host.querySelectorAll(".line-number")).toHaveLength(3);
+      expect(host.textContent).not.toContain("publicLarge679");
+    } finally {
+      app.unmount();
+    }
+  } finally {
+    host.remove();
+    releaseWorkers(workers);
+  }
+});
+
+it("cancels an actual busy tokenizer while keeping complete source selection and editing available", async () => {
+  const workers = observeWorkers();
   const host = document.createElement("div");
   document.body.appendChild(host);
   const large = `import { ref } from 'vue'; const publicLarge679 = ref<string>(${JSON.stringify("x".repeat(100000))});`;
@@ -105,6 +126,8 @@ it("cancels an actual busy tokenizer while keeping complete source selection and
   const app = createApp(CodeHighlightHarness, { initial: large, replacement });
   app.mount(host);
   try {
+    await nextTick();
+    await workers[0].initialized;
     await expect.poll(() => workers[0]?.ready).toBe(true);
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     expect(workers[0].terminated).toBe(false);
@@ -130,13 +153,7 @@ it("cancels an actual busy tokenizer while keeping complete source selection and
   } finally {
     app.unmount();
     host.remove();
-    vi.unstubAllGlobals();
-    console.info(
-      "code-highlight-worker-lifecycle",
-      JSON.stringify(
-        workers.map(({ ready, terminated, events }) => ({ ready, terminated, events })),
-      ),
-    );
+    releaseWorkers(workers);
   }
   expect(workers.every((worker) => worker.terminated)).toBe(true);
 });
