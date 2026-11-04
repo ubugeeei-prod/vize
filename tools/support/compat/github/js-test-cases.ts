@@ -12,6 +12,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -233,7 +234,24 @@ function writeShim(bin: string, name: string, body: string): void {
   writeFileSync(path.join(bin, name), body, { mode: 0o755 });
 }
 
-function shim(tool: "node" | "tsx" | "vp"): string {
+const reporterVariables = [
+  "VIZE_TEST_CASES",
+  "VIZE_TEST_CASES_ROOT",
+  "VIZE_TEST_CASES_NODE",
+  "VIZE_TEST_CASE_PARTIALS",
+  "VIZE_TEST_CASE_SHIM",
+  "VIZE_JS_TEST_CASES",
+  "TEST_CASES_JOB",
+  "GITHUB_RUN_ATTEMPT",
+] as const;
+type ReporterEnvironment = Readonly<Record<(typeof reporterVariables)[number], string>>;
+
+function shim(tool: "node" | "tsx" | "vp", environment: ReporterEnvironment): string {
+  // Cached tasks may filter their environment while retaining this PATH shim.
+  // Bind only this capture's reporter transport, never the caller's other env.
+  const restore = reporterVariables
+    .map((name) => `export ${name}='${environment[name].replaceAll("'", "'\\''")}'`)
+    .join("\n");
   const find = `
 real=""
 IFS=:
@@ -254,6 +272,7 @@ done
 `;
   if (tool === "node")
     return `#!/bin/bash
+${restore}
 # .bin/vp and .bin/tsx are shell shims that exec node on the real CLI, and
 # package scripts prepend node_modules/.bin over this directory.
 script=""
@@ -282,12 +301,14 @@ exec "$VIZE_TEST_CASES_NODE" "$@"
 `;
   if (tool === "tsx")
     return `#!/bin/bash
+${restore}
 ${find}
 ${inject}
 if [[ "$inject" == 1 ]]; then exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-tsx -- "$@"; fi
 exec "$real" "$@"
 `;
   return `#!/bin/bash
+${restore}
 ${find}
 if [[ "\${1-}" == "test" && "\${2-}" == "run" ]]; then exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-vp -- "$@"; fi
 exec "$real" "$@"
@@ -299,15 +320,22 @@ function capture(command: string, args: readonly string[]): void {
   const partials = mkdtempSync(path.join(tmpdir(), "vize-js-cases-"));
   const bin = path.join(partials, "bin");
   mkdirSync(bin);
-  for (const tool of ["node", "tsx", "vp"] as const) writeShim(bin, tool, shim(tool));
+  const reporterEnvironment: ReporterEnvironment = {
+    VIZE_TEST_CASES: process.env.VIZE_TEST_CASES ?? "",
+    VIZE_TEST_CASE_PARTIALS: partials,
+    VIZE_TEST_CASE_SHIM: bin,
+    VIZE_TEST_CASES_NODE: realpathSync(process.execPath),
+    VIZE_TEST_CASES_ROOT: root,
+    VIZE_JS_TEST_CASES: self,
+    TEST_CASES_JOB: process.env.TEST_CASES_JOB ?? "",
+    GITHUB_RUN_ATTEMPT: process.env.GITHUB_RUN_ATTEMPT ?? "",
+  };
+  for (const tool of ["node", "tsx", "vp"] as const)
+    writeShim(bin, tool, shim(tool, reporterEnvironment));
   const env = {
     ...process.env,
     PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
-    VIZE_TEST_CASE_PARTIALS: partials,
-    VIZE_TEST_CASE_SHIM: bin,
-    VIZE_TEST_CASES_NODE: process.execPath,
-    VIZE_TEST_CASES_ROOT: root,
-    VIZE_JS_TEST_CASES: self,
+    ...reporterEnvironment,
   };
   let status = 1;
   try {
