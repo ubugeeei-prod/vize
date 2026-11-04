@@ -8,7 +8,7 @@ use vize_atelier_core::options::{
 };
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_l0::dump::capture::NoCapture;
-use vize_l0::profiler::global_profiler;
+use vize_l0::profiler::{active_profiler_is_enabled, with_active_profiler};
 use vize_l0::{Allocator, profile};
 use vize_l1_to_l2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
@@ -258,8 +258,7 @@ pub(super) fn emit_l2(
     development: bool,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = LegacyCaps::for_version(dialect);
-    let profiler = global_profiler();
-    let emit = if profiler.is_enabled() {
+    let emit = if active_profiler_is_enabled() {
         let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
             allocator,
             source,
@@ -328,25 +327,27 @@ const fn l2_binding_kind(kind: BindingType) -> BindingKind {
 }
 
 fn record_l2_budget(budget: vize_l1_to_l2::DomEmitBudget, pre_s2_walks: Option<WalkCounts>) {
-    let profiler = global_profiler();
-    profiler.record_counter_enabled("l2.dom.files", 1);
-    profiler.record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
-    profiler.record_counter_enabled(
-        "l2.dom.transform.passes",
-        u64::from(budget.transform.passes),
-    );
-    profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
-    profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
-    profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
-    let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
-        (counts.total_walks(), counts.total_visits())
+    with_active_profiler(|profiler| {
+        profiler.record_counter_enabled("l2.dom.files", 1);
+        profiler
+            .record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
+        profiler.record_counter_enabled(
+            "l2.dom.transform.passes",
+            u64::from(budget.transform.passes),
+        );
+        profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
+        profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
+        profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
+        let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
+            (counts.total_walks(), counts.total_visits())
+        });
+        profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
+        profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
+        profiler.record_counter_enabled(
+            "l2.dom.build.walks",
+            pre_s2_walks + u64::from(budget.total_walks()),
+        );
     });
-    profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
-    profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
-    profiler.record_counter_enabled(
-        "l2.dom.build.walks",
-        pre_s2_walks + u64::from(budget.total_walks()),
-    );
 }
 
 #[cfg(test)]

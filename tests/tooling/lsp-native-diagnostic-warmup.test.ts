@@ -225,14 +225,22 @@ await test(
       );
       assert.equal(nativeErrors(secondLint).length, 0);
       gate.assertStopped();
+      const resumedAt = notifications.length;
       gate.resume();
       assert.equal(
         nativeErrors(
-          await wait(first, (packet) => packet.version === 2 && nativeErrors(packet).length === 8),
+          await wait(
+            first,
+            (packet) => packet.version === 2 && nativeErrors(packet).length === 8,
+            resumedAt,
+          ),
         ).length,
         8,
       );
-      assert.equal(nativeErrors(await wait(second, (packet) => packet.version === 1)).length, 8);
+      assert.equal(
+        nativeErrors(await wait(second, (packet) => packet.version === 1, resumedAt)).length,
+        8,
+      );
       const afterWarm = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
       await t.test(
         "UNRESOLVED #10622: unrelated generated tsconfig root expansion restarts the native process",
@@ -256,16 +264,17 @@ await test(
       change(second, 2, changedSource(8));
       await wait(second, (packet) => packet.version === 2, admittedPass);
       admittedGate.assertStopped();
+      const admittedResumedAt = notifications.length;
       admittedGate.resume();
       await wait(
         first,
         (packet) => packet.version === 3 && nativeErrors(packet).length === 8,
-        admittedPass,
+        admittedResumedAt,
       );
       await wait(
         second,
         (packet) => packet.version === 2 && nativeErrors(packet).length === 8,
-        admittedPass,
+        admittedResumedAt,
       );
       const admittedAfter = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
       assert.deepEqual(

@@ -6,12 +6,21 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import {
+  jsPackageRoot,
+  nodeTestArguments,
+  vitestArguments,
+  wrappedNodeArguments,
+} from "../../tools/support/compat/github/js-test-cases.ts";
 import { TEST_AREAS, areaFor } from "../../tools/support/compat/github/test-areas.ts";
 import {
   nextestCases,
+  nodeTestCases,
   readPackets,
+  vitestCases,
   workspaceCrates,
 } from "../../tools/support/compat/github/test-cases.ts";
+import { withPreparedNative } from "../../npm/native/scripts/test-preparation.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const crates = workspaceCrates(root);
@@ -45,6 +54,153 @@ test("nextest cases keep their final outcome, crate path and decoded name", () =
     /not_a_member is not a workspace member/,
   );
   assert.throws(() => nextestCases(`<testcase name="x"/>`, crates), /no classname or name/);
+});
+
+test("node and vitest reports use the same case packet", () => {
+  assert.equal(jsPackageRoot({}), root);
+  assert.equal(jsPackageRoot({ VIZE_TEST_CASES_ROOT: "/tmp/cases/" }), "/tmp/cases");
+  const ui = path.join(root, "npm/ui/src/one.test.ts");
+  assert.deepEqual(
+    nodeTestCases(
+      [
+        {
+          type: "test:pass",
+          data: { name: "passes", file: ui, details: { type: "test" } },
+        },
+        {
+          type: "test:fail",
+          data: { name: ui, file: ui, details: { type: "test" } },
+        },
+        { type: "test:pass", data: { name: "suite", file: ui, details: { type: "suite" } } },
+      ],
+      root,
+    ),
+    [
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › passes", outcome: "passed" },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts", outcome: "failed" },
+    ],
+  );
+  assert.deepEqual(
+    vitestCases(
+      {
+        testResults: [
+          {
+            name: ui,
+            status: "failed",
+            assertionResults: [
+              {
+                ancestorTitles: ["one.test.ts", "group"],
+                title: "passes",
+                status: "passed",
+              },
+              { ancestorTitles: [], title: "fails", status: "failed" },
+              { ancestorTitles: ["group"], title: "later", status: "todo" },
+              { ancestorTitles: ["group"], title: "holds", status: "pending" },
+            ],
+          },
+          { name: path.join(root, "npm/builder/vite/src/load.test.ts"), status: "failed", assertionResults: [] },
+        ],
+      },
+      root,
+    ),
+    [
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › passes", outcome: "passed" },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › fails", outcome: "failed" },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › later", outcome: "skipped" },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › holds", outcome: "skipped" },
+      { path: "npm/builder/vite/src/load.test.ts", name: "npm/builder/vite/src/load.test.ts", outcome: "failed" },
+    ],
+  );
+  assert.throws(() => vitestCases({ testResults: [{ name: ui, assertionResults: [{ ancestorTitles: [], title: "x", status: "unknown" }] }] }, root), /status unknown/);
+  const reporter = path.join(root, "tools/support/compat/github/test-case-reporter.ts");
+  assert.deepEqual(nodeTestArguments(["--test", "a.test.ts"], reporter, "/tmp/out.json"), [
+    "--test",
+    "--test-reporter=spec",
+    "--test-reporter-destination=stdout",
+    `--test-reporter=${reporter}`,
+    "--test-reporter-destination=/tmp/out.json",
+    "a.test.ts",
+  ]);
+  assert.deepEqual(
+    nodeTestArguments(["--test-reporter=tap", "--test", "a.test.ts"], reporter, "/tmp/out.json"),
+    [
+      "--test-reporter=tap",
+      "--test",
+      `--test-reporter=${reporter}`,
+      "--test-reporter-destination=/tmp/out.json",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(nodeTestArguments(["plain.mjs", "--test"], reporter, "/tmp/out.json"), null);
+  assert.deepEqual(nodeTestArguments(["--test", `--test-reporter=${reporter}`], reporter, "/tmp/out.json"), [
+    "--test",
+    `--test-reporter=${reporter}`,
+  ]);
+  assert.deepEqual(vitestArguments(["test", "run", "--config", "vite.config.ts"], "/tmp/out.json"), [
+    "test",
+    "run",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=/tmp/out.json",
+    "--config",
+    "vite.config.ts",
+  ]);
+  assert.deepEqual(vitestArguments(["test", "run", "--reporter=dot", "a.test.ts"], "/tmp/out.json"), [
+    "test",
+    "run",
+    "--reporter=json",
+    "--outputFile.json=/tmp/out.json",
+    "--reporter=dot",
+    "a.test.ts",
+  ]);
+  assert.equal(vitestArguments(["test", "watch"], "/tmp/out.json"), null);
+  assert.equal(vitestArguments(["pack"], "/tmp/out.json"), null);
+  const vp = "/pkg/node_modules/vite-plus/bin/vp";
+  const tsx = "/pkg/node_modules/tsx/dist/cli.mjs";
+  assert.deepEqual(wrappedNodeArguments([vp, "test", "run", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"), [
+    vp,
+    "test",
+    "run",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile.json=/tmp/vitest.json",
+    "a.test.ts",
+  ]);
+  assert.equal(
+    wrappedNodeArguments([vp, "exec", "tsx", "--test", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    null,
+  );
+  assert.equal(
+    wrappedNodeArguments(
+      [vp, "test", "run", "--outputFile.json=/tmp/already.json"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    null,
+  );
+  assert.deepEqual(
+    wrappedNodeArguments([tsx, "--test", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    [
+      tsx,
+      "--test",
+      "--test-reporter=spec",
+      "--test-reporter-destination=stdout",
+      `--test-reporter=${reporter}`,
+      "--test-reporter-destination=/tmp/node.json",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(wrappedNodeArguments([tsx, "src/file.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"), null);
+  assert.equal(
+    wrappedNodeArguments(
+      [tsx, "--test", `--test-reporter=${reporter}`, "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    null,
+  );
 });
 
 test("every workspace crate belongs to a named product area", () => {
@@ -209,4 +365,150 @@ test("each test job names its case packet after itself and the report downloads 
     "test-cases-tooling-${{ inputs.shard }}-${{ github.run_attempt }}",
   );
   assert.equal(upload.if, "${{ !cancelled() && steps.tests.outcome != 'skipped' }}");
+
+  const packages = workflow("pr-js-checks.yml").jobs["pr-js-package-tests"];
+  const packageTests = packages.steps.find((step) => step.name === "Test JS package group");
+  assert.equal(packageTests?.id, "tests");
+  assert.equal(packageTests?.env?.TEST_CASES_JOB, packages.name);
+  assert.equal(packages.name, "PR JS package tests (${{ matrix.group }})");
+  assert.equal(
+    packageTests?.env?.VIZE_TEST_CASES,
+    "${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json",
+  );
+  const packageUpload = packages.steps[packages.steps.indexOf(packageTests ?? {}) + 1];
+  assert.equal(
+    packageUpload.with?.name,
+    "test-cases-js-${{ matrix.group }}-${{ github.run_attempt }}",
+  );
+  assert.equal(packageUpload.with?.path, packageTests?.env?.VIZE_TEST_CASES);
+  assert.equal(packageUpload.if, "${{ !cancelled() && steps.tests.outcome != 'skipped' }}");
+  assert.equal(packageUpload.with?.["if-no-files-found"], "error");
 });
+
+void test(
+  "package test preparation records node and vitest cases into one packet",
+  withDirectory((directory) => {
+    const calls: Array<{ command: string; args: readonly string[] }> = [];
+    const saved = process.env.VIZE_TEST_CASES;
+    process.env.VIZE_TEST_CASES = path.join(directory, "packet.json");
+    try {
+      assert.equal(
+        withPreparedNative(
+          path.join(directory, "missing-native"),
+          "--native-test-owner=00000000-0000-0000-0000-000000000000",
+          "vp",
+          ["run", "test"],
+          (command, args) => {
+            calls.push({ command, args });
+            return { status: 0 };
+          },
+        ),
+        0,
+      );
+    } finally {
+      if (saved === undefined) delete process.env.VIZE_TEST_CASES;
+      else process.env.VIZE_TEST_CASES = saved;
+    }
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].command, process.execPath);
+    assert.equal(calls[0].args[1], "capture");
+    assert.deepEqual(calls[0].args.slice(-4), ["--", "vp", "run", "test"]);
+
+    writeFileSync(
+      path.join(directory, "a.test.ts"),
+      `import { test } from "node:test";
+test("passes", () => {});
+test("fails", () => { throw new Error("no"); });
+`,
+    );
+    writeFileSync(
+      path.join(directory, "b.test.ts"),
+      `import { test } from "node:test";
+test("passes", () => {});
+`,
+    );
+    writeFileSync(path.join(directory, "plain.mjs"), "process.stdout.write('plain\\n');\n");
+    const lib = path.join(directory, "lib");
+    const tsxCli = path.join(directory, "tsx", "dist");
+    const dotbin = path.join(directory, "node_modules", ".bin");
+    mkdirSync(lib);
+    mkdirSync(tsxCli, { recursive: true });
+    mkdirSync(dotbin, { recursive: true });
+    const vpCli = path.join(lib, "vp");
+    writeFileSync(
+      vpCli,
+      `import { writeFileSync } from "node:fs";
+const output = process.argv.find((arg) => arg.startsWith("--outputFile.json="))?.slice("--outputFile.json=".length);
+if (!output) throw new Error("vitest json output was not requested");
+writeFileSync(output, JSON.stringify({
+  testResults: [{
+    name: ${JSON.stringify(path.join(directory, "npm/ui/src/one.test.ts"))},
+    status: "passed",
+    assertionResults: [{ ancestorTitles: ["one.test.ts"], title: "renders", status: "passed" }],
+  }],
+}));
+`,
+    );
+    writeFileSync(
+      path.join(tsxCli, "cli.mjs"),
+      `import { spawnSync } from "node:child_process";
+const result = spawnSync(process.execPath, process.argv.slice(2), { stdio: "inherit", env: process.env });
+process.exit(result.status ?? 1);
+`,
+    );
+    writeFileSync(path.join(dotbin, "vp"), `#!/bin/sh\nexec node ${JSON.stringify(vpCli)} "$@"\n`, {
+      mode: 0o755,
+    });
+    writeFileSync(
+      path.join(dotbin, "tsx"),
+      `#!/bin/sh\nexec node ${JSON.stringify(path.join(tsxCli, "cli.mjs"))} "$@"\n`,
+      { mode: 0o755 },
+    );
+    const out = path.join(directory, "captured.json");
+    const helper = path.join(root, "tools/support/compat/github/js-test-cases.ts");
+    const { NODE_TEST_CONTEXT: _context, ...nested } = process.env;
+    const result = spawnSync(
+      process.execPath,
+      [
+        helper,
+        "capture",
+        "--",
+        "bash",
+        "-c",
+        `export PATH=${JSON.stringify(dotbin)}:"$PATH"; node plain.mjs && node --test a.test.ts; status=$?; vp test run src/one.test.ts; tsx --test b.test.ts; exit $status`,
+      ],
+      {
+        cwd: directory,
+        encoding: "utf8",
+        env: {
+          ...nested,
+          PATH: `${dotbin}${path.delimiter}${process.env.PATH ?? ""}`,
+          TEST_CASES_JOB: "PR JS package tests (ui)",
+          GITHUB_RUN_ATTEMPT: "4",
+          VIZE_TEST_CASES: out,
+          VIZE_TEST_CASES_ROOT: directory,
+        },
+      },
+    );
+    assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stdout, /plain/);
+    const captured = JSON.parse(readFileSync(out, "utf8")) as {
+      job: string;
+      attempt: number;
+      cases: Array<{ path: string; name: string; outcome: string }>;
+    };
+    assert.equal(captured.job, "PR JS package tests (ui)");
+    assert.equal(captured.attempt, 4);
+    assert.deepEqual(
+      captured.cases
+        .map((entry) => [entry.path, entry.name, entry.outcome])
+        .sort((left, right) => left.join("\0").localeCompare(right.join("\0"))),
+      [
+        ["a.test.ts", "a.test.ts › fails", "failed"],
+        ["a.test.ts", "a.test.ts › passes", "passed"],
+        ["b.test.ts", "b.test.ts › passes", "passed"],
+        ["npm/ui/src/one.test.ts", "npm/ui/src/one.test.ts › renders", "passed"],
+      ],
+    );
+  }),
+);

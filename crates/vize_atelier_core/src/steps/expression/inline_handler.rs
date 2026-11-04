@@ -66,14 +66,23 @@ fn process_inline_handler_role<'a>(
                 .is_some_and(crate::retained::js_module_compatible),
         )
     });
-    let function_check_source = ts_stripped_content
+    let shape = ts_stripped_content
         .as_ref()
         .map(|s| s.as_str())
         .unwrap_or(content);
-    let is_function = if function_check_source == *content {
+    // The retained AST describes the authored bytes. Once erasure changed
+    // them (`onPick!` → `onPick`, `onPick as any` → `onPick`), both the
+    // function shape and the reference shape are read off that text.
+    let shape_is_authored = shape == *content;
+    let is_function = if shape_is_authored {
         is_function_expression_node(&normalized)
     } else {
-        is_function_expression(function_check_source)
+        is_function_expression(shape)
+    };
+    let is_reference = if shape_is_authored {
+        is_simple_identifier(content) || is_event_handler_reference_node(&normalized)
+    } else {
+        is_simple_identifier(shape) || super::is_event_handler_reference_expression(shape)
     };
 
     // Check if it's an inline function expression
@@ -133,19 +142,21 @@ fn process_inline_handler_role<'a>(
     // Check if it's an identifier/member-expression handler reference.
     // Vue passes these directly without wrapping them in `$event => (...)`.
     // Codegen relies on this: a handler leaving this pass is either a function
-    // expression or a reference, never a bare statement.
-    if is_simple_identifier(content) || is_event_handler_reference_node(&normalized) {
+    // expression or a reference, never a bare statement. The shape above
+    // already unwraps TypeScript, so `onPick!` is the same reference as
+    // `onPick` and the runtime calls it.
+    if is_reference {
         let new_content: String = if ctx.options.prefix_identifiers {
             // Inline render functions read setup bindings directly, so an
             // identifier still needs its `_unref` / `.value` access.
-            if is_simple_identifier(content) && !ctx.options.inline {
-                if let Some(prefix) = get_identifier_prefix(content, ctx) {
-                    let mut s = String::with_capacity(prefix.len() + content.len());
+            if is_simple_identifier(shape) && !ctx.options.inline {
+                if let Some(prefix) = get_identifier_prefix(shape, ctx) {
+                    let mut s = String::with_capacity(prefix.len() + shape.len());
                     s.push_str(prefix);
-                    s.push_str(content);
+                    s.push_str(shape);
                     s
                 } else {
-                    (*content).into()
+                    shape.into()
                 }
             } else {
                 let result = rewrite_expression(
@@ -332,5 +343,30 @@ mod tests {
         assert!(result.content.contains("const value = compute()"));
         assert!(result.content.contains("emit('change', value)"));
         assert!(!result.content.contains("_ctx.value"));
+    }
+
+    /// `onPick!` and `onPick as any` erase to the same identifier reference
+    /// as `onPick`. The runtime calls that reference; a parenthesized
+    /// `$event => (_ctx.onPick)` would only evaluate it.
+    #[test]
+    fn erased_handler_references_are_called_like_plain_identifiers() {
+        for source in ["onPick!", "onPick as any", "onPick"] {
+            let allocator = Allocator::new();
+            let mut ctx = TransformContext::new(
+                &allocator,
+                source,
+                TransformOptions {
+                    prefix_identifiers: true,
+                    is_ts: true,
+                    ..Default::default()
+                },
+            );
+            let expr = compound_expression(&allocator, source);
+            let result = process_inline_handler(&mut ctx, &expr);
+            let ExpressionNode::Simple(result) = result else {
+                panic!("expected simple expression");
+            };
+            assert_eq!(result.content, "_ctx.onPick", "{source}");
+        }
     }
 }

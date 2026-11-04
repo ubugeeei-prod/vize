@@ -13,19 +13,19 @@ use vize_atelier_dom::{
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
 use vize_l0::Allocator;
-use vize_l0::profiler::{CounterSummary, global_profiler};
+use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn optimize_imports_uses_l2_after_legacy_noop_audit() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<button @click="go">{{ label }}</button>"#;
     let selected_default = compile(source, CodegenOptions::default());
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let selected_optimized = compile(
         source,
         CodegenOptions {
@@ -34,7 +34,7 @@ fn optimize_imports_uses_l2_after_legacy_noop_audit() {
         },
     );
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(selected_optimized.preamble, selected_default.preamble);
@@ -79,11 +79,4 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
-}
-
-fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
-    static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    PROFILER_TEST_LOCK
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
