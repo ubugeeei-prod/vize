@@ -3,8 +3,8 @@
 set -euo pipefail
 observation="$RUNNER_TEMP/builders-exit-observation"
 mkdir -p "$observation/bin"
-real_node="$(command -v node)"
-real_node="$(readlink -f "$real_node")"
+real_node="$(node -p 'process.execPath')"
+test -x "$real_node"
 export BUILDERS_OBSERVATION="$observation"
 export BUILDERS_REAL_NODE="$real_node"
 "$real_node" - <<'NODE'
