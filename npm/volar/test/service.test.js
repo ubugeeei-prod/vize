@@ -5,7 +5,7 @@ import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
 import { publicInstanceReference } from "./public-instance-reference.js";
-import { listenerWrapperReference } from "./listener-wrapper-reference.js";
+import { assertListenerStarts, listenerWrapperReference } from "./listener-wrapper-reference.js";
 import "./listener-wrapper-reference.test.js";
 import {
   directory,
@@ -361,15 +361,7 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     const errors = query("feature-boundary-diagnostics", { file }, () =>
       e.languageService.getSemanticDiagnostics(file),
     );
-    // The wrong listener parameter and the wrong prop both survive (#11657).
-    const anchors = [
-      eventParent.indexOf("(value: number) => undefined"),
-      eventParent.indexOf("foo-bar"),
-    ];
-    assert.deepEqual(
-      errors.map((diagnostic) => [diagnostic.code, diagnostic.start]),
-      anchors.map((start) => [2322, start]),
-    );
+    assertListenerStarts(errors, eventParent);
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
       .map((row, index) => ({ row, mapping: root.embeddedCodes[0].mappings[index] }))
