@@ -8,6 +8,7 @@ import {
   readRequiredFile,
   VIZE_CONFIG_FILES,
 } from "../setup/config.js";
+import { packageSubdirectoryMessage } from "./package-root.js";
 
 export const NUXT_CONFIG_FILES = [
   "nuxt.config.ts",
@@ -143,6 +144,10 @@ export function withFramework(
 }
 
 export function detectProject(root: string): ProjectDetection {
+  const subdirectory = packageSubdirectoryMessage(root);
+  if (subdirectory !== null) {
+    throw new Error(subdirectory);
+  }
   const packagePath = path.join(root, "package.json");
   const packageSource = readRequiredFile(packagePath, "No package.json found");
   const packageJson = parsePackageJson(packagePath, packageSource);
