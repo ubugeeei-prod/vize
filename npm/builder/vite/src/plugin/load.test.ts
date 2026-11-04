@@ -332,8 +332,25 @@ assert.match(
 
 const watchedDependency = "/src/external.css";
 const watchedPath = "/src/Watched.vue";
+const watchedProjectRoot = createTempRoot("watch-only-project");
+const missingProjectConfig = path.join(watchedProjectRoot, "tsconfig.json");
+const watchedDeclaration = path.join(watchedProjectRoot, "Props.ts");
+fs.writeFileSync(watchedDeclaration, "export interface Props { label: string }");
+assert.equal(fs.existsSync(missingProjectConfig), false);
+const compilerDependencies = [watchedDependency, missingProjectConfig, watchedDeclaration];
+const watchedFiles: string[] = [];
+const moduleImports: string[] = [];
+const dependencyWatches: string[] = [];
 const watchedState: VizePluginState = {
   ...hmrState,
+  server: {
+    watcher: {
+      add(file: string) {
+        watchedFiles.push(file);
+        dependencyWatches.push(file);
+      },
+    },
+  } as never,
   cache: new Map([
     [
       watchedPath,
@@ -345,22 +362,32 @@ export default _sfc_main`,
         scopeId: "watch1234",
         hasScoped: false,
         styles: [],
-        dependencies: [watchedDependency],
+        dependencies: compilerDependencies,
       },
     ],
   ]),
   pendingHmrUpdateTypes: new Map(),
 };
-const watchedFiles: string[] = [];
 const watchedLoad = await transformCachedSfcModule(watchedState, toVirtualId(watchedPath), {
   ssr: false,
-  addWatchFile: (id) => watchedFiles.push(id),
+  addWatchFile: (id) => {
+    watchedFiles.push(id);
+    moduleImports.push(id);
+  },
 });
 assert.ok(watchedLoad && typeof watchedLoad === "object", "Watched SFC should load");
 assert.deepEqual(
   watchedFiles,
-  [watchedPath, watchedDependency],
+  [watchedPath, ...compilerDependencies],
   "Virtual SFC loads should register the real source file and src dependencies with Vite's watcher",
+);
+assert.deepEqual(moduleImports, [watchedPath], "only the real SFC enters Vite's module graph");
+assert.deepEqual(dependencyWatches, compilerDependencies);
+assert.deepEqual(watchedState.cache.get(watchedPath)?.dependencies, compilerDependencies);
+assert.equal(
+  fs.existsSync(missingProjectConfig),
+  false,
+  "watching must preserve absent discovery candidates",
 );
 
 const inlinePath = "/src/InlineHmr.vue";
