@@ -64,7 +64,9 @@ jobs:
         run: |
           set -euo pipefail
           dispatcher=crates/vize/src/commands/content_mapper/dispatch.rs
+          tests=crates/vize/src/commands/content_mapper/dispatch/tests.rs
           evidence="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.log"
+          artifacts="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.jsonl"
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           comparison_dispatcher="$(git rev-parse "$COMPARISON_SHA:$dispatcher")"
           if [ "$comparison_dispatcher" != "765353130eaba123edb530df5c0ade0944639659" ]; then
@@ -74,17 +76,24 @@ jobs:
           fi
           trap 'git show "HEAD:$dispatcher" > "$dispatcher"' EXIT
           git show "$COMPARISON_SHA:$dispatcher" > "$dispatcher"
-          printf 'comparison=%s source=%s profile=%s dispatcher=%s\n' "$COMPARISON_SHA" "$SOURCE_SHA" "$BUILD_PROFILE" "$(git hash-object "$dispatcher")" > "$evidence"
+          printf 'comparison=%s source=%s profile=%s dispatcher=%s tests=%s\n' "$COMPARISON_SHA" "$SOURCE_SHA" "$BUILD_PROFILE" "$(git hash-object "$dispatcher")" "$(git hash-object "$tests")" > "$evidence"
+          cargo clean --profile "$BUILD_PROFILE" -p vize
+          cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib --no-run --message-format=json > "$artifacts"
+          test_image="$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize" and .profile.test == true and .executable != null) | .executable' "$artifacts")"
+          test -x "$test_image"
+          image_hash="$(sha256sum "$test_image" | cut -d' ' -f1)"
+          printf 'image=%s sha256=%s\n' "$test_image" "$image_hash" >> "$evidence"
           set +e
-          cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib \
-            commands::content_mapper::dispatch::tests::admission_waits_before_reading_unknown_malformed_or_uninitialized_requests \
-            -- --exact --nocapture >> "$evidence" 2>&1
+          "$test_image" commands::content_mapper::dispatch::tests::admission_waits_before_reading_unknown_malformed_or_uninitialized_requests \
+            --exact --nocapture >> "$evidence" 2>&1
           result=$?
           set -e
           cat "$evidence"
-          test "$result" -eq 101
+          test "$result" -ne 0
+          test "$result" -lt 128
           rg -F 'mapper read beyond the effective-worker admission window' "$evidence"
           rg -F 'test result: FAILED. 0 passed; 1 failed;' "$evidence"
+          test "$(sha256sum "$test_image" | cut -d' ' -f1)" = "$image_hash"
           git show "HEAD:$dispatcher" > "$dispatcher"
           trap - EXIT
           git diff --exit-code -- "$dispatcher"
@@ -93,15 +102,22 @@ jobs:
           BUILD_PROFILE: ${{ matrix.profile }}
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          cargo clean --profile "$BUILD_PROFILE" -p vize
           cargo build --locked --profile "$BUILD_PROFILE" -p vize --bin vize
       - name: Verify worker spawn and admission release scoped threads
         env:
           BUILD_PROFILE: ${{ matrix.profile }}
         run: |
           set -euo pipefail
-          cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib \
-            commands::content_mapper::dispatch::tests:: \
-            -- --nocapture | tee "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
+          artifacts="$RUNNER_TEMP/worker-admission-head-$BUILD_PROFILE.jsonl"
+          evidence="$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
+          cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib --no-run --message-format=json > "$artifacts"
+          test_image="$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize" and .profile.test == true and .executable != null) | .executable' "$artifacts")"
+          test -x "$test_image"
+          image_hash="$(sha256sum "$test_image" | cut -d' ' -f1)"
+          printf 'source=%s tree=%s dispatcher=%s tests=%s image=%s sha256=%s\n' "$SOURCE_SHA" "$(git rev-parse HEAD^{tree})" "$(git hash-object crates/vize/src/commands/content_mapper/dispatch.rs)" "$(git hash-object crates/vize/src/commands/content_mapper/dispatch/tests.rs)" "$test_image" "$image_hash" > "$evidence"
+          "$test_image" commands::content_mapper::dispatch::tests:: --nocapture | tee -a "$evidence"
+          test "$(sha256sum "$test_image" | cut -d' ' -f1)" = "$image_hash"
           rg -F 'test result: ok. 7 passed; 0 failed;' "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
       - name: Probe bounded child processes and retain complete packets
         env:
@@ -124,5 +140,7 @@ jobs:
             ${{ runner.temp }}/worker-stack
             ${{ runner.temp }}/worker-spawn-${{ matrix.profile }}.log
             ${{ runner.temp }}/worker-admission-before-${{ matrix.profile }}.log
+            ${{ runner.temp }}/worker-admission-before-${{ matrix.profile }}.jsonl
+            ${{ runner.temp }}/worker-admission-head-${{ matrix.profile }}.jsonl
           if-no-files-found: error
           retention-days: 7
