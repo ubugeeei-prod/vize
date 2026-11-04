@@ -30,14 +30,17 @@ export function semanticPacket(
     .filter(Boolean);
   const packet = lines.map((line) => {
     const match =
-      /^src\/(Negative|Unused)\.vue\(([0-9]+),([0-9]+)\): error TS([0-9]+): (.+)$/u.exec(line);
+      /^src\/(Negative|Unused)\.vue\(([0-9]+),([0-9]+)\): error (TS|vize)([0-9]+): (.+)$/u.exec(
+        line,
+      );
     assert.ok(match, "unexpected or unparsed semantic diagnostic: " + line);
     return {
       file: match[1],
       line: Number(match[2]),
       column: Number(match[3]),
-      code: Number(match[4]),
-      message: match[5],
+      namespace: match[4],
+      code: Number(match[5]),
+      message: match[6],
     };
   });
   assert.equal(packet.length, 2, "complete independent template/directive oracle required");
@@ -45,11 +48,13 @@ export function semanticPacket(
     unused = packet.filter((row) => row.file === "Unused");
   assert.equal(negative.length, 1);
   assert.equal(unused.length, 1);
+  assert.equal(negative[0].namespace, "TS");
   assert.equal(negative[0].code, 2339);
   assert.equal(negative[0].line, 5);
   assert.ok(negative[0].column >= 6 && negative[0].column <= 19);
   assert.ok(negative[0].message.includes("missing"));
   assert.equal(unused[0].code, 4);
+  assert.equal(unused[0].namespace, "vize");
   assert.equal(unused[0].line, 5);
   assert.ok(unused[0].column >= 8 && unused[0].column <= 24);
   assert.equal(unused[0].message, "Unused '@vue-expect-error' directive");
