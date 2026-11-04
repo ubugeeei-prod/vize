@@ -37,11 +37,11 @@ export function verifiedSourcePair(
 ): Record<string, SourceReceipt> {
   const builds: Record<string, SourceReceipt> = Object.fromEntries(
     [
-      ["currentmain", base],
+      ["baseline", base],
       ["candidate", head],
     ].map(([id, root]) => {
       const receipt = json<SourceReceipt>(join(root, "target/template-alias-11822/receipt.json"));
-      assert.equal(receipt.source.sha, sources[id === "currentmain" ? "base" : "head"].sha);
+      assert.equal(receipt.source.sha, sources[id === "baseline" ? "base" : "head"].sha);
       assert.equal(
         receipt.endpoint,
         "normal Node CLI -> generated SDK loader -> platform NAPI image",
@@ -56,9 +56,9 @@ export function verifiedSourcePair(
       return [id, receipt];
     }),
   );
-  assert.deepEqual(builds.currentmain.artifact.features, builds.candidate.artifact.features);
-  assert.deepEqual(builds.currentmain.artifact.profile, builds.candidate.artifact.profile);
-  assert.equal(builds.currentmain.rustc, builds.candidate.rustc);
+  assert.deepEqual(builds.baseline.artifact.features, builds.candidate.artifact.features);
+  assert.deepEqual(builds.baseline.artifact.profile, builds.candidate.artifact.profile);
+  assert.equal(builds.baseline.rustc, builds.candidate.rustc);
   return builds;
 }
 

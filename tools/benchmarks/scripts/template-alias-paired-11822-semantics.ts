@@ -77,7 +77,7 @@ export async function qualifySemantics(options: {
   );
   const packets = new Map<string, ReturnType<typeof semanticPacket>>();
   for (const host of options.hosts)
-    for (const id of ["currentmain", "candidate"] as const) {
+    for (const id of ["baseline", "candidate"] as const) {
       const directory = join(options.output, `semantic-${host.name}-${id}`),
         workspace = join(directory, "workspace");
       mkdirSync(directory);

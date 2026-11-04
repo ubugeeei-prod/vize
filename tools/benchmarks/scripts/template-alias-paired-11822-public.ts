@@ -18,7 +18,6 @@ import { verifiedSourcePair } from "./template-alias-paired-11822-source.ts";
 import {
   assertCampaignEnvironment,
   remainingBudget,
-  recordedStage,
 } from "./template-alias-paired-11822-process.ts";
 import { observeMemory } from "./template-alias-paired-11822-memory.ts";
 import { qualifySemantics } from "./template-alias-paired-11822-semantics.ts";
@@ -29,7 +28,6 @@ import {
 } from "./template-alias-paired-11822-protocol.ts";
 import {
   capture,
-  childEnvironment,
   closureSnapshot,
   diagnostics,
   evidence,
@@ -137,24 +135,6 @@ export async function main() {
     base: pristine(base, values["base-sha"]!),
     head: pristine(head, values["head-sha"]!),
   };
-  const requireCurrentMain = (stage: "before" | "after") =>
-    assert.equal(
-      recordedStage({
-        directory: join(process.env.RUNNER_TEMP!, "mapper-public-stages"),
-        id: "main-" + stage,
-        command: "git",
-        args: ["-C", base, "ls-remote", "origin", "refs/heads/main"],
-        cwd: base,
-        environment: childEnvironment({ GIT_TERMINAL_PROMPT: "0" }),
-        sourceSha: sources.base.sha,
-        maxMilliseconds: 15_000,
-      })
-        .trim()
-        .split(/\s+/u)[0],
-      sources.base.sha,
-      "public main advanced: rebind source tuple before dispatch",
-    );
-  requireCurrentMain("before");
   git(head, "merge-base", "--is-ancestor", sources.base.sha, sources.head.sha);
   const driverIdentity = pristine(driver, values["driver-sha"]!);
   // This campaign isolates dispatcher admission. Projection/checker/SDK changes require a new qualification design.
@@ -192,6 +172,11 @@ export async function main() {
     schema: "vize.public-dispatcher-campaign.v1",
     driver: driverIdentity,
     sources,
+    comparisonScope: {
+      followsMain: false,
+      baselineMeaning: "fixed public commit, possibly historical main",
+      qualifiedForOtherSourceHeads: false,
+    },
     changed,
     builds,
     hosts,
@@ -238,14 +223,14 @@ export async function main() {
   const rows: Record<string, Observation[]> = {};
   const packets = new Map<string, ReturnType<typeof emittedPacket>>();
   for (let pair = 0; pair < 5; pair++) {
-    const variants = pair % 2 ? ["candidate", "currentmain"] : ["currentmain", "candidate"];
+    const variants = pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"];
     for (const host of hosts)
       for (const id of variants) {
         const directory = join(output, `primary-${host.name}-${id}-${pair}`);
         const workspace = join(directory, "workspace");
         mkdirSync(directory);
         const closure = prepareWorkspace(corpus, provider, workspace, {
-          id: id as "currentmain" | "candidate",
+          id: id as "baseline" | "candidate",
           package: builds[id].cliPackage,
         });
         write(join(directory, "workspace.json"), closure);
@@ -282,7 +267,7 @@ export async function main() {
   }
   const projections = new Map<string, unknown>();
   for (const host of hosts)
-    for (const id of ["currentmain", "candidate"] as const) {
+    for (const id of ["baseline", "candidate"] as const) {
       const directory = join(output, `capture-${host.name}-${id}`);
       mkdirSync(directory);
       const workspace = join(directory, "workspace"),
@@ -343,7 +328,7 @@ export async function main() {
     ),
   });
   for (const host of hosts)
-    for (const id of ["currentmain", "candidate"] as const) {
+    for (const id of ["baseline", "candidate"] as const) {
       const directory = join(output, `phase-${host.name}-${id}`),
         workspace = join(directory, "workspace");
       mkdirSync(directory);
@@ -377,12 +362,12 @@ export async function main() {
   const memory: Record<string, Awaited<ReturnType<typeof observeMemory>>[]> = {};
   for (let pair = 0; pair < 3; pair++)
     for (const host of hosts)
-      for (const id of pair % 2 ? ["candidate", "currentmain"] : ["currentmain", "candidate"]) {
+      for (const id of pair % 2 ? ["candidate", "baseline"] : ["baseline", "candidate"]) {
         const directory = join(output, `memory-${host.name}-${id}-${pair}`),
           workspace = join(directory, "workspace");
         mkdirSync(directory);
         const closure = prepareWorkspace(corpus, provider, workspace, {
-          id: id as "currentmain" | "candidate",
+          id: id as "baseline" | "candidate",
           package: builds[id].cliPackage,
         });
         const cache = join(workspace, ".empty-cache"),
@@ -426,7 +411,6 @@ export async function main() {
   );
   assert.deepEqual(closureSnapshot([provider]), providerBefore);
   verifiedSourcePair(base, head, sources);
-  requireCurrentMain("after");
   assert.deepEqual(inventory(join(corpus, "src")), authored);
   copyFileSync(join(provider, "package-lock.json"), join(output, "public-provider-lock.json"));
   write(join(output, "primary-summary.json"), {

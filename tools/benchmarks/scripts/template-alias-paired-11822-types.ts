@@ -93,7 +93,7 @@ export interface GitIdentity {
   sha: string;
   tree: string;
 }
-export type VariantId = "currentmain" | "candidate" | "vue";
+export type VariantId = "baseline" | "candidate" | "vue";
 export type Variant = { id: "vue" } | { id: Exclude<VariantId, "vue">; package: string };
 export interface MapperConfig {
   compilerOptions?: Record<string, unknown>;

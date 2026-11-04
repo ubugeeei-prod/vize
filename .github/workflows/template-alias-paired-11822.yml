@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       base-sha:
-        description: Exact public main comparison source SHA
+        description: Exact fixed public baseline source SHA
         required: true
         type: string
       head-sha:

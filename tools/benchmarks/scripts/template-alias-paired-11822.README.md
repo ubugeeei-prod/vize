@@ -1,6 +1,6 @@
 # Public mapper comparison
 
-This controller compares an exact public main commit with a dispatcher-admission candidate through the normal Node CLI and freshly built NAPI SDK. It creates 2,500 typed Vue components here and installs an independent public npm lock: TypeScript 7.1.0-beta, TSRS 0.21.0-ts7.1.0-beta and Vue 3.5.44. It does not inherit external private corpus results, historical package comparisons, Vue Content Mapper, Misskey or n8n results.
+This controller compares an exact fixed public baseline commit (which may be historical main) with a dispatcher-admission candidate through the normal Node CLI and freshly built NAPI SDK. It creates 2,500 typed Vue components here and installs an independent public npm lock: TypeScript 7.1.0-beta, TSRS 0.21.0-ts7.1.0-beta and Vue 3.5.44. It does not inherit external private corpus results, historical package comparisons, Vue Content Mapper, Misskey or n8n results.
 
 Pull requests run strict TypeScript and finite negative controls. The manual Blacksmith 32-CPU job requires an explicitly approved source/comparison packet before dispatch. It has a 60-minute hard limit, a shared 53-minute processing deadline and a target seven-minute artifact reserve. Child stages clamp their deadlines to the shared processing deadline; setup Actions and upload use the job hard limit. An incomplete or timed-out population cannot produce medians or an accepted conclusion. The setup/build estimate is not a proven completion budget.
 
@@ -16,7 +16,7 @@ Execution has separate populations:
 
 Primary GNU time reports wall time, waited CPU and maximum single-process RSS; it is not process-tree RSS. Every corpus call requires all twelve authored script diagnostics with exact starts/codes and full messages. Raw output preserves order and duplicates; canonical packets preserve multiline messages. CLI end ranges and related information are unavailable, so full authored-range qualification is false. Whole projections and same-host output equality qualify the bounded dispatcher-only comparison, not arbitrary checker or SDK changes.
 
-The controller keeps accepted-performance false even after complete populations. Source-bound peer review of raw evidence is required before interpreting a result. There is no speed or memory win until an actual campaign completes. This cohort uses normal default CPU/checker width only and does not establish scaling. Full-graph Misskey/n8n and persistent warm LSP require separate campaigns.
+Results apply only to the recorded baseline/candidate SHAs; they do not qualify a later main or a rebased candidate. The controller keeps accepted-performance false even after complete populations. Source-bound peer review of raw evidence is required before interpreting a result. There is no speed or memory win until an actual campaign completes. This cohort uses normal default CPU/checker width only and does not establish scaling. Full-graph Misskey/n8n and persistent warm LSP require separate campaigns.
 
 Run finite qualification with existing source-pinned dependencies:
 
