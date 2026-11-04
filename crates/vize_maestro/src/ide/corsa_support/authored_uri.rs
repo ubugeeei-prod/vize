@@ -79,6 +79,15 @@ mod tests {
             1,
             "typescript".into(),
         );
-        assert_eq!(authored_file_uri(&ctx, &authored), Some(open));
+        assert_eq!(authored_file_uri(&ctx, &authored), Some(open.clone()));
+        let linked = Url::from_file_path(&authored).unwrap();
+        state.documents.open(
+            linked.clone(),
+            "export const value = 3;".into(),
+            1,
+            "typescript".into(),
+        );
+        assert_eq!(authored_file_uri(&ctx, &physical), Some(open));
+        assert_eq!(authored_file_uri(&ctx, &authored), Some(linked));
     }
 }
