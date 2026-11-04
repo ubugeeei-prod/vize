@@ -33,7 +33,12 @@ const inputs = [
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashes = (root) =>
   Object.fromEntries(inputs.map((file) => [file, digest(readFileSync(resolve(root, file)))]));
-const git = (root, args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+const git = (root, args) =>
+  execFileSync("git", args, {
+    cwd: root,
+    maxBuffer: 64 * 1024 * 1024,
+    env: Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_"))),
+  });
 const gitText = (root, args) => git(root, args).toString("utf8").trim();
 const recipeIdentity = (body, revision) => ({
   revision,

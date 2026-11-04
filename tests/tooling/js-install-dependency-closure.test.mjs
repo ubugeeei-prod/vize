@@ -220,7 +220,14 @@ void test("paired install receipts are bound to the current event rather than ea
 
 void test("a current source permits only the exact historical installer overlay", () => {
   const source = mkdtempSync(join(tmpdir(), "vize-current-recipe-"));
-  const git = (...args) => execFileSync("git", args, { cwd: source, encoding: "utf8" }).trim();
+  const git = (...args) =>
+    execFileSync("git", args, {
+      cwd: source,
+      encoding: "utf8",
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+      ),
+    }).trim();
   const files = [
     "package.json",
     "pnpm-workspace.yaml",
@@ -236,6 +243,7 @@ void test("a current source permits only the exact historical installer overlay"
     git("init", "--quiet");
     git("config", "user.name", "Fixture");
     git("config", "user.email", "fixture@example.invalid");
+    git("config", "commit.gpgsign", "false");
     for (const file of files) {
       mkdirSync(dirname(join(source, file)), { recursive: true });
       writeFileSync(join(source, file), `current source ${file}\n`);
