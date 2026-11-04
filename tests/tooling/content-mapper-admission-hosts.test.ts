@@ -1,0 +1,316 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+  fixture,
+  frames,
+  qualifyWire,
+  diagnosticPacket,
+} from "../../tools/support/compat/content-mapper/admission-hosts-core.ts";
+const encode = (packet: unknown) => {
+  const body = Buffer.from(JSON.stringify(packet));
+  return Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
+};
+function pair() {
+  const source = fixture(false, 65_536),
+    expected = new Map<string, string>();
+  const input: Record<string, unknown>[] = [
+      { jsonrpc: "2.0", id: 1, method: "initialize", params: { positionEncodings: ["utf-8"] } },
+      {
+        jsonrpc: "2.0",
+        id: 2,
+        method: "openProject",
+        params: { projectHandle: "owned", configFileName: "/project/tsconfig.json" },
+      },
+    ],
+    output: Record<string, unknown>[] = [
+      { jsonrpc: "2.0", id: 1, result: { positionEncoding: "utf-8" } },
+      { jsonrpc: "2.0", id: 2, result: { configIdentity: "fixture" } },
+    ];
+  for (let index = 0; index < 8; index++) {
+    const fileName = `/project/src/File${index}.vue`;
+    expected.set(fileName, source);
+    input.push({
+      jsonrpc: "2.0",
+      id: index + 3,
+      method: "transform",
+      params: { fileName, content: source, projectHandle: "owned" },
+    });
+    output.push({
+      jsonrpc: "2.0",
+      id: index + 3,
+      result: {
+        text: " ".repeat(70_000),
+        mappings: [[0, 1, 0, 1, 0, 0]],
+        diagnostics: [],
+        diagnosticDirectives: { ignored: [] },
+      },
+    });
+  }
+  return {
+    input: Buffer.concat(input.map(encode)),
+    output: Buffer.concat(output.map(encode)),
+    expected,
+    responses: output,
+    requests: input,
+  };
+}
+void test("complete Unicode frames retain every ordered packet and authored byte", () => {
+  const value = pair();
+  assert.equal(qualifyWire(value.input, value.output, value.expected, 65_536).transforms.length, 8);
+  assert.deepEqual(
+    frames(value.output).map((row) => row.packet),
+    value.responses,
+  );
+});
+void test("partial headers, bodies, invalid UTF8 and duplicate headers are refused", () => {
+  for (const bytes of [
+    Buffer.from("Content-Length: 2"),
+    Buffer.from("Content-Length: 2\r\n\r\n{"),
+    Buffer.from("Content-Length: 2\r\nContent-Length: 2\r\n\r\n{}"),
+    Buffer.from([...Buffer.from("Content-Length: 1\r\n\r\n"), 255]),
+  ])
+    assert.throws(() => frames(bytes));
+});
+void test("reordered, missing, duplicate and RPC-error responses never acquire liveness credit", () => {
+  const value = pair();
+  for (const rows of [
+    [...value.responses].reverse(),
+    value.responses.slice(1),
+    [...value.responses.slice(0, 7), value.responses[0]],
+    [{ jsonrpc: "2.0", id: 1, error: {} }, ...value.responses.slice(1)],
+  ])
+    assert.throws(() =>
+      qualifyWire(value.input, Buffer.concat(rows.map(encode)), value.expected, 65_536),
+    );
+});
+void test("changed authored source, missing mappings and small responses are refused", () => {
+  const value = pair();
+  assert.throws(() =>
+    qualifyWire(
+      value.input,
+      value.output,
+      new Map([...value.expected].map(([name]) => [name, "changed"])),
+      65_536,
+    ),
+  );
+  for (const result of [
+    { text: "small", mappings: [[0, 1, 0, 1, 0, 0]], diagnostics: [] },
+    { text: " ".repeat(70_000), mappings: [], diagnostics: [] },
+  ])
+    assert.throws(() =>
+      qualifyWire(
+        value.input,
+        Buffer.concat(
+          value.responses.map((row, index) =>
+            encode(index < 2 ? row : { jsonrpc: "2.0", id: index + 1, result }),
+          ),
+        ),
+        value.expected,
+        65_536,
+      ),
+    );
+});
+void test("normal positive and complete authored negative diagnostic packets are distinct", () => {
+  assert.deepEqual(diagnosticPacket("", "", "/project", []), []);
+  const text =
+    Array.from(
+      { length: 8 },
+      (_, index) =>
+        `src/File${index}.vue(2,7): error TS2322: Type 'string' is not assignable to type 'number'.`,
+    ).join("\n") + "\n";
+  assert.equal(diagnosticPacket(text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
+  assert.throws(() => diagnosticPacket("", "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]));
+  assert.throws(() =>
+    diagnosticPacket(text.replace("(2,7)", "(2,8)"), "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]),
+  );
+  assert.throws(() => diagnosticPacket(text, "timeout", "/project", [0, 1, 2, 3, 4, 5, 6, 7]));
+});
+
+void test("host raw descriptors and argv are durable before a controlled Node child starts", async () => {
+  const { mkdtempSync, readFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { run } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-process.ts");
+  const root = mkdtempSync(join(tmpdir(), "mapper-admission-fds-"));
+  const previous = process.env.ADMISSION_DEADLINE_MS;
+  try {
+    process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 10_000);
+    const output = join(root, "process");
+    const code = `const fs=require('node:fs');const p=${JSON.stringify(output)};for(const name of ['stdout.raw','stderr.raw','spawn.json'])if(!fs.existsSync(p+'/'+name))process.exit(9);process.stdout.write('full output');process.exit(2);`;
+    const result = await run(output, [process.execPath, "-e", code], root);
+    assert.equal(result.status, 2);
+    assert.equal(result.text, "full output");
+    assert.equal(result.timedOut, false);
+    assert.equal(JSON.parse(readFileSync(join(output, "spawn.json"), "utf8")).argv[2], code);
+  } finally {
+    if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
+    else process.env.ADMISSION_DEADLINE_MS = previous;
+    rmSync(root, { recursive: true });
+  }
+});
+
+void test("a process deadline retains partial raw output and fails outside semantic diagnostics", async () => {
+  const { mkdtempSync, readFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { run } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-process.ts");
+  const root = mkdtempSync(join(tmpdir(), "mapper-admission-deadline-"));
+  const previous = process.env.ADMISSION_DEADLINE_MS;
+  try {
+    process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 200);
+    const output = join(root, "process");
+    await assert.rejects(
+      run(
+        output,
+        [process.execPath, "-e", "process.stdout.write('partial');setInterval(()=>{},1000);"],
+        root,
+      ),
+      /timeout\/crash\/survivor/u,
+    );
+    const result = JSON.parse(readFileSync(join(output, "result.json"), "utf8"));
+    assert.equal(result.timedOut, true);
+    assert.equal(result.signal, "SIGKILL");
+    assert.equal(readFileSync(join(output, "stdout.raw"), "utf8"), "partial");
+  } finally {
+    if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
+    else process.env.ADMISSION_DEADLINE_MS = previous;
+    rmSync(root, { recursive: true });
+  }
+});
+
+void test("request version is optional and opaque extra fields remain in complete packets", () => {
+  const value = pair();
+  const requests = value.requests.map(({ jsonrpc: _version, ...row }) => ({
+    ...row,
+    opaque: { retained: true },
+  }));
+  const output = value.responses.map((row) => ({ ...row, extra: { untouched: [1, 2] } }));
+  const captured = qualifyWire(
+    Buffer.concat(requests.map(encode)),
+    Buffer.concat(output.map(encode)),
+    value.expected,
+    65_536,
+  );
+  assert.deepEqual(
+    captured.requests.map((row) => row.packet),
+    requests,
+  );
+  assert.deepEqual(
+    captured.responses.map((row) => row.packet),
+    output,
+  );
+  assert.throws(() =>
+    qualifyWire(
+      Buffer.concat(requests.map((row) => encode({ ...row, jsonrpc: "wrong" }))),
+      value.output,
+      value.expected,
+      65_536,
+    ),
+  );
+});
+
+void test("successful transforms require initialized UTF8 and a matching opened project", () => {
+  const value = pair();
+  const check = (requests: unknown[], responses: unknown[]) =>
+    qualifyWire(
+      Buffer.concat(requests.map(encode)),
+      Buffer.concat(responses.map(encode)),
+      value.expected,
+      65_536,
+    );
+  assert.throws(() => check(value.requests.slice(2), value.responses.slice(2)), /initialize/u);
+  assert.throws(
+    () =>
+      check(
+        [value.requests[0], ...value.requests.slice(2)],
+        [value.responses[0], ...value.responses.slice(2)],
+      ),
+    /not opened/u,
+  );
+  const wrong = value.requests.map((row, index) =>
+    index < 2
+      ? row
+      : { ...row, params: { ...(row.params as object), projectHandle: "never-opened" } },
+  );
+  assert.throws(() => check(wrong, value.responses), /not opened/u);
+  assert.throws(
+    () =>
+      check(value.requests, [
+        { ...value.responses[0], result: { positionEncoding: "utf-16" } },
+        ...value.responses.slice(1),
+      ]),
+    /UTF8/u,
+  );
+  assert.equal(
+    check(value.requests, value.responses).transforms.length,
+    8,
+    "host closeProject is not required for an otherwise completed transcript",
+  );
+  const close = { id: 11, method: "closeProject", params: { projectHandle: "owned" } };
+  const closed = { jsonrpc: "2.0", id: 11, result: null };
+  assert.equal(
+    check([...value.requests, close], [...value.responses, closed]).transforms.length,
+    8,
+  );
+  assert.equal(
+    check(
+      [...value.requests, { ...close, params: { projectHandle: "unknown" } }],
+      [...value.responses, closed],
+    ).transforms.length,
+    8,
+    "closing an unknown handle is idempotent in the mapper API",
+  );
+  assert.throws(
+    () =>
+      check(
+        [...value.requests, close, { ...value.requests[2], id: 12 }],
+        [...value.responses, closed, { ...value.responses[2], id: 12 }],
+      ),
+    /not opened/u,
+  );
+});
+
+void test("a detached immediate orphan remains owned after its parent exits", async () => {
+  const { existsSync, mkdtempSync, readFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { run } =
+    await import("../../tools/support/compat/content-mapper/admission-hosts-process.ts");
+  const root = mkdtempSync(join(tmpdir(), "mapper-admission-orphan-"));
+  const previous = process.env.ADMISSION_DEADLINE_MS;
+  let escaped: number | undefined;
+  try {
+    process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 15_000);
+    const marker = join(root, "escaped.json"),
+      output = join(root, "process");
+    const descendant = `require('node:fs').writeFileSync(${JSON.stringify(marker)},JSON.stringify({pid:process.pid}));setInterval(()=>{},1000);`;
+    const parent = `const child=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(descendant)}],{detached:true,stdio:'ignore'});child.unref();`;
+    await assert.rejects(
+      run(output, [process.execPath, "-e", parent], root),
+      /timeout\/crash\/survivor/u,
+    );
+    escaped = JSON.parse(readFileSync(marker, "utf8")).pid;
+    const result = JSON.parse(readFileSync(join(output, "result.json"), "utf8"));
+    assert.equal(result.status, 0);
+    assert.equal(result.survivors, true);
+    assert.ok(
+      result.observedProcesses.some(
+        (row: { pid: number; startTicks: string; ownerMarker: boolean }) =>
+          row.pid === escaped && row.startTicks && row.ownerMarker,
+      ),
+    );
+    assert.ok(result.cleanup.some((row: { pid: number }) => row.pid === escaped));
+  } finally {
+    if (existsSync(join(root, "process/spawn.json"))) {
+      const { OwnedProcesses } =
+        await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
+      const { ownerNonce } = JSON.parse(readFileSync(join(root, "process/spawn.json"), "utf8"));
+      new OwnedProcesses(undefined, ownerNonce).killAll();
+    }
+    if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
+    else process.env.ADMISSION_DEADLINE_MS = previous;
+    rmSync(root, { recursive: true });
+  }
+});

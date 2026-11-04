@@ -9,6 +9,9 @@ on:
       - tools/benchmarks/scripts/content-mapper-worker-stack.ts
       - tools/benchmarks/scripts/content-mapper-worker-stack-core.ts
       - tests/tooling/content-mapper-worker-stack.test.ts
+      - tools/support/compat/content-mapper/admission-hosts*.ts
+      - tests/tooling/content-mapper-admission-hosts.test.ts
+      - tests/_fixtures/tooling/content-mapper-admission-provider/**
       - crates/vize/src/commands/content_mapper.rs
       - crates/vize/src/commands/content_mapper/dispatch.rs
       - crates/vize/src/commands/content_mapper/dispatch/**
@@ -142,5 +145,80 @@ jobs:
             ${{ runner.temp }}/worker-admission-before-${{ matrix.profile }}.log
             ${{ runner.temp }}/worker-admission-before-${{ matrix.profile }}.jsonl
             ${{ runner.temp }}/worker-admission-head-${{ matrix.profile }}.jsonl
+          if-no-files-found: error
+          retention-days: 7
+
+  host-pipes:
+    name: Normal Node mapper pipes with both pinned Go hosts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Reserve five minutes for functional raw retention
+        run: |
+          mkdir -p "$RUNNER_TEMP/mapper-admission"
+          deadline="$(( $(date -u +%s) * 1000 + 15 * 60 * 1000 ))"
+          printf 'ADMISSION_DEADLINE_MS=%s\n' "$deadline" >> "$GITHUB_ENV"
+          printf '{"hardMinutes":20,"softDeadlineMs":%s,"artifactReserveMinutes":5,"performance":false}\n' "$deadline" > "$RUNNER_TEMP/mapper-admission/budget.json"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version: "26.12.1", run-install: false, cache: true }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-js-packages, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Build the reviewed normal Node and NAPI endpoint with a frozen provider
+        env:
+          CARGO_INCREMENTAL: "0"
+          CARGO_BUILD_JOBS: "16"
+        run: |
+          set -euo pipefail
+          within_budget() {
+            remaining="$(( (ADMISSION_DEADLINE_MS - $(date -u +%s) * 1000) / 1000 ))"
+            test "$remaining" -gt 0
+            timeout --signal=TERM --kill-after=5s "${remaining}s" "$@"
+          }
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/mapper-admission/source.txt"
+          node --version > "$RUNNER_TEMP/mapper-admission/toolchain.txt"
+          rustc -Vv >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
+          cargo -V >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
+          vp --version >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
+          within_budget node --test tests/tooling/content-mapper-admission-hosts.test.ts > "$RUNNER_TEMP/mapper-admission/pure.log" 2>&1
+          within_budget vp install --frozen-lockfile --prefer-offline > "$RUNNER_TEMP/mapper-admission/source-install.log" 2>&1
+          provider_fixture=tests/_fixtures/tooling/content-mapper-admission-provider
+          mkdir "$RUNNER_TEMP/admission-provider"
+          cp "$provider_fixture/package.json.txt" "$RUNNER_TEMP/admission-provider/package.json"
+          cp "$provider_fixture/package-lock.json.txt" "$RUNNER_TEMP/admission-provider/package-lock.json"
+          cp "$provider_fixture/provenance.json" "$RUNNER_TEMP/admission-provider/provenance.json"
+          cp -R "$provider_fixture" "$RUNNER_TEMP/mapper-admission/public-provider-inputs"
+          (cd "$RUNNER_TEMP/admission-provider" && within_budget npm ci --ignore-scripts --no-audit --no-fund --prefer-offline) > "$RUNNER_TEMP/mapper-admission/provider-install.log" 2>&1
+          cmp "$provider_fixture/package-lock.json.txt" "$RUNNER_TEMP/admission-provider/package-lock.json"
+          token="$(openssl rand -hex 16)"
+          printf 'ADMISSION_NATIVE_TOKEN=%s\n' "$token" >> "$GITHUB_ENV"
+          within_budget cargo clean --profile ci -p vize -p vize_vitrine
+          VIZE_NATIVE_BUILD_TOKEN="$token" within_budget cargo build --locked --profile ci -p vize_vitrine --features napi > "$RUNNER_TEMP/mapper-admission/native-build.log" 2>&1
+          cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
+          (cd npm/cli && within_budget vp pack) > "$RUNNER_TEMP/mapper-admission/cli-pack.log" 2>&1
+          git diff --exit-code HEAD
+          sha256sum npm/native/vize-vitrine.linux-x64-gnu.node > "$RUNNER_TEMP/mapper-admission/native.sha256"
+      - name: Require normal host completion, complete packets and authored negative controls
+        run: |
+          set -euo pipefail
+          cpu="$(node -e 'const fs=require("node:fs");const line=fs.readFileSync("/proc/self/status","utf8").split("\n").find(row=>row.startsWith("Cpus_allowed_list:"));process.stdout.write(line.split(":")[1].trim().split(/[,-]/)[0]);')"
+          taskset -c "$cpu" node tools/support/compat/content-mapper/admission-hosts.ts \
+            --source "$GITHUB_WORKSPACE" --source-sha "$SOURCE_SHA" \
+            --provider "$RUNNER_TEMP/admission-provider" \
+            --output "$RUNNER_TEMP/mapper-admission/hosts" --token "$ADMISSION_NATIVE_TOKEN"
+      - name: Preserve functional packets before accepting the run
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: content-mapper-admission-hosts-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/mapper-admission
+            !${{ runner.temp }}/mapper-admission/**/project/node_modules/**
           if-no-files-found: error
           retention-days: 7
