@@ -90,8 +90,11 @@ fn strip_comments_preserves_string_literals() {
 #[test]
 fn unresolved_property_shapes_preserve_value_type_boundaries() {
     let aliases = FxHashMap::from_iter([
-        (cstr!("Props"), cstr!("{ value?: Missing }")),
-        (cstr!("Inherited"), cstr!("Missing & { value?: string }")),
+        (cstr!("Props"), String::from("{ value?: Missing }")),
+        (
+            cstr!("Inherited"),
+            String::from("Missing & { value?: string }"),
+        ),
     ]);
     for expression in ["{ value?: Missing }", "Props", "Record<'value', Missing>"] {
         assert_eq!(
