@@ -8,7 +8,7 @@ import {
   freshCredentialFailure,
   parsePermissionAudience,
   publishWithFreshProvenance,
-} from "../../tools/support/release/jsr/publish-with-fresh-provenance.mjs";
+} from "../../tools/support/release/jsr/publish-with-fresh-provenance.ts";
 
 interface PermissionBinding {
   scope: string;

@@ -33,7 +33,7 @@ import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.ts";
-import { typecheckerRunStatus } from "./typechecker-qualification.mjs";
+import { typecheckerRunStatus } from "./typechecker-qualification.ts";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 export function runTool(project, tool, args, launch, outputDir) {
   const prepared = prepareToolRun(project, tool, args, launch, outputDir);
