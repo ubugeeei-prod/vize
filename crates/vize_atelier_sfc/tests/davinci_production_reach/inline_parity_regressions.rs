@@ -116,6 +116,20 @@ import Child from './Child.vue'
 }
 
 #[test]
+fn typed_maybe_ref_handlers_keep_reference_and_call_roles() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "typed-maybe-ref-handler.vue",
+        r#"<script setup lang="ts">
+import useLocale from './locale'
+type Fn = (event: unknown) => unknown
+const { changeLocale } = useLocale()
+</script>
+<template><Dropdown @select="changeLocale as any" /><Dropdown @select="changeLocale!" /><Dropdown @select="changeLocale satisfies Fn" /><Dropdown @select="(<Fn>changeLocale)" /><Dropdown @select="changeLocale($event)" /><Dropdown @select="() => changeLocale" /></template>"#,
+    );
+}
+
+#[test]
 fn maybe_ref_model_writes_match_shipped_compiler() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
