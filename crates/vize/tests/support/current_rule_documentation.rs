@@ -14,6 +14,46 @@ use std::path::Path;
 
 fn reference(rule: &str, before: &str) -> &'static str {
     let (old, current) = match rule {
+        "cross-file" => (
+            "docs/content/rules/cross-file.md",
+            "docs/content/rules/cross-file.md",
+        ),
+        "ecosystem/vue-router-unknown-route" => (
+            "docs/content/rules/ecosystem.md",
+            "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
+        ),
+        "ecosystem/vue-router-missing-param" => (
+            "docs/content/rules/ecosystem.md",
+            "docs/content/rules/project/ecosystem-vue-router-missing-param.md",
+        ),
+        "ecosystem/vue-router-extra-param" => (
+            "docs/content/rules/ecosystem.md",
+            "docs/content/rules/project/ecosystem-vue-router-extra-param.md",
+        ),
+        "ecosystem/vue-router-param-type" => (
+            "docs/content/rules/ecosystem.md",
+            "docs/content/rules/project/ecosystem-vue-router-param-type.md",
+        ),
+        "html/cross-component-nesting" => (
+            "docs/content/rules/html.md",
+            "docs/content/rules/project/html-cross-component-nesting.md",
+        ),
+        "vue/cross-file-attrs-fallthrough" => (
+            "docs/content/rules/vue.md",
+            "docs/content/rules/project/vue-cross-file-attrs-fallthrough.md",
+        ),
+        "type/strict-boolean-expressions" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/type-strict-boolean-expressions.md",
+        ),
+        "script/no-deprecated-dollar-listeners-api" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/script-no-deprecated-dollar-listeners-api.md",
+        ),
+        "script/no-deprecated-events-api" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/script-no-deprecated-events-api.md",
+        ),
         "a11y/alt-text" => (
             "docs/content/rules/accessibility.md",
             "docs/content/rules/reference/a11y-alt-text.md",
@@ -127,21 +167,21 @@ pub(crate) fn packet(mut expected: Value) -> Value {
 }
 
 pub(crate) fn props_plain(expected: &str) -> String {
+    plain(expected)
+}
+
+pub(crate) fn plain(expected: &str) -> String {
     let mut rule = None;
     let mut current = String::new();
     for line in expected.split_inclusive('\n') {
-        for candidate in [
-            "script/define-props-destructuring",
-            "script/no-with-defaults",
-        ] {
-            if line.split_whitespace().any(|word| word == candidate) {
-                rule = Some(candidate);
-            }
+        let words: Vec<_> = line.split_whitespace().take(3).collect();
+        if words.len() == 3 && matches!(words[1], "error" | "warning") {
+            rule = Some(words[2]);
         }
         if let Some(old) = line.strip_prefix("    Reference: ") {
             current.push_str("    Reference: ");
             current.push_str(reference(
-                rule.take().expect("preceding authored props rule"),
+                rule.take().expect("preceding frozen report rule"),
                 old.trim_end_matches('\n'),
             ));
             if line.ends_with('\n') {
@@ -151,6 +191,33 @@ pub(crate) fn props_plain(expected: &str) -> String {
             current.push_str(line);
         }
     }
+    current
+}
+
+/// Change only the frozen JSON URL tokens, retaining all other stdout bytes.
+pub(crate) fn json_stdout(expected: &str) -> String {
+    let packet: Value = serde_json::from_str(expected).expect("complete frozen JSON report");
+    let mut messages = packet
+        .as_array()
+        .expect("complete frozen CLI rows")
+        .iter()
+        .flat_map(|row| row["messages"].as_array().expect("frozen messages"));
+    let mut current = String::new();
+    let mut cursor = 0;
+    for (offset, key) in expected.match_indices("\"ruleDocsPath\":") {
+        let message = messages.next().expect("one URL per frozen message");
+        let old = serde_json::to_string(&message["ruleDocsPath"]).unwrap();
+        let start = offset + key.len();
+        let whitespace = expected[start..].len() - expected[start..].trim_start().len();
+        let value_start = start + whitespace;
+        assert_eq!(&expected[value_start..value_start + old.len()], old);
+        let projected = self::message(message.clone());
+        current.push_str(&expected[cursor..value_start]);
+        current.push_str(&serde_json::to_string(&projected["ruleDocsPath"]).unwrap());
+        cursor = value_start + old.len();
+    }
+    assert_eq!(messages.next(), None, "every frozen message has a URL");
+    current.push_str(&expected[cursor..]);
     current
 }
 
@@ -169,4 +236,21 @@ fn frozen_documentation_projection_rejects_changed_urls_and_foreign_rules() {
     expected["ruleDocsPath"] =
         Value::String("docs/content/rules/reference/vue-multi-word-component-names.md".to_owned());
     assert_eq!(message(original), expected);
+}
+
+#[test]
+fn current_frozen_report_projection_keeps_every_non_url_stdout_byte() {
+    let historical = "[ {\"file\":\"Owned.vue\", \"messages\":[{\"ruleId\":\"script/no-deprecated-events-api\",\"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\"message\":\"authored\",\"severity\":2,\"line\":7}] } ]\n";
+    let current = "[ {\"file\":\"Owned.vue\", \"messages\":[{\"ruleId\":\"script/no-deprecated-events-api\",\"ruleDocsPath\": \"docs/content/rules/reference/script-no-deprecated-events-api.md\",\"message\":\"authored\",\"severity\":2,\"line\":7}] } ]\n";
+    assert_eq!(json_stdout(historical), current);
+    assert_eq!(
+        serde_json::from_str::<Value>(&json_stdout(historical)).unwrap(),
+        packet(serde_json::from_str(historical).unwrap())
+    );
+    assert_eq!(
+        plain(
+            "Owned.vue\n  Owned.vue:7:2 error script/no-deprecated-events-api authored\n    Reference: docs/content/rules/type-and-script.md\n"
+        ),
+        "Owned.vue\n  Owned.vue:7:2 error script/no-deprecated-events-api authored\n    Reference: docs/content/rules/reference/script-no-deprecated-events-api.md\n"
+    );
 }

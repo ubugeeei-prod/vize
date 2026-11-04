@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import { emitGateOracle } from "./support/emit-props-gate-oracle.ts";
 
 // The direct inference-only emit-props call is the oracle: the gated call that
 // checks a props-independent literal against `any` must produce exactly the
@@ -10,6 +11,7 @@ import ts from "typescript";
 // can bind.
 const repo = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, repo), "utf8");
+const oracle = emitGateOracle(read);
 const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 const inference = read(`${declarations}emit-inference.d.ts.txt`);
 const sharedInference = read(`${declarations}shared-emit-inference.d.ts.txt`);
@@ -22,14 +24,16 @@ const ownership = ["$ComponentMetadataKeys", "$ComponentOwnKeys", "$UnownedCompo
     return line;
   })
   .join("\n");
-const helpers = [
-  read(`${declarations}core-types.d.ts.txt`).trimEnd(),
-  "type $PublicComponentInputProps = { hidden?: boolean };",
-  read(`${declarations}emit-overloads.d.ts.txt`).trimEnd(),
-  read(`${declarations}emit-props.d.ts.txt`).trimEnd(),
-  ownership,
-  inference.trimEnd(),
-].join("\n");
+const helpersFor = (emitInference: string) =>
+  [
+    read(`${declarations}core-types.d.ts.txt`).trimEnd(),
+    "type $PublicComponentInputProps = { hidden?: boolean };",
+    read(`${declarations}emit-overloads.d.ts.txt`).trimEnd(),
+    read(`${declarations}emit-props.d.ts.txt`).trimEnd(),
+    ownership,
+    emitInference.trimEnd(),
+  ].join("\n");
+const helpers = helpersFor(inference);
 
 const scope = "crates/vize_canon/src/virtual_ts/scope/";
 const events = read(`${scope}component_events.rs`);
@@ -54,10 +58,7 @@ const TEMPLATES = {
     gate,
     "const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
   ],
-  inferred: [
-    generic,
-    "type {inferred_args} = ({library} extends true ? typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}} : typeof {emit_props}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];",
-  ],
+  inferred: [generic, oracle.current.inferred],
 } as const;
 
 const aliasSource = gate.match(/const GATE_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
@@ -170,6 +171,7 @@ function usage(
   literal: string[],
   index: number,
   wrap: (lines: string[]) => string[] = (lines) => lines,
+  inferredTemplate: string = TEMPLATES.inferred[1],
 ): string[] {
   const component_ref = `C_${name}_${index}`;
   const library = `${component_ref}_library`;
@@ -185,7 +187,7 @@ function usage(
   const gated = `${component_ref}_gated`;
   const values = { component_ref, library, resolver_type, emit_props_factory: "$EmitPropsFactory" };
   const inferred = (emit_props: string, prop_key: string, alias: string) =>
-    format(TEMPLATES.inferred[1], { ...values, emit_props, prop_key, inferred_args: alias });
+    format(inferredTemplate, { ...values, emit_props, prop_key, inferred_args: alias });
   return [
     `const ${component_ref} = undefined as unknown as ${shape};`,
     ...wrap([
@@ -208,15 +210,24 @@ function usage(
   ];
 }
 
-function program(aliases: string, only?: string): string {
+function program(aliases: string, only?: string, historical = false): string {
   return [
     ...prelude,
-    helpers,
+    historical ? oracle.historical.helpers : helpers,
     aliases.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
     ...Object.entries(shapes)
       .filter(([name]) => only === undefined || name === only)
       .flatMap(([name, shape]) =>
-        literalsFor(name).flatMap((literal, index) => usage(name, shape, literal, index)),
+        literalsFor(name).flatMap((literal, index) =>
+          usage(
+            name,
+            shape,
+            literal,
+            index,
+            undefined,
+            historical ? oracle.historical.inferred : undefined,
+          ),
+        ),
       ),
   ].join("\n");
 }
@@ -257,6 +268,8 @@ void test("the gate mirrors every $EmitPropsFactory route", () => {
     "$EmitPropsFactory",
     "$NativeEmitPropsFactory",
     "$ConstructorEmitPropsFactory",
+    "$LooseEmitPropsFactory",
+    "$EmitIsWide",
   ]) {
     const local = inference.split("\n").find((line) => line.startsWith(`type ${name}<`));
     const shared = sharedInference.split("\n").find((line) =>
@@ -271,7 +284,7 @@ void test("the gate mirrors every $EmitPropsFactory route", () => {
   const mirror = factory
     .slice("type $EmitPropsFactory<C> = ".length, -1)
     .replace(
-      "$IsAny<C> extends true ? (component: C) => (props: any) => {}",
+      "$IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps",
       "0 extends (1 & C) ? false",
     )
     .replaceAll("(component: C) => F", "true")
@@ -316,7 +329,7 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
     [
       "a union whose members return different types skips subtype reduction",
       GATE_ALIASES.replace(single, "(props: any) => R"),
-      "optional",
+      oracle.current.subtypeWitness,
     ],
   ] as const) {
     assert.notEqual(broken, GATE_ALIASES, name);
@@ -328,35 +341,46 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
   }
 });
 
-void test("a deferred component type changes the gated call, so generic templates keep the direct one", () => {
-  const deferred = [
-    ...prelude,
-    helpers,
-    GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
-    `export function template<K extends ${resolvesEmits} | ${sfc}>() {`,
-    ...usage("deferred", "K", literals.text!, 0).map((line) => `  ${line}`),
-    "}",
-  ].join("\n");
-  const failures = diagnostics(deferred, false);
+void test("the historical deferred counter stays frozen and generic templates keep the direct call", () => {
+  const deferred = (historical: boolean) =>
+    [
+      ...prelude,
+      historical ? oracle.historical.helpers : helpers,
+      GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+      `export function template<K extends ${resolvesEmits} | ${sfc}>() {`,
+      ...usage(
+        "deferred",
+        "K",
+        literals.text!,
+        0,
+        undefined,
+        historical ? oracle.historical.inferred : undefined,
+      ).map((line) => `  ${line}`),
+      "}",
+    ].join("\n");
+  const failures = diagnostics(deferred(true), false);
   assert.ok(
     failures.some((text) => text.startsWith("TS2344 ") && text.includes("C_deferred_0_")),
     failures.join("\n"),
   );
+  // The marker-aware observer removes this historical counterexample. This
+  // does not enable the gate for deferred templates: its producer law stays.
+  assert.deepEqual(diagnostics(deferred(false), false), []);
+  assert.ok(gate.includes("!generic_component && !legacy_vue2"));
 });
 
 void test("the gate takes the cheap call exactly where the factory ignores the props", () => {
-  const cheap = ["any", "sfc", "loose", "unmarked", "plain", "deck", "sameEmitUnion", "columns"];
-  const direct = [
-    "resolvesEmits",
-    "resolvesProps",
-    "library",
-    "genericUnion",
-    "optional",
-    "nativeUnion",
-  ];
+  assertRoutes(oracle.current.cheap, oracle.current.direct, helpers);
+});
+
+function assertRoutes(
+  cheap: readonly string[],
+  direct: readonly string[],
+  helperText: string,
+): void {
   const lines = [
     ...prelude,
-    helpers,
+    helperText,
     GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
   ];
   for (const name of [...cheap, ...direct]) {
@@ -375,7 +399,44 @@ void test("the gate takes the cheap call exactly where the factory ignores the p
       `type ${component_ref}_route = Expect<${route}>;`,
     );
   }
-  assert.deepEqual(diagnostics(lines.join("\n"), false), []);
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    assert.deepEqual(diagnostics(lines.join("\n"), exactOptionalPropertyTypes), []);
+  }
+}
+
+void test("the immutable pre-marker oracle retains its original routes and union refusal", () => {
+  assertRoutes(oracle.historical.cheap, oracle.historical.direct, oracle.historical.helpers);
+  const single =
+    "[R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F";
+  const broken = GATE_ALIASES.replace(single, "(props: any) => R");
+  assert.notEqual(broken, GATE_ALIASES);
+  const witness = oracle.historical.subtypeWitness;
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    assert.deepEqual(
+      diagnostics(program(GATE_ALIASES, undefined, true), exactOptionalPropertyTypes),
+      [],
+    );
+    const failures = diagnostics(program(broken, witness, true), exactOptionalPropertyTypes);
+    assert.ok(
+      failures.some((text) => text.startsWith("TS2344 ") && text.includes(`C_${witness}_`)),
+    );
+  }
+});
+
+void test("a successor refuses unknown producer bytes and altered historical context", () => {
+  for (const path of [
+    "tests/_fixtures/tooling/emit-props-gate-11697.json",
+    ...Object.keys(oracle.current.sourceHashes),
+  ]) {
+    assert.throws(
+      () => emitGateOracle((selected) => read(selected) + (selected === path ? " " : "")),
+      /oracle context|selected emit gate producer/u,
+    );
+    assert.throws(
+      () => emitGateOracle((selected) => (selected === path ? "" : read(selected))),
+      /oracle context|selected emit gate producer/u,
+    );
+  }
 });
 
 void test("a gated result still feeds the listener args, so the call stays", () => {

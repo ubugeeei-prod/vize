@@ -157,6 +157,10 @@ for (const file of [
   "expected-packets",
   "expected-packets.provenance.json",
   "public-instance-reference.js",
+  "listener-wrapper-reference.js",
+  "listener-wrapper-reference.test.js",
+  "reference-fixtures",
+  "listener-wrapper-reference.provenance.json",
 ])
   fs.cpSync(path.join(root, "npm/volar/test", file), path.join(tests, file), {
     recursive: true,

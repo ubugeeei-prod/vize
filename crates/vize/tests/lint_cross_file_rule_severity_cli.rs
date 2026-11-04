@@ -221,9 +221,17 @@ fn configured_cross_file_findings_keep_complete_reports_and_input_bytes() {
                 fs::read(corpus.join(format!("cases/{name}.stderr.txt"))).unwrap(),
                 "{name}/{format}"
             );
+            let historical_stdout =
+                fs::read_to_string(corpus.join(format!("cases/{name}.{format}.stdout.txt")))
+                    .unwrap();
+            let expected_stdout = if format == "json" {
+                crate::support::current_rule_documentation::json_stdout(&historical_stdout)
+            } else {
+                crate::support::current_rule_documentation::plain(&historical_stdout)
+            };
             assert_eq!(
                 output.stdout,
-                fs::read(corpus.join(format!("cases/{name}.{format}.stdout.txt"))).unwrap(),
+                expected_stdout.as_bytes(),
                 "{name}/{format}: {output:?}"
             );
             if format == "json" {

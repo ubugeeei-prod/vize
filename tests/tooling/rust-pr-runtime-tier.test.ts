@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -267,7 +267,7 @@ test("only the typechecker cohort requires tsgo on pull_request", () => {
       const nativeRuntime = join(runtimeDir, "tsc");
       writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
       const githubEnv = join(cwd, "github-env");
-      const result = spawnSync(
+      const result: SpawnSyncReturns<string> = spawnSync(
         "/bin/bash",
         ["--noprofile", "--norc", "-eo", "pipefail", "-c", script],
         {

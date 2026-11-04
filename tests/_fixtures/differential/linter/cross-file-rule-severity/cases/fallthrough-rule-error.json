@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "vue/cross-file-attrs-fallthrough",
-        "ruleDocsPath": "docs/content/rules/project/vue-cross-file-attrs-fallthrough.md",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/cross-file-attrs-fallthrough] class passed to <Child> cannot fall through because the component has a fragment root",
         "line": 4,

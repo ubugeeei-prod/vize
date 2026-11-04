@@ -36,7 +36,11 @@ export const AUTHENTICATED_PREAMBLE_SHA256 =
 export function applySourceOwnedPreambleTransitions(historical: string) {
   let current = historical;
   for (const [before, after] of TRANSITIONS) {
-    assert.equal(current.split(before).length, 2, `missing frozen preamble edit ${before.slice(0, 48)}`);
+    assert.equal(
+      current.split(before).length,
+      2,
+      `missing frozen preamble edit ${before.slice(0, 48)}`,
+    );
     assert.equal(current.includes(after), false, `preamble already contains ${after.slice(0, 48)}`);
     current = current.replace(before, after);
   }

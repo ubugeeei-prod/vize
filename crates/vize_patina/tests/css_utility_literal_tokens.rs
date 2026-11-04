@@ -73,11 +73,15 @@ fn complete_utility_findings_exclude_css_comments_strings_and_urls() {
             .expect("whole SFC input");
         assert_eq!(Some(source.len() as u64), case["bytes"].as_u64());
         let filename = case["filename"].as_str().unwrap();
-        let expected: Value = serde_json::from_str(
+        let mut expected: Value = serde_json::from_str(
             &fs::read_to_string(fixture.join(case["expected"].as_str().unwrap()))
                 .expect("independently authored complete output vector"),
         )
         .expect("valid complete vector");
+        expected["json"] = crate::current_css_documentation::packet(expected["json"].clone());
+        expected["plain"] = json!(crate::current_css_documentation::plain(
+            expected["plain"].as_str().unwrap()
+        ));
         let result = linter.lint_sfc(&source, filename);
         let api = complete(&result);
         let slices: Vec<_> = result

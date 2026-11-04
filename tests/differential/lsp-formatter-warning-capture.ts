@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import path from "node:path";
 import { readPinnedArtifact, sha256 } from "./harness.mjs";
 import {
   FORMATTER_BIND_POLICY_CONFIG,
@@ -14,7 +13,7 @@ const TEST = "every_handler_logs_the_conflict_returns_null_and_keeps_authored_by
 
 /** Authenticate the new warning-capture input without reclassifying the old formatter law. */
 export function loadFormatterWarningCapture(
-  packRoot: string,
+  repositoryRoot: string,
   data: FixtureData,
   files: { runtimePath: string; bytes: Buffer }[],
   expected: unknown,
@@ -79,9 +78,7 @@ export function loadFormatterWarningCapture(
   ]);
   assert.equal(data.provenance.witness?.path, FORMATTER_WARNING_CONSUMER);
   const witness = data.provenance.witness!;
-  const source = readPinnedArtifact(path.resolve(packRoot, "../../../.."), witness).toString(
-    "utf8",
-  );
+  const source = readPinnedArtifact(repositoryRoot, witness).toString("utf8");
   const start = source.indexOf(`fn ${TEST}()`);
   assert(start >= 0, "the existing actual handler test must consume the new input");
   const body = source.slice(start, source.indexOf("\n#[test]", start));

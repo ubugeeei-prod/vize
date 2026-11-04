@@ -99,7 +99,7 @@ test("a fresh owned output exists before receipts and any reused attempt is refu
     fs.rmSync(parent, { recursive: true, force: true });
   }
 });
-test("whole source SDK10 and all thirteen local edges refuse a changed provider declaration", () => {
+test("the current whole SDK and its dependency closure refuse changed or missing declarations", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-sdk-pair-"));
   try {
     const base = path.join(temporary, "base"),
@@ -107,21 +107,68 @@ test("whole source SDK10 and all thirteen local edges refuse a changed provider 
     const typescript = createRequire(path.join(root, "npm/cli/package.json"))(
       "typescript",
     ) as SdkScanner;
-    const original = verifySourceSdkPair(root, root, typescript);
+    const original = verifySourceSdkPair(root, root, typescript, "current");
     for (const role of [base, head])
       for (const file of ["package.json", ...original.declarations.map((row) => row.file)]) {
         const target = path.join(role, "npm/cli", file);
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.copyFileSync(path.join(root, "npm/cli", file), target);
       }
-    assert.deepEqual(verifySourceSdkPair(base, head, typescript), original);
-    for (const file of ["virtual-ts-slots.d.ts", "package.json"]) {
+    assert.deepEqual(verifySourceSdkPair(base, head, typescript, "current"), original);
+    assert.equal(original.declarations.length, 12);
+    assert.equal(original.edges.length, 18);
+    for (const file of ["virtual-ts-slots.d.ts", "virtual-ts-emits.d.ts", "package.json"]) {
       const target = path.join(head, "npm/cli", file),
         before = fs.readFileSync(target);
       fs.appendFileSync(target, "\n");
-      assert.throws(() => verifySourceSdkPair(base, head, typescript));
+      assert.throws(() => verifySourceSdkPair(base, head, typescript, "current"));
       fs.writeFileSync(target, before);
     }
+    const leaf = path.join(head, "npm/cli/virtual-ts-emits.d.ts");
+    fs.unlinkSync(leaf);
+    assert.throws(() => verifySourceSdkPair(base, head, typescript, "current"));
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+void test("the separate frozen SDK10 admission retains its thirteen-edge contract", () => {
+  // Synthetic guard control, not an independent historical/public acceptance run.
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-frozen-sdk-pair-"));
+  try {
+    const pkg = path.join(temporary, "npm/cli");
+    const declarations = new Map<string, string>();
+    for (const extension of ["ts", "mts", "cts"]) {
+      declarations.set(
+        `virtual-ts.d.${extension}`,
+        ["globals", "patterns", "slots"]
+          .map((name) => `import type {} from "./virtual-ts-${name}.js";`)
+          .join("\n"),
+      );
+      declarations.set(
+        `content-mapper-helpers.d.${extension}`,
+        'export type * from "./generated/content-mapper-types.js";',
+      );
+    }
+    for (const name of ["globals", "patterns", "slots"])
+      declarations.set(`virtual-ts-${name}.d.ts`, "export {};\n");
+    declarations.set(
+      "generated/content-mapper-types.d.ts",
+      'import type {} from "../virtual-ts.js";',
+    );
+    for (const [file, body] of declarations) {
+      const target = path.join(pkg, file);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, body);
+    }
+    fs.writeFileSync(path.join(pkg, "package.json"), "{}\n");
+    const typescript = createRequire(path.join(root, "npm/cli/package.json"))(
+      "typescript",
+    ) as SdkScanner;
+    const result = verifySourceSdkPair(temporary, temporary, typescript);
+    assert.equal(result.declarations.length, 10);
+    assert.equal(result.edges.length, 13);
+    assert.throws(() => verifySourceSdkPair(temporary, temporary, typescript, "current"));
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
