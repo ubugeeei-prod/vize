@@ -108,6 +108,10 @@ test("actual native-smoke and release files bind the registered successor", () =
 });
 
 test("smoke rollback or premature Babel publication cannot reuse historical admission", () => {
+  const workflow = fs.readFileSync(
+    new URL("../../.github/workflows/native-smoke.yml", import.meta.url),
+    "utf8",
+  );
   const release = fs.readFileSync(
     new URL("../../.github/workflows/release.yml", import.meta.url),
     "utf8",
@@ -116,13 +120,13 @@ test("smoke rollback or premature Babel publication cannot reuse historical admi
   const newLine = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(oldLine && newLine);
   assert.throws(() => assertLiveInventory(before, release));
-  assert.throws(() => assertLiveInventory(after, release.replace(oldLine, newLine)));
+  assert.throws(() => assertLiveInventory(workflow, release.replace(oldLine, newLine)));
   for (const changed of [
     oldLine.replace(" npm/cli", ""),
     oldLine.replace(" npm/cli", " npm/cli npm/cli"),
     oldLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
   ])
-    assert.throws(() => assertLiveInventory(after, release.replace(oldLine, changed)));
+    assert.throws(() => assertLiveInventory(workflow, release.replace(oldLine, changed)));
 });
 
 test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {
