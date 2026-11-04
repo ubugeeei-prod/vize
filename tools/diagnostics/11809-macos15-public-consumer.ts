@@ -414,7 +414,10 @@ async function main(): Promise<void> {
       assert.equal(row.status, row.id === "observed-standalone" ? 1 : 2, row.id);
       if (row.id === "observed-standalone")
         assert.deepEqual(diagnosticLines(row), [standalonePacket]);
-      else assert.equal(row.stdout, wrongPacket, row.id);
+      else {
+        assert.equal(row.stdout, wrongPacket, row.id);
+        assert.equal(row.stderr, "", row.id);
+      }
     }
     const events = (route: string): Record<string, unknown>[] =>
       readFileSync(join(evidence, "observed-" + route + ".ndjson"), "utf8")
@@ -428,13 +431,23 @@ async function main(): Promise<void> {
             event.kind === "execve" && object(event.image).sha256 === fileHash(hosts[host]),
         ),
       );
-    for (const route of ["tsc", "tsrs", "standalone"])
-      assert.ok(
-        events(route).some(
-          (event) =>
-            event.kind === "native-after" && object(event.image).sha256 === nativeImage.sha256,
-        ),
-      );
+    for (const route of ["tsc", "tsrs", "standalone"]) {
+      const routeEvents = events(route);
+      const nativeLoads = routeEvents.filter((event) => event.kind === "native-after");
+      assert.ok(nativeLoads.length > 0, route + " observed a native load");
+      for (const nativeLoad of nativeLoads) {
+        assert.equal(object(nativeLoad.image).sha256, nativeImage.sha256, route);
+        assert.equal(typeof nativeLoad.pid, "number", route);
+        const runtime = routeEvents.find(
+          (event) => event.kind === "node-process" && event.pid === nativeLoad.pid,
+        );
+        assert.ok(runtime, route + " native load has a matching Node process PID");
+        assert.equal(runtime.node, "v22.23.3", route);
+        assert.equal(runtime.arch, "arm64", route);
+        assert.equal(object(runtime.image).sha256, fileHash(process.execPath), route);
+        assert.match(text(nativeLoad.opaqueBuildToken), /^[0-9a-f]{32}$/, route);
+      }
+    }
     assert.deepEqual(snapshots(), before);
     assert.deepEqual(helperHashes(), helpersBefore);
     assert.equal(fileHash(nativeFile), nativeImage.sha256);
