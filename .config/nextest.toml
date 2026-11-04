@@ -161,6 +161,11 @@ filter = '''(package(=vize) & binary(=integration) & test(=lint_call_source_cli:
 (package(=vize_patina) & binary(=integration) & test(=call_source_7989::original_and_controls_keep_complete_configured_service_results))'''
 junit.store-success-output = true
 
+# Retain all sixteen original adjacent-attribute host observations in PR/full JUnit.
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=integration) & test(=content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics)'
+junit.store-success-output = true
+
 # Start the 30-110s tests first so they do not finish a cohort alone.
 # Substring matches survive test-binary consolidation.
 [[profile.default.overrides]]

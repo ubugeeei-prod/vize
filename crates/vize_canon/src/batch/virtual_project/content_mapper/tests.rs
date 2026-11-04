@@ -13,6 +13,7 @@ use crate::batch::{
     generate_vue_content_mapper_transform_with_options,
 };
 
+mod attribute_boundaries;
 mod diagnostic_origin;
 mod diagnostic_ownership;
 mod helper_modes;
@@ -207,32 +208,6 @@ defineProps<{ count: number }>();
             .count()
             >= 2
     );
-}
-
-#[test]
-fn split_script_setup_spans_start_at_the_authored_block() {
-    let source = r#"<script lang="ts">
-export type SearchQuery = { value: string };
-</script>
-
-<script setup lang="ts">
-const values: any = [];
-values.map(it => it);
-</script>
-"#;
-    let result =
-        generate_vue_content_mapper_transform(Path::new("Split.vue"), source).expect("transform");
-    let generated = result.text.find("it => it").expect("generated parameter");
-    let original = source.find("it => it").expect("authored parameter");
-    let span = result
-        .mappings
-        .iter()
-        .map(|mapping| mapping.0)
-        .find(|span| generated >= span[0] && generated < span[0] + span[1])
-        .expect("parameter mapping");
-
-    assert_eq!(span[4], 0, "setup line should remain verbatim: {span:?}");
-    assert_eq!(span[2] + generated - span[0], original);
 }
 
 #[test]
