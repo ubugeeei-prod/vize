@@ -45,21 +45,53 @@ it("keeps a complete 100k SFC script responsive and replaces it with the latest 
 });
 
 it("cancels an actual busy tokenizer while keeping complete source selection and editing available", async () => {
-  const workers: { ready: boolean; terminated: boolean }[] = [];
+  const workers: {
+    ready: boolean;
+    terminated: boolean;
+    initialized: Promise<void>;
+    events: { type: string; at: number }[];
+  }[] = [];
   const NativeWorker = Worker;
   vi.stubGlobal(
     "Worker",
     new Proxy(NativeWorker, {
       construct(target, args) {
         const worker = Reflect.construct(target, args) as Worker;
-        const state = { ready: false, terminated: false };
+        let initialized!: () => void;
+        let initializationFailed!: (error: Error) => void;
+        const initialization = new Promise<void>((resolve, reject) => {
+          initialized = resolve;
+          initializationFailed = reject;
+        });
+        // A worker may be disposed before this test awaits its initialization.
+        void initialization.catch(() => {});
+        const state = {
+          ready: false,
+          terminated: false,
+          initialized: initialization,
+          events: [{ type: "created", at: performance.now() }],
+        };
         workers.push(state);
         worker.addEventListener("message", ({ data }) => {
-          if (data.type === "ready") state.ready = true;
+          state.events.push({ type: data.type, at: performance.now() });
+          if (data.type === "ready") {
+            state.ready = true;
+            initialized();
+          } else if (data.type === "initialization-error") {
+            initializationFailed(new Error("the real highlighter worker failed to initialize"));
+          }
+        });
+        worker.addEventListener("error", (event) => {
+          state.events.push({ type: "worker-error", at: performance.now() });
+          initializationFailed(new Error(event.message));
         });
         const terminate = worker.terminate.bind(worker);
         worker.terminate = () => {
           state.terminated = true;
+          state.events.push({ type: "terminated", at: performance.now() });
+          if (!state.ready) {
+            initializationFailed(new Error("the real highlighter worker stopped before ready"));
+          }
           terminate();
         };
         return worker;
@@ -87,6 +119,11 @@ it("cancels an actual busy tokenizer while keeping complete source selection and
     await nextTick();
     expect(workers[0].terminated).toBe(true);
     expect(sourceText(host)).toBe(replacement);
+    expect(workers).toHaveLength(2);
+    // Initialization has its own production deadline. Start the unchanged
+    // color assertion only after the replacement tokenizer can receive work.
+    await workers[1].initialized;
+    expect(workers[1].terminated).toBe(false);
     await expect.poll(() => host.querySelector(".code-line span[style]")).not.toBeNull();
     expect(sourceText(host)).toBe(replacement);
     expect(host.querySelector("script")).toBeNull();
@@ -94,6 +131,12 @@ it("cancels an actual busy tokenizer while keeping complete source selection and
     app.unmount();
     host.remove();
     vi.unstubAllGlobals();
+    console.info(
+      "code-highlight-worker-lifecycle",
+      JSON.stringify(
+        workers.map(({ ready, terminated, events }) => ({ ready, terminated, events })),
+      ),
+    );
   }
   expect(workers.every((worker) => worker.terminated)).toBe(true);
 });
