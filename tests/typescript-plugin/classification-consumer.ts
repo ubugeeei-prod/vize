@@ -10,7 +10,12 @@ const probe = createRequire(import.meta.url)("./classification-probe.cjs") as {
 export interface ClassificationFixture {
   readonly output: string;
 }
-export const createClassificationFixtures = probe.createClassificationFixtures;
+export function createClassificationFixtures(
+  workspace: string,
+  output: string,
+): ClassificationFixture {
+  return probe.createClassificationFixtures(workspace, output);
+}
 
 export async function checkPackedClassifications(
   client: TsserverClient,

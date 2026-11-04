@@ -108,6 +108,23 @@
         "sha256": "70f653fff93a727b22561fe44ebd8be8fdd7389e44cba1dac3f83b24b5dbdd6e",
         "bytes": 2926
       }
+    },
+    {
+      "before": {
+        "path": "tests/typescript-plugin/classifications.test.cjs",
+        "sha256": "3767491fc2e414aca6635646b40b1e780509b93492ccf3aa13729b9d176a9efa",
+        "bytes": 8823
+      },
+      "after": {
+        "path": "tests/typescript-plugin/classifications.test.cjs",
+        "sha256": "a2e25ee8c8c6845f4f79d49cacbce7c521f445d5fbffb2f277572fe64740a649",
+        "bytes": 8838
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/classifications.before.cjs.gz",
+        "sha256": "e3373622b6e91e701d9d045d8893ab69b83c6421f2044352fc27e5ca50c948e3",
+        "bytes": 2623
+      }
     }
   ],
   "input": {
@@ -123,8 +140,13 @@
     },
     {
       "path": "tests/typescript-plugin/classification-consumer.ts",
-      "sha256": "01cb55095cab244800ab148daadf1f09ea89e4629fc1d4620fd4975455606614",
-      "bytes": 1402
+      "sha256": "78a2c624707d9153a388dce5a0a92811a0d795d245e138df8c1124b0aeca31b1",
+      "bytes": 1500
+    },
+    {
+      "path": "tests/typescript-plugin/classifications.test.cjs",
+      "sha256": "a2e25ee8c8c6845f4f79d49cacbce7c521f445d5fbffb2f277572fe64740a649",
+      "bytes": 8838
     },
     {
       "path": "editors/vscode/test/suite/classification-provider.cjs",
@@ -133,8 +155,8 @@
     },
     {
       "path": "tests/tooling/language-project-classification-runtime.test.ts",
-      "sha256": "1ddc3d35329b6f962ee9346f504372c0055458b1dedc072bd1ff97bc4fde884d",
-      "bytes": 13315
+      "sha256": "c7291c688f2733e8052316d2a89d2c64f9a63b311ecac28ed196fbab087ab611",
+      "bytes": 14210
     },
     {
       "path": "tests/tooling/language-project-classification-position.test.ts",

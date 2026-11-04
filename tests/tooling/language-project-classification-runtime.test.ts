@@ -25,12 +25,12 @@ const require = createRequire(import.meta.url);
 const probe = require("../typescript-plugin/classification-probe.cjs");
 const provider = require("../../editors/vscode/test/suite/classification-provider.cjs");
 
-test("live runtime successors preserve six original consumers and leave base and unrelated reads actual", () => {
+test("live runtime successors preserve seven original consumers and leave base and unrelated reads actual", () => {
   const metadata = record();
   assert.equal(metadata.id, CLASSIFICATION_RUNTIME_ID);
   const originals = authenticateClassificationRuntime(read);
   const historical = historicalClassificationConsumers(read);
-  assert.equal(originals.size, 6);
+  assert.equal(originals.size, 7);
   for (const row of metadata.transitions) {
     const original = gunzipSync(read("head", row.gzip.path)!);
     assert.equal(digest(original), row.before.sha256);
@@ -164,6 +164,23 @@ test("new helper and input paths select the existing jobs and cannot be removed 
       );
     }
   }
+});
+
+test("explicit test Promise disposition preserves the whole original assertions and actual test entry", () => {
+  const source = "tests/typescript-plugin/classifications.test.cjs";
+  const metadata = record();
+  const row = metadata.transitions.find((value: any) => value.after.path === source);
+  const original = gunzipSync(read("head", row.gzip.path)!).toString();
+  const current = read("head", source)!.toString();
+  assert.equal(current, original.replace(/(^\s*)test\(/gm, "$1void test("));
+  assert.equal(current.match(/void test\(/g)?.length, 3);
+  assert.match(
+    read("head", "tests/typescript-plugin/mapped-language-service.test.cjs")!.toString(),
+    /require\("\.\/classifications\.test\.cjs"\)/,
+  );
+  const historical = historicalClassificationConsumers(read);
+  assert.equal(historical("head", source)!.toString(), original);
+  authenticateClassificationRuntime(read);
 });
 
 test("whole authored packets reject empty, reordered, mistyped, modifier-losing and escaping triples", () => {

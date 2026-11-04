@@ -6,7 +6,7 @@ export const CLASSIFICATION_RUNTIME_ROOT =
   "tests/_fixtures/tooling/typescript-classification-runtime-11664/";
 export const CLASSIFICATION_RUNTIME_ID =
   "typechecker/language-project/classification-runtime-11664";
-const custodyHash = "54b078822ef0c508e958bdb8c7a2d5f1984f453a332bf8521bd0d0683186418e";
+const custodyHash = "622d03c3f61f2607d5cb03fc21d6c6e34cb448473da04bba642551ce3e910d0c";
 const predecessorPath =
   "tests/_fixtures/tooling/typescript-classification-successor-11664/custody.json";
 const predecessorHash = "04628e3b129e38c7ee0cc721848a428fa34518993a4646ea7bef806827c68005";
@@ -23,10 +23,12 @@ const transitions = [
   [".github/workflows/language-project-fixtures.yml", "language-project-fixtures.before.yml.gz"],
   [".github/workflows/typescript-plugin.yml", "typescript-plugin.before.yml.gz"],
   [".github/workflows/typescript-provider-vsix.yml", "typescript-provider-vsix.before.yml.gz"],
+  ["tests/typescript-plugin/classifications.test.cjs", "classifications.before.cjs.gz"],
 ] as const;
 const consumers = [
   "tests/typescript-plugin/classification-probe.cjs",
   "tests/typescript-plugin/classification-consumer.ts",
+  "tests/typescript-plugin/classifications.test.cjs",
   "editors/vscode/test/suite/classification-provider.cjs",
   "tests/tooling/language-project-classification-runtime.test.ts",
   "tests/tooling/language-project-classification-position.test.ts",
@@ -106,7 +108,7 @@ export function authenticateClassificationRuntime(read: ReadFile): Map<string, B
   return originals;
 }
 
-/** Base reads remain actual; only six exact, authenticated head transitions have a historical view. */
+/** Base reads remain actual; only seven exact, authenticated head transitions have a historical view. */
 export function historicalClassificationConsumers(read: ReadFile): ReadFile {
   let originals: Map<string, Buffer> | undefined;
   return (side, path) => {
@@ -122,6 +124,10 @@ export function historicalClassificationConsumers(read: ReadFile): ReadFile {
 }
 
 const historicalHashes = new Map<string, string>([
+  [
+    "tests/typescript-plugin/classifications.test.cjs",
+    "3767491fc2e414aca6635646b40b1e780509b93492ccf3aa13729b9d176a9efa",
+  ],
   [
     ".github/workflows/typescript-plugin.yml",
     "3c9ed480a8ff672eaca469a3de1304d44c76425a7c55c76279abfb0e3d34303b",

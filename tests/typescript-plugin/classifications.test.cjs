@@ -97,7 +97,7 @@ function project(newline) {
 
 for (const newline of ["\n", "\r\n"])
   for (const method of ["getEncodedSyntacticClassifications", "getEncodedSemanticClassifications"])
-    test(`real TypeScript ${method} maps the complete UTF-8 packet ${JSON.stringify(newline)}`, () => {
+    void test(`real TypeScript ${method} maps the complete UTF-8 packet ${JSON.stringify(newline)}`, () => {
       const p = project(newline);
       try {
         const raw = p.original[method](
@@ -149,7 +149,7 @@ for (const newline of ["\n", "\r\n"])
       }
     });
 
-test("classification ranges use existing feature ownership, atomic maps, clipping and ordered triples", () => {
+void test("classification ranges use existing feature ownership, atomic maps, clipping and ordered triples", () => {
   const file = "/src/Clipped.art";
   const source = "😀 日本語 abcd -- name -- masked";
   const generated = "helper;nameLong::abcd::masked";
@@ -236,7 +236,7 @@ test("classification ranges use existing feature ownership, atomic maps, clippin
   assert.equal(snapshots, 6, "reuse one current document snapshot per request, not per token");
 });
 
-test("ordinary TypeScript retains the original packet, range, format and service call", () => {
+void test("ordinary TypeScript retains the original packet, range, format and service call", () => {
   const packet = { spans: [8, 2, 512], endOfLineState: 123 };
   const range = { start: 8, length: 2 };
   const calls = [];
