@@ -6,6 +6,8 @@ import {
   verifyBabelSmokeInventoryPair,
 } from "./support/native-smoke-babel-inventory.ts";
 
+import { assertPackedSmokeTimingSuccessor } from "./support/native-smoke-timing-successor.ts";
+
 const directory = new URL(
   "../_fixtures/differential/workflows/native-smoke-babel-inventory-10702/",
   import.meta.url,
@@ -88,7 +90,7 @@ test("source provenance, original digest and archive membership cannot be omitte
 });
 
 function assertLiveInventory(workflow: string, release: string): void {
-  assert.equal(workflow, after, "the active whole workflow is the registered successor");
+  assertPackedSmokeTimingSuccessor(after, workflow);
   const expected = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(expected);
   assert.deepEqual(
@@ -121,4 +123,25 @@ test("smoke rollback or premature Babel publication cannot reuse historical admi
     oldLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
   ])
     assert.throws(() => assertLiveInventory(after, release.replace(oldLine, changed)));
+});
+
+test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {
+  const workflow = fs.readFileSync(
+    new URL("../../.github/workflows/native-smoke.yml", import.meta.url),
+    "utf8",
+  );
+  for (const [from, to] of [
+    ["VIZE_SMOKE_TIMING_FILE:", "OTHER_TIMING_FILE:"],
+    ["packed-smoke-timing.jsonl", "other.jsonl"],
+    ["name: Retain packed smoke timing", "name: Unknown timing step"],
+    ["retention-days: 14", "retention-days: 15"],
+    ["--runtime-checks", "--omit-runtime"],
+    ["timeout-minutes: 45", "timeout-minutes: 46"],
+  ]) {
+    assert.ok(workflow.includes(from), from);
+    assert.throws(() => assertPackedSmokeTimingSuccessor(after, workflow.replace(from, to)));
+  }
+  assert.throws(() => assertPackedSmokeTimingSuccessor(after + "# changed\n", workflow));
+  assert.throws(() => assertPackedSmokeTimingSuccessor(after, after));
+  assert.throws(() => assertPackedSmokeTimingSuccessor(after, workflow + "# unreviewed\n"));
 });
