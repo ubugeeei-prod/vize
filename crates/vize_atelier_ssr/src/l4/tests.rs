@@ -212,3 +212,38 @@ fn unowned_shapes_name_their_legacy_reason() {
         );
     }
 }
+
+#[test]
+fn type_annotated_v_for_aliases_stay_in_scope() {
+    let source = r#"<li v-for="(row: Row, index: number) in rows">{{ index }} {{ row.id }}</li>"#;
+    for lane in [SsrLane::Selected, SsrLane::LegacyOnly] {
+        let allocator = Allocator::new();
+        let (_, errors, result) = compile_ssr_on_lane(
+            &allocator,
+            source,
+            SsrCompilerOptions {
+                is_ts: true,
+                ..SsrCompilerOptions::default()
+            },
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            SsrCompilerExperimentalOptions::default(),
+            false,
+            lane,
+        );
+        assert!(errors.is_empty(), "{errors:?}\n{}", result.code);
+        assert!(
+            result.code.contains("(row, index) =>"),
+            "type annotations must leave the callback:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_ssrInterpolate(index)")
+                && result.code.contains("_ssrInterpolate(row.id)")
+                && !result.code.contains("_ctx.index")
+                && !result.code.contains("_ctx.row."),
+            "annotated aliases must be scoped:\n{}",
+            result.code
+        );
+    }
+}

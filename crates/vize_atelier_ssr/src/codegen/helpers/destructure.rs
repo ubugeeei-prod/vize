@@ -96,6 +96,8 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
                     pending.push(part);
                 }
             }
+        } else if let Some(name) = typed_binding_name(value) {
+            params.insert(name.to_compact_string());
         } else if is_valid_identifier(value) {
             params.insert(value.to_compact_string());
         }
@@ -132,6 +134,15 @@ fn is_valid_identifier(value: &str) -> bool {
     chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
+/// `index: number` and `item?: { id: number }` contribute the binding name.
+/// The type is not a nested pattern. Object renames stay in the `{...}` branch.
+fn typed_binding_name(value: &str) -> Option<&str> {
+    let colon = value.find(':')?;
+    let name = value.get(..colon)?.trim();
+    let name = name.strip_suffix('?').unwrap_or(name).trim();
+    is_valid_identifier(name).then_some(name)
+}
+
 #[cfg(test)]
 mod tests {
     use super::extract_destructure_params;
@@ -146,10 +157,15 @@ mod tests {
         );
         extract_destructure_params("(index)", &mut params);
 
-        for expected in ["itemId", "first", "rest", "count", "index"] {
+        extract_destructure_params("(row: Row, index: number)", &mut params);
+        extract_destructure_params("item?: { id: number }", &mut params);
+
+        for expected in ["itemId", "first", "rest", "count", "index", "row", "item"] {
             assert!(params.contains(expected), "missing {expected:?}");
         }
-        assert_eq!(params.len(), 5);
+        assert!(!params.contains("Row"), "type names are not bindings");
+        assert!(!params.contains("id"), "a type body is not a pattern");
+        assert_eq!(params.len(), 7);
 
         for malformed in ["$data.[label, value]", "(dep(, file)"] {
             let mut params = FxHashSet::default();
