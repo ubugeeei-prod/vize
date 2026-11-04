@@ -84,6 +84,8 @@ export interface AutogenOutputNapi {
 }
 
 export interface BatchCompileOptionsNapi {
+  /** Fallback tsconfig when inputs have no nearest user project. */
+  typeResolutionFallbackTsconfig?: string;
   whitespace?: string;
   mode?: string;
   ssr?: boolean;
@@ -169,6 +171,8 @@ export interface BatchFileInputNapi {
 }
 
 export interface BatchFileResultNapi {
+  /** Project authority for configuration watches shared across components. */
+  typeProject?: TypeProjectContextNapi;
   path: string;
   code: string;
   /**
@@ -1338,6 +1342,8 @@ export interface SfcBlockAttributeNapi {
 }
 
 export interface SfcCompileOptionsNapi {
+  /** Fallback tsconfig when an input has no nearest user project. */
+  typeResolutionFallbackTsconfig?: string;
   whitespace?: string;
   filename?: string;
   mode?: string;
@@ -1376,6 +1382,8 @@ export interface SfcCompileOptionsNapi {
 }
 
 export interface SfcCompileResultNapi {
+  /** Project authority for configuration watches shared across components. */
+  typeProject?: TypeProjectContextNapi;
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, present only when
@@ -1867,4 +1875,17 @@ export interface OxlintHtmlOutcome {
   /** Exactly one of completed/refused is present. */
   completed?: OxlintHtmlCompleted;
   refused?: OxlintHtmlRefusal;
+}
+
+export declare function typeProjectOwners(path: string): Array<string>;
+
+export declare function typeProjectInputs(
+  root: string,
+  revision: string,
+  knownRevision?: string | undefined | null,
+): Array<string> | null;
+
+export interface TypeProjectContextNapi {
+  root: string;
+  revision: string;
 }

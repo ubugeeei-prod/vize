@@ -6,6 +6,7 @@
 import type { ExperimentalCompileFlags } from "./experimental-options.ts";
 import type { ModuleOutputInfo } from "./utils/module-output.ts";
 import type { MacroArtifact, NativeStyleBlockInfo } from "./types.ts";
+import type { TypeProjectContext } from "./sfc-types.ts";
 
 export interface BatchFileInput {
   path: string;
@@ -15,6 +16,7 @@ export interface BatchFileInput {
 }
 
 export interface BatchFileResult {
+  typeProject?: TypeProjectContext;
   path: string;
   code: string;
   /**
@@ -49,6 +51,8 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   vapor?: boolean;
   /** Extract Nuxt page metadata; enabled by the Nuxt integration only. */
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   customRenderer?: boolean;
   customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";

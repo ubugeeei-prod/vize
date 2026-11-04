@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use vize_carton::{FxHashMap, FxHashSet};
 
+use super::super::super::tsconfig_paths::resolve_extended_tsconfig_path_with_inputs;
+use super::super::compiler_inputs::CompilerInputs;
 use super::{
     graph,
     ownership::TsconfigSourceKind,
@@ -100,22 +102,41 @@ pub(super) struct SpecCache {
 
 impl SpecCache {
     pub(super) fn load(&mut self, config_path: &Path) -> Option<OwnershipSpec> {
+        self.load_with_inputs(config_path, None)
+    }
+
+    pub(super) fn load_with_inputs(
+        &mut self,
+        config_path: &Path,
+        inputs: Option<&CompilerInputs>,
+    ) -> Option<OwnershipSpec> {
         let normalized = graph::normalize_path(config_path);
+        if let Some(inputs) = inputs {
+            inputs.record_config_alias(config_path, &normalized);
+        }
         if let Some(cached) = self.completed.get(&normalized) {
             return cached.clone();
         }
         if !self.active.insert(normalized.clone()) {
             return None;
         }
-        let loaded = self.load_uncached(&normalized);
+        let loaded = self.load_uncached(&normalized, inputs);
         self.active.remove(&normalized);
         self.completed.insert(normalized, loaded.clone());
         loaded
     }
 
-    fn load_uncached(&mut self, config_path: &Path) -> Option<OwnershipSpec> {
-        let content = std::fs::read_to_string(config_path).ok()?;
-        let config = parse_jsonc_value(&content).ok()?;
+    fn load_uncached(
+        &mut self,
+        config_path: &Path,
+        inputs: Option<&CompilerInputs>,
+    ) -> Option<OwnershipSpec> {
+        let config = if let Some(inputs) = inputs {
+            inputs.read_jsonc(config_path).ok()?
+        } else {
+            let content = std::fs::read_to_string(config_path).ok()?;
+            parse_jsonc_value(&content).ok()?
+        };
         let base = config_path.parent().unwrap_or(Path::new("."));
         let mut effective = OwnershipSpec {
             default_include: TsconfigWildcard::new(base, "**/*", TsconfigWildcardUsage::Include),
@@ -128,9 +149,12 @@ impl SpecCache {
         };
 
         for parent in extends_entries(&config) {
-            if let Some(parent) = resolve_extended_tsconfig_path(config_path, parent)
-                .and_then(|path| self.load(&path))
-            {
+            let path = if inputs.is_some() {
+                resolve_extended_tsconfig_path_with_inputs(config_path, parent, inputs)
+            } else {
+                resolve_extended_tsconfig_path(config_path, parent)
+            };
+            if let Some(parent) = path.and_then(|path| self.load_with_inputs(&path, inputs)) {
                 effective.apply_extended(parent);
             }
         }

@@ -35,8 +35,8 @@ use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
     SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc_for_adapter_with_stage_capture,
-    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
+    compile_sfc_for_adapter_with_project, compile_sfc_for_adapter_with_project_and_stage_capture,
+    parse_sfc,
 };
 use vize_l0::cstr;
 use vize_l0::profile;
@@ -270,46 +270,59 @@ fn compile_file_inner(
         scope_id: None,
     };
 
-    let (result, capture) = settings.with_whitespace(path, || {
-        profile!("atelier.sfc.compile", {
-        let experimental = SfcCompileExperimentalOptions {
-            self_component: settings.experimental_self_component,
-        };
-        if settings.davinci.dump_dir.is_some() {
-            compile_sfc_for_adapter_with_stage_capture(
-                &descriptor,
-                compile_opts,
-                compiler.template_syntax,
-                custom_elements,
-                CodegenOptions::default(),
-                SfcScriptOutputMode::InlineTemplate,
-                experimental,
-            )
-            .map(|(result, stages)| {
-                (
-                    result,
-                    Some(BuildCapture::from_descriptor(stages, &descriptor)),
-                )
+    let type_project = settings
+        .type_projects
+        .for_descriptor(&descriptor, path)
+        .map_err(|error| CompileError {
+            path: path.clone(),
+            error: error.message,
+            phase: ErrorPhase::Compile,
+        })?;
+    let (result, capture) = settings
+        .with_whitespace(path, || {
+            profile!("atelier.sfc.compile", {
+                let experimental = SfcCompileExperimentalOptions {
+                    self_component: settings.experimental_self_component,
+                };
+                if settings.davinci.dump_dir.is_some() {
+                    compile_sfc_for_adapter_with_project_and_stage_capture(
+                        &descriptor,
+                        compile_opts,
+                        compiler.template_syntax,
+                        custom_elements,
+                        CodegenOptions::default(),
+                        SfcScriptOutputMode::InlineTemplate,
+                        experimental,
+                        type_project.as_deref(),
+                    )
+                    .map(|(result, stages)| {
+                        (
+                            type_project.track(result),
+                            Some(BuildCapture::from_descriptor(stages, &descriptor)),
+                        )
+                    })
+                } else {
+                    compile_sfc_for_adapter_with_project(
+                        &descriptor,
+                        compile_opts,
+                        compiler.template_syntax,
+                        custom_elements,
+                        CodegenOptions::default(),
+                        SfcScriptOutputMode::InlineTemplate,
+                        experimental,
+                        false,
+                        type_project.as_deref(),
+                    )
+                    .map(|result| (type_project.track(result), None))
+                }
             })
-        } else {
-            compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
-                &descriptor,
-                compile_opts,
-                compiler.template_syntax,
-                custom_elements,
-                CodegenOptions::default(),
-                experimental,
-            )
-            .map(|result| (result, None))
-        }
         })
-    })
-    .and_then(|(result, capture)| check_compile_result(result).map(|result| (result, capture)))
-    .map_err(|e| CompileError {
-        path: path.clone(),
-        error: e.message,
-        phase: ErrorPhase::Compile,
-    })?;
+        .and_then(|(result, capture)| check_compile_result(result).map(|result| (result, capture)))
+        .map_err(|e| CompileError {
+            path: path.clone(),
+            error: e.message,
+            phase: ErrorPhase::Compile,
+        })?;
     let compile_time = compile_start.elapsed();
     if settings.record_profile_totals {
         stats.add_compile_time(compile_time);

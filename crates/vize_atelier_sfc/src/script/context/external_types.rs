@@ -17,9 +17,18 @@ use super::ScriptCompileContext;
 use super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 use super::helpers::is_import_type_only;
 
+mod required;
+
+#[derive(Default)]
+pub(crate) struct ImportedTypes {
+    pub imports: Vec<(String, String)>,
+    pub dependencies: Vec<String>,
+}
 pub(super) mod resolution;
 mod sources;
-use resolution::{canonical_base_file, path_key, resolve_import_path};
+use resolution::{
+    canonical_base_file, path_key, project::Project, resolve_import_path_with_project,
+};
 
 /// Type declarations and outgoing specifiers extracted from a source module.
 #[derive(Debug, Default)]
@@ -28,6 +37,8 @@ pub(super) struct FileTypeSummary {
     type_aliases: Vec<(String, String)>,
     /// Import/re-export specifiers to follow, in source order.
     specifiers: Vec<String>,
+    /// Local type names and their module requests, for checked macro imports.
+    imports: Vec<(String, String)>,
 }
 
 /// Freshness stamp for a cached summary: modification time plus file size,
@@ -171,6 +182,25 @@ fn extract_script_summary(
                 summary
                     .specifiers
                     .push(import_decl.source.value.to_compact_string());
+                if let Some(specifiers) = &import_decl.specifiers {
+                    for specifier in specifiers {
+                        let local = match specifier {
+                            ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                                &specifier.local
+                            }
+                        };
+                        summary.imports.push((
+                            local.name.to_compact_string(),
+                            import_decl.source.value.to_compact_string(),
+                        ));
+                    }
+                }
             }
             // Plain (non-`type`) re-exports forward types as well in TS:
             // `export * from './Link.vue'` in a types barrel re-exports
@@ -232,8 +262,18 @@ impl ScriptCompileContext {
     /// misfired on JS object keys like `type: 'text'` next to any `import`,
     /// which is exactly what the `is_ts` gate cuts off.
     pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
+        let _ = self.try_collect_imported_types_from_path(source, filename, is_ts, None);
+    }
+
+    pub(crate) fn try_collect_imported_types_from_path(
+        &mut self,
+        source: &str,
+        filename: &str,
+        is_ts: bool,
+        selected: Option<&Project>,
+    ) -> Result<ImportedTypes, String> {
         if !is_ts {
-            return;
+            return Ok(ImportedTypes::default());
         }
 
         // The root source lives in memory (possibly unsaved editor state), so
@@ -246,22 +286,51 @@ impl ScriptCompileContext {
         if root.specifiers.is_empty() {
             // Nothing to resolve — skip base-file canonicalization entirely
             // (the common case: scripts with only runtime imports).
-            return;
+            return Ok(ImportedTypes::default());
         }
 
         let owned_base = canonical_base_file(filename);
         let base_file = owned_base.as_path();
         let Some(base_dir) = base_file.parent() else {
-            return;
+            return Ok(ImportedTypes::default());
         };
         if base_dir.as_os_str().is_empty() {
-            return;
+            return Ok(ImportedTypes::default());
         }
 
+        let discovered = if selected.is_none() {
+            resolution::project::for_file(base_file)?
+        } else {
+            None
+        };
+        let project = selected.or(discovered.as_deref());
+
         let mut visited = FxHashSet::default();
+        let mut imports = root.imports;
         for specifier in &root.specifiers {
-            self.collect_types_from_specifier(specifier, base_file, &mut visited);
+            self.collect_types_from_specifier(
+                specifier,
+                base_file,
+                &mut visited,
+                project,
+                &mut imports,
+            );
         }
+        let mut dependencies: Vec<String> = visited.into_iter().collect();
+        dependencies.extend(
+            Project::discovery_inputs(base_file)?
+                .iter()
+                .map(|path| path_key(path)),
+        );
+        if let Some(project) = project {
+            dependencies.extend(project.inputs().iter().map(|path| path_key(path)));
+        }
+        dependencies.sort();
+        dependencies.dedup();
+        Ok(ImportedTypes {
+            imports,
+            dependencies,
+        })
     }
 
     fn collect_types_from_specifier(
@@ -269,8 +338,12 @@ impl ScriptCompileContext {
         specifier: &str,
         current_file: &Path,
         visited: &mut FxHashSet<String>,
+        project: Option<&Project>,
+        imports: &mut Vec<(String, String)>,
     ) {
-        let Some(resolved_path) = resolve_import_path(current_file, specifier) else {
+        let Some(resolved_path) =
+            resolve_import_path_with_project(current_file, specifier, project)
+        else {
             return;
         };
 
@@ -295,6 +368,7 @@ impl ScriptCompileContext {
             && entry.is_fresh(&resolved_path, epoch)
         {
             self.merge_file_summary(&entry.summary);
+            imports.extend(entry.summary.imports.iter().cloned());
             specifiers = Some(entry.summary.specifiers.clone());
         }
 
@@ -309,6 +383,7 @@ impl ScriptCompileContext {
                     return;
                 };
                 self.merge_file_summary(&summary);
+                imports.extend(summary.imports.iter().cloned());
                 let specifiers = summary.specifiers.clone();
                 if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
                     cache.insert(
@@ -325,7 +400,7 @@ impl ScriptCompileContext {
         };
 
         for specifier in &specifiers {
-            self.collect_types_from_specifier(specifier, &resolved_path, visited);
+            self.collect_types_from_specifier(specifier, &resolved_path, visited, project, imports);
         }
     }
 

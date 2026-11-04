@@ -96,6 +96,7 @@ export function compileFile(
   }
 
   const compiled: CompiledModule = {
+    ...(result.typeProject ? { typeProject: result.typeProject } : {}),
     source: content,
     code: result.code,
     // Set only when present: the persistent cache round-trips through JSON, so
@@ -250,6 +251,8 @@ export function compileBatch(
     if (fallback.css !== undefined) fileResult.css = fallback.css;
     fileResult.scopeId = fallback.scopeId;
     fileResult.hasScoped = fallback.hasScoped;
+    delete fileResult.typeProject;
+    if (fallback.typeProject !== undefined) fileResult.typeProject = fallback.typeProject;
     delete fileResult.macroArtifacts;
     if (fallback.macroArtifacts !== undefined) {
       fileResult.macroArtifacts = fallback.macroArtifacts;
@@ -268,6 +271,7 @@ export function compileBatch(
   for (const fileResult of result.results) {
     if (fileResult.errors.length === 0) {
       cache.set(fileResult.path, {
+        ...(fileResult.typeProject ? { typeProject: fileResult.typeProject } : {}),
         source: filesByPath.get(fileResult.path)?.source,
         code: fileResult.code,
         ...(fileResult.map ? { map: fileResult.map } : {}),

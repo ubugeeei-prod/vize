@@ -88,6 +88,11 @@ export function planAffectedJs(
       reasons.add(`source packaged mapper contract: ${path}`);
       continue;
     }
+    if (path === "tests/native/imported-type-project-stats.ts") {
+      changed.add("@vizejs/native");
+      reasons.add(`source native project contract: ${path}`);
+      continue;
+    }
     if (isCensusToolingInput(path) || isDocsQualityToolingInput(path)) continue;
     if (/^(?:docs\/|\.changeset\/).*\.(?:md|mdx)$/.test(path) && !isSharedRustInput(path)) continue;
     if (/(?:^|\/)(?:README|AGENTS)\.md$/.test(path)) continue;

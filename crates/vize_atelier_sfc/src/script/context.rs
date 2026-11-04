@@ -9,6 +9,7 @@ mod props;
 mod source_snapshot;
 mod type_world;
 pub use batch_epoch::{TypeResolutionBatchGuard, begin_type_resolution_batch};
+pub use external_types::resolution::project::Project as SfcTypeProject;
 pub use source_snapshot::TypeSourceSnapshot;
 
 use crate::types::{BindingMetadata, BindingType};

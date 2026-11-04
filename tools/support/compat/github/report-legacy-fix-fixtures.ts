@@ -8,6 +8,10 @@ import { appendFileSync } from "node:fs";
 import { changedPaths } from "./plan-source-checks.ts";
 import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
+  isCompilerProjectCase,
+  validateCompilerProjectCase,
+} from "../../../../tests/differential/compiler-project.ts";
+import {
   compilerCssApiSources,
   newCompilerCssApiCases,
   onlyCompilerCssChanges,
@@ -156,7 +160,8 @@ function checkCompilerCase(
 ): void {
   const reference = entry.reference;
   const expectedPath = `${root}/module.expected.txt`;
-  if (
+  if (isCompilerProjectCase(entry)) validateCompilerProjectCase(entry);
+  else if (
     entry.id !== `compiler/sfc/${root}` ||
     JSON.stringify(entry.targets) !== JSON.stringify(["ssr"]) ||
     files.length !== 1 ||
@@ -177,7 +182,7 @@ function checkCompilerCase(
   requirePinned(
     readFile,
     `tests/_fixtures/differential/compiler/${expectedPath}`,
-    reference.sha256 ?? "",
+    reference?.sha256 ?? "",
     "compiler reference",
   );
 }

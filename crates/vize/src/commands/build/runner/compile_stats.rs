@@ -9,8 +9,8 @@ use std::{
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
-    StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
+    SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc_for_adapter_with_project, parse_sfc,
 };
 use vize_l0::cstr;
 use vize_l0::hash::hash_str;
@@ -27,6 +27,7 @@ use super::cache::{
 };
 use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
 use super::settings::CompileFileSettings;
+use crate::type_projects::{Facts, SelectedTypeProject};
 
 /// Compiles one file for `--format stats`, using content-addressed reuse.
 ///
@@ -77,13 +78,28 @@ pub(super) fn compile_file_stats_with_cache(
             global_profiler().record_counter("cache.stats_compile.bypass.self_component", 1);
         }
     }
-    let cache_key = cache_bypass.is_none().then(|| StatsCompileCacheKey {
+    let project_error = |error: vize_atelier_sfc::SfcError| CompileError {
+        path: path.clone(),
+        error: error.message,
+        phase: ErrorPhase::Compile,
+    };
+    let known_facts = cache.source_facts.lookup(&source);
+    let type_project = known_facts
+        .map(|facts| settings.type_projects.for_facts(facts, path))
+        .transpose()
+        .map_err(project_error)?;
+    let make_key = |project: &SelectedTypeProject| StatsCompileCacheKey {
+        type_context: project.cache_identity(path),
         source_hash: hash_str(&source),
         source_len: file_size,
         component_name_len: component_name.len(),
         settings: settings.cache_bits(path),
         custom_elements_hash: settings.custom_elements_hash(path),
-    });
+    };
+    let mut cache_key = type_project
+        .as_ref()
+        .filter(|_| cache_bypass.is_none())
+        .map(make_key);
 
     if let Some(key) = cache_key
         && let Some(entry) = cache
@@ -123,7 +139,7 @@ pub(super) fn compile_file_stats_with_cache(
             }),
         };
     }
-    if cache_key.is_some() {
+    if cache_bypass.is_none() {
         global_profiler().record_counter("cache.stats_compile.misses", 1);
     }
 
@@ -135,6 +151,14 @@ pub(super) fn compile_file_stats_with_cache(
     let descriptor = match profile!("atelier.sfc.parse", parse_sfc(&source, parse_opts)) {
         Ok(descriptor) => descriptor,
         Err(error) => {
+            if known_facts.is_none() && cache_bypass.is_none() {
+                let facts = cache.source_facts.record(&source, || Facts::PARSE_FAILURE);
+                let project = settings
+                    .type_projects
+                    .for_facts(facts, path)
+                    .map_err(project_error)?;
+                cache_key = Some(make_key(&project));
+            }
             cache_failure(cache, cache_key, ErrorPhase::Parse, error.message.clone());
             return Err(CompileError {
                 path: path.clone(),
@@ -146,6 +170,24 @@ pub(super) fn compile_file_stats_with_cache(
     let parse_time = parse_start.elapsed();
     if settings.record_profile_totals {
         stats.add_parse_time(parse_time);
+    }
+
+    // The first body uses the descriptor this compile already parsed. Later
+    // context-independent hits retain the original parse-free stats shortcut.
+    let type_project = match type_project {
+        Some(project) => project,
+        None => {
+            let facts = cache
+                .source_facts
+                .record(&source, || Facts::for_descriptor(&descriptor));
+            settings
+                .type_projects
+                .for_facts(facts, path)
+                .map_err(project_error)?
+        }
+    };
+    if cache_bypass.is_none() {
+        cache_key = Some(make_key(&type_project));
     }
 
     let template_size = descriptor
@@ -207,15 +249,18 @@ pub(super) fn compile_file_stats_with_cache(
         .with_whitespace(path, || {
             profile!(
                 "atelier.sfc.compile",
-                compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
+                compile_sfc_for_adapter_with_project(
                     &descriptor,
                     compile_opts,
                     compiler.template_syntax,
                     custom_elements,
                     CodegenOptions::default(),
+                    SfcScriptOutputMode::InlineTemplate,
                     SfcCompileExperimentalOptions {
                         self_component: settings.experimental_self_component,
-                    }
+                    },
+                    false,
+                    type_project.as_deref(),
                 )
             )
         })

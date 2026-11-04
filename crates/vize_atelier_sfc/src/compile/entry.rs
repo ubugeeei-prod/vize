@@ -8,6 +8,38 @@ pub use root_match::prepare_root_patterned_template;
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_l0::dump::capture::StageCapture;
 
+/// Compile against the immutable project selected by the host. Omitting a
+/// project retains ordinary nearest-config discovery for filesystem inputs.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "adapter compile inputs and project authority"
+)]
+pub fn compile_sfc_for_adapter_with_project(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+    nuxt_page_meta: bool,
+    project: Option<&crate::script::SfcTypeProject>,
+) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        nuxt_page_meta,
+        project,
+        None,
+    )
+}
+
 /// Script/template assembly selected by adapter-facing compiler entrypoints.
 #[doc(hidden)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,6 +71,7 @@ pub fn compile_sfc(
         SfcCompileExperimentalOptions::default(),
         false,
         None,
+        None,
     )
 }
 
@@ -57,6 +90,7 @@ pub fn compile_sfc_with_vue_parser_quirks(
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
         false,
+        None,
         None,
     )
 }
@@ -77,6 +111,7 @@ pub fn compile_sfc_with_template_syntax(
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
         false,
+        None,
         None,
     )
 }
@@ -138,6 +173,7 @@ pub fn compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental
         experimental_options,
         false,
         None,
+        None,
     )
 }
 
@@ -184,6 +220,7 @@ pub fn compile_sfc_for_adapter_with_experimental_options(
         experimental_options,
         false,
         None,
+        None,
     )
 }
 
@@ -199,6 +236,34 @@ pub fn compile_sfc_for_adapter_with_stage_capture(
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
 ) -> Result<(SfcCompileResult, StageCapture), SfcError> {
+    compile_sfc_for_adapter_with_project_and_stage_capture(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        None,
+    )
+}
+
+/// Capture the same stages while compiling against a host-selected project.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "adapter inputs with project authority"
+)]
+pub fn compile_sfc_for_adapter_with_project_and_stage_capture(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+    project: Option<&crate::script::SfcTypeProject>,
+) -> Result<(SfcCompileResult, StageCapture), SfcError> {
     let mut capture = StageCapture::new("sfc");
     let result = compile_sfc_inner(
         descriptor,
@@ -209,6 +274,7 @@ pub fn compile_sfc_for_adapter_with_stage_capture(
         script_output,
         experimental_options,
         false,
+        project,
         Some(&mut capture),
     )?;
     Ok((result, capture))
@@ -235,6 +301,7 @@ pub fn compile_sfc_for_adapter_with_nuxt_page_meta(
         script_output,
         experimental_options,
         true,
+        None,
         None,
     )
 }

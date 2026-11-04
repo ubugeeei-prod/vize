@@ -70,6 +70,8 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
+pub use compile::compile_sfc_for_adapter_with_project;
+pub use compile::compile_sfc_for_adapter_with_project_and_stage_capture;
 #[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
