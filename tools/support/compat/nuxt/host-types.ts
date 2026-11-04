@@ -3,6 +3,8 @@
 // The packages resolve from the consumer graph at run time, so each loader
 // checks the members it relies on before exposing them through these types.
 import assert from "node:assert/strict";
+import type { ChildProcess } from "node:child_process";
+import { once } from "node:events";
 import net from "node:net";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -56,6 +58,33 @@ export interface Chromium {
   launch(options?: Record<string, unknown>): Promise<Browser>;
 }
 
+/** Stop a private development consumer before restoring its installed SDK files. */
+export async function closeConsumer(
+  browser: Pick<Browser, "close"> | undefined,
+  server: ChildProcess | undefined,
+  restore: () => void,
+): Promise<void> {
+  try {
+    await browser?.close();
+  } finally {
+    try {
+      if (server?.pid && server.exitCode === null && server.signalCode === null) {
+        const stopped = once(server, "exit");
+        const deadline = setTimeout(() => server.kill("SIGKILL"), 5_000);
+        deadline.unref();
+        server.kill("SIGTERM");
+        try {
+          await stopped;
+        } finally {
+          clearTimeout(deadline);
+        }
+      }
+    } finally {
+      restore();
+    }
+  }
+}
+
 /** The DOM members read by callbacks that Playwright runs in the page realm. */
 export interface BrowserElement {
   outerHTML: string;
@@ -71,7 +100,12 @@ export interface BrowserGlobals {
     querySelectorAll(selector: string): Iterable<BrowserElement>;
     styleSheets: Iterable<{ cssRules: Iterable<{ cssText: string }> }>;
   };
-  getComputedStyle: (element: BrowserElement) => { display: string; gap: string; color: string };
+  getComputedStyle: (element: BrowserElement) => {
+    display: string;
+    gap: string;
+    color: string;
+    outlineColor: string;
+  };
 }
 
 export function loadChromium(repoRoot: string): Chromium {

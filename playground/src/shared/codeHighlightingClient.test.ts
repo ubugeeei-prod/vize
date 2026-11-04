@@ -90,6 +90,34 @@ it("bounds initialization and ignores a worker that becomes ready after cancella
   expect(complete).not.toHaveBeenCalled();
 });
 
+it("gives a replacement worker its own initialization phase before the tokenizer deadline", async () => {
+  const highlighter = createCodeHighlighter();
+  const complete = vi.fn();
+  highlighter.highlight("old", "typescript", complete);
+  const old = HighlightWorker.instances[0];
+  old.emit({ type: "ready" });
+  highlighter.highlight("current", "typescript", complete);
+  const current = HighlightWorker.instances[1];
+  expect(old.terminate).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(current.terminate).not.toHaveBeenCalled();
+  expect(current.postMessage).not.toHaveBeenCalled();
+  expect(complete).not.toHaveBeenCalled();
+  current.emit({ type: "ready" });
+  expect(current.postMessage).toHaveBeenLastCalledWith({
+    id: 2,
+    code: "current",
+    language: "typescript",
+  });
+  await vi.advanceTimersByTimeAsync(999);
+  expect(current.terminate).not.toHaveBeenCalled();
+  current.emit({ type: "result", id: 2, lines: tokens });
+  expect(complete).toHaveBeenCalledExactlyOnceWith(tokens);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(current.terminate).not.toHaveBeenCalled();
+  highlighter.cancel();
+});
+
 it("hard-cancels a non-returning tokenizer and can highlight a later source", async () => {
   const highlighter = createCodeHighlighter();
   const complete = vi.fn();
