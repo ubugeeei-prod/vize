@@ -88,7 +88,11 @@ export function emittedPacket(
   workspace: string,
   expected: Parameters<typeof diagnostics>[2],
 ) {
-  assert.equal(row.status, 1, "the complete negative oracle must exit with diagnostics");
+  assert.equal(
+    row.status,
+    2,
+    "the pinned negative oracle must retain its exact diagnostic exit status",
+  );
   const stdout = readFileSync(row.stdout.path, "utf8").replaceAll(workspace + "/", "");
   const stderr = readFileSync(row.stderr.path, "utf8").replaceAll(workspace + "/", "");
   const packet: DiagnosticPacket = {
@@ -340,7 +344,7 @@ export async function main() {
         [...normalHostArguments(host.command, closure.configFile), "--extendedDiagnostics"],
         workspace,
       );
-      assert.equal(row.status, 1);
+      assert.equal(row.status, 2);
       assert.deepEqual(
         {
           status: row.status,

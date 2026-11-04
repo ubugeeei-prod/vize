@@ -9,12 +9,13 @@ void test("independent template/directive anchors reject missing, suppressed, du
   assert.equal(files.get("Unused.vue")!.split("\n")[4], "  <!-- @vue-expect-error -->");
   const output =
     "src/Negative.vue(5,12): error TS2339: Property 'missing' does not exist on type '{ n: number; }'.\nsrc/Unused.vue(5,8): error TS4: Unused '@vue-expect-error' directive\n";
-  assert.equal(semanticPacket(1, output, "", "/workspace").packet.length, 2);
+  assert.equal(semanticPacket(2, output, "", "/workspace").packet.length, 2);
   assert.throws(() => semanticPacket(0, output, "", "/workspace"));
-  assert.throws(() => semanticPacket(1, output.split("\n")[0], "", "/workspace"));
-  assert.throws(() => semanticPacket(1, output + output, "", "/workspace"));
+  assert.throws(() => semanticPacket(1, output, "", "/workspace"));
+  assert.throws(() => semanticPacket(2, output.split("\n")[0], "", "/workspace"));
+  assert.throws(() => semanticPacket(2, output + output, "", "/workspace"));
   assert.throws(() =>
-    semanticPacket(1, output.replace("Negative", "Suppressed"), "", "/workspace"),
+    semanticPacket(2, output.replace("Negative", "Suppressed"), "", "/workspace"),
   );
-  assert.throws(() => semanticPacket(1, output.replace("(5,12)", "(3,12)"), "", "/workspace"));
+  assert.throws(() => semanticPacket(2, output.replace("(5,12)", "(3,12)"), "", "/workspace"));
 });

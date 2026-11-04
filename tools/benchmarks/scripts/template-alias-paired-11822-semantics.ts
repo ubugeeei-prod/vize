@@ -21,7 +21,7 @@ export function semanticPacket(
   stderr: string,
   workspace: string,
 ) {
-  assert.equal(status, 1);
+  assert.equal(status, 2);
   assert.equal(stderr, "");
   const lines = stdout
     .replaceAll(workspace + "/", "")
