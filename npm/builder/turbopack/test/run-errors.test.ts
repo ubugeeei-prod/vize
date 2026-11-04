@@ -67,7 +67,10 @@ void test("checkHostErrors waits through 500 framework error, 500 [vize] diagnos
     );
     assert.equal(seen[0]?.html, frameworkError);
     assert.equal(await fs.readFile(path.join(root, "invalid-sfc.html"), "utf8"), vizeDiagnostic);
-    assert.equal(await fs.readFile(path.join(root, "invalid-sfc.json"), "utf8"), '{"status":500}\n');
+    assert.equal(
+      await fs.readFile(path.join(root, "invalid-sfc.json"), "utf8"),
+      '{"status":500}\n',
+    );
     assert.match(await fs.readFile(path.join(root, "recovered-sfc.html"), "utf8"), /Counter 2 🐱/);
     assert.match(
       await fs.readFile(path.join(root, "vapor-presence.html"), "utf8"),

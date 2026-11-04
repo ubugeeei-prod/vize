@@ -287,7 +287,12 @@ function completeToolRun({
     fileCount: validatedFileCount(tool, payload),
     coverage:
       tool === "typechecker" ? summarizeTypecheckerCoverage(payload.typecheckerCoverage) : null,
-    status: tool === "typechecker" ? typecheckerRunStatus(result.status, payload.parsed) : result.status === 0 ? "ok" : "findings",
+    status:
+      tool === "typechecker"
+        ? typecheckerRunStatus(result.status, payload.parsed)
+        : result.status === 0
+          ? "ok"
+          : "findings",
   };
 }
 

@@ -28,7 +28,10 @@ void test("changed bytes must not reuse a same-second Parcel 304", async () => {
     const file = path.join(directory, "bundle.js");
     await writeAt(file, "Recovered", sameSecond);
     const recovered = await advanceDevBundleMtime(fs, file, undefined);
-    assert.equal(parcelRespondsNotModified(sameSecond.toUTCString(), recovered.servedMtimeMs), true);
+    assert.equal(
+      parcelRespondsNotModified(sameSecond.toUTCString(), recovered.servedMtimeMs),
+      true,
+    );
 
     await writeAt(file, "Discarded", sameSecond);
     const discarded = await advanceDevBundleMtime(fs, file, recovered);

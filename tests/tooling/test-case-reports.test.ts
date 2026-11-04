@@ -76,7 +76,11 @@ test("node and vitest reports use the same case packet", () => {
       root,
     ),
     [
-      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › passes", outcome: "passed" },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › passes",
+        outcome: "passed",
+      },
       { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts", outcome: "failed" },
     ],
   );
@@ -98,20 +102,51 @@ test("node and vitest reports use the same case packet", () => {
               { ancestorTitles: ["group"], title: "holds", status: "pending" },
             ],
           },
-          { name: path.join(root, "npm/builder/vite/src/load.test.ts"), status: "failed", assertionResults: [] },
+          {
+            name: path.join(root, "npm/builder/vite/src/load.test.ts"),
+            status: "failed",
+            assertionResults: [],
+          },
         ],
       },
       root,
     ),
     [
-      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › passes", outcome: "passed" },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › passes",
+        outcome: "passed",
+      },
       { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › fails", outcome: "failed" },
-      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › later", outcome: "skipped" },
-      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › group › holds", outcome: "skipped" },
-      { path: "npm/builder/vite/src/load.test.ts", name: "npm/builder/vite/src/load.test.ts", outcome: "failed" },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › later",
+        outcome: "skipped",
+      },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › holds",
+        outcome: "skipped",
+      },
+      {
+        path: "npm/builder/vite/src/load.test.ts",
+        name: "npm/builder/vite/src/load.test.ts",
+        outcome: "failed",
+      },
     ],
   );
-  assert.throws(() => vitestCases({ testResults: [{ name: ui, assertionResults: [{ ancestorTitles: [], title: "x", status: "unknown" }] }] }, root), /status unknown/);
+  assert.throws(
+    () =>
+      vitestCases(
+        {
+          testResults: [
+            { name: ui, assertionResults: [{ ancestorTitles: [], title: "x", status: "unknown" }] },
+          ],
+        },
+        root,
+      ),
+    /status unknown/,
+  );
   const reporter = path.join(root, "tools/support/compat/github/test-case-reporter.ts");
   assert.deepEqual(nodeTestArguments(["--test", "a.test.ts"], reporter, "/tmp/out.json"), [
     "--test",
@@ -132,42 +167,61 @@ test("node and vitest reports use the same case packet", () => {
     ],
   );
   assert.equal(nodeTestArguments(["plain.mjs", "--test"], reporter, "/tmp/out.json"), null);
-  assert.deepEqual(nodeTestArguments(["--test", `--test-reporter=${reporter}`], reporter, "/tmp/out.json"), [
-    "--test",
-    `--test-reporter=${reporter}`,
-  ]);
-  assert.deepEqual(vitestArguments(["test", "run", "--config", "vite.config.ts"], "/tmp/out.json"), [
-    "test",
-    "run",
-    "--reporter=default",
-    "--reporter=json",
-    "--outputFile.json=/tmp/out.json",
-    "--config",
-    "vite.config.ts",
-  ]);
-  assert.deepEqual(vitestArguments(["test", "run", "--reporter=dot", "a.test.ts"], "/tmp/out.json"), [
-    "test",
-    "run",
-    "--reporter=json",
-    "--outputFile.json=/tmp/out.json",
-    "--reporter=dot",
-    "a.test.ts",
-  ]);
+  assert.deepEqual(
+    nodeTestArguments(["--test", `--test-reporter=${reporter}`], reporter, "/tmp/out.json"),
+    ["--test", `--test-reporter=${reporter}`],
+  );
+  assert.deepEqual(
+    vitestArguments(["test", "run", "--config", "vite.config.ts"], "/tmp/out.json"),
+    [
+      "test",
+      "run",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=/tmp/out.json",
+      "--config",
+      "vite.config.ts",
+    ],
+  );
+  assert.deepEqual(
+    vitestArguments(["test", "run", "--reporter=dot", "a.test.ts"], "/tmp/out.json"),
+    [
+      "test",
+      "run",
+      "--reporter=json",
+      "--outputFile.json=/tmp/out.json",
+      "--reporter=dot",
+      "a.test.ts",
+    ],
+  );
   assert.equal(vitestArguments(["test", "watch"], "/tmp/out.json"), null);
   assert.equal(vitestArguments(["pack"], "/tmp/out.json"), null);
   const vp = "/pkg/node_modules/vite-plus/bin/vp";
   const tsx = "/pkg/node_modules/tsx/dist/cli.mjs";
-  assert.deepEqual(wrappedNodeArguments([vp, "test", "run", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"), [
-    vp,
-    "test",
-    "run",
-    "--reporter=default",
-    "--reporter=json",
-    "--outputFile.json=/tmp/vitest.json",
-    "a.test.ts",
-  ]);
+  assert.deepEqual(
+    wrappedNodeArguments(
+      [vp, "test", "run", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    [
+      vp,
+      "test",
+      "run",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=/tmp/vitest.json",
+      "a.test.ts",
+    ],
+  );
   assert.equal(
-    wrappedNodeArguments([vp, "exec", "tsx", "--test", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    wrappedNodeArguments(
+      [vp, "exec", "tsx", "--test", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
     null,
   );
   assert.equal(
@@ -180,7 +234,12 @@ test("node and vitest reports use the same case packet", () => {
     null,
   );
   assert.deepEqual(
-    wrappedNodeArguments([tsx, "--test", "a.test.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    wrappedNodeArguments(
+      [tsx, "--test", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
     [
       tsx,
       "--test",
@@ -191,7 +250,10 @@ test("node and vitest reports use the same case packet", () => {
       "a.test.ts",
     ],
   );
-  assert.equal(wrappedNodeArguments([tsx, "src/file.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"), null);
+  assert.equal(
+    wrappedNodeArguments([tsx, "src/file.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    null,
+  );
   assert.equal(
     wrappedNodeArguments(
       [tsx, "--test", `--test-reporter=${reporter}`, "a.test.ts"],
