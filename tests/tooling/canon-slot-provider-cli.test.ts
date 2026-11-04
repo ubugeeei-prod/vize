@@ -10,6 +10,14 @@ import {
   applySourceOwnedPreambleTransitions,
   applyCurrentEmitPreamble,
 } from "../../tools/benchmarks/scripts/canon-slot-provider-preamble.ts";
+import {
+  applyCurrentSlotPreamble,
+  readPreviousEmitSource,
+} from "../../tools/benchmarks/scripts/canon-slot-provider-current-preamble.ts";
+import {
+  beforeGenericEventPreamble,
+  genericEventRecordPath,
+} from "./support/generic-event-specialization-source.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -66,10 +74,13 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     createHash("sha256").update(currentPreamble).digest("hex"),
     certificate.preamble.after.sha256,
   );
-  assert.equal(applyCurrentEmitPreamble(previousPreamble), currentPreamble);
-  assert.throws(() => applyCurrentEmitPreamble(currentPreamble), /certified previous preamble/u);
+  assert.equal(applyCurrentEmitPreamble(previousPreamble, readPreviousEmitSource), currentPreamble);
   assert.throws(
-    () => applyCurrentEmitPreamble(previousPreamble + "\n"),
+    () => applyCurrentEmitPreamble(currentPreamble, readPreviousEmitSource),
+    /certified previous preamble/u,
+  );
+  assert.throws(
+    () => applyCurrentEmitPreamble(previousPreamble + "\n", readPreviousEmitSource),
     /certified previous preamble/u,
   );
   for (const changed of [
@@ -84,8 +95,8 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
             file === changed
               ? mutation === "missing"
                 ? ""
-                : fs.readFileSync(file, "utf8") + "\n"
-              : fs.readFileSync(file, "utf8"),
+                : readPreviousEmitSource(file) + "\n"
+              : readPreviousEmitSource(file),
           ),
         /immutable emit preamble certificate|selected canonical emit source/u,
       );
@@ -97,13 +108,36 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
       "type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;",
     ),
   );
+  const successorPreamble = applyCurrentSlotPreamble(previousPreamble);
+  assert.equal(
+    beforeGenericEventPreamble((file) => fs.readFileSync(file, "utf8"), successorPreamble),
+    currentPreamble,
+  );
+  for (const changed of [
+    genericEventRecordPath,
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt",
+  ]) {
+    for (const mutation of ["missing", "changed"] as const) {
+      assert.throws(() =>
+        applyCurrentSlotPreamble(previousPreamble, (file) =>
+          file === changed
+            ? mutation === "missing"
+              ? ""
+              : fs.readFileSync(file, "utf8") + "\n"
+            : fs.readFileSync(file, "utf8"),
+        ),
+      );
+    }
+  }
   const stderr = Buffer.from(
-    `\n=== __vize_helpers.d.ts ===\n${currentPreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
+    `\n=== __vize_helpers.d.ts ===\n${successorPreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
   );
   assert.deepEqual(slotCliPacket({ stdout, stderr, status: 0 }, project).diagnostics, []);
   for (const altered of [
-    Buffer.from(stderr.toString("utf8").replace(currentPreamble, historical)),
-    Buffer.from(stderr.toString("utf8").replace(currentPreamble, previousPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(successorPreamble, currentPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(successorPreamble, historical)),
+    Buffer.from(stderr.toString("utf8").replace(successorPreamble, previousPreamble)),
     Buffer.concat([Buffer.from("unknown warning\n"), stderr]),
     Buffer.concat([stderr, Buffer.from("unknown error\n")]),
     stderr.subarray(1),
