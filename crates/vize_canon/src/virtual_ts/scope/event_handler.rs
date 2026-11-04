@@ -10,7 +10,8 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
-use super::context::EventHandlerExprContext;
+use super::context::{EventHandlerExprContext, ScopeMappings};
+mod contextual_listener;
 use super::handler_shape::is_single_expression_statement;
 use super::vif_guard::append_ignored_vif_guard_open;
 use super::vif_guard::callback_vif_guard;
@@ -18,7 +19,7 @@ use super::vif_guard::callback_vif_guard;
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     scope_id: u32,
     ctx: &EventHandlerExprContext<'_>,
 ) {
@@ -117,6 +118,24 @@ pub(super) fn generate_event_handler_expressions(
                 let mapped_end = ts.len();
                 ts.push_str(";  // handler expression (emit checks disabled)\n");
                 mapped_start..mapped_end
+            } else if let (Some(contextless), Some(listener_type)) =
+                (ctx.event_handler_contextless, ctx.event_listener_type)
+                && (is_reference || inline_callback_arg.is_some())
+            {
+                contextual_listener::emit(
+                    ts,
+                    mappings.diagnostics,
+                    contextual_listener::Listener {
+                        name: cstr!("__vize_handler_{scope_id}_{}", expr.start).as_str(),
+                        content,
+                        annotation: ctx.event_handler_type.unwrap_or(listener_type),
+                        contextless,
+                        listener_type,
+                        indent: handler_indent,
+                        source: src_start..src_end,
+                        event_name: ctx.event_name_src_range.clone(),
+                    },
+                )
             } else if let (Some(handler_type), Some(listener_type)) =
                 (ctx.event_handler_type, ctx.event_listener_type)
                 && (is_reference || inline_callback_arg.is_some())

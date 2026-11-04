@@ -1,0 +1,7 @@
+<script setup lang="ts" generic="T extends string">
+const props = defineProps<{ value: T }>()
+const emit = defineEmits<{ pick: [value: T] }>()
+</script>
+<template>
+<button @click="emit('pick', props.value)" />
+</template>

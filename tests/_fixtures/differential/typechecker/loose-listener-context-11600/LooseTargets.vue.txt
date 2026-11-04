@@ -1,0 +1,16 @@
+<script setup lang="ts">
+type Component = new (...args: any[]) => { $emit: (...args: any[]) => void }
+interface VNode { readonly __v_isVNode: true }
+declare const target: Component
+declare const node: VNode
+declare const loose: any
+declare const tag: string
+const take = (value: unknown) => value
+</script>
+<template>
+<component :is="target" @pick="(v) => take(v)" />
+<component :is="node" @pick="(v) => take(v)" />
+<component :is="loose" @pick="(v) => take(v)" />
+<component :is="tag" @pick="(v) => take(v)" />
+<component :is="'span'" @pick="(v) => take(v)" />
+</template>

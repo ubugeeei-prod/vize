@@ -11955,6 +11955,71 @@
       }
     },
     {
+      "id": "typechecker/loose-listener-context-11600",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "virtual_ts::scope::event_handler::contextual_listener::tests::contextual_listener_complete_projection_and_mapping_packets",
+      "inputs": [
+        {
+          "file": "src/LooseTargets.vue",
+          "path": "loose-listener-context-11600/LooseTargets.vue.txt",
+          "sha256": "a0c0f8e644e9146c82a5403b0885e1a2a313c5de0fb8eaed3b6b568188058310"
+        },
+        {
+          "file": "src/HandlerValues.vue",
+          "path": "loose-listener-context-11600/HandlerValues.vue.txt",
+          "sha256": "ff74d69f97f3c58f61fb30a7e1b5e5c3b828dbdb14c174b2dd7f688425c180ba"
+        },
+        {
+          "file": "src/RefAndNames.vue",
+          "path": "loose-listener-context-11600/RefAndNames.vue.txt",
+          "sha256": "03b995d927e8323257afa972d6e3f57323e0ac2557a439f47982e03f3cda376d"
+        },
+        {
+          "file": "src/TypedChild.vue",
+          "path": "loose-listener-context-11600/TypedChild.vue.txt",
+          "sha256": "c9b6f3f54226d26388ed6b64ff8a6952d0b9dd691a22def3b19f77f8eaa2731d"
+        },
+        {
+          "file": "src/ZeroChild.vue",
+          "path": "loose-listener-context-11600/ZeroChild.vue.txt",
+          "sha256": "6388d0e2dbdac1a27d2f98c1f191bca6fd29042d1c7261af95b52fa6b66b21b0"
+        },
+        {
+          "file": "src/GenericChild.vue",
+          "path": "loose-listener-context-11600/GenericChild.vue.txt",
+          "sha256": "d6a50765412654519e7e712abaab94ee4de06344f3649327d40650befde5b9b1"
+        },
+        {
+          "file": "src/TypedParent.vue",
+          "path": "loose-listener-context-11600/TypedParent.vue.txt",
+          "sha256": "74c3a44cc6e91b04bb0789775912d4cd624aa5e83829286471d9dd576314df11"
+        },
+        {
+          "file": "cases.json",
+          "path": "loose-listener-context-11600/cases.json",
+          "sha256": "41a542793db6fe58c4a8f8af798c68faa1d24a3d0c52fd5cf4f4a99f0bdd1fea"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Finite loose/typed/truezero/ref/noncallable authored inputs; source execution requires exact source Actions."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/mixed-script-static-ref-11811",
       "state": "active",
       "targets": [

@@ -120,6 +120,7 @@ pub(super) fn generate_component_handler_scope(
     let handler_type = event_types.handler_type;
     let handler_type_expr = event_types.handler_type_expr;
     let handler_annotation = event_types.handler_annotation;
+    let contextless_listener = event_types.contextless_listener;
     let listener_type = event_types.listener_type;
     let listener_type_expr = event_types.listener_type_expr;
     // Type the listener against the FULL emit tuple so multi-arg emits
@@ -181,6 +182,7 @@ pub(super) fn generate_component_handler_scope(
                 check_emits: true,
                 event_type: event_type.as_str(),
                 event_handler_type: handler_annotation.as_deref(),
+                event_handler_contextless: contextless_listener.as_deref(),
                 event_listener_type: Some(listener_type.as_str()),
                 event_name_src_range: event_name_src_range.clone(),
                 return_single_expression: inline_statement_handler,

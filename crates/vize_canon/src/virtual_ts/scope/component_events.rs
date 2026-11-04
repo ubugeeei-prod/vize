@@ -32,6 +32,8 @@ pub(super) struct ComponentEventTypes {
     /// The handler annotation: the alias, plus any array form the child's
     /// listener prop admits, kept outside the alias so TypeScript prints it.
     pub(super) handler_annotation: Option<String>,
+    /// A loose resolver has no contextual parameter signature, unlike a declared zero-argument emit.
+    pub(super) contextless_listener: Option<String>,
     pub(super) listener_type: String,
     pub(super) listener_type_expr: String,
 }
@@ -316,6 +318,7 @@ pub(super) fn generate_component_event_types(
             indent,
             hoist_shared_preamble,
             gated_inference: gated_inference && explicit_generic.is_none(),
+            contextual_listener: !legacy_vue2 && needs_typed_handler_assignment,
         },
     );
 
@@ -325,7 +328,8 @@ pub(super) fn generate_component_event_types(
             "{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\n",
         );
     }
-    if let Some(ref inferred) = inferred_emit_args {
+    if let Some(inference) = inferred_emit_args.as_ref() {
+        let inferred = &inference.arguments;
         append!(
             *ts,
             "{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\n",
@@ -431,10 +435,13 @@ pub(super) fn generate_component_event_types(
         Some(arrays) => cstr!("{handler} | {arrays}"),
         None => handler.clone(),
     });
+    let contextless_listener =
+        inferred_emit_args.and_then(|inference| inference.contextless_listener);
     Some(ComponentEventTypes {
         event_type,
         handler_type,
         handler_annotation,
+        contextless_listener,
         handler_type_expr,
         listener_type,
         listener_type_expr,
