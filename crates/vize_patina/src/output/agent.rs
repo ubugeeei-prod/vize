@@ -35,7 +35,7 @@ pub(super) fn format_agent(results: &[LintResult], sources: &[(String, String)])
         output.push_str(" rule=");
         output.push_str(&json_quote(view.rule_id));
         output.push_str(" docs=");
-        output.push_str(&json_quote(view.rule_docs_path));
+        output.push_str(&json_quote(&view.rule_docs_path));
         output.push('\n');
         output.push_str("message: ");
         output.push_str(view.message);
