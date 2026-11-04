@@ -13,6 +13,7 @@ import {
   expectedOutput,
   assertOutput,
   identity,
+  physicalHost,
   archiveIdentity,
   lockedPackage,
   sha256,
@@ -242,9 +243,21 @@ export function main(args = process.argv.slice(2)) {
     assert.equal(identity(installedImage).sha256, producer.binary.sha256);
     const tsRequire = createRequire(require.resolve("typescript/package.json"));
     const tsrsRequire = createRequire(require.resolve("tsrs/package.json"));
+    const officialPlatform = physicalHost(
+      tsRequire,
+      "@typescript/typescript-linux-x64",
+      "7.1.0-beta",
+      "lib/tsc",
+    );
+    const tsrsPlatform = physicalHost(
+      tsrsRequire,
+      "@tsrs/linux-x64-gnu",
+      "0.21.0-ts7.1.0-beta",
+      "tsrs",
+    );
     const hosts = {
-      official: tsRequire.resolve("@typescript/typescript-linux-x64/lib/tsc"),
-      tsrs: tsrsRequire.resolve("@tsrs/linux-x64-gnu/tsrs"),
+      official: officialPlatform.executable.path,
+      tsrs: tsrsPlatform.executable.path,
     };
     const upstream = JSON.parse(
       fs.readFileSync(path.join(install, "node_modules/tsrs/UPSTREAM.json"), "utf8"),
@@ -258,8 +271,8 @@ export function main(args = process.argv.slice(2)) {
         [require.resolve("typescript/package.json"), "7.1.0-beta"],
         [require.resolve("tsrs/package.json"), "0.21.0-ts7.1.0-beta"],
         [require.resolve("vue/package.json"), "3.5.44"],
-        [tsRequire.resolve("@typescript/typescript-linux-x64/package.json"), "7.1.0-beta"],
-        [tsrsRequire.resolve("@tsrs/linux-x64-gnu/package.json"), "0.21.0-ts7.1.0-beta"],
+        [officialPlatform.manifest.path, "7.1.0-beta"],
+        [tsrsPlatform.manifest.path, "0.21.0-ts7.1.0-beta"],
       ].map(([file, version]) => {
         assert.ok(file && version);
         const key = path.relative(install, path.dirname(file));

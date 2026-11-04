@@ -107,3 +107,41 @@ void test("archive custody rejects changed bytes and package locks require the e
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+for (const [name, version, executable] of [
+  ["@typescript/typescript-linux-x64", "7.1.0-beta", "lib/tsc"],
+  ["@tsrs/linux-x64-gnu", "0.21.0-ts7.1.0-beta", "tsrs"],
+] as const) {
+  void test(`physical CLI is selectable when ${name} exports only its manifest`, async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { tmpdir } = await import("node:os");
+    const { createRequire } = await import("node:module");
+    const { physicalHost } =
+      await import("../../tools/support/compat/content-mapper/direct-child-props-runtime-11809.ts");
+    const project = fs.mkdtempSync(path.join(tmpdir(), "child-props-exports-"));
+    try {
+      const root = path.join(project, "node_modules", name);
+      const binary = path.join(root, executable);
+      fs.mkdirSync(path.dirname(binary), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "package.json"),
+        JSON.stringify({ name, version, exports: { "./package.json": "./package.json" } }),
+      );
+      fs.writeFileSync(binary, "pinned physical executable bytes");
+      const require = createRequire(path.join(project, "package.json"));
+      assert.throws(() => require.resolve(`${name}/${executable}`), {
+        code: "ERR_PACKAGE_PATH_NOT_EXPORTED",
+      });
+      const selected = physicalHost(require, name, version, executable);
+      assert.equal(selected.executable.path, fs.realpathSync(binary));
+      assert.equal(selected.executable.bytes, fs.statSync(binary).size);
+      assert.equal(selected.manifest.path, fs.realpathSync(path.join(root, "package.json")));
+      assert.throws(() => physicalHost(require, name, "wrong-version", executable));
+      fs.rmSync(binary);
+      assert.throws(() => physicalHost(require, name, version, executable));
+    } finally {
+      fs.rmSync(project, { recursive: true, force: true });
+    }
+  });
+}

@@ -41,6 +41,20 @@ export function identity(file: string) {
   const bytes = fs.readFileSync(physical);
   return { path: physical, bytes: bytes.length, sha256: sha256(bytes) };
 }
+export function physicalHost(
+  owner: NodeJS.Require,
+  name: string,
+  version: string,
+  relativeExecutable: string,
+) {
+  const manifest = owner.resolve(`${name}/package.json`);
+  const value = JSON.parse(fs.readFileSync(manifest, "utf8")) as { name: string; version: string };
+  assert.equal(value.name, name);
+  assert.equal(value.version, version);
+  // The package exposes its manifest, while the CLI is a pinned physical file.
+  const executable = path.join(path.dirname(manifest), relativeExecutable);
+  return { manifest: identity(manifest), executable: identity(executable) };
+}
 export function archiveIdentity(file: string, expectedIntegrity: string) {
   const integrity = `sha512-${createHash("sha512").update(fs.readFileSync(file)).digest("base64")}`;
   assert.equal(integrity, expectedIntegrity, "actual tarball must match npm's SRI");
