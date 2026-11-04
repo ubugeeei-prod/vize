@@ -13,6 +13,7 @@ import {
   ariaPropReferenceStdout,
   reportedAriaConfig,
 } from "./aria-component-projects.ts";
+import { assertShippedDeclarationModule, sharedDeclarationEntry } from "./aria-sdk-entry.ts";
 
 const packageFiles = [
   "virtual-ts-globals.d.ts",
@@ -57,9 +58,10 @@ const consumer = fs.realpathSync(required("--consumer")),
     ? fs.realpathSync(required("--candidate-cli"))
     : undefined;
 assert.equal(options.has("--source-sha"), !!candidate);
-// Source-mode packages include the extracted slot family. Installed release
-// roles retain their separately pinned declaration inventory until qualified.
-if (candidate) packageFiles.push("virtual-ts-slots.d.ts");
+// Source-mode packages include the extracted slot family and the checker
+// entry the current producer imports. Installed release roles retain their
+// separately pinned declaration inventory until qualified.
+if (candidate) packageFiles.push("virtual-ts-slots.d.ts", "virtual-ts-checker.d.ts");
 assert.ok(
   !options.has("--source-package") || candidate,
   "installed mode cannot override package files",
@@ -226,6 +228,13 @@ for (const project of ariaComponentProjects()) {
     packageRoot = fs.realpathSync(path.join(modules, "vize"));
   }
   const installed = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"));
+  const declarationEntry = sharedDeclarationEntry({
+    mode: candidate ? "source" : "published",
+    exports: installed.exports,
+    files: ["virtual-ts-checker.d.ts", "virtual-ts.d.ts"].filter((file) =>
+      fs.existsSync(path.join(packageRoot, file)),
+    ),
+  });
   const exec = installed.typescript.contentMapper.exec as string[];
   const command = exec.map((part, index) =>
     index === 0 && part === "node" ? process.execPath : part,
@@ -298,16 +307,7 @@ for (const project of ariaComponentProjects()) {
       for (const [index, packet] of packets.entries()) {
         assert.equal(typeof packet.text, "string");
         const text = packet.text as string;
-        assert.equal(
-          text.split('import type {} from "vize/virtual-ts";').length,
-          2,
-          "exercise the actual shipped shared declaration module",
-        );
-        assert.ok(!text.includes("vize:virtual-ts"));
-        assert.ok(
-          !text.includes("type $PropValue<"),
-          "embedded helpers would hide the published regression",
-        );
+        assertShippedDeclarationModule(text, declarationEntry);
         assert.deepEqual(packet.diagnostics, []);
         assert.ok(Array.isArray(packet.mappings));
         const generated = Buffer.from(text),
