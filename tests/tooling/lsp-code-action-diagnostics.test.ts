@@ -17,6 +17,78 @@ const fixture = path.join(root, "tests/_fixtures/differential/lsp/code-action-di
 const reference = JSON.parse(fs.readFileSync(path.join(fixture, "references.json"), "utf8"));
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
+function currentCliExpectation(expected: unknown) {
+  assert.ok(Array.isArray(expected));
+  return expected.map((row: { messages: unknown[] }) => ({
+    ...row,
+    messages: row.messages.map((entry) => {
+      assert.ok(entry !== null && typeof entry === "object");
+      const message = entry as Record<string, unknown>;
+      const accessibility = message.ruleId === "a11y/alt-text";
+      if (!accessibility)
+        assert.equal(message.ruleId, "vue/html-self-closing", "authored code-action rule");
+      assert.equal(
+        message.ruleDocsPath,
+        accessibility ? "docs/content/rules/accessibility.md" : "docs/content/rules/vue.md",
+        "frozen code-action documentation",
+      );
+      const page = accessibility ? "a11y-alt-text" : "vue-html-self-closing";
+      for (const locale of ["", "ja/"])
+        assert.ok(
+          fs.existsSync(path.join(root, `docs/content/${locale}rules/reference/${page}.md`)),
+        );
+      return { ...message, ruleDocsPath: `docs/content/rules/reference/${page}.md` };
+    }),
+  }));
+}
+
+void test("current code-action CLI expectations preserve the complete historical witness", () => {
+  const frozen = fs.readFileSync(path.join(fixture, "references.json"));
+  assert.equal(frozen.length, 2619);
+  assert.equal(hash(frozen), "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2");
+  const saved = JSON.stringify(reference);
+  const current = currentCliExpectation(reference.cli);
+  assert.equal(JSON.stringify(reference), saved);
+  assert.equal(
+    JSON.stringify(current)
+      .replaceAll(
+        "docs/content/rules/reference/a11y-alt-text.md",
+        "docs/content/rules/accessibility.md",
+      )
+      .replaceAll(
+        "docs/content/rules/reference/vue-html-self-closing.md",
+        "docs/content/rules/vue.md",
+      ),
+    JSON.stringify(reference.cli),
+  );
+  for (const row of current)
+    for (const message of row.messages)
+      assert.ok(
+        [
+          "docs/content/rules/reference/a11y-alt-text.md",
+          "docs/content/rules/reference/vue-html-self-closing.md",
+        ].includes(message.ruleDocsPath),
+      );
+  for (const ruleDocsPath of [
+    undefined,
+    "docs/content/rules/foreign.md",
+    "docs/content/rules/reference/vue-html-self-closing.md",
+  ]) {
+    assert.throws(
+      () =>
+        currentCliExpectation([{ messages: [{ ruleId: "vue/html-self-closing", ruleDocsPath }] }]),
+      /frozen code-action documentation/u,
+    );
+  }
+  assert.throws(
+    () =>
+      currentCliExpectation([
+        { messages: [{ ruleId: "vue/foreign", ruleDocsPath: "docs/content/rules/vue.md" }] },
+      ]),
+    /authored code-action rule/u,
+  );
+});
+
 test("source LSP selects each same-range original diagnostic and preserves valid fixes", async () => {
   assert.equal(reference.schema, "vize.lsp.code-action-diagnostics.regression");
   for (const row of reference.originalFiles) {
@@ -71,7 +143,10 @@ test("source LSP selects each same-range original diagnostic and preserves valid
     assert.equal(cli.signal, null);
     assert.equal(cli.status, 0);
     assert.deepEqual(cli.stderr, Buffer.alloc(0));
-    assert.deepEqual(cli.stdout, Buffer.from(JSON.stringify(reference.cli, null, 2)));
+    assert.deepEqual(
+      cli.stdout,
+      Buffer.from(JSON.stringify(currentCliExpectation(reference.cli), null, 2)),
+    );
     assert.equal(fs.readFileSync(file, "utf8"), source);
 
     process.env.VIZE_LSP_BIN = binary;
