@@ -1,4 +1,4 @@
-import { assertSourceProtocolAdmission } from "./helper-abi-source-admission-11809.ts";
+import { assertSourceAndPublishedAdmission } from "./helper-abi-source-admission-11809.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -9,7 +9,6 @@ import {
 } from "./content-mapper-instance-globals-hosts-10617.ts";
 import {
   assertErrorMappings,
-  assertProtocolAdmission,
   assertTransformEnvelope,
   decodeFrames,
   frame,
@@ -266,11 +265,7 @@ export function runCopyAndCollisionControls(
         { status: 0, signal: null, error: null, stderr: "" },
       );
       assert.equal(responses.length, stages.length + 2);
-      assertSourceProtocolAdmission(responses, path.join(source, "tsconfig.json"));
-      assertProtocolAdmission(
-        decodeFrames(publicPacket.stdout),
-        path.join(published, "tsconfig.json"),
-      );
+      assertSourceAndPublishedAdmission(responses, publicPacket.stdout, source, published);
     },
   });
   const mappedReads: unknown[] = [];

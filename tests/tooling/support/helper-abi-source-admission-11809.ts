@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertProtocolAdmission, decodeFrames } from "./content-mapper-instance-globals-10617.ts";
 
 type Contract = {
   schema: number;
@@ -108,4 +109,15 @@ export function assertSourceProtocolAdmission(responses: readonly unknown[], con
       watchedFiles: [...watched].sort(),
     },
   });
+}
+
+/** Keep the published-before oracle unchanged beside the qualified source profile. */
+export function assertSourceAndPublishedAdmission(
+  sourceResponses: readonly unknown[],
+  publishedStdout: string,
+  source: string,
+  published: string,
+) {
+  assertSourceProtocolAdmission(sourceResponses, path.join(source, "tsconfig.json"));
+  assertProtocolAdmission(decodeFrames(publishedStdout), path.join(published, "tsconfig.json"));
 }
