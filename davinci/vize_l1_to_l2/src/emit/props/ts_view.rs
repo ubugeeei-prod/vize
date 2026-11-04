@@ -3,14 +3,13 @@
 //! The shipped transform rewrites an expression node's content *once*
 //! and marks it processed; every later reader — the patch-flag static
 //! check, the hoist decision, the hoisted text itself — sees that
-//! rewritten text. The L2 emitter reads the authored bytes instead, so
-//! wherever such a reader exists it takes this view: the stripped text
-//! and a parse of it, when stripping actually changed the bytes.
+//! rewritten text. The prefix boundary stores that erasure. This view
+//! reads it back, so a second strip cannot disagree with emission.
 
 use vize_l0::{Allocator, String};
 use vize_l2::expr::JsExpr;
 
-use super::super::prefix::{erase_typescript, retained_expression_is_js};
+use super::super::prefix::{retained_expression_is_js, shared_erasure};
 use super::static_expr::is_static_bound_expr;
 
 pub(in crate::emit) struct TsView {
@@ -46,6 +45,32 @@ pub(in crate::emit) fn ts_view(js: &JsExpr<'_>, is_ts: bool) -> Option<TsView> {
         return None;
     }
     let source = super::super::js::js_expr_source(js);
-    let text = erase_typescript(source.as_str(), retained_expression_is_js(js));
+    let text = shared_erasure(source.as_str(), retained_expression_is_js(js));
     (text.as_str() != source.as_str()).then_some(TsView { text })
+}
+
+#[cfg(all(test, feature = "typescript"))]
+mod tests {
+    use vize_l0::{Allocator, Span};
+    use vize_l2::expr::JsExpr;
+
+    use super::super::super::prefix;
+    use super::ts_view;
+
+    /// The constness reader and a second reader of the same bind share one strip.
+    #[test]
+    fn ts_view_strips_a_typed_literal_once() {
+        let source = "{ n: 1 } as const";
+        let allocator = Allocator::new();
+        let end = u32::try_from(source.len()).unwrap();
+        let js = JsExpr::parse_in(&allocator, source, Span::new(0, end)).unwrap();
+        let before = prefix::typescript_erasure_calls();
+        let first = ts_view(js, true).expect("typed literal erases");
+        let after_first = prefix::typescript_erasure_calls();
+        let second = ts_view(js, true).expect("second reader reuses the strip");
+        assert_eq!(after_first - before, 1);
+        assert_eq!(prefix::typescript_erasure_calls(), after_first);
+        assert!(first.is_static());
+        assert_eq!(first.into_text().as_str(), second.into_text().as_str());
+    }
 }

@@ -63,6 +63,8 @@ pub(super) fn handler_source_is_expression(source: &str) -> bool {
     rewrite::with_prefix_parse(source, |_| true).unwrap_or(false)
 }
 
+#[cfg(feature = "typescript")]
+use vize_l0::FxHashMap;
 use vize_l0::{Span, String};
 use vize_l2::expr::{ExprRef, JsExpr};
 
@@ -140,7 +142,70 @@ impl Erased<'_, '_, '_> {
     }
 }
 
-/// Type-erase `content` once, under `is_ts`.
+/// One remembered strip per `(content, proven_js)` on this worker. The
+/// constness reader and [`erase`] used to each pay for the oxc transform.
+#[cfg(feature = "typescript")]
+const ERASURE_MEMO_CAP: usize = 2048;
+
+#[cfg(all(test, feature = "typescript"))]
+std::thread_local! {
+    static ERASURE_CALLS: core::cell::Cell<u32> = const { core::cell::Cell::new(0) };
+}
+
+#[cfg(feature = "typescript")]
+std::thread_local! {
+    static ERASURES: core::cell::RefCell<FxHashMap<(String, bool), String>> =
+        core::cell::RefCell::new(FxHashMap::<(String, bool), String>::default());
+}
+
+#[cfg(feature = "typescript")]
+fn recall_erasure(key: &(String, bool)) -> Option<String> {
+    ERASURES
+        .try_with(|memo| memo.borrow().get(key).cloned())
+        .ok()
+        .flatten()
+}
+
+#[cfg(feature = "typescript")]
+fn remember_erasure(key: (String, bool), erased: &str) {
+    let _ = ERASURES.try_with(|memo| {
+        let mut memo = memo.borrow_mut();
+        if memo.len() >= ERASURE_MEMO_CAP {
+            memo.clear();
+        }
+        memo.insert(key, String::from(erased));
+    });
+}
+
+/// The lane's one type erasure of `content`. Later readers, including the
+/// bind constness view, take this text instead of stripping again.
+#[cfg(feature = "typescript")]
+pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+    let key = (String::from(content), proven_js);
+    if let Some(hit) = recall_erasure(&key) {
+        return hit;
+    }
+    #[cfg(test)]
+    {
+        let _ = ERASURE_CALLS.try_with(|calls| calls.set(calls.get().saturating_add(1)));
+    }
+    let text = erase_typescript(content, proven_js);
+    remember_erasure(key, text.as_str());
+    text
+}
+
+#[cfg(not(feature = "typescript"))]
+pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+    erase_typescript(content, proven_js)
+}
+
+#[cfg(all(test, feature = "typescript"))]
+pub(in crate::emit) fn typescript_erasure_calls() -> u32 {
+    ERASURE_CALLS.try_with(core::cell::Cell::get).unwrap_or(0)
+}
+
+/// Type-erase `content` once, under `is_ts`. The result is the same text
+/// [`shared_erasure`] hands to the constness reader.
 fn erase<'c, 'r, 'a>(
     scope: &PrefixScope<'_>,
     content: &'c Content<'_>,
@@ -155,7 +220,7 @@ fn erase<'c, 'r, 'a>(
     };
     if scope.is_ts() {
         let proven_js = erased.proven_js();
-        let text = erase_typescript(authored, proven_js);
+        let text = shared_erasure(authored, proven_js);
         erased.erased = (text.as_str() != authored).then_some(text);
         erased.proven_js = Some(proven_js);
     }
