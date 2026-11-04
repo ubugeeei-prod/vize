@@ -1,4 +1,4 @@
-name: Template alias paired campaign
+name: Mapper campaign functional contracts
 
 on:
   pull_request:
@@ -6,25 +6,13 @@ on:
       - .github/workflows/template-alias-paired-11822.yml
       - tools/benchmarks/scripts/template-alias-paired-11822*
       - tests/_helpers/template-alias-typescript-11822.ts
-  workflow_dispatch:
-    inputs:
-      base_sha:
-        description: Approved exact current-main 40-hex SHA; must be an ancestor of this workflow commit
-        type: string
-        required: true
 
 permissions: { contents: read }
 concurrency:
-  group: template-alias-paired-11822-${{ github.event.pull_request.number || github.ref }}
+  group: mapper-campaign-contracts-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  CARGO_INCREMENTAL: "0"
-  BASE_SHA: ${{ inputs.base_sha }}
-  HEAD_SHA: ${{ github.sha }}
-  EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
-  TEMPLATE_ALIAS_RUNNER: blacksmith-32vcpu-ubuntu-2404
 
 jobs:
   contracts:
@@ -47,152 +35,3 @@ jobs:
         run: vp install --frozen-lockfile --filter . --filter @vize/tests --filter ./npm/cli...
       - name: Require strict harness types, complete declarations and negative controls
         run: node tools/benchmarks/scripts/template-alias-paired-11822-contracts.ts
-
-  paired:
-    if: github.event_name == 'workflow_dispatch'
-    # One bounded campaign, no PR/push/schedule triggers. Four systems:
-    # 40 primary invocations + 8 untimed protocol captures, on the same runner.
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 60
-    steps:
-      - name: Reserve seven minutes for raw retention and archiving
-        shell: bash
-        run: |
-          campaign_started_ms="$(( $(date -u +%s) * 1000 ))"
-          campaign_deadline_ms="$(( campaign_started_ms + 53 * 60 * 1000 ))"
-          printf 'TEMPLATE_ALIAS_STARTED_MS=%s\n' "$campaign_started_ms" >> "$GITHUB_ENV"
-          printf 'TEMPLATE_ALIAS_DEADLINE_MS=%s\n' "$campaign_deadline_ms" >> "$GITHUB_ENV"
-          printf '{"startedMs":%s,"softDeadlineMs":%s,"jobLimitMinutes":60,"processingLimitMinutes":53,"artifactReserveMinutes":7}\n' "$campaign_started_ms" "$campaign_deadline_ms" > "$RUNNER_TEMP/template-alias-budget.json"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          path: head
-          ref: ${{ github.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Freeze exact source and read-only upstream selections
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$EXECUTED_WORKFLOW_SHA" = "$HEAD_SHA"
-          test "$(git -C head rev-parse HEAD)" = "$HEAD_SHA"
-          test "$(git -C head ls-remote origin refs/heads/main | cut -f1)" = "$BASE_SHA"
-          git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
-          git -C head worktree add --detach "$GITHUB_WORKSPACE/base" "$BASE_SHA"
-          git clone --no-checkout https://github.com/MatesEngineer/vue-typecheck-benchmark.git "$RUNNER_TEMP/template-alias-upstream"
-          git -C "$RUNNER_TEMP/template-alias-upstream" checkout --detach c9a59cb07c236cbf7e0a97aa06ca3d02756415ea
-          git -C "$RUNNER_TEMP/template-alias-upstream" remote set-url --push origin DISABLED
-          test -z "$(git -C "$RUNNER_TEMP/template-alias-upstream" status --porcelain --untracked-files=all)"
-
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          version: "1.3.0"
-          node-version: "26.12.1"
-          run-install: false
-          cache: false
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with: { wild-version: "0.9.0" }
-      - name: Expose nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/
-      - uses: ./head/.github/actions/setup-rust-sticky-cache
-        with:
-          key: template-alias-11822-head
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: head/target
-          secondary-key: template-alias-11822-base
-          secondary-target-path: base/target
-          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
-      - name: Check custody parsers and diagnostic negative controls
-        run: node --test head/tools/benchmarks/scripts/template-alias-paired-11822.test.ts
-
-      - name: Install the immutable upstream provider in a separate private copy
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(node --version)" = v26.12.1
-          mkdir "$RUNNER_TEMP/template-alias-provider"
-          git -C "$RUNNER_TEMP/template-alias-upstream" archive c9a59cb07c236cbf7e0a97aa06ca3d02756415ea | tar -x -C "$RUNNER_TEMP/template-alias-provider"
-          cd "$RUNNER_TEMP/template-alias-provider"
-          node "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/template-alias-paired-11822-source.ts" --install-provider "$PWD"
-          cmp pnpm-lock.yaml "$RUNNER_TEMP/template-alias-upstream/pnpm-lock.yaml"
-          node --version > provider-toolchain.txt
-          vp --version >> provider-toolchain.txt
-
-      - name: Build two atomic source Node CLI and NAPI SDK capsules
-        shell: bash
-        run: |
-          set -euo pipefail
-          for side in base head; do
-            mkdir -p "$side/target"
-            source_sha="$(git -C "$side" rev-parse HEAD)"
-            node head/tools/benchmarks/scripts/template-alias-paired-11822-source.ts \
-              --source "$GITHUB_WORKSPACE/$side" --sha "$source_sha"
-          done
-
-      - name: Gate complete diagnostics and run five alternating pairs per default checker
-        shell: bash
-        run: |
-          set -euo pipefail
-          node head/tools/benchmarks/scripts/template-alias-paired-11822.ts \
-            --base "$GITHUB_WORKSPACE/base" --base-sha "$BASE_SHA" \
-            --head "$GITHUB_WORKSPACE/head" --head-sha "$HEAD_SHA" \
-            --upstream "$RUNNER_TEMP/template-alias-upstream" \
-            --provider "$RUNNER_TEMP/template-alias-provider" \
-            --output "$RUNNER_TEMP/template-alias-evidence"
-
-      - name: Retain original process streams before attempting the large archive
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        timeout-minutes: 2
-        with:
-          name: template-alias-11822-raw-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/template-alias-budget.json
-            ${{ runner.temp }}/template-alias-provider.install.*
-            head/target/template-alias-11822/*.stdout
-            head/target/template-alias-11822/*.stderr
-            head/target/template-alias-11822/*.process.json
-            head/target/template-alias-11822/commands.json
-            head/target/template-alias-11822/receipt.json
-            base/target/template-alias-11822/*.stdout
-            base/target/template-alias-11822/*.stderr
-            base/target/template-alias-11822/*.process.json
-            base/target/template-alias-11822/commands.json
-            base/target/template-alias-11822/receipt.json
-            ${{ runner.temp }}/template-alias-evidence/*.raw/**
-            ${{ runner.temp }}/template-alias-evidence/provenance.json
-            ${{ runner.temp }}/template-alias-evidence/failure.json
-            ${{ runner.temp }}/template-alias-evidence/summary.json
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Preserve successful and failed original streams, protocol, directives and build custody
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/template-alias-evidence/builds"
-          for side in base head; do
-            if [[ -d "$side/target/template-alias-11822" ]]; then
-              cp -R "$side/target/template-alias-11822" "$RUNNER_TEMP/template-alias-evidence/builds/$side"
-            fi
-          done
-          if [[ -f "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" ]]; then cp "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" "$RUNNER_TEMP/template-alias-evidence/"; fi
-          for stream in stdout stderr process.json; do
-            if [[ -f "$RUNNER_TEMP/template-alias-provider.install.$stream" ]]; then cp "$RUNNER_TEMP/template-alias-provider.install.$stream" "$RUNNER_TEMP/template-alias-evidence/"; fi
-          done
-          timeout --signal=TERM --kill-after=5s 180s tar --exclude='*.workspace' -czf "$RUNNER_TEMP/template-alias-evidence.tgz" -C "$RUNNER_TEMP" template-alias-evidence
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
-        timeout-minutes: 1
-        with:
-          name: template-alias-11822-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/template-alias-evidence.tgz
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 30

@@ -37,7 +37,6 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { installMapperCapture } from "./template-alias-paired-11822-capture.ts";
 import { copyPublishedPackage } from "./template-alias-paired-11822-packages.ts";
 
-export const upstreamSha = "c9a59cb07c236cbf7e0a97aa06ca3d02756415ea";
 export const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 export const json = <T = PackageManifest>(path: string): T =>
   JSON.parse(readFileSync(path, "utf8")) as T;
