@@ -53,7 +53,7 @@ fn current_expected_packet(route: &Value) -> Value {
 }
 
 #[test]
-fn current_documentation_oracle_rejects_wrong_actual_pages_and_foreign_rules() {
+fn current_documentation_oracle_rejects_invalid_frozen_urls_and_foreign_rules() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let case = corpus["cases"]
         .as_array()
@@ -65,14 +65,14 @@ fn current_documentation_oracle_rejects_wrong_actual_pages_and_foreign_rules() {
     let expected = current_expected_packet(route);
     assert_eq!(expected[0]["messages"].as_array().unwrap().len(), 1);
     for page in [
-        "docs/content/rules/accessibility.md",
+        "docs/content/rules/vue.md",
         "docs/content/rules/reference/missing-page.md",
         "docs/content/rules/reference/a11y-alt-text.md",
     ] {
-        let mut actual = expected.clone();
-        actual[0]["messages"][0]["ruleDocsPath"] = page.into();
-        std::panic::catch_unwind(|| assert_eq!(actual, expected))
-            .expect_err("a wrong actual documentation page must fail the full packet");
+        let mut invalid = route.clone();
+        invalid["afterPacket"][0]["messages"][0]["ruleDocsPath"] = page.into();
+        std::panic::catch_unwind(|| current_expected_packet(&invalid))
+            .expect_err("invalid frozen documentation must fail the owned projection");
     }
     let mut foreign = route.clone();
     foreign["afterPacket"][0]["messages"][0]["ruleId"] = "a11y/alt-text".into();
