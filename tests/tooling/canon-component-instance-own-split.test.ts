@@ -214,8 +214,22 @@ const shapes: [string, string, string, string?][] = [
 // Reads through every literal key and index signature, so a shape whose
 // whole type cannot be compared still pins what each member access sees.
 const keys = [
-  ...["$props", "$emit", "$slots", "__vizeRawProps", "$attrs", "$el", "$refs", "$data"],
-  ...["$options", "$watch", "$route", "useFeature", "open", "count", "inc", "title"],
+  "$props",
+  "$emit",
+  "$slots",
+  "__vizeRawProps",
+  "$attrs",
+  "$el",
+  "$refs",
+  "$data",
+  "$options",
+  "$watch",
+  "$route",
+  "useFeature",
+  "open",
+  "count",
+  "inc",
+  "title",
 ].map((key) => `'${key}'`);
 const indexKeys = ["string", "number", "`$${string}`", "`$x${string}`", "'$unknown'", "'unknown'"];
 
