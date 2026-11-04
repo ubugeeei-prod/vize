@@ -1,0 +1,137 @@
+name: Template alias paired campaign
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Approved exact current-main 40-hex SHA; must be an ancestor of this workflow commit
+        type: string
+        required: true
+
+permissions: { contents: read }
+concurrency:
+  group: template-alias-paired-11822
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CARGO_INCREMENTAL: "0"
+  BASE_SHA: ${{ inputs.base_sha }}
+  HEAD_SHA: ${{ github.sha }}
+  TEMPLATE_ALIAS_RUNNER: blacksmith-32vcpu-ubuntu-2404
+
+jobs:
+  paired:
+    # One bounded campaign, no PR/push/schedule triggers. Four systems:
+    # 40 primary invocations + 8 untimed protocol captures, on the same runner.
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: head
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Freeze exact source and read-only upstream selections
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C head rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git -C head ls-remote origin refs/heads/main | cut -f1)" = "$BASE_SHA"
+          git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+          git -C head worktree add --detach "$GITHUB_WORKSPACE/base" "$BASE_SHA"
+          git clone --no-checkout https://github.com/MatesEngineer/vue-typecheck-benchmark.git "$RUNNER_TEMP/template-alias-upstream"
+          git -C "$RUNNER_TEMP/template-alias-upstream" checkout --detach c9a59cb07c236cbf7e0a97aa06ca3d02756415ea
+          git -C "$RUNNER_TEMP/template-alias-upstream" remote set-url --push origin DISABLED
+          test -z "$(git -C "$RUNNER_TEMP/template-alias-upstream" status --porcelain --untracked-files=all)"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          version: "1.3.0"
+          node-version: "26.12.1"
+          run-install: false
+          cache: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Expose nested target action at the workspace root
+        run: mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: template-alias-11822-head
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: head/target
+          secondary-key: template-alias-11822-base
+          secondary-target-path: base/target
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - name: Check custody parsers and diagnostic negative controls
+        run: node --test head/tools/benchmarks/scripts/template-alias-paired-11822.test.mjs
+
+      - name: Install the immutable upstream provider in a separate private copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = v26.12.1
+          mkdir "$RUNNER_TEMP/template-alias-provider"
+          git -C "$RUNNER_TEMP/template-alias-upstream" archive c9a59cb07c236cbf7e0a97aa06ca3d02756415ea | tar -x -C "$RUNNER_TEMP/template-alias-provider"
+          cd "$RUNNER_TEMP/template-alias-provider"
+          vp install --frozen-lockfile
+          cmp pnpm-lock.yaml "$RUNNER_TEMP/template-alias-upstream/pnpm-lock.yaml"
+          node --version > provider-toolchain.txt
+          vp --version >> provider-toolchain.txt
+
+      - name: Build independent exact-source CLIs with identical default features and profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          for side in base head; do
+            mkdir -p "$side/target"
+            rustc -Vv > "$side/target/rustc-11822.txt"
+            cargo build --locked --manifest-path "$side/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/$side/target" --profile ci-opt -p vize --message-format=json \
+              --config 'profile.ci-opt.inherits="release"' \
+              --config 'profile.ci-opt.lto="thin"' \
+              --config 'profile.ci-opt.codegen-units=16' \
+              --config 'profile.ci-opt.package.vize.strip="symbols"' \
+              > "$side/target/build-11822.jsonl" 2> "$side/target/build-11822.stderr"
+          done
+
+      - name: Gate complete diagnostics and run five alternating pairs per default checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          node head/tools/benchmarks/scripts/template-alias-paired-11822.mjs \
+            --base "$GITHUB_WORKSPACE/base" --base-sha "$BASE_SHA" \
+            --head "$GITHUB_WORKSPACE/head" --head-sha "$HEAD_SHA" \
+            --upstream "$RUNNER_TEMP/template-alias-upstream" \
+            --provider "$RUNNER_TEMP/template-alias-provider" \
+            --output "$RUNNER_TEMP/template-alias-evidence"
+
+      - name: Preserve successful and failed original streams, protocol, directives and build custody
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/template-alias-evidence/builds"
+          for side in base head; do
+            if [[ -f "$side/target/build-11822.jsonl" ]]; then
+              cp "$side/target/build-11822.jsonl" "$side/target/build-11822.stderr" "$side/target/rustc-11822.txt" "$RUNNER_TEMP/template-alias-evidence/builds/"
+              mv "$RUNNER_TEMP/template-alias-evidence/builds/build-11822.jsonl" "$RUNNER_TEMP/template-alias-evidence/builds/$side.jsonl"
+              mv "$RUNNER_TEMP/template-alias-evidence/builds/build-11822.stderr" "$RUNNER_TEMP/template-alias-evidence/builds/$side.stderr"
+              mv "$RUNNER_TEMP/template-alias-evidence/builds/rustc-11822.txt" "$RUNNER_TEMP/template-alias-evidence/builds/$side.rustc.txt"
+            fi
+          done
+          if [[ -f "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" ]]; then cp "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" "$RUNNER_TEMP/template-alias-evidence/"; fi
+          tar --exclude='*.workspace' -czf "$RUNNER_TEMP/template-alias-evidence.tgz" -C "$RUNNER_TEMP" template-alias-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: template-alias-11822-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/template-alias-evidence.tgz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
