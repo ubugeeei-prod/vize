@@ -173,7 +173,8 @@ export function newLanguageProjectCases(
     const test = object(value, ["selector", "source", "sha256"]);
     const [selector, source] = LANGUAGE_PROJECT_PRODUCERS[index]!;
     require(test.selector === selector && test.source === source, "unregistered producer");
-    if (source === CLASSIFICATION_PRODUCER) historicalClassificationProducer(readFile, test.sha256, row);
+    if (source === CLASSIFICATION_PRODUCER)
+      historicalClassificationProducer(readFile, test.sha256, row);
     else pinned(historicalRead, source, test.sha256);
   }
   const beforeInputs = files.get("before-inputs.json")!;

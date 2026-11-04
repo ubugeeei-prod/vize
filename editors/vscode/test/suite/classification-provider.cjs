@@ -17,7 +17,7 @@ const tokenTypes = [
 ];
 const tokenModifiers = ["declaration", "static", "async", "readonly", "defaultLibrary", "local"];
 
-function decodeTokens(document, value, legend) {
+function decodeTokens(document, value, legend, Position) {
   assert.deepEqual(legend.tokenTypes, tokenTypes);
   assert.deepEqual(legend.tokenModifiers, tokenModifiers);
   const data = Array.from(value.data);
@@ -39,7 +39,7 @@ function decodeTokens(document, value, legend) {
     );
     line += deltaLine;
     character = deltaLine ? deltaCharacter : character + deltaCharacter;
-    const start = document.offsetAt({ line, character });
+    const start = document.offsetAt(new Position(line, character));
     const actual = document.positionAt(start);
     assert.equal(actual.line, line);
     assert.equal(actual.character, character);
@@ -101,7 +101,7 @@ async function checkInstalledClassifications(vscode, fixture) {
         requestRange,
       );
       assert(legend && value, "the actual built-in TypeScript semantic provider must answer");
-      return { success: true, body: decodeTokens(document, value, legend) };
+      return { success: true, body: decodeTokens(document, value, legend, vscode.Position) };
     },
   });
 }

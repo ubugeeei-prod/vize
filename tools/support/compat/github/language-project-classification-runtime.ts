@@ -6,7 +6,7 @@ export const CLASSIFICATION_RUNTIME_ROOT =
   "tests/_fixtures/tooling/typescript-classification-runtime-11664/";
 export const CLASSIFICATION_RUNTIME_ID =
   "typechecker/language-project/classification-runtime-11664";
-const custodyHash = "5df4c2013682a5802371e5b8f171bcee09768c2fab1c2857eb60bc498305a23a";
+const custodyHash = "54b078822ef0c508e958bdb8c7a2d5f1984f453a332bf8521bd0d0683186418e";
 const predecessorPath =
   "tests/_fixtures/tooling/typescript-classification-successor-11664/custody.json";
 const predecessorHash = "04628e3b129e38c7ee0cc721848a428fa34518993a4646ea7bef806827c68005";
@@ -29,6 +29,7 @@ const consumers = [
   "tests/typescript-plugin/classification-consumer.ts",
   "editors/vscode/test/suite/classification-provider.cjs",
   "tests/tooling/language-project-classification-runtime.test.ts",
+  "tests/tooling/language-project-classification-position.test.ts",
   "tools/support/compat/github/language-project-classification-successor.ts",
   "tools/support/compat/github/language-project-fixtures.ts",
   "npm/typescript-plugin/language-service.cjs",

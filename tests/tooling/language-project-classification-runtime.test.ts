@@ -205,6 +205,14 @@ test("whole authored packets reject empty, reordered, mistyped, modifier-losing 
   assert.throws(() => probe.triples(expected, source, { start: 2, length: 4 }));
 });
 
+class Position {
+  readonly line: number;
+  readonly character: number;
+  constructor(line: number, character: number) {
+    this.line = line;
+    this.character = character;
+  }
+}
 function document(source: string) {
   const lines = source.split("\n");
   const starts = lines.map((_line, index) =>
@@ -212,11 +220,13 @@ function document(source: string) {
   );
   return {
     getText: () => source,
-    offsetAt: ({ line, character }: { line: number; character: number }) =>
-      (starts[line] ?? source.length) + character,
+    offsetAt: (position: Position) => {
+      assert(position instanceof Position, "Invalid argument: expected Position");
+      return (starts[position.line] ?? source.length) + position.character;
+    },
     positionAt: (offset: number) => {
       const line = starts.findLastIndex((start) => start <= offset);
-      return { line, character: offset - starts[line]! };
+      return new Position(line, offset - starts[line]!);
     },
   };
 }
@@ -241,7 +251,10 @@ const legend = {
 test("the GUI provider decoder preserves ordered UTF16 triples and the complete type/modifier legend", () => {
   const doc = document("a\r\n𐐀変数");
   const value = { data: [0, 0, 1, 7, 1, 1, 0, 4, 7, 33] };
-  assert.deepEqual(provider.decodeTokens(doc, value, legend).spans, [0, 1, 2049, 3, 4, 2081]);
+  assert.deepEqual(
+    provider.decodeTokens(doc, value, legend, Position).spans,
+    [0, 1, 2049, 3, 4, 2081],
+  );
   for (const data of [
     [],
     [0, 0, 1, 7],
@@ -251,15 +264,25 @@ test("the GUI provider decoder preserves ordered UTF16 triples and the complete 
     [-1, 0, 1, 7, 1],
     [4, 0, 1, 7, 1],
   ])
-    assert.throws(() => provider.decodeTokens(doc, { data }, legend));
+    assert.throws(() => provider.decodeTokens(doc, { data }, legend, Position));
   assert.throws(() =>
-    provider.decodeTokens(doc, value, { ...legend, tokenTypes: [...legend.tokenTypes].reverse() }),
+    provider.decodeTokens(
+      doc,
+      value,
+      { ...legend, tokenTypes: [...legend.tokenTypes].reverse() },
+      Position,
+    ),
   );
   assert.throws(() =>
-    provider.decodeTokens(doc, value, {
-      ...legend,
-      tokenModifiers: [...legend.tokenModifiers].reverse(),
-    }),
+    provider.decodeTokens(
+      doc,
+      value,
+      {
+        ...legend,
+        tokenModifiers: [...legend.tokenModifiers].reverse(),
+      },
+      Position,
+    ),
   );
 });
 
