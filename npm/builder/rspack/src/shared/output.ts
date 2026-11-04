@@ -221,7 +221,10 @@ export function generateOutputWithMap(
   if (options.hmr && compiled.scopeId && exportsSfcMain) {
     const metadata = compiled.hmr && {
       ...compiled.hmr,
-      module: createHash("sha256").update(emitted.code).digest("hex").slice(0, 16),
+      module: createHash("sha256")
+        .update(hmrModuleSource(compiled, emitted.code))
+        .digest("hex")
+        .slice(0, 16),
       styles: JSON.stringify({
         scoped: compiled.hasScoped,
         blocks: compiled.styles.map(({ content, ...style }) => ({
@@ -234,4 +237,19 @@ export function generateOutputWithMap(
   }
 
   return { code: emitted.code, map: emitted.map };
+}
+
+/**
+ * Native CSS module class names are derived from style-block offsets, then
+ * replaced by the bundler. Hashing those names turns the first CSS edit after
+ * a template length change into a component reload.
+ */
+function hmrModuleSource(compiled: CompiledModule, code: string): string {
+  const hasCssModules = compiled.styles.some((style) => style.module);
+  const script = compiled.hmr?.script;
+  const template = compiled.hmr?.template;
+  if (hasCssModules && typeof script === "string" && typeof template === "string") {
+    return JSON.stringify([script, template]);
+  }
+  return code;
 }
