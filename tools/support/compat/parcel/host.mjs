@@ -27,6 +27,14 @@ const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const processes = [];
 const browserEvents = [];
 const watchEvents = [];
+const inputEvents = [];
+const inputEdits = [];
+async function editInput(filePath, content) {
+  const edit = { filePath, sha256: sha(content) };
+  inputEdits.push({ ...edit, phase: "start", elapsedMs: performance.now() - started });
+  await fs.writeFile(filePath, content);
+  inputEdits.push({ ...edit, phase: "written", elapsedMs: performance.now() - started });
+}
 const started = performance.now();
 assert.equal(await fs.stat(proof).catch(() => null), null, "evidence destination must be absent");
 await fs.mkdir(proof, { recursive: true });
@@ -380,8 +388,27 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   manifest.alias = { "fixture-counter": "./counter.js" };
   await fs.writeFile(path.join(consumer, "package.json"), JSON.stringify(manifest, null, 2) + "\n");
   const { Parcel } = require("@parcel/core");
+  const { NodeFS } = createRequire(require.resolve("@parcel/core"))("@parcel/fs");
+  const inputFS = new NodeFS();
+  const watch = inputFS.watch.bind(inputFS);
+  inputFS.watch = (directory, callback, options) =>
+    watch(
+      directory,
+      (...args) => {
+        const [error, events] = args;
+        inputEvents.push({
+          elapsedMs: performance.now() - started,
+          directory,
+          error: error?.message,
+          events,
+        });
+        return callback(...args);
+      },
+      options,
+    );
   const { chromium } = require("@playwright/test");
   const base = {
+    inputFS,
     entries: path.join(consumer, "index.html"),
     config: path.join(consumer, ".parcelrc"),
     shouldTrace: true,
@@ -644,7 +671,20 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   });
   watcher = await dev.watch((error, event) =>
     events.push(
-      error ? { type: "error", diagnostics: error.diagnostics, message: error.message } : event,
+      error
+        ? { type: "error", diagnostics: error.diagnostics, message: error.message }
+        : {
+            ...event,
+            observedMs: performance.now() - started,
+            changedInputs: event.changedAssets
+              ? [...event.changedAssets.values()].map((asset) => ({
+                  id: asset.id,
+                  filePath: asset.filePath,
+                  type: asset.type,
+                  uniqueKey: asset.uniqueKey,
+                }))
+              : undefined,
+          },
     ),
   );
   const waitBuild = async (offset, type = "buildSuccess") => {
@@ -685,7 +725,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   );
   assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 1);
   let offset = events.length;
-  await fs.writeFile(
+  await editInput(
     path.join(consumer, "styles", "external é.css"),
     ".external { color: rgb(55, 66, 77); background-image: url('../icon.svg'); }\n",
   );
@@ -711,7 +751,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     .filter(Boolean)
     .map((line) => JSON.parse(line));
   offset = events.length;
-  await fs.writeFile(path.join(consumer, "styles", "palette.scss"), "$border: rgb(65, 43, 21);\n");
+  await editInput(path.join(consumer, "styles", "palette.scss"), "$border: rgb(65, 43, 21);\n");
   await waitBuild(offset);
   await eventually(
     () => page.locator(".card").evaluate((element) => getComputedStyle(element).borderColor),
@@ -747,7 +787,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     compileCallsAfter: compileCalls(nativeEventsAfterSass),
   });
   offset = events.length;
-  await fs.writeFile(path.join(consumer, "counter.js"), "export const initialCount = 3;\n");
+  await editInput(path.join(consumer, "counter.js"), "export const initialCount = 3;\n");
   await waitBuild(offset);
   await eventually(
     () => page.getByRole("button").textContent(),
@@ -756,7 +796,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   );
   assert.equal(await page.evaluate(() => window.parcelModuleEvaluations), 2);
   offset = events.length;
-  await fs.writeFile(path.join(consumer, "App.vue"), source("Updated"));
+  await editInput(path.join(consumer, "App.vue"), source("Updated"));
   await waitBuild(offset);
   await eventually(
     () => page.getByRole("button").textContent(),
@@ -770,7 +810,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     "background-image:",
     "border-radius: 3px; background-image:",
   );
-  await fs.writeFile(path.join(consumer, "App.vue"), inlineSource);
+  await editInput(path.join(consumer, "App.vue"), inlineSource);
   const inlineUpdate = await waitBuild(offset);
   const inlineModules = new Map();
   for (const bundle of inlineUpdate.bundleGraph.getBundles()) {
@@ -801,7 +841,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     "component updates must not reload the document",
   );
   offset = events.length;
-  await fs.writeFile(
+  await editInput(
     path.join(consumer, ".vizerc.parcel.json"),
     JSON.stringify({ transformAssetUrls: false }),
   );
@@ -813,11 +853,11 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   );
   if (recoveryFrontier) {
     offset = events.length;
-    await fs.writeFile(path.join(consumer, "App.vue"), "<template><div></template>");
+    await editInput(path.join(consumer, "App.vue"), "<template><div></template>");
     await waitBuild(offset, "buildFailure");
     offset = events.length;
-    await fs.writeFile(path.join(consumer, ".vizerc.parcel.json"), "{}\n");
-    await fs.writeFile(path.join(consumer, "App.vue"), source("Recovered"));
+    await editInput(path.join(consumer, ".vizerc.parcel.json"), "{}\n");
+    await editInput(path.join(consumer, "App.vue"), source("Recovered"));
     await waitBuild(offset);
     await eventually(
       () => page.getByRole("button").textContent(),
@@ -825,7 +865,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
       "watch recovery",
     );
     offset = events.length;
-    await fs.writeFile(path.join(consumer, "App.vue"), "<template><b></template>");
+    await editInput(path.join(consumer, "App.vue"), "<template><b></template>");
     await waitBuild(offset, "buildFailure");
     offset = events.length;
     const repairInputs = [
@@ -833,7 +873,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
       "<template><i></template>",
       source("RapidRecovered"),
     ];
-    for (const input of repairInputs) await fs.writeFile(path.join(consumer, "App.vue"), input);
+    for (const input of repairInputs) await editInput(path.join(consumer, "App.vue"), input);
     await eventually(
       () => page.locator("button.card").textContent(),
       (value) => /RapidRecovered: 3/.test(value),
@@ -1046,14 +1086,22 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
 } finally {
   await write(
     "watch-events.json",
-    watchEvents.map(({ type, diagnostics, message, buildTime }) => ({
+    watchEvents.map(({ type, diagnostics, message, buildTime, observedMs, changedInputs }) => ({
       type,
       diagnostics,
       message,
       buildTime,
+      observedMs,
+      changedInputs,
     })),
   );
   if (watcher) await watcher.unsubscribe();
+  await write("input-watch-events.json", {
+    diagnosticOnly: true,
+    qualified: false,
+    events: inputEvents,
+    edits: inputEdits,
+  });
   if (staticServer) await new Promise((resolve) => staticServer.server.close(resolve));
   if (browser && tracing) {
     try {
