@@ -7,11 +7,31 @@ import {
   diagnosticPacket,
   hostConfig,
   semanticPacket,
+  mapperExitReceipt,
 } from "../../tools/support/compat/content-mapper/admission-hosts-core.ts";
 const encode = (packet: unknown) => {
   const body = Buffer.from(JSON.stringify(packet));
   return Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
 };
+void test("a missing optional exit receipt never invents a successful child exit", () => {
+  assert.deepEqual(mapperExitReceipt(undefined), {
+    exitObserved: false,
+    status: null,
+    signal: null,
+  });
+  assert.deepEqual(mapperExitReceipt({ status: 0, signal: null, error: null }), {
+    exitObserved: true,
+    status: 0,
+    signal: null,
+  });
+  for (const value of [
+    {},
+    { status: 1, signal: null, error: null },
+    { status: null, signal: "SIGKILL", error: null },
+    { status: 0, signal: null, error: "broken pipe" },
+  ])
+    assert.throws(() => mapperExitReceipt(value));
+});
 function pair() {
   const source = fixture(false, 65_536),
     expected = new Map<string, string>();

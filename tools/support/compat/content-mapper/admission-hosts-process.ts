@@ -8,6 +8,7 @@ import {
   openSync,
   readFileSync,
   realpathSync,
+  renameSync,
   writeFileSync,
   writeSync,
 } from "node:fs";
@@ -318,7 +319,9 @@ async function tee(root: string, capture: string, token: string) {
   closeSync(input);
   closeSync(output);
   closeSync(errors);
-  save(join(directory, "result.json"), { pid: child.pid ?? null, status, signal, error });
+  const pending = join(directory, "result.pending.json");
+  save(pending, { pid: child.pid ?? null, status, signal, error });
+  renameSync(pending, join(directory, "result.json"));
   process.exitCode = status === 0 && !signal && !error ? 0 : 1;
 }
 export const teeCommand = (root: string, capture: string, token: string) => [

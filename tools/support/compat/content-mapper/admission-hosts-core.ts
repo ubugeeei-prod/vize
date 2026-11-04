@@ -196,3 +196,12 @@ export function semanticPacket(
   assert.equal(status, expectedErrors.length ? 2 : 0, "pinned noEmit semantic status changed");
   return diagnosticPacket(stdout, stderr, project, expectedErrors);
 }
+/** Host disposal can kill the tee before it commits a child-exit receipt. */
+export function mapperExitReceipt(value: unknown) {
+  if (value === undefined) return { exitObserved: false, status: null, signal: null };
+  const result = object(value);
+  assert.equal(result.status, 0, "observed mapper child exit failed");
+  assert.equal(result.signal, null, "observed mapper child exit was signaled");
+  assert.equal(result.error, null, "observed mapper child spawn or pipe failed");
+  return { exitObserved: true, status: 0, signal: null };
+}

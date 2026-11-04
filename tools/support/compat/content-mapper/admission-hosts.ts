@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -23,6 +24,7 @@ import {
 import {
   fixture,
   hostConfig,
+  mapperExitReceipt,
   object,
   qualifyWire,
   semanticPacket,
@@ -270,6 +272,20 @@ export async function main() {
         entry.binary,
         fileImage(join(nativeRoot, basename(nativeImage.path))),
       );
+      assertCustody(wrapperImages);
+      assertCustody(inputImages);
+      assertCustody(fixed);
+      assertDeclarationCustody(packageRoot, sdk.files, sdk.edges);
+      assertDeclarationCustody(sourcePackage, declarations.files, declarations.edges);
+      save(join(directory, "post-custody.json"), {
+        source: values["source-sha"],
+        wrappers: wrapperImages,
+        inputs: inputImages,
+        fixed,
+        stagedSdk: sdk,
+        sourceSdk: declarations,
+        allMatched: true,
+      });
       const diagnostics = semanticPacket(
         result.status,
         result.text,
@@ -312,10 +328,6 @@ export async function main() {
           effectiveWorkers: 1,
           spawnFailure: null,
         });
-        const mapperResult = json(join(session, "result.json"));
-        assert.equal(mapperResult.status, 0);
-        assert.equal(mapperResult.signal, null);
-        assert.equal(mapperResult.error, null);
         assert.equal(readFileSync(join(session, "stderr.raw"), "utf8"), "");
         const wire = qualifyWire(
           readFileSync(join(session, "stdin.raw")),
@@ -324,6 +336,28 @@ export async function main() {
           pipeCapacity,
         );
         save(join(directory, "whole-protocol.json"), wire);
+        const resultPath = join(session, "result.json");
+        const sidecarObserved = existsSync(resultPath);
+        save(join(directory, "capture-observation.json"), {
+          sidecarObserved,
+          childExit: mapperExitReceipt(sidecarObserved ? json(resultPath) : undefined),
+          host: {
+            status: result.status,
+            signal: result.signal,
+            closeObserved: result.closeObserved,
+            error: result.error,
+            timedOut: result.timedOut,
+            survivors: result.survivors,
+            remaining: result.remaining,
+          },
+          knownProcesses: result.observedProcesses,
+          terminalProofs: result.terminatedProcesses,
+          raw: ["stdin.raw", "stdout.raw", "stderr.raw"].map((name) =>
+            fileImage(join(session, name)),
+          ),
+          completeProtocol: true,
+          postCustody: fileImage(join(directory, "post-custody.json")),
+        });
         save(join(directory, "diagnostics.json"), {
           diagnostics,
           endAndRelated: "unavailable from text CLI; no full authored-range qualification",
@@ -335,11 +369,6 @@ export async function main() {
           endAndRelated: "unavailable from text CLI; no full authored-range qualification",
         });
       }
-      assertCustody(wrapperImages);
-      assertCustody(inputImages);
-      assertCustody(fixed);
-      assertDeclarationCustody(packageRoot, sdk.files, sdk.edges);
-      assertDeclarationCustody(sourcePackage, declarations.files, declarations.edges);
       packets.push({
         label,
         captureMode,
@@ -349,6 +378,11 @@ export async function main() {
       });
     }
   }
+  assert.equal(
+    packets.length,
+    4,
+    "both hosts require normal completion and a separate complete capture",
+  );
   for (const packet of packets)
     assert.deepEqual(
       packet.diagnostics,
