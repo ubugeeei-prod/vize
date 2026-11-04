@@ -42,7 +42,7 @@ export default defineConfig({
 | `crossFileComplexity` | `false` | 複雑度とホットスポットを表示し、ファイル間解析を有効にします。 |
 | `strictReactivity` | `false` | `type/no-reactivity-loss` を有効にします。ルールの個別設定が優先されます。 |
 | `maxWarnings` | 未指定 | 警告数が上限を超えると失敗します。`0` は警告を一つも許可しません。 |
-| `reportUnusedDisableDirectives` | `false` | Vize の診断を抑制しなかったテンプレートの抑制コメントを報告します。 |
+| `reportUnusedDisableDirectives` | `false` | Vize の診断を抑制しなかった、対応済みの抑制コメントを報告します。 |
 
 CLI とエディタで共有する場合は、これらのキーを `vue.linter` に指定します。
 `crossFileTree` と `crossFileComplexity` は、ファイル間の解析も有効にします。
@@ -69,6 +69,33 @@ CSS の `vize-disable` コメントの動作と、Vize コメントを未使用�
 Vite+ の Lint タスクには、対象のパスと `--fix` を渡せます。
 Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vue` に指定してください。
 たとえば `vp run lint -- src` を実行すると、それぞれの設定を使って両方の Lint が実行されます。
+
+<span id="unused-disable-directives"></span>
+
+## 使われていない抑制コメント
+
+`reportUnusedDisableDirectives: true` を指定すると、使われていない抑制コメントを
+`vue/comment-directive` の error として、そのコメントの位置に報告します。
+これは明示的に有効化する実行設定で、プリセットのルールではありません。
+診断 ID を `rules` に追加するだけでは有効になりません。既定は無効で、
+設定の `false` は対象のファイル設定での報告を無効にします。
+`--report-unused-disable-directives` を明示すると、設定が `false` でも有効になります。
+
+テンプレートでは `eslint-disable`、`eslint-disable-line`、
+`eslint-disable-next-line` と、それぞれの `oxlint-` 形式を検査します。
+実際の診断を抑制したコメントは使用済みとして扱います。
+対象は Vize が有効にして実行したルールです。無効なルールは数えません。
+ほかのリンターが担当するルール名の未使用チェックは、そのリンターに任せます。
+
+ファイル間解析を有効にした場合は、選択した Vue ファイルの、対応済みの名前付き
+プロジェクトルールの抑制コメントも対象になります。対応する script ブロック内の
+コメントも含みます。任意の script/style のディレクティブや、すべての
+`vize-disable` 形式への一般的な対応を意味しません。文字列・属性値・カスタム
+ブロック内のマーカーが、抑制コメントとして扱われることもありません。
+
+抑制範囲は[コメント注釈](./comment-annotations.md)、プロジェクトの検査は
+[ファイル間ルール](../rules/cross-file.md)を参照してください。このネイティブの
+報告設定は、`eslint-plugin-vue` の comment-directive との完全な互換性を保証しません。
 
 ## 静的な class 属性の既定のチェック
 
