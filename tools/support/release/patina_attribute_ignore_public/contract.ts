@@ -73,8 +73,39 @@ export function validateSourceCopies(input: unknown, read: (path: string) => Buf
     assert(!path.startsWith("/") && !path.split("/").includes("..") && !seen.has(path));
     seen.add(path);
     const current = read(path);
-    assert.equal(current.length, row.bytes, path);
-    assert.equal(digest(current), row.sha256, path);
+    const reviewedConsumer = path === "crates/vize/tests/lint_attribute_hyphenation_ignore.rs";
+    const historical = reviewedConsumer
+      ? read(
+          "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/OriginalConsumer.rs.txt",
+        )
+      : current;
+    assert.equal(historical.length, row.bytes, path);
+    assert.equal(digest(historical), row.sha256, path);
+    if (reviewedConsumer) {
+      assert.equal(row.bytes, 6410);
+      assert.equal(row.sha256, "d374f5af3f51c46312df248c322d1e36ebd8c92fcd9323495e75c27460bf40a8");
+      assert.equal(row.gitBlob, "fd95f7f31582169279cd666a9be64d950ecd6748");
+      assert.equal(
+        createHash("sha1").update(`blob ${historical.length}\0`).update(historical).digest("hex"),
+        "fd95f7f31582169279cd666a9be64d950ecd6748",
+      );
+      assert.equal(current.length, 6442);
+      assert.equal(
+        digest(current),
+        "cffed787f27c96453332a1fa88c7a9c54ba7b3a5500c472504d77ba73b7c1332",
+      );
+      const before = '"docs/content/rules/vue.md"';
+      const after = '"docs/content/rules/reference/vue-attribute-hyphenation.md"';
+      assert.equal(historical.toString("utf8").split(before).length - 1, 1);
+      assert.equal(current.toString("utf8"), historical.toString("utf8").replace(before, after));
+      for (const locale of ["", "ja/"])
+        assert.match(
+          read(`docs/content/${locale}rules/reference/vue-attribute-hyphenation.md`).toString(
+            "utf8",
+          ),
+          /^title: "vue\/attribute-hyphenation"$/mu,
+        );
+    }
   }
   assert.equal(corpus.valid.length, 9);
   assert.equal(corpus.invalid.length, 6);
