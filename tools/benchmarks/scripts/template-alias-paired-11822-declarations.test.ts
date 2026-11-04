@@ -32,7 +32,7 @@ function fixture(t: TestContext): string {
   return packageRoot;
 }
 
-test("actual shared SDK globals and slots are physically required before copy and helper admission", (t) => {
+void test("actual shared SDK globals and slots are physically required before copy and helper admission", (t) => {
   const packageRoot = fixture(t);
   const workspace = resolve(packageRoot, "../..");
   const admitted = sharedHelperClosure(workspace, typescript);
@@ -69,7 +69,7 @@ test("actual shared SDK globals and slots are physically required before copy an
   assert.deepEqual(sharedHelperClosure(workspace, typescript), admitted);
 });
 
-test("all conditional types exports and recursive relative imports are required even when unused", (t) => {
+void test("all conditional types exports and recursive relative imports are required even when unused", (t) => {
   const root = fixture(t);
   const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
   manifest.exports = {
@@ -101,7 +101,7 @@ test("all conditional types exports and recursive relative imports are required 
   }
 });
 
-test("relative reference types require physical same-package closure while bare types remain external authority", (t) => {
+void test("relative reference types require physical same-package closure while bare types remain external authority", (t) => {
   const root = fixture(t);
   const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
   manifest.types = "./entry.d.ts";

@@ -41,7 +41,7 @@ const scratch = (t: TestContext) => {
   return root;
 };
 
-test("stage argv and raw streams survive timeout, with an explicit shared soft deadline", (t) => {
+void test("stage argv and raw streams survive timeout, with an explicit shared soft deadline", (t) => {
   const root = scratch(t),
     id = "interrupted-build";
   assert.equal(remainingBudget({ TEMPLATE_ALIAS_DEADLINE_MS: "1500" }, 1000), 500);
@@ -101,7 +101,7 @@ test("stage argv and raw streams survive timeout, with an explicit shared soft d
   assert.ok(ended.ended);
 });
 
-test("closed inventories reject external links and observe mutation of every admitted target and ignored image", (t) => {
+void test("closed inventories reject external links and observe mutation of every admitted target and ignored image", (t) => {
   const root = scratch(t);
   const provider = join(root, "provider"),
     outside = join(root, "outside");
@@ -120,7 +120,7 @@ test("closed inventories reject external links and observe mutation of every adm
   assert.notDeepEqual(closureSnapshot([provider, outside], [image]), imageBefore);
 });
 
-test("external processes never inherit CI credentials or override native resolution", () => {
+void test("external processes never inherit CI credentials or override native resolution", () => {
   const result = childEnvironment(
     {},
     {
@@ -136,7 +136,7 @@ test("external processes never inherit CI credentials or override native resolut
   assert.deepEqual(result, { PATH: "/bin", HOME: "/home/runner" });
 });
 
-test("normal packages keep wrapper and generated SDK files with a cycle-safe closed runtime graph", (t) => {
+void test("normal packages keep wrapper and generated SDK files with a cycle-safe closed runtime graph", (t) => {
   const root = scratch(t),
     original = join(root, "source"),
     capsule = join(root, "capsule");
@@ -170,7 +170,7 @@ test("normal packages keep wrapper and generated SDK files with a cycle-safe clo
   assert.throws(() => manifestChanges({ name: "a" }, { name: "b" }), /non-dependency/);
 });
 
-test("shared helper admission uses the actual SDK export set and preserves authored directive authority", () => {
+void test("shared helper admission uses the actual SDK export set and preserves authored directive authority", () => {
   const text =
     'import type {} from "vize/virtual-ts-checker";\ntype T = import("vize/virtual-ts").Args;';
   assert.equal(admitSharedTransform(text, { virtualExports: ["Args"] }).mode, "shared-hoisted");
@@ -201,7 +201,7 @@ test("shared helper admission uses the actual SDK export set and preserves autho
   );
 });
 
-test("transform custody rejects substituted paths, duplicates, missing and error responses", (t) => {
+void test("transform custody rejects substituted paths, duplicates, missing and error responses", (t) => {
   const root = scratch(t),
     workspace = join(root, "work"),
     capture = join(root, "capture");
@@ -261,7 +261,7 @@ test("transform custody rejects substituted paths, duplicates, missing and error
   );
 });
 
-test("derivative configs preserve every original scope and mapper option", () => {
+void test("derivative configs preserve every original scope and mapper option", () => {
   const original = {
     extends: "./tsconfig.base.json",
     files: ["src/main.ts"],
@@ -287,7 +287,7 @@ test("derivative configs preserve every original scope and mapper option", () =>
   assert.throws(() => deriveConfig(original, "vize"));
 });
 
-test("native custody requires exact package version, SRI and real Linux x64 ELF", (t) => {
+void test("native custody requires exact package version, SRI and real Linux x64 ELF", (t) => {
   const root = mkdtempSync(join(tmpdir(), "template-alias-custody-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const packageRoot = join(root, "node_modules/@tsrs/linux-x64-gnu");
@@ -348,7 +348,7 @@ const output = expected
   )
   .join("\n");
 
-test("parity retains complete multiline messages and rejects duplicate, extra and unparsed errors", () => {
+void test("parity retains complete multiline messages and rejects duplicate, extra and unparsed errors", () => {
   const packet = diagnostics(output, "/work", expected);
   assert.equal(packet.length, 12);
   assert.equal(packet[0].message, "Wrong value 1.\n  Detail 1.");
@@ -374,7 +374,7 @@ test("parity retains complete multiline messages and rejects duplicate, extra an
   );
 });
 
-test("protocol custody retains Unicode, directives and all bytes, refusing incomplete or ambiguous frames", () => {
+void test("protocol custody retains Unicode, directives and all bytes, refusing incomplete or ambiguous frames", () => {
   const message = {
     id: 1,
     result: {
@@ -393,7 +393,7 @@ test("protocol custody retains Unicode, directives and all bytes, refusing incom
   assert.throws(() => decodeFrames(Buffer.concat([frame, Buffer.from("garbage")])), /truncated/);
 });
 
-test("phase and resource receipts cannot pass with incomplete or early-failure output", () => {
+void test("phase and resource receipts cannot pass with incomplete or early-failure output", () => {
   const text =
     "Content mapper request wait time: 0.392s\nCheck time: 2.478s\nTypes: 4684959\nInstantiations: 49119876\nMemory used: 2296581K\n";
   assert.deepEqual(metrics(text), {

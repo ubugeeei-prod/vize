@@ -1,5 +1,9 @@
 import type { PackageManifest } from "./template-alias-paired-11822-types.ts";
+import type { Diagnostic, SourceFile } from "typescript";
 export type TypeScriptApi = typeof import("typescript");
+interface ParsedSourceFile extends SourceFile {
+  readonly parseDiagnostics: readonly Diagnostic[];
+}
 export interface DeclarationFile {
   path: string;
   bytes: number;
@@ -107,8 +111,7 @@ export function declarationClosure(directory: string, ts: TypeScriptApi): Declar
       text = bytes.toString("utf8");
     const parsed = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
     assert.deepEqual(
-      (parsed as typeof parsed & { parseDiagnostics: readonly import("typescript").Diagnostic[] })
-        .parseDiagnostics,
+      (parsed as ParsedSourceFile).parseDiagnostics,
       [],
       `malformed declaration ${path}`,
     );
