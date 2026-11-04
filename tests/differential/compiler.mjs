@@ -423,7 +423,7 @@ export function runCompilerPack({
     binary: null,
     rows: [],
     cssApi: compilerCssApiReport(loaded.cssApiCases),
-    summary: null,
+    summary: /** @type {ReturnType<typeof validateCompilerReport> | null} */ (null),
   };
   let build = { sourceRevision };
   let binaryFailure;
