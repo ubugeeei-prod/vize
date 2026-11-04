@@ -8,8 +8,14 @@ type Tier = "all" | "source" | "products";
 const productJobs = ["pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
-function context(event: unknown, runRust: unknown, needs: unknown) {
-  if (typeof event !== "string" || !["pull_request", "merge_group"].includes(event))
+function context(event: unknown, runRust: unknown, needs: unknown, fullProfile: boolean) {
+  if (
+    typeof event !== "string" ||
+    !(
+      ["pull_request", "merge_group"].includes(event) ||
+      (event === "workflow_dispatch" && fullProfile === true)
+    )
+  )
     throw new Error("Unexpected Rust tier event");
   if (runRust !== "true")
     throw new Error("Rust source checks must run for every pull request and merge group");
@@ -27,15 +33,16 @@ export function requireRustTier(
   runRust: unknown,
   needs: unknown,
   tier: Tier = "all",
+  fullProfile = false,
 ): GateReport {
-  const jobs = context(event, runRust, needs);
+  const jobs = context(event, runRust, needs, fullProfile);
   if (!["all", "source", "products"].includes(tier)) throw new Error("Unknown Rust tier mode");
   const required =
     tier === "source"
       ? sourceJobs
       : tier === "products"
         ? productJobs
-        : event === "merge_group"
+        : event === "merge_group" || fullProfile
           ? ["merge-rust-differential", "pr-rust-build", "pr-rust-shard"]
           : ["pr-rust-build", "pr-rust-shard"];
   const selected: Record<string, unknown> = {};
@@ -46,7 +53,7 @@ export function requireRustTier(
   if (tier !== "all") assert.deepEqual(Object.keys(jobs).sort(), [...required].sort());
   return aggregateNeedsResults(
     selected,
-    tier === "source" && event === "pull_request"
+    tier === "source" && event === "pull_request" && !fullProfile
       ? { "merge-rust-differential": "merge-group only" }
       : {},
   );
@@ -58,12 +65,19 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const needs: unknown = JSON.parse(String(process.env.NEEDS_JSON));
   const result =
     args[0] === "--products"
-      ? requireRustTier(process.env.GITHUB_EVENT_NAME, process.env.RUN_RUST, needs, "products")
+      ? requireRustTier(
+          process.env.GITHUB_EVENT_NAME,
+          process.env.RUN_RUST,
+          needs,
+          "products",
+          process.env.SOURCE_FULL_PROFILE === "true",
+        )
       : requireRustTier(
           process.env.GITHUB_EVENT_NAME,
           process.env.RUN_RUST,
           needs,
           args[0] === "--source" ? "source" : "all",
+          process.env.SOURCE_FULL_PROFILE === "true",
         );
   process.stdout.write(`${result.message}\n`);
   process.exitCode = result.exitCode;

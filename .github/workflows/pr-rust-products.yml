@@ -220,6 +220,7 @@ jobs:
       - name: Require the complete Rust tier
         env:
           RUN_RUST: ${{ inputs.run-rust }}
+          SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
           NEEDS_JSON: ${{ toJSON(needs) }}
           GH_TOKEN: ${{ github.token }}
         run: node tools/support/compat/github/require-rust-tier.ts --products

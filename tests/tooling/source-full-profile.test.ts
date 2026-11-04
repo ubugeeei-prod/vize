@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { planPrChecks } from "../../tools/support/compat/github/plan-pr-checks.ts";
+import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
 import { aggregateCheckNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
@@ -118,6 +119,49 @@ test("the nested differential workflow receives the explicit full profile", () =
     assert.equal(
       job.if,
       "${{ (github.event_name == 'merge_group' || inputs.full-profile) && inputs.run-rust }}",
+    );
+  }
+});
+
+test("manual Rust reports require the explicit profile and the whole differential tier", () => {
+  const source = {
+    "merge-rust-differential": { result: "success" },
+    "pr-rust-build": { result: "success" },
+  };
+  assert.equal(requireRustTier("workflow_dispatch", "true", source, "source", true).exitCode, 0);
+  assert.throws(() => requireRustTier("workflow_dispatch", "true", source, "source"));
+  const missingDifferential = { ...source, "merge-rust-differential": { result: "skipped" } };
+  assert.equal(
+    requireRustTier("workflow_dispatch", "true", missingDifferential, "source", true).exitCode,
+    1,
+  );
+  assert.equal(requireRustTier("pull_request", "true", missingDifferential, "source").exitCode, 0);
+  assert.equal(
+    requireRustTier("pull_request", "true", missingDifferential, "source", true).exitCode,
+    1,
+  );
+  assert.equal(
+    requireRustTier(
+      "workflow_dispatch",
+      "true",
+      { "pr-rust-shard": { result: "success" } },
+      "products",
+      true,
+    ).exitCode,
+    0,
+  );
+  assert.throws(() => requireRustTier("unknown", "true", source, "source", true));
+  for (const file of ["pr-rust-checks.yml", "pr-rust-products.yml"]) {
+    const workflow = parse(readRepoFile(".github/workflows/" + file));
+    const report = Object.values(workflow.jobs).find((job) =>
+      (job as { steps?: Array<{ name?: string }> }).steps?.some(
+        (step) => step.name === "Require the complete Rust tier",
+      ),
+    ) as { steps: Array<{ name?: string; env?: Record<string, string> }> };
+    assert.equal(
+      report.steps.find((step) => step.name === "Require the complete Rust tier")?.env
+        ?.SOURCE_FULL_PROFILE,
+      "${{ inputs.full-profile }}",
     );
   }
 });
