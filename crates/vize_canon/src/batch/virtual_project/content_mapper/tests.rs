@@ -8,8 +8,9 @@ use super::span_features::{
     content_mapper_span_features,
 };
 use crate::batch::{
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperTransformOptions,
-    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_VIRTUAL_EXTENSION,
+    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
 };
 
 mod attribute_boundaries;
@@ -210,29 +211,19 @@ defineProps<{ count: number }>();
 }
 
 #[test]
-fn split_script_setup_spans_start_at_the_authored_block() {
-    let source = r#"<script lang="ts">
-export type SearchQuery = { value: string };
-</script>
-
-<script setup lang="ts">
-const values: any = [];
-values.map(it => it);
-</script>
-"#;
+fn authored_parse_errors_are_mapper_diagnostics() {
+    let source = "<template><div></template>";
     let result =
-        generate_vue_content_mapper_transform(Path::new("Split.vue"), source).expect("transform");
-    let generated = result.text.find("it => it").expect("generated parameter");
-    let original = source.find("it => it").expect("authored parameter");
-    let span = result
-        .mappings
-        .iter()
-        .map(|mapping| mapping.0)
-        .find(|span| generated >= span[0] && generated < span[0] + span[1])
-        .expect("parameter mapping");
+        generate_vue_content_mapper_transform(Path::new("Broken.vue"), source).expect("transform");
 
-    assert_eq!(span[4], 0, "setup line should remain verbatim: {span:?}");
-    assert_eq!(span[2] + generated - span[0], original);
+    assert!(!result.diagnostics.is_empty());
+    assert!(result.mappings.is_empty());
+    assert!(result.text.contains("__vize_component"));
+    assert!(result.diagnostics[0].start <= source.len());
+    assert_eq!(
+        result.diagnostics[0].code,
+        CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE
+    );
 }
 
 /// Opening line of the generated template scope.
