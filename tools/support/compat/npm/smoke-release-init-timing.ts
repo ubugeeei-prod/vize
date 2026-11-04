@@ -46,7 +46,7 @@ function finiteDuration(value: number, label: string): number {
 }
 
 function identity(value: string, label: string): string {
-  if (value.trim() === "" || /[\s\u0000]/u.test(value)) {
+  if (value.trim() === "" || /\s/u.test(value) || value.includes("\u0000")) {
     throw new Error(`${label} must be a single token`);
   }
   return value;
