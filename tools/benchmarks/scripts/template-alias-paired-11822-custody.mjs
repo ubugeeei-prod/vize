@@ -16,8 +16,9 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, isAbsolute, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { copyPublishedPackage } from "./template-alias-paired-11822-packages.mjs";
 
 export const upstreamSha = "c9a59cb07c236cbf7e0a97aa06ca3d02756415ea";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -37,25 +38,51 @@ export function git(directory, ...args) {
   return result.stdout.trim();
 }
 
-export function inventory(directory, prefix = "") {
+export function inventory(directory, prefix = "", allowedRoots = [directory]) {
+  const roots = allowedRoots.map((root) => realpathSync(root));
   return readdirSync(join(directory, prefix))
     .sort()
     .flatMap((name) => {
       const path = join(prefix, name);
       const stat = lstatSync(join(directory, path));
-      if (stat.isDirectory()) return inventory(directory, path);
-      if (stat.isSymbolicLink())
+      if (stat.isDirectory()) return inventory(directory, path, roots);
+      if (stat.isSymbolicLink()) {
+        const resolved = realpathSync(join(directory, path));
+        assert.ok(
+          roots.some((root) => {
+            const suffix = relative(root, resolved);
+            return suffix === "" || (!suffix.startsWith("..") && !isAbsolute(suffix));
+          }),
+          `external symlink escapes admitted full closure: ${path}`,
+        );
         return [
           {
             path,
             symlink: readlinkSync(join(directory, path)),
-            resolved: realpathSync(join(directory, path)),
+            resolved,
           },
         ];
+      }
       assert.ok(stat.isFile(), `unexpected non-file input ${path}`);
       const bytes = readFileSync(join(directory, path));
       return [{ path, bytes: bytes.length, sha256: sha256(bytes) }];
     });
+}
+
+export function closureSnapshot(roots, files = []) {
+  const directories = roots.map((root) => realpathSync(root));
+  return {
+    directories: directories.map((root) => ({ root, files: inventory(root, "", directories) })),
+    files: [...new Set(files.map((file) => resolve(file)))].sort().map(evidence),
+  };
+}
+
+export function strictNumber(token, name, integer = false) {
+  assert.match(token, /^\d+(?:\.\d+)?$/, `malformed numeric ${name}`);
+  const value = Number(token);
+  assert.ok(Number.isFinite(value) && value >= 0, `non-finite numeric ${name}`);
+  if (integer) assert.ok(Number.isSafeInteger(value), `unsafe integer ${name}`);
+  return value;
 }
 
 /** Keep every message continuation and every duplicate; a Set would hide regressions. */
@@ -95,17 +122,17 @@ export function diagnostics(text, workspace, expected) {
 }
 
 export function metrics(text) {
-  const number = (name, unit = "") => {
-    const match = new RegExp(`^${name}:\\s+([\\d.]+)${unit}\\s*$`, "m").exec(text);
+  const number = (name, unit = "", integer = false) => {
+    const match = new RegExp(`^${name}:\\s+(\\S+?)${unit}\\s*$`, "m").exec(text);
     assert.ok(match, `missing extended diagnostic ${name}`);
-    return Number(match[1]);
+    return strictNumber(match[1], name, integer);
   };
   return {
     mapperWaitSeconds: number("Content mapper request wait time", "s"),
     checkSeconds: number("Check time", "s"),
-    types: number("Types"),
-    instantiations: number("Instantiations"),
-    checkerMemoryKiB: number("Memory used", "K"),
+    types: number("Types", "", true),
+    instantiations: number("Instantiations", "", true),
+    checkerMemoryKiB: number("Memory used", "K", true),
   };
 }
 
@@ -133,11 +160,37 @@ export function decodeFrames(bytes) {
 export function resourceUsage(text) {
   const result = {};
   for (const key of ["wall_s", "user_s", "system_s", "max_rss_kib", "status"]) {
-    const match = new RegExp(`^${key}=([\\d.]+)$`, "m").exec(text);
+    const match = new RegExp(`^${key}=(\\S+)$`, "m").exec(text);
     assert.ok(match, `missing GNU time field ${key}`);
-    result[key] = Number(match[1]);
+    result[key] = strictNumber(match[1], key, key === "status" || key === "max_rss_kib");
   }
   return result;
+}
+
+/** External mappers and package hooks receive no CI credentials or token URLs. */
+export function childEnvironment(extra = {}, ambient = process.env) {
+  const keys = [
+    "PATH",
+    "CI",
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "SHELL",
+    "GOMAXPROCS",
+    "RAYON_NUM_THREADS",
+    "NODE_OPTIONS",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+  ];
+  return {
+    ...Object.fromEntries(
+      keys.filter((key) => ambient[key] !== undefined).map((key) => [key, ambient[key]]),
+    ),
+    ...extra,
+  };
 }
 
 export async function capture(directory, command, args, cwd, env = {}) {
@@ -166,7 +219,7 @@ export async function capture(directory, command, args, cwd, env = {}) {
     ],
     {
       cwd,
-      env: { ...process.env, ...explicitEnvironment },
+      env: childEnvironment(explicitEnvironment),
       stdio: ["ignore", stdout, stderr],
       detached: true,
     },
@@ -278,10 +331,8 @@ export function prepareWorkspace(upstream, provider, directory, variant, capture
     cpSync(referenceRoot, packageRoot, { recursive: true, dereference: true });
   } else {
     packageRoot = join(directory, "node_modules", "vize");
-    cpSync(variant.package, packageRoot, { recursive: true, dereference: true });
-    command = variant.binary
-      ? [variant.binary, "content-mapper"]
-      : mapperCommand(variant.package, json(join(variant.package, "package.json")));
+    copyPublishedPackage(variant.package, packageRoot);
+    command = mapperCommand(variant.package, json(join(variant.package, "package.json")));
   }
   const manifestPath = join(packageRoot, "package.json");
   const manifest = json(manifestPath);
@@ -323,7 +374,14 @@ export function prepareWorkspace(upstream, provider, directory, variant, capture
   };
 }
 
-export function installedNative(provider, providerInputs, packageName, version, binaryNames) {
+export function installedNative(
+  provider,
+  providerInputs,
+  packageName,
+  version,
+  binaryNames,
+  kind = "executable",
+) {
   const manifests = providerInputs
     .filter(({ path }) => `/${path}`.endsWith(`/node_modules/${packageName}/package.json`))
     .filter(({ path }) => {
@@ -345,6 +403,11 @@ export function installedNative(provider, providerInputs, packageName, version, 
     );
   assert.equal(binaries.length, 1, `require one actual native binary for ${packageName}`);
   const binary = join(packageRoot, binaries[0].path);
+  assert.equal(
+    binary.endsWith(".node"),
+    kind === "napi",
+    "NAPI images are not executable commands",
+  );
   const header = readFileSync(binary).subarray(0, 20);
   assert.equal(header[4], 2, "ELF64 required");
   assert.equal(header[5], 1, "little-endian required");
@@ -358,49 +421,12 @@ export function installedNative(provider, providerInputs, packageName, version, 
   return {
     packageName,
     version,
+    kind,
     integrity: integrity[1],
+    integrityMeaning:
+      "pinned tarball SRI recorded; installed payload SHA and pre/post closure are separate receipts",
     manifest: evidence(join(packageRoot, "package.json")),
     binary: evidence(binary),
     elfHeader: header.toString("hex"),
-  };
-}
-
-export function collectTransforms(captureDirectory, workspace, output) {
-  mkdirSync(output);
-  const input = new Map();
-  for (const name of readdirSync(captureDirectory).filter((name) => name.startsWith("in-"))) {
-    for (const message of decodeFrames(readFileSync(join(captureDirectory, name)))) {
-      if (message.id !== undefined) input.set(`${name.slice(3)}:${message.id}`, message);
-    }
-  }
-  const transforms = [];
-  for (const name of readdirSync(captureDirectory).filter((name) => name.startsWith("out-"))) {
-    for (const message of decodeFrames(readFileSync(join(captureDirectory, name)))) {
-      const request = input.get(`${name.slice(4)}:${message.id}`);
-      if (request?.method !== "transform") continue;
-      assert.equal(typeof message.result?.text, "string", "transform missing or failed");
-      const path = relative(workspace, request.params.fileName);
-      assert.ok(!path.startsWith("..") && !isAbsolute(path), "transform escaped corpus");
-      const target = join(output, path + (message.result.extension ?? ".ts"));
-      mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, message.result.text, { flag: "wx" });
-      const { text, ...metadata } = message.result;
-      write(target + ".metadata.json", { request, result: metadata });
-      transforms.push({
-        path,
-        bytes: Buffer.byteLength(text),
-        lines: text.split("\n").length,
-        sha256: sha256(text),
-        metadata,
-      });
-    }
-  }
-  assert.equal(transforms.length, 2500, "require complete transforms; no partial-work speedup");
-  assert.equal(new Set(transforms.map(({ path }) => path)).size, 2500);
-  write(join(output, "inventory.json"), transforms);
-  return {
-    count: transforms.length,
-    bytes: transforms.reduce((n, t) => n + t.bytes, 0),
-    lines: transforms.reduce((n, t) => n + t.lines, 0),
   };
 }

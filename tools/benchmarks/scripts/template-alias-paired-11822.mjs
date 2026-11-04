@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
-import { cpus, release, totalmem } from "node:os";
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+} from "node:fs";
+import { availableParallelism, cpus, release, totalmem } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
@@ -17,8 +25,10 @@ import {
   pristine,
   prepareWorkspace,
   installedNative,
-  collectTransforms,
+  closureSnapshot,
 } from "./template-alias-paired-11822-custody.mjs";
+import { copyPublishedPackage } from "./template-alias-paired-11822-packages.mjs";
+import { collectTransforms, sharedHelperClosure } from "./template-alias-paired-11822-protocol.mjs";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const median = (values) => values.toSorted((a, b) => a - b)[Math.floor(values.length / 2)];
 
@@ -30,6 +40,12 @@ export async function main(argv = process.argv.slice(2)) {
   for (const key of [
     "TEMPLATE_ALIAS_CAPTURE",
     "VIZE_COLD_CAPTURE",
+    "NAPI_RS_NATIVE_LIBRARY_PATH",
+    "NAPI_RS_FORCE_WASI",
+    "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
+    "NODE_PATH",
+    "LD_PRELOAD",
+    "NODE_OPTIONS",
     "VIZE_CHILD_ALLOCATION_OBSERVATION",
     "VIZE_ROUTE_MEMORY_OBSERVATION",
     "VIZE_OWNED_READ_BUFFER_TRACE",
@@ -54,6 +70,11 @@ export async function main(argv = process.argv.slice(2)) {
     ]),
   );
   const { base, head, upstream, provider, output } = paths;
+  assert.equal(
+    process.env.EXECUTED_WORKFLOW_SHA,
+    options["head-sha"],
+    "executed workflow differs from the approved source head",
+  );
   mkdirSync(output);
   const sources = {
     base: pristine(base, options["base-sha"]),
@@ -94,60 +115,90 @@ export async function main(argv = process.argv.slice(2)) {
       providerInputs,
       "@vizejs/native-linux-x64-gnu",
       "0.679.0",
-      ["vize"],
+      ["vize-vitrine.linux-x64-gnu.node"],
+      "napi",
     ),
   };
   const { expectedDiagnostics } = await import(
     pathToFileURL(join(upstream, "scripts/diagnostics.mjs"))
   );
   assert.equal(expectedDiagnostics.length, 12);
-  const variants = [
-    { id: "published679", package: realpathSync(join(provider, "node_modules/vize")) },
-    { id: "currentmain", package: join(base, "npm/cli"), binary: join(base, "target/ci-opt/vize") },
-    { id: "candidate", package: join(head, "npm/cli"), binary: join(head, "target/ci-opt/vize") },
-    { id: "vue" },
-  ];
-  const binaries = {};
-  const builds = {};
-  for (const variant of variants.filter(({ binary }) => binary)) {
-    const bytes = readFileSync(variant.binary);
-    assert.deepEqual(bytes.subarray(0, 4), Buffer.from([0x7f, 0x45, 0x4c, 0x46]));
-    assert.equal(bytes[4], 2);
-    assert.equal(bytes[5], 1);
-    assert.equal(bytes.readUInt16LE(18), 62);
-    binaries[variant.id] = {
-      ...evidence(variant.binary),
-      elfHeader: bytes.subarray(0, 20).toString("hex"),
-    };
-    const buildLog = join(
-      variant.id === "currentmain" ? base : head,
-      "target",
-      "build-11822.jsonl",
-    );
-    const messages = readFileSync(buildLog, "utf8")
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
-    const artifacts = messages.filter(
-      (message) =>
-        message.reason === "compiler-artifact" &&
-        message.target.name === "vize" &&
-        message.executable,
-    );
-    assert.equal(artifacts.length, 1, "require one attributable native CLI build");
-    assert.equal(realpathSync(artifacts[0].executable), realpathSync(variant.binary));
-    assert.deepEqual(artifacts[0].features.toSorted(), ["default", "glyph", "maestro"]);
-    builds[variant.id] = {
-      log: evidence(buildLog),
-      artifact: artifacts[0],
-      rustc: readFileSync(
-        join(variant.id === "currentmain" ? base : head, "target", "rustc-11822.txt"),
-        "utf8",
-      ),
-    };
-  }
+  const builds = Object.fromEntries(
+    [
+      ["currentmain", base],
+      ["candidate", head],
+    ].map(([id, root]) => {
+      const receipt = json(join(root, "target/template-alias-11822/receipt.json"));
+      assert.equal(receipt.source.sha, sources[id === "currentmain" ? "base" : "head"].sha);
+      assert.equal(
+        receipt.endpoint,
+        "normal Node CLI -> generated SDK loader -> platform NAPI image",
+      );
+      assert.deepEqual(closureSnapshot([dirname(dirname(receipt.cliPackage))]), receipt.capsule);
+      for (const entry of receipt.generatedSdk)
+        assert.equal(
+          evidence(join(receipt.nativePackage, entry.path.split("/").at(-1))).sha256,
+          entry.sha256,
+        );
+      assert.deepEqual(readFileSync(receipt.image.path), readFileSync(receipt.originalImage.path));
+      return [id, receipt];
+    }),
+  );
+  assert.deepEqual(builds.currentmain.artifact.features, builds.candidate.artifact.features);
   assert.deepEqual(builds.currentmain.artifact.profile, builds.candidate.artifact.profile);
   assert.equal(builds.currentmain.rustc, builds.candidate.rustc);
+  const variants = [
+    { id: "published679", package: realpathSync(join(provider, "node_modules/vize")) },
+    { id: "currentmain", package: builds.currentmain.cliPackage },
+    { id: "candidate", package: builds.candidate.cliPackage },
+    { id: "vue" },
+  ];
+  const roots = [
+    provider,
+    ...Object.values(builds).map((build) => dirname(dirname(build.cliPackage))),
+  ];
+  const files = [
+    process.execPath,
+    ...Object.values(native).map((entry) => entry.binary.path),
+    ...Object.values(builds).map((build) => build.originalImage.path),
+  ];
+  const frozenClosure = closureSnapshot(roots, files);
+  write(join(output, "execution-closure-pre.json"), frozenClosure);
+  const width = () => ({
+    availableParallelism: availableParallelism(),
+    affinity: readFileSync("/proc/self/status", "utf8")
+      .split("\n")
+      .find((line) => line.startsWith("Cpus_allowed_list:")),
+    quota: existsSync("/sys/fs/cgroup/cpu.max")
+      ? readFileSync("/sys/fs/cgroup/cpu.max", "utf8")
+      : null,
+    cpuset: existsSync("/sys/fs/cgroup/cpuset.cpus.effective")
+      ? readFileSync("/sys/fs/cgroup/cpuset.cpus.effective", "utf8")
+      : null,
+  });
+  const cpuWidth = width();
+  const observe = async (id, command, args, cwd, env = {}) => {
+    const before = closureSnapshot(roots, files);
+    write(join(output, id + ".custody-pre.json"), before);
+    assert.deepEqual(
+      before,
+      frozenClosure,
+      "execution image/launcher/provider changed before invocation",
+    );
+    assert.deepEqual(width(), cpuWidth, "effective CPU width changed before invocation");
+    try {
+      return await capture(join(output, id + ".raw"), command, args, cwd, env);
+    } finally {
+      const after = closureSnapshot(roots, files);
+      write(join(output, id + ".custody-post.json"), after);
+      assert.deepEqual(
+        after,
+        before,
+        "execution image/launcher/provider changed during invocation",
+      );
+      assert.deepEqual(width(), cpuWidth, "effective CPU width changed during invocation");
+    }
+  };
   const inputFiles = inventory(join(upstream, "src"));
   assert.equal(inputFiles.filter(({ path }) => path.endsWith(".vue")).length, 2500);
   cpSync(join(upstream, "src"), join(output, "inputs/src"), { recursive: true });
@@ -166,41 +217,63 @@ export async function main(argv = process.argv.slice(2)) {
   for (const variant of variants) {
     const packageRoot =
       variant.package ?? realpathSync(join(provider, "node_modules/@vue/content-mapper"));
-    cpSync(packageRoot, join(output, "inputs/packages", variant.id), {
-      recursive: true,
-      dereference: true,
-    });
+    if (variant.id === "vue")
+      cpSync(packageRoot, join(output, "inputs/packages", variant.id), {
+        recursive: true,
+        dereference: false,
+      });
+    else copyPublishedPackage(packageRoot, join(output, "inputs/packages", variant.id));
   }
-  for (const name of [
-    "template-alias-paired-11822.mjs",
-    "template-alias-paired-11822-custody.mjs",
-    "template-alias-paired-11822-tee.mjs",
-    "template-alias-paired-11822.test.mjs",
-  ]) {
+  for (const [id, build] of Object.entries(builds))
+    cpSync(dirname(dirname(build.cliPackage)), join(output, "inputs/capsule-" + id), {
+      recursive: true,
+      dereference: false,
+    });
+  for (const name of readdirSync(scriptDirectory).filter(
+    (name) => name.startsWith("template-alias-paired-11822") && name.endsWith(".mjs"),
+  )) {
     copyFileSync(join(scriptDirectory, name), join(output, "inputs", name));
   }
   copyFileSync(
     join(head, ".github/workflows/template-alias-paired-11822.yml"),
     join(output, "inputs/workflow.yml"),
   );
-  for (const [id, binary] of [
-    ...Object.entries(native).map(([id, value]) => [id, value.binary.path]),
-    ...variants.filter(({ binary }) => binary).map(({ id, binary }) => [id, binary]),
-  ]) {
+  const probes = {};
+  for (const id of ["tsc", "tsrs", "published679", "currentmain", "candidate"]) {
     const workspace = join(output, id + ".version-workspace");
     mkdirSync(workspace);
-    const run = await capture(join(output, id + ".version-raw"), binary, ["--version"], workspace);
-    assert.equal(run.status, 0, `${id} actual native version probe failed`);
+    const variant = variants.find((variant) => variant.id === id);
+    const command = variant ? process.execPath : native[id].binary.path;
+    const args = variant
+      ? [join(scriptDirectory, "template-alias-paired-11822-probe.mjs"), variant.package]
+      : ["--version"];
+    const run = await observe(id + ".version", command, args, workspace);
+    assert.equal(run.status, 0, id + " native/wrapper version probe failed");
     if (id === "tsc") assert.match(run.text, /7\.1\.0-beta/);
     if (id === "published679") assert.match(run.text, /0\.679\.0/);
-    if (native[id])
-      native[id].versionProbe = { stdout: run.stdout, stderr: run.stderr, command: run.command };
-    else
-      binaries[id].versionProbe = { stdout: run.stdout, stderr: run.stderr, command: run.command };
+    let identity = null;
+    if (variant) {
+      const line = /^TEMPLATE_ALIAS_NATIVE_IDENTITY (.+)$/m.exec(run.text);
+      assert.ok(line, "normal Node/NAPI probe identity absent");
+      identity = JSON.parse(line[1]);
+      const expected = id === "published679" ? native.published679.binary : builds[id].image;
+      assert.ok(
+        identity.images.some(
+          (image) => image.path === realpathSync(expected.path) && image.sha256 === expected.sha256,
+        ),
+      );
+      assert.ok(
+        identity.sharedObjects.includes(realpathSync(expected.path)),
+        "expected NAPI image was not actually mapped",
+      );
+      if (builds[id]) assert.equal(identity.token, builds[id].token);
+    }
+    probes[id] = { stdout: run.stdout, stderr: run.stderr, command: run.command, identity };
   }
   write(join(output, "provenance.json"), {
     sources,
-    binaries,
+    probes,
+    cpuWidth,
     builds,
     inputFiles,
     native,
@@ -235,7 +308,7 @@ export async function main(argv = process.argv.slice(2)) {
       totalmem: totalmem(),
     },
     workflow: {
-      sha: process.env.GITHUB_WORKFLOW_SHA,
+      sha: process.env.EXECUTED_WORKFLOW_SHA,
       run: process.env.GITHUB_RUN_ID,
       attempt: process.env.GITHUB_RUN_ATTEMPT,
     },
@@ -246,8 +319,14 @@ export async function main(argv = process.argv.slice(2)) {
       ]),
     ),
     policy: {
+      vizeEndpoint:
+        "normal Node CLI -> NAPI SDK loader -> platform shared image for all Vize cohorts",
+      sourceProfile:
+        "ci-opt; identical source-pair flags/features are required; historical registry build flags are not verified here",
       pairs: 5,
       warmups: 0,
+      preflightCaptures:
+        "eight untimed mapper/diagnostic/helper/directive admissions precede all measured fresh processes",
       compilerIncremental: false,
       freshProcessAndWorkspace: true,
       osPageCacheFlushed: false,
@@ -260,6 +339,74 @@ export async function main(argv = process.argv.slice(2)) {
   });
   const observations = [];
   const oracle = new Map();
+  const captures = [];
+  const expectedPaths = inputFiles
+    .filter(({ path }) => path.endsWith(".vue"))
+    .map(({ path }) => "src/" + path);
+  for (const checker of ["tsc", "tsrs"]) {
+    for (const variant of variants) {
+      const id = `${checker}-${variant.id}-capture`;
+      const workspace = join(output, id + ".workspace");
+      const captureDirectory = join(output, id + ".protocol");
+      const closure = prepareWorkspace(upstream, provider, workspace, variant, captureDirectory);
+      const run = await observe(
+        id,
+        join(provider, "node_modules/.bin", checker),
+        [
+          "--runExternalCode",
+          "--noEmit",
+          "--pretty",
+          "false",
+          "--extendedDiagnostics",
+          "-p",
+          closure.configFile,
+        ],
+        workspace,
+        { TEMPLATE_ALIAS_CAPTURE: captureDirectory },
+      );
+      assert.deepEqual(
+        inventory(join(workspace, "src")),
+        closure.authoredInputs,
+        "capture changed authored inputs",
+      );
+      assert.deepEqual(
+        inventory(closure.packageRoot),
+        closure.package,
+        "capture changed helper package",
+      );
+      assert.ok([1, 2].includes(run.status), "require semantic diagnostic exit");
+      oracle.set(checker + ":" + variant.id, {
+        status: run.status,
+        diagnostics: diagnostics(run.text, workspace, expectedDiagnostics),
+      });
+      captures.push({
+        id,
+        transforms: collectTransforms(
+          captureDirectory,
+          workspace,
+          join(output, id + ".transforms"),
+          expectedPaths,
+          variant.id === "vue" ? null : sharedHelperClosure(workspace),
+        ),
+        metrics: metrics(run.text),
+        timingEligible: false,
+      });
+    }
+  }
+  for (const checker of ["tsc", "tsrs"]) {
+    assert.deepEqual(
+      oracle.get(checker + ":candidate"),
+      oracle.get(checker + ":currentmain"),
+      "preflight full base/head diagnostic identity changed",
+    );
+    const before = captures.find((entry) => entry.id === checker + "-currentmain-capture");
+    const after = captures.find((entry) => entry.id === checker + "-candidate-capture");
+    assert.deepEqual(
+      after.transforms.directiveAuthority,
+      before.transforms.directiveAuthority,
+      "authored directive authority changed",
+    );
+  }
   for (const checker of ["tsc", "tsrs"]) {
     for (let pair = 0; pair < 5; pair++) {
       const ordered = pair % 2 ? [...variants].reverse() : variants;
@@ -267,8 +414,8 @@ export async function main(argv = process.argv.slice(2)) {
         const id = `${checker}-${variant.id}-${pair}`;
         const workspace = join(output, id + ".workspace");
         const closure = prepareWorkspace(upstream, provider, workspace, variant);
-        const run = await capture(
-          join(output, id + ".raw"),
+        const run = await observe(
+          id,
           join(provider, "node_modules/.bin", checker),
           [
             "--runExternalCode",
@@ -292,6 +439,12 @@ export async function main(argv = process.argv.slice(2)) {
           "checker/mapper changed helper package",
         );
         assert.ok([1, 2].includes(run.status), "require semantic diagnostic exit");
+        assert.ok(
+          run.usage.wall_s > 0 &&
+            run.usage.user_s + run.usage.system_s > 0 &&
+            run.usage.max_rss_kib > 0,
+          "primary resource denominators must be positive",
+        );
         const packet = {
           status: run.status,
           diagnostics: diagnostics(run.text, workspace, expectedDiagnostics),
@@ -328,55 +481,6 @@ export async function main(argv = process.argv.slice(2)) {
       "full base/head diagnostic identity changed",
     );
   }
-  const captures = [];
-  for (const checker of ["tsc", "tsrs"]) {
-    for (const variant of variants) {
-      const id = `${checker}-${variant.id}-capture`;
-      const workspace = join(output, id + ".workspace");
-      const captureDirectory = join(output, id + ".protocol");
-      const closure = prepareWorkspace(upstream, provider, workspace, variant, captureDirectory);
-      const run = await capture(
-        join(output, id + ".raw"),
-        join(provider, "node_modules/.bin", checker),
-        [
-          "--runExternalCode",
-          "--noEmit",
-          "--pretty",
-          "false",
-          "--extendedDiagnostics",
-          "-p",
-          closure.configFile,
-        ],
-        workspace,
-        { TEMPLATE_ALIAS_CAPTURE: captureDirectory },
-      );
-      assert.deepEqual(
-        inventory(join(workspace, "src")),
-        closure.authoredInputs,
-        "capture changed authored inputs",
-      );
-      assert.deepEqual(
-        inventory(closure.packageRoot),
-        closure.package,
-        "capture changed helper package",
-      );
-      assert.deepEqual(
-        { status: run.status, diagnostics: diagnostics(run.text, workspace, expectedDiagnostics) },
-        oracle.get(checker + ":" + variant.id),
-        "capture changed diagnostic work",
-      );
-      captures.push({
-        id,
-        transforms: collectTransforms(
-          captureDirectory,
-          workspace,
-          join(output, id + ".transforms"),
-        ),
-        metrics: metrics(run.text),
-        timingEligible: false,
-      });
-    }
-  }
   const summary = [];
   for (const checker of ["tsc", "tsrs"])
     for (const variant of variants) {
@@ -392,6 +496,7 @@ export async function main(argv = process.argv.slice(2)) {
           cohort.map((row) => row.resources.user_s + row.resources.system_s),
         ),
         medianMaxRssKiB: median(cohort.map((row) => row.resources.max_rss_kib)),
+        medianCheckerMemoryKiB: median(cohort.map((row) => row.metrics.checkerMemoryKiB)),
         medianMapperWaitSeconds: median(cohort.map((row) => row.metrics.mapperWaitSeconds)),
         medianCheckSeconds: median(cohort.map((row) => row.metrics.checkSeconds)),
         types: cohort.map((row) => row.metrics.types),
@@ -408,6 +513,8 @@ export async function main(argv = process.argv.slice(2)) {
     readFileSync(join(upstream, "pnpm-lock.yaml")),
     readFileSync(join(provider, "pnpm-lock.yaml")),
   );
+  write(join(output, "execution-closure-post.json"), closureSnapshot(roots, files));
+  assert.deepEqual(closureSnapshot(roots, files), frozenClosure);
   const providerAfter = inventory(provider);
   write(join(output, "provider-post.json"), providerAfter);
   assert.deepEqual(providerAfter, providerInputs, "installed transitive provider payload changed");

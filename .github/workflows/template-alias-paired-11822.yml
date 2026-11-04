@@ -18,6 +18,7 @@ env:
   CARGO_INCREMENTAL: "0"
   BASE_SHA: ${{ inputs.base_sha }}
   HEAD_SHA: ${{ github.sha }}
+  EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
   TEMPLATE_ALIAS_RUNNER: blacksmith-32vcpu-ubuntu-2404
 
 jobs:
@@ -39,6 +40,7 @@ jobs:
           set -euo pipefail
           [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$EXECUTED_WORKFLOW_SHA" = "$HEAD_SHA"
           test "$(git -C head rev-parse HEAD)" = "$HEAD_SHA"
           test "$(git -C head ls-remote origin refs/heads/main | cut -f1)" = "$BASE_SHA"
           git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
@@ -80,24 +82,20 @@ jobs:
           mkdir "$RUNNER_TEMP/template-alias-provider"
           git -C "$RUNNER_TEMP/template-alias-upstream" archive c9a59cb07c236cbf7e0a97aa06ca3d02756415ea | tar -x -C "$RUNNER_TEMP/template-alias-provider"
           cd "$RUNNER_TEMP/template-alias-provider"
-          vp install --frozen-lockfile
+          node "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/template-alias-paired-11822-source.mjs" --install-provider "$PWD"
           cmp pnpm-lock.yaml "$RUNNER_TEMP/template-alias-upstream/pnpm-lock.yaml"
           node --version > provider-toolchain.txt
           vp --version >> provider-toolchain.txt
 
-      - name: Build independent exact-source CLIs with identical default features and profiles
+      - name: Build two atomic source Node CLI and NAPI SDK capsules
         shell: bash
         run: |
           set -euo pipefail
           for side in base head; do
             mkdir -p "$side/target"
-            rustc -Vv > "$side/target/rustc-11822.txt"
-            cargo build --locked --manifest-path "$side/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/$side/target" --profile ci-opt -p vize --message-format=json \
-              --config 'profile.ci-opt.inherits="release"' \
-              --config 'profile.ci-opt.lto="thin"' \
-              --config 'profile.ci-opt.codegen-units=16' \
-              --config 'profile.ci-opt.package.vize.strip="symbols"' \
-              > "$side/target/build-11822.jsonl" 2> "$side/target/build-11822.stderr"
+            source_sha="$(git -C "$side" rev-parse HEAD)"
+            node head/tools/benchmarks/scripts/template-alias-paired-11822-source.mjs \
+              --source "$GITHUB_WORKSPACE/$side" --sha "$source_sha"
           done
 
       - name: Gate complete diagnostics and run five alternating pairs per default checker
@@ -118,14 +116,14 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/template-alias-evidence/builds"
           for side in base head; do
-            if [[ -f "$side/target/build-11822.jsonl" ]]; then
-              cp "$side/target/build-11822.jsonl" "$side/target/build-11822.stderr" "$side/target/rustc-11822.txt" "$RUNNER_TEMP/template-alias-evidence/builds/"
-              mv "$RUNNER_TEMP/template-alias-evidence/builds/build-11822.jsonl" "$RUNNER_TEMP/template-alias-evidence/builds/$side.jsonl"
-              mv "$RUNNER_TEMP/template-alias-evidence/builds/build-11822.stderr" "$RUNNER_TEMP/template-alias-evidence/builds/$side.stderr"
-              mv "$RUNNER_TEMP/template-alias-evidence/builds/rustc-11822.txt" "$RUNNER_TEMP/template-alias-evidence/builds/$side.rustc.txt"
+            if [[ -d "$side/target/template-alias-11822" ]]; then
+              cp -R "$side/target/template-alias-11822" "$RUNNER_TEMP/template-alias-evidence/builds/$side"
             fi
           done
           if [[ -f "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" ]]; then cp "$RUNNER_TEMP/template-alias-provider/provider-toolchain.txt" "$RUNNER_TEMP/template-alias-evidence/"; fi
+          for stream in stdout stderr; do
+            if [[ -f "$RUNNER_TEMP/template-alias-provider.install.$stream" ]]; then cp "$RUNNER_TEMP/template-alias-provider.install.$stream" "$RUNNER_TEMP/template-alias-evidence/"; fi
+          done
           tar --exclude='*.workspace' -czf "$RUNNER_TEMP/template-alias-evidence.tgz" -C "$RUNNER_TEMP" template-alias-evidence
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
