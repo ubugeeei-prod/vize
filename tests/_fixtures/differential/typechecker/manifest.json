@@ -11571,6 +11571,38 @@
       }
     },
     {
+      "id": "typechecker/dynamic-listener-member-arity/typed-reference",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::template_handler_ts7006::dynamic_component_custom_member_handlers_stay_unresolved",
+      "sourceRevision": "d342658bc3d4390caf03ad36fe9c899c5cd30b73",
+      "scriptLang": "ts",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-listener-member-arity/TypedReference.vue.txt",
+          "sha256": "4468408a384f1e4e90c7404d93b01772887fe0cb2813a2f8d77d530eea87e55a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Existing real-host dynamic_component_custom_member_handlers_stay_unresolved consumes this exact input; typed WheelEvent reference must remain valid for a dynamic target with no declared emit contract."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/editor-vite-stub-11145/whole-install-ownership",
       "state": "active",
       "targets": [
