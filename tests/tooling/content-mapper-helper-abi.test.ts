@@ -79,10 +79,12 @@ void test("ambient implicit exports are qualified by TypeScript rather than modi
   assert.doesNotThrow(() => contentMapperHelperAbi(root, pending));
 });
 
-for (const [name, samePeer, preserveSymlinks] of [
-  ["different physical peer", false, false],
-  ["same physical peer", true, false],
-  ["preserved logical peer", false, true],
+for (const [name, samePeer, preserveSymlinks, externalSdkManifest, sharedVueManifest] of [
+  ["different physical peer", false, false, false, false],
+  ["same physical peer", true, false, false, false],
+  ["preserved logical peer", false, true, false, false],
+  ["external SDK manifest", false, false, true, false],
+  ["shared Vue manifest", false, false, false, true],
 ] as const) {
   void test(`pnpm SDK resolution uses the ${name} Vue authority`, () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-abi-peer-"));
@@ -118,6 +120,25 @@ for (const [name, samePeer, preserveSymlinks] of [
       installVue(projectVue);
       if (samePeer) link(projectVue, path.join(store, "vue"));
       else installVue(path.join(store, "vue"));
+      if (externalSdkManifest || sharedVueManifest) {
+        const metadata = path.join(directory, "metadata");
+        fs.mkdirSync(metadata);
+        if (externalSdkManifest) {
+          const manifest = path.join(sdk, "package.json");
+          const target = path.join(metadata, "sdk.json");
+          fs.renameSync(manifest, target);
+          fs.symlinkSync(target, manifest, "file");
+        }
+        if (sharedVueManifest) {
+          const manifest = path.join(projectVue, "package.json");
+          const target = path.join(metadata, "vue.json");
+          const peer = path.join(store, "vue/package.json");
+          fs.renameSync(manifest, target);
+          fs.unlinkSync(peer);
+          fs.symlinkSync(target, manifest, "file");
+          fs.symlinkSync(target, peer, "file");
+        }
+      }
       const options: ts.CompilerOptions = {
         module: ts.ModuleKind.Preserve,
         moduleResolution: ts.ModuleResolutionKind.Bundler,
