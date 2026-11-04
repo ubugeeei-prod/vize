@@ -39,7 +39,14 @@ await test("closed actual CSS API inputs remain separate from compiler execution
     [{ id: domId, targets: ["dom"] }],
   );
   const ssrCases = loaded.cases.filter((row) => row.id !== domId);
-  assert.equal(ssrCases.length, 68);
+  const rendererControlId = "compiler/sfc/recovered-attribute-boundary-11731";
+  assert.deepEqual(
+    ssrCases
+      .filter((row) => row.id === rendererControlId)
+      .map(({ id, targets }) => ({ id, targets })),
+    [{ id: rendererControlId, targets: ["ssr"] }],
+  );
+  assert.equal(ssrCases.filter((row) => row.id !== rendererControlId).length, 68);
   assert.ok(ssrCases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
   const report = compilerCssApiReport(loaded.cssApiCases);
   assert.deepEqual(

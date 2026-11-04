@@ -2,7 +2,9 @@ use std::path::Path;
 
 use vize_l0::cstr;
 
-use crate::batch::generate_vue_content_mapper_transform;
+use crate::batch::{
+    CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, generate_vue_content_mapper_transform,
+};
 
 #[test]
 fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
@@ -54,5 +56,21 @@ fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
     assert_eq!(
         serde_json::to_value(actual).expect("whole adjacent packet"),
         serde_json::to_value(expected).expect("whole spaced packet")
+    );
+}
+
+#[test]
+fn authored_parse_errors_are_mapper_diagnostics() {
+    let source = "<template><div></template>";
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Broken.vue"), source).expect("transform");
+
+    assert!(!result.diagnostics.is_empty());
+    assert!(result.mappings.is_empty());
+    assert!(result.text.contains("__vize_component"));
+    assert!(result.diagnostics[0].start <= source.len());
+    assert_eq!(
+        result.diagnostics[0].code,
+        CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE
     );
 }

@@ -1664,7 +1664,8 @@
           "errors",
           "warnings",
           "macro_artifacts"
-        ]
+        ],
+        "scriptLang": "ts"
       },
       "dialectCoverage": {
         "state": "source-inspected",
@@ -1674,7 +1675,8 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template"
+              "html-template",
+              "ts"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
