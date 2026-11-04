@@ -194,11 +194,7 @@ pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'
     ctx.push("\"");
 
     // Calculate patch flag and dynamic props
-    let (mut patch_flag, dynamic_props) = calculate_element_patch_info(
-        el,
-        ctx.options.binding_metadata.as_ref(),
-        ctx.cache_handlers_in_current_scope(),
-    );
+    let (mut patch_flag, dynamic_props) = calculate_element_patch_info(el, ctx);
     // `once` has no directive transform, so Vue turns its text children into
     // text vnodes and the element has no TEXT child.
     let once = super::helpers::has_v_once(el);
@@ -352,17 +348,9 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
     // Calculate patch flag and dynamic props for component
     // For dynamic components, skip the :is binding from patch flag calculation
     let (mut patch_flag, dynamic_props) = if is_dynamic {
-        calculate_element_patch_info_skip_is(
-            el,
-            ctx.options.binding_metadata.as_ref(),
-            ctx.cache_handlers_in_current_scope(),
-        )
+        calculate_element_patch_info_skip_is(el, ctx)
     } else {
-        calculate_element_patch_info(
-            el,
-            ctx.options.binding_metadata.as_ref(),
-            ctx.cache_handlers_in_current_scope(),
-        )
+        calculate_element_patch_info(el, ctx)
     };
 
     // Slot content is patched through the slot object, so the component vnode

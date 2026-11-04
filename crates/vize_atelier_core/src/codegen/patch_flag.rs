@@ -1,39 +1,19 @@
 //! Patch flag calculation and naming functions.
 
+mod authored_const;
 mod dynamic_props;
 mod literal_const;
 mod static_literal;
 
+use self::authored_const::is_constant_interpolation;
 use self::dynamic_props::dedupe_dynamic_props;
 use self::literal_const::is_setup_literal_const_access;
 use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
+use super::context::CodegenContext;
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 use vize_l0::{String, ToCompactString, is_builtin_directive};
-
-/// Check whether an interpolation only references bindings constant at runtime.
-fn is_constant_interpolation(
-    expr: &ExpressionNode<'_>,
-    bindings: Option<&BindingMetadata>,
-) -> bool {
-    let bindings = match bindings {
-        Some(b) => b,
-        None => return false, // No binding info, assume dynamic
-    };
-
-    match expr {
-        ExpressionNode::Simple(simple) => {
-            // LiteralConst and SetupConst identifiers need no TEXT patch flag.
-            let name = simple.content;
-            matches!(
-                bindings.bindings.get(name),
-                Some(BindingType::LiteralConst | BindingType::SetupConst)
-            )
-        }
-        ExpressionNode::Compound(_) => false, // Compound expressions are dynamic
-    }
-}
 
 /// Check if an event handler references a constant binding (SetupConst or LiteralConst)
 fn is_const_handler(expr: &ExpressionNode<'_>, bindings: Option<&BindingMetadata>) -> bool {
@@ -71,27 +51,27 @@ fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
 /// `skip_is_prop`: when true, skip `:is` binding (used for `<component :is="...">`)
 pub fn calculate_element_patch_info(
     el: &ElementNode<'_>,
-    bindings: Option<&BindingMetadata>,
-    cache_handlers: bool,
+    ctx: &CodegenContext,
 ) -> (Option<i32>, Option<Vec<String>>) {
-    calculate_element_patch_info_inner(el, bindings, cache_handlers, false)
+    calculate_element_patch_info_inner(el, ctx, false)
 }
 
 /// Same as `calculate_element_patch_info` but allows skipping the `is` prop.
 pub fn calculate_element_patch_info_skip_is(
     el: &ElementNode<'_>,
-    bindings: Option<&BindingMetadata>,
-    cache_handlers: bool,
+    ctx: &CodegenContext,
 ) -> (Option<i32>, Option<Vec<String>>) {
-    calculate_element_patch_info_inner(el, bindings, cache_handlers, true)
+    calculate_element_patch_info_inner(el, ctx, true)
 }
 
 fn calculate_element_patch_info_inner(
     el: &ElementNode<'_>,
-    bindings: Option<&BindingMetadata>,
-    cache_handlers: bool,
+    ctx: &CodegenContext,
     skip_is: bool,
 ) -> (Option<i32>, Option<Vec<String>>) {
+    let bindings = ctx.options.binding_metadata.as_ref();
+    let cache_handlers = ctx.cache_handlers_in_current_scope();
+    let source = ctx.source.as_str();
     let mut flag: i32 = 0;
     // Pre-allocate with small capacity - most elements have few dynamic props
     let mut dynamic_props: Vec<String> = Vec::with_capacity(4);
@@ -375,10 +355,11 @@ fn calculate_element_patch_info_inner(
         )
     });
     if has_interpolation && all_text_or_interp {
-        // Check if all interpolations reference only constant bindings
+        // `CAN_SKIP_PATCH` only for an authored simple identifier. The
+        // erased spelling (`pick<Item>` → `pick`) is not that shape.
         let all_constant = el.children.iter().all(|child| {
             if let TemplateChildNode::Interpolation(interp) = child {
-                is_constant_interpolation(&interp.content, bindings)
+                is_constant_interpolation(&interp.content, bindings, source)
             } else {
                 true // Text nodes are always "constant"
             }

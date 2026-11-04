@@ -232,17 +232,9 @@ fn generate_if_branch_component(
     }
 
     let (mut patch_flag, dynamic_props) = if is_dynamic {
-        calculate_element_patch_info_skip_is(
-            el,
-            ctx.options.binding_metadata.as_ref(),
-            ctx.cache_handlers_in_current_scope(),
-        )
+        calculate_element_patch_info_skip_is(el, ctx)
     } else {
-        calculate_element_patch_info(
-            el,
-            ctx.options.binding_metadata.as_ref(),
-            ctx.cache_handlers_in_current_scope(),
-        )
+        calculate_element_patch_info(el, ctx)
     };
 
     if has_slot_children(el)
@@ -327,11 +319,7 @@ fn generate_if_branch_element(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let (patch_flag, dynamic_props) = calculate_element_patch_info(
-        el,
-        ctx.options.binding_metadata.as_ref(),
-        ctx.cache_handlers_in_current_scope(),
-    );
+    let (patch_flag, dynamic_props) = calculate_element_patch_info(el, ctx);
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     let has_custom_dirs = has_custom_directives(el);

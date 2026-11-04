@@ -151,11 +151,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props
-            let (patch_flag, dynamic_props) = calculate_element_patch_info(
-                el,
-                ctx.options.binding_metadata.as_ref(),
-                ctx.cache_handlers_in_current_scope(),
-            );
+            let (patch_flag, dynamic_props) = calculate_element_patch_info(el, ctx);
             let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
             // Generate props (only if there are renderable props, not just v-show)
@@ -300,17 +296,9 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             // Calculate patch flag and dynamic props for component
             // For dynamic components, skip the :is binding from patch flag calculation
             let (mut patch_flag, dynamic_props) = if is_dynamic {
-                calculate_element_patch_info_skip_is(
-                    el,
-                    ctx.options.binding_metadata.as_ref(),
-                    ctx.cache_handlers_in_current_scope(),
-                )
+                calculate_element_patch_info_skip_is(el, ctx)
             } else {
-                calculate_element_patch_info(
-                    el,
-                    ctx.options.binding_metadata.as_ref(),
-                    ctx.cache_handlers_in_current_scope(),
-                )
+                calculate_element_patch_info(el, ctx)
             };
 
             // For components with slot children, remove TEXT flag (1) since text is inside slot
