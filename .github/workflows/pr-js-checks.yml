@@ -251,6 +251,27 @@ jobs:
           VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
           VIZE_CSS_MAP_SOURCE_SHA: ${{ github.sha }}
         run: node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs
+      - name: Verify packaged direct-child props with source native on Node 22
+        if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/direct-child-props-source-11809"
+          mkdir -p "$capture"
+          node npm/native/scripts/native-build-receipt.mjs >"$capture/producer.stdout" 2>"$capture/producer.stderr"
+          (cd npm/cli && vp pack) >"$capture/cli-pack.stdout" 2>"$capture/cli-pack.stderr"
+          node tools/support/compat/content-mapper/direct-child-props-11809.ts --capture "$capture" >"$capture/consumer.stdout" 2>"$capture/consumer.stderr"
+      - name: Retain source reporter archives and whole outcomes
+        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-child-props-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/direct-child-props-source-11809/
+            !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules
+            !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve UI conformance native fault diagnostics
         if: ${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -24,7 +24,7 @@ void test("the pinned package manager selects private transitive dependencies fo
   ).packageManager;
   const special = new Map([
     ["fresco-conformance", ["./npm/fresco-native"]],
-    ["ui-conformance", ["./npm/ui"]],
+    ["ui-conformance", ["./npm/ui", "./npm/cli"]],
     ["original-project", ["./npm/oxlint"]],
   ]);
   const groups = new Map([

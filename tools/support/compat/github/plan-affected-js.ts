@@ -77,6 +77,17 @@ export function planAffectedJs(
     if (rust?.packages.includes(crate)) changed.add(pkg);
   }
   for (const path of paths) {
+    if (
+      [
+        "tools/support/compat/content-mapper/direct-child-props-11809.ts",
+        "tools/support/compat/content-mapper/direct-child-props-runtime-11809.ts",
+        "tests/tooling/content-mapper-direct-child-props.test.ts",
+      ].includes(path)
+    ) {
+      changed.add("@vizejs/native");
+      reasons.add(`source packaged mapper contract: ${path}`);
+      continue;
+    }
     if (isCensusToolingInput(path) || isDocsQualityToolingInput(path)) continue;
     if (/^(?:docs\/|\.changeset\/).*\.(?:md|mdx)$/.test(path) && !isSharedRustInput(path)) continue;
     if (/(?:^|\/)(?:README|AGENTS)\.md$/.test(path)) continue;
