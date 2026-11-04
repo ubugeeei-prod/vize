@@ -181,6 +181,14 @@ fn admission_reader(body: &[u8], count: usize) -> (AdmissionReader, mpsc::Receiv
     )
 }
 
+struct FailAdmissionOnDrop<'a>(&'a super::WriteProgress);
+
+impl Drop for FailAdmissionOnDrop<'_> {
+    fn drop(&mut self) {
+        self.0.fail();
+    }
+}
+
 #[test]
 fn admission_waits_before_reading_unknown_malformed_or_uninitialized_requests() {
     for body in [
@@ -194,6 +202,7 @@ fn admission_waits_before_reading_unknown_malformed_or_uninitialized_requests() 
             let (done, replies) = mpsc::channel();
             let progress = super::WriteProgress::new();
             thread::scope(|scope| {
+                let _wake_on_failure = FailAdmissionOnDrop(&progress);
                 let read = scope.spawn(|| {
                     super::read_loop(
                         &mut reader,
@@ -233,6 +242,7 @@ fn writer_failure_wakes_admission_without_reading_another_frame() {
     let (done, replies) = mpsc::channel();
     let progress = super::WriteProgress::new();
     thread::scope(|scope| {
+        let _wake_on_failure = FailAdmissionOnDrop(&progress);
         let read = scope.spawn(|| {
             super::read_loop(
                 &mut reader,
