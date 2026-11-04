@@ -96,7 +96,18 @@ mod tests {
             1,
             "typescript".into(),
         );
-        assert_eq!(authored_file_uri(&ctx, &physical), Some(open));
+        assert_eq!(authored_file_uri(&ctx, &physical), Some(open.clone()));
+        assert_eq!(authored_file_uri(&ctx, &authored), Some(linked.clone()));
+        state.documents.close(&open);
+        let encoded = Url::parse(&open.as_str().replace("foreign.ts", "fore%69gn.ts")).unwrap();
+        assert_eq!(encoded.to_file_path().unwrap(), physical);
+        state.documents.open(
+            encoded.clone(),
+            "export const value = 4;".into(),
+            1,
+            "typescript".into(),
+        );
+        assert_eq!(authored_file_uri(&ctx, &physical), Some(encoded));
         assert_eq!(authored_file_uri(&ctx, &authored), Some(linked));
     }
 }
