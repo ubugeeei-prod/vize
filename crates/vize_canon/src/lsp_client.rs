@@ -34,6 +34,7 @@ mod retained_text_tests;
 mod session;
 mod session_paths;
 mod session_storage;
+mod tracked_documents;
 pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
@@ -72,7 +73,7 @@ pub struct CorsaProjectClient {
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
     overlay_versions: FxHashMap<String, i32>,
     /// Current in-memory contents for virtual overlays and offset mapping.
-    document_texts: FxHashMap<String, String>,
+    document_texts: tracked_documents::TrackedDocumentTexts,
     /// Mapping from caller-facing URIs to the session-local URIs Corsa sees.
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.

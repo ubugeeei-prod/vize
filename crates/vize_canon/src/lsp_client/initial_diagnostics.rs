@@ -114,7 +114,7 @@ impl CorsaProjectClient {
             && Arc::ptr_eq(&self.capabilities, read.capabilities)
             && std::ptr::eq(read.project_root, &self.project_root)
             && std::ptr::eq(read.explicit_config, &self.explicit_project_config)
-            && std::ptr::eq(read.documents, &self.document_texts)
+            && std::ptr::eq(read.documents, &*self.document_texts)
             && std::ptr::eq(read.external_document_uris, &self.external_document_uris)
             && self
                 .session_document_uris

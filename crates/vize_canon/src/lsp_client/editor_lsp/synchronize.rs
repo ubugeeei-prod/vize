@@ -2,9 +2,10 @@
 
 use lsp_types::Uri;
 use std::str::FromStr;
-use vize_l0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 use super::EditorLspSession;
+use crate::lsp_client::tracked_documents::TrackedDocumentTexts;
 
 /// Stay comfortably below the transport's bounded outbound notification queue.
 /// A response-backed symbol request drains preceding notifications.
@@ -17,9 +18,28 @@ impl EditorLspSession {
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<(), String> {
+        self.tracked_documents = None;
+        self.synchronize_selected(documents, None)
+    }
+
+    pub(super) fn synchronize_tracked(
+        &mut self,
+        documents: &mut TrackedDocumentTexts,
+    ) -> Result<(), String> {
+        let changes = documents.changes_since(self.tracked_documents);
+        self.synchronize_selected(documents, changes)?;
+        self.tracked_documents = Some(documents.acknowledge());
+        Ok(())
+    }
+
+    fn synchronize_selected(
+        &mut self,
+        documents: &FxHashMap<String, String>,
+        changes: Option<&FxHashSet<String>>,
+    ) -> Result<(), String> {
         let phase =
             crate::corsa_bridge::preparation_trace::Phase::start("editor_mirror", documents.len());
-        let mut desired = documents.iter().collect::<Vec<_>>();
+        let (mut desired, mut removed) = selected_documents(documents, &self.documents, changes);
         desired.sort_unstable_by(|left, right| left.0.cmp(right.0));
         for (document_uri, text) in desired {
             let changed = self
@@ -32,12 +52,10 @@ impl EditorLspSession {
             }
         }
 
-        let mut removed = self
-            .documents
-            .keys()
-            .filter(|uri| !documents.contains_key(uri.as_str()))
-            .cloned()
-            .collect::<Vec<_>>();
+        if removed.is_empty() {
+            phase.finish();
+            return Ok(());
+        }
         removed.sort_unstable();
         let retained_barrier = documents
             .keys()
@@ -65,6 +83,7 @@ impl EditorLspSession {
 
     fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
         let uri = parse_document_uri(document_uri)?;
+        self.tracked_documents = None;
         self.overlay.close(&uri).map_err(|error| {
             cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
         })?;
@@ -95,7 +114,93 @@ impl EditorLspSession {
     }
 }
 
+fn selected_documents<'a>(
+    documents: &'a FxHashMap<String, String>,
+    mirrored: &FxHashMap<String, String>,
+    changes: Option<&FxHashSet<String>>,
+) -> (Vec<(&'a String, &'a String)>, Vec<String>) {
+    match changes {
+        Some(changes) => (
+            changes
+                .iter()
+                .filter_map(|uri| documents.get_key_value(uri.as_str()))
+                .collect(),
+            changes
+                .iter()
+                .filter(|uri| {
+                    !documents.contains_key(uri.as_str()) && mirrored.contains_key(uri.as_str())
+                })
+                .cloned()
+                .collect(),
+        ),
+        None => (
+            documents.iter().collect(),
+            mirrored
+                .keys()
+                .filter(|uri| !documents.contains_key(uri.as_str()))
+                .cloned()
+                .collect(),
+        ),
+    }
+}
+
 fn parse_document_uri(document_uri: &str) -> Result<Uri, String> {
     Uri::from_str(document_uri)
         .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn rows() -> FxHashMap<String, String> {
+        FxHashMap::from_iter([
+            ("file:///a.ts".into(), "a".into()),
+            ("file:///b.ts".into(), "b".into()),
+            ("file:///z.ts".into(), "z".into()),
+        ])
+    }
+
+    #[test]
+    fn certified_single_edit_does_not_select_unrelated_texts() {
+        let mut documents = rows();
+        let mirrored = documents.clone();
+        documents.insert("file:///b.ts".into(), "changed".into());
+        let changes = FxHashSet::from_iter(["file:///b.ts".into()]);
+        let (desired, removed) = selected_documents(&documents, &mirrored, Some(&changes));
+        assert_eq!(
+            desired,
+            vec![(
+                documents.get_key_value("file:///b.ts").unwrap().0,
+                documents.get("file:///b.ts").unwrap(),
+            )]
+        );
+        assert!(removed.is_empty());
+    }
+
+    #[test]
+    fn selection_preserves_new_and_removed_exact_uri_identities() {
+        let mut documents = rows();
+        let mirrored = documents.clone();
+        documents.remove("file:///a.ts");
+        documents.insert("file:///%61.ts".into(), "a".into());
+        let changes = FxHashSet::from_iter(["file:///a.ts".into(), "file:///%61.ts".into()]);
+        let (desired, removed) = selected_documents(&documents, &mirrored, Some(&changes));
+        assert_eq!(desired.len(), 1);
+        assert_eq!(desired[0].0.as_str(), "file:///%61.ts");
+        assert_eq!(removed, vec![String::from("file:///a.ts")]);
+    }
+
+    #[test]
+    fn unknown_generation_selects_the_complete_map_and_every_removal() {
+        let documents = FxHashMap::from_iter([("file:///b.ts".into(), "changed".into())]);
+        let mirrored = rows();
+        let (desired, mut removed) = selected_documents(&documents, &mirrored, None);
+        assert_eq!(desired.len(), 1);
+        removed.sort_unstable();
+        assert_eq!(
+            removed,
+            [String::from("file:///a.ts"), String::from("file:///z.ts")]
+        );
+    }
 }
