@@ -1,0 +1,7 @@
+import { ref, watch, type Ref } from "vue";
+
+export function useBoxObject(): { el: Ref<HTMLElement | undefined> } {
+  const el = ref<HTMLElement>();
+  watch(el, (value) => console.log(value?.clientWidth));
+  return { el };
+}

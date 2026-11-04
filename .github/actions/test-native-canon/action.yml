@@ -299,6 +299,22 @@ runs:
         if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install -y strace; fi
         cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >"$capture/build.jsonl"
         node tests/tooling/support/native-beta-shutdown/source.mjs
+    - name: Test mixed script destructured static refs and authored ownership
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_MIXED_STATIC_REF_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/mixed-script-static-ref-11811
+      run: |
+        set -uo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        mixed_ref_status=0
+        cargo test --locked --profile ci -p vize_croquis --lib script_parser::tests::destructure_spans::destructured_bindings_keep_authored_identifier_spans -- --exact --nocapture || mixed_ref_status=1
+        cargo test --locked --profile ci -p vize_canon --features legacy --lib virtual_ts::tests::unused_refs::mixed_scripts:: -- --nocapture || mixed_ref_status=1
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused --ignored --exact --nocapture || mixed_ref_status=1
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::protocol::standard_tsgo_mixed_script_static_refs_keep_runtime_reads_and_authored_errors --ignored --exact --nocapture || mixed_ref_status=1
+        exit "$mixed_ref_status"
     - name: Test inherited Options API calls with the authenticated beta checker
       if: ${{ !cancelled() }}
       shell: bash
