@@ -1,6 +1,9 @@
 //! Complete scoped semantic oracles for public reports #8752–#8755.
 //! The original Opinionated/router project has a separate acceptance boundary.
 
+#[path = "../../../tests/current_type_documentation.rs"]
+mod current_type_documentation;
+
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
@@ -114,11 +117,12 @@ fn expected_whole_case(case: &Value, execution_filename: &str) -> Value {
     let mut expected_api = case["afterApi"].clone();
     assert_eq!(expected_api["filename"], filename);
     expected_api["filename"] = execution_filename.into();
-    let mut expected_cli = case
-        .get("afterCli")
-        .or_else(|| case.get("afterFormatter"))
-        .expect("complete formatter contract")
-        .clone();
+    let mut expected_cli = current_type_documentation::packet(
+        case.get("afterCli")
+            .or_else(|| case.get("afterFormatter"))
+            .expect("complete formatter contract")
+            .clone(),
+    );
     assert_eq!(expected_cli[0]["file"], filename);
     expected_cli[0]["file"] = execution_filename.into();
     json!({"id": case["id"], "actualApi": expected_api,
