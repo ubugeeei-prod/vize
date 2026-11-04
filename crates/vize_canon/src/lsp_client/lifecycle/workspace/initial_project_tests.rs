@@ -146,6 +146,9 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
             serde_json::json!({"result":&bad,"state":state(&client)}),
         );
         let bad = bad.unwrap();
+        let bad_view = client
+            .diagnosing_view_for_test(&path_to_file_uri(&canon_root.join("source.ts")))
+            .unwrap();
         // An independent editor is legitimately lazy until the first report.
         let initial_owner = control::native_lsp(&canon_root, &native);
         let uri = path_to_file_uri(&canon_root.join("source.ts"));
@@ -175,7 +178,9 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
             serde_json::json!({"result":&repaired}),
         );
         let repaired = repaired.unwrap();
+        let repaired_view = client.diagnosing_view_for_test(&uri).unwrap();
         let owner = control::native_lsp(&canon_root, &native);
+        assert_eq!(owner, initial_owner);
         if owner != initial_owner {
             control::assert_reaped(&initial_owner);
         }
@@ -190,28 +195,31 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
         let after_empty = state(&client);
         assert!(std::sync::Arc::ptr_eq(&storage, &client.overlay_storage));
         assert_eq!(control::native_lsp(&canon_root, &native), owner);
-        let materialized_config: serde_json::Value =
-            serde_json::from_slice(&fs::read(storage.root().join("tsconfig.json")).unwrap())
-                .unwrap();
         let shared = canon_root.join("shared.js");
         fs::remove_file(&shared).unwrap();
         client
             .refresh_materialized_files(&[], &[], std::slice::from_ref(&shared))
             .unwrap();
         let missing = report(&mut client, &canon_root, edited).unwrap();
+        let missing_view = client.diagnosing_view_for_test(&uri).unwrap();
         fs::write(&shared, fixture["shared"].as_str().unwrap()).unwrap();
         client
             .refresh_materialized_files(&[], &[shared], &[])
             .unwrap();
         let restored = report(&mut client, &canon_root, edited).unwrap();
+        let restored_view = client.diagnosing_view_for_test(&uri).unwrap();
         assert_eq!(control::native_lsp(&canon_root, &native), owner);
+        let api_eligible = client.can_use_api_for_uri(&uri);
         client.shutdown().unwrap();
         control::assert_reaped(&owner);
         let packet = serde_json::json!({
             "initial":initial,"bad":bad,"repaired":repaired,
             "diagnosingProject":diagnosing_project,
             "beforeEmpty":before_empty,"afterEmpty":after_empty,
-            "materializedConfig":materialized_config,"missing":missing,"restored":restored,
+            "badView":bad_view,"repairedView":repaired_view,"missingView":missing_view,"restoredView":restored_view,
+            "privateConfig":fs::read(storage.root().join("tsconfig.json")).ok(),
+            "missing":missing,"restored":restored,
+            "apiEligibleForEdited":api_eligible,
             "canonSource":fs::read(canon_root.join("source.ts")).unwrap(),
             "canonShared":fs::read(canon_root.join("shared.js")).unwrap(),
             "canonConfig":fs::read(&config).unwrap(),
@@ -232,6 +240,36 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
             .unwrap();
         assert_eq!(packet["bad"], fixture["expected"]);
         assert_eq!(packet["repaired"], fixture["editedExpected"]);
+        assert_eq!(packet["privateConfig"], serde_json::Value::Null);
+        assert_eq!(packet["apiEligibleForEdited"], false);
+        assert_eq!(packet["afterEmpty"]["logical"], true);
+        assert_eq!(packet["afterEmpty"]["attached"], true);
+        for (field, text) in [
+            ("badView", source),
+            ("repairedView", edited),
+            ("missingView", edited),
+            ("restoredView", edited),
+        ] {
+            let view = &packet[field];
+            assert_eq!(view["uri"], uri.as_str());
+            assert_eq!(view["config"], packet["diagnosingProject"]);
+            assert_eq!(
+                view["documents"],
+                serde_json::to_value(FxHashMap::from_iter([(
+                    uri.clone(),
+                    vize_l0::String::from(text)
+                )]))
+                .unwrap()
+            );
+            assert_eq!(view["acknowledgedGeneration"], view["writtenGeneration"]);
+            assert_eq!(view["dirtyDocuments"], serde_json::json!([]));
+        }
+        assert!(
+            packet["repairedView"]["writtenGeneration"]
+                .as_u64()
+                .unwrap()
+                > packet["badView"]["writtenGeneration"].as_u64().unwrap()
+        );
         assert_eq!(
             packet["missing"],
             serde_json::json!({

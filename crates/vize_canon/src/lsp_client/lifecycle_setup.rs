@@ -1,4 +1,4 @@
-use serde_json::{Value, json};
+use serde_json::json;
 use std::path::Path;
 use vize_l0::{String, ToCompactString, cstr};
 
@@ -64,35 +64,11 @@ pub(super) fn write_materialized_project_tsconfig(
             ),
         ]);
     }
-    // Private edits resolve first, followed by the authored rootDirs order,
-    // then untouched relative dependencies in the existing project.
-    let mut root_dirs = if selected.is_file() {
-        crate::snapshot_tsconfig_compiler_options(project_root, &selected)
-            .map_err(|error| cstr!("Failed to preserve materialized rootDirs: {error}"))?
-            .remove("rootDirs")
-            .unwrap_or_else(|| json!([]))
-    } else {
-        json!([])
-    };
-    if root_dirs.is_null() {
-        root_dirs = json!([]);
-    }
-    if let Value::Array(roots) = &mut root_dirs {
-        roots.insert(
-            0,
-            json!(crate::file_uri::path_to_typescript_name(overlay_root)),
-        );
-        let project = json!(crate::file_uri::path_to_typescript_name(project_root));
-        if !roots.contains(&project) {
-            roots.push(project);
-        }
-    }
     let content = json!({
         "extends": crate::file_uri::path_to_typescript_name(&selected),
         "compilerOptions": {
             "allowImportingTsExtensions": true,
-            "noEmit": true,
-            "rootDirs": root_dirs
+            "noEmit": true
         },
         "include": include,
         "exclude": []
@@ -205,68 +181,12 @@ mod tests {
         );
         assert_eq!(
             parsed["compilerOptions"],
-            serde_json::json!({
-                "allowImportingTsExtensions":true,"noEmit":true,
-                "rootDirs":[
-                    crate::file_uri::path_to_typescript_name(storage.root()),
-                    crate::file_uri::path_to_typescript_name(root),
-                ]
-            })
+            serde_json::json!({"allowImportingTsExtensions":true,"noEmit":true})
         );
         assert_eq!(std::fs::read(selected).unwrap(), authored);
         assert_eq!(
             std::fs::read(root.join("tsconfig.json")).unwrap(),
             b"{\"compilerOptions\":{\"strict\":false}}"
         );
-    }
-
-    #[test]
-    fn materialized_root_dirs_keep_the_selected_chain_order_and_authored_paths() {
-        let project = tempfile::tempdir().unwrap();
-        let root = project.path();
-        std::fs::create_dir(root.join("config")).unwrap();
-        let parent = root.join("base.json");
-        let selected = root.join("config/app.json");
-        let parent_bytes = br#"{"compilerOptions":{"rootDirs":["preferred","fallback"],"paths":{"@/*":["src/*"]}}}"#;
-        let selected_bytes = br#"{"extends":"../base.json","compilerOptions":{"strict":true}}"#;
-        std::fs::write(&parent, parent_bytes).unwrap();
-        std::fs::write(&selected, selected_bytes).unwrap();
-        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
-        let generated =
-            write_materialized_project_tsconfig(root, storage.root(), Some(&selected)).unwrap();
-        let config: serde_json::Value =
-            serde_json::from_slice(&std::fs::read(generated).unwrap()).unwrap();
-        assert_eq!(
-            config["compilerOptions"],
-            serde_json::json!({
-                "allowImportingTsExtensions":true,"noEmit":true,"rootDirs":[
-                crate::file_uri::path_to_typescript_name(storage.root()),
-                crate::file_uri::path_to_typescript_name(&root.join("preferred")),
-                crate::file_uri::path_to_typescript_name(&root.join("fallback")),
-                crate::file_uri::path_to_typescript_name(root),
-            ]})
-        );
-        assert_eq!(std::fs::read(parent).unwrap(), parent_bytes);
-        assert_eq!(std::fs::read(selected).unwrap(), selected_bytes);
-    }
-
-    #[test]
-    fn invalid_authored_root_dirs_are_not_replaced_by_a_valid_fallback() {
-        let project = tempfile::tempdir().unwrap();
-        let root = project.path();
-        let selected = root.join("tsconfig.json");
-        let authored = br#"{"compilerOptions":{"rootDirs":"invalid"}}"#;
-        std::fs::write(&selected, authored).unwrap();
-        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
-        let generated = write_materialized_project_tsconfig(root, storage.root(), None).unwrap();
-        let config: serde_json::Value =
-            serde_json::from_slice(&std::fs::read(generated).unwrap()).unwrap();
-        assert_eq!(
-            config["compilerOptions"],
-            serde_json::json!({
-                "allowImportingTsExtensions":true,"noEmit":true,"rootDirs":"invalid",
-            })
-        );
-        assert_eq!(std::fs::read(selected).unwrap(), authored);
     }
 }

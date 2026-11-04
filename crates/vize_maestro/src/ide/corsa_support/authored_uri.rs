@@ -1,10 +1,11 @@
 //! Authored URI spelling shared by native and import-alias navigation.
 
 use crate::ide::IdeContext;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 use tower_lsp::lsp_types::Url;
 
 pub(crate) struct AuthoredUriResolver {
+    open_uris: Arc<[Url]>,
     open_by_source_path: vize_l0::FxHashMap<PathBuf, Url>,
     open_by_physical_path: vize_l0::FxHashMap<PathBuf, Url>,
     workspace: Option<(PathBuf, PathBuf)>,
@@ -27,6 +28,7 @@ impl AuthoredUriResolver {
             (root, physical)
         });
         Self {
+            open_uris,
             open_by_source_path,
             open_by_physical_path,
             workspace,
@@ -38,6 +40,12 @@ impl AuthoredUriResolver {
         ctx: &IdeContext<'_>,
         source_path: &std::path::Path,
     ) -> Option<Url> {
+        let source_uri = Url::from_file_path(source_path).ok();
+        if let Some(uri) = &source_uri
+            && let Ok(index) = self.open_uris.binary_search(uri)
+        {
+            return Some(self.open_uris[index].clone());
+        }
         if let Some(uri) = self.open_by_source_path.get(source_path) {
             return Some(uri.clone());
         }
@@ -50,7 +58,7 @@ impl AuthoredUriResolver {
                 let relative = physical_path.strip_prefix(physical_root).ok()?;
                 Url::from_file_path(logical_root.join(relative)).ok()
             })
-            .or_else(|| Url::from_file_path(source_path).ok())
+            .or(source_uri)
     }
 }
 
@@ -108,5 +116,18 @@ mod tests {
         );
         assert_eq!(authored_file_uri(&ctx, &physical), Some(encoded));
         assert_eq!(authored_file_uri(&ctx, &authored), Some(linked));
+        let unicode = root.join("é.ts");
+        std::fs::write(&unicode, "export const value = 5;").unwrap();
+        let canonical = Url::from_file_path(&unicode).unwrap();
+        let alternate = Url::parse(&canonical.as_str().replace("%C3%A9", "%c3%a9")).unwrap();
+        assert_ne!(alternate, canonical);
+        assert_eq!(alternate.to_file_path().unwrap(), unicode);
+        state
+            .documents
+            .open(canonical.clone(), "".into(), 1, "typescript".into());
+        state
+            .documents
+            .open(alternate, "".into(), 1, "typescript".into());
+        assert_eq!(authored_file_uri(&ctx, &unicode), Some(canonical));
     }
 }
