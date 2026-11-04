@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   currentCssCases,
   currentCssPacket,
+  currentCssPlain,
   currentCssReport,
 } from "./support/current-css-documentation.ts";
 import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
@@ -19,6 +20,30 @@ interface CssRow {
   expectedCli: unknown;
   expectedPlain?: string;
 }
+
+await test("the authored compound-ID report keeps its current JSON and projects only legacy plain links", () => {
+  const path = new URL(
+    "../../crates/vize_patina/tests/fixtures/css-id-selector-ranges/repeated-compound-ids.cli.expected.json",
+    import.meta.url,
+  );
+  const bytes = fs.readFileSync(path);
+  assert.equal(bytes.length, 2451);
+  assert.equal(
+    createHash("sha256").update(bytes).digest("hex"),
+    "5cc3f4660cc685b4a25450a08ff8481f2834494a9dfe9194f70f531740c33337",
+  );
+  const original = JSON.parse(bytes.toString()) as { json: unknown; plain: string };
+  const page = "docs/content/rules/reference/css-no-id-selectors.md";
+  const expected = { ...original, plain: currentCssPlain(original.plain) };
+  assert.equal(expected.json, original.json);
+  assert.equal(expected.plain.split(page).length - 1, 4);
+  assert.equal(expected.plain.replaceAll(page, oldUrl), original.plain);
+  assert.ok(fs.readFileSync(path).equals(bytes));
+  assert.throws(() => currentCssPlain(original.plain.replaceAll(oldUrl, page)));
+  assert.throws(() =>
+    currentCssPlain(original.plain.replaceAll("css/no-id-selectors", "css/foreign")),
+  );
+});
 
 await test("current CSS expectations preserve complete frozen corpora except documentation fields", () => {
   let count = 0;

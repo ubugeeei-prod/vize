@@ -50,7 +50,9 @@ await test("source-built CLI locates every original and authored CSS ID selector
           "5cc3f4660cc685b4a25450a08ff8481f2834494a9dfe9194f70f531740c33337",
         );
       }
-      const expected = authoredCurrent ? original : currentCssReport(original);
+      const expected = authoredCurrent
+        ? { ...original, plain: currentCssPlain(original.plain) }
+        : currentCssReport(original);
       fs.writeFileSync(path.join(directory, entry.filename), source);
       for (const format of entry.id === "original-7981"
         ? ["json", "plain", "json"]
@@ -106,4 +108,4 @@ await test("source-built CLI locates every original and authored CSS ID selector
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
-import { currentCssReport } from "./support/current-css-documentation.ts";
+import { currentCssPlain, currentCssReport } from "./support/current-css-documentation.ts";

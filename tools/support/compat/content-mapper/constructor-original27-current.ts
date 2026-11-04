@@ -23,7 +23,10 @@ import {
   inside,
 } from "../../release/computed_event_custody.ts";
 import { capture, completed } from "../../release/constructor_original27_public/capture.ts";
-import { sdkFiles } from "../../release/constructor_original27_public/authority.ts";
+import {
+  captureCurrentSdkDeclarations,
+  relativeDeclarationGraph,
+} from "./current-sdk-declarations.ts";
 import {
   assertInputs,
   fixtureDriver,
@@ -47,15 +50,14 @@ import {
 const controllerRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 const git = (root: string, ...args: string[]) =>
   execFileSync("git", args, { cwd: root }).toString("utf8").trim();
-const graphFiles = [...sdkFiles, "virtual-ts-slots.d.ts"].sort();
 export function assertCurrentGraph(
   graph: ReturnType<typeof captureDeclarationGraph>,
   root: string,
 ) {
   const files = graph.files.map((file) => relative(root, file.path).replaceAll("\\", "/"));
   assert.equal(new Set(files).size, files.length);
-  assert.deepEqual([...files].sort(), graphFiles);
-  assert.equal(graph.edges.length, 13);
+  const expected = captureCurrentSdkDeclarations(root).mapperGraph;
+  assert.deepEqual(relativeDeclarationGraph(graph, root), relativeDeclarationGraph(expected, root));
   for (const edge of graph.edges) {
     assert.ok(inside(root, edge.from) && inside(root, edge.target));
     assert.ok(graph.files.some((file) => file.path === edge.from));
@@ -259,7 +261,8 @@ function stageSourcePackage(
     if (name !== "vize" && name !== ".bin")
       symlinkSync(join(modules, name), join(stagedModules, name), "dir");
   const sourcePackage = realpathSync(join(sourceRoot, "npm/cli")),
-    graph = captureDeclarationGraph(sourcePackage);
+    closure = captureCurrentSdkDeclarations(sourcePackage),
+    graph = closure.mapperGraph;
   assertCurrentGraph(graph, sourcePackage);
   const staged = join(stagedModules, "vize");
   mkdirSync(staged);
@@ -273,7 +276,7 @@ function stageSourcePackage(
   });
   writeFileSync(join(record.root, "source-package-original.json"), raw);
   record.json("source-package-staged.json", manifest);
-  for (const image of graph.files) {
+  for (const image of closure.graph.files) {
     const file = relative(sourcePackage, image.path),
       output = join(staged, file),
       retained = join(record.root, "source-package", file);
@@ -282,7 +285,9 @@ function stageSourcePackage(
     mkdirSync(dirname(retained), { recursive: true });
     copyFileSync(image.path, retained);
   }
-  const stagedGraph = captureDeclarationGraph(staged);
+  const stagedClosure = captureCurrentSdkDeclarations(staged);
+  assertSameGraph(closure.graph, sourcePackage, stagedClosure.graph, staged);
+  const stagedGraph = stagedClosure.mapperGraph;
   assertCurrentGraph(stagedGraph, staged);
   assertSameGraph(graph, sourcePackage, stagedGraph, staged);
   record.json("source-declaration-graphs.json", {
