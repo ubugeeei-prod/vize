@@ -217,6 +217,40 @@ const message = "hello"
             .contains("/// <reference types=\"vite/client\" />")
     );
     assert!(!result.mappings.is_empty());
+    let interpolation = result
+        .text
+        .find("void (message); // Interpolation")
+        .expect("interpolation projection");
+    let authored_message = source.rfind("message").expect("authored interpolation");
+    let wrapper_start = interpolation + "void ".len();
+    let diagnostic_anchors = [
+        [
+            wrapper_start,
+            1,
+            authored_message,
+            "message".len(),
+            ContentMapperSpanKind::Atom as usize,
+            0,
+        ],
+        [
+            wrapper_start + "(message".len(),
+            1,
+            authored_message,
+            "message".len(),
+            ContentMapperSpanKind::Atom as usize,
+            0,
+        ],
+    ];
+    assert_eq!(
+        result
+            .mappings
+            .iter()
+            .filter(|mapping| mapping.0[5] == 0)
+            .map(|mapping| mapping.0)
+            .collect::<Vec<_>>(),
+        diagnostic_anchors,
+        "only the generated parentheses are diagnostic-only anchors"
+    );
     for pair in result.mappings.windows(2) {
         let left = pair[0].0;
         let right = pair[1].0;
@@ -235,19 +269,20 @@ const message = "hello"
         }
     }
     assert!(result.mappings.iter().all(|mapping| {
-        mapping.0[5]
-            == match mapping.0[4] {
-                kind if kind == ContentMapperSpanKind::Verbatim as usize => {
-                    CONTENT_MAPPER_SPAN_FEATURES_ALL
+        diagnostic_anchors.contains(&mapping.0)
+            || mapping.0[5]
+                == match mapping.0[4] {
+                    kind if kind == ContentMapperSpanKind::Verbatim as usize => {
+                        CONTENT_MAPPER_SPAN_FEATURES_ALL
+                    }
+                    kind if kind == ContentMapperSpanKind::Atom as usize => {
+                        CONTENT_MAPPER_SPAN_FEATURES_ATOM
+                    }
+                    kind if kind == ContentMapperSpanKind::Alias as usize => {
+                        CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
+                    }
+                    kind => panic!("unknown content-mapper span kind {kind}"),
                 }
-                kind if kind == ContentMapperSpanKind::Atom as usize => {
-                    CONTENT_MAPPER_SPAN_FEATURES_ATOM
-                }
-                kind if kind == ContentMapperSpanKind::Alias as usize => {
-                    CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
-                }
-                kind => panic!("unknown content-mapper span kind {kind}"),
-            }
     }));
 }
 
