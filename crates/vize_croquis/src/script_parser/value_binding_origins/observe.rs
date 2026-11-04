@@ -27,6 +27,7 @@ impl crate::script_parser::ScriptParseResult {
         {
             origins.note_opaque_binding(scope, id.name.as_str(), id.span);
             if let Some(key) = origins.declaration_key(scope, id.span) {
+                origins.note_declared_function(key);
                 origins.async_components.note_function(key, function);
             }
         }
