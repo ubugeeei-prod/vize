@@ -11,7 +11,7 @@ use vize_atelier_core::{
 };
 use vize_croquis::Croquis;
 use vize_l0::dump::capture::{CaptureOutcome, CaptureSink};
-use vize_l0::{Allocator, String, profile, profiler::global_profiler};
+use vize_l0::{Allocator, String, profile, profiler::active_profiler_is_enabled};
 
 use crate::compile::selection::{self, DomLegacyReason};
 use crate::compile::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
@@ -125,7 +125,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
-    let profiling_l2 = use_l2_emit && global_profiler().is_enabled();
+    let profiling_l2 = use_l2_emit && active_profiler_is_enabled();
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",

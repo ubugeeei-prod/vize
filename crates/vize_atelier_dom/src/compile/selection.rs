@@ -1,7 +1,7 @@
 //! Lane-selection accounting for the DOM compile path (P3-17).
 //!
 //! Every DOM template compile that reaches codegen records exactly one
-//! selection counter while the global profiler is enabled: `accepted` when
+//! selection counter while the active profiler is enabled: `accepted` when
 //! the L2 emitter produced the module, or one `legacy.<reason>` naming the
 //! first gate that kept the compile on the legacy transform lane. The
 //! production-reach gate (`vize_atelier_sfc/tests/davinci_production_reach.rs`)
@@ -9,7 +9,7 @@
 //! here must keep that one-counter-per-compile law. Nothing is recorded while
 //! the profiler is disabled (the P2-12b no-observer cost law).
 
-use vize_l0::profiler::global_profiler;
+use vize_l0::profiler::with_active_profiler;
 
 /// The counter an L2-emitted DOM compile records.
 pub(super) const ACCEPTED_COUNTER: &str = "l2.dom.accepted";
@@ -103,15 +103,16 @@ impl DomLegacyReason {
 
 /// Record the lane one DOM compile took.
 pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
-    let profiler = global_profiler();
-    if !profiler.is_enabled() {
-        return;
-    }
-    let counter = match outcome {
-        Ok(()) => ACCEPTED_COUNTER,
-        Err(reason) => reason.counter(),
-    };
-    profiler.record_counter_enabled(counter, 1);
+    with_active_profiler(|profiler| {
+        if !profiler.is_enabled() {
+            return;
+        }
+        let counter = match outcome {
+            Ok(()) => ACCEPTED_COUNTER,
+            Err(reason) => reason.counter(),
+        };
+        profiler.record_counter_enabled(counter, 1);
+    });
 }
 
 /// Keep L2's typed refusal for the differential census. Production builds
