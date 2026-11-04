@@ -5,7 +5,6 @@ use oxc_ast_visit::{Visit, walk};
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_carton::{String, ToCompactString, cstr};
 
-#[path = "imported_props_project_resolution/checked_imports.rs"]
 mod checked_imports;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -419,7 +418,13 @@ fn invalid_project_configuration_is_a_compile_error() {
     write(project.path(), "tsconfig.json", "{ broken");
     let error = compile_source(project.path(), "<script setup lang=\"ts\">import type { FooProps } from '@lib/models/FooProps'; defineProps<FooProps>();</script>").expect_err("invalid config must fail");
     assert_eq!(error.code.as_deref(), Some("V_SFC_TYPE_RESOLUTION"));
-    assert!(error.message.starts_with("invalid TypeScript project "));
+    assert_eq!(
+        error.message,
+        cstr!(
+            "invalid TypeScript project {}: key must be a string at line 1 column 3",
+            project.path().join("tsconfig.json").display()
+        )
+    );
 }
 
 #[test]

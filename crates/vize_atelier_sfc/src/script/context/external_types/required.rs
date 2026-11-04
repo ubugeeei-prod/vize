@@ -1,13 +1,14 @@
-//! Reject unresolved imports reached by a typed props declaration.
+//! Reject unresolved imports that determine the typed props object shape.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{TSTypeName, TSTypeReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{String, ToCompactString, cstr};
 
 use super::ScriptCompileContext;
+use crate::script::type_resolution::unresolved_property_shape_references;
 
 #[derive(Default)]
 struct References(Vec<String>);
@@ -41,25 +42,18 @@ impl ScriptCompileContext {
         else {
             return Ok(());
         };
-        let mut pending = vec![cstr!("type $Props = {type_args};")];
-        let mut visited = FxHashSet::default();
-        while let Some(source) = pending.pop() {
+        for reference in
+            unresolved_property_shape_references(type_args, &self.interfaces, &self.type_aliases)
+        {
+            // Only an unresolved property-shape expression needs AST reference discovery.
+            // A resolved object body and its value types never enter this fallback.
+            let source = cstr!("type $Props = {reference};");
             let allocator = Allocator::default();
             let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
             let mut references = References::default();
             references.visit_program(&parsed.program);
             for name in references.0 {
-                if !visited.insert(name.clone()) {
-                    continue;
-                }
-                if let Some(body) = self.interfaces.get(&name) {
-                    // The context represents interface heritage as an
-                    // intersection type, using the same form as its resolver.
-                    pending.push(cstr!("type $Type = {body};"));
-                } else if let Some(body) = self.type_aliases.get(&name) {
-                    pending.push(cstr!("type $Type = {body};"));
-                } else if let Some((_, specifier)) = imports.iter().find(|(local, _)| local == name)
-                {
+                if let Some((_, specifier)) = imports.iter().find(|(local, _)| local == name) {
                     return Err(cstr!(
                         "Cannot resolve imported macro type `{name}` from `{specifier}`."
                     ));
