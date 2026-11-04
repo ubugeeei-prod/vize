@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/typed-context-undefined.yml
       - crates/vize_canon/src/virtual_ts/helpers.rs
+      - crates/vize_canon/src/batch/virtual_project/content_mapper.rs
       - crates/vize_canon/src/virtual_ts/helpers/setup_macros.rs
       - crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs
       - crates/vize_canon/src/virtual_ts/generator/template_refs.rs
@@ -14,6 +15,8 @@ on:
       - crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined/**
       - tests/_fixtures/differential/typechecker/template-context-undefined-10667/**
       - tools/support/github/typed-context-undefined-replay.mjs
+      - tools/support/github/typed-context-wrapper-mappings.ts
+      - tests/tooling/typed-context-wrapper-mappings.test.ts
   workflow_dispatch:
     inputs:
       source_ref:
@@ -85,6 +88,8 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "26.12.1", package-manager-cache: false }
+      - name: Require the finite diagnostic-wrapper mapping successor laws
+        run: node --test tests/tooling/typed-context-wrapper-mappings.test.ts
       - name: Install the pinned public dependency graph without hooks
         working-directory: public
         run: npm exec --yes --ignore-scripts --package=pnpm@12.9.0 -- pnpm install --frozen-lockfile --ignore-scripts

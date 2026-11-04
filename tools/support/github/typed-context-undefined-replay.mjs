@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
+import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
 const hash = (b) => createHash("sha256").update(b).digest("hex"),
@@ -438,7 +439,13 @@ if (mode === "prepare") {
   const mappings = a.mappings.map(([start, length, ...rest]) => {
     return [...projectedRange(start, length, edits), ...rest];
   });
-  assert.deepEqual(b.mappings, mappings);
+  assertTypedContextWrapperMappings(
+    pre.source,
+    a,
+    b,
+    mappings,
+    readFileSync("source/crates/vize_canon/src/batch/virtual_project/content_mapper.rs"),
+  );
   const links = a.semanticLinks ?? [];
   assert.deepEqual(
     b.semanticLinks ?? [],
