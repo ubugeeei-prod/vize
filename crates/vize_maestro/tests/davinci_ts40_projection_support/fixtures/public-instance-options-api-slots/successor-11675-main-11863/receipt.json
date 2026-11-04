@@ -27,11 +27,7 @@
     "pullRequestHead": "2a008a4656c3bae6cf05104b8e5c000460ebd603",
     "mainRevision": "869a446d2f07f636a7df7190caeefd3cb463b471",
     "producerCommit": "46b752b95bd8e2b955148866655e01b58a166fe4",
-    "observedLanes": [
-      "canon",
-      "content-mapper",
-      "maestro"
-    ]
+    "observedLanes": ["canon", "content-mapper", "maestro"]
   },
   "scope": "Only the two diagnostics-only interpolation parenthesis Atom mappings and corresponding authored hits changed. Every other predecessor byte is retained."
 }

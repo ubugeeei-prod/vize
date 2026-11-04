@@ -143,7 +143,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-11675-main-11863/receipt.json"
         ),
-        "b30ac3d37431105568552655597e45bd02f95b91022a6792fe9cc076e474708a",
+        "554080a49a1536daa454d8f63f5fff978bae5c04afd39db111afd89ee48dc1bd",
         11863,
         runtime_prop_successor,
         delimiter_successor,
@@ -258,7 +258,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "fixtures/public-instance-mixed-vue2/successor-11675-main-11863/receipt.json"
             ),
-            "516d0ad58e7422262e0f69b313c08a050db0faed83bb0aff5222023613af0248",
+            "7c9503a77fccad883c99097ee0af7bec02984d02a4a81627b9d0e6ce056254c5",
             11863,
             runtime_prop_successor,
             delimiter_successor,
