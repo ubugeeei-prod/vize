@@ -1,3 +1,4 @@
+// Consumer runtime asset, copied verbatim into node_modules by the typed driver.
 import { spawn } from "node:child_process";
 import { closeSync, openSync, readFileSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";

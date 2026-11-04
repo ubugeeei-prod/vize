@@ -1,14 +1,19 @@
+import { assertCampaignEnvironment } from "./template-alias-paired-11822-process.ts";
+import type {
+  Variant,
+  NativeReceipt,
+  ProbeRecord,
+  ProbeIdentity,
+  DiagnosticPacket,
+  WorkspaceClosure,
+  VariantId,
+  Metrics,
+  Resources,
+  Location,
+} from "./template-alias-paired-11822-types.ts";
 import assert from "node:assert/strict";
-import {
-  copyFileSync,
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-} from "node:fs";
-import { availableParallelism, cpus, release, totalmem } from "node:os";
+import { existsSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
+import { availableParallelism } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
@@ -16,7 +21,6 @@ import {
   upstreamSha,
   json,
   write,
-  evidence,
   git,
   inventory,
   diagnostics,
@@ -26,32 +30,26 @@ import {
   prepareWorkspace,
   installedNative,
   closureSnapshot,
-} from "./template-alias-paired-11822-custody.mjs";
-import { copyPublishedPackage } from "./template-alias-paired-11822-packages.mjs";
-import { collectTransforms, sharedHelperClosure } from "./template-alias-paired-11822-protocol.mjs";
+} from "./template-alias-paired-11822-custody.ts";
+import {
+  archiveCampaignInputs,
+  requiredDependencyDirectory,
+} from "./template-alias-paired-11822-packages.ts";
+import {
+  verifiedSourcePair,
+  writeCampaignProvenance,
+} from "./template-alias-paired-11822-source.ts";
+import {
+  declarationParser,
+  declarationClosure,
+} from "./template-alias-paired-11822-declarations.ts";
+import { collectTransforms, sharedHelperClosure } from "./template-alias-paired-11822-protocol.ts";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-const median = (values) => values.toSorted((a, b) => a - b)[Math.floor(values.length / 2)];
+const median = (values: number[]) =>
+  values.toSorted((a, b) => a - b)[Math.floor(values.length / 2)];
 
 export async function main(argv = process.argv.slice(2)) {
-  assert.equal(process.platform, "linux", "performance campaign is Linux Actions only");
-  assert.equal(process.arch, "x64");
-  assert.equal(process.env.GITHUB_ACTIONS, "true", "performance campaign is Actions only");
-  assert.equal(process.env.TEMPLATE_ALIAS_RUNNER, "blacksmith-32vcpu-ubuntu-2404");
-  for (const key of [
-    "TEMPLATE_ALIAS_CAPTURE",
-    "VIZE_COLD_CAPTURE",
-    "NAPI_RS_NATIVE_LIBRARY_PATH",
-    "NAPI_RS_FORCE_WASI",
-    "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
-    "NODE_PATH",
-    "LD_PRELOAD",
-    "NODE_OPTIONS",
-    "VIZE_CHILD_ALLOCATION_OBSERVATION",
-    "VIZE_ROUTE_MEMORY_OBSERVATION",
-    "VIZE_OWNED_READ_BUFFER_TRACE",
-  ]) {
-    assert.equal(process.env[key], undefined, `${key} would instrument primary measurements`);
-  }
+  assertCampaignEnvironment();
   const { values: options } = parseArgs({
     args: argv,
     options: Object.fromEntries(
@@ -63,25 +61,30 @@ export async function main(argv = process.argv.slice(2)) {
   });
   for (const name of ["base", "head", "base-sha", "head-sha", "upstream", "provider", "output"])
     assert.ok(options[name], `missing --${name}`);
+  const option = (name: string): string => {
+    const value = options[name];
+    assert.ok(typeof value === "string", "missing --" + name);
+    return value;
+  };
   const paths = Object.fromEntries(
-    ["base", "head", "upstream", "provider", "output"].map((name) => [
-      name,
-      resolve(options[name]),
-    ]),
+    ["base", "head", "upstream", "provider", "output"].map((name) => [name, resolve(option(name))]),
   );
   const { base, head, upstream, provider, output } = paths;
+  const typescript = declarationParser(
+    join(requiredDependencyDirectory(join(head, "npm/cli"), "typescript"), "lib/typescript.js"),
+  );
   assert.equal(
     process.env.EXECUTED_WORKFLOW_SHA,
-    options["head-sha"],
+    option("head-sha"),
     "executed workflow differs from the approved source head",
   );
   mkdirSync(output);
   const sources = {
-    base: pristine(base, options["base-sha"]),
-    head: pristine(head, options["head-sha"]),
+    base: pristine(base, option("base-sha")),
+    head: pristine(head, option("head-sha")),
     upstream: pristine(upstream, upstreamSha),
   };
-  git(head, "merge-base", "--is-ancestor", options["base-sha"], options["head-sha"]);
+  git(head, "merge-base", "--is-ancestor", option("base-sha"), option("head-sha"));
   assert.deepEqual(
     readFileSync(join(upstream, "pnpm-lock.yaml")),
     readFileSync(join(provider, "pnpm-lock.yaml")),
@@ -98,7 +101,7 @@ export async function main(argv = process.argv.slice(2)) {
   assert.equal(json(join(provider, "node_modules/vize/package.json")).version, "0.679.0");
   const providerInputs = inventory(provider);
   write(join(output, "provider-pre.json"), providerInputs);
-  const native = {
+  const native: Record<string, NativeReceipt> = {
     tsc: installedNative(
       provider,
       providerInputs,
@@ -119,35 +122,12 @@ export async function main(argv = process.argv.slice(2)) {
       "napi",
     ),
   };
-  const { expectedDiagnostics } = await import(
-    pathToFileURL(join(upstream, "scripts/diagnostics.mjs"))
-  );
+  const { expectedDiagnostics } = (await import(
+    pathToFileURL(join(upstream, "scripts/diagnostics.mjs")).href
+  )) as { expectedDiagnostics: Location[] };
   assert.equal(expectedDiagnostics.length, 12);
-  const builds = Object.fromEntries(
-    [
-      ["currentmain", base],
-      ["candidate", head],
-    ].map(([id, root]) => {
-      const receipt = json(join(root, "target/template-alias-11822/receipt.json"));
-      assert.equal(receipt.source.sha, sources[id === "currentmain" ? "base" : "head"].sha);
-      assert.equal(
-        receipt.endpoint,
-        "normal Node CLI -> generated SDK loader -> platform NAPI image",
-      );
-      assert.deepEqual(closureSnapshot([dirname(dirname(receipt.cliPackage))]), receipt.capsule);
-      for (const entry of receipt.generatedSdk)
-        assert.equal(
-          evidence(join(receipt.nativePackage, entry.path.split("/").at(-1))).sha256,
-          entry.sha256,
-        );
-      assert.deepEqual(readFileSync(receipt.image.path), readFileSync(receipt.originalImage.path));
-      return [id, receipt];
-    }),
-  );
-  assert.deepEqual(builds.currentmain.artifact.features, builds.candidate.artifact.features);
-  assert.deepEqual(builds.currentmain.artifact.profile, builds.candidate.artifact.profile);
-  assert.equal(builds.currentmain.rustc, builds.candidate.rustc);
-  const variants = [
+  const builds = verifiedSourcePair(base, head, sources);
+  const variants: Variant[] = [
     { id: "published679", package: realpathSync(join(provider, "node_modules/vize")) },
     { id: "currentmain", package: builds.currentmain.cliPackage },
     { id: "candidate", package: builds.candidate.cliPackage },
@@ -177,7 +157,13 @@ export async function main(argv = process.argv.slice(2)) {
       : null,
   });
   const cpuWidth = width();
-  const observe = async (id, command, args, cwd, env = {}) => {
+  const observe = async (
+    id: string,
+    command: string,
+    args: string[],
+    cwd: string,
+    env: NodeJS.ProcessEnv = {},
+  ) => {
     const before = closureSnapshot(roots, files);
     write(join(output, id + ".custody-pre.json"), before);
     assert.deepEqual(
@@ -201,51 +187,18 @@ export async function main(argv = process.argv.slice(2)) {
   };
   const inputFiles = inventory(join(upstream, "src"));
   assert.equal(inputFiles.filter(({ path }) => path.endsWith(".vue")).length, 2500);
-  cpSync(join(upstream, "src"), join(output, "inputs/src"), { recursive: true });
-  for (const name of [
-    "package.json",
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-    "tsconfig.base.json",
-    "tsconfig.vize-content-mapper.json",
-    "tsconfig.vue-content-mapper.json",
-    "scripts/diagnostics.mjs",
-  ]) {
-    mkdirSync(dirname(join(output, "inputs", name)), { recursive: true });
-    copyFileSync(join(upstream, name), join(output, "inputs", name));
-  }
-  for (const variant of variants) {
-    const packageRoot =
-      variant.package ?? realpathSync(join(provider, "node_modules/@vue/content-mapper"));
-    if (variant.id === "vue")
-      cpSync(packageRoot, join(output, "inputs/packages", variant.id), {
-        recursive: true,
-        dereference: false,
-      });
-    else copyPublishedPackage(packageRoot, join(output, "inputs/packages", variant.id));
-  }
-  for (const [id, build] of Object.entries(builds))
-    cpSync(dirname(dirname(build.cliPackage)), join(output, "inputs/capsule-" + id), {
-      recursive: true,
-      dereference: false,
-    });
-  for (const name of readdirSync(scriptDirectory).filter(
-    (name) => name.startsWith("template-alias-paired-11822") && name.endsWith(".mjs"),
-  )) {
-    copyFileSync(join(scriptDirectory, name), join(output, "inputs", name));
-  }
-  copyFileSync(
-    join(head, ".github/workflows/template-alias-paired-11822.yml"),
-    join(output, "inputs/workflow.yml"),
-  );
-  const probes = {};
-  for (const id of ["tsc", "tsrs", "published679", "currentmain", "candidate"]) {
+  archiveCampaignInputs({ upstream, output, provider, variants, builds, scriptDirectory, head });
+  const probes: Record<string, ProbeRecord> = {};
+  for (const id of ["tsc", "tsrs", "published679", "currentmain", "candidate"] as const) {
     const workspace = join(output, id + ".version-workspace");
     mkdirSync(workspace);
-    const variant = variants.find((variant) => variant.id === id);
+    const variant = variants.find(
+      (variant): variant is Exclude<Variant, { id: "vue" }> =>
+        variant.id !== "vue" && variant.id === id,
+    );
     const command = variant ? process.execPath : native[id].binary.path;
     const args = variant
-      ? [join(scriptDirectory, "template-alias-paired-11822-probe.mjs"), variant.package]
+      ? [join(scriptDirectory, "template-alias-paired-11822-probe.ts"), variant.package]
       : ["--version"];
     const run = await observe(id + ".version", command, args, workspace);
     assert.equal(run.status, 0, id + " native/wrapper version probe failed");
@@ -255,8 +208,10 @@ export async function main(argv = process.argv.slice(2)) {
     if (variant) {
       const line = /^TEMPLATE_ALIAS_NATIVE_IDENTITY (.+)$/m.exec(run.text);
       assert.ok(line, "normal Node/NAPI probe identity absent");
-      identity = JSON.parse(line[1]);
-      const expected = id === "published679" ? native.published679.binary : builds[id].image;
+      identity = JSON.parse(line[1]) as ProbeIdentity;
+      const sourceBuild = id === "currentmain" || id === "candidate" ? builds[id] : undefined;
+      const expected = id === "published679" ? native.published679.binary : sourceBuild?.image;
+      assert.ok(expected);
       assert.ok(
         identity.images.some(
           (image) => image.path === realpathSync(expected.path) && image.sha256 === expected.sha256,
@@ -266,80 +221,48 @@ export async function main(argv = process.argv.slice(2)) {
         identity.sharedObjects.includes(realpathSync(expected.path)),
         "expected NAPI image was not actually mapped",
       );
-      if (builds[id]) assert.equal(identity.token, builds[id].token);
+      if (sourceBuild) assert.equal(identity.token, sourceBuild.token);
     }
-    probes[id] = { stdout: run.stdout, stderr: run.stderr, command: run.command, identity };
+    probes[id] = {
+      stdout: run.stdout,
+      stderr: run.stderr,
+      command: run.command,
+      identity,
+      nativeDeclarations: variant
+        ? declarationClosure(
+            requiredDependencyDirectory(variant.package, "@vizejs/native"),
+            typescript,
+          )
+        : null,
+    };
   }
-  write(join(output, "provenance.json"), {
+  writeCampaignProvenance({
+    output,
+    provider,
     sources,
     probes,
     cpuWidth,
     builds,
     inputFiles,
     native,
-    providerLock: evidence(join(provider, "pnpm-lock.yaml")),
-    provider: {
-      package: evidence(join(provider, "package.json")),
-      modules: evidence(join(provider, "node_modules/.modules.yaml")),
-      packages: Object.fromEntries(
-        ["typescript", "tsrs", "@vue/content-mapper", "vize", "vue"].map((name) => [
-          name,
-          {
-            manifest: evidence(join(provider, "node_modules", name, "package.json")),
-            resolvedRoot: realpathSync(join(provider, "node_modules", name)),
-          },
-        ]),
-      ),
-      checkers: Object.fromEntries(
-        ["tsc", "tsrs"].map((name) => [
-          name,
-          evidence(realpathSync(join(provider, "node_modules/.bin", name))),
-        ]),
-      ),
-      published679Measured: true,
-    },
-    node: { version: process.version, executable: evidence(process.execPath) },
-    runner: {
-      label: process.env.TEMPLATE_ALIAS_RUNNER,
-      name: process.env.RUNNER_NAME,
-      environment: process.env.RUNNER_ENVIRONMENT,
-      cpus: cpus(),
-      release: release(),
-      totalmem: totalmem(),
-    },
-    workflow: {
-      sha: process.env.EXECUTED_WORKFLOW_SHA,
-      run: process.env.GITHUB_RUN_ID,
-      attempt: process.env.GITHUB_RUN_ATTEMPT,
-    },
-    hostEnvironment: Object.fromEntries(
-      ["GOMAXPROCS", "RAYON_NUM_THREADS", "NODE_OPTIONS", "CARGO_BUILD_JOBS"].map((key) => [
-        key,
-        process.env[key] ?? null,
-      ]),
-    ),
-    policy: {
-      vizeEndpoint:
-        "normal Node CLI -> NAPI SDK loader -> platform shared image for all Vize cohorts",
-      sourceProfile:
-        "ci-opt; identical source-pair flags/features are required; historical registry build flags are not verified here",
-      pairs: 5,
-      warmups: 0,
-      preflightCaptures:
-        "eight untimed mapper/diagnostic/helper/directive admissions precede all measured fresh processes",
-      compilerIncremental: false,
-      freshProcessAndWorkspace: true,
-      osPageCacheFlushed: false,
-      fastFlag: false,
-      rss: "GNU time maximum resident set for waited process and descendants; not simultaneous process-tree RSS sum",
-      comparison: "Blacksmith paired campaign; not a reproduction of the reporter's M5 Pro times",
-      materializedChecker:
-        "not executed; mapper directives remain part of the authored diagnostic oracle",
-    },
   });
-  const observations = [];
-  const oracle = new Map();
-  const captures = [];
+  const observations: {
+    id: string;
+    checker: string;
+    variant: VariantId;
+    pair: number;
+    closure: WorkspaceClosure;
+    packet: DiagnosticPacket;
+    resources: Resources;
+    metrics: Metrics;
+  }[] = [];
+  const oracle = new Map<string, DiagnosticPacket>();
+  const captures: {
+    id: string;
+    transforms: ReturnType<typeof collectTransforms>;
+    metrics: Metrics;
+    timingEligible: boolean;
+  }[] = [];
   const expectedPaths = inputFiles
     .filter(({ path }) => path.endsWith(".vue"))
     .map(({ path }) => "src/" + path);
@@ -374,7 +297,7 @@ export async function main(argv = process.argv.slice(2)) {
         closure.package,
         "capture changed helper package",
       );
-      assert.ok([1, 2].includes(run.status), "require semantic diagnostic exit");
+      assert.ok(run.status === 1 || run.status === 2, "require semantic diagnostic exit");
       oracle.set(checker + ":" + variant.id, {
         status: run.status,
         diagnostics: diagnostics(run.text, workspace, expectedDiagnostics),
@@ -386,7 +309,7 @@ export async function main(argv = process.argv.slice(2)) {
           workspace,
           join(output, id + ".transforms"),
           expectedPaths,
-          variant.id === "vue" ? null : sharedHelperClosure(workspace),
+          variant.id === "vue" ? null : sharedHelperClosure(workspace, typescript),
         ),
         metrics: metrics(run.text),
         timingEligible: false,
@@ -401,6 +324,7 @@ export async function main(argv = process.argv.slice(2)) {
     );
     const before = captures.find((entry) => entry.id === checker + "-currentmain-capture");
     const after = captures.find((entry) => entry.id === checker + "-candidate-capture");
+    assert.ok(before && after);
     assert.deepEqual(
       after.transforms.directiveAuthority,
       before.transforms.directiveAuthority,
@@ -438,7 +362,7 @@ export async function main(argv = process.argv.slice(2)) {
           closure.package,
           "checker/mapper changed helper package",
         );
-        assert.ok([1, 2].includes(run.status), "require semantic diagnostic exit");
+        assert.ok(run.status === 1 || run.status === 2, "require semantic diagnostic exit");
         assert.ok(
           run.usage.wall_s > 0 &&
             run.usage.user_s + run.usage.system_s > 0 &&
@@ -507,7 +431,7 @@ export async function main(argv = process.argv.slice(2)) {
     ["base", base],
     ["head", head],
     ["upstream", upstream],
-  ])
+  ] as const)
     pristine(directory, sources[role].sha);
   assert.deepEqual(
     readFileSync(join(upstream, "pnpm-lock.yaml")),
@@ -526,6 +450,7 @@ export async function main(argv = process.argv.slice(2)) {
       const after = observations.find(
         (row) => row.checker === checker && row.variant === "candidate" && row.pair === pair,
       );
+      assert.ok(before && after, "incomplete paired population");
       return {
         pair,
         wallRatio: after.resources.wall_s / before.resources.wall_s,

@@ -1,8 +1,27 @@
+import { cpus, release, totalmem } from "node:os";
+import type {
+  CargoArtifact,
+  SourceReceipt,
+  GitIdentity,
+  CampaignContext,
+} from "./template-alias-paired-11822-types.ts";
+import { recordedStage } from "./template-alias-paired-11822-process.ts";
+import {
+  declarationParser,
+  declarationClosure,
+  typecheckHarness,
+} from "./template-alias-paired-11822-declarations.ts";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, basename, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import {
@@ -12,15 +31,118 @@ import {
   json,
   pristine,
   write,
-} from "./template-alias-paired-11822-custody.mjs";
+} from "./template-alias-paired-11822-custody.ts";
 import {
   copyPublishedPackage,
-  dependencyDirectory,
+  requiredDependencyDirectory,
   manifestChanges,
   stageRuntimeDependencies,
-} from "./template-alias-paired-11822-packages.mjs";
+} from "./template-alias-paired-11822-packages.ts";
 
-export async function buildSource(source, sha) {
+export function writeCampaignProvenance(context: CampaignContext): void {
+  const { output, provider, sources, probes, cpuWidth, builds, inputFiles, native } = context;
+  write(join(output, "provenance.json"), {
+    sources,
+    probes,
+    cpuWidth,
+    builds,
+    inputFiles,
+    native,
+    providerLock: evidence(join(provider, "pnpm-lock.yaml")),
+    provider: {
+      package: evidence(join(provider, "package.json")),
+      modules: evidence(join(provider, "node_modules/.modules.yaml")),
+      packages: Object.fromEntries(
+        ["typescript", "tsrs", "@vue/content-mapper", "vize", "vue"].map((name) => [
+          name,
+          {
+            manifest: evidence(join(provider, "node_modules", name, "package.json")),
+            resolvedRoot: realpathSync(join(provider, "node_modules", name)),
+          },
+        ]),
+      ),
+      checkers: Object.fromEntries(
+        ["tsc", "tsrs"].map((name) => [
+          name,
+          evidence(realpathSync(join(provider, "node_modules/.bin", name))),
+        ]),
+      ),
+      published679Measured: true,
+    },
+    node: { version: process.version, executable: evidence(process.execPath) },
+    runner: {
+      label: process.env.TEMPLATE_ALIAS_RUNNER,
+      name: process.env.RUNNER_NAME,
+      environment: process.env.RUNNER_ENVIRONMENT,
+      cpus: cpus(),
+      release: release(),
+      totalmem: totalmem(),
+    },
+    workflow: {
+      sha: process.env.EXECUTED_WORKFLOW_SHA,
+      run: process.env.GITHUB_RUN_ID,
+      attempt: process.env.GITHUB_RUN_ATTEMPT,
+    },
+    hostEnvironment: Object.fromEntries(
+      ["GOMAXPROCS", "RAYON_NUM_THREADS", "NODE_OPTIONS", "CARGO_BUILD_JOBS"].map((key) => [
+        key,
+        process.env[key] ?? null,
+      ]),
+    ),
+    policy: {
+      vizeEndpoint:
+        "normal Node CLI -> NAPI SDK loader -> platform shared image for all Vize cohorts",
+      sourceProfile:
+        "ci-opt; identical source-pair flags/features are required; historical registry build flags are not verified here",
+      pairs: 5,
+      warmups: 0,
+      preflightCaptures:
+        "eight untimed mapper/diagnostic/helper/directive admissions precede all measured fresh processes",
+      compilerIncremental: false,
+      freshProcessAndWorkspace: true,
+      osPageCacheFlushed: false,
+      fastFlag: false,
+      rss: "GNU time maximum resident set for waited process and descendants; not simultaneous process-tree RSS sum",
+      comparison: "Blacksmith paired campaign; not a reproduction of the reporter's M5 Pro times",
+      materializedChecker:
+        "not executed; mapper directives remain part of the authored diagnostic oracle",
+    },
+  });
+}
+
+export function verifiedSourcePair(
+  base: string,
+  head: string,
+  sources: { base: GitIdentity; head: GitIdentity },
+): Record<string, SourceReceipt> {
+  const builds: Record<string, SourceReceipt> = Object.fromEntries(
+    [
+      ["currentmain", base],
+      ["candidate", head],
+    ].map(([id, root]) => {
+      const receipt = json<SourceReceipt>(join(root, "target/template-alias-11822/receipt.json"));
+      assert.equal(receipt.source.sha, sources[id === "currentmain" ? "base" : "head"].sha);
+      assert.equal(
+        receipt.endpoint,
+        "normal Node CLI -> generated SDK loader -> platform NAPI image",
+      );
+      assert.deepEqual(closureSnapshot([dirname(dirname(receipt.cliPackage))]), receipt.capsule);
+      for (const entry of receipt.generatedSdk)
+        assert.equal(
+          evidence(join(receipt.nativePackage, basename(entry.path))).sha256,
+          entry.sha256,
+        );
+      assert.deepEqual(readFileSync(receipt.image.path), readFileSync(receipt.originalImage.path));
+      return [id, receipt];
+    }),
+  );
+  assert.deepEqual(builds.currentmain.artifact.features, builds.candidate.artifact.features);
+  assert.deepEqual(builds.currentmain.artifact.profile, builds.candidate.artifact.profile);
+  assert.equal(builds.currentmain.rustc, builds.candidate.rustc);
+  return builds;
+}
+
+export async function buildSource(source: string, sha: string): Promise<SourceReceipt> {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
   assert.equal(process.env.GITHUB_ACTIONS, "true");
@@ -28,7 +150,13 @@ export async function buildSource(source, sha) {
   const target = join(source, "target");
   const out = join(target, "template-alias-11822");
   mkdirSync(out, { recursive: false });
-  const commands = [];
+  const commands: {
+    id: string;
+    command: string;
+    args: string[];
+    cwd: string;
+    processReceipt: string;
+  }[] = [];
   const token = randomBytes(16).toString("hex");
   const compilerEnvironment = Object.fromEntries(
     [
@@ -53,28 +181,25 @@ export async function buildSource(source, sha) {
     CARGO_TARGET_DIR: target,
     VIZE_NATIVE_BUILD_TOKEN: token,
   });
-  const run = (id, command, args, cwd) => {
-    const result = spawnSync(command, args, {
-      cwd,
-      env: environment,
-      maxBuffer: 128 * 1024 * 1024,
-    });
-    writeFileSync(join(out, id + ".stdout"), result.stdout ?? Buffer.alloc(0), { flag: "wx" });
-    writeFileSync(join(out, id + ".stderr"), result.stderr ?? Buffer.alloc(0), { flag: "wx" });
-    commands.push({
+  const run = (
+    id: string,
+    command: string,
+    args: string[],
+    cwd: string,
+    extra: NodeJS.ProcessEnv = {},
+  ) => {
+    commands.push({ id, command, args, cwd, processReceipt: join(out, id + ".process.json") });
+    writeFileSync(join(out, "commands.json"), JSON.stringify(commands, null, 2) + "\n");
+    return recordedStage({
+      directory: out,
       id,
       command,
       args,
       cwd,
-      status: result.status,
-      signal: result.signal,
-      error: result.error ? String(result.error) : null,
+      environment: { ...environment, ...extra },
+      sourceSha: sha,
+      maxMilliseconds: id === "napi" ? 720_000 : 300_000,
     });
-    writeFileSync(join(out, "commands.json"), JSON.stringify(commands, null, 2) + "\n");
-    assert.equal(result.error, undefined);
-    assert.equal(result.signal, null);
-    assert.equal(result.status, 0, `source stage ${id} failed; complete raw streams retained`);
-    return result.stdout.toString();
   };
   const native = join(source, "npm/native");
   const generated = ["index.js", "index.d.ts"].map((name) => ({
@@ -99,6 +224,29 @@ export async function buildSource(source, sha) {
       source,
     );
     run("vp-version", "vp", ["--version"], source);
+    const apiPath = join(
+      requiredDependencyDirectory(join(source, "npm/cli"), "typescript"),
+      "lib/typescript.js",
+    );
+    const typescript = declarationParser(apiPath);
+    typecheckHarness(
+      dirname(fileURLToPath(import.meta.url)),
+      apiPath,
+      requiredDependencyDirectory(join(source, "npm/cli"), "@types/node"),
+    );
+    run(
+      "declaration-controls",
+      process.execPath,
+      [
+        "--test",
+        join(
+          dirname(fileURLToPath(import.meta.url)),
+          "template-alias-paired-11822-declarations.test.ts",
+        ),
+      ],
+      source,
+      { TEMPLATE_ALIAS_TYPESCRIPT_API: apiPath },
+    );
     run(
       "helpers",
       process.execPath,
@@ -140,11 +288,11 @@ export async function buildSource(source, sha) {
     const messages = readFileSync(join(out, "napi.stdout"), "utf8")
       .split("\n")
       .filter((line) => line.startsWith("{"))
-      .map((line) => JSON.parse(line));
+      .map((line) => JSON.parse(line) as Partial<CargoArtifact> & { success?: boolean });
     const artifacts = messages.filter(
-      (message) =>
+      (message): message is CargoArtifact =>
         message.reason === "compiler-artifact" &&
-        message.target.name === "vize_vitrine" &&
+        message.target?.name === "vize_vitrine" &&
         message.target.kind.includes("cdylib"),
     );
     const completed = messages.filter((message) => message.reason === "build-finished");
@@ -170,7 +318,7 @@ export async function buildSource(source, sha) {
       "generated native SDK declaration missing",
     );
     const { preparePublishManifest } = await import(
-      pathToFileURL(join(source, "tools/support/compat/npm/prepare-publish-manifest.ts"))
+      pathToFileURL(join(source, "tools/support/compat/npm/prepare-publish-manifest.ts")).href
     );
     preparePublishManifest(cliPackage);
     preparePublishManifest(nativePackage);
@@ -213,13 +361,13 @@ export async function buildSource(source, sha) {
     const buildDependencies = Object.fromEntries(
       ["typescript", "oxfmt", "vite-plus"].map((name) => [
         name,
-        evidence(join(dependencyDirectory(join(source, "npm/cli"), name), "package.json")),
+        evidence(join(requiredDependencyDirectory(join(source, "npm/cli"), name), "package.json")),
       ]),
     );
     buildDependencies.napi = evidence(
-      join(dependencyDirectory(native, "@napi-rs/cli"), "package.json"),
+      join(requiredDependencyDirectory(native, "@napi-rs/cli"), "package.json"),
     );
-    const receipt = {
+    const receipt: SourceReceipt = {
       source: identity,
       endpoint: "normal Node CLI -> generated SDK loader -> platform NAPI image",
       token,
@@ -231,6 +379,10 @@ export async function buildSource(source, sha) {
       image: evidence(image),
       originalImage: evidence(originalImage),
       generatedSdk,
+      physicalDeclarations: {
+        cli: declarationClosure(cliPackage, typescript),
+        native: declarationClosure(nativePackage, typescript),
+      },
       manifestDiffs,
       buildDependencies,
       sourceLock: evidence(join(source, "pnpm-lock.yaml")),
@@ -259,21 +411,21 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     assert.equal(process.platform, "linux");
     assert.equal(process.env.GITHUB_ACTIONS, "true");
     const provider = resolve(values["install-provider"]);
-    const result = spawnSync("vp", ["install", "--frozen-lockfile"], {
+    recordedStage({
+      directory: dirname(provider),
+      id: basename(provider) + ".install",
+      command: "vp",
+      args: ["install", "--frozen-lockfile"],
       cwd: provider,
-      env: childEnvironment(),
-      maxBuffer: 128 * 1024 * 1024,
+      environment: childEnvironment(),
+      sourceSha: "c9a59cb07c236cbf7e0a97aa06ca3d02756415ea",
+      maxMilliseconds: 300_000,
     });
-    writeFileSync(provider + ".install.stdout", result.stdout ?? Buffer.alloc(0), { flag: "wx" });
-    writeFileSync(provider + ".install.stderr", result.stderr ?? Buffer.alloc(0), { flag: "wx" });
-    process.stdout.write(result.stdout ?? Buffer.alloc(0));
-    process.stderr.write(result.stderr ?? Buffer.alloc(0));
-    assert.equal(result.error, undefined);
-    assert.equal(result.signal, null);
-    assert.equal(result.status, 0);
-  } else
-    buildSource(resolve(values.source), values.sha).catch((error) => {
+  } else {
+    assert.ok(values.source && values.sha);
+    buildSource(resolve(values.source), values.sha).catch((error: unknown) => {
       console.error(error);
       process.exitCode = 1;
     });
+  }
 }

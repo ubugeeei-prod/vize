@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, symlinkSync } from "node:fs";
+import { test, type TestContext } from "node:test";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+  symlinkSync,
+  writeSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -13,23 +21,85 @@ import {
   inventory,
   closureSnapshot,
   childEnvironment,
-} from "./template-alias-paired-11822-custody.mjs";
+} from "./template-alias-paired-11822-custody.ts";
 import {
   collectTransforms,
   directiveAuthority,
   admitSharedTransform,
-} from "./template-alias-paired-11822-protocol.mjs";
+} from "./template-alias-paired-11822-protocol.ts";
 import {
   copyPublishedPackage,
   stageRuntimeDependencies,
   manifestChanges,
-} from "./template-alias-paired-11822-packages.mjs";
+} from "./template-alias-paired-11822-packages.ts";
+import { recordedStage, remainingBudget } from "./template-alias-paired-11822-process.ts";
+import type { ProtocolMessage } from "./template-alias-paired-11822-types.ts";
 
-const scratch = (t) => {
+const scratch = (t: TestContext) => {
   const root = mkdtempSync(join(tmpdir(), "template-alias-law-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   return root;
 };
+
+test("stage argv and raw streams survive timeout, with an explicit shared soft deadline", (t) => {
+  const root = scratch(t),
+    id = "interrupted-build";
+  assert.equal(remainingBudget({ TEMPLATE_ALIAS_DEADLINE_MS: "1500" }, 1000), 500);
+  assert.throws(() => remainingBudget({ TEMPLATE_ALIAS_DEADLINE_MS: "1000" }, 1000), /exhausted/);
+  assert.throws(() => remainingBudget({}, 1000), /explicit/);
+  assert.throws(
+    () =>
+      recordedStage({
+        directory: root,
+        id,
+        command: "native-build-fixture",
+        args: ["--profile", "ci-opt"],
+        cwd: root,
+        sourceSha: "a".repeat(40),
+        environment: { PATH: "/bin" },
+        maxMilliseconds: 1000,
+        budget: () => 500,
+        run: (command, args, options) => {
+          const started = JSON.parse(readFileSync(join(root, id + ".process.json"), "utf8")) as {
+            command: string;
+            ended: string | null;
+            sourceSha: string;
+          };
+          assert.equal(started.command, "native-build-fixture");
+          assert.equal(started.ended, null);
+          assert.equal(started.sourceSha, "a".repeat(40));
+          assert.equal(command, "/usr/bin/timeout");
+          assert.ok(args.includes("0.5s"));
+          assert.ok(Array.isArray(options.stdio));
+          const stdout = options.stdio[1],
+            stderr = options.stdio[2];
+          assert.equal(typeof stdout, "number");
+          assert.equal(typeof stderr, "number");
+          writeSync(stdout as number, "partial stdout\n");
+          writeSync(stderr as number, "partial stderr\n");
+          return {
+            pid: 1,
+            status: 124,
+            signal: null,
+            output: [null, null, null],
+            stdout: Buffer.alloc(0),
+            stderr: Buffer.alloc(0),
+          };
+        },
+      }),
+    /timed out/,
+  );
+  assert.equal(readFileSync(join(root, id + ".stdout"), "utf8"), "partial stdout\n");
+  assert.equal(readFileSync(join(root, id + ".stderr"), "utf8"), "partial stderr\n");
+  const ended = JSON.parse(readFileSync(join(root, id + ".process.json"), "utf8")) as {
+    status: number;
+    timedOut: boolean;
+    ended: string | null;
+  };
+  assert.equal(ended.status, 124);
+  assert.equal(ended.timedOut, true);
+  assert.ok(ended.ended);
+});
 
 test("closed inventories reject external links and observe mutation of every admitted target and ignored image", (t) => {
   const root = scratch(t);
@@ -139,17 +209,17 @@ test("transform custody rejects substituted paths, duplicates, missing and error
   mkdirSync(capture);
   for (const file of ["a.vue", "b.vue", "other.vue"])
     writeFileSync(join(workspace, "src", file), "source");
-  const frame = (value) => {
+  const frame = (value: unknown) => {
     const bytes = Buffer.from(JSON.stringify(value));
     return Buffer.concat([Buffer.from(`Content-Length: ${bytes.length}\r\n\r\n`), bytes]);
   };
-  const request = (id, file) => ({
+  const request = (id: number, file: string) => ({
     id,
     method: "transform",
-    params: { fileName: join(workspace, "src", file) },
+    params: { fileName: join(workspace, "src", file), content: "source" },
   });
-  const response = (id) => ({ id, result: { text: "transformed", extension: ".tsx" } });
-  const run = (id, requests, responses) => {
+  const response = (id: number) => ({ id, result: { text: "transformed", extension: ".tsx" } });
+  const run = (id: string, requests: ProtocolMessage[], responses: ProtocolMessage[]) => {
     writeFileSync(join(capture, "in-1.bin"), Buffer.concat(requests.map(frame)));
     writeFileSync(join(capture, "out-1.bin"), Buffer.concat(responses.map(frame)));
     return collectTransforms(capture, workspace, join(root, id), ["src/a.vue", "src/b.vue"]);

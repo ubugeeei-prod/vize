@@ -1,4 +1,21 @@
 import assert from "node:assert/strict";
+import type {
+  FileEvidence,
+  InventoryEntry,
+  ClosureSnapshot,
+  PackageManifest,
+  Location,
+  Diagnostic,
+  ProtocolMessage,
+  Resources,
+  Metrics,
+  Observation,
+  GitIdentity,
+  MapperConfig,
+  Variant,
+  WorkspaceClosure,
+} from "./template-alias-paired-11822-types.ts";
+import { remainingBudget } from "./template-alias-paired-11822-process.ts";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -16,29 +33,34 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { copyPublishedPackage } from "./template-alias-paired-11822-packages.mjs";
+import { copyPublishedPackage } from "./template-alias-paired-11822-packages.ts";
 
 export const upstreamSha = "c9a59cb07c236cbf7e0a97aa06ca3d02756415ea";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-export const json = (path) => JSON.parse(readFileSync(path, "utf8"));
-export const write = (path, value) =>
+export const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
+export const json = <T = PackageManifest>(path: string): T =>
+  JSON.parse(readFileSync(path, "utf8")) as T;
+export const write = (path: string, value: unknown) =>
   writeFileSync(path, JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
-export const evidence = (path) => ({
+export const evidence = (path: string): FileEvidence => ({
   path,
   bytes: readFileSync(path).length,
   sha256: sha256(readFileSync(path)),
 });
 
-export function git(directory, ...args) {
+export function git(directory: string, ...args: string[]): string {
   const result = spawnSync("git", ["-C", directory, ...args], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   return result.stdout.trim();
 }
 
-export function inventory(directory, prefix = "", allowedRoots = [directory]) {
+export function inventory(
+  directory: string,
+  prefix = "",
+  allowedRoots: string[] = [directory],
+): InventoryEntry[] {
   const roots = allowedRoots.map((root) => realpathSync(root));
   return readdirSync(join(directory, prefix))
     .sort()
@@ -69,7 +91,7 @@ export function inventory(directory, prefix = "", allowedRoots = [directory]) {
     });
 }
 
-export function closureSnapshot(roots, files = []) {
+export function closureSnapshot(roots: string[], files: string[] = []): ClosureSnapshot {
   const directories = roots.map((root) => realpathSync(root));
   return {
     directories: directories.map((root) => ({ root, files: inventory(root, "", directories) })),
@@ -77,7 +99,7 @@ export function closureSnapshot(roots, files = []) {
   };
 }
 
-export function strictNumber(token, name, integer = false) {
+export function strictNumber(token: string, name: string, integer = false): number {
   assert.match(token, /^\d+(?:\.\d+)?$/, `malformed numeric ${name}`);
   const value = Number(token);
   assert.ok(Number.isFinite(value) && value >= 0, `non-finite numeric ${name}`);
@@ -86,10 +108,10 @@ export function strictNumber(token, name, integer = false) {
 }
 
 /** Keep every message continuation and every duplicate; a Set would hide regressions. */
-export function diagnostics(text, workspace, expected) {
+export function diagnostics(text: string, workspace: string, expected: Location[]): Diagnostic[] {
   const normalized = text.replaceAll(workspace + "/", "").replaceAll("\r\n", "\n");
-  const result = [];
-  let active;
+  const result: Diagnostic[] = [];
+  let active: Diagnostic | undefined;
   for (const line of normalized.split("\n")) {
     const match =
       /^(src\/generated\/GeneratedComponent\d{4}\.vue)\((\d+),(\d+)\): error TS(\d+): (.*)$/.exec(
@@ -110,7 +132,7 @@ export function diagnostics(text, workspace, expected) {
       else active = undefined;
     }
   }
-  const order = (a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b));
+  const order = (a: unknown, b: unknown) => JSON.stringify(a).localeCompare(JSON.stringify(b));
   const locations = result.map(({ message: _message, ...location }) => location).sort(order);
   assert.equal(result.length, 12, "require all twelve diagnostics, with no duplicate or extra");
   assert.deepEqual(
@@ -121,8 +143,8 @@ export function diagnostics(text, workspace, expected) {
   return result.sort(order);
 }
 
-export function metrics(text) {
-  const number = (name, unit = "", integer = false) => {
+export function metrics(text: string): Metrics {
+  const number = (name: string, unit = "", integer = false) => {
     const match = new RegExp(`^${name}:\\s+(\\S+?)${unit}\\s*$`, "m").exec(text);
     assert.ok(match, `missing extended diagnostic ${name}`);
     return strictNumber(match[1], name, integer);
@@ -136,8 +158,8 @@ export function metrics(text) {
   };
 }
 
-export function decodeFrames(bytes) {
-  const result = [];
+export function decodeFrames(bytes: Buffer): ProtocolMessage[] {
+  const result: ProtocolMessage[] = [];
   let offset = 0;
   while (offset < bytes.length) {
     const end = bytes.indexOf("\r\n\r\n", offset);
@@ -157,9 +179,9 @@ export function decodeFrames(bytes) {
   return result;
 }
 
-export function resourceUsage(text) {
-  const result = {};
-  for (const key of ["wall_s", "user_s", "system_s", "max_rss_kib", "status"]) {
+export function resourceUsage(text: string): Resources {
+  const result = {} as Resources;
+  for (const key of ["wall_s", "user_s", "system_s", "max_rss_kib", "status"] as const) {
     const match = new RegExp(`^${key}=(\\S+)$`, "m").exec(text);
     assert.ok(match, `missing GNU time field ${key}`);
     result[key] = strictNumber(match[1], key, key === "status" || key === "max_rss_kib");
@@ -168,7 +190,10 @@ export function resourceUsage(text) {
 }
 
 /** External mappers and package hooks receive no CI credentials or token URLs. */
-export function childEnvironment(extra = {}, ambient = process.env) {
+export function childEnvironment(
+  extra: NodeJS.ProcessEnv = {},
+  ambient: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
   const keys = [
     "PATH",
     "CI",
@@ -193,11 +218,18 @@ export function childEnvironment(extra = {}, ambient = process.env) {
   };
 }
 
-export async function capture(directory, command, args, cwd, env = {}) {
+export async function capture(
+  directory: string,
+  command: string,
+  args: string[],
+  cwd: string,
+  env: NodeJS.ProcessEnv = {},
+): Promise<Observation> {
   mkdirSync(directory, { recursive: false });
   const stdoutPath = join(directory, "stdout.bin");
   const stderrPath = join(directory, "stderr.bin");
   const timePath = join(directory, "time.txt");
+  const timeoutMilliseconds = Math.min(300_000, remainingBudget());
   const stdout = openSync(stdoutPath, "wx");
   const stderr = openSync(stderrPath, "wx");
   const started = new Date().toISOString();
@@ -207,6 +239,15 @@ export async function capture(directory, command, args, cwd, env = {}) {
   mkdirSync(temporary);
   const explicitEnvironment = { ...env, NO_COLOR: "1", XDG_CACHE_HOME: cache, TMPDIR: temporary };
   let timedOut = false;
+  write(join(directory, "process-start.json"), {
+    command,
+    args,
+    cwd,
+    explicitEnvironment,
+    started,
+    timeoutMilliseconds,
+    sourceHead: process.env.HEAD_SHA,
+  });
   const child = spawn(
     "/usr/bin/time",
     [
@@ -226,13 +267,13 @@ export async function capture(directory, command, args, cwd, env = {}) {
   );
   const timer = setTimeout(() => {
     timedOut = true;
-    process.kill(-child.pid, "SIGKILL");
-  }, 300_000);
-  let status;
-  let signal;
-  let error;
+    if (child.pid) process.kill(-child.pid, "SIGKILL");
+  }, timeoutMilliseconds);
+  let status: number | null = null;
+  let signal: NodeJS.Signals | null = null;
+  let error: string | undefined;
   try {
-    [status, signal] = await new Promise((done, fail) => {
+    [status, signal] = await new Promise<[number | null, NodeJS.Signals | null]>((done, fail) => {
       child.on("error", fail);
       child.on("close", (...values) => done(values));
     });
@@ -271,21 +312,22 @@ export async function capture(directory, command, args, cwd, env = {}) {
   };
 }
 
-export function pristine(directory, sha) {
+export function pristine(directory: string, sha: string): GitIdentity {
   assert.match(sha, /^[0-9a-f]{40}$/);
   assert.equal(git(directory, "rev-parse", "HEAD"), sha);
   assert.equal(git(directory, "status", "--porcelain", "--untracked-files=all"), "");
   return { sha, tree: git(directory, "rev-parse", "HEAD^{tree}") };
 }
 
-function linkProvider(destination, provider) {
+function linkProvider(destination: string, provider: string) {
   mkdirSync(destination);
   for (const name of readdirSync(provider)) {
     if (name !== "vize") symlinkSync(join(provider, name), join(destination, name));
   }
 }
 
-function mapperCommand(packageRoot, manifest) {
+function mapperCommand(packageRoot: string, manifest: PackageManifest): string[] {
+  assert.ok(manifest.typescript?.contentMapper);
   return manifest.typescript.contentMapper.exec.map((part, index) =>
     index === 0 && part === "node"
       ? process.execPath
@@ -295,7 +337,7 @@ function mapperCommand(packageRoot, manifest) {
   );
 }
 
-export function deriveConfig(original, packageName) {
+export function deriveConfig(original: MapperConfig, packageName: string): MapperConfig {
   assert.equal(original.contentMappers.length, 1);
   assert.equal(original.contentMappers[0].package, packageName);
   const config = structuredClone(original);
@@ -314,7 +356,13 @@ export function deriveConfig(original, packageName) {
   return config;
 }
 
-export function prepareWorkspace(upstream, provider, directory, variant, captureDirectory) {
+export function prepareWorkspace(
+  upstream: string,
+  provider: string,
+  directory: string,
+  variant: Variant,
+  captureDirectory?: string,
+): WorkspaceClosure {
   mkdirSync(directory);
   cpSync(join(upstream, "src"), join(directory, "src"), { recursive: true });
   copyFileSync(join(upstream, "tsconfig.base.json"), join(directory, "tsconfig.base.json"));
@@ -336,6 +384,7 @@ export function prepareWorkspace(upstream, provider, directory, variant, capture
   }
   const manifestPath = join(packageRoot, "package.json");
   const manifest = json(manifestPath);
+  assert.ok(manifest.typescript?.contentMapper);
   manifest.typescript.contentMapper.exec = command;
   if (captureDirectory) {
     mkdirSync(captureDirectory);
@@ -349,7 +398,7 @@ export function prepareWorkspace(upstream, provider, directory, variant, capture
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
   const configFile =
     variant.id === "vue" ? "tsconfig.vue-content-mapper.json" : "tsconfig.vize-content-mapper.json";
-  const original = json(join(upstream, configFile));
+  const original = json<MapperConfig>(join(upstream, configFile));
   const config = deriveConfig(original, packageName);
   write(join(directory, configFile), config);
   assert.equal(
@@ -375,11 +424,11 @@ export function prepareWorkspace(upstream, provider, directory, variant, capture
 }
 
 export function installedNative(
-  provider,
-  providerInputs,
-  packageName,
-  version,
-  binaryNames,
+  provider: string,
+  providerInputs: InventoryEntry[],
+  packageName: string,
+  version: string,
+  binaryNames: string[],
   kind = "executable",
 ) {
   const manifests = providerInputs
@@ -395,7 +444,7 @@ export function installedNative(
   );
   const packageRoot = dirname(join(provider, manifests[0].path));
   const binaries = inventory(packageRoot)
-    .filter(({ path, symlink }) => !symlink && binaryNames.includes(path.split("/").at(-1)))
+    .filter(({ path, symlink }) => !symlink && binaryNames.includes(basename(path)))
     .filter(({ path }) =>
       readFileSync(join(packageRoot, path))
         .subarray(0, 4)

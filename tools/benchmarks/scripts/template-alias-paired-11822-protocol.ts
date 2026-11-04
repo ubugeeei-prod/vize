@@ -1,3 +1,5 @@
+import type { DirectivePacket, ProtocolMessage } from "./template-alias-paired-11822-types.ts";
+import type { TypeScriptApi } from "./template-alias-paired-11822-declarations.ts";
 import assert from "node:assert/strict";
 import {
   mkdirSync,
@@ -8,11 +10,16 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, isAbsolute, join, relative } from "node:path";
-import { decodeFrames, sha256, write } from "./template-alias-paired-11822-custody.mjs";
+import { decodeFrames, sha256, write } from "./template-alias-paired-11822-custody.ts";
+import { declarationClosure } from "./template-alias-paired-11822-declarations.ts";
 
-const order = (a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b));
+const order = (a: unknown, b: unknown) => JSON.stringify(a).localeCompare(JSON.stringify(b));
 
-export function directiveAuthority(packet, authoredBytes, virtualBytes) {
+export function directiveAuthority(
+  packet: DirectivePacket | null | undefined,
+  authoredBytes: number,
+  virtualBytes: number,
+) {
   if (packet === undefined || packet === null) return null;
   assert.ok(Array.isArray(packet.directives));
   assert.ok(Array.isArray(packet.unusedExpectDirectiveDiagnostics));
@@ -34,7 +41,7 @@ export function directiveAuthority(packet, authoredBytes, virtualBytes) {
   return { directives, unusedExpectDirectiveDiagnostics: packet.unusedExpectDirectiveDiagnostics };
 }
 
-function packageManifest(from, name) {
+function packageManifest(from: string, name: string): string {
   let current = from;
   for (;;) {
     const path = join(current, "node_modules", name, "package.json");
@@ -45,8 +52,9 @@ function packageManifest(from, name) {
   }
 }
 
-export function sharedHelperClosure(workspace) {
+export function sharedHelperClosure(workspace: string, typescript: TypeScriptApi) {
   const root = join(workspace, "node_modules/vize");
+  const physicalDeclarations = declarationClosure(root, typescript);
   const projectVue = packageManifest(workspace, "vue");
   const helperVue = packageManifest(root, "vue");
   assert.equal(helperVue, projectVue, "helper and authored code resolved different Vue instances");
@@ -80,10 +88,11 @@ export function sharedHelperClosure(workspace) {
     canonicalExports: exports.sort(),
     virtualExports: virtualExports.sort(),
     requiredMode: "shared-hoisted",
+    physicalDeclarations,
   };
 }
 
-export function admitSharedTransform(text, helpers) {
+export function admitSharedTransform(text: string, helpers: { virtualExports: string[] }) {
   assert.ok(
     text.includes('import type {} from "vize/virtual-ts-checker";'),
     "inline helper fallback is not an equivalent primary cohort",
@@ -116,20 +125,22 @@ export function admitSharedTransform(text, helpers) {
     mode: "shared-hoisted",
     canonicalImports: canonical,
     virtualImports: references,
-    otherHelperImports: imports.filter((name) => !canonical.includes(name)).sort(),
+    otherHelperImports: imports
+      .filter((name) => !canonical.some((item: string) => item === name))
+      .sort(),
   };
 }
 
 export function collectTransforms(
-  captureDirectory,
-  workspace,
-  output,
-  expectedPaths,
-  helpers = null,
+  captureDirectory: string,
+  workspace: string,
+  output: string,
+  expectedPaths: string[],
+  helpers: ReturnType<typeof sharedHelperClosure> | null = null,
 ) {
   mkdirSync(output);
-  const input = new Map();
-  const pending = new Set();
+  const input = new Map<string, ProtocolMessage>();
+  const pending = new Set<string>();
   const sourcePaths = [...expectedPaths].sort();
   assert.equal(new Set(sourcePaths).size, sourcePaths.length);
   for (const name of readdirSync(captureDirectory).filter((name) => name.startsWith("in-"))) {
@@ -142,7 +153,7 @@ export function collectTransforms(
     }
   }
   const transforms = [];
-  const observed = new Set();
+  const observed = new Set<string>();
   for (const name of readdirSync(captureDirectory).filter((name) => name.startsWith("out-"))) {
     for (const message of decodeFrames(readFileSync(join(captureDirectory, name)))) {
       if (message.id === undefined) continue;
@@ -152,10 +163,20 @@ export function collectTransforms(
       if (request.method !== "transform") continue;
       assert.ok(pending.delete(key), "duplicate transform response");
       assert.equal(message.error, undefined, "failed transform response");
-      assert.equal(typeof message.result?.text, "string", "transform missing or failed");
+      assert.ok(
+        message.result && typeof message.result.text === "string",
+        "transform missing or failed",
+      );
+      assert.ok(request.params && typeof request.params.fileName === "string");
       const path = relative(workspace, request.params.fileName);
       assert.ok(!path.startsWith("..") && !isAbsolute(path), "transform escaped corpus");
       assert.ok(sourcePaths.includes(path), `unexpected authored transform ${path}`);
+      const authoredContent = readFileSync(join(workspace, path), "utf8");
+      assert.equal(
+        request.params.content,
+        authoredContent,
+        "transform request substituted authored content",
+      );
       assert.equal(observed.has(path), false, "duplicate authored transform");
       observed.add(path);
       const target = join(output, path + (message.result.extension ?? ".ts"));
@@ -171,8 +192,8 @@ export function collectTransforms(
         metadata,
         helperMode: helpers ? admitSharedTransform(text, helpers) : null,
         directiveAuthority: directiveAuthority(
-          metadata.diagnosticDirectives,
-          Buffer.byteLength(readFileSync(join(workspace, path))),
+          message.result.diagnosticDirectives,
+          Buffer.byteLength(authoredContent),
           Buffer.byteLength(text),
         ),
       });
@@ -188,6 +209,7 @@ export function collectTransforms(
   write(join(output, "inventory.json"), transforms);
   return {
     count: transforms.length,
+    sharedHelperClosure: helpers,
     bytes: transforms.reduce((n, t) => n + t.bytes, 0),
     lines: transforms.reduce((n, t) => n + t.lines, 0),
     helperModes: transforms.map(({ path, helperMode }) => ({ path, helperMode })),

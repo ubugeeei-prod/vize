@@ -6,14 +6,16 @@ import { createHash } from "node:crypto";
 
 const packageRoot = process.argv[2];
 const require = createRequire(join(packageRoot, "package.json"));
-const binding = require("@vizejs/native");
+const binding = require("@vizejs/native") as { getNativeBuildToken?: () => string };
 const images = Object.keys(require.cache)
   .filter((path) => path.endsWith(".node"))
   .map((path) => {
     const file = realpathSync(path);
     return { path: file, sha256: createHash("sha256").update(readFileSync(file)).digest("hex") };
   });
-const sharedObjects = process.report.getReport().sharedObjects.map((path) => {
+const sharedObjects = (
+  process.report!.getReport() as { sharedObjects: string[] }
+).sharedObjects.map((path) => {
   try {
     return realpathSync(path);
   } catch {
@@ -26,4 +28,4 @@ writeSync(
 );
 const launcher = join(packageRoot, "bin/vize");
 process.argv = [process.execPath, launcher, "--version"];
-await import(pathToFileURL(launcher));
+await import(pathToFileURL(launcher).href);
