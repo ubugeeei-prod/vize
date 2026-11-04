@@ -8,6 +8,14 @@ use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use std::process::Command;
 
+fn sha256(bytes: &[u8]) -> vize_l0::String {
+    let mut value = vize_l0::String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        value.push_str(vize_l0::cstr!("{byte:02x}").as_str());
+    }
+    value
+}
+
 #[test]
 #[ignore = "requires the authenticated beta host and actual source CLI in native-canon Actions"]
 fn standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors() {
@@ -51,9 +59,9 @@ fn standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors() {
     let packet = json!({
         "route":"actual-source-cli-content-mapper-protocol", "host":host,
         "hostVersion":version.stdout,
-        "hostSha256":format!("{:x}", Sha256::digest(std::fs::read(&host).unwrap())),
+        "hostSha256":sha256(&std::fs::read(&host).unwrap()),
         "sourceCli":env!("CARGO_BIN_EXE_vize"),
-        "sourceCliSha256":format!("{:x}", Sha256::digest(std::fs::read(env!("CARGO_BIN_EXE_vize")).unwrap())),
+        "sourceCliSha256":sha256(&std::fs::read(env!("CARGO_BIN_EXE_vize")).unwrap()),
         "inputs":inputs, "contract":contract, "expectedStdout":expected,
         "status":result.status.code(),"stdout":result.stdout,"stderr":result.stderr,
     });
