@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -125,7 +126,7 @@ await test("opinionated activates the existing withDefaults warning through the 
       const bytes = fs.readFileSync(path.join(fixture, entry.input));
       const destination = path.join(directory, pin.filename);
       fs.writeFileSync(destination, bytes);
-      const oracle = expected(pin.filename, bytes, entry);
+      const oracle = currentRuleDocumentationPacket(expected(pin.filename, bytes, entry));
       const args = [
         "lint",
         "--no-config",

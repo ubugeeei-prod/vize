@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -106,7 +107,7 @@ void test("cross-file directives share authored ranges, actual suppression, unus
         stdout: result.stdout,
         stderr: result.stderr,
         packet,
-        expected,
+        expected: phase === "after" ? currentRuleDocumentationPacket(expected) : expected,
         expectedStatus,
       });
       persist();

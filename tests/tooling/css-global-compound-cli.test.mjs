@@ -1,4 +1,7 @@
-import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -89,8 +92,14 @@ await test("source CLI preserves whole compound global ownership and refusal rep
           row.filename,
         ];
         assert.equal(
-          run(row, id + "-plain", plainArgs, config, row.expectedPlain).stdout,
-          row.expectedPlain,
+          run(
+            row,
+            id + "-plain",
+            plainArgs,
+            config,
+            currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
+          ).stdout,
+          currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
           row.id,
         );
         const offConfig = JSON.parse(config);

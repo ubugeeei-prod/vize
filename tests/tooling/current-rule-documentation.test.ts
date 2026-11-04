@@ -4,7 +4,9 @@ import { test } from "node:test";
 import { asArray, asRecord, asString } from "../../tools/support/json-value.ts";
 import {
   currentRuleDocumentationMessage,
+  currentRuleDocumentationMessages,
   currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
 } from "./support/current-rule-documentation.ts";
 
 const histories = [
@@ -23,6 +25,29 @@ const histories = [
   ["vue/no-deprecated-v-on-native-modifier", "vue"],
   ["vue/v-bind-style", "vue"],
   ["vue/v-on-style", "vue"],
+  ["css/no-id-selectors", "musea-and-css"],
+  ["css/no-utility-classes", "musea-and-css"],
+  ["html/no-empty-palpable-content", "html"],
+  ["script/no-async-in-computed", "type-and-script"],
+  ["script/define-props-destructuring", "type-and-script"],
+  ["script/no-deep-destructure-in-props", "type-and-script"],
+  ["script/no-export-in-script-setup", "type-and-script"],
+  ["script/no-options-api", "type-and-script"],
+  ["script/no-with-defaults", "type-and-script"],
+  ["script/prefer-import-from-vue", "type-and-script"],
+  ["script/return-in-computed-property", "type-and-script"],
+  ["type/no-reactivity-loss", "type-and-script"],
+  ["vue/component-name-in-template-casing", "vue"],
+  ["vue/html-self-closing", "vue"],
+  ["vue/no-boolean-attr-value", "vue"],
+  ["vue/no-deprecated-v-on-number-modifiers", "vue"],
+  ["vue/no-deprecated-functional-template", "vue"],
+  ["vue/no-unused-properties", "vue"],
+  ["vue/no-unused-vars", "vue"],
+  ["vue/require-component-registration", "vue"],
+  ["vue/require-v-for-key", "vue"],
+  ["vue/v-slot-style", "vue"],
+  ["nuxt/nuxt-config-keys-order", "index"],
 ] as const;
 const message = (ruleId: string, category: string) => ({
   ruleId,
@@ -36,7 +61,7 @@ const message = (ruleId: string, category: string) => ({
   endColumn: 9,
 });
 
-void test("only the fifteen known documentation fields change, preserving complete packets and frozen inputs", () => {
+void test("only the finite known documentation fields change, preserving complete packets and frozen inputs", () => {
   for (const [rule, category] of histories) {
     const expected = [
       { file: "Probe.vue", messages: [message(rule, category)], errorCount: 1, warningCount: 0 },
@@ -62,6 +87,37 @@ void test("only the fifteen known documentation fields change, preserving comple
         new RegExp(`^title: "${rule}"$`, "mu"),
       );
   }
+});
+
+void test("synthetic directives retain their operational guide and whole message fields", () => {
+  for (const [rule, category, target] of [
+    ["vue/comment-directive", "vue", "docs/content/guide/lint-execution.md"],
+    ["cross-file", "cross-file", "docs/content/rules/cross-file.md"],
+  ]) {
+    const original = [message(rule!, category!)];
+    const current = currentRuleDocumentationMessages(original);
+    assert.equal(current[0]!.ruleDocsPath, target);
+    current[0]!.ruleDocsPath = original[0]!.ruleDocsPath;
+    assert.deepEqual(current, original);
+  }
+});
+
+void test("plain reports keep all non-reference bytes and reject unrelated documentation", () => {
+  for (const [rule, category] of histories) {
+    const before = `whole report\n    Reference: docs/content/rules/${category}.md\n    Help:\n      original help\n`;
+    const current = currentRuleDocumentationPlain(before, rule);
+    const afterLink = `docs/content/rules/reference/${rule.replace("/", "-")}.md`;
+    assert.equal(current, before.replace(`docs/content/rules/${category}.md`, afterLink));
+    assert.throws(() => currentRuleDocumentationPlain(current, rule));
+    assert.throws(() =>
+      currentRuleDocumentationPlain(before.replace(`${category}.md`, "foreign.md"), rule),
+    );
+  }
+  assert.equal(
+    currentRuleDocumentationPlain("clean report\n", "css/no-display-none"),
+    "clean report\n",
+  );
+  assert.throws(() => currentRuleDocumentationPlain("clean report\n", "css/future-rule"));
 });
 
 void test("complete stored CSS, listbox and runtime-prop packets keep every non-URL field", () => {
