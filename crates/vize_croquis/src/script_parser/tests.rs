@@ -1,3 +1,4 @@
+mod destructure_spans;
 mod reactivity_offsets;
 
 use self::reactivity_offsets::assert_reactive_source;
