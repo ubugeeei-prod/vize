@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "issue": 11853,
+  "reportedVersion": "0.680.0",
+  "reporter": "makarasty",
+  "inputs": [
+    "Child.vue",
+    "Probe.vue",
+    "NoFollowingChain.vue",
+    "DivChain.vue",
+    "NoOuterGuard.vue",
+    "UnusedHandler.vue",
+    "WrongPayload.vue",
+    "tsconfig.json"
+  ],
+  "cases": [
+    {
+      "file": "Probe.vue",
+      "contract": "reported falsepositive",
+      "expectedCodes": []
+    },
+    {
+      "file": "NoFollowingChain.vue",
+      "contract": "no later ifelse control",
+      "expectedCodes": []
+    },
+    {
+      "file": "DivChain.vue",
+      "contract": "later ordinary ifelse falsepositive",
+      "expectedCodes": []
+    },
+    {
+      "file": "NoOuterGuard.vue",
+      "contract": "no outer narrowing control",
+      "expectedCodes": []
+    },
+    {
+      "file": "UnusedHandler.vue",
+      "contract": "genuine alwaysdefined function condition",
+      "expectedCodes": [
+        2774
+      ]
+    },
+    {
+      "file": "WrongPayload.vue",
+      "contract": "genuine listener parameter mismatch",
+      "expectedCodes": [
+        2322
+      ]
+    }
+  ],
+  "expectedStdout": "UnusedHandler.vue(8,29): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?\nWrongPayload.vue(8,84): error TS2322: Type '(action: number) => void' is not assignable to type '(action: string) => any'.\n  Types of parameters 'action' and 'action' are incompatible.\n    Type 'string' is not assignable to type 'number'.\n"
+}
