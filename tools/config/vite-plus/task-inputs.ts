@@ -170,6 +170,7 @@ export const cacheInputs = {
   // owned fixtures and runtime packages. Plan docs remain compile-time inputs;
   // release prose and decision records are not read by their producers.
   toolingProductObservers: [
+    "tests/_fixtures/differential/compiler/unicode-script-line-comments-11798/**",
     ...toolingInputs.filter((input) => input !== "docs/**"),
     "docs/davinci/plan/**",
   ],

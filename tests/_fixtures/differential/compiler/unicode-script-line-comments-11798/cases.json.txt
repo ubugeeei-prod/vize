@@ -1,0 +1,1734 @@
+{
+  "schema": "vize.sfc.unicode-line-comments",
+  "version": 1,
+  "cases": [
+    {
+      "id": "prefix0-gap0-dom",
+      "source": "<script>export default { label: '雪' };</script>",
+      "sourceSha256": "8b96b413c7fdd0990c0e097c847d498b1f61c1e7a452820931bbe2aaede5fc4c",
+      "code": "export default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 14,
+        "defaultExportEnd": 32
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export default { label: '雪' };</script>",
+          "script": {
+            "content": "export default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 40,
+              "tagStart": 0,
+              "tagEnd": 49,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 41
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap0-ssr",
+      "source": "<script>export default { label: '雪' };</script>",
+      "sourceSha256": "8b96b413c7fdd0990c0e097c847d498b1f61c1e7a452820931bbe2aaede5fc4c",
+      "code": "export default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 14,
+        "defaultExportEnd": 32
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export default { label: '雪' };</script>",
+          "script": {
+            "content": "export default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 40,
+              "tagStart": 0,
+              "tagEnd": 49,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 41
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap1-dom",
+      "source": "<script>export\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "1379e20f34f84aeaa120a478dc24c5d17e683da0c3a5d2ef4bf83d8d2d7916ec",
+      "code": "export\r\ndefault { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 15,
+        "defaultExportEnd": 33
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "export\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 41,
+              "tagStart": 0,
+              "tagEnd": 50,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap1-ssr",
+      "source": "<script>export\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "1379e20f34f84aeaa120a478dc24c5d17e683da0c3a5d2ef4bf83d8d2d7916ec",
+      "code": "export\r\ndefault { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 15,
+        "defaultExportEnd": 33
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "export\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 41,
+              "tagStart": 0,
+              "tagEnd": 50,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap2-dom",
+      "source": "<script>export/* note */default { label: '雪' };</script>",
+      "sourceSha256": "6ab2bb30d437da1911470b99f6a28789869d6918540a503e8523752bcef6203f",
+      "code": "export/* note */default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/* note */default { label: '雪' };</script>",
+          "script": {
+            "content": "export/* note */default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/* note */default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap2-ssr",
+      "source": "<script>export/* note */default { label: '雪' };</script>",
+      "sourceSha256": "6ab2bb30d437da1911470b99f6a28789869d6918540a503e8523752bcef6203f",
+      "code": "export/* note */default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/* note */default { label: '雪' };</script>",
+          "script": {
+            "content": "export/* note */default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/* note */default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap3-dom",
+      "source": "<script>export/**//**/default { label: '雪' };</script>",
+      "sourceSha256": "2daff3595c69153b8544f10877e6e1dd3c40b851d0448b624120b2b1e4c02caf",
+      "code": "export/**//**/default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 21,
+        "defaultExportEnd": 39
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/**//**/default { label: '雪' };</script>",
+          "script": {
+            "content": "export/**//**/default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 47,
+              "tagStart": 0,
+              "tagEnd": 56,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 48
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/**//**/default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap3-ssr",
+      "source": "<script>export/**//**/default { label: '雪' };</script>",
+      "sourceSha256": "2daff3595c69153b8544f10877e6e1dd3c40b851d0448b624120b2b1e4c02caf",
+      "code": "export/**//**/default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 21,
+        "defaultExportEnd": 39
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/**//**/default { label: '雪' };</script>",
+          "script": {
+            "content": "export/**//**/default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 47,
+              "tagStart": 0,
+              "tagEnd": 56,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 48
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/**//**/default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap4-dom",
+      "source": "<script>export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "37cce50210298575d4da47d42955ac77082a1e076105c360502d7eec8abd4150",
+      "code": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 52,
+        "defaultExportEnd": 70
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 78,
+              "tagStart": 0,
+              "tagEnd": 87,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 3,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap4-ssr",
+      "source": "<script>export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "37cce50210298575d4da47d42955ac77082a1e076105c360502d7eec8abd4150",
+      "code": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 52,
+        "defaultExportEnd": 70
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 78,
+              "tagStart": 0,
+              "tagEnd": 87,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 3,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap5-dom",
+      "source": "<script>export﻿default { label: '雪' };</script>",
+      "sourceSha256": "6b2609684c1624706f58b0172f60da95f1b3f46d67cf7e3c2ab56d8f1e64a9b2",
+      "code": "export﻿default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 16,
+        "defaultExportEnd": 34
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "export﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 42,
+              "tagStart": 0,
+              "tagEnd": 51,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 43
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap5-ssr",
+      "source": "<script>export﻿default { label: '雪' };</script>",
+      "sourceSha256": "6b2609684c1624706f58b0172f60da95f1b3f46d67cf7e3c2ab56d8f1e64a9b2",
+      "code": "export﻿default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 16,
+        "defaultExportEnd": 34
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "export﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 42,
+              "tagStart": 0,
+              "tagEnd": 51,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 43
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap6-dom",
+      "source": "<script>export /* 😀 */﻿default { label: '雪' };</script>",
+      "sourceSha256": "f227387185e2d22d69742524dce9097b0c068b814895bd89d937d2b604f47564",
+      "code": "export /* 😀 */﻿default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 29,
+        "defaultExportEnd": 47
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export /* 😀 */﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "export /* 😀 */﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 55,
+              "tagStart": 0,
+              "tagEnd": 64,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 56
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export /* 😀 */﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap6-ssr",
+      "source": "<script>export /* 😀 */﻿default { label: '雪' };</script>",
+      "sourceSha256": "f227387185e2d22d69742524dce9097b0c068b814895bd89d937d2b604f47564",
+      "code": "export /* 😀 */﻿default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 29,
+        "defaultExportEnd": 47
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export /* 😀 */﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "export /* 😀 */﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 55,
+              "tagStart": 0,
+              "tagEnd": 64,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 56
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export /* 😀 */﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap7-dom",
+      "source": "<script>export// note default { label: '雪' };</script>",
+      "sourceSha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+      "code": "export// note default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export// note default { label: '雪' };</script>",
+          "script": {
+            "content": "export// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap7-ssr",
+      "source": "<script>export// note default { label: '雪' };</script>",
+      "sourceSha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+      "code": "export// note default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export// note default { label: '雪' };</script>",
+          "script": {
+            "content": "export// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap8-dom",
+      "source": "<script>export// note default { label: '雪' };</script>",
+      "sourceSha256": "89d6b69018f55bf6ec65ff8fd65ee3e1d46eac58d9b857042c7f2d847e54c5ca",
+      "code": "export// note default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export// note default { label: '雪' };</script>",
+          "script": {
+            "content": "export// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix0-gap8-ssr",
+      "source": "<script>export// note default { label: '雪' };</script>",
+      "sourceSha256": "89d6b69018f55bf6ec65ff8fd65ee3e1d46eac58d9b857042c7f2d847e54c5ca",
+      "code": "export// note default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 0,
+        "defaultExportKeywordEnd": 23,
+        "defaultExportEnd": 41
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>export// note default { label: '雪' };</script>",
+          "script": {
+            "content": "export// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 49,
+              "tagStart": 0,
+              "tagEnd": 58,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 1,
+              "endColumn": 50
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "export// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap0-dom",
+      "source": "<script>const label = '雪😀';\r\nexport default { label: '雪' };</script>",
+      "sourceSha256": "2731d483b8eae43dda645f792f428472f2d3bb6fe67d45ced7670874e494e782",
+      "code": "const label = '雪😀';\r\nexport default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 40,
+        "defaultExportEnd": 58
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 66,
+              "tagStart": 0,
+              "tagEnd": 75,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 33
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap0-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport default { label: '雪' };</script>",
+      "sourceSha256": "2731d483b8eae43dda645f792f428472f2d3bb6fe67d45ced7670874e494e782",
+      "code": "const label = '雪😀';\r\nexport default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 40,
+        "defaultExportEnd": 58
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 66,
+              "tagStart": 0,
+              "tagEnd": 75,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 33
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap1-dom",
+      "source": "<script>const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "0eb6caca2c2318a06df4aabaeb649c4dca8a6a5d8f1262ee24faa8edff942b7a",
+      "code": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 41,
+        "defaultExportEnd": 59
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 67,
+              "tagStart": 0,
+              "tagEnd": 76,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 3,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap1-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "0eb6caca2c2318a06df4aabaeb649c4dca8a6a5d8f1262ee24faa8edff942b7a",
+      "code": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 41,
+        "defaultExportEnd": 59
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 67,
+              "tagStart": 0,
+              "tagEnd": 76,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 3,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap2-dom",
+      "source": "<script>const label = '雪😀';\r\nexport/* note */default { label: '雪' };</script>",
+      "sourceSha256": "2513139abbb9168c5a04c0cdb6c61f79f73a7c7256d03bd7475c08b25e1cfef5",
+      "code": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/* note */default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap2-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport/* note */default { label: '雪' };</script>",
+      "sourceSha256": "2513139abbb9168c5a04c0cdb6c61f79f73a7c7256d03bd7475c08b25e1cfef5",
+      "code": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/* note */default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/* note */default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap3-dom",
+      "source": "<script>const label = '雪😀';\r\nexport/**//**/default { label: '雪' };</script>",
+      "sourceSha256": "0248f6d63d6890022d417fc3a90d73ecab1b3c4ee5b7c67211251160dee3fc8c",
+      "code": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 47,
+        "defaultExportEnd": 65
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/**//**/default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 73,
+              "tagStart": 0,
+              "tagEnd": 82,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 40
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap3-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport/**//**/default { label: '雪' };</script>",
+      "sourceSha256": "0248f6d63d6890022d417fc3a90d73ecab1b3c4ee5b7c67211251160dee3fc8c",
+      "code": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 47,
+        "defaultExportEnd": 65
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/**//**/default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 73,
+              "tagStart": 0,
+              "tagEnd": 82,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 40
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/**//**/default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap4-dom",
+      "source": "<script>const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "350d18bbc8a153924c19941a7bf5dc013a8cfb0de541b23dc5401588452e8172",
+      "code": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 78,
+        "defaultExportEnd": 96
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 104,
+              "tagStart": 0,
+              "tagEnd": 113,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 4,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap4-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+      "sourceSha256": "350d18bbc8a153924c19941a7bf5dc013a8cfb0de541b23dc5401588452e8172",
+      "code": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 78,
+        "defaultExportEnd": 96
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 104,
+              "tagStart": 0,
+              "tagEnd": 113,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 4,
+              "endColumn": 26
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport/* default decoy */ \r\n// export decoy\r\ndefault { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap5-dom",
+      "source": "<script>const label = '雪😀';\r\nexport﻿default { label: '雪' };</script>",
+      "sourceSha256": "ce621c911a6b286c309fb125e87bf8203fc07b221b24e872987fcd93902fabe5",
+      "code": "const label = '雪😀';\r\nexport﻿default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 42,
+        "defaultExportEnd": 60
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 68,
+              "tagStart": 0,
+              "tagEnd": 77,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 35
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap5-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport﻿default { label: '雪' };</script>",
+      "sourceSha256": "ce621c911a6b286c309fb125e87bf8203fc07b221b24e872987fcd93902fabe5",
+      "code": "const label = '雪😀';\r\nexport﻿default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 42,
+        "defaultExportEnd": 60
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 68,
+              "tagStart": 0,
+              "tagEnd": 77,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 35
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap6-dom",
+      "source": "<script>const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };</script>",
+      "sourceSha256": "600b83e17cefd544e30f9d5bab5023dd249d8109a825d28ba92b6c66b5710079",
+      "code": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 55,
+        "defaultExportEnd": 73
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 81,
+              "tagStart": 0,
+              "tagEnd": 90,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 48
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap6-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };</script>",
+      "sourceSha256": "600b83e17cefd544e30f9d5bab5023dd249d8109a825d28ba92b6c66b5710079",
+      "code": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 55,
+        "defaultExportEnd": 73
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 81,
+              "tagStart": 0,
+              "tagEnd": 90,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 48
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport /* 😀 */﻿default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap7-dom",
+      "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+      "sourceSha256": "d67b2d0f7419d52e84e02981f1126135a5e7c6807051c5f5bece2deee310e088",
+      "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap7-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+      "sourceSha256": "d67b2d0f7419d52e84e02981f1126135a5e7c6807051c5f5bece2deee310e088",
+      "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap8-dom",
+      "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+      "sourceSha256": "7c4f07686ee41e270db6423848c1693334c88c0019cac57cd39f91ad745f07ff",
+      "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+      "ssr": false,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "prefix1-gap8-ssr",
+      "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+      "sourceSha256": "7c4f07686ee41e270db6423848c1693334c88c0019cac57cd39f91ad745f07ff",
+      "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+      "ssr": true,
+      "moduleShape": {
+        "hasDefaultExport": true,
+        "hasSfcMainDefined": false,
+        "hasNamedRenderExport": false,
+        "hasNamedSsrRenderExport": false,
+        "defaultExportIsSfcMain": false,
+        "defaultExportStart": 26,
+        "defaultExportKeywordEnd": 49,
+        "defaultExportEnd": 67
+      },
+      "wasm": {
+        "descriptor": {
+          "filename": "Case.vue",
+          "source": "<script>const label = '雪😀';\r\nexport// note default { label: '雪' };</script>",
+          "script": {
+            "content": "const label = '雪😀';\r\nexport// note default { label: '雪' };",
+            "loc": {
+              "start": 8,
+              "end": 75,
+              "tagStart": 0,
+              "tagEnd": 84,
+              "startLine": 1,
+              "startColumn": 9,
+              "endLine": 2,
+              "endColumn": 42
+            },
+            "setup": false,
+            "attrs": {}
+          },
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "slotted": false,
+          "shouldForceReload": false
+        },
+        "script": {
+          "code": "const label = '雪😀';\r\nexport// note default { label: '雪' };"
+        },
+        "errors": [],
+        "warnings": []
+      }
+    }
+  ]
+}

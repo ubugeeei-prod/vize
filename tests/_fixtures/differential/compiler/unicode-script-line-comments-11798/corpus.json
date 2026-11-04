@@ -1,0 +1,13 @@
+{
+  "schema": "vize.sfc.unicode-line-comments.registration",
+  "version": 1,
+  "path": "cases.json.txt",
+  "sha256": "a21a00c778bb4f984d6a6b5cacddaec54480935bd0c1e249687aba65d93b9509",
+  "cases": 36,
+  "distinctSources": 18,
+  "adapters": {
+    "napi": "npm/builder/vite/src/unicode-script-line-comments.test.ts",
+    "cli": "tests/tooling/cli-unicode-script-line-comments.test.ts",
+    "wasm": "playground/e2e/unicode-script-line-comments.test.ts"
+  }
+}
