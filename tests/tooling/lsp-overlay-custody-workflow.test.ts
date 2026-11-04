@@ -179,6 +179,8 @@ test("URI review controls run independently of source admission and retain both 
       "lsp_client::session::tests::releasing_either_normalized_owner_keeps_the_other_until_the_last_close",
       "lsp_client::utils::tests::converging_workspace_edit_keys_keep_every_edit_in_each_original_order",
       "lsp_client::editor_lsp::file_rename::tests::materialized_renames_share_one_native_namespace_and_keep_each_caller_context",
+      "lsp_client::lifecycle::workspace::initial_project_tests::native_first_materialized_editor_matches_existing_activation_and_delta",
+      "lsp_client::lifecycle_setup::tests::",
     ],
     [
       "ide::corsa_support::authored_uri::tests::closed_foreign_targets_keep_the_import_path_before_an_open_owner_takes_precedence",

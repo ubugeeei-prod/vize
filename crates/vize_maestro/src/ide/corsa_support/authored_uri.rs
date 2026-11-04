@@ -1,11 +1,11 @@
 //! Authored URI spelling shared by native and import-alias navigation.
 
 use crate::ide::IdeContext;
-use std::{path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 use tower_lsp::lsp_types::Url;
 
 pub(crate) struct AuthoredUriResolver {
-    open_uris: Arc<[Url]>,
+    open_by_source_path: vize_l0::FxHashMap<PathBuf, Url>,
     open_by_physical_path: vize_l0::FxHashMap<PathBuf, Url>,
     workspace: Option<(PathBuf, PathBuf)>,
 }
@@ -13,19 +13,21 @@ pub(crate) struct AuthoredUriResolver {
 impl AuthoredUriResolver {
     pub(crate) fn new(ctx: &IdeContext<'_>) -> Self {
         let open_uris = ctx.state.documents.uris();
-        let open_by_physical_path = open_uris
-            .iter()
-            .filter_map(|uri| {
-                let path = uri.to_file_path().ok()?;
-                Some((ctx.state.canonical_editor_path(&path), uri.clone()))
-            })
-            .collect();
+        let mut open_by_source_path = vize_l0::FxHashMap::default();
+        let mut open_by_physical_path = vize_l0::FxHashMap::default();
+        for uri in open_uris.iter() {
+            let Ok(path) = uri.to_file_path() else {
+                continue;
+            };
+            open_by_source_path.insert(path.clone(), uri.clone());
+            open_by_physical_path.insert(ctx.state.canonical_editor_path(&path), uri.clone());
+        }
         let workspace = ctx.state.get_workspace_root().map(|root| {
             let physical = ctx.state.canonical_editor_path(&root);
             (root, physical)
         });
         Self {
-            open_uris,
+            open_by_source_path,
             open_by_physical_path,
             workspace,
         }
@@ -36,11 +38,8 @@ impl AuthoredUriResolver {
         ctx: &IdeContext<'_>,
         source_path: &std::path::Path,
     ) -> Option<Url> {
-        let source_uri = Url::from_file_path(source_path).ok();
-        if let Some(uri) = &source_uri
-            && self.open_uris.binary_search(uri).is_ok()
-        {
-            return source_uri;
+        if let Some(uri) = self.open_by_source_path.get(source_path) {
+            return Some(uri.clone());
         }
         let physical_path = ctx.state.canonical_editor_path(source_path);
         self.open_by_physical_path
@@ -51,7 +50,7 @@ impl AuthoredUriResolver {
                 let relative = physical_path.strip_prefix(physical_root).ok()?;
                 Url::from_file_path(logical_root.join(relative)).ok()
             })
-            .or(source_uri)
+            .or_else(|| Url::from_file_path(source_path).ok())
     }
 }
 

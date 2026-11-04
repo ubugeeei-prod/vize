@@ -190,12 +190,28 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
         let after_empty = state(&client);
         assert!(std::sync::Arc::ptr_eq(&storage, &client.overlay_storage));
         assert_eq!(control::native_lsp(&canon_root, &native), owner);
+        let materialized_config: serde_json::Value =
+            serde_json::from_slice(&fs::read(storage.root().join("tsconfig.json")).unwrap())
+                .unwrap();
+        let shared = canon_root.join("shared.js");
+        fs::remove_file(&shared).unwrap();
+        client
+            .refresh_materialized_files(&[], &[], std::slice::from_ref(&shared))
+            .unwrap();
+        let missing = report(&mut client, &canon_root, edited).unwrap();
+        fs::write(&shared, fixture["shared"].as_str().unwrap()).unwrap();
+        client
+            .refresh_materialized_files(&[], &[shared], &[])
+            .unwrap();
+        let restored = report(&mut client, &canon_root, edited).unwrap();
+        assert_eq!(control::native_lsp(&canon_root, &native), owner);
         client.shutdown().unwrap();
         control::assert_reaped(&owner);
         let packet = serde_json::json!({
             "initial":initial,"bad":bad,"repaired":repaired,
             "diagnosingProject":diagnosing_project,
             "beforeEmpty":before_empty,"afterEmpty":after_empty,
+            "materializedConfig":materialized_config,"missing":missing,"restored":restored,
             "canonSource":fs::read(canon_root.join("source.ts")).unwrap(),
             "canonShared":fs::read(canon_root.join("shared.js")).unwrap(),
             "canonConfig":fs::read(&config).unwrap(),
@@ -216,6 +232,18 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
             .unwrap();
         assert_eq!(packet["bad"], fixture["expected"]);
         assert_eq!(packet["repaired"], fixture["editedExpected"]);
+        assert_eq!(
+            packet["missing"],
+            serde_json::json!({
+                "kind":"full", "items":[{
+                    "code":2307,
+                    "message":"Cannot find module './shared.js' or its corresponding type declarations.",
+                    "range":{"start":{"line":0,"character":22},"end":{"line":0,"character":35}},
+                    "severity":1,"source":"ts",
+                }]
+            })
+        );
+        assert_eq!(packet["restored"], fixture["editedExpected"]);
         assert_eq!(packet["beforeEmpty"], packet["afterEmpty"]);
         packets.push(packet);
     }
@@ -229,6 +257,8 @@ fn native_first_materialized_editor_matches_existing_activation_and_delta() {
         "diagnosingProject",
         "bad",
         "repaired",
+        "missing",
+        "restored",
         "canonSource",
         "canonShared",
         "canonConfig",
