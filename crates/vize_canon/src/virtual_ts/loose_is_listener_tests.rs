@@ -49,33 +49,22 @@ const take = (value: unknown) => value
         r#"<component :is="'span'" @pick="(v) => take(v)"></component>"#,
     );
     let code = generate(script, template);
+    assert_eq!(
+        code.as_str(),
+        include_str!("loose_is_listener_tests/current_output/loose-targets.ts.txt"),
+        "complete loose-targets projection from the current unit producer",
+    );
 
-    assert!(
-        code.contains("type $LooseEmitProps = { readonly __vizeLooseListener: [] };"),
-        "loose targets need an empty listener context:\n{code}"
-    );
-    assert!(
-        !code.contains("(props: any) => {}"),
-        "an explicit props any types the listener parameter and hides TS7006:\n{code}"
-    );
     assert_eq!(
         code.matches("readonly __vizeLooseListener: infer __L extends unknown[]")
             .count(),
         5,
         "each loose listener must read the empty parameter list:\n{code}"
     );
-    assert!(
-        code.contains("$IsAny<__P> extends true ? never"),
-        "any props must not union an explicit any into the handler:\n{code}"
-    );
     assert_eq!(
         code.matches("(v) => take(v)").count(),
         5,
         "each loose listener keeps its authored parameter:\n{code}"
-    );
-    assert!(
-        !code.contains("(v: any)") && !code.contains("(v:any)"),
-        "the authored parameter must stay implicit any so TS7006 can report it:\n{code}"
     );
 }
 
@@ -85,35 +74,19 @@ fn loose_is_listener_typed_emit_keeps_declared_payload() {
         "const emit = defineEmits<{ pick: [value: string] }>()\n",
         "<button @click=\"emit('pick', 'ok')\"></button>",
     );
-    assert!(
-        child.contains("export type Emits = { pick: [value: string] };")
-            && child.contains("__vizeEmitProps")
-            && child.contains("readonly __vizeComponentMarker: true"),
-        "a declared emit stays on the component signature:\n{child}"
-    );
-    assert!(
-        !child.contains("infer __L extends unknown[]") && !child.contains("$LooseEmitProps"),
-        "the component that declares the emit is not a loose listener target:\n{child}"
+    assert_eq!(
+        child.as_str(),
+        include_str!("loose_is_listener_tests/current_output/declared-child.ts.txt"),
+        "complete declared-child projection from the current unit producer",
     );
 
     let parent = generate(
         "import Child from './Child.vue'\nconst take = (value: string) => value\n",
         r#"<Child @pick="(v) => take(v)"></Child>"#,
     );
-    assert!(
-        parent.contains(
-            "C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<"
-        ) && parent.contains(
-            "C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F"
-        ),
-        "a generated child and a declared resolver stay off the loose factory:\n{parent}"
-    );
-    assert!(
-        parent.contains("(v) => take(v)") && !parent.contains("(v: any)"),
-        "the typed listener is still the authored callback:\n{parent}"
-    );
-    assert!(
-        !parent.contains("infer __L extends unknown[]"),
-        "a declared emit must not take the loose empty parameter list:\n{parent}"
+    assert_eq!(
+        parent.as_str(),
+        include_str!("loose_is_listener_tests/current_output/typed-parent.ts.txt"),
+        "complete typed-parent projection from the current unit producer",
     );
 }
