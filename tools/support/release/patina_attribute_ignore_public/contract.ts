@@ -26,6 +26,43 @@ export const checkout = fileURLToPath(new URL("../../../../", import.meta.url));
 export const digest = (bytes: Uint8Array | string): string =>
   createHash("sha256").update(bytes).digest("hex");
 export const custodySha256 = "a033d844772d6109143c4faf4ca94c1aef054e474af467358d72f70fdccec670";
+const consumerSuccessorSha256 = "2334eacebfdfc57e630d161772e53e78b85f5a714cdeb683c5345dfd7ac0d80f";
+
+export function consumerSuccessor(): JsonRecord {
+  const bytes = readFileSync(new URL("consumer-successor.json", import.meta.url));
+  assert.equal(digest(bytes), consumerSuccessorSha256);
+  const value = asRecord(parseJson(bytes.toString()));
+  assert.equal(value.schema, "vize.patina-attribute-ignore-public.consumer-successor.v1");
+  assert.equal(value.sourceCustodySha256, custodySha256);
+  assert.equal(value.originalSource, requiredMerges[1]);
+  assert.equal(value.path, "crates/vize/tests/lint_attribute_hyphenation_ignore.rs");
+  return value;
+}
+
+export function validateCurrentConsumer(historical: Buffer, current: Buffer): void {
+  const successor = consumerSuccessor();
+  for (const [kind, bytes] of [
+    ["historical", historical],
+    ["current", current],
+  ] as const) {
+    const identity = asRecord(successor[kind]);
+    assert.equal(bytes.length, identity.bytes, kind);
+    assert.equal(digest(bytes), identity.sha256, kind);
+    assert.equal(
+      createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex"),
+      identity.gitBlob,
+      kind,
+    );
+  }
+  const change = asRecord(successor.change);
+  const original = historical.toString("utf8");
+  assert.equal(original.split(asString(change.before)).length - 1, change.occurrences);
+  assert.equal(
+    current.toString("utf8"),
+    original.replace(asString(change.before), asString(change.after)),
+    "only the reviewed current documentation literal may change",
+  );
+}
 export type Image = { path: string; bytes: number; sha256: string };
 export type Native = {
   lintPatinaSfc: (source: string, options: Record<string, unknown>) => unknown;
@@ -67,15 +104,22 @@ export function validateSourceCopies(input: unknown, read: (path: string) => Buf
   const files = asArray(value.files);
   assert.equal(files.length, 12);
   const seen = new Set<string>();
+  const successor = consumerSuccessor();
   for (const raw of files) {
     const row = asRecord(raw),
       path = asString(row.path);
     assert(!path.startsWith("/") && !path.split("/").includes("..") && !seen.has(path));
     seen.add(path);
-    const current = read(path);
-    assert.equal(current.length, row.bytes, path);
-    assert.equal(digest(current), row.sha256, path);
+    const observed = read(path);
+    let historical = observed;
+    if (path === successor.path) {
+      historical = read(asString(asRecord(successor.historical).snapshot));
+      validateCurrentConsumer(historical, observed);
+    }
+    assert.equal(historical.length, row.bytes, path);
+    assert.equal(digest(historical), row.sha256, path);
   }
+  assert(seen.has(asString(successor.path)), "the reviewed source consumer must remain present");
   assert.equal(corpus.valid.length, 9);
   assert.equal(corpus.invalid.length, 6);
   for (const row of corpus.valid) referenceFor(row);

@@ -347,8 +347,9 @@ fn mapped_virtual_ranges(
         .filter_map(
             |span @ ContentMapperSpan([generated, length, original, original_length, _, _])| {
                 let first = excluded.partition_point(|echo| echo.generated.end < *generated);
-                let is_owned_echo = excluded[first..]
+                let is_owned_echo = excluded
                     .iter()
+                    .skip(first)
                     .take_while(|echo| echo.generated.start <= generated + length)
                     .any(|echo| echo_owns_mapping(span, echo));
                 (*length > 0
