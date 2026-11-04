@@ -173,30 +173,62 @@ fn panic_text(check: impl FnOnce()) -> std::string::String {
 fn native_type_aware_assertion_prints_the_complete_diagnostic_set() {
     let returned = fixture(vec![
         LintDiagnostic::warn("type/no-floating-promises", "floating call", 12, 20)
-            .with_label("call", 12, 20),
+            .with_help("Handle this promise")
+            .with_label("call", 12, 20)
+            .with_fix(crate::Fix::new(
+                "Handle promise",
+                crate::TextEdit::replace(12, 20, "void save()"),
+            )),
         runtime("checker exited: socket closed"),
     ]);
-    let context = failure_context(&returned);
-    for fragment in [
-        "Component.vue",
-        "errors=1",
-        "warnings=1",
-        "type/no-floating-promises",
-        "Warning",
-        "floating call",
-        "start: 12",
-        "end: 20",
-        "labels:",
-        "call",
-        "help:",
-        "fix:",
-        "type/corsa-runtime",
-        "checker exited: socket closed",
-        "TypeAwareFailure::Runtime",
-        RUNTIME_HELP,
-    ] {
-        assert!(context.contains(fragment), "{context}");
-    }
+    assert_eq!(
+        failure_context(&returned),
+        r#"returned diagnostics for Component.vue (errors=1, warnings=1): [
+    LintDiagnostic {
+        rule_name: "type/no-floating-promises",
+        severity: Warning,
+        message: "floating call",
+        start: 12,
+        end: 20,
+        help: Some(
+            "Handle this promise",
+        ),
+        labels: [
+            Label {
+                message: "call",
+                start: 12,
+                end: 20,
+            },
+        ],
+        fix: Some(
+            Fix {
+                message: "Handle promise",
+                edits: [
+                    TextEdit {
+                        start: 12,
+                        end: 20,
+                        new_text: "void save()",
+                    },
+                ],
+            },
+        ),
+    },
+    LintDiagnostic {
+        rule_name: "type/corsa-runtime",
+        severity: Error,
+        message: "checker exited: socket closed",
+        start: 0,
+        end: 0,
+        help: Some(
+            "Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
+runtime/query failure:
+  TypeAwareFailure::Runtime: checker exited: socket closed"#
+    );
 }
 
 #[test]
@@ -204,12 +236,25 @@ fn native_type_aware_assertion_captures_query_failure_text() {
     let context = failure_context(&fixture(vec![query(
         "symbol owner is unknown to this connection",
     )]));
-    assert!(context.contains("TypeAwareFailure::Query"), "{context}");
-    assert!(
-        context.contains("symbol owner is unknown to this connection"),
-        "{context}"
+    assert_eq!(
+        context,
+        r#"returned diagnostics for Component.vue (errors=1, warnings=0): [
+    LintDiagnostic {
+        rule_name: "type/corsa-runtime",
+        severity: Error,
+        message: "symbol owner is unknown to this connection",
+        start: 0,
+        end: 0,
+        help: Some(
+            "Type-aware lint could not complete with the selected native runtime. Use a compatible runtime or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
+runtime/query failure:
+  TypeAwareFailure::Query: symbol owner is unknown to this connection"#
     );
-    assert!(!context.contains("TypeAwareFailure::Runtime"), "{context}");
 }
 
 #[test]
@@ -220,22 +265,32 @@ fn native_type_aware_assertion_labels_unclassified_runtime_text() {
         0,
         0,
     )]));
-    assert!(
-        context.contains("type/corsa-runtime: plain runtime text"),
-        "{context}"
+    assert_eq!(
+        context,
+        r#"returned diagnostics for Component.vue (errors=1, warnings=0): [
+    LintDiagnostic {
+        rule_name: "type/corsa-runtime",
+        severity: Error,
+        message: "plain runtime text",
+        start: 0,
+        end: 0,
+        help: None,
+        labels: [],
+        fix: None,
+    },
+]
+runtime/query failure:
+  type/corsa-runtime: plain runtime text"#
     );
-    assert!(!context.contains("TypeAwareFailure::Runtime"), "{context}");
-    assert!(!context.contains("TypeAwareFailure::Query"), "{context}");
 }
 
 #[test]
 fn native_type_aware_assertion_prints_an_empty_returned_set() {
     let returned = fixture(vec![]);
-    let context = failure_context(&returned);
-    assert!(context.contains("errors=0"), "{context}");
-    assert!(context.contains("warnings=0"), "{context}");
-    assert!(context.contains("[]"), "{context}");
-    assert!(!context.contains("runtime/query failure"), "{context}");
+    assert_eq!(
+        failure_context(&returned),
+        "returned diagnostics for Component.vue (errors=0, warnings=0): []"
+    );
     assert_absent(&returned, "type/no-floating-promises");
 }
 
@@ -260,16 +315,40 @@ fn native_type_aware_assertion_keeps_expected_rule_and_negative_control() {
 
     let missing = fixture(vec![runtime("checker exited: hidden")]);
     let message = panic_text(|| assert_reports(&missing, "type/no-floating-promises"));
-    assert!(
-        message.contains("expected diagnostic `type/no-floating-promises`"),
-        "{message}"
+    // These literal contexts come from the injected fixtures, never from the
+    // function being checked. Every panic must retain the complete DTO.
+    const MISSING_CONTEXT: &str = r#"returned diagnostics for Component.vue (errors=1, warnings=0): [
+    LintDiagnostic {
+        rule_name: "type/corsa-runtime",
+        severity: Error,
+        message: "checker exited: hidden",
+        start: 0,
+        end: 0,
+        help: Some(
+            "Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
+runtime/query failure:
+  TypeAwareFailure::Runtime: checker exited: hidden"#;
+    const UNEXPECTED_CONTEXT: &str = r#"returned diagnostics for Component.vue (errors=0, warnings=1): [
+    LintDiagnostic {
+        rule_name: "type/no-floating-promises",
+        severity: Warning,
+        message: "floating call",
+        start: 1,
+        end: 2,
+        help: None,
+        labels: [],
+        fix: None,
+    },
+]"#;
+    assert_eq!(
+        message,
+        format!("expected diagnostic `type/no-floating-promises`\n{MISSING_CONTEXT}")
     );
-    assert!(
-        message.contains("TypeAwareFailure::Runtime: checker exited: hidden"),
-        "{message}"
-    );
-    assert!(message.contains("type/corsa-runtime"), "{message}");
-    assert!(message.contains("checker exited: hidden"), "{message}");
 
     let unexpected = fixture(vec![LintDiagnostic::warn(
         "type/no-floating-promises",
@@ -284,12 +363,12 @@ fn native_type_aware_assertion_keeps_expected_rule_and_negative_control() {
             "handled chains stay quiet",
         );
     });
-    assert!(
-        message.contains("did not expect diagnostic `type/no-floating-promises`"),
-        "{message}"
+    assert_eq!(
+        message,
+        format!(
+            "did not expect diagnostic `type/no-floating-promises`\nhandled chains stay quiet\n{UNEXPECTED_CONTEXT}"
+        )
     );
-    assert!(message.contains("handled chains stay quiet"), "{message}");
-    assert!(message.contains("floating call"), "{message}");
 
     let message = panic_text(|| {
         assert_reports_note(
@@ -298,10 +377,11 @@ fn native_type_aware_assertion_keeps_expected_rule_and_negative_control() {
             "control flow still reports",
         );
     });
-    assert!(message.contains("control flow still reports"), "{message}");
-    assert!(
-        message.contains("TypeAwareFailure::Runtime: checker exited: hidden"),
-        "{message}"
+    assert_eq!(
+        message,
+        format!(
+            "expected diagnostic `type/no-floating-promises`\ncontrol flow still reports\n{MISSING_CONTEXT}"
+        )
     );
 
     let message = panic_text(|| {
@@ -311,8 +391,12 @@ fn native_type_aware_assertion_keeps_expected_rule_and_negative_control() {
             "Template interpolation",
         );
     });
-    assert!(message.contains("Template interpolation"), "{message}");
-    assert!(message.contains("floating call"), "{message}");
+    assert_eq!(
+        message,
+        format!(
+            "expected `type/no-floating-promises` containing \"Template interpolation\"\n{UNEXPECTED_CONTEXT}"
+        )
+    );
 
     let message = panic_text(|| {
         assert_absent_rules(
@@ -323,7 +407,10 @@ fn native_type_aware_assertion_keeps_expected_rule_and_negative_control() {
             ],
         );
     });
-    assert!(message.contains("expected none of"), "{message}");
-    assert!(message.contains("type/no-floating-promises"), "{message}");
-    assert!(message.contains("floating call"), "{message}");
+    assert_eq!(
+        message,
+        format!(
+            "expected none of [\"type/no-floating-promises\", \"type/no-unsafe-template-binding\"]\n{UNEXPECTED_CONTEXT}"
+        )
+    );
 }

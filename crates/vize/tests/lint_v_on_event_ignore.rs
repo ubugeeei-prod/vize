@@ -64,7 +64,7 @@ fn expected(row: &Value) -> Value {
         .iter()
         .map(|finding| {
             let (message, help) = presentation(finding["message"].as_str().unwrap());
-            json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":2,
+            json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-v-on-event-hyphenation.md","severity":2,
             "message":cstr!("[vize:{RULE}] {message}"),"help":help,
             "line":finding["line"],"column":finding["column"],
             "endLine":finding["endLine"],"endColumn":finding["endColumn"]})

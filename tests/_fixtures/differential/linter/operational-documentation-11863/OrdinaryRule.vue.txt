@@ -1,0 +1,3 @@
+<template>
+  <div v-for="item in [1, 2]">{{ item }}</div>
+</template>

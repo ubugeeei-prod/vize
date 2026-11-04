@@ -1,0 +1,35 @@
+{
+  "schema": "vize.component-name-eslint.source-successor.v1",
+  "path": "crates/vize/tests/lint_rule_options_casing_cli.rs",
+  "originalDescriptor": {
+    "path": "tests/_fixtures/differential/linter/formatter-on-style-policy-6098/cases.json",
+    "bytes": 1571,
+    "sha256": "adacad5b6d7eeedddadcdde38ea57d514809b39eb46b9002d323302d9d7cfa1e"
+  },
+  "historical": {
+    "snapshot": "tests/_fixtures/differential/linter/formatter-on-style-policy-6098/OriginalConsumer.rs.txt",
+    "bytes": 16768,
+    "sha256": "531c092139d0f1a2a44cc1e2838acb9e7a7cf5b3139284110cfe0282277b2792",
+    "gitBlob": "000020a19c77fa006f98eac2806e3d133ae8302e"
+  },
+  "current": {
+    "source": "bbdefc8e31e9e027991c3ca6798b6bf7ad2dca96",
+    "bytes": 16838,
+    "sha256": "bad0adb1aa50fe79125f97ae1646997a18bd2726c1edc97eecbd53d7e7934d6e",
+    "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
+  },
+  "changes": [
+    {
+      "ruleId": "vue/component-name-in-template-casing",
+      "before": "docs/content/rules/vue.md",
+      "after": "docs/content/rules/reference/vue-component-name-in-template-casing.md",
+      "occurrences": 1
+    },
+    {
+      "ruleId": "script/custom-event-name-casing",
+      "before": "docs/content/rules/type-and-script.md",
+      "after": "docs/content/rules/reference/script-custom-event-name-casing.md",
+      "occurrences": 1
+    }
+  ]
+}

@@ -14,7 +14,7 @@ expression: "serde_json::to_string_pretty(&support::normalized_report(root,\nrep
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,
         "message": "[vize:vue/multi-word-component-names] Component name \"Image\" should be multi-word to avoid conflicts with HTML elements",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-multi-word-component-names.md",
         "ruleId": "vue/multi-word-component-names",
         "severity": 2
       }

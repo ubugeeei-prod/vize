@@ -62,7 +62,9 @@ pub fn cli_packet(case: &Value, filename: &str) -> Value {
             let start = position(source, diagnostic["start"].as_u64().unwrap(), false);
             let end = position(source, diagnostic["end"].as_u64().unwrap(), false);
             json!({
-                "ruleId": RULE, "ruleDocsPath": "docs/content/rules/vue.md", "severity": 1,
+                "ruleId": RULE,
+                "ruleDocsPath": "docs/content/rules/reference/vue-require-component-registration.md",
+                "severity": 1,
                 "message": format!("[vize:{RULE}] {}", diagnostic["message"].as_str().unwrap()),
                 "line": start.0 + 1, "column": start.1 + 1,
                 "endLine": end.0 + 1, "endColumn": end.1 + 1,

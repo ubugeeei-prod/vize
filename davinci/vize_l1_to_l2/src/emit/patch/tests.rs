@@ -221,7 +221,7 @@ fn materialized_handler_facts(kind: BindingKind) -> PatchFacts {
         &|_| false,
         &|_| false,
         &|on| {
-            crate::emit::props::handler_is_constant(handler, on, &|name| {
+            crate::emit::props::handler_is_constant(handler, on, false, &|name| {
                 name == handler && handler_static_patch_binding(kind)
             })
         },

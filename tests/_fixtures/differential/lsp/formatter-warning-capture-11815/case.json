@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-warning-capture-11815",
+  "provenance": {
+    "fixCommit": "b0beefba53e3c1473d9bf4d7179a5b29b904ca96",
+    "inputOrigin": "Authored source and formatter config exactly retain the original formatter-bind-style-policy-6098 inputs; no old fixture is modified.",
+    "contractOrigin": "New exact warning-capture input for the existing Rust full3WARN/null/read-only test. These responses are not an independent old formatter golden.",
+    "witness": {
+      "path": "crates/vize_maestro/src/server/handlers/tests/formatting/bind_style_policy.rs",
+      "sha256": "cb517d5e48aa24619c846b66eaf6e203c3f4d83def2f8d12f5e2b8f4e28d068d"
+    }
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "Fixed.vue.txt",
+      "runtimePath": "VBindProp.vue",
+      "sha256": "83d741c78b8e8de60767a95724ae2e882446dbafce92edff32f512616e024952"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "70e3a95ec9117f04998f30308271d11f9495340557acf2103a91be199e51e00b"
+    },
+    {
+      "source": "warnings.expected.json",
+      "runtimePath": "warnings.expected.json",
+      "sha256": "18b7a399d07f7acfb7bc13b8bcff81df297d2b10149966c64508a54dcc9fffac"
+    }
+  ],
+  "entry": "VBindProp.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "d8599bd7a7f09cca388c8837da001857e0519120de026f346aa953f811522eef"
+  },
+  "method": "textDocument/formatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

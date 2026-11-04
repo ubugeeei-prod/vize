@@ -72,7 +72,7 @@ fn registered_expose_last_policy_keeps_the_original_source_until_manual_repair()
         );
         let messages = if violation {
             json!([{
-                "ruleId":RULE, "ruleDocsPath":"docs/content/rules/type-and-script.md", "severity":2,
+                "ruleId":RULE, "ruleDocsPath":"docs/content/rules/reference/script-define-macros-order.md", "severity":2,
                 "message":"[vize:script/define-macros-order] `defineExpose` should be the last statement in `<script setup>`.",
                 "line":3, "column":1, "endLine":3, "endColumn":25,
                 "help":"Put defineExpose as the last statement in <script setup>."

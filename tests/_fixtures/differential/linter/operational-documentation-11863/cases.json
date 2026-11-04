@@ -1,0 +1,111 @@
+{
+  "schema": "vize.lint.operational-documentation-inputs",
+  "version": 1,
+  "sourceRevision": "869a446d2f07f636a7df7190caeefd3cb463b471",
+  "beforeEvidence": {
+    "run": "https://github.com/ubugeeei-prod/vize/actions/runs/41864281488",
+    "lintJob": "https://github.com/ubugeeei-prod/vize/actions/runs/41864281488/job/126694670424",
+    "cliJob": "https://github.com/ubugeeei-prod/vize/actions/runs/41864281488/job/126694670560",
+    "scope": "Observed operational report identities and URL-only failures; these authored reductions were not recaptured from a changed binary."
+  },
+  "cases": [
+    {
+      "id": "unused-directive",
+      "files": {
+        "UnusedDirective.vue": "UnusedDirective.vue.txt",
+        "vite.config.mjs": "incremental.vite.config.mjs.txt",
+        "package.json": "package.json.txt",
+        "tsconfig.json": "tsconfig.json.txt"
+      },
+      "argv": [
+        "lint",
+        "UnusedDirective.vue",
+        "--config",
+        "vite.config.mjs",
+        "--report-unused-disable-directives",
+        "--format",
+        "json"
+      ],
+      "documentation": {
+        "ruleId": "vue/comment-directive",
+        "before": "docs/content/rules/reference/vue-comment-directive.md",
+        "after": "docs/content/guide/lint-execution.md"
+      }
+    },
+    {
+      "id": "cross-file-unmatched-provider",
+      "files": {
+        "MissingProvider.vue": "MissingProvider.vue.txt",
+        "main.ts": "main.ts.txt",
+        "vite.config.mjs": "incremental.vite.config.mjs.txt",
+        "package.json": "package.json.txt",
+        "tsconfig.json": "tsconfig.json.txt"
+      },
+      "argv": [
+        "lint",
+        "--cross-file",
+        "MissingProvider.vue",
+        "main.ts",
+        "--config",
+        "vite.config.mjs",
+        "--format",
+        "json"
+      ],
+      "documentation": {
+        "ruleId": "cross-file",
+        "before": "docs/content/rules/reference/cross-file.md",
+        "after": "docs/content/rules/cross-file.md"
+      }
+    },
+    {
+      "id": "requested-runtime-missing",
+      "files": {
+        "RuntimeFailure.vue": "RuntimeFailure.vue.txt",
+        "vite.config.mjs": "runtime.vite.config.mjs.txt",
+        "package.json": "package.json.txt",
+        "tsconfig.json": "tsconfig.json.txt"
+      },
+      "argv": [
+        "lint",
+        "RuntimeFailure.vue",
+        "--config",
+        "vite.config.mjs",
+        "--type-aware",
+        "--format",
+        "json"
+      ],
+      "documentation": {
+        "ruleId": "type/corsa-runtime",
+        "before": "docs/content/rules/reference/type-corsa-runtime.md",
+        "after": "docs/content/rules/type-and-script.md"
+      }
+    },
+    {
+      "id": "ordinary-rule-negative-control",
+      "files": {
+        "OrdinaryRule.vue": "OrdinaryRule.vue.txt",
+        "vite.config.mjs": "incremental.vite.config.mjs.txt",
+        "package.json": "package.json.txt",
+        "tsconfig.json": "tsconfig.json.txt"
+      },
+      "argv": [
+        "lint",
+        "OrdinaryRule.vue",
+        "--config",
+        "vite.config.mjs",
+        "--format",
+        "json"
+      ],
+      "documentation": {
+        "ruleId": "vue/require-v-for-key",
+        "before": "docs/content/rules/reference/vue-require-v-for-key.md",
+        "after": "docs/content/rules/reference/vue-require-v-for-key.md"
+      }
+    }
+  ],
+  "qualification": {
+    "state": "source-inspected",
+    "nativeExecution": "pending",
+    "nativeAcceptance": false
+  }
+}

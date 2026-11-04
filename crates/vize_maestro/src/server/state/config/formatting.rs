@@ -120,9 +120,8 @@ impl ServerState {
                 &resolved.rule_options,
                 snapshot.options.normalize_directive_shorthands,
             )
-            .map_err(|error| {
+            .inspect_err(|error| {
                 warn_formatter_refusal(path, error.as_str());
-                error
             })?;
         }
         Ok(FormatterContext {
