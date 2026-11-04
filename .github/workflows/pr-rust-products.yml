@@ -102,6 +102,7 @@ jobs:
         uses: ./.github/actions/hydrate-pinned-fixture
         with: { fixture: tests/_fixtures/_git/element-plus }
       - name: Build and run the affected Rust test cohort
+        id: cohort
         # Preserve affected package feature unification; the shared cohort
         # registry partitions test binaries by their actual product surface.
         env:
@@ -130,6 +131,12 @@ jobs:
           path: ${{ runner.temp }}/test-cases-rust-${{ matrix.cohort }}.json
           if-no-files-found: error
           retention-days: 7
+      - name: Observe every computed-event snapshot with the same compiled binary
+        # Artifact transport only: the original cohort failure and report stay red.
+        if: ${{ !cancelled() && matrix.cohort == 'typechecker' && steps.cohort.outcome == 'failure' }}
+        env:
+          VIZE_ORIGINAL_COHORT_OUTCOME: ${{ steps.cohort.outcome }}
+        run: node tools/support/compat/github/capture-computed-event-snapshots.ts "$RUNNER_TEMP/rust-build-evidence"
       - name: Retain genuine pending Canon snapshot observations
         # Observation transport only; the original failed test remains failed.
         # Pending files are reviewed before any checked-in golden changes.
@@ -137,7 +144,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pending-canon-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: crates/vize_canon/**/*.snap.new
+          path: |
+            crates/vize_canon/**/*.snap.new
+            crates/vize_canon/src/virtual_ts/snapshots/computed-event-capture.json
           if-no-files-found: ignore
           retention-days: 7
       - name: Retain genuine pending Maestro snapshot observations
