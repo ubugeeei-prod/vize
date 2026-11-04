@@ -282,6 +282,7 @@ runs:
         cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1
         cargo test --locked --profile ci -p vize_canon --lib generated_diagnostics:: -- --nocapture --test-threads=1
     - name: Test exact beta editor owner diagnostics and clean EOF shutdown
+      if: ${{ !cancelled() }}
       shell: bash
       env:
         VIZE_TEST_NATIVE_BETA_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
