@@ -3,9 +3,13 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  currentRuleDocumentationJson,
+  currentRuleDocumentationPlain,
   currentRuleDocumentationPacket,
   currentRuleDocumentationMessages,
 } from "./support/current-rule-documentation.ts";
+import { currentDocumentation, exact } from "./support/nuxt-render-scope-packets.ts";
+import type { ProcessPacket } from "./support/nuxt-render-scope-packets.ts";
 import { wholeJson as currentLintOracle } from "./lint-default-correctness-reference.mjs";
 import {
   loadCases as loadSlotCases,
@@ -166,4 +170,114 @@ await test("current rule projections refuse unknown rules, foreign paths and cou
     Object.assign(actual[0]!.messages[0]!, { [field]: "changed" });
     assert.notDeepEqual(actual, expected, field);
   }
+});
+
+await test("Nuxt process docs expectations preserve every non-URL byte and process field", () => {
+  const packet = [
+    {
+      file: "src/layouts/bare.vue",
+      messages: [
+        {
+          ruleId: "vue/no-unused-vars",
+          ruleDocsPath: "docs/content/rules/vue.md",
+          severity: 1,
+          message: "Variable 'item' is defined by v-for but never used",
+          line: 1,
+          column: 44,
+          endLine: 1,
+          endColumn: 48,
+        },
+      ],
+      errorCount: 0,
+      warningCount: 1,
+    },
+  ];
+  const oldPath = "docs/content/rules/vue.md";
+  const currentPath = "docs/content/rules/reference/vue-no-unused-vars.md";
+  for (const ending of ["", "\n"]) {
+    const json = JSON.stringify(packet, null, 2) + ending;
+    assert.equal(currentRuleDocumentationJson(json), json.replace(oldPath, currentPath));
+  }
+  for (const newline of ["\n", "\r\n"]) {
+    const plain = [
+      "Patina lint report: 1 warning in 1 file",
+      "src/layouts/bare.vue",
+      "  src/layouts/bare.vue:1:44 warning vue/no-unused-vars Variable 'item' is defined by v-for but never used",
+      `    Reference: ${oldPath}`,
+      "    Help:",
+      "      Preserve this exact authored explanation",
+      "",
+    ].join(newline);
+    assert.equal(currentRuleDocumentationPlain(plain), plain.replace(oldPath, currentPath));
+  }
+  for (const format of ["json", "plain"]) {
+    const stdout =
+      format === "json"
+        ? JSON.stringify(packet, null, 2)
+        : `  bare.vue:1:44 warning vue/no-unused-vars unused item\n    Reference: ${oldPath}\n`;
+    const before: ProcessPacket = {
+      command: "/public/vize",
+      cwd: "/authored",
+      args: ["lint", "--format", format],
+      status: 0,
+      signal: null,
+      error: null,
+      stdout,
+      stderr: "retained exact stderr",
+    };
+    const saved = structuredClone(before);
+    const actual = {
+      ...before,
+      command: "/source/vize",
+      stdout: stdout.replace(oldPath, currentPath),
+    };
+    assert.throws(() => exact(actual, before));
+    const expected = currentDocumentation(before);
+    exact(actual, expected);
+    assert.deepEqual(before, saved);
+    assert.deepEqual({ ...expected, stdout: before.stdout }, before);
+    assert.throws(() => exact({ ...actual, status: 1 }, expected));
+    assert.throws(() => exact({ ...actual, stderr: "changed" }, expected));
+  }
+});
+
+await test("Nuxt process docs expectations reject unknown formats, rules and references", () => {
+  const header = "  bare.vue:1:44 warning vue/no-unused-vars unused item\n";
+  const oldPath = "docs/content/rules/vue.md";
+  for (const reference of [
+    "docs/content/rules/index.md",
+    "docs/content/rules/reference/vue-no-unused-vars.md",
+    "../foreign.md",
+  ])
+    assert.throws(
+      () => currentRuleDocumentationPlain(header + `    Reference: ${reference}\n`),
+      /frozen rule documentation URL/u,
+    );
+  assert.throws(
+    () =>
+      currentRuleDocumentationPlain(
+        header.replace("vue/no-unused-vars", "vue/foreign") + `    Reference: ${oldPath}\n`,
+      ),
+    /finite authored documentation rule/u,
+  );
+  assert.throws(
+    () => currentRuleDocumentationPlain(`    Reference: ${oldPath}\n`),
+    /preceding authored diagnostic rule/u,
+  );
+  assert.throws(() => currentRuleDocumentationJson(" [ ] "), /canonical authored JSON bytes/u);
+  const process: ProcessPacket = {
+    command: "/public/vize",
+    cwd: "/authored",
+    args: ["lint"],
+    status: 0,
+    signal: null,
+    error: null,
+    stdout: "[]",
+    stderr: "",
+  };
+  assert.throws(() => currentDocumentation(process), /explicit authored report format/u);
+  assert.throws(
+    () => currentDocumentation({ ...process, args: ["lint", "--format", "future"] }),
+    /finite authored report format/u,
+  );
 });

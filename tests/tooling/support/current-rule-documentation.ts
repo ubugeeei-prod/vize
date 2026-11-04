@@ -30,6 +30,7 @@ const pages = {
   "vue/no-deprecated-v-bind-sync": ["vue", "vue-no-deprecated-v-bind-sync"],
   "vue/no-deprecated-v-on-native-modifier": ["vue", "vue-no-deprecated-v-on-native-modifier"],
   "vue/no-unused-properties": ["vue", "vue-no-unused-properties"],
+  "vue/no-unused-vars": ["vue", "vue-no-unused-vars"],
   "vue/require-scoped-style": ["vue", "vue-require-scoped-style"],
   "vue/require-v-for-key": ["vue", "vue-require-v-for-key"],
   "vue/sfc-element-order": ["vue", "vue-sfc-element-order"],
@@ -111,4 +112,29 @@ export function currentRuleDocumentationPacket(expected: unknown): {
       warningCount: row.warningCount,
     };
   });
+}
+
+export function currentRuleDocumentationJson(expected: string): string {
+  const packet: unknown = JSON.parse(expected);
+  const ending = expected.endsWith("\n") ? "\n" : "";
+  assert.equal(JSON.stringify(packet, null, 2) + ending, expected, "canonical authored JSON bytes");
+  return JSON.stringify(currentRuleDocumentationPacket(packet), null, 2) + ending;
+}
+
+export function currentRuleDocumentationPlain(expected: string): string {
+  let rule: string | undefined;
+  return expected
+    .split(/(?<=\n)/u)
+    .map((line) => {
+      const finding = /^\s+\S+:\d+:\d+ (?:warning|error|info) (\S+) /u.exec(line);
+      if (finding) rule = finding[1];
+      const prefix = "    Reference: ";
+      if (!line.startsWith(prefix)) return line;
+      assert.ok(rule, "preceding authored diagnostic rule");
+      const ending = line.endsWith("\r\n") ? "\r\n" : line.endsWith("\n") ? "\n" : "";
+      const reference = line.slice(prefix.length, ending ? -ending.length : undefined);
+      const message = currentRuleDocumentationMessage({ ruleId: rule, ruleDocsPath: reference });
+      return prefix + String(message.ruleDocsPath) + ending;
+    })
+    .join("");
 }
