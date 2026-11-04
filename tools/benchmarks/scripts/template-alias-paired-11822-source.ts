@@ -69,6 +69,7 @@ export async function buildSource(source: string, sha: string): Promise<SourceRe
   const identity = pristine(source, sha);
   const target = join(source, "target");
   const out = join(target, "template-alias-11822");
+  mkdirSync(target, { recursive: true });
   mkdirSync(out, { recursive: false });
   const commands: {
     id: string;
