@@ -123,3 +123,6 @@ mod reexecuted_map_tests;
 
 #[cfg(test)]
 mod value_binding_origins_tests;
+
+#[cfg(test)]
+mod value_binding_origins_callable_tests;

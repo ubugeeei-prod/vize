@@ -4,6 +4,7 @@
 //! Keys belong to one store; merging two actual Programs refuses provenance.
 
 use crate::scope::{ScopeChain, ScopeId, ScopeKind};
+mod callable;
 mod homogeneous;
 mod observe;
 mod resolution;
@@ -94,6 +95,11 @@ pub struct ValueBindingOrigins {
     writes: Vec<(ValueReference, bool)>,
     mutated: FxHashSet<ValueBindingKey>,
     member_mutated: FxHashSet<ValueBindingKey>,
+    /// Direct function and arrow initializers, plus function declarations.
+    /// Type wrappers stay out of this set. Listener projection does not read it.
+    callable_keys: FxHashSet<ValueBindingKey>,
+    /// `as` / angle assertion / `satisfies` / non-null / instantiation wrappers.
+    asserted_keys: FxHashSet<ValueBindingKey>,
     refused: bool,
     admitted: bool,
     pub(crate) async_components: super::async_components::AsyncComponentBindings,
@@ -237,15 +243,13 @@ impl ValueBindingOrigins {
                 if kind.is_const()
                     && let Some(init) = init
                 {
-                    self.async_components.note_initializer(
-                        ValueBindingKey {
-                            scope,
-                            start: id.span.start,
-                            end: id.span.end,
-                        },
+                    let key = ValueBindingKey {
                         scope,
-                        init,
-                    );
+                        start: id.span.start,
+                        end: id.span.end,
+                    };
+                    self.async_components.note_initializer(key, scope, init);
+                    self.note_callable_initializer(key, init);
                 }
             }
             BindingPattern::ObjectPattern(object) => {

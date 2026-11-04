@@ -134,10 +134,18 @@ impl ValueBindingOrigins {
         else {
             return false;
         };
-        !declaration.ambiguous
+        let imported = !declaration.ambiguous
             && declaration.immutable
             && !self.mutated.contains(&declaration.key)
-            && matches!(&declaration.origin, Origin::Import(import) if import.value)
+            && matches!(&declaration.origin, Origin::Import(import) if import.value);
+        if imported {
+            debug_assert!(
+                self.root_reference(name)
+                    .is_none_or(|reference| !self.closure_stable_callable(&reference)),
+                "a value import is not a closure-stable callable"
+            );
+        }
+        imported
     }
 
     pub(crate) fn component_binding_name(&self, tag: &str) -> Option<Option<&str>> {
@@ -146,6 +154,42 @@ impl ValueBindingOrigins {
             root.get_key_value(candidate).map(|(name, _)| name.as_str())
         })
         .map(Some)
+    }
+
+    /// Nearest source binding is a closure-stable callable.
+    ///
+    /// Incomplete domains (`var`, eval, a named function expression) admit
+    /// nothing. An asserted edge stops the walk even when the peeled inner
+    /// expression would otherwise be an alias.
+    pub(crate) fn closure_stable_callable(&self, reference: &ValueReference) -> bool {
+        if !self.is_complete() || reference.end < reference.start {
+            return false;
+        }
+        let mut seen = FxHashSet::default();
+        let mut current = reference.clone();
+        loop {
+            let Some(declaration) = self.lookup(&current) else {
+                return false;
+            };
+            if !seen.insert(declaration.key) {
+                return false;
+            }
+            if declaration.ambiguous
+                || !declaration.immutable
+                || self.mutated.contains(&declaration.key)
+                || self.asserted_keys.contains(&declaration.key)
+                || declaration.initialized > current.start
+            {
+                return false;
+            }
+            if self.callable_keys.contains(&declaration.key) {
+                return true;
+            }
+            match &declaration.origin {
+                Origin::Alias(next) => current = next.clone(),
+                Origin::Import(_) | Origin::Opaque => return false,
+            }
+        }
     }
 
     pub(crate) fn root_reference(&self, name: &str) -> Option<ValueReference> {
