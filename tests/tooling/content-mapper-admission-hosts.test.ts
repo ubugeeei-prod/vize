@@ -5,6 +5,8 @@ import {
   frames,
   qualifyWire,
   diagnosticPacket,
+  hostConfig,
+  semanticPacket,
 } from "../../tools/support/compat/content-mapper/admission-hosts-core.ts";
 const encode = (packet: unknown) => {
   const body = Buffer.from(JSON.stringify(packet));
@@ -119,11 +121,35 @@ void test("normal positive and complete authored negative diagnostic packets are
         `src/File${index}.vue(2,7): error TS2322: Type 'string' is not assignable to type 'number'.`,
     ).join("\n") + "\n";
   assert.equal(diagnosticPacket(text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
+  assert.equal(semanticPacket(1, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]).length, 8);
+  assert.throws(
+    () => semanticPacket(2, text, "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]),
+    /semantic status/u,
+  );
   assert.throws(() => diagnosticPacket("", "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]));
   assert.throws(() =>
     diagnosticPacket(text.replace("(2,7)", "(2,8)"), "", "/project", [0, 1, 2, 3, 4, 5, 6, 7]),
   );
   assert.throws(() => diagnosticPacket(text, "timeout", "/project", [0, 1, 2, 3, 4, 5, 6, 7]));
+});
+
+void test("host config follows the existing public root mapper schema", async () => {
+  const { readFileSync } = await import("node:fs");
+  const suite = JSON.parse(
+    readFileSync(
+      new URL("../_fixtures/content-mapper/escaton-component-props.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const oracle = JSON.parse(suite.originals[0].files["tsconfig.json"]);
+  const config = hostConfig({ strict: true, skipLibCheck: false });
+  assert.deepEqual(config.contentMappers, oracle.contentMappers);
+  assert.equal(Object.hasOwn(config.compilerOptions, "contentMappers"), false);
+  assert.deepEqual(config.contentMappers[0].extensions, [".vue"]);
+  assert.throws(
+    () => hostConfig({ contentMappers: [{ extension: ".vue", package: "vize" }] }),
+    /project root/u,
+  );
 });
 
 void test("host raw descriptors and argv are durable before a controlled Node child starts", async () => {

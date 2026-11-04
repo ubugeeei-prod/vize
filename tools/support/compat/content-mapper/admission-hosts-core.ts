@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import { relative, sep } from "node:path";
 
 export type Packet = Record<string, unknown>;
+export function hostConfig(compilerOptions: Packet) {
+  assert.ok(
+    !Object.hasOwn(compilerOptions, "contentMappers"),
+    "contentMappers belongs at the project root",
+  );
+  return {
+    compilerOptions,
+    contentMappers: [{ package: "vize", extensions: [".vue"] }],
+    include: ["src/**/*.vue"],
+  };
+}
 export function object(value: unknown): Packet {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
   return value as Packet;
@@ -174,4 +185,14 @@ export function diagnosticPacket(
   }));
   assert.deepEqual(rows, expected, "whole authored diagnostic population changed");
   return rows;
+}
+export function semanticPacket(
+  status: number | null,
+  stdout: string,
+  stderr: string,
+  project: string,
+  expectedErrors: readonly number[],
+) {
+  assert.equal(status, expectedErrors.length ? 1 : 0, "normal noEmit semantic status changed");
+  return diagnosticPacket(stdout, stderr, project, expectedErrors);
 }

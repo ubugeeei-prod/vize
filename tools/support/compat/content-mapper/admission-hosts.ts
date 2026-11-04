@@ -20,7 +20,13 @@ import {
   captureDeclarationGraph,
   fileImage,
 } from "../../release/computed_event_custody.ts";
-import { fixture, object, qualifyWire, diagnosticPacket } from "./admission-hosts-core.ts";
+import {
+  fixture,
+  hostConfig,
+  object,
+  qualifyWire,
+  semanticPacket,
+} from "./admission-hosts-core.ts";
 import { run, save, teeCommand } from "./admission-hosts-process.ts";
 const json = (path: string) => object(JSON.parse(readFileSync(path, "utf8")));
 const link = (target: string, path: string) => {
@@ -232,18 +238,14 @@ export async function main() {
         writeFileSync(name, text);
         expected.set(name, text);
       }
-      const config = {
-        compilerOptions: {
-          strict: true,
-          target: "ESNext",
-          module: "ESNext",
-          moduleResolution: "Bundler",
-          skipLibCheck: false,
-          types: [],
-          contentMappers: [{ extension: ".vue", package: "vize" }],
-        },
-        include: ["src/**/*.vue"],
-      };
+      const config = hostConfig({
+        strict: true,
+        target: "ESNext",
+        module: "ESNext",
+        moduleResolution: "Bundler",
+        skipLibCheck: false,
+        types: [],
+      });
       save(join(project, "tsconfig.json"), config);
       save(join(project, "package.json"), { private: true, type: "module" });
       const inputImages = [...expected.keys()].map(fileImage);
@@ -268,12 +270,13 @@ export async function main() {
         entry.binary,
         fileImage(join(nativeRoot, basename(nativeImage.path))),
       );
-      assert.equal(
+      const diagnostics = semanticPacket(
         result.status,
-        2,
-        "mixed valid/invalid corpus requires the normal semantic status",
+        result.text,
+        result.errors,
+        project,
+        [1, 3, 5, 7],
       );
-      const diagnostics = diagnosticPacket(result.text, result.errors, project, [1, 3, 5, 7]);
       for (const value of result.observedHosts) {
         const argv = object(value).argv;
         assert.ok(Array.isArray(argv));
