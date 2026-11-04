@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { compileFunction } from "node:vm";
 
 type Native = Pick<
   typeof import("../../npm/native/index.js"),
@@ -92,7 +93,7 @@ function validateInputs() {
 
 function runtimeProps(result: CompileResult) {
   assert.deepEqual(result.errors, []);
-  const component = new Function("Vue", result.code)({}) as {
+  const component = compileFunction(result.code, ["Vue"])({}) as {
     props: Record<string, { type: { name: string }; required: boolean }>;
   };
   return Object.fromEntries(
