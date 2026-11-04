@@ -4,7 +4,8 @@ import { mdiGithub } from "@mdi/js";
 import { computed, onMounted, onUnmounted, ref, useId, watch } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
-import { codeToThemedTokenLines, type CodeHighlightLanguage } from "../../shared/codeHighlighting";
+import type { CodeHighlightLanguage } from "../../shared/codeHighlighting";
+import { createCodeHighlighter } from "../../shared/codeHighlightingClient";
 import { PRESETS } from "../../presets";
 import { useClipboard } from "../../utils/useClipboard";
 import { useTheme } from "../../utils/useTheme";
@@ -56,7 +57,7 @@ const activeOutputTab = ref<
 >("compare");
 const diffViewMode = ref<"merged" | "split">("merged");
 const highlightedDiffLines = ref<HighlightedDiffLine[]>([]);
-let latestDiffHighlightId = 0;
+const diffHighlighter = createCodeHighlighter();
 const inspectorTargets = ["dom", "ssr", "vapor"] as const satisfies readonly InspectorTarget[];
 
 const selectedFile = computed(() => files.value[selectedFileIndex.value] ?? files.value[0]!);
@@ -193,34 +194,31 @@ function openPullRequest() {
   window.open(pullRequestUrl.value, "_blank", "noopener,noreferrer");
 }
 
-async function updateDiffHighlights() {
+function updateDiffHighlights() {
   const diff = report.value?.diff ?? [];
-  const renderId = ++latestDiffHighlightId;
   highlightedDiffLines.value = renderPlainDiffLines(diff);
 
   if (diff.length === 0) {
+    diffHighlighter.cancel();
     return;
   }
 
-  const highlightedLines = await codeToThemedTokenLines(
+  diffHighlighter.highlight(
     diff.map(diffLineText).join("\n"),
     diffLanguage.value,
+    (highlightedLines) => {
+      highlightedDiffLines.value = diff.map((line, index) => ({
+        ...line,
+        tokens: highlightedLines[index] ?? [
+          {
+            content: diffLineText(line),
+            darkColor: undefined,
+            lightColor: undefined,
+          },
+        ],
+      }));
+    },
   );
-
-  if (renderId !== latestDiffHighlightId) {
-    return;
-  }
-
-  highlightedDiffLines.value = diff.map((line, index) => ({
-    ...line,
-    tokens: highlightedLines[index] ?? [
-      {
-        content: diffLineText(line),
-        darkColor: undefined,
-        lightColor: undefined,
-      },
-    ],
-  }));
 }
 
 watch(
@@ -277,6 +275,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  diffHighlighter.cancel();
   if (compileTimer) clearTimeout(compileTimer);
   if (pollInterval) {
     clearInterval(pollInterval);
