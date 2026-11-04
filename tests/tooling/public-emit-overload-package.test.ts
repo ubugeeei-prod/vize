@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -9,6 +10,7 @@ import { repoRoot } from "./_helpers/tool-commands.ts";
 import { findNpmCli } from "../../tools/support/release/computed_event_names.ts";
 
 const sourcePackage = path.join(repoRoot, "npm/cli");
+const ui = createRequire(new URL("../../npm/ui/package.json", import.meta.url));
 const moduleName = "virtual-ts-emit-overloads.d.ts";
 const valid = [
   "import type { __EmitProps } from 'vize/virtual-ts';",
@@ -58,7 +60,7 @@ test("packed public emit props retain complete diagnostics and require every dec
       scratch,
     );
     fs.symlinkSync(
-      fs.realpathSync(path.join(repoRoot, "node_modules/vue")),
+      fs.realpathSync(path.dirname(ui.resolve("vue/package.json"))),
       path.join(consumer, "node_modules/vue"),
       process.platform === "win32" ? "junction" : "dir",
     );
