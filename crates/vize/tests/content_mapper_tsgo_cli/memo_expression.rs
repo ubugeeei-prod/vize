@@ -70,7 +70,7 @@ fn optional_memo_without_either_provider_remains_unexecuted() {
 #[test]
 #[should_panic(expected = "unexecuted memo cohort: VIZE_TEST_REQUIRE_TSGO is set")]
 fn required_memo_without_either_provider_fails_closed() {
-    select_memo_host(None, None, true);
+    let _ = select_memo_host(None, None, true);
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn required_memo_without_either_provider_fails_closed() {
 fn invalid_explicit_memo_provider_does_not_fall_back_to_another_host() {
     let root = tempfile::tempdir().unwrap();
     let conformance = tempfile::NamedTempFile::new().unwrap();
-    select_memo_host(
+    let _ = select_memo_host(
         Some(root.path().join("missing-tsgo")),
         Some(conformance.path().to_path_buf()),
         true,
