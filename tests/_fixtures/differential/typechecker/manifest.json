@@ -12422,6 +12422,50 @@
       }
     },
     {
+      "id": "typechecker/regression/direct-child-props-11809",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "direct-child-props-11809/PropsChild.vue.txt",
+          "sha256": "16d7b729d60501cc53a1fbea01a86be97a57971c6a935b4ae2c65789a46bd3c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/PropsParent.vue.txt",
+          "sha256": "3378e19998e3834e265d0cee20899da34edff77b55522331a8252fec363b1525",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/Missing.vue.txt",
+          "sha256": "15a51e8bfff4e50d9f6f4d839813fa5897cf537fcf9aa0bcc45e077eeb1f16ee",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/tsconfig.vize-no-shim.json.txt",
+          "sha256": "8b8353611a3f97c7e2bac9ba216501d0cf283463acca93f8b8d651967cd252f3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "tools/support/compat/content-mapper/direct-child-props-11809.ts requires actual Node22 packaged JS/NAPI on both official TypeScript7.1beta and tsrs0.21: numeric prop, valid number and independent missing-property control, three prop spellings and shim/no-shim, 36 complete process outputs plus two separate observed-load contrasts. Ref #11809; reported public failure not reproduced. No production fix or introduced commit claimed."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/dynamic-component-scoped-aliases-11491",
       "state": "active",
       "targets": [
