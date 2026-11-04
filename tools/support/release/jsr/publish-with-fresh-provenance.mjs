@@ -17,8 +17,7 @@ import { pathToFileURL } from "node:url";
 
 const issuer = "https://token.actions.githubusercontent.com";
 const minimumRemainingSeconds = 30;
-const provenancePath =
-  /^\/api\/scopes\/([^/]+)\/packages\/([^/]+)\/versions\/([^/]+)\/provenance$/;
+const provenancePath = /^\/api\/scopes\/([^/]+)\/packages\/([^/]+)\/versions\/([^/]+)\/provenance$/;
 const skippedHeaders = new Set([
   "host",
   "connection",
@@ -80,7 +79,8 @@ export function parsePermissionAudience(audience) {
     return null;
   }
   const permission = parsed.permissions[0];
-  if (permission === null || typeof permission !== "object" || Array.isArray(permission)) return null;
+  if (permission === null || typeof permission !== "object" || Array.isArray(permission))
+    return null;
   const keys = Object.keys(permission).sort().join(",");
   if (keys !== "package,permission,scope,tarballHash,version") return null;
   const { permission: name, scope, package: packageName, version, tarballHash } = permission;
@@ -150,7 +150,11 @@ export function freshCredentialFailure({ presented, fresh, audience, now }) {
   const binding = parsePermissionAudience(audience);
   if (!binding) return "permission-audience";
   if (!sameIdentity(presented, fresh)) return "workflow-identity";
-  if (typeof presented.jti !== "string" || typeof fresh.jti !== "string" || fresh.jti === presented.jti) {
+  if (
+    typeof presented.jti !== "string" ||
+    typeof fresh.jti !== "string" ||
+    fresh.jti === presented.jti
+  ) {
     return "not-fresh";
   }
   if (
@@ -290,7 +294,10 @@ export async function publishWithFreshProvenance(options) {
         return;
       }
     }
-    const target = new URL(requestUrl.pathname + requestUrl.search, upstream.endsWith("/") ? upstream : `${upstream}/`);
+    const target = new URL(
+      requestUrl.pathname + requestUrl.search,
+      upstream.endsWith("/") ? upstream : `${upstream}/`,
+    );
     const upstreamResponse = await fetch(target, {
       method: request.method,
       headers,
@@ -318,7 +325,8 @@ export async function publishWithFreshProvenance(options) {
   }
 
   async function authorizeProvenance(provenance, headers) {
-    if (!provenance.scope || !provenance.packageName || !provenance.version) return "missing-binding";
+    if (!provenance.scope || !provenance.packageName || !provenance.version)
+      return "missing-binding";
     const match = captured.findLast(
       (item) =>
         item.binding.scope === provenance.scope &&
