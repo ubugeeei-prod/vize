@@ -94,8 +94,8 @@ impl InstalledSdk {
             transform_request(3, source),
         ]));
         assert_eq!(
-            responses[2]["result"],
-            serde_json::to_value(expected).unwrap()
+            responses[2],
+            json!({ "id": 3, "jsonrpc": "2.0", "result": expected })
         );
     }
 
