@@ -63,6 +63,39 @@ mod tests {
     }
 
     #[test]
+    fn transformed_typed_references_keep_the_authored_callable() {
+        for authored in [
+            "handler",
+            "handler as any",
+            "handler!",
+            "handler satisfies Fn",
+            "<Fn>handler",
+        ] {
+            for cached in [false, true] {
+                let allocator = Allocator::new();
+                let mut location = SourceLocation::STUB;
+                location.span = Span::new(0, authored.len() as u32);
+                let mut simple = SimpleExpressionNode::new("_unref(handler)", false, location);
+                simple.is_ref_transformed = true;
+                simple.is_handler_key = true;
+                let expression = ExpressionNode::Simple(Box::new_in(simple, &&allocator));
+                let mut ctx = CodegenContext::new(CodegenOptions {
+                    is_ts: true,
+                    ..CodegenOptions::default()
+                });
+                ctx.source = authored.into();
+                generate_event_handler(&mut ctx, &expression, cached);
+                let expected = if cached {
+                    "(...args) => (_unref(handler) && _unref(handler)(...args))"
+                } else {
+                    "_unref(handler)"
+                };
+                assert_eq!(ctx.into_code().as_str(), expected, "{authored}, {cached}");
+            }
+        }
+    }
+
+    #[test]
     fn cached_identifier_keeps_both_complete_authored_expression_links() {
         let allocator = Allocator::new();
         let mut location = SourceLocation::STUB;
