@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import fs from "node:fs";
+import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path, { matchesGlob } from "node:path";
@@ -12,6 +13,7 @@ import { parse } from "yaml";
 import observeNitro2 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro2.ts";
 import observeNitro3 from "../../tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts";
 import { closeConsumer } from "../../tools/support/compat/nuxt/host-types.ts";
+import { waitForDevelopmentSsr } from "../../tools/support/compat/nuxt/development-response.ts";
 
 type Step = {
   name?: string;
@@ -23,6 +25,60 @@ type Step = {
   with?: { path?: string };
   "continue-on-error"?: boolean;
 };
+
+for (const [name, statuses, expected] of [
+  ["startup 503 followed by rendered SSR", [503, 200], 200],
+  ["a permanent startup 503", [503], 503],
+  ["an actual rendering 500", [500, 200], 500],
+] as const) {
+  void test(`development SSR distinguishes ${name}`, async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt5-dev-startup-"));
+    let requests = 0;
+    const server = createServer((_request, response) => {
+      const status = statuses[Math.min(requests++, statuses.length - 1)];
+      response.writeHead(status, { "content-type": "text/html" });
+      response.end(status === 200 ? "<button>0</button>" : `controlled-${status}`);
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    try {
+      const address = server.address();
+      assert.ok(address && typeof address !== "string");
+      const run = () =>
+        waitForDevelopmentSsr({
+          url: `http://127.0.0.1:${address.port}/`,
+          output: directory,
+          running: () => server.listening,
+          timeoutMs: expected === 503 ? 30 : 2_000,
+        });
+      if (expected === 200) {
+        assert.equal(await run(), "<button>0</button>");
+        assert.equal(requests, 2);
+        assert.equal(
+          JSON.parse(fs.readFileSync(path.join(directory, "startup/0001.json"), "utf8")).status,
+          503,
+        );
+        assert.equal(
+          fs.readFileSync(path.join(directory, "startup/0001.html"), "utf8"),
+          "controlled-503",
+        );
+        assert.equal(
+          JSON.parse(fs.readFileSync(path.join(directory, "ssr-response.json"), "utf8")).status,
+          200,
+        );
+      } else {
+        await assert.rejects(run(), expected === 500 ? /rendering error/ : /ready/);
+        if (expected === 500) assert.equal(requests, 1, "a rendering error is never retried");
+        else assert.equal(fs.existsSync(path.join(directory, "ssr-response.json")), false);
+      }
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+      fs.rmSync(directory, { recursive: true });
+    }
+  });
+}
 const root = new URL("../../", import.meta.url);
 
 void test("consumer cleanup restores its SDK after the browser rejects closure", async () => {
@@ -176,6 +232,7 @@ void test("the existing source job appends development qualification after produ
       "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/app/app.vue",
       "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts",
       "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts",
+      "tools/support/compat/nuxt/development-response.ts",
       "tests/tooling/nuxt5-dev-runtime.test.ts",
     ])
       assert.ok(

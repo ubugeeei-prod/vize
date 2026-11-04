@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { at, readJson } from "../../json-value.ts";
 import { closeConsumer, freePort, loadChromium, type BrowserGlobals } from "./host-types.ts";
 import { prepareNuxtSourceBinding } from "./source-binding.ts";
+import { waitForDevelopmentSsr } from "./development-response.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const relative = "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime";
@@ -147,28 +148,11 @@ try {
   fs.closeSync(log);
   write("server-process.json", { command, cwd: fixture, pid: server.pid, runtimeSha256: nodeHash });
   const url = `http://127.0.0.1:${port}/`;
-  let html = "";
-  for (let attempt = 0; attempt < 50; attempt++) {
-    try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(2_000) });
-      html = await response.text();
-      write("ssr-response.json", {
-        status: response.status,
-        headers: Object.fromEntries(response.headers),
-      });
-      fs.writeFileSync(path.join(output, "ssr.html"), html);
-      assert.equal(response.status, 200);
-      break;
-    } catch (error) {
-      if (
-        fs.existsSync(path.join(output, "ssr-response.json")) ||
-        server.exitCode !== null ||
-        serverError
-      )
-        throw error;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
+  const html = await waitForDevelopmentSsr({
+    url,
+    output,
+    running: () => server?.exitCode === null && server.signalCode === null && !serverError,
+  });
   assert.match(html, /<button\b[^>]*>0<\/button>/);
   assert.equal((html.match(/ghost-vize-entry\.js/g) ?? []).length, 0);
   assert.equal((html.match(/stylesheet-control\.css\?direct/g) ?? []).length, 1);

@@ -15,6 +15,7 @@ on:
       - tests/tooling/nuxt5-runtime.test.ts
       - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
       - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts
+      - tools/support/compat/nuxt/development-response.ts
       - tests/tooling/nuxt5-dev-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
@@ -58,6 +59,7 @@ on:
       - tests/tooling/nuxt5-runtime.test.ts
       - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
       - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts
+      - tools/support/compat/nuxt/development-response.ts
       - tests/tooling/nuxt5-dev-runtime.test.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
