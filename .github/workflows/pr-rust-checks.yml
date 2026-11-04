@@ -2,6 +2,7 @@ name: Rust source checks
 on:
   workflow_call:
     inputs:
+      full-profile: { type: boolean, default: false }
       run-rust:
         type: boolean
         required: true
@@ -24,7 +25,7 @@ jobs:
   # the source report requires both source jobs.
   merge-rust-differential:
     name: Required Rust differential corpora
-    if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
+    if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && inputs.run-rust }}
     uses: ./.github/workflows/pr-rust-differential.yml
     with:
       run-rust: ${{ inputs.run-rust }}
@@ -44,6 +45,7 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -101,8 +103,16 @@ jobs:
       - name: Select Clippy and doctest runtime envelope
         run: |
           case "$GITHUB_EVENT_NAME" in
-            pull_request) printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV" ;;
+            pull_request)
+              if [[ "${SOURCE_FULL_PROFILE:-false}" == true ]]; then
+                printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV"
+              else
+                printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV"
+              fi ;;
             merge_group) printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
+            workflow_dispatch)
+              [[ "${SOURCE_FULL_PROFILE:-false}" == true ]] || exit 1
+              printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
             *) exit 1 ;;
           esac
       - name: Clippy affected crates

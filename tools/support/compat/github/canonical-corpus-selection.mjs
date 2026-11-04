@@ -104,19 +104,23 @@ export function requireCanonicalCorpusSuccess(needs) {
     throw new Error(`optional canonical corpus did not succeed: ${result}`);
 }
 
-export function canonicalSourceReport(needs, eventName) {
+export function canonicalSourceReport(needs, eventName, fullProfile = false) {
   requireCanonicalCorpusSuccess(needs);
   const original = Object.fromEntries(
     Object.entries(needs).filter(([job]) => job !== "canonical-corpus"),
   );
-  return aggregateCheckNeedsResults(original, eventName);
+  return aggregateCheckNeedsResults(original, eventName, fullProfile);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   if (args.length === 1 && args[0] === "--check") {
     const needs = JSON.parse(process.env.NEEDS_JSON ?? "null");
-    const report = canonicalSourceReport(needs, process.env.GITHUB_EVENT_NAME);
+    const report = canonicalSourceReport(
+      needs,
+      process.env.GITHUB_EVENT_NAME,
+      process.env.VIZE_SOURCE_FULL_PROFILE === "true",
+    );
     process.stdout.write(`${report.message}\n`);
     process.exitCode = report.exitCode;
   } else {

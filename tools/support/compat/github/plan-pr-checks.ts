@@ -17,6 +17,7 @@ type Request = {
   labels: readonly string[];
   workspace: readonly JsPackage[];
   cargoMetadata?: CargoMetadata;
+  fullProfile?: boolean;
 };
 
 function sourceChecks(paths: readonly string[], eventName: string) {
@@ -51,18 +52,32 @@ function requiredRustPlan(
 }
 
 /** Actual changed dependencies select JS/native work; Rust checks also enforce the PR/MQ policy. */
-export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadata }: Request) {
-  const source = sourceChecks(paths, eventName);
+export function planPrChecks({
+  paths,
+  eventName,
+  labels,
+  workspace,
+  cargoMetadata,
+  fullProfile = false,
+}: Request) {
+  if (fullProfile && !["pull_request", "merge_group", "workflow_dispatch"].includes(eventName))
+    throw new Error("unexpected full source qualification context");
+  // This is selection policy only; the workflow preserves its real event identity.
+  const policyEvent = fullProfile ? "merge_group" : eventName;
+  const selectedPaths = fullProfile ? [] : paths;
+  const source = sourceChecks(selectedPaths, policyEvent);
   if (!cargoMetadata) throw new Error("Rust checks require Cargo workspace metadata");
-  const affectedRust = source.rust ? planAffectedRust(cargoMetadata, paths, eventName) : undefined;
-  const requiredRust = requiredRustPlan(cargoMetadata, affectedRust, eventName);
+  const affectedRust = source.rust
+    ? planAffectedRust(cargoMetadata, selectedPaths, policyEvent)
+    : undefined;
+  const requiredRust = requiredRustPlan(cargoMetadata, affectedRust, policyEvent);
   const rust = {
     ...requiredRust,
     testMatrix: rustTestMatrix(cargoMetadata, requiredRust.packages),
   };
-  const js = planAffectedJs(workspace, paths, affectedRust);
-  const native = planNativeRuntime(paths, affectedRust);
-  const tier = selectPrTier({ paths, eventName, labels });
+  const js = planAffectedJs(workspace, selectedPaths, affectedRust);
+  const native = planNativeRuntime(selectedPaths, affectedRust);
+  const tier = selectPrTier({ paths: selectedPaths, eventName: policyEvent, labels });
   // Preserve the real-tree source/API and reviewed-doc contracts in daily CI.
   // Unknown Rust/tooling inputs remain conservative; ordinary package-only
   // edits do not pay for these independent repository scans.
@@ -99,6 +114,7 @@ export function main(argv = process.argv.slice(2)) {
     paths,
     eventName,
     labels,
+    fullProfile: process.env.VIZE_SOURCE_FULL_PROFILE === "true",
     workspace: readJsWorkspace(),
     cargoMetadata: readCargoMetadata(),
   });

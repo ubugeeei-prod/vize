@@ -87,7 +87,11 @@ export function aggregateNeedsResults(
 }
 
 /** Queue-only product qualifications must succeed before the required Check report. */
-export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): GateReport {
+export function aggregateCheckNeedsResults(
+  needs: unknown,
+  eventName: unknown,
+  fullProfile = false,
+): GateReport {
   const nonqueue = ["pull_request", "push", "schedule", "workflow_dispatch"];
   if (
     eventName !== "merge_group" &&
@@ -110,7 +114,7 @@ export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): 
     }
   }
   const skippable =
-    eventName === "merge_group"
+    eventName === "merge_group" || fullProfile
       ? {}
       : Object.fromEntries(queueOnly.map((job) => [job, "queue-only"]));
   return aggregateNeedsResults(needs, skippable);

@@ -143,7 +143,7 @@ const plan = {
 };
 
 const stepName = "Build and run the affected Rust test cohort";
-for (const event of ["merge_group", "pull_request"] as const) {
+for (const event of ["merge_group", "pull_request", "workflow_dispatch"] as const) {
   const profile = "full";
   test(`${event} typechecker cohort requires tsgo and keeps the full filter`, () => {
     const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
@@ -176,7 +176,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
       );
       assert.equal(
         workflow.jobs["pr-rust-shard"].env.NEXTEST_PROFILE,
-        "${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && 'full' || 'pr' }}",
+        "${{ (inputs.full-profile || github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && 'full' || 'pr' }}",
       );
       const environment: Record<string, string | undefined> = {
         ...process.env,
@@ -185,6 +185,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
         GITHUB_WORKSPACE: cwd,
         GITHUB_ENV: join(cwd, "github-env"),
         GITHUB_EVENT_NAME: event,
+        SOURCE_FULL_PROFILE: event === "workflow_dispatch" ? "true" : "false",
         COHORT: "typechecker",
         EXPECTED_CORSA_PATH: nativeRuntime,
         NEXTEST_FILTER: "package(=vize_armature) | package(=vize_l1)",
@@ -286,6 +287,7 @@ test("only the typechecker cohort requires tsgo on pull_request", () => {
             GITHUB_WORKSPACE: cwd,
             GITHUB_ENV: githubEnv,
             GITHUB_EVENT_NAME: event,
+            SOURCE_FULL_PROFILE: event === "workflow_dispatch" ? "true" : "false",
             COHORT: cohort,
             NEXTEST_PROFILE: cohort === "typechecker" || event === "merge_group" ? "full" : "pr",
             GITHUB_RUN_ID: "1",

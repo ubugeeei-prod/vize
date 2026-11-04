@@ -1,16 +1,19 @@
 name: PR source checks
 on:
   workflow_call:
+    inputs:
+      full-profile: { type: boolean, default: false }
+      comparison-base: { type: string, default: "" }
 permissions: { contents: read, pull-requests: read, actions: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
   nuxt-module-qualification:
     name: Nuxt module qualification
-    if: ${{ github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'merge_group' || inputs.full-profile }}
     uses: ./.github/workflows/nuxt3-module-build.yml
   pr-source-plan:
     name: Plan PR source checks
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.full-profile }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -36,10 +39,19 @@ jobs:
       - name: Resolve and fetch comparison base
         id: comparison
         env:
-          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          EVENT_BASE_SHA: ${{ inputs.comparison-base || github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$SOURCE_FULL_PROFILE" == true ]]
+            [[ "$EVENT_BASE_SHA" =~ ^[0-9a-f]{40}$ && ! "$EVENT_BASE_SHA" =~ ^0+$ ]]
+            [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
+            comparison_base="$EVENT_BASE_SHA"
+            printf 'base=%s\n' "$comparison_base" >> "$GITHUB_OUTPUT"
+          else
+            comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
+          fi
           if [[ ! "$comparison_base" =~ ^0+$ ]]; then
             # Only the two trees are compared, so the base needs no history.
             git fetch --no-tags --depth=1 origin "$comparison_base"
@@ -48,7 +60,8 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
-          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          PR_LABELS: ${{ github.event_name == 'pull_request' && toJSON(github.event.pull_request.labels.*.name) || '[]' }}
+          VIZE_SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
         run: node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Require legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
@@ -63,8 +76,15 @@ jobs:
         run: node tools/support/compat/github/clippy-test-targets.ts hold "$BASE_SHA"
       - name: Plan canonical corpus inputs
         id: canonical-corpus-plan
-        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
-        run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
+        run: |
+          if [[ "$SOURCE_FULL_PROFILE" == true ]]; then
+            printf 'canonical-corpus=true\n' >> "$GITHUB_OUTPUT"
+          else
+            node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+          fi
       - name: Plan affected tooling tests
         id: tooling-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
@@ -128,12 +148,13 @@ jobs:
       - name: Require every selected tooling worker
         env:
           EVENT_NAME: ${{ github.event_name }}
+          SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
           SELECTED: ${{ needs.pr-source-plan.outputs.affected-tooling }}
           CLI: ${{ needs.affected-tooling-cli.result }}
           WORKERS: ${{ needs.affected-tooling.result }}
         run: |
           echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
-          [[ "$EVENT_NAME" == pull_request || "$EVENT_NAME" == merge_group ]]
+          [[ "$EVENT_NAME" == pull_request || "$EVENT_NAME" == merge_group || ( "$EVENT_NAME" == workflow_dispatch && "$SOURCE_FULL_PROFILE" == true ) ]]
           if [[ "$SELECTED" == true ]]; then
             [[ "$CLI" == success && "$WORKERS" == success ]]
           else
@@ -176,10 +197,11 @@ jobs:
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     permissions: { contents: read, actions: read }
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.full-profile }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-checks.yml
     with:
+      full-profile: ${{ inputs.full-profile }}
       # Every PR and queue candidate must execute Rust checks. The planner
       # narrows packages; it cannot disable test or Clippy acceptance.
       run-rust: true
@@ -188,15 +210,16 @@ jobs:
   pr-rust-products:
     name: PR Rust workspace products
     permissions: { contents: read, actions: read, pull-requests: read }
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.full-profile }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-products.yml
     with:
+      full-profile: ${{ inputs.full-profile }}
       run-rust: true
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
   pr-js-packages:
     name: PR JS packages
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.full-profile }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-js-checks.yml
     with:
@@ -321,7 +344,7 @@ jobs:
         uses: ./.github/actions/test-native-selected-template
   pr-playground-test:
     name: PR playground browser tests
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.full-profile }}
     needs: pr-source-plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -392,12 +415,12 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:browser
       - name: Run VRT
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
+        if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
       - name: Upload VRT report
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-playground-vrt-report
@@ -405,14 +428,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Upload VRT diff artifacts
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
       - name: Fail if VRT failed
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ (github.event_name == 'merge_group' || inputs.full-profile) && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
   source-report:
     name: PR source report
@@ -430,5 +453,6 @@ jobs:
       - name: Require every source gate to succeed
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
+          VIZE_SOURCE_FULL_PROFILE: ${{ inputs.full-profile }}
           GH_TOKEN: ${{ github.token }}
         run: node tools/support/compat/github/canonical-corpus-selection.mjs --check

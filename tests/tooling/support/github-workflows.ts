@@ -24,7 +24,14 @@ export function checkWorkflowJobSources(
     uses: ./.github/workflows/full-qualification.yml
     with:
       compare-rust-test-profile: \${{ inputs.compare-rust-test-profile == true }}`;
-  assert.equal(workflowJobBody(caller, "full-qualification"), expectedCaller);
+  const sourceProfileCaller = expectedCaller.replace(
+    "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+    "(github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification",
+  );
+  assert.ok(
+    [expectedCaller, sourceProfileCaller].includes(workflowJobBody(caller, "full-qualification")),
+    "full qualification caller must preserve either the original or explicit source-profile guard",
+  );
   const header = `name: Full qualification
 on:
   workflow_call:

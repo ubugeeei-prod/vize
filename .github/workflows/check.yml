@@ -1,5 +1,5 @@
 name: Check
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check {0} @ {1}', inputs.source-qualification && 'source full' || 'full', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
 on:
   push:
     branches: [main, davinci]
@@ -12,6 +12,14 @@ on:
     - cron: "11 3 * * *"
   workflow_dispatch:
     inputs:
+      source-qualification:
+        description: Run the existing source jobs with the full merge-queue policy before enqueueing
+        type: boolean
+        default: false
+      source-base:
+        description: Exact main commit compared by explicit source qualification
+        type: string
+        default: ""
       release-qualification:
         description: Qualify an immutable release source without repeating daily source coverage
         type: boolean
@@ -24,7 +32,7 @@ on:
         default: false
 concurrency:
   # A push to main must not cancel an exact-SHA full validation used by release.
-  group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
+  group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('{0}-{1}', inputs.source-qualification && 'source-full' || 'full', github.sha) || (github.event.pull_request.number || github.ref) }}
   cancel-in-progress: true
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
@@ -66,8 +74,11 @@ jobs:
   pr-source-checks:
     name: PR source checks
     permissions: { contents: read, actions: read, checks: read, pull-requests: read }
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || (github.event_name == 'workflow_dispatch' && inputs.source-qualification) }}
     uses: ./.github/workflows/pr-source-checks.yml
+    with:
+      full-profile: ${{ github.event_name == 'workflow_dispatch' && inputs.source-qualification }}
+      comparison-base: ${{ inputs.source-base || '' }}
   instruction-counts:
     name: Instruction ceilings
     if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -77,7 +88,7 @@ jobs:
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/check-nix
@@ -262,7 +273,7 @@ jobs:
         run: echo 'Product application inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -282,7 +293,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   full-qualification:
     name: Full qualification
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification }}
     uses: ./.github/workflows/full-qualification.yml
     with:
       compare-rust-test-profile: ${{ inputs.compare-rust-test-profile == true }}
@@ -290,7 +301,7 @@ jobs:
     name: full-js-report
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ (always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')) && !inputs.source-qualification }}
     # Whole callee success retains all four original full-product dependencies.
     needs: [full-qualification, check-js, instruction-counts]
     steps:
@@ -299,7 +310,7 @@ jobs:
         with: { needs-json: "${{ toJSON(needs) }}" }
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -324,7 +335,7 @@ jobs:
     timeout-minutes: 50
     # Keep daily and ordinary manual measurement; immutable release qualification
     # retains all correctness jobs without repeating the instrumented trend run.
-    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v'))))) && !inputs.source-qualification }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -387,7 +398,7 @@ jobs:
           retention-days: 14
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !inputs.source-qualification }}
     timeout-minutes: 45
     # Keep the strict nightly instrumentation gate on scheduled and explicit runs.
     env:
@@ -432,7 +443,7 @@ jobs:
     name: test-report
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || (github.event_name == 'workflow_dispatch' && inputs.source-qualification)) }}
     needs:
       - iteration-plan
       - fmt-rust
