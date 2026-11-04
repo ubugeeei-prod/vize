@@ -123,6 +123,9 @@ export function renderComposablePage(
   const importNames = typeOnly
     ? [...interfaces.map((item) => item.name), ...aliases.map((item) => item.name)]
     : entry.runtimeExports;
+  const importSpecifiers = importNames.map((name) =>
+    name === "default" ? "default as defaultExport" : name,
+  );
   const usage = [
     "## Minimal setup",
     "",
@@ -135,7 +138,7 @@ export function renderComposablePage(
     "Import the entry directly. Call lifecycle-bound utilities inside `<script setup>` so cleanup follows the component scope; consult the runtime contract for this entry's SSR and hydration behavior.",
     "",
     "```ts",
-    `import ${typeOnly ? "type " : ""}{ ${importNames.join(", ")} } from "@vizejs/composable/${name}";`,
+    `import ${typeOnly ? "type " : ""}{ ${importSpecifiers.join(", ")} } from "@vizejs/composable/${name}";`,
     "```",
   ].join("\n");
   return blocks(
