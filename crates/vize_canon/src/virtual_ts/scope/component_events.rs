@@ -399,8 +399,11 @@ pub(super) fn generate_component_event_types(
                 let arrays_type = cstr!(
                     "__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_arrays"
                 );
+                // `any` props infer `__H` as `any`, and `Extract<any, …>` is
+                // `any`. Unioning that into the handler annotation would type
+                // `(v)` as explicit `any` and hide TS7006 on a loose `:is`.
                 let arrays = cstr!(
-                    "__P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
+                    "{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
                 );
                 if first_contract {
                     if let Some(props) = contextual_props.as_ref() {

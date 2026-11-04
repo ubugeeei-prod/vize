@@ -42,6 +42,8 @@ pub mod incremental;
 mod interface_extends_tests;
 #[cfg(test)]
 mod legacy_vue2_vuetify_tests;
+#[cfg(test)]
+mod loose_is_listener_tests;
 mod macro_type_mappings;
 pub mod mapping;
 mod model_types;
