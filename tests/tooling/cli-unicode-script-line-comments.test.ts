@@ -17,12 +17,17 @@ const root = new URL(
   "../_fixtures/differential/compiler/unicode-script-line-comments-11798/",
   import.meta.url,
 );
-const registration = JSON.parse(readFileSync(new URL("corpus.json", root), "utf8"));
+const registration = JSON.parse(readFileSync(new URL("corpus.json", root), "utf8")) as {
+  path: string;
+  sha256: string;
+};
 const bytes = readFileSync(new URL(registration.path, root));
 assert.equal(createHash("sha256").update(bytes).digest("hex"), registration.sha256);
-const corpus = JSON.parse(bytes.toString());
+const corpus = JSON.parse(bytes.toString()) as {
+  cases: readonly { id: string; source: string; code: string; ssr: boolean }[];
+};
 const binary = join(repository, binaryRelativePath());
-const receipt = JSON.parse(readFileSync(`${binary}.differential-build.json`, "utf8"));
+const receipt: unknown = JSON.parse(readFileSync(`${binary}.differential-build.json`, "utf8"));
 validateBuildReceipt(receipt, expectedBuildIdentity(repository));
 
 void test("#11798 actual source CLI preserves all 36 authored script modules", () => {

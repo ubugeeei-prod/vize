@@ -7,7 +7,7 @@
   "distinctSources": 18,
   "adapters": {
     "napi": "npm/builder/vite/src/unicode-script-line-comments.test.ts",
-    "cli": "tests/tooling/cli-unicode-script-line-comments.test.mjs",
+    "cli": "tests/tooling/cli-unicode-script-line-comments.test.ts",
     "wasm": "playground/e2e/unicode-script-line-comments.test.ts"
   }
 }
