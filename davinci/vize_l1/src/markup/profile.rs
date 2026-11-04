@@ -25,6 +25,10 @@ pub trait Profile: Copy + Default + 'static {
     const FOLD_NAME_CASE: bool;
     /// `<x />` closes any element; otherwise only void and foreign elements.
     const SELF_CLOSING_ANY_ELEMENT: bool;
+    /// HTML requires whitespace after a quoted attribute value; Vue SFC
+    /// templates use the closing quote itself as an attribute boundary.
+    /// Custom profiles retain the existing HTML diagnostic by default.
+    const REQUIRE_ATTRIBUTE_WHITESPACE: bool = true;
     /// HTML implied end tags (`<p>` closed by a block, `<li>` by `<li>`).
     const IMPLIED_END_TAGS: bool;
     /// HTML select/option/optgroup stack rules, rather than authored nesting.
@@ -57,6 +61,7 @@ impl Profile for Component {
     const TOLERATE_DECLARATIONS: bool = false;
     const FOLD_NAME_CASE: bool = false;
     const SELF_CLOSING_ANY_ELEMENT: bool = true;
+    const REQUIRE_ATTRIBUTE_WHITESPACE: bool = false;
     const IMPLIED_END_TAGS: bool = false;
     const SELECT_CONTENT_MODEL: bool = false;
     const TABLE_CONTENT_MODEL: bool = false;

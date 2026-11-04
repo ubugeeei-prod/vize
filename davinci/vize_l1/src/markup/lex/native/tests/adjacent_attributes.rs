@@ -71,3 +71,22 @@ fn adjacency_does_not_change_unquoted_or_unfinished_value_errors() {
     let unfinished = tokenize("<div a=\"x");
     assert_eq!(unfinished.errors.as_slice(), &[(LexErrorCode::EofInTag, 9)]);
 }
+
+#[test]
+fn html_documents_keep_their_whitespace_error_and_the_same_attribute_tokens() {
+    use super::{LexOptions, Lexer, TestCallbacks};
+    use crate::markup::profile::Document;
+
+    let source = "<div a=\"x\"b='y'></div>";
+    let component = tokenize(source);
+    let mut lexer =
+        Lexer::<Document, _>::new(source, TestCallbacks::default(), LexOptions::default());
+    lexer.run();
+    let document = lexer.into_sink();
+    assert!(component.errors.is_empty());
+    assert_eq!(document.events, component.events);
+    assert_eq!(
+        document.errors.as_slice(),
+        &[(LexErrorCode::MissingWhitespaceBetweenAttributes, 10)]
+    );
+}
