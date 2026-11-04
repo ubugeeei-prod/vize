@@ -36,7 +36,9 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     )
     .split("\n")[1];
   assert.ok(oldAlias !== undefined && currentAlias !== undefined);
-  const currentPreamble = applySourceOwnedPreambleTransitions(historical.replace(oldAlias, currentAlias));
+  const currentPreamble = applySourceOwnedPreambleTransitions(
+    historical.replace(oldAlias, currentAlias),
+  );
   assert.notEqual(currentPreamble, historical);
   assert.equal(Buffer.byteLength(currentPreamble), AUTHENTICATED_PREAMBLE_BYTES);
   assert.equal(
