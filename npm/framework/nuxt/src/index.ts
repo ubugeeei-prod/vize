@@ -40,7 +40,7 @@ import {
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 import { dedupeVueRuntimePackages, externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
-import { registerNuxtServerPlugin, type NuxtNitroPluginVariants } from "./server-plugins";
+import { registerNuxtDevStylesheets } from "./server-plugins";
 const VIZE_NUXT_AUTO_IMPORT_PATCHED = "__vizeNuxtAutoImportPatched";
 type VitePluginWithTransform = {
   name?: string;
@@ -95,14 +95,6 @@ let nuxtKitPromise: Promise<NuxtKit> | null = null;
 function loadNuxtKit(): Promise<NuxtKit> {
   nuxtKitPromise ||= import("@nuxt/kit");
   return nuxtKitPromise;
-}
-
-async function addNuxtServerPlugin(
-  rootDir: string,
-  variants: NuxtNitroPluginVariants,
-): Promise<void> {
-  const kit = await loadNuxtKit();
-  await registerNuxtServerPlugin(rootDir, variants, (plugin) => kit.addServerPlugin(plugin));
 }
 
 async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
@@ -320,18 +312,12 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
 
   if (usesVizeCompiler) {
     if (nuxt.options.dev && devOptions.stylesheetLinks) {
-      const devAssetBase =
-        compilerOptions.devUrlBase ?? buildNuxtDevAssetBase(appBaseURL, buildAssetsDir);
-      nuxt.options.nitro ||= {};
-      nuxt.options.nitro.virtual ||= {};
-      if (nuxt.options.nitro.virtual) {
-        nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
-          `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
-        await addNuxtServerPlugin(nuxt.options.rootDir, {
-          nitro2: resolver.resolve("./runtime/server/dev-stylesheet-links"),
-          nitro3: resolver.resolve("./runtime/server/dev-stylesheet-links-nitro3"),
-        });
-      }
+      await registerNuxtDevStylesheets(
+        nuxt.options,
+        compilerOptions.devUrlBase ?? buildNuxtDevAssetBase(appBaseURL, buildAssetsDir),
+        resolver,
+        async (plugin) => (await loadNuxtKit()).addServerPlugin(plugin),
+      );
     }
 
     // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active, except

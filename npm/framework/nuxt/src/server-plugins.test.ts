@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { registerNuxtServerPlugin } from "./server-plugins.ts";
+import { registerNuxtDevStylesheets, registerNuxtServerPlugin } from "./server-plugins.ts";
 
 const variants = { nitro2: "/module/legacy.mjs", nitro3: "/module/current.mjs" };
 function host(source: string, exported = true) {
@@ -22,6 +22,42 @@ function host(source: string, exported = true) {
   fs.writeFileSync(path.join(pkg, "kit.mjs"), source);
   return root;
 }
+
+void test("stylesheet registration preserves host virtual files and configures complete variants", async () => {
+  const root = host(`export function addNitroPlugin(value) {
+    if (value.nitro2 !== '/module/runtime/server/dev-stylesheet-links' ||
+        value.nitro3 !== '/module/runtime/server/dev-stylesheet-links-nitro3') throw new Error('incomplete variants');
+  }`);
+  const options = { rootDir: root, nitro: { virtual: { "#existing": "export const value = 1;" } } };
+  try {
+    await registerNuxtDevStylesheets(
+      options,
+      '/app/"assets/',
+      { resolve: (file) => path.posix.resolve("/module", file) },
+      () => assert.fail("the host owns variant selection"),
+    );
+    assert.deepEqual(options.nitro.virtual, {
+      "#existing": "export const value = 1;",
+      "#vizejs/nuxt/dev-stylesheet-links-config": 'export const devAssetBase = "/app/\\\"assets/";',
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true });
+  }
+});
+
+void test("legacy registration completes before stylesheet setup resolves", async () => {
+  const root = host("export const olderKit = true;");
+  const calls: string[] = [];
+  try {
+    await registerNuxtServerPlugin(root, variants, async (file) => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      calls.push(file);
+    });
+    assert.deepEqual(calls, [variants.nitro2]);
+  } finally {
+    fs.rmSync(root, { recursive: true });
+  }
+});
 
 void test("the host Kit owns selection between complete Nitro plugin variants", async () => {
   const output = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt-server-observation-"));
@@ -44,7 +80,9 @@ void test("older host Kit retains the existing legacy plugin registration", asyn
   const root = host("export const olderKit = true;");
   const calls: string[] = [];
   try {
-    await registerNuxtServerPlugin(root, variants, (file) => calls.push(file));
+    await registerNuxtServerPlugin(root, variants, (file) => {
+      calls.push(file);
+    });
     assert.deepEqual(calls, [variants.nitro2]);
   } finally {
     fs.rmSync(root, { recursive: true });
@@ -55,7 +93,9 @@ void test("hosts without the public Kit subpath retain Nuxt and Bridge legacy re
   const root = host("export const olderKit = true;", false);
   const calls: string[] = [];
   try {
-    await registerNuxtServerPlugin(root, variants, (file) => calls.push(file));
+    await registerNuxtServerPlugin(root, variants, (file) => {
+      calls.push(file);
+    });
     assert.deepEqual(calls, [variants.nitro2]);
   } finally {
     fs.rmSync(root, { recursive: true });
@@ -79,7 +119,9 @@ void test("an invalid exported registration API cannot silently use a legacy plu
   const legacy: string[] = [];
   try {
     await assert.rejects(
-      registerNuxtServerPlugin(root, variants, (file) => legacy.push(file)),
+      registerNuxtServerPlugin(root, variants, (file) => {
+        legacy.push(file);
+      }),
       {
         name: "TypeError",
         message: "The host nuxt/kit addNitroPlugin export must be a function.",

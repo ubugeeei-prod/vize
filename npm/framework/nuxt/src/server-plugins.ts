@@ -6,11 +6,37 @@ export interface NuxtNitroPluginVariants {
   nitro3: string;
 }
 
+interface NuxtServerPluginOptions {
+  rootDir: string;
+  nitro?: { virtual?: Record<string, string> };
+}
+
+/** Keep the stylesheet virtual module and its server plugin registration together. */
+export async function registerNuxtDevStylesheets(
+  options: NuxtServerPluginOptions,
+  devAssetBase: string,
+  resolver: { resolve(file: string): string },
+  registerLegacy: (plugin: string) => void | Promise<void>,
+): Promise<void> {
+  options.nitro ||= {};
+  options.nitro.virtual ||= {};
+  options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
+    `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
+  await registerNuxtServerPlugin(
+    options.rootDir,
+    {
+      nitro2: resolver.resolve("./runtime/server/dev-stylesheet-links"),
+      nitro3: resolver.resolve("./runtime/server/dev-stylesheet-links-nitro3"),
+    },
+    registerLegacy,
+  );
+}
+
 /** Use the host's server API selection while retaining older Nuxt/Bridge Kit support. */
 export async function registerNuxtServerPlugin(
   rootDir: string,
   variants: NuxtNitroPluginVariants,
-  registerLegacy: (plugin: string) => void,
+  registerLegacy: (plugin: string) => void | Promise<void>,
 ): Promise<void> {
   let entry: string;
   try {
@@ -21,7 +47,7 @@ export async function registerNuxtServerPlugin(
       "code" in error &&
       (error.code === "MODULE_NOT_FOUND" || error.code === "ERR_PACKAGE_PATH_NOT_EXPORTED")
     ) {
-      registerLegacy(variants.nitro2);
+      await registerLegacy(variants.nitro2);
       return;
     }
     throw error;
@@ -35,5 +61,5 @@ export async function registerNuxtServerPlugin(
     kit.addNitroPlugin(variants);
     return;
   }
-  registerLegacy(variants.nitro2);
+  await registerLegacy(variants.nitro2);
 }
