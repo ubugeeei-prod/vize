@@ -80,10 +80,18 @@ test("ordinary source tooling retains complete capacity packets on success and f
     "${{ always() && hashFiles('target/vize-tests/diagnostic-capacity-129/result.json') != '' }}",
   );
   assert.ok(step.uses?.startsWith("actions/upload-artifact@"));
-  assert.equal(
-    step.with?.path,
-    "target/vize-tests/diagnostic-capacity-129/result.json\n" +
-      "target/ci/vize.differential-build.json\n",
+  const uploadPaths = step.with?.path;
+  assert.ok(typeof uploadPaths === "string");
+  assert.deepEqual(
+    uploadPaths
+      .split(/\r?\n/u)
+      .map((path) => path.trim())
+      .filter(Boolean)
+      .sort(),
+    [
+      "target/vize-tests/diagnostic-capacity-129/result.json",
+      "target/ci/vize.differential-build.json",
+    ].sort(),
   );
   assert.equal(step.with?.["if-no-files-found"], "error");
   assert.equal(step.with?.["retention-days"], 7);

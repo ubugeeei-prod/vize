@@ -343,7 +343,9 @@ runs:
           const manifest = JSON.parse(fs.readFileSync(path.join(path.dirname(path.dirname(program)), 'package.json'), 'utf8'));
           assert.equal(manifest.name, '@typescript/typescript-linux-x64');
           assert.equal(manifest.version, '7.1.0-beta');
-          provider = {program, sha256: digest(fs.readFileSync(program)), package: manifest.name, version: manifest.version};
+          const sha256 = digest(fs.readFileSync(program));
+          assert.equal(sha256, 'a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70');
+          provider = {program, sha256, package: manifest.name, version: manifest.version};
           for (const line of stderr.toString().split('\n').filter(line => line.startsWith('11731 cell '))) {
             const row = /^11731 cell variant=(\S+) newline=("(?:\\.|[^"])*") noUnusedLocals=(false|true) provider=(.+) status=exit status: (\d+) stdout=/.exec(line);
             assert.ok(row, line);
