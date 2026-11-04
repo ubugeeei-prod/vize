@@ -7,6 +7,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -26,6 +27,15 @@ const helper = "npm/native/scripts/test-preparation.mjs";
 function stageNative(fixture) {
   mkdirSync(join(fixture, "npm/native/scripts"), { recursive: true });
   copyFileSync(join(root, helper), join(fixture, helper));
+  for (const dependency of [
+    "tools/support/compat/github/js-test-cases.ts",
+    "tools/support/compat/github/test-case-reporter.ts",
+    "tools/support/compat/github/test-cases.ts",
+    "tools/support/json-value.ts",
+  ]) {
+    mkdirSync(dirname(join(fixture, dependency)), { recursive: true });
+    copyFileSync(join(root, dependency), join(fixture, dependency));
+  }
   writeFileSync(join(fixture, "npm/native/vize-vitrine.fixture.node"), "fixture addon");
 }
 
@@ -37,6 +47,78 @@ function commitFixture(fixture) {
   git("add", ".");
   git("commit", "-qm", "fixture");
 }
+
+void test("prepared native fixtures retain the real Actions test reporter and reject missing dependencies", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "vize-prepared-reporter-'$-"));
+  const packet = join(fixture, "test-cases.json");
+  try {
+    stageNative(fixture);
+    writeFileSync(join(fixture, "package.json"), '{"type":"module"}\n');
+    writeFileSync(
+      join(fixture, "probe.test.ts"),
+      'import {test} from "node:test"; test("prepared reporter case", () => {});\n',
+    );
+    writeFileSync(
+      join(fixture, "filtered.test.ts"),
+      `import assert from 'node:assert/strict'; import {test} from 'node:test';
+test('filtered reporter case',()=>{assert.equal(process.execPath,${JSON.stringify(realpathSync(process.execPath))}); assert.equal(process.env.VIZE_REPORTER_UNKNOWN,undefined);});\n`,
+    );
+    writeFileSync(
+      join(fixture, "filtered.sh"),
+      'exec env -i PATH="$PATH" node --test filtered.test.ts\n',
+    );
+    commitFixture(fixture);
+    const run = (args = ["node", "--test", "probe.test.ts"]) =>
+      spawnSync(process.execPath, [helper, ...args], {
+        cwd: fixture,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          GITHUB_ACTIONS: "true",
+          VIZE_TEST_CASES: packet,
+          VIZE_TEST_CASES_ROOT: fixture,
+          TEST_CASES_JOB: "prepared native fixture reporter",
+          GITHUB_RUN_ATTEMPT: "1",
+          NODE_TEST_CONTEXT: undefined,
+          VIZE_REPORTER_UNKNOWN: "caller-only",
+        },
+      });
+    const reported = run();
+    assert.equal(reported.status, 0, `${reported.stdout}\n${reported.stderr}`);
+    assert.deepEqual(JSON.parse(readFileSync(packet, "utf8")), {
+      version: 1,
+      job: "prepared native fixture reporter",
+      attempt: 1,
+      cases: [
+        {
+          path: "probe.test.ts",
+          name: "probe.test.ts › prepared reporter case",
+          outcome: "passed",
+        },
+      ],
+    });
+    const filtered = run(["sh", "filtered.sh"]);
+    assert.equal(filtered.status, 0, `${filtered.stdout}\n${filtered.stderr}`);
+    assert.deepEqual(JSON.parse(readFileSync(packet, "utf8")), {
+      version: 1,
+      job: "prepared native fixture reporter",
+      attempt: 1,
+      cases: [
+        {
+          path: "filtered.test.ts",
+          name: "filtered.test.ts › filtered reporter case",
+          outcome: "passed",
+        },
+      ],
+    });
+    rmSync(join(fixture, "tools/support/compat/github/test-case-reporter.ts"));
+    const missing = run();
+    assert.notEqual(missing.status, 0, `${missing.stdout}\n${missing.stderr}`);
+    assert.match(missing.stderr, /test-case-reporter\.ts/u);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
 
 void test("standalone Vite tests build first; prepared tests reuse the same native build", () => {
   const manifest = JSON.parse(readFileSync(join(root, "npm/builder/vite/package.json"), "utf8"));
@@ -158,13 +240,18 @@ process.exit(7);
     writeFileSync(
       join(fixture, "windows.mjs"),
       `
-import assert from 'node:assert/strict';
+import assert from 'node:assert/strict'; import fs from 'node:fs';
 import {withPreparedNative} from './${helper}';
 import {runViteTests} from ${JSON.stringify(join(root, "npm/builder/vite/scripts/run-tests.mjs"))};
 Object.defineProperty(process,'platform',{value:'win32'});
 let calls=0;
 const packageRun=(command,args,options)=>{
-  assert.ok(command==='vp'||command==='pnpm'); assert.equal(options.shell,true);
+  if(command===process.execPath) {
+    assert.ok(process.env.VIZE_TEST_CASES);
+    assert.equal(fs.realpathSync(args[0]),fs.realpathSync(${JSON.stringify(join(fixture, "tools/support/compat/github/js-test-cases.ts"))}));
+    assert.deepEqual(args.slice(1),['capture','--','vp','run','test']);
+    assert.equal(options.shell,false);
+  } else { assert.ok(command==='vp'||command==='pnpm'); assert.equal(options.shell,true); }
   assert.equal(options.env,process.env); calls++; return {status:0};
 };
 assert.equal(withPreparedNative(${JSON.stringify(join(fixture, "npm/native"))},'--native-test-owner=00000000-0000-0000-0000-000000000000','vp',['run','test'],packageRun),0);
