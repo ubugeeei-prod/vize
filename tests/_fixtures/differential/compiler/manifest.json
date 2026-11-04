@@ -316,6 +316,62 @@
       }
     },
     {
+      "id": "compiler/dom/typed-handler-runtime-spelling-11815",
+      "state": "active",
+      "targets": [
+        "dom"
+      ],
+      "inputs": {
+        "root": "typed-handler-runtime-spelling-11815",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "f96447efcb9f0d9336a08fadb27bafb922c27a250b616c038aed98b864ebdee8"
+          }
+        ]
+      },
+      "reference": {
+        "path": "typed-handler-runtime-spelling-11815/module.expected.txt",
+        "sha256": "c3da518002b36d5396993d6963a5f1d4893502c041b9cc947ee37f186d6aebb7",
+        "source": "Independent public @vizejs/native 0.680.0 untyped control compiled as Layout.vue with script lang=ts, ssr=false and sourceMap=false. The runtime onPick declaration, script, filename, and module wrapper are identical; only the template handler type assertion is absent from the control. Complete module bytes are frozen without normalization. The source Rust handler unit consumes this same typed input; source CLI equivalence remains an Actions qualification."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-dom-11815",
+        "legacyRecipe": "cargo build --profile ci -p vize",
+        "native": null,
+        "reasons": {
+          "native": "The published SDK untyped control supplies the frozen whole-module oracle; current source native equivalence is not asserted by this source-CLI case."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-dom-module-bytes-11815",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-dom-11815 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
       "targets": ["ssr"],

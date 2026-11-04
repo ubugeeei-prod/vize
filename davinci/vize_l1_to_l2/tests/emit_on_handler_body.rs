@@ -169,6 +169,15 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
 /// which evaluates the function and never calls it.
 #[test]
 fn ts_erased_handler_references_are_called_like_identifiers() {
+    let (_, template) = include_str!(
+        "../../../tests/_fixtures/differential/compiler/typed-handler-runtime-spelling-11815/Layout.vue.txt"
+    )
+    .split_once("<template>")
+    .expect("pinned handler SFC template start");
+    let (pinned_handler, _) = template
+        .split_once("</template>")
+        .expect("pinned handler SFC template end");
+    assert_eq!(pinned_handler, r#"<div @click="onPick as any"></div>"#);
     for prefix in [false, true] {
         let plain = assembled_prefixed(r#"<div @click="onPick"></div>"#, prefix, true);
         let reference = if prefix { "_ctx.onPick" } else { "onPick" };
@@ -181,10 +190,7 @@ fn ts_erased_handler_references_are_called_like_identifiers() {
             expected,
             "JavaScript control prefix={prefix}",
         );
-        for source in [
-            r#"<div @click="onPick!"></div>"#,
-            r#"<div @click="onPick as any"></div>"#,
-        ] {
+        for source in [r#"<div @click="onPick!"></div>"#, pinned_handler] {
             let emitted = assembled_prefixed(source, prefix, true);
             assert_eq!(emitted, plain, "prefix={prefix} {source}");
             assert_eq!(
