@@ -16,10 +16,12 @@ import path from "node:path";
 
 import { hasFileMetadataChanged } from "./state.ts";
 import { PRECOMPILE_CACHE_ENV } from "./precompile-cache.ts";
+import { compileAll } from "./precompile-run.ts";
 import {
   BASE_SOURCE,
   coldRun,
   makeProject,
+  makeState,
   manifestFiles,
   persistedFiles,
   recompiledCount,
@@ -210,6 +212,35 @@ const form = reactive({ name: "" });
   const third = await coldRun(root);
   assert.equal(restoredCount(third.log), 0);
   assert.match(third.state.cache.get(file)!.code, /two/, "the new dependency must be compiled in");
+}
+
+// ---------------------------------------------------------------------------
+// Project captures are process-local: cold runs recompile and register watches.
+// ---------------------------------------------------------------------------
+{
+  const { root, file } = makeProject(
+    `<script setup lang="ts">import type { Props } from './Props';defineProps<Props>();</script>`,
+  );
+  const config = path.join(root, "tsconfig.json");
+  const types = path.join(root, "src", "Props.ts");
+  fs.writeFileSync(config, "{}");
+  for (const constructor of ["String", "Number"]) {
+    fs.writeFileSync(types, `export interface Props { value?: ${constructor.toLowerCase()} }`);
+    const lines: string[] = [];
+    const state = makeState(root, {}, (line) => lines.push(line));
+    const watches: string[] = [];
+    await compileAll(state, [], undefined, (input) => watches.push(input));
+    assert.equal(restoredCount(lines.join("\n")), 0);
+    assert.equal(recompiledCount(lines.join("\n")), 1);
+    const compiled = state.cache.get(file)!;
+    assert.ok(compiled.typeProject, "the fresh compile owns a live project capture");
+    assert.match(compiled.code, new RegExp(`type: ${constructor}`));
+    assert.ok(watches.includes(config), "each cold run registers configuration watches");
+    assert.ok(compiled.dependencies?.includes(types), "type-file HMR ownership is preserved");
+    if (manifestFiles(root).length > 0) {
+      assert.equal(persistedFiles(root).includes(file), false);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

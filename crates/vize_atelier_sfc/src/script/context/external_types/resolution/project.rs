@@ -30,6 +30,7 @@ pub struct Project {
     base_url: Option<PathBuf>,
     aliases: Vec<(String, Vec<String>)>,
     inputs: Vec<PathBuf>,
+    configuration_diagnostics: Vec<String>,
 }
 
 impl Project {
@@ -46,6 +47,12 @@ impl Project {
     /// Identity of the captured options used by host-owned compile caches.
     pub fn cache_revision(&self) -> [u8; 32] {
         self.revision
+    }
+
+    /// Unresolved inherited configs do not prevent using the resolved options.
+    /// Hosts can report these diagnostics while compilation continues.
+    pub fn configuration_diagnostics(&self) -> &[String] {
+        &self.configuration_diagnostics
     }
 
     pub(crate) fn inputs(&self) -> &[PathBuf] {
@@ -327,9 +334,11 @@ fn build(
     let root = config
         .parent()
         .ok_or_else(|| String::from("TypeScript project has no parent"))?;
-    if let Some(unresolved) = flattened.unresolved_extends.first() {
-        return Err(unresolved.configuration_message());
-    }
+    let configuration_diagnostics = flattened
+        .unresolved_extends
+        .iter()
+        .map(|unresolved| unresolved.configuration_message())
+        .collect();
     let mut aliases = Vec::new();
     if let Some(value) = flattened.options.get("paths") {
         let paths = value
@@ -379,5 +388,6 @@ fn build(
         base_url,
         aliases,
         inputs,
+        configuration_diagnostics,
     })
 }

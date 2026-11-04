@@ -3,6 +3,74 @@
 use super::{compile_source, project};
 
 #[test]
+fn unresolved_parents_preserve_relative_imports_and_resolved_aliases() {
+    use super::{compile, expected, write};
+    use vize_atelier_sfc::script::SfcTypeProject;
+    let project = project();
+    write(
+        project.path(),
+        "tsconfig.json",
+        r#"{"extends":["./missing.json","./base.json"]}"#,
+    );
+    write(
+        project.path(),
+        "base.json",
+        r#"{"compilerOptions":{"paths":{"@lib/*":["./src/*"]}}}"#,
+    );
+    let captured = SfcTypeProject::from_tsconfig(&project.path().join("tsconfig.json")).unwrap();
+    assert_eq!(captured.configuration_diagnostics().len(), 1);
+    assert!(captured.configuration_diagnostics()[0].contains("./missing.json"));
+    for import in ["./models/FooProps", "@lib/models/FooProps"] {
+        assert_eq!(
+            compile(project.path(), "src/Partial.vue", import, false),
+            expected()
+        );
+    }
+}
+
+#[test]
+fn a_generated_parent_invalidates_the_partial_project_capture() {
+    use super::{compile, expected, write};
+    use vize_atelier_sfc::script::SfcTypeProject;
+    let project = project();
+    let config = project.path().join("tsconfig.json");
+    write(
+        project.path(),
+        "tsconfig.json",
+        r#"{"extends":"./.nuxt/tsconfig.json"}"#,
+    );
+    let before = SfcTypeProject::from_tsconfig(&config).unwrap();
+    assert_eq!(before.configuration_diagnostics().len(), 1);
+    assert_eq!(
+        compile(
+            project.path(),
+            "src/Partial.vue",
+            "./models/FooProps",
+            false
+        ),
+        expected()
+    );
+    write(
+        project.path(),
+        ".nuxt/tsconfig.json",
+        r#"{"compilerOptions":{"paths":{"@generated/*":["../src/*"]}}}"#,
+    );
+    let after = SfcTypeProject::from_tsconfig(&config).unwrap();
+    assert!(!std::sync::Arc::ptr_eq(&before, &after));
+    assert!(after.configuration_diagnostics().is_empty());
+    assert_eq!(before.configuration_diagnostics().len(), 1);
+    assert_eq!(
+        compile(
+            project.path(),
+            "app/Generated.vue",
+            "@generated/models/FooProps",
+            false
+        ),
+        expected()
+    );
+}
+
+#[test]
 fn unresolved_namespace_import_in_a_macro_is_not_silently_erased() {
     let project = project();
     let error = compile_source(project.path(), "<script setup lang=\"ts\">import type * as Types from '@missing/Props';defineProps<Types.Foo>();</script>").expect_err("unresolved qualified type");
