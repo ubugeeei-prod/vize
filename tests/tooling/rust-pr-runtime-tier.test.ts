@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -65,7 +73,7 @@ const canonDeferred = [
     pack: "native-pointer-events-original",
   },
 ];
-type Step = { name?: string; run?: string };
+type Step = { name?: string; run?: string; if?: string; with?: Record<string, string> };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {
   jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
@@ -303,3 +311,94 @@ test("only the typechecker cohort requires tsgo on pull_request", () => {
     }
   }
 });
+
+const mapperSetupName = "Prepare the mandatory full-profile Content Mapper host";
+test("the full-profile CLI cohort installs the independently pinned mapper host and retains its proof", () => {
+  const steps = workflow.jobs["pr-rust-shard"].steps;
+  const setup = steps.find((step) => step.name === mapperSetupName);
+  assert.ok(setup);
+  assert.equal(
+    setup?.if,
+    "${{ env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}",
+  );
+  assert.ok(steps.indexOf(setup) < steps.findIndex((step) => step.name === stepName));
+  const artifact = steps.find((step) => step.name === "Retain the Content Mapper host proof");
+  assert.equal(
+    artifact?.if,
+    "${{ always() && env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}",
+  );
+  assert.equal(artifact?.with?.path, "${{ runner.temp }}/mq-content-mapper-host-proof/");
+});
+
+for (const mode of ["success", "bootstrap-failure", "missing-executable"] as const) {
+  test(`MQ mapper host wiring ${mode} preserves the bootstrap failure boundary`, () => {
+    const script = workflow.jobs["pr-rust-shard"].steps.find(
+      (step) => step.name === mapperSetupName,
+    )?.run;
+    assert.ok(script);
+    const cwd = mkdtempSync(join(tmpdir(), "vize-mq-mapper-host-"));
+    const secrets = [
+      "GH_TOKEN",
+      "GITHUB_TOKEN",
+      "NODE_AUTH_TOKEN",
+      "NPM_TOKEN",
+      "NODE_OPTIONS",
+      "NODE_PATH",
+    ];
+    try {
+      const bin = join(cwd, "bin");
+      mkdirSync(bin);
+      // This shell stub tests wiring only: it performs no install or native execution.
+      writeFileSync(
+        join(bin, "node"),
+        `#!/bin/sh
+set -eu
+test "$#" = 3
+test "$1" = tools/support/release/type-admission-mapper-host.ts
+test "$2" = "$RUNNER_TEMP/mq-content-mapper-host"
+test "$3" = "$RUNNER_TEMP/mq-content-mapper-host-proof"
+${secrets.map((name) => `test -z "\${${name}+x}"`).join("\n")}
+if test "$MOCK_MODE" = bootstrap-failure; then exit 23; fi
+mkdir -p "$3"
+if test "$MOCK_MODE" = success; then
+  mkdir -p "$2/node_modules/@typescript/typescript-linux-x64/lib"
+  printf '#!/bin/sh\\nexit 0\\n' > "$2/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+  chmod +x "$2/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+fi
+`,
+        { mode: 0o755 },
+      );
+      const githubEnv = join(cwd, "github-env");
+      const result = spawnSync(
+        "/bin/bash",
+        ["--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        {
+          cwd,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            ...Object.fromEntries(secrets.map((name) => [name, "must-be-removed"])),
+            PATH: `${bin}:/usr/bin:/bin`,
+            RUNNER_TEMP: cwd,
+            GITHUB_ENV: githubEnv,
+            MOCK_MODE: mode,
+          },
+        },
+      );
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      if (mode === "success") {
+        assert.equal(result.status, 0, result.stderr);
+        assert.equal(
+          readFileSync(githubEnv, "utf8"),
+          `VIZE_TEST_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc\n`,
+        );
+      } else {
+        assert.equal(result.status, mode === "bootstrap-failure" ? 23 : 1, result.stderr);
+        assert.equal(existsSync(githubEnv), false, "a failed preparation must not publish a host");
+      }
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+}
