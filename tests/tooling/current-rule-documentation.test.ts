@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
@@ -279,5 +280,85 @@ await test("Nuxt process docs expectations reject unknown formats, rules and ref
   assert.throws(
     () => currentDocumentation({ ...process, args: ["lint", "--format", "future"] }),
     /finite authored report format/u,
+  );
+});
+
+await test("remaining CLI documentation contracts preserve all migration and return packet fields", () => {
+  let checked = 0;
+  const verify = (packet: unknown) => {
+    const saved = JSON.stringify(packet);
+    const current = currentRuleDocumentationPacket(packet);
+    const before = packet as { messages: Record<string, unknown>[] }[];
+    for (const [fileIndex, row] of current.entries()) {
+      for (const [index, message] of row.messages.entries()) {
+        assert.equal(
+          message.ruleDocsPath,
+          `docs/content/rules/reference/${String(message.ruleId).replace("/", "-")}.md`,
+        );
+        message.ruleDocsPath = before[fileIndex]!.messages[index]!.ruleDocsPath;
+      }
+    }
+    assert.deepEqual(current, packet);
+    assert.equal(JSON.stringify(packet), saved);
+    checked++;
+  };
+  for (const [relative, kind, count] of [
+    ["lint-default-migrations/current-range-cases.json", "migration", 12],
+    ["differential/lint/return-prefilter-8090/cases.json", "return", 16],
+  ] as const) {
+    const file = new URL(`../_fixtures/${relative}`, import.meta.url);
+    const original = fs.readFileSync(file);
+    const corpus = JSON.parse(original.toString("utf8"));
+    assert.equal(corpus.cases.length, count);
+    for (const row of corpus.cases) {
+      const findings =
+        kind === "migration"
+          ? [
+              row.diagnostics,
+              row.diagnostics,
+              row.essentialDiagnostics,
+              row.diagnostics,
+              row.diagnostics,
+              row.diagnostics,
+              [],
+              row.baselineDiagnostics,
+              ...corpus.configuredVueVersions.map((version: string) =>
+                version === "3" ? row.diagnostics : row.baselineDiagnostics,
+              ),
+              row.essentialDiagnostics,
+            ]
+          : [row.diagnostics, row.diagnostics, row.diagnostics, row.diagnostics, [], [], []];
+      for (const diagnostics of findings) verify(withoutHelp(currentLintOracle(row, diagnostics)));
+    }
+    assert.ok(fs.readFileSync(file).equals(original));
+  }
+  assert.equal(checked, 144 + 112);
+  const component = {
+    ruleId: "vue/require-component-registration",
+    ruleDocsPath: "docs/content/rules/vue.md",
+    severity: 1,
+    message: "Component is used but not explicitly imported",
+    line: 3,
+    column: 6,
+    endLine: 3,
+    endColumn: 14,
+  };
+  verify([{ file: "my-panel.vue", messages: [component], errorCount: 0, warningCount: 1 }]);
+  assert.throws(
+    () =>
+      currentRuleDocumentationMessages([
+        { ...component, ruleDocsPath: "docs/content/rules/type-and-script.md" },
+      ]),
+    /frozen rule documentation URL/u,
+  );
+  assert.throws(
+    () =>
+      currentRuleDocumentationMessages([
+        {
+          ...component,
+          ruleDocsPath: "docs/content/rules/reference/vue-require-component-registration.md",
+        },
+      ]),
+    /frozen rule documentation URL/u,
   );
 });
