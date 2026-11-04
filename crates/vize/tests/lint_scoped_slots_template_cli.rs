@@ -118,7 +118,9 @@ fn scoped_slots_template_cli_preserves_whole_packets_and_the_original_n8n_projec
     run(
         case,
         json!({"linter": projection["linter"]}),
-        json!([corpus["origin"]["originalCliExpectation"]]),
+        crate::support::current_rule_documentation::packet(json!([
+            corpus["origin"]["originalCliExpectation"]
+        ])),
         "original-whole51",
     );
     run(
