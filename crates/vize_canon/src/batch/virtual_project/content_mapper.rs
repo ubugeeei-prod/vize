@@ -423,17 +423,21 @@ fn protocol_spans(
     spans
 }
 
-/// The generated quotes around a mapped name, when no authored span owns them.
+/// Generated quotes or parentheses around a mapped span that no authored span owns.
 ///
-/// TypeScript reports a string-literal node (a quoted property key, a CSS
-/// module name) from its opening quote, and maps a position in an unmapped gap
-/// to the end of the preceding span. Diagnostic-only atoms on both quotes keep
-/// such a diagnostic on the authored name instead of the previous attribute.
+/// TypeScript reports a quoted key from its opening quote, and a listener
+/// check from the `(` of `= ((value) => ...)`. A start in that gap maps to the
+/// preceding span's end — the attribute `=` — instead of the authored value.
+/// Diagnostic-only atoms on both wrappers keep the anchor on that value
+/// (#9753, #11675).
 fn synthetic_delimiters(generated: &str, range: &Range<usize>) -> Option<(usize, usize)> {
+    let bytes = generated.as_bytes();
     let open = range.start.checked_sub(1)?;
-    let quote = *generated.as_bytes().get(open)?;
-    (matches!(quote, b'"' | b'\'') && generated.as_bytes().get(range.end) == Some(&quote))
-        .then_some((open, range.end))
+    let open_byte = *bytes.get(open)?;
+    let close_byte = *bytes.get(range.end)?;
+    let wrapped = (matches!(open_byte, b'"' | b'\'') && close_byte == open_byte)
+        || (open_byte == b'(' && close_byte == b')');
+    wrapped.then_some((open, range.end))
 }
 
 fn candidate(
