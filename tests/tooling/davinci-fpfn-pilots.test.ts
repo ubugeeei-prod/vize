@@ -296,17 +296,28 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
     reportPath,
   ]);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.deepStrictEqual(
-    readJson(reportPath),
-    readJson(path.join(expectedDir, "suppression-report.json")),
-  );
+  const expected = readJson(path.join(expectedDir, "suppression-report.json")) as {
+    ruleMap: { fixture: string; mappedRules: number };
+  };
+  assert.equal(expected.ruleMap.fixture, "tests/_fixtures/patina-eslint-vue-rule-map.json");
+  const ruleMap = readJson(path.join(root, expected.ruleMap.fixture)) as {
+    entries: Record<string, { status: string }>;
+  };
+  const mappedRules = Object.values(ruleMap.entries).filter(
+    (entry) => entry.status === "mapped",
+  ).length;
+  // Preserve the historical packet; its catalog-size metadata follows the committed input.
+  assert.deepStrictEqual(readJson(reportPath), {
+    ...expected,
+    ruleMap: { ...expected.ruleMap, mappedRules },
+  });
   const lines = result.stdout.trim().split("\n");
   // The rule-map size follows the linter catalog; only the fixture counts are pinned.
   const proof = lines[1]?.match(
     /^scope-proof: files-scanned=4 suppression-comments=2 named=2 bare=0 rules-mapped=(\d+) mapped-seen=1 unmapped-seen=1 fp-candidates=1$/,
   );
   assert.ok(proof, lines[1]);
-  assert.ok(Number(proof[1]) > 0, lines[1]);
+  assert.equal(Number(proof[1]), mappedRules, lines[1]);
 });
 
 // This exercises the JavaScript compatibility writer with synthetic diagnostic
