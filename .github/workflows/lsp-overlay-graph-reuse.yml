@@ -9,6 +9,10 @@ on:
       - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs
       - crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare_materialize.rs
       - crates/vize_canon/src/corsa_bridge/source_catalog.rs
+      - crates/vize_canon/src/lsp_client/canon_file_cache.rs
+      - crates/vize_canon/src/lsp_client/session/replay.rs
+      - crates/vize_canon/src/lsp_client/workspace_project.rs
+      - crates/vize_canon/src/lsp_client/lifecycle.rs
       - tests/tooling/lsp-overlay-graph-reuse.test.ts
   workflow_dispatch:
     inputs:

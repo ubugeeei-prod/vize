@@ -190,6 +190,10 @@ mod tests {
         }
         assert_eq!(cache.reads, 3);
         assert!(
+            cache.files.is_empty(),
+            "recent exact reads are never retained as settled authority"
+        );
+        assert!(
             cache
                 .synchronize_at(&path, CHANGED, settled_clock())
                 .unwrap()
@@ -282,10 +286,6 @@ mod tests {
         assert_eq!(std::fs::read(&a).unwrap(), ORIGINAL.as_bytes());
         assert_eq!(std::fs::read(&b).unwrap(), ORIGINAL.as_bytes());
         assert_eq!(cache.reads, 3);
-        assert!(
-            cache.files.is_empty(),
-            "recent exact reads are never retained as settled authority"
-        );
         assert!(cache.files.is_empty());
     }
 }
