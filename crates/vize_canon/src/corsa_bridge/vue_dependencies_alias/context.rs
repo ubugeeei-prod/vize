@@ -210,36 +210,21 @@ impl AliasContext {
                 mirror
                     .materialized_source_documents()
                     .into_iter()
-                    .map(
-                        |document| super::super::vue_document::CorsaMaterializedSource {
-                            materialized_path: document.materialized_path,
-                            source_path: document.source_path,
-                            source: document.source,
-                            code: document.code,
-                            mapping: {
-                                let mut mapping = crate::virtual_ts::ProjectionMapping::from_parts(
-                                    document.mappings, document.semantic_links,
-                                );
-                                mapping.set_prop_default_key_links(document.prop_default_key_links);
-                                mapping
-                            },
-                            import_source_map: document.import_source_map,
-                            mapping_kind: match document.mapping_kind {
-                                crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {
-                                    super::super::vue_document::CorsaMaterializedMappingKind::Generated
-                                }
-                                crate::batch::virtual_project::MaterializedSourceMappingKind::AuthoredIdentity => {
-                                    super::super::vue_document::CorsaMaterializedMappingKind::AuthoredIdentity
-                                }
-                                crate::batch::virtual_project::MaterializedSourceMappingKind::Synthetic => {
-                                    super::super::vue_document::CorsaMaterializedMappingKind::Synthetic
-                                }
-                            },
-                        },
-                    )
+                    .map(materialized_source_from_document)
                     .collect()
             })
             .unwrap_or_default()
+    }
+
+    /// The host file's mirror document after a same-graph edit.
+    pub(in crate::corsa_bridge) fn materialized_source_for(
+        &self,
+        source: &Path,
+    ) -> Option<super::super::vue_document::CorsaMaterializedSource> {
+        self.mirror
+            .as_ref()
+            .and_then(|mirror| mirror.materialized_source_document(source))
+            .map(materialized_source_from_document)
     }
 
     pub(in crate::corsa_bridge) fn resolve_first_party_source(
@@ -261,7 +246,40 @@ impl AliasContext {
         );
         self.package_routes.get(&package_key)
     }
+}
 
+fn materialized_source_from_document(
+    document: crate::batch::virtual_project::MaterializedSourceDocument,
+) -> super::super::vue_document::CorsaMaterializedSource {
+    super::super::vue_document::CorsaMaterializedSource {
+        materialized_path: document.materialized_path,
+        source_path: document.source_path,
+        source: document.source,
+        code: document.code,
+        mapping: {
+            let mut mapping = crate::virtual_ts::ProjectionMapping::from_parts(
+                document.mappings,
+                document.semantic_links,
+            );
+            mapping.set_prop_default_key_links(document.prop_default_key_links);
+            mapping
+        },
+        import_source_map: document.import_source_map,
+        mapping_kind: match document.mapping_kind {
+            crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {
+                super::super::vue_document::CorsaMaterializedMappingKind::Generated
+            }
+            crate::batch::virtual_project::MaterializedSourceMappingKind::AuthoredIdentity => {
+                super::super::vue_document::CorsaMaterializedMappingKind::AuthoredIdentity
+            }
+            crate::batch::virtual_project::MaterializedSourceMappingKind::Synthetic => {
+                super::super::vue_document::CorsaMaterializedMappingKind::Synthetic
+            }
+        },
+    }
+}
+
+impl AliasContext {
     pub(in crate::corsa_bridge) fn forget_cached_sources(
         session: &crate::corsa_bridge::EditorMirrorSession,
         source_paths: &[PathBuf],
