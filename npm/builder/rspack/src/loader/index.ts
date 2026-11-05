@@ -1,6 +1,7 @@
 /** Main .vue SFC loader. Compiles SFC → JS; must be used with `oneOf` (mutual exclusion with style-loader). */
 
 import { sources, type LoaderContext } from "@rspack/core";
+import { parseSfc } from "@vizejs/native";
 import fs from "node:fs";
 import path from "node:path";
 import { compileFile, generateOutputWithMap } from "../shared/compiler.ts";
@@ -104,7 +105,10 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       this.addDependency(scriptPath);
       try {
         const scriptContent = fs.readFileSync(scriptPath, "utf-8");
-        inlineSrcBlock(resolvedSource, "script", scriptContent, scriptPath);
+        inlineSrcBlock(resolvedSource, parseSfc, "script", scriptContent, {
+          filename: scriptPath,
+          sourceFilename: resourcePath,
+        });
       } catch {
         callback(
           new Error(
@@ -120,7 +124,10 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       this.addDependency(templatePath);
       try {
         const templateContent = fs.readFileSync(templatePath, "utf-8");
-        inlineSrcBlock(resolvedSource, "template", templateContent, templatePath);
+        inlineSrcBlock(resolvedSource, parseSfc, "template", templateContent, {
+          filename: templatePath,
+          sourceFilename: resourcePath,
+        });
       } catch {
         callback(
           new Error(

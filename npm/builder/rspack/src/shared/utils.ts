@@ -7,6 +7,7 @@ import {
   extractSfcStyleBlocks,
   generateSfcScopeId,
   isSfcImportableAssetUrl,
+  parseSfc,
   scopeViteCssForPipeline,
   stripSfcScopedCssComments,
 } from "@vizejs/native";
@@ -95,11 +96,11 @@ export function inlineSrcBlocks(
   const result = new MappedModule(source, null);
 
   if (scriptContent !== null) {
-    inlineSrcBlock(result, "script", scriptContent);
+    inlineSrcBlock(result, parseSfc, "script", scriptContent);
   }
 
   if (templateContent !== null) {
-    inlineSrcBlock(result, "template", templateContent);
+    inlineSrcBlock(result, parseSfc, "template", templateContent);
   }
 
   return result.code;
