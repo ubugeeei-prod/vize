@@ -99,6 +99,7 @@ mod permitted_contents;
 // `use_unique_element_ids` implementation lives under rules::opinionated::vue.
 
 // Style rules
+mod match_component_file_name;
 mod single_style_block;
 // Opinionated style rules live under rules::opinionated::vue.
 
@@ -216,6 +217,7 @@ pub use crate::rules::opinionated::vue::NoPreprocessorLang;
 pub use crate::rules::opinionated::vue::NoScriptNonStandardLang;
 pub use crate::rules::opinionated::vue::NoSrcAttribute;
 pub use crate::rules::opinionated::vue::NoTemplateLang;
+pub use match_component_file_name::MatchComponentFileName;
 pub use require_scoped_style::RequireScopedStyle;
 pub use single_style_block::SingleStyleBlock;
 
@@ -327,5 +329,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-non-component-keep-alive-child") {
         registry.register(Box::new(NoNonComponentKeepAliveChild));
+    }
+    if !registry.has_rule("vue/match-component-file-name") {
+        registry.register(Box::new(MatchComponentFileName));
     }
 }

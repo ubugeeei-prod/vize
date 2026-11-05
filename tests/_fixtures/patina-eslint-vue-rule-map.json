@@ -270,8 +270,10 @@
       "status": "unimplemented"
     },
     "vue/match-component-file-name": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/match-component-file-name",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/match-component-import-name": {
       "issue": 3223,
@@ -2025,8 +2027,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 150,
-    "unimplemented": 100
+    "mapped": 151,
+    "unimplemented": 99
   },
   "upstream": {
     "package": "eslint-plugin-vue",
