@@ -1,0 +1,103 @@
+---
+source: crates/vize_atelier_vapor/src/l3/tests/attributes.rs
+assertion_line: 230
+expression: outputs
+---
+[
+    (
+        "<div style :style=\"s\"></div>",
+        false,
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div style :style=\"s\"></div>",
+        true,
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div :style=\"s\" style></div>",
+        false,
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [_ctx.s, \"\"]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div :style=\"s\" style></div>",
+        true,
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [_ctx.s, \"\"]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"\", _ctx.s]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div class :class=\"c\"></div>",
+        false,
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div class :class=\"c\"></div>",
+        true,
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div :class=\"c\" class></div>",
+        false,
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div :class=\"c\" class></div>",
+        true,
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+        "import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setClass(n0, [\"\", _ctx.c]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+]

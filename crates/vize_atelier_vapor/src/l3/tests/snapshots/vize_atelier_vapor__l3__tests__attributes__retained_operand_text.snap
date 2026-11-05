@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_vapor/src/l3/tests/attributes.rs
+assertion_line: 375
+expression: "(code, changed)"
+---
+(
+    "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> </div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setProp(n0, \"title\", _ctx.a + _ctx.b)\n    _setText(x0, _toDisplayString(_ctx.c * _ctx.d))\n  })\n  return n0\n}\n",
+    "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> </div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setProp(n0, \"title\", _ctx.changed)\n    _setText(x0, _toDisplayString(_ctx.c * _ctx.d))\n  })\n  return n0\n}\n",
+)
