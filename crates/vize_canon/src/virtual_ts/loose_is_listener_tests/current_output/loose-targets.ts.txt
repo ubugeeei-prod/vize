@@ -185,7 +185,8 @@ function __setup() {
   type __target_7_pick_event = __target_7_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __target_7_pick_return_native_fallthrough = __target_7__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __target_7_pick_return = unknown[] extends __target_7_pick_prop_args ? __target_7_pick_return_native_fallthrough : __target_7__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __target_7_pick_prop_arrays = __target_7__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __target_7__props_members = __target_7__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __target_7_pick_prop_arrays = __target_7__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __target_7_pick_listener = unknown[] extends __target_7_pick_args ? ((...args: any[]) => any) : ((...args: __target_7_pick_args) => __target_7_pick_return);
   type __target_7_pick_handler = unknown[] extends __target_7_pick_args ? ((...args: any[]) => any) : __target_7_pick_listener;
   void ((...__vize_args: Parameters<__target_7_pick_listener>) => {
@@ -214,7 +215,8 @@ function __setup() {
   type __node_8_pick_event = __node_8_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __node_8_pick_return_native_fallthrough = __node_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __node_8_pick_return = unknown[] extends __node_8_pick_prop_args ? __node_8_pick_return_native_fallthrough : __node_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __node_8_pick_prop_arrays = __node_8__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __node_8__props_members = __node_8__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __node_8_pick_prop_arrays = __node_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __node_8_pick_listener = unknown[] extends __node_8_pick_args ? ((...args: any[]) => any) : ((...args: __node_8_pick_args) => __node_8_pick_return);
   type __node_8_pick_handler = unknown[] extends __node_8_pick_args ? ((...args: any[]) => any) : __node_8_pick_listener;
   void ((...__vize_args: Parameters<__node_8_pick_listener>) => {
@@ -243,7 +245,8 @@ function __setup() {
   type __loose_9_pick_event = __loose_9_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __loose_9_pick_return_native_fallthrough = __loose_9__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __loose_9_pick_return = unknown[] extends __loose_9_pick_prop_args ? __loose_9_pick_return_native_fallthrough : __loose_9__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __loose_9_pick_prop_arrays = __loose_9__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __loose_9__props_members = __loose_9__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __loose_9_pick_prop_arrays = __loose_9__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __loose_9_pick_listener = unknown[] extends __loose_9_pick_args ? ((...args: any[]) => any) : ((...args: __loose_9_pick_args) => __loose_9_pick_return);
   type __loose_9_pick_handler = unknown[] extends __loose_9_pick_args ? ((...args: any[]) => any) : __loose_9_pick_listener;
   void ((...__vize_args: Parameters<__loose_9_pick_listener>) => {
@@ -272,7 +275,8 @@ function __setup() {
   type __tag_10_pick_event = __tag_10_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __tag_10_pick_return_native_fallthrough = __tag_10__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __tag_10_pick_return = unknown[] extends __tag_10_pick_prop_args ? __tag_10_pick_return_native_fallthrough : __tag_10__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __tag_10_pick_prop_arrays = __tag_10__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __tag_10__props_members = __tag_10__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __tag_10_pick_prop_arrays = __tag_10__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __tag_10_pick_listener = unknown[] extends __tag_10_pick_args ? ((...args: any[]) => any) : ((...args: __tag_10_pick_args) => __tag_10_pick_return);
   type __tag_10_pick_handler = unknown[] extends __tag_10_pick_args ? ((...args: any[]) => any) : __tag_10_pick_listener;
   void ((...__vize_args: Parameters<__tag_10_pick_listener>) => {

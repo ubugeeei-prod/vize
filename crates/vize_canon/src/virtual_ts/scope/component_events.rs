@@ -8,6 +8,7 @@ mod handler_context;
 mod inference_helpers;
 mod listener_return;
 mod native_fallthrough;
+mod prop_array_share;
 pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
@@ -411,24 +412,23 @@ pub(super) fn generate_component_event_types(
                 let arrays_type = cstr!(
                     "__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_arrays"
                 );
-                // `any` props infer `__H` as `any`, and `Extract<any, …>` is
-                // `any`. Unioning that into the handler annotation would type
-                // `(v)` as explicit `any` and hide TS7006 on a loose `:is`.
-                let arrays = cstr!(
-                    "{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
-                );
                 if first_contract {
-                    if let Some(props) = contextual_props.as_ref() {
-                        append!(
-                            *ts,
-                            "{indent}type {arrays_type} = {props} extends infer __P ? {arrays} : never;\n",
-                        );
-                    } else {
-                        append!(
-                            *ts,
-                            "{indent}type {arrays_type} = {props_box} extends infer __B ? __B extends [infer __P] ? {arrays} : never : never;\n",
-                        );
-                    }
+                    let props_members = cstr!("{component_aliases}_props_members");
+                    prop_array_share::emit(
+                        ts,
+                        prop_array_share::Emit {
+                            contracts: event_contracts,
+                            component: &component_contract,
+                            scope_id,
+                            indent,
+                            is_any,
+                            prop_key: prop_key.as_str(),
+                            arrays_type: arrays_type.as_str(),
+                            direct_props: contextual_props.as_deref(),
+                            props_box: props_box.as_str(),
+                            props_members: props_members.as_str(),
+                        },
+                    );
                 }
                 prop_arrays = Some(arrays_type);
                 cstr!("unknown[] extends {args_type} ? ((...args: any[]) => any) : {listener_type}")
