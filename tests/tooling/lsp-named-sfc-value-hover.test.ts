@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveVuePackagePath } from "../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
+import { readPinnedArtifact } from "../differential/harness.mjs";
+import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { root } from "./support/lsp/paths.ts";
@@ -79,6 +81,35 @@ await test(
     }
     assert.deepEqual(Object.keys(reference.inputs).sort(), ["App.vue", "Child.vue", "barrel.ts"]);
     const expected = JSON.parse(fs.readFileSync(path.join(fixture, "expected.json.txt"), "utf8"));
+    const registered = loadLspManifest(
+      path.join(path.dirname(fixture), "manifest.json"),
+    ).cases.find(({ id }) => id === "lsp/regression/named-sfc-value-hover-11953");
+    assert.ok(registered, "the complete native witness also registers immutable LSP inputs");
+    assert.ok(registered.data.provenance.witness);
+    assert.deepEqual(
+      JSON.parse(readPinnedArtifact(fixture, registered.data.provenance.witness).toString("utf8")),
+      reference,
+      "the registered case pins the complete public/native reference custody",
+    );
+    assert.deepEqual(
+      Object.fromEntries(
+        registered.files
+          .filter(({ runtimePath }) => Object.hasOwn(reference.inputs, runtimePath))
+          .map(({ runtimePath, bytes }) => [runtimePath, bytes.toString("utf8")]),
+      ),
+      reference.inputs,
+      "the registered authored sources retain the original direct-import reproducer",
+    );
+    assert.deepEqual(
+      registered.requests,
+      expected[0].requests
+        .filter(({ id }: Request) => id === "direct" || id === "alias")
+        .map(({ params, result }: { params: { position: unknown }; result: unknown }) => ({
+          params: { position: params.position },
+          result,
+        })),
+      "registered whole hovers retain the same native control oracle",
+    );
     const binary = path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize");
     let sourceIdentity: unknown;
     resolveVizeLaunchCommand(undefined, binary, {

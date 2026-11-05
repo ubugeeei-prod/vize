@@ -1,0 +1,1 @@
+export { default as Child, childValue } from './Child.vue';

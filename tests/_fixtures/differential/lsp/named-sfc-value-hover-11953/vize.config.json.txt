@@ -1,0 +1,8 @@
+{
+  "lsp": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  }
+}
