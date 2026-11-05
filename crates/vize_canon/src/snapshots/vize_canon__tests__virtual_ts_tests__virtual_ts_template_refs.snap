@@ -139,7 +139,7 @@ void (null! as $TemplateRefs["btn"]);   const buttonEl = __vizeInferRef('btn')
   // @vize-map: 15681:15823 -> 0:135
 
   // Runtime reads for static template refs
-  void (() => inputRef);
+  void (() => inputRef!);
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

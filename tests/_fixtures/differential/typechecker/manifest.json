@@ -14600,6 +14600,46 @@
       }
     },
     {
+      "id": "typechecker/static-template-ref-uninitialized-runtime-11377",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::dynamic_template_refs::native_cli_static_template_refs_keep_unused_and_shadow_diagnostics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "static-template-ref-runtime-11377/tsconfig.json.txt",
+          "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+        },
+        {
+          "file": "src/useBox.ts",
+          "path": "static-template-ref-runtime-11377/useBox.ts.txt",
+          "sha256": "8b69196f7909119360e50ac2d72dba8705c29d50155b8d7e6843c27884ec5387"
+        },
+        {
+          "file": "src/StaticRef.vue",
+          "path": "static-template-ref-uninitialized-runtime-11377/StaticRef.vue.txt",
+          "sha256": "b1eb163631e6140ea1919cc2d40acc7a39e9f1694d6a0cb4d759382674929975"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/template-callback-listener-11023/parent-beside-quit",
       "state": "active",
       "targets": [

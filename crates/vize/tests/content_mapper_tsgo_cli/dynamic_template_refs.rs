@@ -169,6 +169,11 @@ const ORIGINAL: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/typechecker/static-template-ref-runtime-11377/StaticRef.vue.txt"
 ));
 
+const UNINITIALIZED: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/static-template-ref-uninitialized-runtime-11377/StaticRef.vue.txt"
+));
+
 #[test]
 fn standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
@@ -198,7 +203,7 @@ fn standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused
         ("original", ORIGINAL, ""),
         ("authored-unused", unused.as_str(), original_unused),
         ("template-shadow", shadowed.as_str(), shadow_unused),
-        ("uninitialized-render-read", uninitialized.as_str(), ""),
+        ("uninitialized-render-read", UNINITIALIZED, ""),
         (
             "authored-uninitialized-read",
             authored_read.as_str(),
@@ -220,6 +225,13 @@ fn standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused
     let mut outputs = Vec::new();
     for (id, source, expected) in cases {
         std::fs::write(project.path().join("src/StaticRef.vue"), source).unwrap();
+        let transform = vize_canon::generate_vue_content_mapper_transform_with_options(
+            &project.path().join("src/StaticRef.vue"),
+            source,
+            vize_canon::ContentMapperTransformOptions::default()
+                .with_preserve_unused_diagnostics(true),
+        )
+        .map_err(|error| error.to_string());
         let output = check_project(&tsgo, project.path(), "tsconfig.json");
         println!(
             "static template ref CLI: {}",
@@ -227,12 +239,15 @@ fn standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused
                 "case":id,"program":&tsgo,"cwd":project.path(),"status":output.status.code(),
                 "stdout":&output.stdout,"stderr":&output.stderr,
                 "inputs":{"tsconfig.json":CONFIG,"src/useBox.ts":USE_BOX,"src/StaticRef.vue":source},
+                "transform":&transform,
             })
         );
-        outputs.push((id, expected, output));
+        outputs.push((id, expected, output, transform));
     }
-    // Preserve all complete outcomes before the first semantic verdict.
-    for (id, expected, output) in outputs {
+    // Preserve all complete outcomes and generated source before the first verdict.
+    assert_eq!(uninitialized, UNINITIALIZED);
+    for (id, expected, output, transform) in outputs {
+        assert!(transform.is_ok(), "{id}: {transform:?}");
         assert_eq!(
             output.status.success(),
             expected.is_empty(),
@@ -298,7 +313,7 @@ fn native_cli_static_template_refs_keep_unused_and_shadow_diagnostics() {
         ),
         (
             "uninitialized-render-read",
-            uninitialized.as_str(),
+            UNINITIALIZED,
             Vec::<&str>::new(),
         ),
         (
@@ -336,6 +351,7 @@ fn native_cli_static_template_refs_keep_unused_and_shadow_diagnostics() {
         outcomes.push((id, status, expected, output));
     }
     // Every original/control process is retained before the first semantic assertion.
+    assert_eq!(uninitialized, UNINITIALIZED);
     for (id, status, expected, output) in outcomes {
         assert_eq!(
             output.status.code(),
