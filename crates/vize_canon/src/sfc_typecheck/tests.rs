@@ -1,6 +1,7 @@
 //! Tests for SFC type checking.
 #![cfg(test)]
 mod heritage_props;
+mod sfc_grammar;
 
 mod emit_props;
 mod fallthrough_ranges;

@@ -1,0 +1,1 @@
+<template lang="html" v-match="result" data-note="sfc"><p v-when="'ready'">Ready</p><i v-when="_">Other</i></template>

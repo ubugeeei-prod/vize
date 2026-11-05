@@ -79,6 +79,14 @@ function syntheticReport(code = fixture.expected) {
         requiredBuildRecipe: current.requiredBuildRecipe,
         argv: current.argv,
         inputSha256: sha256(current.input),
+        ...(current.configuredProjectFiles
+          ? {
+              configuredProjectInputs: current.configuredProjectFiles.map(({ path, sha256 }) => ({
+                path,
+                sha256,
+              })),
+            }
+          : {}),
         ...(current.dialectInput
           ? {
               dialectInput: {
