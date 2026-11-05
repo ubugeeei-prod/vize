@@ -9,18 +9,22 @@ Toutes les règles du linter de Vize, regroupées par catégorie. Ouvrez une rè
 
 La colonne Préréglage indique le plus petit préréglage qui active la règle ; la page de chaque règle les liste tous. Voir [préréglages](../rules/index.md#préréglages) pour le contenu de chacun.
 
-## Règles Vue (108)
+## Règles Vue (120)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exiger un attribut alt sur les images pour les rendre accessibles. | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Imposer un style de nommage des attributs sur les composants personnalisés. | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Imposer un ordre cohérent des attributs. | `happy-path` |  |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Prend en charge les commentaires de contrôle des diagnostics dans `<template>`. | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Imposer PascalCase ou kebab-case aux noms de définition des composants. | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | Imposer une casse précise aux noms de composants dans les templates. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-html-button-has-type"></span>[`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | Exiger un type explicite et valide sur les éléments button. | `nuxt`, `opinionated` |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | Exige une balise de fermeture explicite pour les éléments HTML qui permettent de l'omettre. | `happy-path` | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | Imposer un style de guillemets pour les attributs HTML. | `happy-path` | ✓ |
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | Imposer un style de fermeture automatique des balises. | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Considère comme utilisées les variables référencées dans les noms d'éléments JSX. | `essential` |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Exige que le nom déclaré du composant corresponde au nom du fichier. | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limiter la complexité propre du template d’un composant, cyclomatique et cognitive. | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Exiger des noms de composants composés de plusieurs mots. | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Imposer un espacement cohérent dans les interpolations à doubles accolades. | `happy-path` | ✓ |
@@ -28,6 +32,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Interdire le texte brut destiné aux utilisateurs dans les templates lorsqu’il devrait être internationalisé. | — |  |
 | <span id="vue-no-boolean-attr-value"></span>[`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | Interdire les valeurs explicites des attributs HTML booléens. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | Interdire le contenu enfant lors de l’utilisation de v-html ou v-text. | `essential` |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | Interdit les modificateurs personnalisés sur le `v-model` d'un composant pour assurer la compatibilité avec Vue 2. | — |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Interdire la syntaxe obsolète des filtres de Vue 2 utilisant l’opérateur pipe. | `essential` |  |
 | <span id="vue-no-deprecated-functional-template"></span>[`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | Interdire l’attribut `functional` sur le `<template>` d’un SFC. | `essential` |  |
 | <span id="vue-no-deprecated-html-element-is"></span>[`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | Interdire l’attribut `is` sur les éléments HTML natifs. | `essential` |  |
@@ -53,9 +58,11 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | Interdire une condition v-if négative lorsque la chaîne comporte un v-else. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | Interdire les enveloppes d’éléments ordinaires directement sous `<KeepAlive>`. | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | Déconseiller les préprocesseurs CSS au profit du CSS moderne. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Interdit de copier la valeur d'une ref dans la même portée en perdant ses mises à jour réactives. | — |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | Interdire l’utilisation de noms réservés comme noms de composants. | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | Interdire v-if sur l’unique élément racine d’un template. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | Déconseiller les valeurs lang non standard dans les scripts. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Interdit les copies des valeurs des props de setup qui perdent leurs mises à jour réactives. | — |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | Déconseiller l’attribut src sur les blocs SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Interdire les attributs de style en ligne statiques. | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | Interdire l’attribut `key` sur `<template>`. | `essential` |  |
@@ -63,6 +70,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | Interdire les noms de variables qui masquent des variables d’une portée externe. | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | Interdire target="_blank" sans rel="noopener noreferrer". | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | Interdire l’interpolation à doubles accolades dans `<textarea>`. | `essential` |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Interdit d'accéder par `this` à une instance encore inexistante dans `beforeRouteEnter`. | — |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Interdire les références à des variables non définies dans les templates. | — |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | Signaler les liaisons d’URL potentiellement dangereuses. | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | Exiger un attribut sandbox sur les éléments iframe. | `happy-path` |  |
@@ -76,16 +84,19 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | Interdire une interpolation à doubles accolades dont l’expression est une chaîne littérale constante. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-template-attributes"></span>[`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | Interdire les attributs inutiles sur les éléments `<template>`. | `essential` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | Interdire un v-bind dont la valeur est une simple chaîne littérale. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige de placer la key de `template v-for` sur un enfant réel pour assurer la compatibilité avec Vue 2. | — |  |
 | <span id="vue-no-v-for-template-key-on-child"></span>[`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | Interdire `key` sur l’enfant d’un `<template v-for>`. | `essential` |  |
 | <span id="vue-no-v-html"></span>[`vue/no-v-html`](./reference/vue-no-v-html.md) | Déconseiller v-html pour prévenir les vulnérabilités XSS. | `essential` |  |
 | <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | Interdire la directive v-text ; préférer l’interpolation à doubles accolades. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | Interdire v-text / v-html sur les éléments de composants. | `essential` |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | Faire respecter les règles du modèle de contenu HTML. | `happy-path` |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige que `Boolean` soit le premier constructeur dans la liste des types d'une prop. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recommander la syntaxe abrégée des props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Préférer la syntaxe abrégée pour un attribut booléen lié à `true`. | `nuxt`, `opinionated` |  |
 | <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | Imposer une casse aux noms des props déclarées. | `happy-path` |  |
 | <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | Exiger `v-bind:is` sur les éléments `<component>`. | `essential` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | Exiger un import ou un enregistrement explicite des composants. | `opinionated` |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Exige que les composants de l'Options API déclarent explicitement leurs propriétés publiques avec `expose`. | — |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | Exiger l’attribut scoped sur les balises style. | `happy-path` |  |
 | <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | Exiger un mécanisme de bascule sur l’élément enveloppé par `<transition>`. | `essential` |  |
 | <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | Exiger `v-bind:key` avec les directives `v-for`. | `essential` |  |
@@ -102,6 +113,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | Imposer un style de directive `v-on`. | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | Imposer un style de directive `v-slot`. | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | Exiger des noms d’attributs valides. | `essential` |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Exige des clés valides dans l'option `model` de Vue 2. | — |  |
 | <span id="vue-valid-template-root"></span>[`vue/valid-template-root`](./reference/vue-valid-template-root.md) | Exiger une racine `<template>` valide selon la sémantique des fragments de Vue 3. | `essential` |  |
 | <span id="vue-valid-v-bind"></span>[`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | Exiger des directives `v-bind` valides. | `essential` |  |
 | <span id="vue-valid-v-cloak"></span>[`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | Exiger des directives `v-cloak` valides. | `essential` |  |

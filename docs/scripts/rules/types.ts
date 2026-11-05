@@ -36,6 +36,8 @@ export interface RuleExample {
   evidence: string;
   availability?: string;
   badDiagnostic?: string;
+  companionRules?: Record<string, string>;
+  reportUnusedDisableDirectives?: boolean;
   typeAware?: boolean;
   standaloneScript?: boolean;
   ruleOptions?: Record<string, JsonValue>;

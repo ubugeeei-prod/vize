@@ -1,7 +1,7 @@
 //! Upstream `pascalCase` / `kebabCase` used when `shouldMatchCase` is false.
 //! The file stem is not rewritten.
 
-use vize_carton::String;
+use vize_l0::String;
 
 pub(super) fn names_match(name: &str, stem: &str) -> bool {
     pascal_case(name) == stem || kebab_case(name) == stem

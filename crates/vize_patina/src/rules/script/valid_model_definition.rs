@@ -10,7 +10,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program};
 use oxc_span::Span;
 
-use vize_carton::{String, cstr};
+use vize_l0::{String, cstr};
 
 const RULE: &str = "vue/valid-model-definition";
 

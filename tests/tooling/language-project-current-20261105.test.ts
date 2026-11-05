@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -73,6 +74,56 @@ test("missing or changed custody and every archived body prevent historical repl
             historicalCurrentLanguageProjectSources(altered)("head", entry.path);
       };
       assert.throws(replay, /current source custody differs/, `${target}:${missing}`);
+    }
+  }
+});
+
+test("the separately registered lazy SFC sources reconstruct their complete original manifest producers", () => {
+  const successor = JSON.parse(
+    read("head", CURRENT_LANGUAGE_PROJECT_ROOT + "plugin-source-successor.json")!.toString(),
+  );
+  assert.equal(successor.qualificationCredit, false);
+  const runtime = JSON.parse(
+    read(
+      "head",
+      "tests/_fixtures/tooling/typescript-classification-runtime-11664/custody.json",
+    )!.toString(),
+  );
+  for (const entry of successor.transitions) {
+    const expected =
+      row.tests.find((test: { source: string }) => test.source === entry.path) ??
+      runtime.consumers.find((consumer: { path: string }) => consumer.path === entry.path);
+    const original = gunzipSync(read("head", entry.gzip.path)!);
+    assert.equal(createHash("sha256").update(original).digest("hex"), expected.sha256);
+    const replay = historicalCurrentLanguageProjectSources(read);
+    assert.notDeepEqual(read("head", entry.path), original);
+    assert.deepEqual(replay("head", entry.path), original);
+    assert.deepEqual(replay("base", entry.path), read("base", entry.path));
+    const unchanged = historicalCurrentLanguageProjectSources((side, source) =>
+      side === "head" && source === entry.path ? original : read(side, source),
+    );
+    assert.deepEqual(unchanged("head", entry.path), original);
+  }
+});
+
+test("lazy SFC replay requires its successor, archives and immutable predecessor custody", () => {
+  const successorPath = CURRENT_LANGUAGE_PROJECT_ROOT + "plugin-source-successor.json";
+  const successor = JSON.parse(read("head", successorPath)!.toString());
+  for (const entry of successor.transitions) {
+    for (const target of [custodyPath, successorPath, entry.gzip.path]) {
+      for (const missing of [false, true]) {
+        const altered = (side: "base" | "head", source: string) =>
+          side === "head" && source === target
+            ? missing
+              ? null
+              : Buffer.concat([read(side, source)!, Buffer.from("\n")])
+            : read(side, source);
+        assert.throws(
+          () => historicalCurrentLanguageProjectSources(altered)("head", entry.path),
+          /current source custody differs/,
+          `${target}:${missing}`,
+        );
+      }
     }
   }
 });

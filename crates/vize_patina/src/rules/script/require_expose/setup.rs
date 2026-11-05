@@ -12,7 +12,7 @@ use oxc_span::{GetSpan, Span};
 use oxc_syntax::node::NodeId;
 use oxc_syntax::scope::ScopeFlags;
 use oxc_syntax::symbol::SymbolId;
-use vize_carton::FxHashSet;
+use vize_l0::FxHashSet;
 
 pub(super) fn is_exempt<'a>(value: &Expression<'a>, semantic: &Semantic<'a>) -> bool {
     match value.without_parentheses() {

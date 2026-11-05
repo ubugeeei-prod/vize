@@ -1,0 +1,88 @@
+import type { ExplanationRecord } from "./types.ts";
+
+export const vueCatalogueAdditionExplanations: readonly ExplanationRecord[] = [
+  [
+    "vue/comment-directive",
+    "The blanket disable comment suppresses no finding on the following `div`, so unused-directive reporting rejects it.",
+    "Remove the unused comment and leave the element unchanged, keeping lint checks active on that line.",
+    "全ルールを抑制するコメントが、次の `div` で何も抑制していないため、未使用の抑制として報告されます。",
+    "不要なコメントを削除し、要素を変えずに、その行で lint の検査が実行されるようにします。",
+  ],
+  [
+    "vue/html-end-tags",
+    "HTML permits this `li` to end implicitly when `ul` closes, but the rule requires its end tag to be explicit.",
+    "Add `</li>` after the item's content, before the containing `ul` closes.",
+    "HTML では `ul` を閉じるときに `li` を暗黙的に閉じられますが、このルールは終了タグの明示を求めます。",
+    "項目の内容の後、親の `ul` を閉じる前に `</li>` を加えます。",
+  ],
+  [
+    "vue/jsx-uses-vars",
+    "`MyButton` is imported but neither the template nor the JSX reads it, so the companion `vue/no-unused-components` rule reports it.",
+    "The JSX tag reads the imported `MyButton`; the helper credits that use and the companion rule no longer reports an unused component.",
+    "`MyButton` を import していますが、テンプレートでも JSX でも参照せず、併用する `vue/no-unused-components` が未使用と報告します。",
+    "JSX のタグで import した `MyButton` を参照します。補助ルールがその使用を認識し、併用するルールの未使用コンポーネント診断が出なくなります。",
+  ],
+  [
+    "vue/match-component-file-name",
+    "The declared component name `OtherPanel` does not match the `MyPanel.vue` file stem under the supported casing conversions.",
+    "Name the component `MyPanel` so the declared name matches the file containing it.",
+    "宣言したコンポーネント名 `OtherPanel` は、対応する表記変換を行っても `MyPanel.vue` のファイル名と一致しません。",
+    "コンポーネント名を `MyPanel` とし、定義されているファイルの名前と一致させます。",
+  ],
+  [
+    "vue/no-custom-modifiers-on-v-model",
+    "The component's `.capitalize` modifier is custom and therefore violates this Vue 2 compatibility restriction.",
+    "Use the component's ordinary `v-model` contract without a custom modifier; implement any required capitalization explicitly.",
+    "コンポーネントの `.capitalize` は独自の修飾子で、この Vue 2 互換性の制約に違反します。",
+    "独自の修飾子を付けず、通常のコンポーネントの `v-model` を使います。大文字化が必要なら、その処理を明示的に実装します。",
+  ],
+  [
+    "vue/no-ref-object-reactivity-loss",
+    "Reading `count.value` into `snapshot` at the script root captures the current number rather than a value that follows later ref updates.",
+    "A computed getter reads `count.value` when its dependency changes, preserving a reactive result instead of a root-scope copy.",
+    "script のルートで `count.value` を `snapshot` に代入すると、その時点の数値を取り出し、その後の ref の更新に追従しません。",
+    "computed の getter 内で `count.value` を読み、依存値の変化に応じて結果を再評価することで、ルートスコープへのコピーを避けます。",
+  ],
+  [
+    "vue/no-setup-props-reactivity-loss",
+    "Copying `props.count` at the script root keeps its current value and does not follow later prop updates.",
+    "Read `props.count` inside a computed getter so the derived result stays connected to prop changes.",
+    "script のルートで `props.count` をコピーすると、その時点の値が保持され、後からの prop の更新に追従しません。",
+    "computed の getter 内で `props.count` を読み、派生する結果を prop の変化に追従させます。",
+  ],
+  [
+    "vue/no-this-in-before-route-enter",
+    "`beforeRouteEnter` runs before the component instance is available, so `this.load()` cannot read that instance.",
+    "Use the instance passed to the `next` callback and call `vm.load()` after the component is created.",
+    "`beforeRouteEnter` の実行時点ではコンポーネントのインスタンスを利用できず、`this.load()` で参照できません。",
+    "`next` のコールバックへ渡されるインスタンスを使い、コンポーネントの生成後に `vm.load()` を呼びます。",
+  ],
+  [
+    "vue/no-v-for-template-key",
+    "For the Vue 2 contract, a key on `<template v-for>` is ignored because the template does not render a real element.",
+    "Put the item's key on the repeated real `li` child, as required by the Vue 2 convention checked here.",
+    "Vue 2 では `template` 自体が実体のある要素を描画しないため、`<template v-for>` の key は無視されます。",
+    "ここで検査する Vue 2 の規約に従い、繰り返す実体のある子の `li` に項目の key を指定します。",
+  ],
+  [
+    "vue/prefer-prop-type-boolean-first",
+    "`String` precedes `Boolean`, so a bare `enabled` attribute uses string-first casting rather than the boolean-first convention.",
+    "Place `Boolean` first to give the prop boolean-first casting while retaining its accepted string type.",
+    "`Boolean` より前に `String` があり、値を省略した `enabled` 属性が、真偽値を優先する規約とは異なる変換になります。",
+    "文字列型も許可したまま `Boolean` を先頭に置き、真偽値を優先する属性変換にします。",
+  ],
+  [
+    "vue/require-expose",
+    "The Options API component has a `focus` method without explicitly declaring its public instance interface.",
+    "An `expose` list explicitly makes `focus` available through the public component instance.",
+    "Options API のコンポーネントに `focus` メソッドがありますが、公開するインスタンスのインターフェースを明示していません。",
+    "`expose` の一覧に `focus` を指定し、コンポーネントの公開インスタンスから使えることを明示します。",
+  ],
+  [
+    "vue/valid-model-definition",
+    "`events` is not a supported key in Vue 2's component `model` option.",
+    "Use the supported singular `event` key together with `prop` to describe the Vue 2 model contract.",
+    "`events` は Vue 2 のコンポーネントの `model` オプションで使えるキーではありません。",
+    "対応する単数形の `event` と `prop` を使い、Vue 2 の model の規約を指定します。",
+  ],
+];
