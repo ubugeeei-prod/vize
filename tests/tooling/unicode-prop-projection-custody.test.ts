@@ -247,7 +247,10 @@ for (const file of assets) {
     const temporary = mkdtempSync(path.join(os.tmpdir(), "unicode-prop-assets-"));
     try {
       for (const role of ["base", "head"]) {
-        for (const asset of assets) {
+        for (const asset of [
+          ...assets,
+          "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+        ]) {
           const destination = path.join(temporary, role, asset);
           mkdirSync(path.dirname(destination), { recursive: true });
           writeFileSync(destination, readFileSync(path.join(root, asset)));
@@ -272,6 +275,10 @@ test("Unicode source custody retains the existing Rust and Cargo input authoriti
   for (const file of [
     "tools/support/compat/github/unicode-prop-projection-custody.mjs",
     "tools/support/compat/content-mapper/constructor-projection-parity.ts",
+    "tools/support/compat/content-mapper/constructor-helper-assets.ts",
+    "tools/support/compat/content-mapper/constructor-projection-receipt.ts",
+    "tools/support/compat/content-mapper/projection-byte-relocation.ts",
+    "tools/support/compat/content-mapper/owned-emit-overload-transition.ts",
     "tools/support/compat/content-mapper/canonical-helper-transition.ts",
     "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
     "crates/vize_canon/src/lib.rs",
@@ -291,6 +298,10 @@ test("Unicode workflow registers the exact certificate, assets and refusal tests
   );
   for (const file of [
     "tools/support/compat/content-mapper/constructor-projection-parity.ts",
+    "tools/support/compat/content-mapper/constructor-helper-assets.ts",
+    "tools/support/compat/content-mapper/constructor-projection-receipt.ts",
+    "tools/support/compat/content-mapper/projection-byte-relocation.ts",
+    "tools/support/compat/content-mapper/owned-emit-overload-transition.ts",
     "tools/support/compat/content-mapper/canonical-helper-transition.ts",
     "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
     "tests/tooling/constructor-projection-parity.test.ts",

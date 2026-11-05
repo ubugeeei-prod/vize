@@ -18,6 +18,10 @@ on:
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
       - "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
+      - "crates/vize_canon/src/virtual_ts/generator/emits.rs"
+      - "crates/vize_canon/tests/constructor_emission_projection.rs"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt"
@@ -33,11 +37,30 @@ on:
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
       - "tools/support/compat/content-mapper/callback-owner*.ts"
       - "tools/support/compat/content-mapper/aria-component*.ts"
+      - "tools/support/compat/content-mapper/aria-source-package.ts"
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
+      - "tools/support/compat/content-mapper/constructor-helper-assets.ts"
+      - "tools/support/compat/content-mapper/constructor-projection-receipt.ts"
+      - "tools/support/compat/content-mapper/projection-byte-relocation.ts"
+      - "tools/support/compat/content-mapper/owned-emit-overload-transition.ts"
+      - "tools/support/compat/content-mapper/canonical-helper-transition.ts"
+      - "tools/support/compat/content-mapper/producer-unmapped-ignores.ts"
+      - "tools/support/release/computed_event_names.ts"
+      - "tools/support/release/computed_event_custody.ts"
+      - "tests/tooling/_helpers/tool-commands.ts"
+      - "tests/tooling/public-emit-overload-package.test.ts"
+      - "npm/ui/package.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - "tests/tooling/constructor-projection-parity.test.ts"
+      - "tests/tooling/constructor-projection-emit-overload.test.ts"
+      - "tests/tooling/emit-overload-transition-fixture.ts"
+      - "tests/tooling/fixtures/emit-overload-transition/**"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
       - "tests/tooling/callback-owner-certificate.test.ts"
       - "tests/tooling/aria-component-attrs.test.ts"
+      - "tests/tooling/aria-source-package.test.ts"
       - "tests/_fixtures/differential/typechecker/aria-propertykey-capture-11153/**"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
@@ -48,6 +71,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  packed-emit-overloads:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: true
+      - name: Verify the packed public emit helper and missing-module controls
+        run: node --test tests/tooling/public-emit-overload-package.test.ts
   published-sdk-packets:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -63,7 +101,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Prove callback comparison custody before building either source
-        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts tests/tooling/callback-owner-certificate.test.ts tests/tooling/aria-component-attrs.test.ts
+        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts tests/tooling/callback-owner-certificate.test.ts tests/tooling/aria-component-attrs.test.ts tests/tooling/aria-source-package.test.ts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: microsoft/TypeScript
@@ -349,7 +387,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test tests/tooling/constructor-projection-parity.test.ts
+          node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/constructor-projection-emit-overload.test.ts
           node tools/support/compat/content-mapper/constructor-projection-parity.ts \
             "$RUNNER_TEMP/component-input-parity" \
             "$RUNNER_TEMP/component-input-base" "$GITHUB_WORKSPACE"

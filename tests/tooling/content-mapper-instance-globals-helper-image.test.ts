@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { makeSourceProject, sha } from "./support/content-mapper-instance-globals-10617.ts";
 
-test("10617 source adapter preserves all eleven current SDK declarations and public type exports", (t) => {
+test("10617 source adapter preserves all twelve current SDK declarations and public type exports", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-instance-globals-helper-image-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -23,6 +23,7 @@ test("10617 source adapter preserves all eleven current SDK declarations and pub
     "content-mapper-helpers.d.cts",
     "generated/content-mapper-types.d.ts",
     "virtual-ts-checker.d.ts",
+    "virtual-ts-emit-overloads.d.ts",
     "virtual-ts-globals.d.ts",
     "virtual-ts-patterns.d.ts",
     "virtual-ts-slots.d.ts",
@@ -102,6 +103,7 @@ test("10617 source adapter preserves all eleven current SDK declarations and pub
     "generated",
     "package.json",
     "virtual-ts-checker.d.ts",
+    "virtual-ts-emit-overloads.d.ts",
     "virtual-ts-globals.d.ts",
     "virtual-ts-patterns.d.ts",
     "virtual-ts-slots.d.ts",

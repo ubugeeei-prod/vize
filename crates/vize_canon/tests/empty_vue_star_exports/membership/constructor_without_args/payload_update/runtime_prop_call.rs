@@ -84,6 +84,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::emit_overload_window::preamble_before(current);
     let current = &super::current_loose_emit::preamble_before(current);
     let file = &FILES[0];
     inverse(
@@ -129,17 +130,27 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| inverse(
+                        &mutated,
+                        file.before,
+                        file.after,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha,
+                    ))
+                    .is_err()
                 );
             }
         }
         let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
-            super::super::current_loose_emit::preamble_after(&preamble_before(body).replacen(
-                FILES[0].before,
-                FILES[0].after,
-                1
-            )),
+            super::super::emit_overload_window::preamble_after(
+                &super::super::current_loose_emit::preamble_after(&preamble_before(body).replacen(
+                    FILES[0].before,
+                    FILES[0].after,
+                    1
+                )),
+            ),
             body
         );
     }

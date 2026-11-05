@@ -221,10 +221,11 @@ fn emit_overload_tail_accumulator_preserves_shapes_and_all_events() {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
-// A generic overload never dedupes against its erased inference, so peeling
-// used to repeat it until depth 900 (~2.6M instantiations for one emit type).
+// A generic overload never dedupes against its erased inference. Peeling one
+// signature per step repeated it until depth 900 (~2.6M instantiations), and
+// later stopped there, dropping every signature declared before it (#11435).
 #[test]
-fn generic_emit_overload_peeling_stops_after_a_stall() {
+fn generic_emit_overloads_keep_earlier_signatures_and_stay_bounded() {
     let Some(tsgo) = resolve_test_tsgo_binary() else {
         return;
     };
@@ -249,9 +250,15 @@ type Stalled = {
 };
 type Names = Assert<Equal<$OverloadParameters<Stalled>[0], 'done' | 'closed'>>;
 type Mixed = { (event: 'a', x: number): void; <U extends string>(event: 'b', u: U): void; (event: 'c'): void };
-type MixedNames = Assert<Equal<$OverloadParameters<Mixed>[0], 'b' | 'c'>>;
+type MixedNames = Assert<Equal<$OverloadParameters<Mixed>[0], 'a' | 'b' | 'c'>>;
 type Plain = { (event: 'a', x: number): void; (event: 'a', x?: number): void; (event: 'b'): void };
 type PlainNames = Assert<Equal<$OverloadParameters<Plain>[0], 'a' | 'b'>>;
+type Issue = { (e: 'first', v: number): void; <T>(e: 'gen', v: T): void; (e: 'last', v: string): void };
+type IssueArgs = Assert<Equal<$OverloadParameters<Issue>, [e: 'first', v: number] | [e: 'gen', v: unknown] | [e: 'last', v: string]>>;
+type TwoGeneric = { (e: 'a'): void; <T>(e: 'b', v: T): void; <U extends string>(e: 'c', u: U): void; (e: 'd'): void };
+type TwoGenericNames = Assert<Equal<$OverloadParameters<TwoGeneric>[0], 'a' | 'b' | 'c' | 'd'>>;
+type Twenty = { (e: 'p0'): void; (e: 'p1'): void; (e: 'p2'): void; (e: 'p3'): void; (e: 'p4'): void; (e: 'p5'): void; (e: 'p6'): void; (e: 'p7'): void; (e: 'p8'): void; (e: 'p9'): void; (e: 'p10'): void; (e: 'p11'): void; (e: 'p12'): void; (e: 'p13'): void; (e: 'p14'): void; (e: 'p15'): void; (e: 'p16'): void; (e: 'p17'): void; (e: 'p18'): void; (e: 'p19'): void; <T>(e: 'g', v: T): void };
+type TwentyNames = Assert<Equal<$OverloadParameters<Twenty>[0], 'p0' | 'p1' | 'p2' | 'p3' | 'p4' | 'p5' | 'p6' | 'p7' | 'p8' | 'p9' | 'p10' | 'p11' | 'p12' | 'p13' | 'p14' | 'p15' | 'p16' | 'p17' | 'p18' | 'p19' | 'g'>>;
 "#,
     );
     let project_root = create_project_case(

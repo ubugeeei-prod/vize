@@ -370,7 +370,12 @@ test("canonical bodies, alias order and native alias migration are independently
   const importPath =
     "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt";
   for (const destination of [base, head])
-    for (const file of [...canonicalPaths, nativeAttributesPath, importPath]) {
+    for (const file of [
+      ...canonicalPaths,
+      nativeAttributesPath,
+      importPath,
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+    ]) {
       mkdirSync(path.dirname(path.join(destination, file)), { recursive: true });
       writeFileSync(path.join(destination, file), readFileSync(path.join(root, file)));
     }

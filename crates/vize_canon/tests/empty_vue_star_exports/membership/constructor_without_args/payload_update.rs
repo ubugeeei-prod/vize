@@ -6,6 +6,7 @@ use std::fs;
 mod checker_augmentations;
 mod current_loose_emit;
 mod emit_overload_stall;
+mod emit_overload_window;
 mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
@@ -161,6 +162,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     extra_keys_policy::retain_provenance(manifest);
     checker_augmentations::retain_provenance(manifest);
     runtime_prop_call::retain_provenance(manifest);
+    emit_overload_window::retain_provenance(manifest);
     current_loose_emit::retain_provenance(manifest);
 }
 

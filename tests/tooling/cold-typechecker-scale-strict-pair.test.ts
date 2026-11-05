@@ -99,7 +99,7 @@ test("a fresh owned output exists before receipts and any reused attempt is refu
     fs.rmSync(parent, { recursive: true, force: true });
   }
 });
-test("whole source SDK10 and all thirteen local edges refuse a changed provider declaration", () => {
+test("the whole advertised source SDK and its local edges refuse a changed provider declaration", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-sdk-pair-"));
   try {
     const base = path.join(temporary, "base"),

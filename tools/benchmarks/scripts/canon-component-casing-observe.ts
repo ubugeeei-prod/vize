@@ -36,6 +36,7 @@ export function nativeDiagnostics(
   return result;
 }
 export const sourceSdkDeclarations = [
+  "virtual-ts-emit-overloads.d.ts",
   "virtual-ts-globals.d.ts",
   "virtual-ts-patterns.d.ts",
   "virtual-ts-slots.d.ts",

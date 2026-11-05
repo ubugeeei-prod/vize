@@ -153,7 +153,7 @@ const helper = fs.readFileSync(
 );
 assert.equal(
   createHash("sha256").update(helper).digest("hex"),
-  "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5",
+  "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74",
 );
 const recursive = helper.split("\n")[1];
 assert.ok(recursive);

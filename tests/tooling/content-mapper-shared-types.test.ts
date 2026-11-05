@@ -85,6 +85,8 @@ function generatorFixture() {
     "npm/cli/generated/content-mapper-types.d.ts",
     "npm/cli/virtual-ts-globals.d.ts",
     "npm/cli/virtual-ts-patterns.d.ts",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+    "npm/cli/virtual-ts-emit-overloads.d.ts",
     embedded,
     shared,
     "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",

@@ -12,7 +12,7 @@ import {
   assertSameGraph,
 } from "../../tools/support/compat/content-mapper/constructor-original27-current.ts";
 
-test("the current ten-file graph preserves complete source bodies, edges, order and module attributes", () => {
+test("the current eleven-file graph preserves complete source bodies, edges, order and module attributes", () => {
   const root = fileURLToPath(new URL("../../npm/cli", import.meta.url)),
     graph = captureDeclarationGraph(root);
   assertCurrentGraph(graph, root);

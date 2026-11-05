@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineEmits<{
+  (e: "first", value: number): void
+  <T>(e: "gen", value: T): void
+  (e: "last", value: string): void
+}>()
+</script>
+
+<template><div /></template>

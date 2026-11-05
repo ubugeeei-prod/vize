@@ -13064,6 +13064,40 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-emit-overload-order-11435",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-emit-overload-order-11435/App.vue.txt",
+          "sha256": "8c7b12d468f0676dd9b0312bb72f3ca10006ea359d94c375039e674bb49e8886",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-emit-overload-order-11435/Child.vue.txt",
+          "sha256": "5a4dcc9c9dcb17a66559d78f4b35f8d5939f0cf653b8f47661f9915ac7c55a43",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::generic_component_listener_payload::generic_overload_order::overloads_declared_before_a_generic_emit_keep_typed_payloads; physically consumes both inputs for #11435: emit overloads declared before a generic overload keep typed listener payloads, with a valid control and genuine wrong-payload diagnostics on the first, generic and last events. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-global-template-ref-11368",
       "state": "active",
       "targets": [
