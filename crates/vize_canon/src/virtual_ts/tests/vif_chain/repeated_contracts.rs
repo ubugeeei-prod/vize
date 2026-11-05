@@ -307,6 +307,111 @@ fn repeated_prop_value_type_is_emitted_once() {
     }
 }
 
+#[test]
+fn repeated_emit_resolver_is_emitted_once() {
+    let script = "import KeyPad from './KeyPad.vue'\nconst kind = 'k0'\nconst a0 = 'a0'\nconst b0 = 'b0'\nconst a1 = 'a1'\nconst b1 = 'b1'\nconst onPress = (key: string) => key\n";
+    let template = "<div><template v-if=\"kind === 'k0'\"><KeyPad :label=\"a0\" @press=\"onPress\" /><KeyPad :label=\"b0\" @press=\"onPress\" /></template><template v-else-if=\"kind === 'k1'\"><KeyPad :label=\"a1\" @press=\"onPress\" /><KeyPad :label=\"b1\" @press=\"onPress\" /></template></div>";
+    let values = ["a0", "b0", "a1", "b1"];
+    let mut name_ranges = Vec::new();
+    let mut from = 0;
+    while let Some(at) = template[from..].find(":label") {
+        let start = from + at + 1;
+        name_ranges.push(start..start + "label".len());
+        from = start + "label".len();
+    }
+    assert_eq!(name_ranges.len(), 4, "four label anchors");
+    let value_ranges = values
+        .into_iter()
+        .map(|value| {
+            let start = template.find(value).expect("authored prop value");
+            start..start + value.len()
+        })
+        .collect::<Vec<_>>();
+    let mut anchors = Vec::new();
+    for hoist in [false, true] {
+        let output = generated(script, template, hoist);
+        let factory = if hoist {
+            "import(\"vize:virtual-ts\").$EmitPropsFactory<typeof KeyPad>"
+        } else {
+            "$EmitPropsFactory<typeof KeyPad>"
+        };
+        assert_eq!(
+            output.code.matches(factory).count(),
+            1,
+            "one component emits the emit-resolver instance alias once; hoist={hoist}: {}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches("type __KeyPad_emit_resolver = ")
+                .count(),
+            1,
+            "the shared resolver is declared once; hoist={hoist}: {}",
+            output.code
+        );
+        for idx in 0..4 {
+            let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_emit_resolver;");
+            assert!(
+                output.code.contains(alias.as_str()),
+                "use {idx} aliases the first resolver; hoist={hoist}: {}",
+                output.code
+            );
+        }
+        assert_eq!(
+            output.code.matches("const __vize_emit_props_").count(),
+            4,
+            "each use still resolves its own emit props; hoist={hoist}: {}",
+            output.code
+        );
+        let mut found = Vec::new();
+        for (idx, (name_range, value_range)) in name_ranges.iter().zip(&value_ranges).enumerate() {
+            let name_span = output
+                .mapping
+                .spans()
+                .iter()
+                .flat_map(|mapping| &mapping.sub_spans)
+                .find(|span| span.src_range == *name_range)
+                .expect("prop diagnostic anchors at the attribute name");
+            assert_eq!(
+                &output.code[name_span.gen_range.clone()],
+                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                "TS2322 stays on the per-usage check; hoist={hoist}"
+            );
+            assert!(
+                output
+                    .mapping
+                    .spans()
+                    .iter()
+                    .flat_map(|mapping| &mapping.sub_spans)
+                    .any(|span| span.src_range == *value_range),
+                "the value diagnostic keeps its authored anchor; hoist={hoist}: {value_range:?}"
+            );
+            let prop_mapping = output
+                .mapping
+                .spans()
+                .iter()
+                .find(|mapping| {
+                    mapping
+                        .sub_spans
+                        .iter()
+                        .any(|span| span.src_range == *name_range)
+                })
+                .expect("prop mapping");
+            found.push((
+                prop_mapping.src_range.clone(),
+                name_range.clone(),
+                value_range.clone(),
+            ));
+        }
+        if anchors.is_empty() {
+            anchors = found;
+        } else {
+            assert_eq!(anchors, found, "hoisting must not move diagnostic anchors");
+        }
+    }
+}
+
 fn label_name_ranges(template: &str) -> Vec<std::ops::Range<usize>> {
     let mut ranges = Vec::new();
     let mut from = 0;

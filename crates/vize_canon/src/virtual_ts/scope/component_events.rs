@@ -3,6 +3,7 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 mod emit_props_gate;
+mod emit_resolver_share;
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
@@ -10,6 +11,9 @@ mod listener_return;
 mod native_fallthrough;
 mod prop_array_share;
 pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
+pub(crate) use emit_resolver_share::{
+    flush as flush_emit_resolvers, reset as reset_emit_resolvers,
+};
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
