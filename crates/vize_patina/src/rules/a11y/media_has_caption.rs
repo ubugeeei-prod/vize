@@ -23,9 +23,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule, MarkupTraversal,
-};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -151,8 +149,8 @@ impl MarkupRule for MediaHasCaption {
         META.name
     }
 
-    fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Elements
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

@@ -9,7 +9,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBinding, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
+use crate::markup::{MarkupBinding, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode};
 
@@ -37,8 +37,8 @@ impl MarkupRule for TabindexNoPositive {
         META.name
     }
 
-    fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Bindings
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Bindings
     }
 
     fn enter_binding<'a>(

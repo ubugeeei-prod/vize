@@ -28,7 +28,7 @@ use crate::diagnostic::Severity;
 use crate::ir::TemplateSyntax;
 use crate::markup::{
     MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupElementKind, MarkupNode,
-    MarkupRule, MarkupTraversal,
+    MarkupRule,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
@@ -244,8 +244,8 @@ impl MarkupRule for InteractiveSupportsFocus {
         Self::check_document(ctx.lint(), document);
     }
 
-    fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Elements
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

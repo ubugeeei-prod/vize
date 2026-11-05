@@ -10,9 +10,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
-};
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
@@ -42,8 +40,8 @@ impl MarkupRule for NoAutofocus {
         META.name
     }
 
-    fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Bindings
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Bindings
     }
 
     fn enter_binding<'a>(
