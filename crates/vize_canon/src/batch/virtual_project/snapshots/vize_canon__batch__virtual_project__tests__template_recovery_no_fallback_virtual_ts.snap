@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
+assertion_line: 492
 expression: snapshot_text(virtual_file.content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -73,12 +74,7 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
-  $props: Props;
-  readonly __vizeRawProps?: Props;
-  $emit: $PublicEmit<Emits>;
-  $slots: $PublicSlots<$Slots>;
-}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

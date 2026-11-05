@@ -254,12 +254,13 @@ export function assertPreservedCallbackPacket(
   }
   const original = before.text as string;
   const actualText = after.text as string;
-  const currentEdits = currentCallbackSourceEdits(
+  const currentSource = currentCallbackSourceEdits(
     original,
     actualText,
     authoredSource,
     currentSourceRead,
   );
+  const currentEdits = currentSource.edits;
   const slotsTransition = original.includes(previousSlotsExport);
   if (slotsTransition) {
     assert.equal(original.split(previousSlotsExport).length, 2);
@@ -371,10 +372,21 @@ export function assertPreservedCallbackPacket(
     assert.ok(shifted <= finish && finish <= actual.length);
     return [shifted, finish - shifted];
   };
-  const expected = structuredClone(before);
+  const comparisonBefore =
+    currentEdits.length > 0
+      ? withoutProducerUnmappedIgnores(
+          before as typeof before & {
+            text: string;
+            mappings: number[][];
+            diagnosticDirectives?: unknown;
+          },
+          { requireComplete: true },
+        )
+      : before;
+  const expected = structuredClone(comparisonBefore);
   expected.text = after.text;
-  assert.ok(Array.isArray(before.mappings));
-  expected.mappings = (before.mappings as number[][]).map((tuple) => {
+  assert.ok(Array.isArray(comparisonBefore.mappings));
+  expected.mappings = (comparisonBefore.mappings as number[][]).map((tuple) => {
     assert.equal(tuple.length, 6);
     assert.ok(tuple.every(Number.isSafeInteger));
     assert.ok(tuple[2] >= 0 && tuple[3] >= 0);
@@ -382,15 +394,18 @@ export function assertPreservedCallbackPacket(
     const [start, length] = range(tuple[0], tuple[1]);
     return [start, length, ...tuple.slice(2)];
   });
-  if (before.semanticLinks) {
-    expected.semanticLinks = (before.semanticLinks as Record<string, number>[]).map((link) => {
-      const [sourceStart, sourceLength] = range(link.sourceStart, link.sourceLength);
-      const [targetStart, targetLength] = range(link.targetStart, link.targetLength);
-      return { ...link, sourceStart, sourceLength, targetStart, targetLength };
-    });
+  expected.mappings.push(...currentSource.addedMappings);
+  if (comparisonBefore.semanticLinks) {
+    expected.semanticLinks = (comparisonBefore.semanticLinks as Record<string, number>[]).map(
+      (link) => {
+        const [sourceStart, sourceLength] = range(link.sourceStart, link.sourceLength);
+        const [targetStart, targetLength] = range(link.targetStart, link.targetLength);
+        return { ...link, sourceStart, sourceLength, targetStart, targetLength };
+      },
+    );
   }
-  if (before.diagnosticDirectives) {
-    const directives = before.diagnosticDirectives as { directives: number[][] };
+  if (comparisonBefore.diagnosticDirectives) {
+    const directives = comparisonBefore.diagnosticDirectives as { directives: number[][] };
     expected.diagnosticDirectives = {
       ...directives,
       directives: directives.directives.map((tuple) => {
@@ -412,8 +427,19 @@ export function assertPreservedCallbackPacket(
       }),
     };
   }
+  const comparisonAfter =
+    currentEdits.length > 0
+      ? withoutProducerUnmappedIgnores(
+          after as typeof after & {
+            text: string;
+            mappings: number[][];
+            diagnosticDirectives?: unknown;
+          },
+          { requireComplete: true },
+        )
+      : after;
   assert.deepEqual(
-    after,
+    comparisonAfter,
     expected,
     "all authored spans, roles, order and other metadata stay exact",
   );

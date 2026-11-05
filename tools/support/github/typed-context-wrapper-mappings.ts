@@ -76,7 +76,29 @@ export function assertTypedContextWrapperMappings(
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");
   const atom = (at: number) => [at, 1, 89, 9, 1, 0];
   // #11675 emits the two unowned parentheses as diagnostic-only Atom rows.
-  // Keep actual packets untouched; only the finite expected successor changes.
-  const expected = [...projected.slice(0, 9), atom(start - 1), projected[9], atom(start + 9)];
+  // The integrated component-export producer also owns the generated default
+  // component name without claiming an authored source range.
+  const componentDeclaration = Buffer.from("declare const Route: typeof __vize_component__;");
+  const declaration = generated.indexOf(componentDeclaration);
+  assert(
+    declaration >= 0 && generated.indexOf(componentDeclaration, declaration + 1) < 0,
+    "unique generated component declaration",
+  );
+  const componentExport = [
+    declaration + Buffer.byteLength("declare const "),
+    Buffer.byteLength("Route"),
+    0,
+    0,
+    1,
+    248,
+  ];
+  // Keep actual packets untouched; only the finite expected successors change.
+  const expected = [
+    ...projected.slice(0, 9),
+    atom(start - 1),
+    projected[9],
+    atom(start + 9),
+    componentExport,
+  ];
   assert.deepEqual(current.mappings, expected, "whole ordered current mapping successor");
 }

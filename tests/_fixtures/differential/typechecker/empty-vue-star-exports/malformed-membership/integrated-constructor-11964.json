@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "kind": "exact-integrated-generic-constructor-successor",
+  "nativeAcceptanceCredit": false,
+  "observedRun": 42070445017,
+  "observedMismatchEntry": 74,
+  "observedActual": [
+    "project/A.vue.ts",
+    3850,
+    "658399f7fddca7c024cca85923ed8bc99478aaf8e61f0c6b42c5c7721c268114"
+  ],
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;"
+  },
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4105,
+        "165c5f61804a7f24154f32df301bfef926eb05ea7a62475d25d65406c242974a"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        3850,
+        "658399f7fddca7c024cca85923ed8bc99478aaf8e61f0c6b42c5c7721c268114"
+      ]
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4325,
+        "83ea4509a74b63f2e85a4a5bf76aa8c05bc47fe4ffe5314c276ac614ac66f6be"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4070,
+        "db07a1ca180873a2a0ab805a6753da67a0e19482e283770fe1e47c860516b056"
+      ]
+    }
+  ]
+}

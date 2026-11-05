@@ -53,8 +53,13 @@ const isIgnore = (row: Row) => row[0] === 0 && row[1] === 0 && row[4] === 0 && r
 
 test("the component-export population names the type and maps the export to the SFC only", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  assert.equal(authority.currentSourcePackets, "source-packets-current-7f70c48c66d8.json");
-  const golden = selectPacketGoldens(authority, files, cases)!;
+  assert.equal(authority.currentSourcePackets, "source-packets-current-245bb0b6f1cb.json");
+  assert.ok(selectPacketGoldens(authority, files, cases));
+  const golden = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-7f70c48c66d8.json" },
+    files,
+    cases,
+  )!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: "source-packets-current-949a579fb06d.json" },
     files,

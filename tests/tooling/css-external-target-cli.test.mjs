@@ -1,4 +1,5 @@
 import { currentCssCases } from "./support/current-css-documentation.ts";
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";

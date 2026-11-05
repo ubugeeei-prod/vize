@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
 import {
+  beforeIntegratedStaticListenerSource,
   beforeStaticListenerSource,
   staticListenerRecord,
   staticListenerSource,
@@ -74,6 +75,11 @@ void test("only static loose markers use the certified prop fallback", () => {
   );
   const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
   const current = read(staticListenerSource);
+  const integratedBase = beforeIntegratedStaticListenerSource(read, staticListenerSource, current);
+  assert.ok(integratedBase.includes("__vizeLooseListener: {loose_marker}"));
+  assert.throws(() =>
+    beforeIntegratedStaticListenerSource(read, staticListenerSource, `${current}\n`),
+  );
   const before = beforeStaticListenerSource(read, staticListenerSource, current);
   assert.ok(before.includes("? __L : typeof {emit_props}"));
   const record = JSON.parse(read(staticListenerRecord)) as { file: { edits: { after: string }[] } };

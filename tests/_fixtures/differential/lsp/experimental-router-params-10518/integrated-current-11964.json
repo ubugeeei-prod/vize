@@ -1,0 +1,60 @@
+{
+  "schema": "vize.experimental-router-generated-transition.v1",
+  "qualificationCredit": false,
+  "ownedConstructor": {
+    "path": "owned-constructor-20261105.json",
+    "sha256": "e1b0adcb4d2b92fc782d08449f6fed6bcd755e6db7f64347ce4c2df938acdc2a"
+  },
+  "integratedSource": {
+    "path": "../../typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
+    "sha256": "b5a575101d75212826bef5930fb83f4bc5a2895451d09d9a8defe123fe72c6e2"
+  },
+  "currentEdit": {
+    "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, $AuthoredKeyWitness<Jsx> & $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
+    "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
+  },
+  "entries": [
+    {
+      "file": "crlf.invalid.virtual.ts.txt",
+      "baselineSha256": "a3ad4ac4ba604f262b0639f2c4790772bcd0bcb7ea220f621f79c54c276f7677",
+      "ownedConstructorSha256": "d57f3391d2559e43d1c289b3ed363268b07c1d064597bbfbde41d44adaee6e57",
+      "joinedSourceSha256": "60c9d78d1a7e3af5bc415be788911137a37d6f2acf4d735d628ef9e028cabbe5",
+      "currentSha256": "b25280bf5f51864dc37a176b7eaad281ab628d19c902ecf11d9987d7665cb5d7"
+    },
+    {
+      "file": "crlf.valid.virtual.ts.txt",
+      "baselineSha256": "0f139df25e3f8ecd21115c5f236a3da8a599b667a89231697524c3438d83e5ac",
+      "ownedConstructorSha256": "3229fbd49e5c03218274304bca2e92642df944b818fa1f03ac87e0b607b18ce3",
+      "joinedSourceSha256": "5a0b32810f318c55cd40480f6023b0d72d9e38432ed5e2d2ed31b25bdf274d37",
+      "currentSha256": "ea321887de71b8f139c32de83ba16efb0df54ab95e6d71ed71e9fff7e1b62de0"
+    },
+    {
+      "file": "explicit.invalid.virtual.ts.txt",
+      "baselineSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
+      "ownedConstructorSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a",
+      "joinedSourceSha256": "bb2cc0e83e524ff79f8f6c1ecc9291bd9ff55caa876435a123a816cdb79cb480",
+      "currentSha256": "d9b59995a2880deb0a7c0f361bc95df445702850518a66b16bc9339c52f3ce2a"
+    },
+    {
+      "file": "explicit.valid.virtual.ts.txt",
+      "baselineSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
+      "ownedConstructorSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a",
+      "joinedSourceSha256": "bb2cc0e83e524ff79f8f6c1ecc9291bd9ff55caa876435a123a816cdb79cb480",
+      "currentSha256": "d9b59995a2880deb0a7c0f361bc95df445702850518a66b16bc9339c52f3ce2a"
+    },
+    {
+      "file": "lf.invalid.virtual.ts.txt",
+      "baselineSha256": "4b68bc2889ef2007664b7f9d5ffd201bdac417997128c970948a1e451ba94a42",
+      "ownedConstructorSha256": "7976df4c8b8c1607ae2a531de510541f99ba1b5f175dc184dfee12886d253224",
+      "joinedSourceSha256": "1ac2e30cc77f4a667156f2951d70b6cf9e09bc2c3ba0dc4876f7f3f285f1760b",
+      "currentSha256": "34f06c2b8101641c0306fe940afcc44f8d3ffc4d412c9e4c09dc589798685c16"
+    },
+    {
+      "file": "lf.valid.virtual.ts.txt",
+      "baselineSha256": "cb7a16664ad5a88fb4f78583c15e454f06fad8b7881e25f00740ab8e79e74055",
+      "ownedConstructorSha256": "32ecb04b38ae278c620ca5303e083f6edcd8cb52be54148c3cff27b3c808394e",
+      "joinedSourceSha256": "ef3d4d8921929f0d523ac91c27de3cefc69538121bcb029604b9495e09195cfc",
+      "currentSha256": "ec49423671a953b7786f9645f69f5a05d2ad3d8ef62cf6ca30b9193e4a642242"
+    }
+  ]
+}

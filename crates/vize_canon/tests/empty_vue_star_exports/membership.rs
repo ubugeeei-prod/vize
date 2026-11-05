@@ -10,6 +10,7 @@ use std::{
 mod constructor_without_args;
 mod current_generated_constructor;
 mod current_updates;
+mod integrated_generated_constructor;
 mod provider_roster;
 
 type Roots = [(&'static str, PathBuf); 3];
@@ -242,6 +243,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     manifest["provenance"]["currentSlotOutletAliasUpdate"] = slot_update;
     current_updates::apply(&mut manifest, &mut members);
     current_generated_constructor::apply(&mut manifest, &mut members);
+    integrated_generated_constructor::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

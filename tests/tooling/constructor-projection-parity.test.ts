@@ -31,7 +31,7 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
 const bytes = (text: string) => Buffer.byteLength(text);
 
-test("component constructor transitions retain the two complete reviewed variants", () => {
+test("component constructor transitions retain the complete reviewed variants", () => {
   for (const { previous, current } of componentConstructorTransitions) {
     const before = Buffer.from(previous);
     const after = Buffer.from(current);

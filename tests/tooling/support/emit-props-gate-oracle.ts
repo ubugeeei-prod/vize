@@ -32,6 +32,12 @@ const producers = [
 ];
 const resolver = "crates/vize_canon/src/virtual_ts/scope/component_events/emit_resolver_share.rs";
 const arrays = "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs";
+const overloadAsset =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
+const overloadTransition =
+  "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/emit_overload_window.rs";
+const integratedSourceTransition =
+  "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json";
 const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
 
 interface SourceIdentity {
@@ -59,6 +65,62 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  if (
+    path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
+    sha256(current) === "5a2b00dd75e8e6ade9a79db43b84b20532d3125514f0d1a4c5c6314f97591d76"
+  ) {
+    const raw = read(integratedSourceTransition);
+    assert.equal(
+      sha256(raw),
+      "b5a575101d75212826bef5930fb83f4bc5a2895451d09d9a8defe123fe72c6e2",
+      "selected integrated component helper transition",
+    );
+    const transition = JSON.parse(raw) as {
+      file: {
+        path: string;
+        before: SourceIdentity;
+        after: SourceIdentity;
+        edits: Array<{ before: string; after: string }>;
+      };
+    };
+    assert.equal(transition.file.path, path);
+    assert.equal(Buffer.byteLength(current), transition.file.after.bytes);
+    assert.equal(sha256(current), transition.file.after.sha256);
+    for (const edit of transition.file.edits) {
+      assert.equal(current.split(edit.after).length, 2);
+      current = current.replace(edit.after, edit.before);
+    }
+    assert.equal(Buffer.byteLength(current), transition.file.before.bytes);
+    assert.equal(sha256(current), transition.file.before.sha256);
+  }
+  if (
+    path === overloadAsset &&
+    sha256(current) === "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74"
+  ) {
+    const source = read(overloadTransition);
+    assert.equal(
+      sha256(source),
+      "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+      "selected emit overload source transition",
+    );
+    const value = (name: string): string => {
+      const match = new RegExp(
+        `pub\\(super\\) const ${name}: &str = ("(?:[^"\\\\]|\\\\.)*");`,
+        "u",
+      ).exec(source);
+      assert.ok(match, `selected emit overload transition: ${name}`);
+      return JSON.parse(match[1]!) as string;
+    };
+    const before = value("ASSET_BEFORE");
+    const after = value("ASSET_AFTER");
+    assert.equal(current.split(after).length, 2, "selected emit overload source transition");
+    current = current.replace(after, before);
+    assert.equal(
+      sha256(current),
+      "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5",
+      "selected emit overload source transition",
+    );
+  }
   // #11913 changes only the static loose-arity producer. Recover the exact
   // already reviewed resolver producer before entering its frozen custody chain.
   if (

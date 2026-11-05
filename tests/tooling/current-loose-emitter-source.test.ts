@@ -12,6 +12,7 @@ const rust = read(
   "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/current_loose_emit.rs",
 );
 const recordPath = corpus + "current-loose-emitter-update-11863.json";
+const genericRecordPath = corpus + "generic-event-specialization-update-11815.json";
 const recordSha = rust.match(/const RECORD_SHA: &str = "([a-f0-9]{64})";/u)?.[1];
 assert.ok(recordSha);
 type Identity = { bytes: number; sha256: string };
@@ -33,6 +34,12 @@ function load(raw = read(recordPath)): Record {
   assert.equal(record.nativeAcceptanceCredit, false);
   assert.equal(record.historicalReconstructionOnly, true);
   assert.equal(record.files.length, 2);
+  return record;
+}
+function loadGeneric(raw = read(genericRecordPath)): Record {
+  assert.equal(hash(raw), "d9eee3c8eb982eba5e2144cca457ecf0b15e1edbb5948b019dd404e6c10ab845");
+  const record = JSON.parse(raw) as Record;
+  assert.equal(record.nativeAcceptanceCredit, false);
   return record;
 }
 function inverse(current: string, entry: Transition): string {
@@ -60,16 +67,23 @@ function mutations(current: string, entry: Transition) {
 }
 void test("the current-only emitter layer preserves both exact historical source assets", () => {
   const record = load();
+  const generic = loadGeneric();
   for (const entry of record.files) {
     const current = read(entry.path);
-    const previous = inverse(current, entry);
-    assert.equal(previous.replace(entry.edits[0]!.before, entry.edits[0]!.after), current);
-    mutations(current, entry);
+    const successor = generic.files.find((candidate) => candidate.path === entry.path);
+    assert.ok(successor);
+    const owned = inverse(current, successor);
+    const previous = inverse(owned, entry);
+    assert.equal(previous.replace(entry.edits[0]!.before, entry.edits[0]!.after), owned);
+    assert.equal(owned.replace(successor.edits[0]!.before, successor.edits[0]!.after), current);
+    mutations(owned, entry);
+    mutations(current, successor);
   }
   assert.throws(() => load(read(recordPath) + "\n"));
 });
 void test("the complete source preamble reconstructs the unchanged runtime and historical laws", () => {
   const record = load(),
+    generic = loadGeneric(),
     decl = base + "declarations/";
   assert.deepEqual(identity(read(record.preambleProducer.path)), {
     bytes: record.preambleProducer.bytes,
@@ -100,10 +114,32 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     ].map((name) => read(decl + name + ".d.ts.txt")),
     read(base + "pattern_matching.d.ts"),
   ].join("");
-  assert.equal(Buffer.byteLength(current), 45384);
-  const previous = inverse(current, record.preamble);
-  assert.equal(Buffer.byteLength(previous), 44748);
-  assert.equal(hash(previous), "378516f3c59cecb166ab9197761b77679824ea7145efd84d752bf5afd3060b07");
+  assert.deepEqual(identity(current), {
+    bytes: 46506,
+    sha256: "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
+  });
+  const integratedSource = read(
+    "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/integrated_source.rs",
+  );
+  assert.equal(
+    hash(integratedSource),
+    "b69ee2c9387acfe02434a0ffd29dfdd249001cda8ff041dc25b7303a9f30f590",
+  );
+  assert.ok(integratedSource.includes(identity(current).sha256));
+  const genericEdit = generic.preamble.edits[0]!;
+  assert.equal(current.split(genericEdit.after).length, 2);
+  const owned = current.replace(genericEdit.after, genericEdit.before);
+  assert.deepEqual(identity(owned), {
+    bytes: 46322,
+    sha256: "aa205818790c5f3c384a3dc57d63b851f970700076c60340499f9f2bdd40f9da",
+  });
+  const edit = record.preamble.edits[0]!;
+  assert.equal(owned.split(edit.after).length, 2);
+  const previous = owned.replace(edit.after, edit.before);
+  assert.deepEqual(identity(previous), {
+    bytes: 45686,
+    sha256: "1291d74aaa2ff4e079ab8eee8feb22bd3b2ce23ed75ed57a25dcf1b0c9e4d36d",
+  });
   const runtimeAfter =
     "type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;";
   const runtimeBefore =
@@ -111,11 +147,8 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   assert.equal(previous.split(runtimeAfter).length, 2);
   assert.equal(
     hash(previous.replace(runtimeAfter, runtimeBefore)),
-    "08ebeeb3d5303bd130213edd33583849ef8e078d33c0e366562d40efd3a9985d",
+    "31f44873c84434d22f94670e6cb558d5d0aa1408723bf6f6214308e0ad4239cd",
   );
-  assert.equal(
-    previous.replace(record.preamble.edits[0]!.before, record.preamble.edits[0]!.after),
-    current,
-  );
-  mutations(current, record.preamble);
+  assert.equal(previous.replace(edit.before, edit.after), owned);
+  assert.equal(owned.replace(genericEdit.before, genericEdit.after), current);
 });

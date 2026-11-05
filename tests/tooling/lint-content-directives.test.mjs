@@ -1,4 +1,3 @@
-import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
 import assert from "node:assert/strict";
@@ -94,7 +93,7 @@ await test("source-built lint matches complete original and configured content-d
           pass,
           config: scenario.config,
           raw,
-          expected: currentRuleDocumentationPacket(scenario.expectedCli),
+          expected: scenario.expectedCli,
         };
         evidence.runs.push(observation);
         persist();
@@ -105,11 +104,7 @@ await test("source-built lint matches complete original and configured content-d
           scenario.expectedCli[0].errorCount > 0 ? 1 : 0,
           JSON.stringify(raw),
         );
-        assert.deepEqual(
-          JSON.parse(raw.stdout),
-          currentRuleDocumentationPacket(scenario.expectedCli),
-          scenario.id,
-        );
+        assert.deepEqual(JSON.parse(raw.stdout), scenario.expectedCli, scenario.id);
       }
     }
     // Preserve the original config bytes in custody and execute its equivalent

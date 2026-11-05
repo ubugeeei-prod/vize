@@ -103,6 +103,21 @@ void test("the private module repair exactly restores the authenticated SDK sync
   assert.equal(record.files.length, 5);
   assert.equal(record.newAssets.length, 1);
   const identity = (text: string) => ({ bytes: Buffer.byteLength(text), sha256: hash(text) });
+  const beforeOverloadSuccessor = (file: string, text: string) => {
+    if (files.includes(file)) {
+      const addition =
+        'import type {} from "./virtual-ts-emit-overloads.js" with { "resolution-mode": "import" };\n';
+      assert.equal(text.split(addition).length, 2);
+      return text.replace(addition, "");
+    }
+    if (file === "npm/cli/package.json") {
+      const before = '    "virtual-ts-globals.d.ts",\n';
+      const after = '    "virtual-ts-emit-overloads.d.ts",\n' + before;
+      assert.equal(text.split(after).length, 2);
+      return text.replace(after, before);
+    }
+    return text;
+  };
   for (const entry of record.files) {
     const inverse = (current: string) => {
       assert.deepEqual(identity(current), entry.after);
@@ -114,7 +129,11 @@ void test("the private module repair exactly restores the authenticated SDK sync
       assert.deepEqual(identity(current), entry.before);
       return current;
     };
-    const current = beforeGenericEventSpecialization(read, entry.path, read(entry.path));
+    const current = beforeGenericEventSpecialization(
+      read,
+      entry.path,
+      beforeOverloadSuccessor(entry.path, read(entry.path)),
+    );
     const previous = inverse(current);
     const origin = old.files.find((file) => file.path === entry.path)?.after;
     const asset = old.newAssets.find((file) => file.path === entry.path);

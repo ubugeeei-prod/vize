@@ -1,4 +1,8 @@
 import { currentCssCases } from "./support/current-css-documentation.ts";
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

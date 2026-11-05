@@ -115,8 +115,8 @@ test("the current whole SDK and its dependency closure refuse changed or missing
         fs.copyFileSync(path.join(root, "npm/cli", file), target);
       }
     assert.deepEqual(verifySourceSdkPair(base, head, typescript, "current"), original);
-    assert.equal(original.declarations.length, 12);
-    assert.equal(original.edges.length, 18);
+    assert.equal(original.declarations.length, 13);
+    assert.equal(original.edges.length, 21);
     for (const file of ["virtual-ts-slots.d.ts", "virtual-ts-emits.d.ts", "package.json"]) {
       const target = path.join(head, "npm/cli", file),
         before = fs.readFileSync(target);
@@ -161,7 +161,10 @@ void test("the separate frozen SDK10 admission retains its thirteen-edge contrac
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, body);
     }
-    fs.writeFileSync(path.join(pkg, "package.json"), "{}\n");
+    fs.writeFileSync(
+      path.join(pkg, "package.json"),
+      JSON.stringify({ files: [...declarations.keys()] }) + "\n",
+    );
     const typescript = createRequire(path.join(root, "npm/cli/package.json"))(
       "typescript",
     ) as SdkScanner;

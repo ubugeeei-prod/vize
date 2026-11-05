@@ -280,7 +280,7 @@ pub(crate) fn json_stdout(expected: &str) -> String {
 fn frozen_documentation_projection_rejects_changed_urls_and_foreign_rules() {
     for value in [
         serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/missing.md"}),
-        serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/reference/vue-multi-word-component-names.md"}),
+        serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/reference/vue-no-unused-components.md"}),
         serde_json::json!({"ruleId":"foreign/rule","ruleDocsPath":"docs/content/rules/vue.md"}),
         serde_json::json!({"ruleId":"vue/multi-word-component-names"}),
     ] {
@@ -291,6 +291,7 @@ fn frozen_documentation_projection_rejects_changed_urls_and_foreign_rules() {
     expected["ruleDocsPath"] =
         Value::String("docs/content/rules/reference/vue-multi-word-component-names.md".to_owned());
     assert_eq!(message(original), expected);
+    assert_eq!(message(expected.clone()), expected);
 }
 
 #[test]

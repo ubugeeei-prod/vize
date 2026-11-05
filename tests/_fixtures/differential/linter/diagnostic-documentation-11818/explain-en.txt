@@ -3862,6 +3862,16 @@ valid:
 
 help:
   Reorder attributes to follow the recommended order
+=== vue/comment-directive
+vue/comment-directive · lint rule
+Support comment directives in `<template>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint rule
 Enforce PascalCase or kebab-case for component definition names
@@ -3930,6 +3940,26 @@ valid:
 
 help:
   A '<button>' defaults to type="submit", which submits the enclosing form. Set an explicit type="button", "submit", or "reset".
+=== vue/html-end-tags
+vue/html-end-tags · lint rule
+Require end tags on HTML elements that may omit them
+
+tier: complete
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/reference/vue-html-end-tags.md
+
+invalid:
+  <ul><li>a</ul>
+  <p>hello
+
+valid:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint rule
 Enforce quotes style of HTML attributes
@@ -3975,6 +4005,39 @@ valid:
 
 help:
   Use self-closing syntax
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint rule
+Treat variables used in JSX element names as used
+
+tier: complete
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+invalid:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+valid:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
+=== vue/match-component-file-name
+vue/match-component-file-name · lint rule
+Require a component name to match its file name
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-match-component-file-name.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint rule
 Limit a component's own template complexity (cyclomatic and cognitive)
@@ -4145,6 +4208,16 @@ help:
 
     <!-- After -->
     <div v-html="content"></div>
+=== vue/no-custom-modifiers-on-v-model
+vue/no-custom-modifiers-on-v-model · lint rule
+Disallow custom modifiers on `v-model` used on a component
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint rule
 Disallow deprecated Vue 2 filter syntax using the pipe operator
@@ -4674,6 +4747,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-ref-object-reactivity-loss
+vue/no-ref-object-reactivity-loss · lint rule
+Disallow copying a ref value in the same scope
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint rule
 Disallow the use of reserved names as component names
@@ -4732,6 +4815,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-no-script-non-standard-lang.md
+=== vue/no-setup-props-reactivity-loss
+vue/no-setup-props-reactivity-loss · lint rule
+Disallow setup prop reads that lose reactivity
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint rule
 Discourage src attribute on SFC blocks
@@ -4847,6 +4940,16 @@ valid:
 
 help:
   Use v-model instead of mustache interpolation in textarea
+=== vue/no-this-in-before-route-enter
+vue/no-this-in-before-route-enter · lint rule
+Disallow `this` in `beforeRouteEnter`
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-no-this-in-before-route-enter.md
 === vue/no-undefined-refs
 vue/no-undefined-refs · lint rule
 Disallow undefined variable references in templates
@@ -5151,6 +5254,26 @@ valid:
 
 help:
   Replace the binding with a static attribute (foo=bar instead of :foo='bar').
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint rule
+Disallow `key` on `<template v-for>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+invalid:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+valid:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint rule
 Disallow `key` on the child of a `<template v-for>`
@@ -5292,6 +5415,16 @@ help:
   - <a> and <button> cannot be nested inside each other
   - <ul>/<ol> direct children must be <li>
   - <table> direct children must be <thead>, <tbody>, <tfoot>, <tr>, or <caption>
+=== vue/prefer-prop-type-boolean-first
+vue/prefer-prop-type-boolean-first · lint rule
+Enforce `Boolean` comes first in component prop types
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md
 === vue/prefer-props-shorthand
 vue/prefer-props-shorthand · lint rule
 Recommend shorthand syntax for props (Vue 3.4+)
@@ -5408,6 +5541,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-expose
+vue/require-expose · lint rule
+Require declare public properties using `expose`
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-require-expose.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint rule
 Require scoped attribute on style tags
@@ -5786,6 +5929,16 @@ valid:
 
 help:
   Attribute names must not contain spaces, quotes, >, /, =, or control characters
+=== vue/valid-model-definition
+vue/valid-model-definition · lint rule
+Require valid keys in the model option
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint rule
 Enforce a valid `<template>` root for Vue 3 fragment semantics

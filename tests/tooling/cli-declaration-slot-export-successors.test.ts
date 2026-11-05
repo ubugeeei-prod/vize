@@ -59,6 +59,74 @@ const identity = (bytes: Buffer): Identity => ({
   bytes: bytes.length,
 });
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
+const currentConstructorSource: Identity = {
+  bytes: 10645,
+  sha256: "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
+};
+const constructorSourceEdit = {
+  before:
+    [
+      "        append!(",
+      "            *ts,",
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{own}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>> & "',
+      "        );",
+      "        if aliases.has_authored_default {",
+      "            append!(",
+      "                *ts,",
+      "                \"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & \"",
+      "            );",
+      "        }",
+      "        instance_base(",
+      "            ts,",
+      "            legacy_vue2,",
+      "            dialect,",
+      "            aliases.has_exposed_type,",
+      "            (aliases.has_root_el, aliases.has_refs),",
+      "        );",
+      '        ts.push_str(";\\n");',
+    ].join("\n") + "\n",
+  after:
+    [
+      "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and",
+      "        // leave undeclared attributes to the consumer's own excess-property",
+      "        // check; TSX binds `$JsxProps` and stays exact (#11629).",
+      "        append!(",
+      "            *ts,",
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
+      "        );",
+    ].join("\n") + "\n",
+};
+
+function constructorSourceTransition(
+  current: Buffer,
+  direction: "forward" | "inverse",
+  historical: Identity,
+): Buffer {
+  const [fromIdentity, toIdentity, from, to] =
+    direction === "inverse"
+      ? ([
+          currentConstructorSource,
+          historical,
+          constructorSourceEdit.after,
+          constructorSourceEdit.before,
+        ] as const)
+      : ([
+          historical,
+          currentConstructorSource,
+          constructorSourceEdit.before,
+          constructorSourceEdit.after,
+        ] as const);
+  assert.deepEqual(identity(current), {
+    bytes: fromIdentity.bytes,
+    sha256: fromIdentity.sha256,
+  });
+  const text = current.toString("utf8");
+  assert.equal(text.split(from).length - 1, 1);
+  assert.equal(text.split(to).length - 1, 0);
+  const changed = Buffer.from(text.replace(from, to));
+  assert.deepEqual(identity(changed), { bytes: toIdentity.bytes, sha256: toIdentity.sha256 });
+  return changed;
+}
 
 function constructorTransition(
   current: Buffer,
@@ -78,20 +146,64 @@ function constructorTransition(
   return changed;
 }
 
+const overloadSource = fs.readFileSync(
+  path.join(
+    repoRoot,
+    "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/emit_overload_window.rs",
+  ),
+  "utf8",
+);
+assert.equal(
+  createHash("sha256").update(overloadSource).digest("hex"),
+  "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+);
+const overloadAsset = (name: string): string => {
+  const match = new RegExp(
+    `pub\\(super\\) const ${name}: &str = ("(?:[^"\\\\]|\\\\.)*");`,
+    "u",
+  ).exec(overloadSource);
+  assert.ok(match, name);
+  return JSON.parse(match[1]!) as string;
+};
+const previousOverloadAsset = overloadAsset("ASSET_BEFORE");
+const currentOverloadAsset = overloadAsset("ASSET_AFTER");
+assert.equal(
+  createHash("sha256").update(previousOverloadAsset).digest("hex"),
+  "1bc7b3912b96929575a09809d42d23a6b1b8015e6e2014ef493cd7820da33477",
+);
+assert.equal(
+  createHash("sha256").update(currentOverloadAsset).digest("hex"),
+  "bbd7d2f184d1f9c5aff57d781ae6ccd393985a0ac4f01981282eb715cfc81ee0",
+);
+
+function overloadOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [from, to] =
+    direction === "inverse"
+      ? [encoded(currentOverloadAsset), encoded(previousOverloadAsset)]
+      : [encoded(previousOverloadAsset), encoded(currentOverloadAsset)];
+  const text = current.toString("utf8");
+  assert.equal(text.split(from).length - 1, 1);
+  assert.equal(text.split(to).length - 1, 0);
+  return Buffer.from(text.replace(from, to));
+}
+
 test("the declaration constructor successor authenticates the whole source and both complete outputs", () => {
   const { source, output, edit } = constructorSuccessor;
   const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
-  assert.deepEqual(identity(sourceBytes), { sha256: source.sha256, bytes: source.bytes });
+  const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
+  assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const previous = constructorTransition(current, "inverse");
-  assert.deepEqual(constructorTransition(previous, "forward"), current);
+  const ownedEnvelope = overloadOutputTransition(current, "inverse");
+  const previous = constructorTransition(ownedEnvelope, "inverse");
+  assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
+  assert.deepEqual(overloadOutputTransition(ownedEnvelope, "forward"), current);
   assert.deepEqual(
     constructorTransition(constructorTransition(previous, "forward"), "inverse"),
     previous,
   );
   for (const [bytes, direction, from, to] of [
     [previous, "forward", edit.before, edit.after],
-    [current, "inverse", edit.after, edit.before],
+    [ownedEnvelope, "inverse", edit.after, edit.before],
   ] as const) {
     const text = bytes.toString("utf8"),
       selected = encoded(from);
@@ -113,16 +225,20 @@ test("the declaration constructor successor authenticates the whole source and b
 
 test("the build declaration constructor adds a reversible receipt without changing older packets", () => {
   const { source, output, edit } = buildConstructorSuccessor;
-  assert.deepEqual(identity(fs.readFileSync(path.join(repoRoot, source.path))), {
-    sha256: source.sha256,
-    bytes: source.bytes,
-  });
+  const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
+  const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
+  assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const previous = constructorTransition(current, "inverse", buildConstructorSuccessor);
-  assert.deepEqual(constructorTransition(previous, "forward", buildConstructorSuccessor), current);
+  const ownedEnvelope = overloadOutputTransition(current, "inverse");
+  const previous = constructorTransition(ownedEnvelope, "inverse", buildConstructorSuccessor);
+  assert.deepEqual(
+    constructorTransition(previous, "forward", buildConstructorSuccessor),
+    ownedEnvelope,
+  );
+  assert.deepEqual(overloadOutputTransition(ownedEnvelope, "forward"), current);
   for (const [bytes, direction, from, to] of [
     [previous, "forward", edit.before, edit.after],
-    [current, "inverse", edit.after, edit.before],
+    [ownedEnvelope, "inverse", edit.after, edit.before],
   ] as const) {
     const text = bytes.toString("utf8"),
       selected = encoded(from);
@@ -144,18 +260,7 @@ test("the build declaration constructor adds a reversible receipt without changi
   }
 });
 
-const helper = fs.readFileSync(
-  path.join(
-    repoRoot,
-    "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
-  ),
-  "utf8",
-);
-assert.equal(
-  createHash("sha256").update(helper).digest("hex"),
-  "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74",
-);
-const recursive = helper.split("\n")[1];
+const recursive = currentOverloadAsset.split("\n")[0];
 assert.ok(recursive);
 const currentRecursive: string = recursive;
 const historicalRecursive =
@@ -231,8 +336,14 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
+    const ownedEnvelope = constructor
+      ? overloadOutputTransition(currentSlot, "inverse")
+      : currentSlot;
     const predecessorSlot = constructor
-      ? constructorTransition(currentSlot, "inverse", constructor)
+      ? overloadOutputTransition(
+          constructorTransition(ownedEnvelope, "inverse", constructor),
+          "forward",
+        )
       : currentSlot;
     const successor = historicalSnapshot(predecessorSlot, successorDigest);
     const before = "export type Slots = $Slots;";

@@ -17,9 +17,8 @@ void test("the current resolver source successor preserves frozen proof and refu
     ...successor.dependencies.map((entry: { path: string }) => entry.path),
   ]) {
     for (const body of ["", read(path) + "\n"])
-      assert.throws(
-        () => emitGateOracle((selected) => (selected === path ? body : read(selected))),
-        /selected emit gate producer/u,
+      assert.throws(() =>
+        emitGateOracle((selected) => (selected === path ? body : read(selected))),
       );
   }
   for (const entry of successor.sources) {

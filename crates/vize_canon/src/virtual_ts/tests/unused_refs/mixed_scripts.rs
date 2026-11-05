@@ -52,7 +52,7 @@ fn mixed_script_destructured_static_refs_keep_the_same_runtime_read_as_controls(
         ("mixed-plain", PLAIN),
         ("setup-only", SETUP_ONLY),
     ] {
-        assert_eq!(raw_reads(source), ["el"], "{case}");
+        assert_eq!(raw_reads(source), ["el!"], "{case}");
     }
 }
 
@@ -60,7 +60,7 @@ fn mixed_script_destructured_static_refs_keep_the_same_runtime_read_as_controls(
 fn mixed_script_ref_ownership_survives_aliases_nested_patterns_and_same_spelling() {
     for pattern in ["{ el }", "{ value: el }", "{ nested: { el } }", "[el]"] {
         let source = OBJECT.replace("{ el }", pattern);
-        assert_eq!(raw_reads(&source), ["el"], "{pattern}");
+        assert_eq!(raw_reads(&source), ["el!"], "{pattern}");
     }
     let collision = OBJECT.replace(
         "export const LABEL = \"box\";",
@@ -68,7 +68,7 @@ fn mixed_script_ref_ownership_survives_aliases_nested_patterns_and_same_spelling
     );
     assert_eq!(
         raw_reads(&collision),
-        ["el"],
+        ["el!"],
         "setup declaration owns the shadowing read"
     );
 }

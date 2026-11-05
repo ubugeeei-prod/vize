@@ -91,10 +91,30 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
     },
   ];
   const beforeText = before.toString();
+  for (const [oldValue, currentValue, label] of [
+    [
+      "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;",
+      "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;",
+      "integrated generic component constructor",
+    ],
+    [
+      'declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Partial<__VizeNativeElement<"p">>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;',
+      'type RouteComponent = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"p">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\ndeclare const __vize_component__: RouteComponent;',
+      "integrated named component surface",
+    ],
+  ]) {
+    const start = uniqueOffset(before, Buffer.from(oldValue));
+    primary.push({
+      start,
+      end: start + Buffer.byteLength(oldValue),
+      replacement: Buffer.from(currentValue),
+      label,
+    });
+  }
   for (const match of beforeText.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(beforeText.slice(0, match.index));
     const end = start + Buffer.byteLength(match[0]);
-    if (helperStart <= start && end <= helperStart + beforeHelper.length) continue;
+    if (primary.some((edit) => edit.start <= start && end <= edit.end)) continue;
     if (!generated(start, end - start)) continue;
     primary.push({
       start,
@@ -113,16 +133,6 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       label: "undefined-safe generated value",
     });
   }
-  const markerPrefix = "readonly __vizeRawProps?: Props; ";
-  const markerNeedle = `${markerPrefix}readonly __vizeHasFallthroughProps: true;`;
-  const markerStart =
-    uniqueOffset(before, Buffer.from(markerNeedle)) + Buffer.byteLength(markerPrefix);
-  primary.push({
-    start: markerStart,
-    end: markerStart,
-    replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
-    label: "native fallthrough ownership marker",
-  });
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)
     assert(primary[index - 1].end <= primary[index].start, "certified generated edits overlap");
@@ -159,12 +169,27 @@ const certifyNativeTransition = (beforeText, afterText) => {
   const before = Buffer.from(beforeText);
   const after = Buffer.from(afterText);
   const source = before.toString();
-  const primary = [];
+  const oldConstructor =
+    "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;";
+  const currentConstructor =
+    "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;";
+  const constructorStart = uniqueOffset(before, Buffer.from(oldConstructor));
+  const constructorEnd = constructorStart + Buffer.byteLength(oldConstructor);
+  const primary = [
+    {
+      start: constructorStart,
+      end: constructorEnd,
+      replacement: Buffer.from(currentConstructor),
+      label: "integrated generic component constructor",
+    },
+  ];
   for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(source.slice(0, match.index));
+    const end = start + Buffer.byteLength(match[0]);
+    if (constructorStart <= start && end <= constructorEnd) continue;
     primary.push({
       start,
-      end: start + Buffer.byteLength(match[0]),
+      end,
       replacement: Buffer.from(`$${match[0].slice("__Vize".length)}`),
       label: "collision-safe generated identifier",
     });

@@ -101,3 +101,50 @@ export function beforeStaticListenerSource(
   );
   return current;
 }
+
+/** Recover the exact PR-base producer that still selected the loose marker per target. */
+export function beforeIntegratedStaticListenerSource(
+  read: (path: string) => string,
+  path: string,
+  current: string,
+): string {
+  if (path !== staticListenerSource) return current;
+  assert.deepEqual(
+    identity(current),
+    {
+      bytes: 18530,
+      sha256: "33f33f57c1d8f4bcd5d61eea09cd8b5262e62bc02b3af2f52371407d58f10d1f",
+    },
+    "selected integrated static listener source",
+  );
+  const raw = read(staticListenerRecord);
+  assert.equal(hash(raw), recordSha256, "immutable static listener transition");
+  const record = JSON.parse(raw) as Transition;
+  assert.equal(record.file.edits.length, 1);
+  const edit = record.file.edits[0]!;
+  assert.equal(current.split(edit.after).length, 2);
+  current = current.replace(edit.after, edit.before);
+  assert.deepEqual(
+    identity(current),
+    {
+      bytes: 18240,
+      sha256: "f231db13ede1284c8aa291ccd67bec0c50f7e68a510a1969b83e8e6c1fa70186",
+    },
+    "selected pre-static-fallback producer",
+  );
+  const previous =
+    '    append!(\n        *ts,\n        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n",\n    );\n';
+  const base =
+    '    // A static component\'s loose sentinel means undeclared runtime arity,\n    // not a declared zero-argument event. Dynamic targets retain the empty\n    // contextual tuple; their contextless marker widens runtime args later.\n    let (loose_marker, loose_args) = if dynamic_component {\n        ("infer __L extends unknown[]", "__L")\n    } else {\n        ("unknown[]", "unknown[]")\n    };\n    append!(\n        *ts,\n        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: {loose_marker} }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n",\n    );\n';
+  assert.equal(current.split(previous).length, 2, "selected PR-base listener transition");
+  current = current.replace(previous, base);
+  assert.deepEqual(
+    identity(current),
+    {
+      bytes: 18626,
+      sha256: "17fec691f4f92415b730dd4ce4d684056719c3045f31dc4b749e5c480aa2b771",
+    },
+    "selected PR-base static listener source",
+  );
+  return current;
+}
