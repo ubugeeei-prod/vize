@@ -66,6 +66,7 @@ function createMappedLanguageService(ts, service, support) {
   function query(method, feature, map, combine = false) {
     if (typeof service[method] !== "function") return;
     proxy[method] = (file, position, ...args) => {
+      support?.ensure?.(file);
       const results = positions(file, position, feature).map((offset) =>
         map(service[method](file, offset, ...args), file),
       );
@@ -179,6 +180,7 @@ function createMappedLanguageService(ts, service, support) {
     "getSuggestionDiagnostics",
   ]) {
     proxy[method] = (file) => {
+      if (isSfc(file)) support?.ensure?.(file);
       const document = get(file);
       if (!document)
         return service[method](file).map((value) => ({
@@ -329,6 +331,7 @@ function createMappedLanguageService(ts, service, support) {
     if (service[method])
       proxy[method] = (file, range, ...args) => {
         if (!isSfc(file)) return service[method](file, range, ...args);
+        support?.ensure?.(file);
         const document = get(file);
         const feature = shared.SemanticTokens;
         const end = range.start + range.length;

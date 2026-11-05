@@ -134,7 +134,9 @@ test("unchanged closed SFCs do no source reads or projection work across program
       }
     }
     assert.deepEqual([...f.reads.values()], Array(40).fill(1));
-    assert.equal(f.counts().generationCount - before.generationCount, 10);
+    assert.equal(f.counts().generationCount - before.generationCount, 0);
+    assert.equal(f.support.get("/open.vue").source, "draft-10");
+    assert.equal(f.counts().generationCount - before.generationCount, 1);
     assert.equal(f.counts().optionCopies - before.optionCopies, 10);
   } finally {
     f.support.dispose();
