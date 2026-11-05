@@ -1,0 +1,121 @@
+use super::{MESSAGE, NoRefObjectReactivityLoss};
+use crate::diagnostic::Severity;
+use crate::rules::script::{ScriptLintResult, ScriptLinter};
+
+const RULE: &str = super::RULE;
+
+fn lint(source: &str) -> ScriptLintResult {
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(NoRefObjectReactivityLoss));
+    linter.lint(source, 0)
+}
+
+fn messages(source: &str) -> Vec<std::string::String> {
+    lint(source)
+        .diagnostics
+        .into_iter()
+        .map(|diagnostic| diagnostic.message.to_string())
+        .collect()
+}
+
+fn assert_copies(source: &str, count: usize) {
+    assert_eq!(messages(source), vec![MESSAGE.to_owned(); count]);
+}
+
+#[test]
+fn reports_same_scope_value_copies() {
+    assert_copies(
+        r#"
+import { ref } from 'vue'
+const count = ref(0)
+const value1 = count.value
+const { value: value2 } = count
+const value3 = fn(count.value)
+const { value: value4 = 42 } = count
+if (foo) {
+  const value1 = count.value
+}
+const direct = ref(0).value
+"#,
+        6,
+    );
+}
+
+#[test]
+fn reports_to_refs_copies() {
+    assert_copies(
+        r#"
+import { toRefs } from 'vue'
+const { count } = toRefs(foo)
+const value1 = count.value
+const { value: value2 } = count
+const value3 = fn(count.value)
+const refs = toRefs(foo)
+const nested = refs.count.value
+const { value: value4 } = refs.count
+const called = fn(refs.count.value)
+const { foo: named = 42 } = refs
+const loose = named.value
+"#,
+        7,
+    );
+}
+
+#[test]
+fn reports_factory_and_define_model_copies() {
+    assert_copies(
+        r#"
+import { ref, computed, shallowRef, customRef, toRef } from 'vue'
+const r = ref(0)
+const c = computed(() => r.value)
+const sr = shallowRef({ count: 1 })
+const cr = customRef((track, trigger) => {
+  return {
+    get() { return sr.value },
+    set(newValue) { sr.value = newValue }
+  }
+})
+const tr = toRef(sr, 'count')
+console.log(r.value, c.value, sr.value, cr.value, tr.value)
+const model1 = defineModel()
+const [model2, mod] = defineModel()
+console.log(model1.value, model2.value, mod.value)
+"#,
+        7,
+    );
+}
+
+#[test]
+fn allows_nested_reads_and_writes() {
+    let source = r#"
+import { ref, computed, toRefs } from 'vue'
+const count = ref(0)
+const value1 = computed(() => count.value)
+const value2 = fn(count)
+const value3 = computed(() => fn(count.value))
+count.value = 42
+count.value++
+;({ foo: count.value } = bar)
+function later() { return count.value }
+const { item } = toRefs(foo)
+const watched = computed(() => item.value)
+const refs = toRefs(foo)
+const watchedBag = computed(() => refs.item.value)
+const [a] = ref(0)
+foo.bar = ref(0)
+let alias = ref(0)
+alias = alias
+unknown.value
+"#;
+    assert!(messages(source).is_empty(), "{:?}", messages(source));
+}
+
+#[test]
+fn stays_opt_in() {
+    let meta = crate::linter::script_rules::builtin_script_rules()
+        .into_iter()
+        .find(|rule| rule.name == RULE)
+        .expect(RULE);
+    assert_eq!(meta.default_severity, Severity::Warning);
+    assert!(meta.presets.is_empty());
+}

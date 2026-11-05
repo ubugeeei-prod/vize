@@ -35,6 +35,7 @@ pub use super::no_page_meta_runtime_values::NoPageMetaRuntimeValues;
 pub use super::no_potential_component_option_typo::NoPotentialComponentOptionTypo;
 pub use super::no_reactive_destructure::NoReactiveDestructure;
 pub use super::no_ref_as_operand::NoRefAsOperand;
+pub use super::no_ref_object_reactivity_loss::NoRefObjectReactivityLoss;
 pub use super::no_reserved_identifiers::NoReservedIdentifiers;
 pub use super::no_reserved_keys::NoReservedKeys;
 pub use super::no_restricted_globals::NoRestrictedGlobals;
