@@ -5,6 +5,8 @@ on:
       - .github/workflows/unicode-prop-projection.yml
       - tools/support/compat/github/unicode-prop-projection-custody.mjs
       - tools/support/compat/content-mapper/constructor-projection-parity.ts
+      - tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts
+      - tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/**
       - tests/tooling/constructor-projection-parity.test.ts
       - tests/tooling/unicode-prop-projection-custody.test.ts
       - crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt

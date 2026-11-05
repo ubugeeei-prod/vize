@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { certifyJsxWitnessChange } from "../../tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts";
 import {
   canonicalPaths,
   comparePackets,
@@ -24,6 +25,41 @@ import {
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
 const bytes = (text: string) => Buffer.byteLength(text);
+
+test("only the complete reviewed JSX witness source transition can change canonical helpers", () => {
+  const file = "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt";
+  const image = JSON.parse(
+    readFileSync(
+      path.join(
+        root,
+        "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
+      ),
+      "utf8",
+    ),
+  );
+  const record = image.files.find((entry: { path: string }) => entry.path === file);
+  assert.ok(record);
+  const after = readFileSync(path.join(root, file));
+  const edit = record.edits[0];
+  const before = Buffer.from(after.toString().replace(edit.after, edit.before));
+  const proof = certifyJsxWitnessChange(file, before, after);
+  assert.equal(proof.beforeSha256, record.beforeSha256);
+  assert.equal(proof.afterSha256, record.afterSha256);
+  assert.equal(proof.nativeAcceptanceCredit, false);
+  for (const mutated of [
+    Buffer.from(after.toString().replace(edit.after, "")),
+    Buffer.concat([after, Buffer.from(edit.after)]),
+    before,
+    Buffer.from(after.toString().replace("type ", "xxxx ")),
+    Buffer.concat([after, Buffer.from("\n")]),
+  ])
+    assert.throws(() => certifyJsxWitnessChange(file, before, mutated), assert.AssertionError);
+  assert.throws(() => certifyJsxWitnessChange(file, after, before), assert.AssertionError);
+  assert.throws(
+    () => certifyJsxWitnessChange("unowned/source.txt", before, after),
+    assert.AssertionError,
+  );
+});
 
 function fixture(selectedAssets: Assets = assets) {
   const source = "<template>日本 🧭</template>";
