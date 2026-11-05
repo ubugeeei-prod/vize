@@ -219,8 +219,9 @@ fn ssr_text_fragment_admission_successor(mut frozen: serde_json::Value) -> serde
     assert_eq!(packet["source"], source);
     assert_eq!(packet["ssr"], true);
     let original_module = packet["module"].as_str().expect("whole module").to_owned();
-    let original_map = SourceMap::from_json_string(&packet["moduleMap"].to_string())
-        .expect("historical composed map");
+    let original_map_json = packet["moduleMap"].to_string();
+    let original_map =
+        SourceMap::from_json_string(&original_map_json).expect("historical composed map");
     let original_null = position(
         &original_module,
         original_module.find("null").expect("generated null"),
@@ -244,8 +245,9 @@ fn ssr_text_fragment_admission_successor(mut frozen: serde_json::Value) -> serde
     // every authored source position and every other token stays unchanged.
     assert_eq!(mappings.matches(";6BAAA;").count(), 1);
     packet["moduleMap"]["mappings"] = json!(mappings.replacen(";6BAAA;", ";qCAAA;", 1));
-    let successor_map = SourceMap::from_json_string(&packet["moduleMap"].to_string())
-        .expect("anchored composed map");
+    let successor_map_json = packet["moduleMap"].to_string();
+    let successor_map =
+        SourceMap::from_json_string(&successor_map_json).expect("anchored composed map");
     let tokens = |map: &SourceMap| {
         map.get_source_view_tokens()
             .map(|token| {
