@@ -58,7 +58,11 @@ mod documentation_authority_tests {
                 "docs/content/guide/lint-execution.md",
             ),
         ] {
-            assert!(!registry.has_rule(rule), "operational diagnostic: {rule}");
+            assert_eq!(
+                registry.has_rule(rule),
+                rule == "vue/comment-directive",
+                "operational diagnostic: {rule}"
+            );
             assert_eq!(super::rule_docs_path(rule), page);
             assert!(root.join(page).is_file(), "English page: {page}");
             assert!(
