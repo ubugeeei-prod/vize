@@ -39,10 +39,7 @@ test("a widened unmapped gap is rejected", () => {
 });
 
 test("an extra IGNORE tuple is rejected", () => {
-  assert.throws(
-    () => authoredDirectives(packet([gap, [0, 0, 2, 4, 0, 0]]), true),
-    /unmapped gaps/,
-  );
+  assert.throws(() => authoredDirectives(packet([gap, [0, 0, 2, 4, 0, 0]]), true), /unmapped gaps/);
 });
 
 test("a current head that drops the producer population is rejected", () => {
