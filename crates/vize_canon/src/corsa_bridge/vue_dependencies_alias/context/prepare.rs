@@ -19,8 +19,68 @@ impl AliasContext {
     }
 
     /// Build or reuse a context while every route input remains unchanged.
-    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     pub(in crate::corsa_bridge) fn for_hosts_cached(
+        source_path: &Path,
+        content: &str,
+        overlays: &FxHashMap<PathBuf, &str>,
+        requested_sources: &[(PathBuf, &str)],
+        options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
+        environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
+    ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        let fingerprint = Self::request_fingerprint(
+            source_path,
+            content,
+            overlays,
+            requested_sources,
+            options,
+            environment,
+        );
+        let sibling = environment.editor_session.cache().changed_overlay_sibling(
+            source_path,
+            &fingerprint,
+            overlays,
+        );
+        if let Some((sibling, root, previous)) = sibling {
+            if let Some(source) = overlays.get(&sibling) {
+                // This non-recursive entry refreshes all changed live sources
+                // once; several dirty buffers cannot recursively prepare each
+                // other. The unchanged caller retains its own graph.
+                drop(Self::prepare_hosts_cached(
+                    &sibling,
+                    source,
+                    overlays,
+                    &[],
+                    options,
+                    environment,
+                )?);
+                let mut prepared = Self::prepare_hosts_cached(
+                    source_path,
+                    content,
+                    overlays,
+                    requested_sources,
+                    options,
+                    environment,
+                )?;
+                prepared.materialized_changes = environment
+                    .editor_session
+                    .cache()
+                    .materialized_snapshot(&root)
+                    .diff(&previous);
+                return Ok(prepared);
+            }
+        }
+        Self::prepare_hosts_cached(
+            source_path,
+            content,
+            overlays,
+            requested_sources,
+            options,
+            environment,
+        )
+    }
+
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+    fn prepare_hosts_cached(
         source_path: &Path,
         content: &str,
         overlays: &FxHashMap<PathBuf, &str>,
@@ -87,7 +147,9 @@ impl AliasContext {
         };
         let graph_hit = revised.is_some();
         let mut context = if let Some((context, stamped)) = prebuilt {
-            fingerprint = stamped;
+            // Keep the request's complete overlay observation for union
+            // validation; the stored prebuild retained only its own read set.
+            fingerprint.adopt_stamps(&stamped);
             context
         } else if let Some(context) = revised {
             context
@@ -151,7 +213,7 @@ impl AliasContext {
                 &mut context,
                 &mut cache,
                 source_path,
-                &fingerprint,
+                &mut fingerprint,
                 graph_hit,
             )?;
         materialize_phase.finish();

@@ -37,8 +37,7 @@ fn cache_evicts_only_the_least_recently_used_context() {
                 expected_files: FxHashSet::default(),
                 package_links: FxHashMap::default(),
                 query_paths: Vec::new(),
-                stamps: Vec::new(),
-                overlay_identity: fingerprint.overlay_identity(),
+                fingerprint: fingerprint.clone(),
                 requires_arbitrary_extensions: false,
             },
         );
@@ -95,8 +94,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
                 ]),
                 package_links: FxHashMap::default(),
                 query_paths: Vec::new(),
-                stamps: Vec::new(),
-                overlay_identity: fingerprint.overlay_identity(),
+                fingerprint: fingerprint.clone(),
                 requires_arbitrary_extensions: false,
             },
         );
@@ -107,7 +105,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
     let union = cache.project_union_snapshot(
         &virtual_root,
         &host(root.path().join("Other.vue")),
-        ContextFingerprint::capture(
+        &ContextFingerprint::capture(
             &root.path().join("Other.vue"),
             "",
             &overlays,
@@ -115,8 +113,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
             &Default::default(),
             None,
             None,
-        )
-        .overlay_identity(),
+        ),
     );
     assert_eq!(
         union.files.len(),
@@ -188,16 +185,37 @@ fn watched_session_trusts_stamps_until_the_event_invalidates_them() {
     assert!(cache.get(&source, &request).is_none());
 }
 
+fn capture(
+    path: &std::path::Path,
+    content: &str,
+    overlays: &FxHashMap<std::path::PathBuf, &str>,
+) -> ContextFingerprint {
+    ContextFingerprint::capture(
+        path,
+        content,
+        overlays,
+        Default::default(),
+        &Default::default(),
+        None,
+        None,
+    )
+}
+
 #[test]
 fn project_union_drops_members_with_stale_input_stamps() {
     let root = tempfile::tempdir().unwrap();
     let virtual_root = root.path().join("mirror");
     let source = root.path().join("App.vue");
-    let manifest = root.path().join("package.json");
+    let manifest = root.path().join("tsconfig.json");
     let expected = virtual_root.join("src/App.vue.ts");
     let link = virtual_root.join("src/node_modules");
     let target = root.path().join("store/node_modules");
-    std::fs::write(&manifest, "{\"version\":1}").unwrap();
+    std::fs::write(&source, "<template />").unwrap();
+    std::fs::write(&manifest, "{}").unwrap();
+    let overlays = FxHashMap::default();
+    let context = AliasContext::for_host(&source, "<template />", &overlays);
+    let mut fingerprint = capture(&source, "<template />", &overlays);
+    fingerprint.stamp(&context);
     let mut cache = SessionCache::default();
     cache.record_project_member(
         virtual_root.clone(),
@@ -207,25 +225,21 @@ fn project_union_drops_members_with_stale_input_stamps() {
             expected_files: FxHashSet::from_iter([expected]),
             package_links: [(link.clone(), target.clone())].into_iter().collect(),
             query_paths: Vec::new(),
-            stamps: vec![crate::package_route::stamp::InputStamp::capture(
-                manifest.clone(),
-            )],
-            overlay_identity: 7,
+            fingerprint: fingerprint.clone(),
             requires_arbitrary_extensions: true,
         },
     );
 
-    let current = cache.project_union_snapshot(&virtual_root, &host(source.clone()), 7);
+    let current = cache.project_union_snapshot(&virtual_root, &host(source.clone()), &fingerprint);
     assert!(current.files.is_empty());
     assert!(!current.requires_arbitrary_extensions);
-    let union =
-        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 7);
+    let other = host(root.path().join("Other.vue"));
+    let union = cache.project_union_snapshot(&virtual_root, &other, &fingerprint);
     assert_eq!(union.package_links.get(&link), Some(&target));
     assert!(union.requires_arbitrary_extensions);
 
-    std::fs::write(&manifest, "{\"version\":2}").unwrap();
-    let union =
-        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 7);
+    std::fs::write(&manifest, r#"{"compilerOptions":{"strict":true}}"#).unwrap();
+    let union = cache.project_union_snapshot(&virtual_root, &other, &fingerprint);
     assert!(union.files.is_empty());
     assert!(union.package_links.is_empty());
     assert!(union.query_paths.is_empty());
@@ -233,38 +247,51 @@ fn project_union_drops_members_with_stale_input_stamps() {
 }
 
 #[test]
-fn project_union_drops_members_from_a_closed_or_changed_overlay_epoch() {
-    let root = tempfile::tempdir().unwrap();
-    let virtual_root = root.path().join("mirror");
-    let source = root.path().join("Host.vue");
-    let expected = virtual_root.join("src/UnsavedDependency.vue.ts");
-    let mut cache = SessionCache::default();
-    cache.record_project_member(
-        virtual_root.clone(),
-        host(source),
-        ProjectMember {
-            source_paths: Vec::new(),
-            expected_files: FxHashSet::from_iter([expected.clone()]),
-            package_links: FxHashMap::default(),
-            query_paths: vec![expected.clone()],
-            stamps: Vec::new(),
-            overlay_identity: 41,
-            requires_arbitrary_extensions: true,
-        },
-    );
-
-    let union =
-        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 41);
-    assert!(union.files.contains(&expected));
-    assert!(union.requires_arbitrary_extensions);
-    assert_eq!(union.query_paths, vec![expected]);
-
-    let union =
-        cache.project_union_snapshot(&virtual_root, &host(root.path().join("Other.vue")), 42);
-    assert!(union.files.is_empty());
-    assert!(union.package_links.is_empty());
-    assert!(union.query_paths.is_empty());
-    assert!(!union.requires_arbitrary_extensions);
+fn project_union_drops_members_from_a_closed_or_changed_dependency_overlay() {
+    for close in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let root = root.path().canonicalize().unwrap();
+        let virtual_root = root.join("mirror");
+        let source = root.join("Host.vue");
+        let dependency = root.join("UnsavedDependency.vue");
+        let content = "<script setup>import Dependency from './UnsavedDependency.vue';</script><template><Dependency /></template>";
+        std::fs::write(&source, content).unwrap();
+        std::fs::write(&dependency, "<template />").unwrap();
+        let expected = virtual_root.join("src/UnsavedDependency.vue.ts");
+        let overlays = FxHashMap::from_iter([(dependency.clone(), "<template>unsaved</template>")]);
+        let context = AliasContext::for_host(&source, content, &overlays);
+        let mut fingerprint = capture(&source, content, &overlays);
+        fingerprint.stamp(&context);
+        let mut cache = SessionCache::default();
+        cache.record_project_member(
+            virtual_root.clone(),
+            host(source),
+            ProjectMember {
+                source_paths: Vec::new(),
+                expected_files: FxHashSet::from_iter([expected.clone()]),
+                package_links: FxHashMap::default(),
+                query_paths: vec![expected.clone()],
+                fingerprint: fingerprint.clone(),
+                requires_arbitrary_extensions: true,
+            },
+        );
+        let other = host(root.join("Other.vue"));
+        let union = cache.project_union_snapshot(&virtual_root, &other, &fingerprint);
+        assert_eq!(union.files, FxHashSet::from_iter([expected.clone()]));
+        assert!(union.requires_arbitrary_extensions);
+        assert_eq!(union.query_paths, vec![expected]);
+        let overlays = if close {
+            FxHashMap::default()
+        } else {
+            FxHashMap::from_iter([(dependency, "<template>changed</template>")])
+        };
+        let changed = capture(&other.source_path, "<template />", &overlays);
+        let union = cache.project_union_snapshot(&virtual_root, &other, &changed);
+        assert!(union.files.is_empty());
+        assert!(union.package_links.is_empty());
+        assert!(union.query_paths.is_empty());
+        assert!(!union.requires_arbitrary_extensions);
+    }
 }
 
 #[test]

@@ -140,12 +140,42 @@ impl CorsaSourceCatalog {
         self.clone()
     }
 
-    pub(in crate::corsa_bridge) fn retain_live_files(
+    pub(in crate::corsa_bridge) fn retaining_live_files(
         &self,
         current: &vize_carton::FxHashSet<PathBuf>,
         preserved: &vize_carton::FxHashSet<PathBuf>,
-    ) {
+    ) -> Self {
+        let sources = recover_lock(&self.sources);
+        if sources
+            .keys()
+            .all(|path| current.contains(path) || preserved.contains(path))
+        {
+            return self.clone();
+        }
+        let retained = sources
+            .iter()
+            .filter(|(path, _)| current.contains(*path) || preserved.contains(*path))
+            .map(|(path, source)| (path.clone(), Arc::clone(source)))
+            .collect();
+        Self {
+            sources: Arc::new(Mutex::new(retained)),
+            native_members: Arc::clone(&self.native_members),
+        }
+    }
+
+    pub(in crate::corsa_bridge) fn current_overlay_sources(
+        &self,
+        overlays: &FxHashMap<PathBuf, &str>,
+    ) -> FxHashSet<PathBuf> {
         recover_lock(&self.sources)
-            .retain(|path, _| current.contains(path) || preserved.contains(path));
+            .values()
+            .filter(|source| source.mapping_kind.is_mappable())
+            .filter(|source| {
+                overlays
+                    .get(&source.source_path)
+                    .is_some_and(|text| *text == source.source.as_str())
+            })
+            .map(|source| source.source_path.clone())
+            .collect()
     }
 }

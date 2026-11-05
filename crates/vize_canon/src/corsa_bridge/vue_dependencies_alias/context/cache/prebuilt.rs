@@ -41,8 +41,49 @@ impl SessionCache {
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> Vec<PathBuf> {
         let mut sources = self.project_sources_to_refresh(virtual_root, overlay_identity);
-        sources.retain(|path| path != host && overlays.contains_key(path));
+        let current = self
+            .source_catalog(virtual_root)
+            .current_overlay_sources(overlays);
         sources
+            .retain(|path| path != host && overlays.contains_key(path) && !current.contains(path));
+        sources
+    }
+
+    /// Refresh a changed independent host through its own graph before an
+    /// unchanged query reuses its context. The caller carries the complete
+    /// before/after materialized delta into the native transaction.
+    pub(in super::super) fn changed_overlay_sibling(
+        &self,
+        source_path: &Path,
+        fingerprint: &ContextFingerprint,
+        overlays: &FxHashMap<PathBuf, &str>,
+    ) -> Option<(
+        PathBuf,
+        PathBuf,
+        crate::batch::virtual_project::MaterializedFileSnapshot,
+    )> {
+        let key = super::RevisionKey::new(source_path.to_path_buf(), fingerprint);
+        let cached = self.slots.get(&key)?;
+        if !fingerprint.matches_revision(&cached.fingerprint) {
+            return None;
+        }
+        let mirror = cached.context.mirror.as_ref()?;
+        let root = mirror.virtual_root();
+        if self.project_overlay_identities.get(root) == Some(&fingerprint.overlay_identity()) {
+            return None;
+        }
+        let host = vize_carton::path::canonicalize_non_verbatim(source_path);
+        let changed =
+            self.overlay_sources_to_refresh(root, fingerprint.overlay_identity(), &host, overlays);
+        let members = self.project_members.get(root)?;
+        let sibling = changed
+            .into_iter()
+            .find(|path| members.keys().any(|key| &key.source_path == path))?;
+        Some((
+            sibling,
+            root.to_path_buf(),
+            self.materialized_snapshot(root),
+        ))
     }
 
     /// Keep one stamped, unmaterialized revision until its request re-enters
@@ -51,12 +92,13 @@ impl SessionCache {
         &mut self,
         generation: u64,
         source_path: PathBuf,
-        fingerprint: ContextFingerprint,
+        mut fingerprint: ContextFingerprint,
         context: AliasContext,
     ) {
         if generation != self.generation {
             return;
         }
+        fingerprint.compact_overlay_inputs();
         self.prebuilt = Some(PrebuiltContext {
             source_path,
             fingerprint,

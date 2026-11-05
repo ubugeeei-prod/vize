@@ -215,10 +215,13 @@ fn epoch_changes_rebuild_exact_live_sources_and_close_rename_remove_old_artifact
             .as_ref()
             .unwrap()
             .registered_original_paths_sorted(),
-        hosts.to_vec()
+        vec![hosts[1].clone()]
     );
-    mapped_token(&refreshed, &hosts[0], &edited);
-    let source = refreshed
+    let admitted = refreshed.source_catalog.get(&queries[0]).unwrap();
+    assert_eq!(admitted.source.as_str(), edited);
+    let owner = open(&session, &hosts[0], &edited, &overlays);
+    mapped_token(&owner, &hosts[0], &edited);
+    let source = owner
         .materialized_sources()
         .into_iter()
         .find(|source| source.source_path == hosts[0])
@@ -238,7 +241,7 @@ fn epoch_changes_rebuild_exact_live_sources_and_close_rename_remove_old_artifact
             .as_ref()
             .unwrap()
             .registered_original_paths_sorted(),
-        vec![hosts[1].clone(), hosts[2].clone()]
+        vec![hosts[1].clone()]
     );
     assert!(!queries[0].exists());
     let renamed = root_path.join("D.vue");
@@ -253,7 +256,7 @@ fn epoch_changes_rebuild_exact_live_sources_and_close_rename_remove_old_artifact
             .as_ref()
             .unwrap()
             .registered_original_paths_sorted(),
-        vec![hosts[1].clone(), renamed.clone()]
+        vec![renamed.clone()]
     );
     assert!(!queries[2].exists());
     mapped_token(&rename_context, &renamed, VUE);

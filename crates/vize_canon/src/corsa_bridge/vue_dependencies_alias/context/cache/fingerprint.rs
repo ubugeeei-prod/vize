@@ -10,10 +10,13 @@ use crate::batch::ModuleSpecifierFactsCache;
 #[derive(Clone)]
 pub(crate) struct ContextFingerprint {
     host_content: u64,
-    /// Every input but the host's own text: the other buffers and requested
-    /// sources. The host's text reaches the graph only through its imports.
+    host_path: PathBuf,
+    /// Requested roots, independently of the open-buffer set.
     dependencies: u64,
     overlays: u64,
+    /// Requests capture every overlay; stored revisions retain only their
+    /// registered sources and resolution probes, including failed probes.
+    overlay_inputs: FxHashMap<PathBuf, u64>,
     generation_options: u64,
     /// Requested workspace sources are part of this revision.
     workspace: bool,
@@ -48,20 +51,22 @@ impl ContextFingerprint {
         let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
         let mut dependencies = vize_l0::micro_default_hasher!("canon.context.dependencies");
         source_path.hash(&mut dependencies);
+        let mut overlay_inputs = FxHashMap::default();
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
-            if *path != host_path {
-                path.hash(&mut dependencies);
-                text.hash(&mut dependencies);
-            }
+            let mut input = vize_l0::micro_default_hasher!("canon.context.overlay_input");
+            text.hash(&mut input);
+            overlay_inputs.insert(path.clone(), input.finish());
         }
         let generation_options =
             editor_namespace_identity(options, virtual_ts_options, project_root, tsconfig_path);
         Self {
             host_content: host.finish(),
+            host_path,
             dependencies: dependencies.finish(),
             overlays: overlay_hash.finish(),
+            overlay_inputs,
             generation_options,
             workspace: false,
             stamps: Vec::new(),
@@ -88,7 +93,7 @@ impl ContextFingerprint {
         context: &AliasContext,
         facts: Option<&mut ModuleSpecifierFactsCache>,
     ) {
-        let mut paths = Vec::new();
+        let mut paths = vec![self.host_path.clone()];
         if let Some(mirror) = context.mirror.as_ref() {
             // The immutable compiler epoch belongs to this editor session.
             // Its physical dependencies remain watched by the owner, while
@@ -161,6 +166,44 @@ impl ContextFingerprint {
         self.dependencies == previous.dependencies
             && self.generation_options == previous.generation_options
             && self.workspace == previous.workspace
+            && self.dependency_overlays_match(previous)
+    }
+
+    /// Compare the inputs that produced the previous graph. A request still
+    /// carries every current overlay, including newly opened failed probes.
+    fn dependency_overlays_match(&self, previous: &Self) -> bool {
+        if previous.stamps.is_empty() {
+            return self.overlays == previous.overlays;
+        }
+        previous.stamps.iter().all(|stamp| {
+            stamp.path() == previous.host_path
+                || self.overlay_inputs.get(stamp.path())
+                    == previous.overlay_inputs.get(stamp.path())
+        })
+    }
+
+    pub(super) fn matches_revision(&self, previous: &Self) -> bool {
+        self.host_content == previous.host_content && self.revises(previous)
+    }
+
+    /// New host bytes replace its old projection in the shared mirror, while
+    /// the other revision still owns unchanged dependency files. A close, or a
+    /// changed dependency buffer, does retire the member.
+    pub(super) fn preserves_member(&self, previous: &Self) -> bool {
+        self.overlay_inputs.contains_key(&previous.host_path)
+            == previous.overlay_inputs.contains_key(&previous.host_path)
+            && self.dependency_overlays_match(previous)
+    }
+
+    pub(super) fn compact_overlay_inputs(&mut self) {
+        let inputs = self
+            .stamps
+            .iter()
+            .map(|stamp| stamp.path())
+            .collect::<vize_carton::FxHashSet<_>>();
+        self.overlay_inputs
+            .retain(|path, _| path == &self.host_path || inputs.contains(path.as_path()));
+        self.overlay_inputs.shrink_to_fit();
     }
 
     /// Disk inputs do not move with the host's buffer; a revision keeps them.
