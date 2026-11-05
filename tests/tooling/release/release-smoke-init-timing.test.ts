@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { parse, stringify } from "yaml";
 
 import {
   DIAGNOSTIC_QUIET_MS,
@@ -142,14 +143,62 @@ test("an LSP settle file is readable once and rejects an invented settle", () =>
   }
 });
 
+type SmokeStep = {
+  name?: string;
+  run?: string;
+  env?: Record<string, string>;
+};
+type SmokeWorkflow = {
+  env?: Record<string, string>;
+  jobs: Record<string, { env?: Record<string, string>; steps: SmokeStep[] }>;
+};
+
+const timingVariable = "VIZE_SMOKE_TIMING_FILE";
+const timingFile = "${{ runner.temp }}/packed-smoke-timing.jsonl";
+const smokeWorkflows = [
+  {
+    file: "release.yml",
+    job: "smoke",
+    steps: ["Smoke install release package tarballs"],
+  },
+  {
+    file: "native-smoke.yml",
+    job: "fresh-install-smoke",
+    steps: [
+      "Fresh install and runtime smoke published tarballs",
+      "Fresh packed Nuxt init, check, and LSP smoke",
+    ],
+  },
+];
+
+function assertSmokeTimingEnvironments(source: string, jobName: string, stepNames: string[]): void {
+  const workflow = parse(source) as SmokeWorkflow;
+  const job = workflow.jobs[jobName];
+  const smokes = job.steps.filter((step) =>
+    /smoke-release-install\.(?:ts|rs)\s+--prepare-manifests\s+--runtime-checks(?:\s|$)/u.test(
+      step.run ?? "",
+    ),
+  );
+  assert.deepEqual(
+    smokes.map((step) => step.name),
+    stepNames,
+  );
+  assert.deepEqual(
+    smokes.map((step) => ({
+      name: step.name,
+      timingFile: { ...workflow.env, ...job.env, ...step.env }[timingVariable],
+    })),
+    stepNames.map((name) => ({ name, timingFile })),
+  );
+}
+
 test("release smokes retain the timing artifact for every host", () => {
   const release = readRepoFile(".github", "workflows", "release.yml");
   const native = readRepoFile(".github", "workflows", "native-smoke.yml");
+  for (const { file, job, steps } of smokeWorkflows) {
+    assertSmokeTimingEnvironments(readRepoFile(".github", "workflows", file), job, steps);
+  }
   for (const workflow of [release, native]) {
-    assert.match(
-      workflow,
-      /VIZE_SMOKE_TIMING_FILE: \$\{\{ runner\.temp \}\}\/packed-smoke-timing\.jsonl/,
-    );
     assert.match(workflow, /name: Retain packed smoke timing/);
     assert.match(workflow, /if-no-files-found: warn/);
   }
@@ -158,6 +207,72 @@ test("release smokes retain the timing artifact for every host", () => {
     native,
     /name: packed-smoke-timing-\$\{\{ matrix\.platform\.target \}\}-node\$\{\{ matrix\.node-version \}\}/,
   );
+});
+
+test("smoke timing accepts quoted YAML and workflow/job environment inheritance", () => {
+  for (const { file, job, steps } of smokeWorkflows) {
+    const source = readRepoFile(".github", "workflows", file);
+    const quoted = source.replaceAll(
+      `${timingVariable}: ${timingFile}`,
+      `${timingVariable}: ${JSON.stringify(timingFile)}`,
+    );
+    assert.notEqual(quoted, source);
+    assertSmokeTimingEnvironments(quoted, job, steps);
+
+    const workflow = parse(source) as SmokeWorkflow;
+    for (const step of workflow.jobs[job].steps) delete step.env?.[timingVariable];
+    workflow.env = { ...workflow.env, [timingVariable]: timingFile };
+    assertSmokeTimingEnvironments(stringify(workflow), job, steps);
+    workflow.env[timingVariable] = "shadowed-workflow.jsonl";
+    workflow.jobs[job].env = { ...workflow.jobs[job].env, [timingVariable]: timingFile };
+    assertSmokeTimingEnvironments(stringify(workflow), job, steps);
+  }
+});
+
+test("a commented timing setting cannot satisfy either native smoke branch", () => {
+  for (const { file, job, steps } of smokeWorkflows) {
+    const source = readRepoFile(".github", "workflows", file);
+    const setting = `${timingVariable}: ${timingFile}`;
+    for (const [index] of steps.entries()) {
+      let occurrence = 0;
+      const commented = source.replaceAll(setting, (match) =>
+        occurrence++ === index ? `# ${match}` : match,
+      );
+      assert.notEqual(commented, source);
+      assert.throws(() => assertSmokeTimingEnvironments(commented, job, steps), {
+        code: "ERR_ASSERTION",
+      });
+    }
+  }
+});
+
+test("every smoke branch rejects a missing or shadowed timing environment", () => {
+  for (const { file, job, steps } of smokeWorkflows) {
+    const source = readRepoFile(".github", "workflows", file);
+    for (const name of steps) {
+      const workflow = parse(source) as SmokeWorkflow;
+      const step = workflow.jobs[job].steps.find((step) => step.name === name)!;
+      delete step.env?.[timingVariable];
+      assert.throws(() => assertSmokeTimingEnvironments(stringify(workflow), job, steps), {
+        code: "ERR_ASSERTION",
+      });
+
+      workflow.env = { ...workflow.env, [timingVariable]: timingFile };
+      workflow.jobs[job].env = {
+        ...workflow.jobs[job].env,
+        [timingVariable]: "shadowed-job.jsonl",
+      };
+      assert.throws(() => assertSmokeTimingEnvironments(stringify(workflow), job, steps), {
+        code: "ERR_ASSERTION",
+      });
+
+      workflow.jobs[job].env[timingVariable] = timingFile;
+      step.env = { ...step.env, [timingVariable]: "shadowed-step.jsonl" };
+      assert.throws(() => assertSmokeTimingEnvironments(stringify(workflow), job, steps), {
+        code: "ERR_ASSERTION",
+      });
+    }
+  }
 });
 
 test("fresh and workspace cells both record the timing receipt", () => {
