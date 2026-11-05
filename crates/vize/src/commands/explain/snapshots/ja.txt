@@ -3815,7 +3815,7 @@ vue/attribute-order · lint ルール
   推奨される順序に属性を並び替えてください
 === vue/comment-directive
 vue/comment-directive · lint ルール
-Support comment directives in `<template>`
+`<template>` 内のコメント指令に対応する
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -3893,7 +3893,7 @@ button要素に明示的で有効なtypeを必須にする
   '<button>' の type は既定で "submit" となり、囲っているフォームを送信します。明示的に type="button"、"submit"、"reset" のいずれかを指定してください。
 === vue/html-end-tags
 vue/html-end-tags · lint ルール
-Require end tags on HTML elements that may omit them
+省略できる HTML 要素の終了タグを明示することを必須にする
 
 精度: complete
 対象: HTML conformance of native elements with static attributes in SFC templates
@@ -3958,7 +3958,7 @@ vue/html-self-closing · lint ルール
   セルフクロージング構文を使用してください
 === vue/jsx-uses-vars
 vue/jsx-uses-vars · lint ルール
-Treat variables used in JSX element names as used
+JSX 要素名で参照する変数を使用済みとして扱う
 
 精度: complete
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -3981,7 +3981,7 @@ Treat variables used in JSX element names as used
   <template><div /></template>
 === vue/match-component-file-name
 vue/match-component-file-name · lint ルール
-Require a component name to match its file name
+コンポーネント名をファイル名と一致させることを必須にする
 
 精度: exact
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -4155,7 +4155,7 @@ v-htmlまたはv-text使用時に子コンテンツを禁止する
   v-htmlまたはv-textを使用する場合、子コンテンツは無視されます。子コンテンツを削除してください
 === vue/no-custom-modifiers-on-v-model
 vue/no-custom-modifiers-on-v-model · lint ルール
-Disallow custom modifiers on `v-model` used on a component
+コンポーネントで使う `v-model` の独自修飾子を禁止する
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -4694,7 +4694,7 @@ CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨す�
 ドキュメント: docs/content/rules/reference/vue-no-preprocessor-lang.md
 === vue/no-ref-object-reactivity-loss
 vue/no-ref-object-reactivity-loss · lint ルール
-Disallow copying a ref value in the same scope
+同じスコープで ref の値をコピーすることを禁止する
 
 精度: exact
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -4762,7 +4762,7 @@ vue/no-script-non-standard-lang · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-script-non-standard-lang.md
 === vue/no-setup-props-reactivity-loss
 vue/no-setup-props-reactivity-loss · lint ルール
-Disallow setup prop reads that lose reactivity
+リアクティビティを失う setup の props 参照を禁止する
 
 精度: exact
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -4887,7 +4887,7 @@ textareaでのマスタッシュ補間を禁止する
   textareaではマスタッシュ補間の代わりにv-modelを使用してください
 === vue/no-this-in-before-route-enter
 vue/no-this-in-before-route-enter · lint ルール
-Disallow `this` in `beforeRouteEnter`
+`beforeRouteEnter` 内の `this` を禁止する
 
 精度: exact
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -5178,7 +5178,7 @@ vue/no-useless-v-bind · lint ルール
   バインディングを静的属性に置き換えてください（:foo='bar' ではなく foo=bar）。
 === vue/no-v-for-template-key
 vue/no-v-for-template-key · lint ルール
-Disallow `key` on `<template v-for>`
+`<template v-for>` 上の `key` を禁止する
 
 精度: exact
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5323,7 +5323,7 @@ HTMLコンテンツモデルルールを強制
   - <table>の直接の子は<thead>、<tbody>、<tfoot>、<tr>、<caption>のみ
 === vue/prefer-prop-type-boolean-first
 vue/prefer-prop-type-boolean-first · lint ルール
-Enforce `Boolean` comes first in component prop types
+コンポーネントの props の型で `Boolean` を先頭に置くことを必須にする
 
 精度: exact
 対象: Options API component definitions written as object literals
@@ -5446,7 +5446,7 @@ vue/require-component-registration · lint ルール
 ドキュメント: docs/content/rules/reference/vue-require-component-registration.md
 === vue/require-expose
 vue/require-expose · lint ルール
-Require declare public properties using `expose`
+`expose` を使って公開プロパティを宣言することを必須にする
 
 精度: exact
 対象: Options API component definitions written as object literals
@@ -5820,7 +5820,7 @@ vue/valid-attribute-name · lint ルール
   属性名にスペース、引用符、>、/、=、制御文字を含めることはできません
 === vue/valid-model-definition
 vue/valid-model-definition · lint ルール
-Require valid keys in the model option
+model オプションに有効なキーを指定することを必須にする
 
 精度: exact
 対象: Options API component definitions written as object literals
