@@ -86,7 +86,7 @@ impl EmitsInfo {
             legacy_vue2,
             hoist_shared_preamble,
         );
-        emit_emit_props_helper(ts, self, hoist_shared_preamble, event_inference);
+        emit_emit_props_helper(ts, summary, self, hoist_shared_preamble, event_inference);
     }
 
     pub(super) fn generic_emit_resolver_fields(
@@ -306,6 +306,7 @@ pub(super) fn emit_emits_type(
 
 fn emit_emit_props_helper(
     ts: &mut String,
+    summary: &Croquis,
     info: &EmitsInfo,
     hoist_shared_preamble: bool,
     event_inference: bool,
@@ -314,7 +315,7 @@ fn emit_emit_props_helper(
         return;
     }
     if !hoist_shared_preamble {
-        ts! { &mut *ts => #EMIT_OVERLOAD_HELPERS }
+        crate::virtual_ts::helpers::hygiene::emit_helper_text(ts, summary, EMIT_OVERLOAD_HELPERS);
     }
     if !hoist_shared_preamble {
         ts! { &mut *ts => #EMIT_PROPS_HELPER #("\n") }
