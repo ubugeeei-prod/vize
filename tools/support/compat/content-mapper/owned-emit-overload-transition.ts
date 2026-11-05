@@ -17,7 +17,8 @@ const sourceHashes = [
   ],
   [
     "crates/vize_canon/src/virtual_ts/generator/emits.rs",
-    "4f43fdfe3c849f4018c301883bcdff070c6cc32edaeb98c37345d904372bf889",
+    // The integrated transition keeps the newer verified main producer on both sides.
+    "17b531f50a473ef1bdadac55d311756d2193bd547cc039f8af961355a05a538a",
   ],
   [
     "crates/vize_canon/tests/constructor_emission_projection.rs",

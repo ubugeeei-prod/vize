@@ -15,10 +15,29 @@ export function assertTypedContextWrapperMappings(
   producer: Uint8Array,
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+  const producerText = Buffer.from(producer).toString("utf8");
+  const componentExportAdditions = [
+    "mod component_export;\n",
+    "    component_export::insert_spans(&mut spans, mappings, metadata);\n",
+  ];
   assert.equal(
     digest(producer),
-    "25abafce233364f0b11f71202d32f87290ef7d231f939063938f8649e3448b67",
+    "f75096741294e3f99e5fedf6accad2daf49ee402c72af2bc684b20b0f4310e20",
     "unqualified content-mapper producer",
+  );
+  let historicalProducer = producerText;
+  for (const addition of componentExportAdditions) {
+    assert.equal(
+      historicalProducer.split(addition).length,
+      2,
+      "finite component-export producer successor",
+    );
+    historicalProducer = historicalProducer.replace(addition, "");
+  }
+  assert.equal(
+    digest(historicalProducer),
+    "25abafce233364f0b11f71202d32f87290ef7d231f939063938f8649e3448b67",
+    "finite component-export producer successor",
   );
   assert.equal(
     digest(source),

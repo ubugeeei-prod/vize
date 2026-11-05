@@ -268,8 +268,7 @@ await test("both original CLI carrier forms preserve the complete source policy 
 await test("the reviewed documentation successor preserves the complete original consumer and rejects unknown edits", () => {
   const source = custody();
   const consumer = "crates/vize/tests/lint_attribute_hyphenation_ignore.rs";
-  const archive =
-    "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/OriginalConsumer.rs.txt";
+  const archive = asString(asRecord(consumerSuccessor().historical).snapshot);
   const read = (path: string) => readFileSync(join(checkout, path));
   const historical = read(archive).toString("utf8");
   const current = read(consumer).toString("utf8");

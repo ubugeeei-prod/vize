@@ -17,18 +17,18 @@ test("the current mapper graph preserves complete source bodies, dependencies an
     graph = captureDeclarationGraph(root);
   assertCurrentGraph(graph, root);
   assertSameGraph(graph, root, graph, root);
-  assert.equal(graph.files.length, 11);
-  assert.equal(graph.edges.length, 17);
-  const missingLeaf = structuredClone(graph);
-  missingLeaf.files = missingLeaf.files.filter(
-    (file) => !file.path.endsWith("virtual-ts-emits.d.ts"),
-  );
-  assert.throws(() => assertCurrentGraph(missingLeaf, root));
-  const missingDependency = structuredClone(graph);
-  missingDependency.edges = missingDependency.edges.filter(
-    (edge) => edge.specifier !== "./virtual-ts-emits.js",
-  );
-  assert.throws(() => assertCurrentGraph(missingDependency, root));
+  assert.equal(graph.files.length, 12);
+  assert.equal(graph.edges.length, 20);
+  for (const module of ["virtual-ts-emits", "virtual-ts-emit-overloads"]) {
+    const missingLeaf = structuredClone(graph);
+    missingLeaf.files = missingLeaf.files.filter((file) => !file.path.endsWith(`${module}.d.ts`));
+    assert.throws(() => assertCurrentGraph(missingLeaf, root));
+    const missingDependency = structuredClone(graph);
+    missingDependency.edges = missingDependency.edges.filter(
+      (edge) => edge.specifier !== `./${module}.js`,
+    );
+    assert.throws(() => assertCurrentGraph(missingDependency, root));
+  }
   const dropped = structuredClone(graph);
   dropped.files.pop();
   assert.throws(() => assertCurrentGraph(dropped, root));

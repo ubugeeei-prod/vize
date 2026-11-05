@@ -25,7 +25,7 @@ fn published_rule_pages(catalogue: &str) -> Vec<(&str, &str)> {
 
 #[test]
 fn rule_docs_path_exists_for_every_published_rule() {
-    const CATALOGUE: &str = include_str!("../../../../docs/content/rules/all.md");
+    const CATALOGUE: &str = include_str!("../../../../../docs/content/rules/all.md");
     let pages = published_rule_pages(CATALOGUE);
     let reference = pages
         .iter()
@@ -66,10 +66,10 @@ fn rule_docs_path_exists_for_every_published_rule() {
 #[test]
 fn synthetic_diagnostic_routes_keep_their_owned_documentation() {
     const ROUTES: &str = include_str!(
-        "../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/routes.json"
+        "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/routes.json"
     );
     const CONTROL: &str = include_str!(
-        "../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/DocumentationControl.vue.txt"
+        "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/DocumentationControl.vue.txt"
     );
     let input: serde_json::Value = serde_json::from_str(ROUTES).unwrap();
     assert_eq!(
