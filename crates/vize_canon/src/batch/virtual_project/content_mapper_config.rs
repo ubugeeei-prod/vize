@@ -161,6 +161,12 @@ impl ContentMapperTransformOptions {
             .and_then(Value::as_bool)
             .or(strict_templates)
             .unwrap_or(false);
+        // `vize check` reads the same pair in `tsconfig_gen::vue_compiler_options`.
+        self.strict_v_model = options
+            .get("strictVModel")
+            .and_then(Value::as_bool)
+            .or(strict_templates)
+            .unwrap_or(false);
         self.strict_css_modules = options
             .get("strictCssModules")
             .and_then(Value::as_bool)
@@ -186,6 +192,7 @@ impl ContentMapperTransformOptions {
             fallthrough_attributes: self.fallthrough_attributes,
             fallthrough_attributes_specified: self.fallthrough_attributes_specified,
             check_unknown_directives: self.check_unknown_directives,
+            strict_v_model: self.strict_v_model,
             vue_compiler_target: self.vue_compiler_target,
             ..Default::default()
         };
@@ -206,5 +213,7 @@ fn resolved_target_tag(target: Option<VueVersion>) -> &'static str {
     }
 }
 
+#[cfg(test)]
+mod strict_v_model_tests;
 #[cfg(test)]
 pub(super) mod typed_router_tests;
