@@ -27,6 +27,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // registered too late and template-phase rules —
         // `vue/no-dupe-v-else-if`, `vue/no-mutating-props`, etc. — can't be
         // suppressed. (#968, #1196)
+        self.ctx.record_callback_site(CallbackSite::Prescan);
         self.prescan_suppression_directives(root);
 
         // Run template-level checks under one profiling span. Rule dispatch
@@ -41,6 +42,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 .zip(self.rule_names.iter().copied())
                 .enumerate()
             {
+                self.ctx.set_callback_rule(index);
                 self.ctx.current_rule = rule_name;
                 if hook(index, self.ctx) || !Self::rule_active(keep_mask, index) {
                     continue;

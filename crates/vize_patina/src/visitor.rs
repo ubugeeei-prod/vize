@@ -125,6 +125,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         if !Self::rule_active(keep_mask, index) {
                             continue;
                         }
+                        self.ctx.set_callback_rule(index);
                         self.ctx.current_rule = rule_name;
                         rule.check_interpolation(self.ctx, interp);
                     }
@@ -293,6 +294,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 if !Self::rule_active(keep_mask, index) {
                     continue;
                 }
+                self.ctx.set_callback_rule(index);
                 self.ctx.current_rule = rule_name;
                 rule.enter_element(self.ctx, el);
             }
@@ -317,6 +319,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         if !Self::rule_active(keep_mask, index) {
                             continue;
                         }
+                        self.ctx.set_callback_rule(index);
                         self.ctx.current_rule = rule_name;
                         rule.check_directive(self.ctx, el, dir);
                     }
@@ -343,6 +346,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                     if !Self::rule_active(keep_mask, index) {
                         continue;
                     }
+                    self.ctx.set_callback_rule(index);
                     self.ctx.current_rule = rule_name;
                     rule.exit_element(self.ctx, el);
                 }

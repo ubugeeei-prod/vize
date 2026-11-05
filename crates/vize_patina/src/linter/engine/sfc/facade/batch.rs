@@ -17,10 +17,11 @@ impl MarkupRule for Rules<'_> {
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
         ctx.lint().replay_callback_site(CallbackSite::Template);
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
             if *name == super::TEMPLATE_DOCUMENT_RULE {
                 continue;
             }
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_document(ctx, document);
         }
@@ -33,10 +34,12 @@ impl MarkupRule for Rules<'_> {
         // its attributes beside its element, before the next rule runs.
         let mut bindings: SmallVec<[MarkupBinding<'a>; 8]> = SmallVec::new();
         element.walk_bindings(&mut |binding| bindings.push(binding));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_element(ctx, element);
             for binding in &bindings {
+                ctx.lint().set_callback_rule(*index);
                 ctx.lint().current_rule = name;
                 rule.enter_binding(ctx, element, binding);
             }
@@ -46,7 +49,8 @@ impl MarkupRule for Rules<'_> {
     fn enter_attributes<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Attributes(element.range().start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_attributes(ctx, element);
         }
@@ -55,7 +59,8 @@ impl MarkupRule for Rules<'_> {
     fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::ExitElement(element.range().start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.exit_element(ctx, element);
         }
@@ -71,7 +76,8 @@ impl MarkupRule for Rules<'_> {
             element.range().start,
             directive.range().start,
         ));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_directive(ctx, element, directive);
         }
@@ -84,7 +90,8 @@ impl MarkupRule for Rules<'_> {
     ) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Conditional(conditional.range().start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_conditional(ctx, conditional);
         }
@@ -93,7 +100,8 @@ impl MarkupRule for Rules<'_> {
     fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::List(list.range().start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_list(ctx, list);
         }
@@ -102,7 +110,8 @@ impl MarkupRule for Rules<'_> {
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Text(text.range().start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_text(ctx, text);
         }
@@ -111,7 +120,8 @@ impl MarkupRule for Rules<'_> {
     fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Interpolation(range.start));
-        for (_, name, rule) in self.0 {
+        for (index, name, rule) in self.0 {
+            ctx.lint().set_callback_rule(*index);
             ctx.lint().current_rule = name;
             rule.enter_interpolation(ctx, range);
         }

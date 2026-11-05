@@ -6,6 +6,7 @@ use vize_l0::{FxHashMap, SmallVec};
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub(crate) enum CallbackSite {
+    Prescan,
     Template,
     Element(u32),
     Attributes(u32),
@@ -33,25 +34,20 @@ struct EmissionOrder {
 
 pub(super) struct CallbackOrder {
     visits: FxHashMap<CallbackSite, Visits>,
-    rules: FxHashMap<&'static str, usize>,
     emissions: Vec<EmissionOrder>,
     next_visit: usize,
     current: Option<usize>,
+    rule: usize,
 }
 
 impl CallbackOrder {
-    fn new(names: &[&'static str]) -> Self {
+    fn new() -> Self {
         Self {
             visits: FxHashMap::default(),
-            rules: names
-                .iter()
-                .copied()
-                .enumerate()
-                .map(|(i, n)| (n, i))
-                .collect(),
             emissions: Vec::new(),
             next_visit: 0,
             current: None,
+            rule: usize::MAX,
         }
     }
 
@@ -60,6 +56,7 @@ impl CallbackOrder {
         self.next_visit += 1;
         self.visits.entry(site).or_default().ordinals.push(ordinal);
         self.current = Some(ordinal);
+        self.rule = usize::MAX;
     }
 
     fn replay(&mut self, site: CallbackSite) {
@@ -68,14 +65,15 @@ impl CallbackOrder {
             visits.replayed += 1;
             ordinal
         });
+        self.rule = usize::MAX;
     }
 
-    fn emission(&mut self, name: &'static str) {
+    fn emission(&mut self) {
         let visit = self.current.unwrap_or(usize::MAX);
         self.emissions.push(EmissionOrder {
             visit,
             rule: if self.current.is_some() {
-                self.rules.get(name).copied().unwrap_or(usize::MAX)
+                self.rule
             } else {
                 // A callback without an original visit retains actual arrival order.
                 usize::MAX
@@ -104,8 +102,8 @@ impl CallbackOrder {
 }
 
 impl LintContext<'_> {
-    pub(crate) fn enable_callback_order(&mut self, names: &[&'static str]) {
-        self.callback_order = Some(Box::new(CallbackOrder::new(names)));
+    pub(crate) fn enable_callback_order(&mut self) {
+        self.callback_order = Some(Box::new(CallbackOrder::new()));
     }
 
     #[inline]
@@ -125,13 +123,21 @@ impl LintContext<'_> {
     pub(crate) fn clear_callback_site(&mut self) {
         if let Some(order) = &mut self.callback_order {
             order.current = None;
+            order.rule = usize::MAX;
         }
     }
 
     #[inline]
-    pub(super) fn record_emission(&mut self, name: &'static str) {
+    pub(crate) fn set_callback_rule(&mut self, index: usize) {
         if let Some(order) = &mut self.callback_order {
-            order.emission(name);
+            order.rule = index;
+        }
+    }
+
+    #[inline]
+    pub(super) fn record_emission(&mut self) {
+        if let Some(order) = &mut self.callback_order {
+            order.emission();
         }
     }
 }

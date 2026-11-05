@@ -22,6 +22,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 if !Self::rule_active(keep_mask, index) {
                     continue;
                 }
+                self.ctx.set_callback_rule(index);
                 self.ctx.current_rule = rule_name;
                 rule.check_if(self.ctx, if_node);
             }
@@ -51,6 +52,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 if !Self::rule_active(keep_mask, index) {
                     continue;
                 }
+                self.ctx.set_callback_rule(index);
                 self.ctx.current_rule = rule_name;
                 rule.check_for(self.ctx, for_node);
             }

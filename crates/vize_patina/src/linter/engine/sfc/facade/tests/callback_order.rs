@@ -234,3 +234,41 @@ fn editor_callback_order_retains_all_unsuppressed_complete_diagnostics() {
         assert_eq!(packet(&result), packet(&expected(&events)));
     }
 }
+
+#[test]
+fn editor_callback_order_preserves_comment_producers_between_real_visits() {
+    use Kind::{Directive as D, Element as E, Multiple as M};
+    let events = [
+        (M, "template"),
+        (E, "element"),
+        (M, "first"),
+        (M, "second"),
+        (D, "directive"),
+        (M, "directive"),
+        (E, "element"),
+        (M, "first"),
+        (M, "second"),
+        (D, "directive"),
+        (M, "directive"),
+        (M, "exit"),
+        (M, "exit"),
+    ];
+    let comment = "<!-- @vize:todo order -->";
+    let source = SOURCE.replacen("<template>", &vize_l0::cstr!("<template>{comment}\n"), 1);
+    let mut expected = expected(&events);
+    let start = "<template>".len() as u32;
+    expected.diagnostics.insert(
+        1,
+        LintDiagnostic::warn(
+            "vize/todo",
+            "TODO: order",
+            start,
+            start + comment.len() as u32,
+        ),
+    );
+    expected.warning_count += 1;
+    for (facade, ordered) in [(false, false), (false, true), (true, true)] {
+        let result = linter(&[D, E, M], facade, ordered).lint_sfc(&source, "order.vue");
+        assert_eq!(packet(&result), packet(&expected));
+    }
+}
