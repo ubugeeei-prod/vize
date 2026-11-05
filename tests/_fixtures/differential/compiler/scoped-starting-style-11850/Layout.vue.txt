@@ -1,0 +1,1 @@
+<template><div class="a"/></template><style scoped>.x{&[open]{opacity:1;@starting-style{opacity:0;}}}@starting-style{.a{opacity:0}}</style>
