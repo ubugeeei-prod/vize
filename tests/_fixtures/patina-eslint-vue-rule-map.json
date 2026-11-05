@@ -242,8 +242,16 @@
       "status": "mapped"
     },
     "vue/jsx-uses-vars": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/jsx-uses-vars",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/key-spacing": {
       "issue": 3223,
@@ -1993,8 +2001,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 140,
-    "unimplemented": 110
+    "mapped": 141,
+    "unimplemented": 109
   },
   "upstream": {
     "package": "eslint-plugin-vue",

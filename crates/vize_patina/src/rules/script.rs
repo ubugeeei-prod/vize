@@ -10,6 +10,7 @@ mod define_macros_order;
 mod define_props_declaration;
 mod define_props_destructuring;
 mod exports;
+mod jsx_uses_vars;
 mod linter;
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
@@ -92,6 +93,7 @@ use oxc_span::SourceType;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 pub use exports::*;
+pub(crate) use jsx_uses_vars::jsx_referenced_names;
 pub use no_dupe_keys::NoDupeKeysModuleScript;
 pub use props_emits::EmitsModuleScript;
 pub(crate) use props_emits::collect_options_props;

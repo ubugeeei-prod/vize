@@ -5,8 +5,8 @@
 use super::names::{
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_CUSTOM_EVENT_NAME_CASING,
     RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER, RULE_DEFINE_PROPS_DECLARATION,
-    RULE_DEFINE_PROPS_DESTRUCTURING, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
-    RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,
+    RULE_DEFINE_PROPS_DESTRUCTURING, RULE_JSX_USES_VARS, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,
     RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_DELETE_SET, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
@@ -42,8 +42,8 @@ use super::{
 };
 use crate::rules::script::{
     ComponentOptionsNameCasing, CustomEventNameCasing, DefineEmitsDeclaration, DefineMacrosOrder,
-    DefinePropsDeclaration, DefinePropsDestructuring, NoArrowFunctionsInWatch, NoAsyncInComputed,
-    NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,
+    DefinePropsDeclaration, DefinePropsDestructuring, JsxUsesVars, NoArrowFunctionsInWatch,
+    NoAsyncInComputed, NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,
     NoDeprecatedDataObjectDeclaration, NoDeprecatedDeleteSet, NoDeprecatedDestroyedLifecycle,
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
     NoDeprecatedModelDefinition, NoDeprecatedPropsDefaultThis, NoDeprecatedVueConfigKeycodes,
@@ -160,6 +160,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_MODEL_DEFINITION, profile_name: "patina.script_rule.no_deprecated_model_definition", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedModelDefinition },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES, profile_name: "patina.script_rule.no_deprecated_vue_config_keycodes", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedVueConfigKeycodes },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_RENDER_RETURN, profile_name: "patina.script_rule.require_render_return", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireRenderReturn },
+    BuiltinScriptRuleEntry { rule_name: RULE_JSX_USES_VARS, profile_name: "patina.script_rule.jsx_uses_vars", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &JsxUsesVars },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_SLOTS_AS_FUNCTIONS, profile_name: "patina.script_rule.require_slots_as_functions", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireSlotsAsFunctions },
     BuiltinScriptRuleEntry { rule_name: RULE_ONE_COMPONENT_PER_FILE, profile_name: "patina.script_rule.one_component_per_file", category: "Script", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OneComponentPerFile },
     BuiltinScriptRuleEntry { rule_name: RULE_ORDER_IN_COMPONENTS, profile_name: "patina.script_rule.order_in_components", category: "Script", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OrderInComponents },
