@@ -93,7 +93,7 @@ pub(super) fn visit_expression_container_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRu
     });
 }
 
-fn walk_expression_container_roots<'a>(
+pub(super) fn walk_expression_container_roots<'a>(
     container: &'a JSXExpressionContainer<'a>,
     offset: u32,
     visitor: &mut impl FnMut(MarkupElement<'a>),

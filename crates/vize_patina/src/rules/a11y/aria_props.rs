@@ -12,6 +12,8 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode, SourceLocation};
 
@@ -159,9 +161,41 @@ impl AriaProps {
     }
 }
 
+impl MarkupRule for AriaProps {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        element.walk_bindings(&mut |binding| {
+            let name = match binding.kind() {
+                MarkupBindingKind::Attribute => binding.arg_name(),
+                MarkupBindingKind::Bind => binding
+                    .arg_name()
+                    .filter(|arg| binding.is_static_unqualified_arg_exact(arg)),
+                _ => None,
+            };
+            if let Some(name) = name
+                && Self::is_aria_attr(name)
+                && !Self::is_valid_aria_attr(name)
+            {
+                Self::report_invalid_aria_at(ctx.lint(), name, binding.range());
+            }
+        });
+    }
+}
+
 impl Rule for AriaProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -197,6 +231,14 @@ impl AriaProps {
         invalid_attr: &str,
         loc: &SourceLocation,
     ) {
+        Self::report_invalid_aria_at(
+            ctx,
+            invalid_attr,
+            ByteRange::new(loc.span.start, loc.span.end),
+        );
+    }
+
+    fn report_invalid_aria_at(ctx: &mut LintContext<'_>, invalid_attr: &str, range: ByteRange) {
         let message = ctx.t_fmt("a11y/aria-props.message", &[("attr", invalid_attr)]);
 
         // Find suggestion for similar valid attribute
@@ -205,9 +247,10 @@ impl AriaProps {
                 "a11y/aria-props.help_suggestion",
                 &[("invalid", invalid_attr), ("valid", suggestion)],
             );
-            ctx.error_with_help(message.clone(), loc, help);
+            ctx.error_at_with_help(message.clone(), range, help);
         } else {
-            ctx.error_with_help(message, loc, ctx.t("a11y/aria-props.help"));
+            let help = ctx.t("a11y/aria-props.help");
+            ctx.error_at_with_help(message, range, help);
         }
     }
 }

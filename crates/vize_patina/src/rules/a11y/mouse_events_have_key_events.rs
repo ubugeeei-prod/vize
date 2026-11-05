@@ -87,6 +87,10 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.is_component() || Self::is_markup_opt_out(element) {
             return;

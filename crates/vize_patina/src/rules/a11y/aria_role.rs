@@ -13,6 +13,8 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode, SourceLocation};
 
@@ -224,9 +226,44 @@ impl AriaRole {
     }
 }
 
+impl MarkupRule for AriaRole {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if self.ignore_non_dom && !Self::is_dom_element(element.tag()) {
+            return;
+        }
+        element.walk_bindings(&mut |binding| {
+            let role = match binding.kind() {
+                MarkupBindingKind::Attribute if binding.is_unqualified_arg_exact("role") => {
+                    binding.static_value()
+                }
+                // Only a whole single string or template literal is checkable.
+                MarkupBindingKind::Bind if binding.is_static_unqualified_arg_exact("role") => {
+                    binding.literal_string_value()
+                }
+                _ => None,
+            };
+            if let Some(role) = role {
+                Self::check_role_at(ctx.lint(), role, binding.range());
+            }
+        });
+    }
+}
+
 impl Rule for AriaRole {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -267,6 +304,10 @@ impl Rule for AriaRole {
 
 impl AriaRole {
     fn check_role(&self, ctx: &mut LintContext<'_>, role: &str, loc: &SourceLocation) {
+        Self::check_role_at(ctx, role, ByteRange::new(loc.span.start, loc.span.end));
+    }
+
+    fn check_role_at(ctx: &mut LintContext<'_>, role: &str, range: ByteRange) {
         // Handle multiple roles (space-separated)
         for single_role in role.split_whitespace() {
             let role_lower = single_role.to_ascii_lowercase();
@@ -275,7 +316,8 @@ impl AriaRole {
             if Self::is_abstract_role(&role_lower) {
                 let message =
                     ctx.t_fmt("a11y/aria-role.message_abstract", &[("role", single_role)]);
-                ctx.error_with_help(message, loc, ctx.t("a11y/aria-role.help_abstract"));
+                let help = ctx.t("a11y/aria-role.help_abstract");
+                ctx.error_at_with_help(message, range, help);
                 continue;
             }
 
@@ -288,9 +330,10 @@ impl AriaRole {
                         "a11y/aria-role.help_suggestion",
                         &[("invalid", single_role), ("valid", suggestion)],
                     );
-                    ctx.error_with_help(message.clone(), loc, help);
+                    ctx.error_at_with_help(message.clone(), range, help);
                 } else {
-                    ctx.error_with_help(message, loc, ctx.t("a11y/aria-role.help"));
+                    let help = ctx.t("a11y/aria-role.help");
+                    ctx.error_at_with_help(message, range, help);
                 }
             }
         }

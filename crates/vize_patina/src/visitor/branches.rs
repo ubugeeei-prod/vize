@@ -1,6 +1,7 @@
 //! Original branch callbacks and child traversal.
 
 use super::{LintVisitor, parse_slot_scope_variables, parse_v_for_variables};
+use crate::context::CallbackSite;
 use vize_l0::{CompactString, profile};
 use vize_relief::{ElementNode, PropNode};
 
@@ -10,18 +11,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run if checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_if", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_if(self.ctx, if_node);
-            }
+            Self::callback_rules::<false>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::Conditional(if_node.loc.span.start),
+                |_, rule, ctx| rule.check_if(ctx, if_node),
+            );
         });
 
         // Visit branches
@@ -37,18 +34,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run for checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_for", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_for(self.ctx, for_node);
-            }
+            Self::callback_rules::<false>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::List(for_node.loc.span.start),
+                |_, rule, ctx| rule.check_for(ctx, for_node),
+            );
         });
 
         // Visit children

@@ -200,3 +200,45 @@ pub fn get_static_or_bound_literal_markup_value<'a>(
 pub fn has_named_markup_attribute_or_bind(element: &MarkupElement<'_>, name: &str) -> bool {
     has_named_markup_prop(element, name)
 }
+
+/// Components, slots, templates and non-native tags render unknown DOM.
+pub(crate) fn is_component_like_markup_element(element: &MarkupElement<'_>) -> bool {
+    matches!(
+        element.kind(),
+        MarkupElementKind::Component | MarkupElementKind::Slot | MarkupElementKind::Template
+    ) || !vize_l0::is_native_tag(element.tag())
+}
+
+/// `role="presentation"` / `role="none"` opts the element out.
+pub(crate) fn is_presentation_markup_role(element: &MarkupElement<'_>) -> bool {
+    matches!(
+        get_static_markup_attribute_value(element, "role"),
+        Some("presentation" | "none")
+    )
+}
+
+/// A static or literal `aria-hidden="true"`, or a bind whose expression is `true`.
+pub(crate) fn is_aria_hidden_true_markup(element: &MarkupElement<'_>) -> bool {
+    if get_static_or_bound_literal_markup_value(element, "aria-hidden") == Some("true") {
+        return true;
+    }
+    let mut hidden = false;
+    element.walk_bindings(&mut |binding| {
+        hidden |= binding.kind() == MarkupBindingKind::Bind
+            && binding.is_static_unqualified_arg_exact("aria-hidden")
+            && binding.expression() == Some("true");
+    });
+    hidden
+}
+
+/// Whether a static-argument `v-on` handler for one of `events` is present.
+pub(crate) fn has_static_markup_event(element: &MarkupElement<'_>, events: &[&str]) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= binding.kind() == MarkupBindingKind::On
+            && events
+                .iter()
+                .any(|event| binding.is_static_unqualified_arg_exact(event));
+    });
+    found
+}

@@ -33,7 +33,7 @@ fn authored_nesting_preserves_full_diagnostics_in_every_locale() {
             ] {
                 let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template>";
                 let sfc = cstr!("{prefix}{source}</template>");
-                let mut expected = linter.lint_template(source, "test.vue");
+                let mut expected = linter.lint_template_relief(source, "test.vue");
                 crate::linter::engine::offset_result(&mut expected, prefix.len() as u32);
                 let actual = linter.lint_sfc(&sfc, "test.vue");
                 assert_eq!(

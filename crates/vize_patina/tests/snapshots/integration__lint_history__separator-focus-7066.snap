@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "separator-focus-7066",
+    history: "8f6f963b0cc0a78987ac84ae35960b90d0504fa5",
+    source: "<hr role=\"separator\" /><div role=\"separator\"></div><div role=\"separator\" tabindex=\"0\"></div><div role=\"separator\" :tabindex=\"index\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/role-has-required-aria-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"separator\" must have the 'aria-valuenow' attribute",
+                start: 51,
+                end: 86,
+                help: Some(
+                    "**Role `separator` requires:** aria-valuenow\n\n**Example:**\n```vue\n<div role=\"separator\" aria-valuenow=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"separator\" must have the 'aria-valuenow' attribute",
+                start: 92,
+                end: 132,
+                help: Some(
+                    "**Role `separator` requires:** aria-valuenow\n\n**Example:**\n```vue\n<div role=\"separator\" aria-valuenow=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"separator\" must have the 'aria-valuenow' attribute",
+                    start: 51,
+                    end: 86,
+                    help: Some(
+                        "**Role `separator` requires:** aria-valuenow\n\n**Example:**\n```vue\n<div role=\"separator\" aria-valuenow=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"separator\" must have the 'aria-valuenow' attribute",
+                    start: 92,
+                    end: 132,
+                    help: Some(
+                        "**Role `separator` requires:** aria-valuenow\n\n**Example:**\n```vue\n<div role=\"separator\" aria-valuenow=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

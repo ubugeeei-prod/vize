@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "id-reference-component-anchor",
+    history: "6e76dbcffcd8a1d70a9b8ab719924393c6299ee0",
+    source: "<QTooltip anchor=\"bottom middle\">Help</QTooltip><button anchor=\"menu\">Open</button><label for=\"email\">Email</label>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-refer-to-non-existent-id",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-refer-to-non-existent-id",
+                severity: Warning,
+                message: "The other-reference attribute references id=\"menu\" which does not exist in the template",
+                start: 56,
+                end: 69,
+                help: Some(
+                    "**Why:** ID reference attributes like `for`, `aria-labelledby`, `aria-describedby`, etc. must point to an existing element with that `id`. A broken reference silently breaks the association.\n\n**Fix:** Ensure the referenced ID exists in the template:\n```vue\n<label for=\"name\">Name:</label>\n<input id=\"name\" type=\"text\">\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/no-refer-to-non-existent-id",
+                severity: Warning,
+                message: "The for attribute references id=\"email\" which does not exist in the template",
+                start: 90,
+                end: 101,
+                help: Some(
+                    "**Why:** ID reference attributes like `for`, `aria-labelledby`, `aria-describedby`, etc. must point to an existing element with that `id`. A broken reference silently breaks the association.\n\n**Fix:** Ensure the referenced ID exists in the template:\n```vue\n<label for=\"name\">Name:</label>\n<input id=\"name\" type=\"text\">\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-refer-to-non-existent-id",
+                    severity: Warning,
+                    message: "The other-reference attribute references id=\"menu\" which does not exist in the template",
+                    start: 56,
+                    end: 69,
+                    help: Some(
+                        "**Why:** ID reference attributes like `for`, `aria-labelledby`, `aria-describedby`, etc. must point to an existing element with that `id`. A broken reference silently breaks the association.\n\n**Fix:** Ensure the referenced ID exists in the template:\n```vue\n<label for=\"name\">Name:</label>\n<input id=\"name\" type=\"text\">\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/no-refer-to-non-existent-id",
+                    severity: Warning,
+                    message: "The for attribute references id=\"email\" which does not exist in the template",
+                    start: 90,
+                    end: 101,
+                    help: Some(
+                        "**Why:** ID reference attributes like `for`, `aria-labelledby`, `aria-describedby`, etc. must point to an existing element with that `id`. A broken reference silently breaks the association.\n\n**Fix:** Ensure the referenced ID exists in the template:\n```vue\n<label for=\"name\">Name:</label>\n<input id=\"name\" type=\"text\">\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

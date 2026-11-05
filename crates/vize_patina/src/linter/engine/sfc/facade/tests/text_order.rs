@@ -22,7 +22,7 @@ fn text_and_attribute_rules_preserve_both_registry_orders() {
             r#"<table summary="Description"><tr><td>Save</td></tr></table>"#,
             r#"<div title="日本語😀" align="center">hello {{ value }} world</div>"#,
         ] {
-            let mut expected = linter.lint_template(source, "test.vue");
+            let mut expected = linter.lint_template_relief(source, "test.vue");
             crate::linter::engine::offset_result(&mut expected, 10);
             let sfc = vize_l0::cstr!("<template>{source}</template>");
             let actual = linter.lint_sfc(&sfc, "test.vue");

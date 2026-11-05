@@ -37,6 +37,10 @@ impl MarkupRule for TabindexNoPositive {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Bindings
+    }
+
     fn enter_binding<'a>(
         &self,
         ctx: &mut MarkupContext<'_, 'a>,

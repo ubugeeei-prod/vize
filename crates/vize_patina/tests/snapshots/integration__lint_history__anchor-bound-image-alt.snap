@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "anchor-bound-image-alt",
+    history: "1d7ff3b2b05e1e93a68d37c291d1683e653df5ba",
+    source: "<a :href=\"href\"><img :src=\"src\" :alt=\"alt\" /></a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/anchor-has-content",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

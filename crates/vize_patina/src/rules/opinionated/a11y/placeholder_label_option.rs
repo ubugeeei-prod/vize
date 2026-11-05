@@ -205,6 +205,10 @@ impl MarkupRule for PlaceholderLabelOption {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         let transparent_fragments = ctx.is_jsx();
         Self::check_element(ctx.lint(), element, transparent_fragments);

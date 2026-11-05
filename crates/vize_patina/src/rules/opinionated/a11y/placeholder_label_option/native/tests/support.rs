@@ -33,7 +33,7 @@ pub fn cases() -> Vec<Case> {
         "/tests/fixtures/lint-history/cases.json"
     )))
     .unwrap();
-    assert_eq!(all.len(), 48);
+    assert_eq!(all.len(), 58);
     let selected: Vec<_> = all.into_iter().filter(|case| case.rule == RULE).collect();
     assert_eq!(selected.len(), 4);
     selected

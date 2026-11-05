@@ -64,36 +64,44 @@ fn refused(source: &str, path: &[usize]) {
 
 #[test]
 fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
-    for (source, path, ignored, invalid_end) in [
+    // `aria`: the registered route reports `:role`. Where the facade keeps
+    // the authored v-pre opener (an ignored nested form, a self-closing nested
+    // a), `:role` is a literal attribute, as in Vue's compiler.
+    for (source, path, ignored, invalid_end, aria) in [
         (
             "<template><form><form v-pre><meta :role='x' /></form></form></template>",
             &[0, 0, 0][..],
             Some("<form v-pre>"),
             Some("</form></template>"),
+            false,
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
             &[1][..],
             None,
             Some("</p>"),
+            true,
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
             &[0, 1][..],
             None,
             None,
+            false,
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
             &[0, 1][..],
             None,
             Some("</option></select>"),
+            true,
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
             &[0, 1][..],
             None,
             Some("</optgroup></select>"),
+            true,
         ),
     ] {
         refused(source, path);
@@ -102,7 +110,9 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
             if let Some(head) = ignored {
                 diagnostics.push(parser("error", IGNORED, span(source, head)));
             }
-            diagnostics.push(error(locale, span(source, ":role='x'"), "meta", "role"));
+            if aria {
+                diagnostics.push(error(locale, span(source, ":role='x'"), "meta", "role"));
+            }
             if let Some(tail) = invalid_end {
                 let mut range = span(source, tail);
                 range.end = range.start + u32::try_from(tail.find('>').unwrap() + 1).unwrap();
@@ -151,14 +161,12 @@ fn actual_depth_guard_refusal_preserves_complete_registered_depth_and_aria_error
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(&source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "Element nesting is too deep.",
-                    span(&source, "<div v-pre>")
-                ),
-                error(locale, span(&source, ":role='x'"), "meta", "role"),
-            ])
+            // The over-deep opener still opens v-pre, as in Vue's compiler.
+            expected(vec![parser(
+                "error",
+                "Element nesting is too deep.",
+                span(&source, "<div v-pre>")
+            )])
         );
     }
 }
