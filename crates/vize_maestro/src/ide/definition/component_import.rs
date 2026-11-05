@@ -24,7 +24,9 @@ pub(crate) fn resolve_component_file(
         .or_else(|| find_registered_component_import(ctx, component_name))?;
     let resolved = helpers::resolve_import_path(ctx.uri, &import.specifier)?;
     if is_vue_path(&resolved) {
-        return Some(resolved);
+        // A Vue SFC's component contract belongs to its default export. Named
+        // exports keep their own native value/type, just as through a barrel.
+        return (import.imported_name == "default").then_some(resolved);
     }
     resolve_exported_component(&resolved, &import.imported_name, 0)
 }

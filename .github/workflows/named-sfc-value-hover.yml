@@ -1,0 +1,53 @@
+name: Native named SFC value hover
+on:
+  pull_request:
+    paths:
+      - .github/workflows/named-sfc-value-hover.yml
+      - crates/vize_maestro/src/ide/definition/component_import.rs
+      - crates/vize_maestro/src/ide/definition/component_import/**
+      - crates/vize_maestro/src/ide/hover/component_import.rs
+      - crates/vize_maestro/src/ide/hover/component_import/**
+      - tests/tooling/lsp-named-sfc-value-hover.test.ts
+      - tests/_fixtures/differential/lsp/named-sfc-value-hover-11953/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: named-sfc-value-hover-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  source-cli:
+    uses: ./.github/workflows/pr-source-cli.yml
+    with: { run-cli: true }
+  native-packets:
+    needs: [source-cli]
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      GOMAXPROCS: "4"
+      RAYON_NUM_THREADS: "4"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+      - name: Require complete native hover, navigation and diagnostic packets
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        run: node --test tests/tooling/lsp-named-sfc-value-hover.test.ts
+      - name: Preserve complete source and raw protocol evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: named-sfc-value-hover-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/differential/named-sfc-value-hover-11953/
+            target/differential/lsp-sessions/
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 14
