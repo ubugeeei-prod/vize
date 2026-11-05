@@ -80,3 +80,33 @@ void test("every published page has a named sidebar group in every locale", () =
     );
   }
 });
+
+void test("operational failures are filed with lint execution in their authored locales", () => {
+  const diagnostics = [
+    "/rules/reference/parser-template",
+    "/rules/reference/parser-sfc",
+    "/rules/reference/parser-jsx",
+    "/rules/reference/type-project-configuration",
+  ];
+  const linter = sitemap.navGroups.find((group) => group.key === "linter")!;
+  for (const locale of localeCodes) {
+    const paths = linter.pathsByLocale?.[locale] ?? linter.paths;
+    assert.deepEqual(
+      paths.filter((route) => diagnostics.includes(route)),
+      locale === "en" || locale === "ja" ? diagnostics : [],
+      `${locale}: available operational pages stay with the execution guide`,
+    );
+    const references = sitemap.navGroups
+      .filter((group) => group.key === "rules")
+      .flatMap((group) =>
+        (group.sections ?? []).flatMap((section) =>
+          sitemap.sectionPaths(section, authoredRoutes(locale)),
+        ),
+      );
+    assert.deepEqual(
+      references.filter((route) => diagnostics.includes(route)),
+      [],
+      `${locale}: diagnostic pages are not duplicated as configurable rules`,
+    );
+  }
+});

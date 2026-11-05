@@ -156,7 +156,47 @@ test("full Docs checks real preview resources before building and retains the ra
     ].join("\n"),
   );
   const japaneseRoutes = defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"));
-  assert.equal(japaneseRoutes.length, 32);
+  assert.deepEqual(
+    [...japaneseRoutes].sort(),
+    [
+      "/ja/",
+      "/ja/getting-started",
+      "/ja/guide/configuration",
+      "/ja/guide/migration",
+      "/ja/guide/vite-plus",
+      "/ja/guide/vite-plugin",
+      "/ja/guide/configuration-reference",
+      "/ja/guide/compiler-configuration-reference",
+      "/ja/guide/musea",
+      "/ja/architecture/performance-blacksmith",
+      "/ja/rules",
+      "/ja/rules/all",
+      "/ja/rules/vue",
+      "/ja/rules/type-and-script",
+      "/ja/rules/html",
+      "/ja/rules/accessibility",
+      "/ja/rules/ssr",
+      "/ja/rules/vapor",
+      "/ja/rules/ecosystem",
+      "/ja/rules/musea-and-css",
+      "/ja/rules/petite-vue",
+      "/ja/rules/cross-file",
+      "/ja/rules/reference/script-define-props-destructuring",
+      "/ja/rules/reference/a11y-form-control-has-label",
+      "/ja/rules/reference/vue-no-preprocessor-lang",
+      "/ja/rules/project/vize-croquis-cf-array-mutation",
+      "/ja/rules/project/vize-croquis-cf-circular-reactive-dependency",
+      "/ja/philosophy",
+      "/ja/guide/content-mapper",
+      "/ja/guide/testing",
+      "/ja/guide/jsx-babel-compat",
+      "/ja/architecture/performance",
+      "/ja/rules/reference/parser-template",
+      "/ja/rules/reference/parser-sfc",
+      "/ja/rules/reference/parser-jsx",
+      "/ja/rules/reference/type-project-configuration",
+    ].sort(),
+  );
   const fixture = JSON.parse(readRepoFile("tests", "_fixtures", "docs-ja-rule-editorial.json")) as {
     cases: { case: string; route: string }[];
   };
