@@ -2,6 +2,7 @@ use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod repeated_contracts;
+mod repeated_slot_contract;
 
 #[test]
 fn interrupted_sibling_chain_keeps_exclusions_outside_the_remaining_branches() {

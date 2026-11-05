@@ -1,8 +1,11 @@
 //! Required-slot checks for component usages.
 
 mod child_types;
+mod contract_share;
 mod slot_syntax;
 mod strict_children;
+
+pub(crate) use contract_share::{flush as flush_slot_contracts, reset as reset_slot_contracts};
 
 use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::{Croquis, analysis::ComponentUsage};
@@ -92,19 +95,13 @@ pub(super) fn generate_component_slot_checks(
     {
         let ts = &mut *ctx.ts;
         let mappings = &mut *ctx.mappings;
-        if ctx.hoist_shared_preamble {
-            let structural_slots =
-                crate::virtual_ts::helpers::shared_types::STRUCTURAL_SLOTS.select(true);
-            append!(
-                *ts,
-                "{expr_indent}type {contract_name} = {structural_slots}<typeof {component_ref}>;\n"
-            );
-        } else {
-            append!(
-                *ts,
-                "{expr_indent}type {contract_name} = $StructuralSlots<typeof {component_ref}>;\n"
-            );
-        }
+        let rhs = contract_share::rhs(
+            usage,
+            component_ref,
+            meta.template_ast,
+            ctx.hoist_shared_preamble,
+        );
+        append!(*ts, "{expr_indent}type {contract_name} = {rhs};\n");
 
         let provided_slots = provided_slots_type(usage);
         let check_name = vize_carton::cstr!("__vize_required_slots_{idx}");
