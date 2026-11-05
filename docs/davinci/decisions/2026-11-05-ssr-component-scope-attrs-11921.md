@@ -16,7 +16,10 @@ their own scope attributes, and slotted scope IDs keep their separate path.
 Three live snapshots change for this reason: static root, static nested, and
 forwarded layout component calls lose the generated scope prop. The forwarded
 layout also loses its now unused `mergeProps` import. Other props, slot output,
-and physical element scope attributes stay byte-identical. Historical producer
+and physical element scope attributes stay byte-identical. Five slot-SFC module references apply the same removal. The original Photo
+compiler packet remains unchanged: its eight SSR/Vapor-SSR observations use a
+closed successor at two exact component calls; every map, CSS byte, binding,
+macro artifact and diagnostic remains the original contract. Historical producer
 and public acceptance evidence is preserved.
 
 The source-bound test retains the original four SFCs and compares complete
