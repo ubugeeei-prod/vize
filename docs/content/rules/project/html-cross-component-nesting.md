@@ -6,26 +6,11 @@ title: "html/cross-component-nesting"
 
 Check actual HTML nesting after imported components are composed.
 
-Default severity: warning  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| warning | None | crossFile; rule severity (off/warn/error) |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "html/cross-component-nesting": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: Reachable project declarations and imported components
 
 ## Shared project files
 
@@ -84,6 +69,24 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "html/cross-component-nesting": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Cross-file index](../cross-file.md)

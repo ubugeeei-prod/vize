@@ -77,6 +77,26 @@ tsrs --runExternalCode --noEmit -p tsconfig.json
 | 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`         |
 | Vue - Official 拡張機能の診断           | content mapper を有効にした TypeScript 7.1 ホスト、または [Vize の言語サーバー](./language-server.md) |
 
+## 型チェックの方針
+
+> vue-tsc との完全な互換性は目指していません。目指しているのは、より正しく、より精密な型チェックです。
+
+vue-tsc、`@vue/content-mapper`、TypeScript は参考にする実装であって、仕様ではありません。Vize と
+vue-tsc の結果が食い違うときは、書かれたコードが正しいほうを決めます。Vize が正しければその挙動を
+残し、Vize が間違っていればバグとして直します。位置、コード、メッセージも vue-tsc に合わせるのでは
+なく、タグ全体ではなく該当する属性を指すなど、正確で役に立つことを基準に選びます。
+
+そのため Vize は、vue-tsc が見逃す実際の誤りを報告することがあります。
+
+- 兄弟の prop の型が解決できなくても、prop は宣言した型を保ちます。vue-tsc ではこのとき props が
+  `any` になります。
+- ネイティブ要素のリスナーは、`<div>` の `@before-enter` のような名前でも DOM の `Event` を受け取ります。
+- コンポーネントが宣言していない slot に渡した内容はエラーになります。これはデフォルトで有効です。
+
+それぞれの例、Vize が出す診断、vue-tsc 3.3 の結果は
+[vue-tsc を超える型チェック](./type-checking-beyond-vue-tsc.md)にまとめています。Volar より精密な
+エディターの応答もあわせて載せています。
+
 ## あわせて使える `vize check`
 
 `vize check` は、`vize` に同梱されたチェッカーで `.vue`、`.ts`、`.tsx`、`.d.ts` を
@@ -233,6 +253,7 @@ vize check --socket /tmp/vize-check.sock src
 ## 関連ページ
 
 - TypeScript 7.1 の設定は [Content Mapper](./content-mapper.md)
+- vue-tsc が見逃す誤りは [vue-tsc を超える型チェック](./type-checking-beyond-vue-tsc.md)
 - [CLI リファレンス: `vize check`](./cli.md#check)
 - エディターで型エラーを表示する[言語サーバー](./language-server.md)
 - 同じチェッカーを使う[型情報を使う lint ルール](../rules/type-and-script.md)

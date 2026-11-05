@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "id": "lsp/regression/native-document-identity-11586",
+  "provenance": {
+    "fixCommit": "387eafd0bef4aa1e0bf914b60262f27207d4d53c",
+    "issue": 11586,
+    "witnessPath": "crates/vize_maestro/src/ide/definition/service/import_target/alias.rs",
+    "witnessTest": "resolved_import_alias_keeps_the_authored_workspace_spelling",
+    "inputOrigin": "Exact authored source and dependency consumed by the failing import-alias symlink regression",
+    "contractOrigin": "Authored imported function declaration URI and complete name range"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "Parent.art.vue.txt",
+      "runtimePath": "src/Parent.art.vue",
+      "sha256": "f1ec7492d6e356ce67e4c62f0553bac08a4fa04af986d27ad34d432171965178"
+    },
+    {
+      "source": "format.ts.txt",
+      "runtimePath": "src/format.ts",
+      "sha256": "c511b4a3f054b81eeb744ea67f5efc33ecbafd3d5e568ea6dc3e28395fd77db4"
+    }
+  ],
+  "entry": "src/Parent.art.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "c8379b9b6557db339a6b2bd45fcf24c0c62e19a805da9171e135168ddd6b8fd4"
+  },
+  "method": "textDocument/definition",
+  "scope": "Authored import definition; generic stdio execution does not establish symlink-root or native program identity acceptance"
+}

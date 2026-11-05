@@ -63,6 +63,16 @@ const files = {
 };
 const full = build({ [files.a]: plain, [files.b]: rich, [files.c]: emptyCss, [files.d]: future });
 
+// Old containers can carry a previous native process's project revision.
+// Decoding must drop that entry, preserving unrelated modules and offsets.
+{
+  const stale = { ...plain, typeProject: { root: "/work/tsconfig.json", revision: "old" } };
+  const entries = decode(build({ [files.a]: stale, [files.b]: rich }));
+  assert.ok(entries);
+  assert.equal(entries.has(files.a), false);
+  assert.deepEqual(entries.get(files.b)!.module, rich);
+}
+
 // ---------------------------------------------------------------------------
 // Round-trip. Every field shape has to come back exactly, including the ones
 // this build has no name for.

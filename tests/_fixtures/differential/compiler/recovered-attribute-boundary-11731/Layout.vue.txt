@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const a = 1;
+</script>
+
+<template>
+  <div :title="`x`" status="y">{{ a }}</div>
+</template>

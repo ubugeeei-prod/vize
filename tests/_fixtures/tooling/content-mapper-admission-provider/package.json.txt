@@ -1,0 +1,9 @@
+{
+  "name": "vize-content-mapper-admission-hosts",
+  "private": true,
+  "dependencies": {
+    "typescript": "7.1.0-beta",
+    "tsrs": "0.21.0-ts7.1.0-beta",
+    "vue": "3.5.44"
+  }
+}

@@ -8,8 +8,9 @@ const TEXT = {
     groups: {
       "typescript-js": "JavaScript TypeScript エンジン (tsc)",
       "tsgo-native": "ネイティブ TypeScript エンジン (tsgo)",
+      "tsrs-native": "ネイティブ TypeScript ポート (tsrs)",
     },
-    note: "速度比は同じネイティブ tsgo エンジンの比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。",
+    note: "速度比は同じ TypeScript エンジン種別内の比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。",
     rejected: "検証で除外。実行時間と順位は掲載しません。",
     validation:
       "型検査の実行検証（厳密なテンプレート検査、ウォームアップ前の検証、毎回の診断再確認）:",
@@ -32,8 +33,9 @@ const TEXT = {
     groups: {
       "typescript-js": "JavaScript TypeScript 引擎 (tsc)",
       "tsgo-native": "原生 TypeScript 引擎 (tsgo)",
+      "tsrs-native": "原生 TypeScript 移植版 (tsrs)",
     },
-    note: "速度比仅比较使用相同原生 tsgo 引擎的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。",
+    note: "速度比仅比较使用相同 TypeScript 引擎类别的工具。诊断覆盖范围可能不同，因此这不代表准确性相同。使用 JavaScript TypeScript 引擎的 vue-tsc 仅作为同次运行的时间参考，不计算跨引擎速度比。",
     rejected: "验证未通过，不公布耗时或排名。",
     validation: "类型检查工作验证（严格模板检查；预热前验证；每次运行重新核对诊断）:",
     proofColumns: [
@@ -55,8 +57,9 @@ const TEXT = {
     groups: {
       "typescript-js": "Moteur TypeScript JavaScript (tsc)",
       "tsgo-native": "Moteur TypeScript natif (tsgo)",
+      "tsrs-native": "Portage TypeScript natif (tsrs)",
     },
-    note: "Les rapports comparent uniquement les outils utilisant le même moteur tsgo natif. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.",
+    note: "Les rapports comparent uniquement les outils d’une même classe de moteur TypeScript. La couverture des diagnostics peut différer : cela ne démontre pas une précision équivalente. vue-tsc, qui utilise le moteur TypeScript JavaScript, figure comme référence chronométrée lors de la même exécution, sans rapport entre moteurs différents.",
     rejected: "rejeté lors de la validation ; aucun temps ni classement publié.",
     validation:
       "Validation du travail de vérification des types (templates stricts ; avant préchauffage ; diagnostics revérifiés à chaque exécution) :",
@@ -79,8 +82,9 @@ const TEXT = {
     groups: {
       "typescript-js": "Mecanismo TypeScript JavaScript (tsc)",
       "tsgo-native": "Mecanismo TypeScript nativo (tsgo)",
+      "tsrs-native": "Port nativo de TypeScript (tsrs)",
     },
-    note: "As razões comparam apenas ferramentas que usam o mesmo mecanismo tsgo nativo. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.",
+    note: "As razões comparam apenas ferramentas da mesma classe de mecanismo TypeScript. A cobertura dos diagnósticos pode diferir; isso não demonstra precisão equivalente. O vue-tsc, que usa o mecanismo TypeScript JavaScript, aparece como referência de tempo da mesma execução, sem razão entre mecanismos diferentes.",
     rejected: "rejeitado na validação; nenhum tempo ou posição publicado.",
     validation:
       "Validação do trabalho de verificação de tipos (templates estritos; antes do aquecimento; diagnósticos conferidos a cada execução):",

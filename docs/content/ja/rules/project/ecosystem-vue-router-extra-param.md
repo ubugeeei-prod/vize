@@ -4,30 +4,15 @@ title: "ecosystem/vue-router-extra-param"
 
 # `ecosystem/vue-router-extra-param`
 
-パスにない tab は Vue Router に破棄されます。
+対象のルートが宣言していないナビゲーションパラメーターを報告します。
 
-既定の重大度: error  
-適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント  
-オプション: crossFile と重大度（off/warn/error）  
-自動修正: なし
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| error | なし | crossFile と重大度（off/warn/error） |
+
+適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント
 
 アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-extra-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## 共通のプロジェクト ファイル
 
@@ -69,9 +54,9 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
-`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
+パスにない tab は Vue Router に破棄されます。`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
 
 `src/UserPost.vue`
 
@@ -84,7 +69,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2", tab: "a" } 
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 `params` から `tab` を除き、ルートのパスで宣言されたキーだけを渡します。タブ選択が必要なら、別途 `query` を使います。
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-extra-param": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [ファイル間ルール一覧](../cross-file.md)

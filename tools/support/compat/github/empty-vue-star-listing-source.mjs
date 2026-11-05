@@ -445,7 +445,7 @@ export async function runStarListingOriginalTest(root, file) {
   const fixture = provisionStarSourceCounterpart(value.root, source, files);
   let retained = false;
   try {
-    await import(pathToFileURL(path.join(fixture.root, file)).href);
+    await fixture.register(() => import(pathToFileURL(path.join(fixture.root, file)).href));
     after(() => {
       try {
         owned(packet);

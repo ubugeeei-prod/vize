@@ -161,3 +161,36 @@ test("overlay custody retains evidence on every outcome and gives each run attem
     1,
   );
 });
+
+test("URI review controls run independently of source admission and retain both failed cohorts", () => {
+  const review = steps.find((step) => step.name === "Require URI identity review regressions")!;
+  assert.equal(review.if, "${{ always() && runner.os == 'Linux' }}");
+  const script = review.run!;
+  assert.match(script, /test "\$\(git rev-parse HEAD\)" = "\$EXPECTED_SOURCE"/);
+  const commands = script.split("\n").filter((line) => line.startsWith("cargo test "));
+  assert.equal(commands.length, 2);
+  const selectors = commands.map((command) =>
+    command.split(" -- ")[1]!.split(" --nocapture")[0]!.split(" "),
+  );
+  assert.deepEqual(selectors, [
+    [
+      "lsp_client::editor_lsp::client::tests::hierarchy_items_preserve_unmapped_foreign_documents",
+      "lsp_client::session::tests::moving_one_spelling_preserves_the_other_native_identity_owner",
+      "lsp_client::session::tests::releasing_either_normalized_owner_keeps_the_other_until_the_last_close",
+      "lsp_client::utils::tests::converging_workspace_edit_keys_keep_every_edit_in_each_original_order",
+      "lsp_client::editor_lsp::file_rename::tests::materialized_renames_share_one_native_namespace_and_keep_each_caller_context",
+      "lsp_client::lifecycle::workspace::initial_project_tests::native_first_materialized_editor_matches_existing_activation_and_delta",
+      "lsp_client::session::logical::tests::an_independent_non_authored_owner_is_not_promoted_to_logical_authority",
+      "lsp_client::session::logical::tests::a_missing_attached_snapshot_is_an_error_not_accepted_logical_authority",
+    ],
+    [
+      "ide::corsa_support::authored_uri::tests::closed_foreign_targets_keep_the_import_path_before_an_open_owner_takes_precedence",
+    ],
+  ]);
+  for (const role of ["canon", "maestro"]) {
+    assert.ok(script.includes(`> "$capture/${role}.stdout" 2> "$capture/${role}.stderr"`));
+    assert.ok(script.includes(`${role}_status=$?`));
+    assert.ok(script.includes(`test "$${role}_status" = 0`));
+  }
+  assert.ok(script.indexOf("maestro_status=$?") < script.indexOf('test "$canon_status" = 0'));
+});

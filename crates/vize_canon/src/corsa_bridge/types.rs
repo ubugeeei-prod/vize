@@ -13,7 +13,9 @@ use std::path::PathBuf;
 use crate::virtual_ts::ProjectionMapping;
 use vize_carton::String;
 
+mod diagnostics;
 mod signature_help;
+pub use diagnostics::{DiagnosticPhase, PhasedLspDiagnostic};
 
 pub use signature_help::{
     LspParameterInformation, LspParameterLabel, LspSignatureHelp, LspSignatureInformation,

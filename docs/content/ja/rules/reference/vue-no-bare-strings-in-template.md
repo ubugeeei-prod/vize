@@ -1,18 +1,44 @@
 ---
 title: "vue/no-bare-strings-in-template"
+description: "テンプレートに直接書かれた、国際化の対象となるテキストを検出します。"
 ---
 
 # `vue/no-bare-strings-in-template`
 
 テンプレートに直接書かれた、国際化の対象となるテキストを検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<div>hello</div>
+<img alt="a cat" />
+<input placeholder="Search" />
+<button title="Close">x</button>
+</template>
+```
+
+## 良い例
+
+翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
+
+```vue annotate="add:2,3,4,5,6"
+<template>
+<div>{{ $t('hello') }}</div>
+<img :alt="$t('cat')" />
+<div>-</div>
+<div>123</div>
+<button :title="$t('close')">{{ $t('x') }}</button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,37 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。
-
-```vue
-<template>
-<div>hello</div>
-<img alt="a cat" />
-<input placeholder="Search" />
-<button title="Close">x</button>
-</template>
-```
-
-## 良い
-
-翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
-
-```vue
-<template>
-<div>{{ $t('hello') }}</div>
-<img :alt="$t('cat')" />
-<div>-</div>
-<div>123</div>
-<button :title="$t('close')">{{ $t('x') }}</button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47)

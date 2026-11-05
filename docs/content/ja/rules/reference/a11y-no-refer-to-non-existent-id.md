@@ -1,18 +1,38 @@
 ---
 title: "a11y/no-refer-to-non-existent-id"
+description: "文書内に存在しない ID への参照を検出します。"
 ---
 
 # `a11y/no-refer-to-non-existent-id`
 
 文書内に存在しない ID への参照を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+aria-labelledby が save-label を参照していますが、その ID の要素がありません。
+
+```vue
+<template>
+  <button aria-labelledby="save-label">Save</button>
+</template>
+```
+
+## 良い例
+
+一致する ID の span を追加し、ボタンの名前を参照できるようにします。
+
+```vue annotate="add:2"
+<template>
+  <span id="save-label">Save changes</span>
+  <button aria-labelledby="save-label">Save</button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-aria-labelledby が save-label を参照していますが、その ID の要素がありません。
-
-```vue
-<template>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
-
-## 良い
-
-一致する ID の span を追加し、ボタンの名前を参照できるようにします。
-
-```vue
-<template>
-  <span id="save-label">Save changes</span>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L38) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L38)

@@ -70,14 +70,16 @@ export const chineseShared: Record<string, string> = {
     "问题针对这个依赖生命周期的组合式函数，并非全面禁止普通工具函数或 setup 外的所有 Composition API 调用。此诊断约定目前没有实现。",
   "The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.":
     "当前诊断实现扫描 JSON.parse(input) 等模板表达式，不会报告仅存在于 script 块中的 throw 语句。",
-  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.":
-    "此示例假定 ID 唯一标识记录。比较指向同一响应式代理的两个引用仍然有效；此诊断约定目前没有实现。",
+  "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer. A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object.":
+    "此示例假定 ID 唯一标识记录。比较指向同一响应式代理的两个引用仍然有效；此诊断约定目前没有实现。原始对象与其响应式代理具有不同的对象身份，toRaw() 返回原始对象。",
   "The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.":
     "实验性 Rust CrossFileAnalyzer 有此诊断代码的实现。CLI 分析遍不会单独发出该代码；配置其 ID 不会启用该 Rust 分析遍。这些情形描述分析器支持的图与事实，并非 Vite+ 功能承诺。",
   "The watcher must only derive the destination. Editable copies and callbacks with other side effects are allowed.":
     "此情形要求侦听器仅派生目标值。可编辑副本及具有其他副作用的回调被允许。",
   "This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.":
     "此检查比较提供者与消费者的显式类型注解，而非推断的字面量值类型。保留示例中提供者的 `as string` 注解。",
+  "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.":
+    "此诊断代码归类多种响应性问题，包括将 prop 复制到 ref。它并不表示跨文件分析遍会检测所有 Date.now() 表达式。",
   "This example configures window.localStorage. The rule has no default deny list; enabling it alone does not report a member.":
     "此示例配置 window.localStorage。规则没有默认拒绝列表；仅启用规则不会报告成员。",
   "This example uses component provide/inject. `app.provide` and supported `app.runWithContext` injection are different valid ownership surfaces, not prohibited by this scenario. No current producer emits this contract code.":
@@ -102,4 +104,8 @@ export const chineseShared: Record<string, string> = {
     "错误和正确示例都使用这些不变的文件。在项目中安装导入的包：Vue，以及示例中出现的 vue-router 或 Pinia。遵循版本特定的支持说明。入口根文件显式展示组件关系。",
   "Vue permits ref/reactive/computed outside component setup. The risk here is unwanted ownership/sharing under an explicit instance-isolation policy, not API illegality. This contract has no current producer.":
     "Vue 允许在组件 setup 外使用 ref/reactive/computed。此处风险是在显式实例隔离策略下产生非预期所有权与共享，并非 API 不合法。此诊断约定目前没有实现。",
+  "Vue permits this reactive state; the example requires each component instance to own its own count.":
+    "Vue 允许这种响应式状态；此示例要求每个组件实例拥有自己的 count。",
+  "Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.":
+    "Vue 支持 watchEffect 的清理；正确示例使用显式的 watch 来源，并取消已失效的工作。",
 };

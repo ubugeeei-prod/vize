@@ -154,6 +154,7 @@ fn authored_element_queries_match_the_non_repairing_template_facade() {
         r#"<Comp :title="value"><template #[name]="scope"><slot :name="name" :value="scope"/></template></Comp>"#,
         r#"<table><template v-for="row in rows"><tr :key="row.id"><td encoding="text&#47;html">cell</td></tr></template></table>"#,
         r#"<template v-if="open"><a :href="url" @click.stop="save"/><component :is="view"/></template>"#,
+        r#"<component/><component :is="view"/><component v-pre :is="view"/><div v-pre><component :is="view"/></div>"#,
     ] {
         let allocator = Allocator::new();
         let (root, _) = Parser::with_options_and_template_syntax(

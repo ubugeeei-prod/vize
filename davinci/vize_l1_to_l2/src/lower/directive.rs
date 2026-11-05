@@ -62,25 +62,39 @@ pub(crate) enum AttrForm<'a> {
     Directive(Directive<'a>),
 }
 
-/// Split an authored attribute name.
-pub(crate) fn classify<'a>(name: &'a str) -> AttrForm<'a> {
-    if let Some(rest) = name.strip_prefix(':') {
-        return directive(Head::Bind, "", arg_first(rest));
+/// An authored attribute name split at its head: what directive it
+/// spells, and the argument and modifier text that follows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct HeadSplit<'a> {
+    pub head: Head,
+    /// The custom head's name without `v-`; empty for built-ins.
+    pub name: &'a str,
+    rest: &'a str,
+    /// Whether `rest` opens with an argument (a shorthand or `v-name:`).
+    arg_first: bool,
+}
+
+/// Split an authored attribute name at its head; `None` for a plain
+/// attribute. Reads no argument or modifier, so it allocates nothing.
+pub(crate) fn split_head(name: &str) -> Option<HeadSplit<'_>> {
+    // `.prop="x"` — v-bind's `.prop` shorthand; the leading dot is the
+    // spelling, the argument follows it.
+    for (prefix, head) in [
+        (':', Head::Bind),
+        ('.', Head::Bind),
+        ('@', Head::On),
+        ('#', Head::Slot),
+    ] {
+        if let Some(rest) = name.strip_prefix(prefix) {
+            return Some(HeadSplit {
+                head,
+                name: "",
+                rest,
+                arg_first: true,
+            });
+        }
     }
-    if let Some(rest) = name.strip_prefix('.') {
-        // `.prop="x"` — v-bind's `.prop` shorthand; the leading dot is
-        // the spelling, the argument follows it.
-        return directive(Head::Bind, "", arg_first(rest));
-    }
-    if let Some(rest) = name.strip_prefix('@') {
-        return directive(Head::On, "", arg_first(rest));
-    }
-    if let Some(rest) = name.strip_prefix('#') {
-        return directive(Head::Slot, "", arg_first(rest));
-    }
-    let Some(rest) = name.strip_prefix("v-") else {
-        return AttrForm::Static;
-    };
+    let rest = name.strip_prefix("v-")?;
     // Head runs to the first `:` (argument) or `.` (modifiers).
     let (head_text, tail) = rest
         .find([':', '.'])
@@ -104,26 +118,35 @@ pub(crate) fn classify<'a>(name: &'a str) -> AttrForm<'a> {
         "memo" => (Head::Memo, ""),
         other => (Head::Custom, other),
     };
-    let (arg, modifiers) = match tail.strip_prefix(':') {
-        Some(after_colon) => arg_first(after_colon),
-        None => (None, split_modifiers(tail.strip_prefix('.').unwrap_or(""))),
-    };
-    AttrForm::Directive(Directive {
-        head,
-        name,
-        arg,
-        modifiers,
+    Some(match tail.strip_prefix(':') {
+        Some(after_colon) => HeadSplit {
+            head,
+            name,
+            rest: after_colon,
+            arg_first: true,
+        },
+        None => HeadSplit {
+            head,
+            name,
+            rest: tail.strip_prefix('.').unwrap_or(""),
+            arg_first: false,
+        },
     })
 }
 
-fn directive<'a>(
-    head: Head,
-    name: &'a str,
-    (arg, modifiers): (Option<Arg<'a>>, Vec<&'a str>),
-) -> AttrForm<'a> {
+/// Split an authored attribute name.
+pub(crate) fn classify<'a>(name: &'a str) -> AttrForm<'a> {
+    let Some(split) = split_head(name) else {
+        return AttrForm::Static;
+    };
+    let (arg, modifiers) = if split.arg_first {
+        arg_first(split.rest)
+    } else {
+        (None, split_modifiers(split.rest))
+    };
     AttrForm::Directive(Directive {
-        head,
-        name,
+        head: split.head,
+        name: split.name,
         arg,
         modifiers,
     })

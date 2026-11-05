@@ -389,14 +389,14 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
       name,
     );
   }
-  for (const [group, pkg] of [
-    ["ui-conformance", "./npm/ui"],
-    ["fresco-conformance", "./npm/fresco-native"],
-    ["original-project", "./npm/oxlint"],
-  ]) {
+  for (const [group, packages] of [
+    ["ui-conformance", ["./npm/ui", "./npm/cli"]],
+    ["fresco-conformance", ["./npm/fresco-native"]],
+    ["original-project", ["./npm/oxlint"]],
+  ] as const) {
     assert.deepEqual(
       jsInstallFilters(group),
-      [packageName, "{./npm/native}...", `{${pkg}}...`],
+      [packageName, "{./npm/native}...", ...packages.map((pkg) => `{${pkg}}...`)],
       group,
     );
   }

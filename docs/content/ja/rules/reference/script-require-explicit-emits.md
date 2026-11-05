@@ -1,18 +1,39 @@
 ---
 title: "script/require-explicit-emits"
+description: "emit するイベントを defineEmits または emits に宣言します。"
 ---
 
 # `script/require-explicit-emits`
 
 emit するイベントを defineEmits または emits に宣言します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+受け取った emit 関数が `save` を送信しますが、`defineEmits([])` にはそのイベントが宣言されていません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const emit = defineEmits([]);
+emit("save");
+</script>
+```
+
+## 良い例
+
+宣言に `"save"` を追加し、送信する文字列イベントをコンポーネントの明示的なイベント契約に含めます。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const emit = defineEmits(["save"]);
+emit("save");
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-受け取った emit 関数が `save` を送信しますが、`defineEmits([])` にはそのイベントが宣言されていません。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits([]);
-emit("save");
-</script>
-```
-
-## 良い
-
-宣言に `"save"` を追加し、送信する文字列イベントをコンポーネントの明示的なイベント契約に含めます。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-emit("save");
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60)

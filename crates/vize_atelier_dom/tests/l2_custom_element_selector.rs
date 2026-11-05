@@ -15,15 +15,13 @@ use vize_atelier_dom::{
     compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
 use vize_l0::Allocator;
-use vize_l0::profiler::{CounterSummary, global_profiler};
-
-static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
@@ -36,11 +34,11 @@ fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
         custom_elements(),
     );
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let selected =
         compile_template_sections(source, DomCompilerOptions::default(), custom_elements());
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(selected.preamble, compat.preamble);
@@ -55,9 +53,9 @@ fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
 
 #[test]
 fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
@@ -70,10 +68,10 @@ fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
         custom_elements(),
     );
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let selected = compile_sfc_sections(source, DomCompilerOptions::default(), custom_elements());
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(selected.preamble, compat.preamble);
@@ -88,9 +86,9 @@ fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
 
 #[test]
 fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
@@ -103,14 +101,14 @@ fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
         predicate_custom_elements(),
     );
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let selected = compile_template_sections(
         source,
         DomCompilerOptions::default(),
         predicate_custom_elements(),
     );
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(selected.preamble, compat.preamble);
@@ -125,9 +123,9 @@ fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
 
 #[test]
 fn static_predicate_custom_element_matcher_uses_l2_for_sfc_sections() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
@@ -140,14 +138,14 @@ fn static_predicate_custom_element_matcher_uses_l2_for_sfc_sections() {
         predicate_custom_elements(),
     );
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let selected = compile_sfc_sections(
         source,
         DomCompilerOptions::default(),
         predicate_custom_elements(),
     );
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(selected.preamble, compat.preamble);
@@ -232,10 +230,4 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
-}
-
-fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
-    PROFILER_TEST_LOCK
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }

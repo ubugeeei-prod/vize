@@ -79,6 +79,8 @@ impl VirtualProject {
             package_shadow_scopes: FxHashMap::default(),
             incremental_materialized_candidates: FxHashSet::default(),
             incremental_source_nodes_rebuilt: 0,
+            #[cfg(test)]
+            source_registration_count: 0,
             incremental_dependency_nodes_reconciled: 0,
             incremental_shadow_bindings_rebuilt: 0,
             materialized_package_links: FxHashMap::default(),
@@ -109,6 +111,8 @@ impl VirtualProject {
             unchecked_javascript_files: FxHashSet::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
+            #[cfg(test)]
+            _live: super::live_projects::LiveProject::new(),
         };
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();

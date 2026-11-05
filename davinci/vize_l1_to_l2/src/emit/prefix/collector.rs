@@ -12,7 +12,10 @@ use alloc::vec::Vec as StdVec;
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_assignment_expression, walk_object_property, walk_update_expression},
+    walk::{
+        walk_assignment_expression, walk_assignment_target, walk_object_property,
+        walk_update_expression,
+    },
 };
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::String;
@@ -236,8 +239,12 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         self.scoped_function(function, flags);
     }
 
+    fn visit_assignment_target(&mut self, target: &oxc_ast_types::AssignmentTarget<'_>) {
+        self.collect_assignment_targets(target);
+        walk_assignment_target(self, target);
+    }
+
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
-        self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
         self.guard_setup_assignment(expr);
     }
@@ -246,6 +253,33 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         self.collect_simple_assignment_targets(&expr.argument);
         walk_update_expression(self, expr);
         self.guard_setup_update(expr);
+    }
+
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        property: &oxc_ast_types::AssignmentTargetPropertyIdentifier<'_>,
+    ) {
+        let ident = &property.binding;
+        let name = ident.name.as_str();
+        let start = self.at(ident.span.start);
+        let suffixes = self.suffix_rewrites.len();
+        self.visit_identifier_reference(ident);
+        if let Some((_, prefix)) = self
+            .rewrites
+            .iter_mut()
+            .find(|(position, text)| *position == start && !text.is_empty())
+        {
+            prefix.reserve(name.len() + 2);
+            prefix.insert_str(0, ": ");
+            prefix.insert_str(0, name);
+        } else if self.suffix_rewrites.len() != suffixes {
+            let mut expanded = String::from(name);
+            expanded.push_str(": ");
+            self.rewrites.push((start, expanded));
+        }
+        if let Some(init) = &property.init {
+            self.visit_expression(init);
+        }
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast_types::ObjectProperty<'_>) {

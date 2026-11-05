@@ -28,7 +28,7 @@ void test("native inline Art Self retains the imported host component", () => {
   });
   const result = compileVariantSfc(art, fixture.template, fixture.variant, fixture.filename);
   assert.deepEqual(result.errors, []);
-  assert.match(result.code, /import MuseaComponent from "\/project\/Button\.vue"/u);
+  assert.match(result.code, /import MuseaComponent from '\/project\/Button\.vue'/u);
   assert.doesNotMatch(result.code, /_resolveComponent\("MuseaComponent"\)/u);
 });
 

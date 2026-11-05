@@ -40,13 +40,12 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
         }
         checked += 1;
         unavailable += usize::from(no_source_finding);
-        let shared = section(&page, "## Shared project files", "## Bad");
-        for (heading, next, should_report) in [("## Bad", "## Good", true), ("## Good", "", false)]
-        {
+        let shared = section(&page, "## Shared project files");
+        for (heading, should_report) in [("## Bad", true), ("## Good", false)] {
             let project = tempfile::tempdir().expect("documentation project");
             for (file, source) in files(shared)
                 .into_iter()
-                .chain(files(section(&page, heading, next)))
+                .chain(files(section(&page, heading)))
             {
                 let path = project.path().join(file.as_str());
                 fs::create_dir_all(path.parent().expect("file parent"))
@@ -119,13 +118,25 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
-fn section<'a>(page: &'a str, heading: &str, next: &str) -> &'a str {
-    let text = page.split_once(heading).expect("documented section").1;
-    if next.is_empty() {
-        text
-    } else {
-        text.split_once(next).expect("next section").0
+fn section<'a>(page: &'a str, heading: &str) -> &'a str {
+    let mut offset = 0;
+    let mut start = None;
+    let mut fenced = false;
+    for line in page.split_inclusive('\n') {
+        let text = line.trim_end_matches(['\r', '\n']);
+        if text.starts_with("```") {
+            fenced = !fenced;
+        } else if !fenced && text.starts_with("## ") {
+            if let Some(start) = start {
+                return &page[start..offset];
+            }
+            if text == heading {
+                start = Some(offset + text.len());
+            }
+        }
+        offset += line.len();
     }
+    &page[start.expect("documented section")..]
 }
 
 fn files(section: &str) -> Vec<(String, String)> {
@@ -149,4 +160,19 @@ fn files(section: &str) -> Vec<(String, String)> {
         inputs.push((file.into(), source.into()));
     }
     inputs
+}
+
+#[test]
+fn project_sections_keep_fenced_headings_and_exclude_configuration() {
+    let page = "## Good\n\n`App.vue`\n\n```vue\n<template>\n## Configuration (Vite+)\n</template>\n```\n\n## Configuration (Vite+)\n\n```ts\nexport default {}\n```\n";
+    assert_eq!(
+        section(page, "## Good"),
+        "\n\n`App.vue`\n\n```vue\n<template>\n## Configuration (Vite+)\n</template>\n```\n\n"
+    );
+}
+
+#[test]
+fn project_sections_start_only_at_unfenced_heading_lines() {
+    let page = "## Shared project files\n\n`example.ts`\n\n```ts\n## Good\n```\n\nA paragraph mentions ## Good.\n\n## Good\n\nThe repaired project.\n\n## Related\n";
+    assert_eq!(section(page, "## Good"), "\n\nThe repaired project.\n\n");
 }

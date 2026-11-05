@@ -5,7 +5,8 @@ import {
   transformVizeVirtualModule,
 } from "./vite-transform.ts";
 import type { VizePluginState } from "./state.ts";
-import { loadHook, transformHook } from "./load.ts";
+import { transformHook } from "./load.ts";
+import { getSfcModuleRequest, transformSfcModule } from "./sfc-module.ts";
 import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 
 {
@@ -131,12 +132,17 @@ import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
     toVirtualId("/src/NoScript.server.vue"),
     toPluginVisibleVirtualId("/src/NoScript.server.vue"),
   ]) {
-    const placeholder = loadHook(state, id, { ssr: false });
-    assert.ok(placeholder && typeof placeholder === "object", "Client builds stub .server.vue");
+    const sfc = getSfcModuleRequest(state, id);
+    assert.ok(sfc, id);
+    const placeholder = await transformSfcModule(state, "<template><p /></template>", sfc, {
+      ssr: false,
+    });
+    assert.match(placeholder.code, /ServerPlaceholder/, "Client builds stub .server.vue");
+    assert.equal(placeholder.map, null, "the boundary placeholder is emitted as authored");
     assert.equal(
-      await transformHook(state, placeholder.code, id, { ssr: false }),
+      await transformHook(state, "<template><p /></template>", id, { ssr: false }),
       null,
-      "the boundary placeholder must be handed back untouched",
+      "the SFC text reaches the compile stage untouched",
     );
   }
 

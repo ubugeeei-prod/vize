@@ -145,8 +145,23 @@ pub(super) fn resolve_open_project(
         no_unused_locals = compiler_options.get("noUnusedLocals") == Some(&Value::Bool(true));
         check_javascript = compiler_options.get("checkJs") == Some(&Value::Bool(true));
     }
-    let shared_helpers =
-        content_mapper_helper_capability(Path::new(params.config_file_name.as_str()));
+    let shared_helpers = super::helper_abi::installed_helpers(
+        Path::new(params.config_file_name.as_str()),
+        &params.compiler_options,
+    );
+    let mut watched_files = configuration.watched_files;
+    watched_files.extend(shared_helpers.watched_files);
+    watched_files.sort();
+    watched_files.dedup();
+    let config_identity = if shared_helpers.fingerprint.is_empty() {
+        configuration.config_identity
+    } else {
+        cstr!(
+            "{}:sdk:{}",
+            configuration.config_identity,
+            shared_helpers.fingerprint
+        )
+    };
     Ok((
         ProjectSettings {
             project_context: configuration.project_context,
@@ -155,66 +170,14 @@ pub(super) fn resolve_open_project(
                 .with_options_api(options_api)
                 .with_preserve_unused_diagnostics(no_unused_locals)
                 .with_check_javascript(check_javascript)
-                .with_external_component_attrs_module(shared_helpers.is_some())
-                .with_external_component_type_helpers(shared_helpers == Some(true))
-                .with_shared_virtual_module(
-                    shared_helpers == Some(true)
-                        && installed_virtual_ts_module(Path::new(params.config_file_name.as_str())),
-                ),
+                .with_external_component_attrs_module(shared_helpers.core_types)
+                .with_external_component_type_helpers(shared_helpers.core_types)
+                .with_shared_virtual_module(shared_helpers.virtual_module),
         },
         OpenProjectResult {
-            config_identity: configuration.config_identity,
-            watched_files: configuration.watched_files,
+            config_identity,
+            watched_files,
             option_diagnostics: diagnostics,
         },
     ))
-}
-
-/// `Some(false)` retains the legacy attribute-only package surface.
-fn installed_virtual_ts_module(config_file_name: &Path) -> bool {
-    let Some(project_directory) = config_file_name.parent() else {
-        return false;
-    };
-    project_directory.ancestors().any(|directory| {
-        directory
-            .join("node_modules/vize/virtual-ts-checker.d.ts")
-            .is_file()
-    })
-}
-
-fn content_mapper_helper_capability(config_file_name: &Path) -> Option<bool> {
-    let project_directory = config_file_name.parent()?;
-    let helper = project_directory
-        .ancestors()
-        .map(|directory| directory.join("node_modules/vize/content-mapper-helpers.d.ts"))
-        .find(|candidate| candidate.is_file())?;
-    let helper_directory = helper.parent()?;
-    let same_vue = resolve_node_package(project_directory, "vue")
-        .zip(resolve_node_package(helper_directory, "vue"))
-        .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue);
-    if !same_vue {
-        return None;
-    }
-    let shared_types = helper_directory.join("generated/content-mapper-types.d.ts");
-    Some(
-        shared_types.is_file()
-            && std::fs::read_to_string(helper).is_ok_and(|contents| {
-                contents.lines().any(|line| {
-                    line == "export type * from \"./generated/content-mapper-types.js\" with { \"resolution-mode\": \"import\" };"
-                })
-            }),
-    )
-}
-
-fn resolve_node_package(from: &Path, package: &str) -> Option<std::path::PathBuf> {
-    from.ancestors().find_map(|directory| {
-        let manifest = directory
-            .join("node_modules")
-            .join(package)
-            .join("package.json");
-        manifest
-            .is_file()
-            .then(|| std::fs::canonicalize(manifest).ok())
-            .flatten()
-    })
 }

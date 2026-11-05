@@ -1,31 +1,42 @@
 ---
 title: "Règles Musea et CSS"
+description: "Les stories `.art.vue` de Musea et le CSS standard des blocs `<style>`."
 ---
 
 # Règles Musea et CSS
 
-Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+Les stories `.art.vue` de Musea et le CSS standard des blocs `<style>`.
 
-<span id="règles-de-la-musea-et-du-css"></span>
-<span id="règles-css-supplémentaires"></span>
+Chaque page de règle montre un exemple qui échoue, un exemple qui passe et la configuration qui active la règle.
 
-| Règle | Exemples | Objectif |
+## Préréglages plus stricts (10)
+
+Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages indique lesquels.
+
+| Règle | Ce qu’elle vérifie | Préréglages | Correction automatique |
+| --- | --- | --- | --- |
+| <span id="css-no-display-none"></span>[`css/no-display-none`](./reference/css-no-display-none.md) | Suggérer v-show plutôt que display: none. | `opinionated`, `nuxt` |  |
+| <span id="css-no-hardcoded-values"></span>[`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | Suggérer des variables CSS plutôt que des valeurs codées en dur. | `opinionated`, `nuxt` |  |
+| <span id="css-no-id-selectors"></span>[`css/no-id-selectors`](./reference/css-no-id-selectors.md) | Déconseiller les sélecteurs d’identifiant en CSS. | `opinionated`, `nuxt` |  |
+| <span id="css-no-important"></span>[`css/no-important`](./reference/css-no-important.md) | Déconseiller !important en CSS. | `opinionated`, `nuxt` |  |
+| <span id="css-no-utility-classes"></span>[`css/no-utility-classes`](./reference/css-no-utility-classes.md) | Déconseiller l’implémentation de classes utilitaires dans les styles des composants. | `opinionated`, `nuxt` |  |
+| <span id="css-no-v-bind-performance"></span>[`css/no-v-bind-performance`](./reference/css-no-v-bind-performance.md) | Signaler le coût de performance de v-bind() en CSS. | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-logical-properties"></span>[`css/prefer-logical-properties`](./reference/css-prefer-logical-properties.md) | Recommander les propriétés logiques CSS pour mieux prendre en charge l’internationalisation. | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | Recommander l’imbrication CSS pour les sélecteurs de descendants. | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | Recommander ::v-slotted() pour styliser le contenu des slots. | `opinionated`, `nuxt` |  |
+| <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | Exiger font-display dans les règles @font-face. | `opinionated`, `nuxt` |  |
+
+## À activer (6)
+
+Dans aucun préréglage. Activez-les par leur nom dans `vue.linter.rules`.
+
+| Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
-| [`css/no-display-none`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-display-none) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-display-none-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-display-none-good) | Suggérer v-show plutôt que display: none |
-| [`css/no-hardcoded-values`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-hardcoded-values) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-hardcoded-values-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-hardcoded-values-good) | Suggérer des variables CSS plutôt que des valeurs codées en dur |
-| [`css/no-id-selectors`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-id-selectors) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-id-selectors-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-id-selectors-good) | Déconseiller les sélecteurs d’identifiant en CSS |
-| [`css/no-important`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-important) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-important-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-important-good) | Déconseiller !important en CSS |
-| [`css/no-utility-classes`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-utility-classes) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-utility-classes-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-utility-classes-good) | Déconseiller l’implémentation de classes utilitaires dans les styles des composants |
-| [`css/no-v-bind-performance`](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-v-bind-performance) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-v-bind-performance-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-no-v-bind-performance-good) | Signaler le coût de performance de v-bind() en CSS |
-| [`css/prefer-logical-properties`](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-logical-properties) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-logical-properties-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-logical-properties-good) | Recommander les propriétés logiques CSS pour mieux prendre en charge l’internationalisation |
-| [`css/prefer-nested-selectors`](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-nested-selectors) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-nested-selectors-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-nested-selectors-good) | Recommander l’imbrication CSS pour les sélecteurs de descendants |
-| [`css/prefer-slotted`](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-slotted) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-slotted-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-prefer-slotted-good) | Recommander ::v-slotted() pour styliser le contenu des slots |
-| [`css/require-font-display`](https://vizejs.dev/fr/rules/musea-and-css.html#css-require-font-display) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#css-require-font-display-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#css-require-font-display-good) | Exiger font-display dans les règles @font-face |
-| [`musea/no-empty-variant`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-no-empty-variant) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-no-empty-variant-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-no-empty-variant-good) | Interdire les blocs &lt;variant&gt; vides |
-| [`musea/prefer-design-tokens`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-prefer-design-tokens) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-prefer-design-tokens-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-prefer-design-tokens-good) | Préférer les variables CSS de design tokens aux valeurs primitives codées en dur |
-| [`musea/require-component`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-component) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-component-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-component-good) | Exiger l’attribut component dans le bloc &lt;art&gt; |
-| [`musea/require-title`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-title) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-title-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-require-title-good) | Exiger l’attribut title dans le bloc &lt;art&gt; |
-| [`musea/unique-variant-names`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-unique-variant-names) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-unique-variant-names-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-unique-variant-names-good) | Exiger des noms de variants uniques |
-| [`musea/valid-variant`](https://vizejs.dev/fr/rules/musea-and-css.html#musea-valid-variant) | [Mauvais](https://vizejs.dev/fr/rules/musea-and-css.html#musea-valid-variant-bad) · [Bon](https://vizejs.dev/fr/rules/musea-and-css.html#musea-valid-variant-good) | Exiger un attribut name dans les blocs &lt;variant&gt; |
+| <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | Interdire les blocs &lt;variant&gt; vides. |  |
+| <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | Préférer les variables CSS de design tokens aux valeurs primitives codées en dur. |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Exiger l’attribut component dans le bloc &lt;art&gt;. |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | Exiger l’attribut title dans le bloc &lt;art&gt;. |  |
+| <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | Exiger des noms de variants uniques. |  |
+| <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | Exiger un attribut name dans les blocs &lt;variant&gt;. |  |
 
-[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[Vue d’ensemble des règles](../rules/index.md) · [Options des règles](/rules/options.md) · [Migrer depuis ESLint](/rules/migration.md)

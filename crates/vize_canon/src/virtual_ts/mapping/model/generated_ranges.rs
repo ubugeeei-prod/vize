@@ -1,6 +1,7 @@
 //! Generated coordinate transforms shared by core and supplementary links.
 
 use super::{ProjectionMapping, VizeMapping, add_delta, shift_both, shift_generated_range};
+use crate::virtual_ts::VizeSubSpan;
 use std::ops::Range;
 
 impl ProjectionMapping {
@@ -25,9 +26,7 @@ impl ProjectionMapping {
         if !self.spans.iter().any(needs_split) {
             for span in &mut self.spans {
                 shift_generated_range(&mut span.gen_range, start, old_end, delta);
-                for sub in &mut span.sub_spans {
-                    shift_generated_range(&mut sub.gen_range, start, old_end, delta);
-                }
+                replace_subspans(&mut span.sub_spans, start, old_end, new_len, delta);
             }
             for link in self
                 .semantic_links
@@ -69,9 +68,7 @@ impl ProjectionMapping {
                 );
             } else {
                 shift_generated_range(&mut span.gen_range, start, old_end, delta);
-                for sub in &mut span.sub_spans {
-                    shift_generated_range(&mut sub.gen_range, start, old_end, delta);
-                }
+                replace_subspans(&mut span.sub_spans, start, old_end, new_len, delta);
                 self.push_with(span, row_meta);
             }
         }
@@ -116,5 +113,116 @@ impl ProjectionMapping {
             adjust(&mut link.source_range);
             adjust(&mut link.target_range);
         }
+    }
+}
+
+fn replace_subspans(
+    spans: &mut Vec<VizeSubSpan>,
+    start: usize,
+    old_end: usize,
+    new_len: usize,
+    delta: isize,
+) {
+    let split = |span: &VizeSubSpan| {
+        span.gen_range.len() == span.src_range.len()
+            && span.gen_range.start < start
+            && old_end < span.gen_range.end
+    };
+    if !spans.iter().any(split) {
+        for span in spans {
+            shift_generated_range(&mut span.gen_range, start, old_end, delta);
+        }
+        return;
+    }
+    let original = core::mem::take(spans);
+    for mut span in original {
+        if split(&span) {
+            let source_start = span.src_range.start + start - span.gen_range.start;
+            let source_end = source_start + old_end - start;
+            spans.push(VizeSubSpan {
+                gen_range: span.gen_range.start..start,
+                src_range: span.src_range.start..source_start,
+            });
+            if old_end > start {
+                spans.push(VizeSubSpan {
+                    gen_range: start..start + new_len,
+                    src_range: source_start..source_end,
+                });
+            }
+            spans.push(VizeSubSpan {
+                gen_range: add_delta(old_end, delta)..add_delta(span.gen_range.end, delta),
+                src_range: source_end..span.src_range.end,
+            });
+        } else {
+            shift_generated_range(&mut span.gen_range, start, old_end, delta);
+            spans.push(span);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn insertion_in_an_identity_subspan_preserves_both_authored_sides() {
+        let prefix = VizeSubSpan {
+            gen_range: 0..4,
+            src_range: 0..4,
+        };
+        let mut mapping = ProjectionMapping::from_spans(vec![VizeMapping {
+            gen_range: 0..11,
+            src_range: 0..10,
+            sub_spans: vec![
+                prefix.clone(),
+                VizeSubSpan {
+                    gen_range: 5..11,
+                    src_range: 4..10,
+                },
+            ],
+        }]);
+        mapping.note_generated_replacement(8, 0, 3);
+        assert_eq!(
+            mapping.spans(),
+            &[VizeMapping {
+                gen_range: 0..14,
+                src_range: 0..10,
+                sub_spans: vec![
+                    prefix,
+                    VizeSubSpan {
+                        gen_range: 5..8,
+                        src_range: 4..7,
+                    },
+                    VizeSubSpan {
+                        gen_range: 11..14,
+                        src_range: 7..10,
+                    },
+                ],
+            }],
+        );
+        assert_eq!(mapping.diagnostic_range_to_authored(6, 7), Some((5, 6)));
+        assert_eq!(mapping.diagnostic_range_to_authored(12, 13), Some((8, 9)));
+    }
+
+    #[test]
+    fn replacement_in_a_nonlinear_subspan_retains_its_original_authored_range() {
+        let mut mapping = ProjectionMapping::from_spans(vec![VizeMapping {
+            gen_range: 0..12,
+            src_range: 0..8,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 2..10,
+                src_range: 2..6,
+            }],
+        }]);
+        mapping.note_generated_replacement(5, 1, 3);
+        assert_eq!(mapping.spans()[0].gen_range, 0..14);
+        assert_eq!(mapping.spans()[0].src_range, 0..8);
+        assert_eq!(
+            mapping.spans()[0].sub_spans,
+            vec![VizeSubSpan {
+                gen_range: 2..12,
+                src_range: 2..6,
+            }],
+        );
     }
 }

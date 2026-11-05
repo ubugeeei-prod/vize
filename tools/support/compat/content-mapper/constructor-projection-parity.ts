@@ -5,6 +5,14 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
+import { withoutProducerUnmappedIgnores } from "./producer-unmapped-ignores.ts";
+import {
+  certifyCanonicalAssets,
+  certifiedTransition,
+  uniqueOffset,
+  previousRuntimeProp,
+  currentRuntimeProp,
+} from "./canonical-helper-transition.ts";
 
 export const canonicalPaths = [
   "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
@@ -55,9 +63,7 @@ export const currentSlotsMarker = "Partial<$Slots>";
 export function readAssets(baseRoot: string, headRoot: string) {
   const baseBytes = canonicalPaths.map((file) => readFileSync(path.join(baseRoot, file)));
   const headBytes = canonicalPaths.map((file) => readFileSync(path.join(headRoot, file)));
-  for (const [index, file] of canonicalPaths.entries()) {
-    assert.deepEqual(headBytes[index], baseBytes[index], `canonical helper body changed: ${file}`);
-  }
+  certifyCanonicalAssets(canonicalPaths, baseBytes, headBytes);
   const baseNativeAttributes = readFileSync(path.join(baseRoot, nativeAttributesPath));
   const headNativeAttributes = readFileSync(path.join(headRoot, nativeAttributesPath));
   if (!baseNativeAttributes.equals(headNativeAttributes)) {
@@ -154,64 +160,11 @@ function range(start: number, length: number, edits: Edit[], limit: number) {
   const relocated = point(start, edits);
   return [relocated, point(start + length, edits) - relocated];
 }
-function uniqueOffset(text: Buffer, needle: Buffer) {
-  const at = text.indexOf(needle);
-  assert.ok(at >= 0 && text.indexOf(needle, at + 1) < 0, "exact helper block must occur once");
-  return at;
-}
-function occurrences(text: string, needle: string) {
-  return text.split(needle).length - 1;
-}
 function bufferOccurrences(text: Buffer, needle: Buffer) {
   let count = 0;
   for (let offset = text.indexOf(needle); offset >= 0; offset = text.indexOf(needle, offset + 1))
     count++;
   return count;
-}
-function certifiedTransition(
-  before: Buffer,
-  after: Buffer,
-  previous: string,
-  current: string,
-  label: string,
-) {
-  const counts = {
-    beforePrevious: occurrences(before.toString(), previous),
-    beforeCurrent: occurrences(before.toString(), current),
-    afterPrevious: occurrences(after.toString(), previous),
-    afterCurrent: occurrences(after.toString(), current),
-  };
-  if (
-    (counts.beforePrevious === 0 &&
-      counts.beforeCurrent === 0 &&
-      counts.afterPrevious === 0 &&
-      counts.afterCurrent === 0) ||
-    (counts.beforePrevious === 1 &&
-      counts.beforeCurrent === 0 &&
-      counts.afterPrevious === 1 &&
-      counts.afterCurrent === 0) ||
-    (counts.beforePrevious === 0 &&
-      counts.beforeCurrent === 1 &&
-      counts.afterPrevious === 0 &&
-      counts.afterCurrent === 1)
-  )
-    return;
-  assert.deepEqual(
-    counts,
-    {
-      beforePrevious: 1,
-      beforeCurrent: 0,
-      afterPrevious: 0,
-      afterCurrent: 1,
-    },
-    `only the certified ${label} transition may change`,
-  );
-  return {
-    start: uniqueOffset(before, Buffer.from(previous)),
-    end: uniqueOffset(before, Buffer.from(previous)) + Buffer.byteLength(previous),
-    replacement: Buffer.from(current),
-    label,
-  };
 }
 function comments(text: string, generatedRanges: [number, number][]) {
   return [...text.matchAll(/^([ \t]*)\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)\r?$/gmu)]
@@ -240,6 +193,9 @@ function relocationEdits(
   assets: Assets,
   replacement: Buffer,
 ) {
+  // Shared packets may already contain both the embedded body and its imports.
+  if (!assets.embedded.equals(assets.headEmbedded) && after.includes(assets.headEmbedded))
+    replacement = assets.headEmbedded;
   const sameHelper = assets.embedded.equals(replacement);
   const helperCounts = {
     beforePrevious: bufferOccurrences(before, assets.embedded),
@@ -291,6 +247,17 @@ function relocationEdits(
       "native attribute alias",
     );
     if (transition) certifiedEdits.push(transition);
+  }
+  // Whole helper replacement owns its alias; pruned helpers retain only the declaration.
+  if (!helperTransition) {
+    const runtimeProp = certifiedTransition(
+      before,
+      after,
+      previousRuntimeProp,
+      currentRuntimeProp,
+      "runtime prop value alias",
+    );
+    if (runtimeProp) certifiedEdits.push(runtimeProp);
   }
   for (const transition of [
     certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),
@@ -390,6 +357,10 @@ export function relocatePacket(
   assets: Assets,
   replacement = assets.imported,
 ) {
+  base = withoutProducerUnmappedIgnores(base);
+  head = withoutProducerUnmappedIgnores(head, {
+    requireComplete: assets.canonical[0].baseSha256 !== assets.canonical[0].headSha256,
+  });
   const sourceBytes = Buffer.byteLength(source);
   validateSource(base, sourceBytes);
   validateSource(head, sourceBytes);
@@ -551,6 +522,10 @@ export function comparePackets(base: Row[], head: Row[], assets: Assets) {
     const usesSharedHelpers =
       before.target === "content-mapper" && ((before.options ?? 0) & 8) !== 0;
     if (usesSharedHelpers) shared++;
+    if ("text" in after.packet)
+      withoutProducerUnmappedIgnores(after.packet, {
+        requireComplete: assets.canonical[0].baseSha256 !== assets.canonical[0].headSha256,
+      });
     if (isDeepStrictEqual(after, before)) {
       if ("text" in before.packet) validateSource(before.packet, Buffer.byteLength(before.source));
       unchanged++;

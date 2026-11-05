@@ -188,16 +188,16 @@ export const contract1Examples: Record<string, ContractExample> = {
         "<script setup lang=\"ts\">\nimport { makeUser } from './user';\nconst { raw, proxy } = makeUser();\nconst sameRecord = proxy.id === raw.id;\n</script>\n\n<template>\n<p>Same record: {{ sameRecord }}</p>\n</template>\n",
     },
     badExplanation: {
-      en: "`proxy === raw` compares wrapper identity, so it is false even though both represent the same user record. The application intended record identity, not object-wrapper identity.",
-      ja: "`proxy === raw` はラッパーの同一性を比較するため、同じユーザーを表していても false になります。アプリが意図するレコードの同一性と、オブジェクトの同一性が異なっています。",
+      en: "This contract illustrates comparing stable record IDs when record identity is intended. `proxy === raw` compares wrapper identity, so it is false even though both represent the same user record. The application intended record identity, not object-wrapper identity.",
+      ja: "この契約の例は、レコードとして同じものかを判定するために安定した ID を比較する方法を示します。`proxy === raw` はラッパーの同一性を比較するため、同じユーザーを表していても false になります。アプリが意図するレコードの同一性と、オブジェクトの同一性が異なっています。",
     },
     goodExplanation: {
       en: "Comparing the stable record `id` answers the intended question without depending on whether the object is raw or proxied.",
       ja: "安定したレコードの `id` を比較し、raw か Proxy かに依存せず意図した同一性を判定します。",
     },
     note: {
-      en: "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer.",
-      ja: "ID がレコードを一意に識別することを前提とします。同じリアクティブ Proxy の参照同士を比較することは有効であり、この契約には現在の生成元がありません。",
+      en: "The example assumes IDs uniquely identify records. Comparing two references to the same reactive proxy remains valid; this contract has no current producer. A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object.",
+      ja: "ID がレコードを一意に識別することを前提とします。同じリアクティブ Proxy の参照同士を比較することは有効であり、この契約には現在の生成元がありません。元のオブジェクトとそのリアクティブな Proxy は別の同一性を持ち、`toRaw()` は元のオブジェクトを返します。",
     },
   },
 };

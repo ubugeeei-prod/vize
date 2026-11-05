@@ -35,27 +35,30 @@ return __returned__
 
 }`;
 
-export const antDesignDomExpected = `import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue";
+export const antDesignDomExpected = `import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+
+
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return _openBlock(), _createBlock($setup["Form"].Item, { label: "Teacher" }, {
-    default: _withCtx(() => [_createVNode($setup["Input"])]),
-    _: 1
-  });
+  return (_openBlock(), _createBlock($setup["Form"].Item, { label: "Teacher" }, {
+    default: _withCtx(() => [
+      _createVNode($setup["Input"])
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
-import { Form, Input } from "ant-design-vue";
+import { Form, Input } from 'ant-design-vue'
+
+
 export default {
-  __name: "AntDesignTeacher",
+  __name: 'AntDesignTeacher',
   render: _sfc_render,
   setup(__props, { expose: __expose }) {
-    __expose();
-    const __returned__ = {
-      Form,
-      Input
-    };
-    Object.defineProperty(__returned__, "__isScriptSetup", {
-      enumerable: false,
-      value: true
-    });
-    return __returned__;
-  }
-};`;
+  __expose();
+
+
+const __returned__ = { Form, Input }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}`;

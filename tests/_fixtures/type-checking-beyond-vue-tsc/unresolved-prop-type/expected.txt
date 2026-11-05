@@ -1,0 +1,3 @@
+src/NodePanel.vue
+  error:3:30 [TS2307] Cannot find module 'missing-run-data' or its corresponding type declarations.
+  error:16:18 [TS2339] Property 'label' does not exist on type 'PanelNode'.

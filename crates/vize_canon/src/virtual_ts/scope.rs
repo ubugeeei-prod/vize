@@ -27,6 +27,7 @@ mod forwarded_roots;
 mod globals;
 mod handler_shape;
 mod inline_callback_classifier;
+mod listener_values;
 mod native_prop_names;
 mod node;
 mod patterns;
@@ -43,7 +44,7 @@ mod vif_guard;
 mod vif_guard_chain;
 
 pub(crate) use closures::generate_scope_closures;
-pub(crate) use component_events::emit_event_inference_helpers;
+pub(crate) use component_events::{emit_event_inference_helpers, emit_gate_aliases};
 pub(crate) use component_prop_checker::{
     contains_inline_function_prop_value, is_inline_callback_prop,
 };

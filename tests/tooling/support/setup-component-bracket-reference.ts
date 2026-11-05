@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { closedSetupReference, type ExposurePacket } from "./script-setup-default-expose.ts";
+import {
+  isTypeScriptSource,
+  type ParseModule,
+  typescriptErasureReference,
+} from "./typescript-erasure-reference.ts";
 
 type ComponentModuleShape = NonNullable<ExposurePacket["moduleShape"]> & {
   defaultExportStart?: number;
@@ -8,7 +13,7 @@ type ComponentModuleShape = NonNullable<ExposurePacket["moduleShape"]> & {
 
 type RuntimeOptionRow = {
   target: string;
-  options: { inlineTemplate?: unknown };
+  options: { inlineTemplate?: unknown; [key: string]: unknown };
   single?: ExposurePacket[];
   batch?: { results: ExposurePacket[] };
   stats?: { outputBytes: number };
@@ -50,19 +55,26 @@ export function setupComponentBracketReference(
   return out;
 }
 
+// `erased` is the current row: a TypeScript source's packets advance by the
+// per-piece erasure only after its program, offsets and map check out.
 export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   row: T,
   sourceFiles: readonly string[],
+  erased: RuntimeOptionRow,
+  parse: ParseModule,
 ): T {
+  assert.equal(erased.target, row.target);
+  assert.deepEqual(erased.options, row.options);
   const out = structuredClone(row);
-  if (out.single)
-    out.single = out.single.map((packet, index) =>
-      closedSetupReference(packet, sourceFiles[index]),
-    );
-  if (out.batch)
-    out.batch.results = out.batch.results.map((packet, index) =>
-      closedSetupReference(packet, sourceFiles[index]),
-    );
+  const advance = (packets: ExposurePacket[], current: ExposurePacket[] | undefined) =>
+    packets.map((packet, index) => {
+      const closed = closedSetupReference(packet, sourceFiles[index]);
+      if (!isTypeScriptSource(sourceFiles[index])) return closed;
+      assert.ok(current?.[index], "the current row holds every TypeScript packet");
+      return typescriptErasureReference(closed, current[index], parse);
+    });
+  if (out.single) out.single = advance(out.single, erased.single);
+  if (out.batch) out.batch.results = advance(out.batch.results, erased.batch?.results);
   if (row.target === "dom" && row.options.inlineTemplate === undefined && out.single && out.batch) {
     out.single[7] = setupComponentBracketReference(out.single[7], "Lazy");
     out.batch.results[7] = setupComponentBracketReference(out.batch.results[7], "Lazy");
@@ -76,4 +88,40 @@ export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
     );
   }
   return out;
+}
+
+export function assertDefaultRuntimeOptionPackets(
+  before: RuntimeOptionRow[],
+  actual: RuntimeOptionRow[],
+  sourceFiles: readonly string[],
+  parse: ParseModule,
+): void {
+  const defaults = (rows: RuntimeOptionRow[]) =>
+    rows.filter(
+      (row) =>
+        row.options.runtimeModuleName === undefined && row.options.runtimeGlobalName === undefined,
+    );
+  const withoutTiming = (row: unknown) => {
+    if (!row) return row;
+    const { timeMs: _timeMs, ...rest } = row as Record<string, unknown>;
+    return rest;
+  };
+  const comparable = (row: RuntimeOptionRow) => ({
+    target: row.target,
+    options: row.options,
+    single: row.single,
+    batch: withoutTiming(row.batch),
+    stats: withoutTiming(row.stats),
+    function: row.function,
+    functionBatch: withoutTiming(row.functionBatch),
+    functionStats: withoutTiming(row.functionStats),
+    syntax: row.syntax,
+  });
+  const current = defaults(actual);
+  const advance = (row: RuntimeOptionRow, index: number) => {
+    const erased = current[index];
+    assert.ok(erased, "the current matrix retains every baseline row");
+    return advanceRuntimeOptionReference(row, sourceFiles, erased, parse);
+  };
+  assert.deepEqual(current.map(comparable), defaults(before).map(advance).map(comparable));
 }

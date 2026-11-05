@@ -8,6 +8,7 @@ mod inline_callback_context_props;
 mod inline_callback_guarded_props;
 mod inline_callback_props;
 mod inline_callback_union_props;
+mod v_else_if_slot_payloads;
 
 #[test]
 fn batch_type_checker_exposes_generic_props_inherited_from_pick() {

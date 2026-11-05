@@ -6,26 +6,11 @@ title: "vize:croquis/cf/non-reactive-provide"
 
 provide した値が reactive ではないため、子孫は更新を観測できません。
 
-既定の重大度: context-dependent  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| context-dependent | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-reactive-provide": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -46,7 +31,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 `ThemeProvider.vue` が通常のオブジェクトを provide しています。そのフィールドを変更しても、inject 側が追跡できる Vue のリアクティブな依存関係にはなりません。
 
@@ -84,7 +69,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-## 良い
+## 良い例
 
 提供する theme を `ref` で包み、inject する同じ参照で後の変更を追跡します。
 
@@ -122,7 +107,25 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/non-reactive-provide": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

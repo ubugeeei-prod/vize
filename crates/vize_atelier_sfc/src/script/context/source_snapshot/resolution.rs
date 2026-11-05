@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::ToCompactString;
 
 use super::{ResolutionScope, TypeSourceSnapshot, lexical_path, source_path};
-use crate::script::context::external_types::resolution::resolve_import_path;
+use crate::script::context::external_types::resolution::resolve_import_path_with_project;
 
 const EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".mts", ".cts", ".js", ".jsx", ".vue",
@@ -67,11 +67,21 @@ impl TypeSourceSnapshot {
     }
 
     fn resolve_uncached(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
+        if !specifier.starts_with('.')
+            && !Path::new(specifier).is_absolute()
+            && let Some(project) = self.project.as_ref()
+            && let Some(path) =
+                project.resolve(specifier, |candidate| self.resolve_candidate(&candidate))
+        {
+            return Some(path);
+        }
         let candidate = if specifier.starts_with('.') {
             Some(current_file.parent()?.join(specifier))
         } else if specifier.starts_with('/') {
             Some(PathBuf::from(specifier))
-        } else if let Some(rest) = specifier.strip_prefix("@/") {
+        } else if self.project.is_none()
+            && let Some(rest) = specifier.strip_prefix("@/")
+        {
             current_file
                 .parent()?
                 .ancestors()
@@ -85,7 +95,7 @@ impl TypeSourceSnapshot {
         }
         // Package exports are handled by the existing package resolver. Source
         // reads still go through this snapshot once the module is identified.
-        resolve_import_path(current_file, specifier)
+        resolve_import_path_with_project(current_file, specifier, self.project.as_deref())
     }
 
     fn exists(&self, candidate: &Path) -> Option<PathBuf> {

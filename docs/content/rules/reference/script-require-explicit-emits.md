@@ -1,18 +1,39 @@
 ---
 title: "script/require-explicit-emits"
+description: "Require emitted events to be declared in defineEmits or the emits option."
 ---
 
 # `script/require-explicit-emits`
 
-Require emitted events to be declared in defineEmits or the emits option
+Require emitted events to be declared in defineEmits or the emits option.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The captured emit function emits `save`, but `defineEmits([])` declares no such event.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const emit = defineEmits([]);
+emit("save");
+</script>
+```
+
+## Good
+
+Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const emit = defineEmits(["save"]);
+emit("save");
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The captured emit function emits `save`, but `defineEmits([])` declares no such event.
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits([]);
-emit("save");
-</script>
-```
-
-## Good
-
-Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-emit("save");
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60)

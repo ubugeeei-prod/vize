@@ -62,12 +62,38 @@ function init({ typescript: ts }) {
   };
 }
 
+const PRUNED_DIRECTORIES = [
+  "node_modules",
+  ".git",
+  "dist",
+  ".output",
+  ".data",
+  "coverage",
+  ".cache",
+  ".turbo",
+  ".vercel",
+  ".netlify",
+];
+
 function discoverSfcFiles(ts, configFile) {
   const config = ts.readConfigFile(configFile, ts.sys.readFile);
   if (config.error) return [];
+  // Nuxt's generated include walks `../**/*`. Skip dependency and build
+  // directories during that second walk. A Vue file inside one is not a root.
+  const pruned = PRUNED_DIRECTORIES.map((name) => `**/${name}`);
   const parsed = ts.parseJsonConfigFileContent(
     config.config,
-    ts.sys,
+    {
+      ...ts.sys,
+      readDirectory: (rootDir, extensions, excludes, includes, depth) =>
+        ts.sys.readDirectory(
+          rootDir,
+          extensions,
+          [...(excludes || []), ...pruned],
+          includes,
+          depth,
+        ),
+    },
     path.dirname(configFile),
     undefined,
     configFile,

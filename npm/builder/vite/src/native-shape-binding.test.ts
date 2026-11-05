@@ -56,6 +56,9 @@ for (const [name, text] of Object.entries(TEXT)) {
     // Options API without a template keeps the authored export, text after it.
     after: `<script>export default { name: "${text}", render() { return "${text}" } }</script><style scoped>p{}</style>`,
     both: `<script>const a = "${text}"; export default { name: "${text}", render() { return a } }</script><style scoped>p{}</style>`,
+    // #11764: the real N-API producer and builder must share comment geometry.
+    blockComment: `<script>const s = "${text}"; export/* note */default { name: s }</script><style scoped>p{}</style>`,
+    lineComment: `<script>const s = "${text}";\r\nexport// note\r\ndefault { name: s }</script><style scoped>p{}</style>`,
   };
   for (const [position, source] of Object.entries(sources)) {
     for (const ssr of [false, true]) {
@@ -74,7 +77,7 @@ for (const [name, text] of Object.entries(TEXT)) {
     }
   }
 }
-assert.equal(cases, 18);
+assert.equal(cases, 30);
 
 // Negative control: UTF-16 indices are not the native contract and must throw.
 {

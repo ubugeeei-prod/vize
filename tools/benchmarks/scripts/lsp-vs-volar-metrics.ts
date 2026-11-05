@@ -17,7 +17,13 @@ export interface TreeReading {
   /** Every live member, so a tree past its memory budget can be killed whole. */
   pids: number[];
   /** Per process, at phase marks only: which member holds the memory and CPU. */
-  members?: Array<{ name: string; cpuSeconds: number; rssBytes: number; pssBytes: number | null }>;
+  members?: Array<{
+    pid: number;
+    name: string;
+    cpuSeconds: number;
+    rssBytes: number;
+    pssBytes: number | null;
+  }>;
 }
 
 const CLOCK_TICKS = 100;
@@ -80,6 +86,46 @@ function descendants<T extends { pid: number; ppid: number }>(rows: T[], roots: 
   return members;
 }
 
+export interface MachineMemory {
+  availableBytes: number;
+  /** tmpfs and shared memory: RAM that no process's RSS shows. */
+  shmemBytes: number;
+  /** Largest processes by RSS, `name MiB`. */
+  largest: (except: Set<number>) => string[];
+}
+
+/** The machine's memory, from `/proc/meminfo`; `null` where there is none. */
+export function machineMemory(): MachineMemory | null {
+  if (process.platform !== "linux") return null;
+  const info = readFileSync("/proc/meminfo", "utf8");
+  const kib = (key: string) =>
+    Number(new RegExp(`^${key}:\\s+(\\d+) kB`, "m").exec(info)?.[1] ?? NaN) * 1024;
+  return {
+    availableBytes: kib("MemAvailable"),
+    shmemBytes: kib("Shmem"),
+    largest: (except) =>
+      procRows()
+        .filter((row) => !except.has(row.pid))
+        .sort((left, right) => right.rssPages - left.rssPages)
+        .slice(0, 5)
+        .map((row) => `${row.name} ${Math.round((row.rssPages * PAGE_BYTES) / 1048576)}`),
+  };
+}
+
+/** Members of `reading` still alive, as `name`; each is SIGKILLed. */
+export function killSurvivors(reading: TreeReading): string[] {
+  const survivors: string[] = [];
+  for (const member of reading.members ?? []) {
+    try {
+      process.kill(member.pid, "SIGKILL");
+      survivors.push(member.name);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
+    }
+  }
+  return survivors;
+}
+
 /** `[[dd-]hh:]mm:ss[.ff]` from `ps -o time`. */
 export function psTimeSeconds(text: string): number {
   const [days, rest] = text.includes("-") ? text.split("-") : ["0", text];
@@ -107,6 +153,7 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
       pids: members.map((member) => member.pid),
       ...(withMembers && {
         members: members.map((member) => ({
+          pid: member.pid,
           name: member.name,
           cpuSeconds: member.cpuTicks / CLOCK_TICKS,
           rssBytes: member.rssPages * PAGE_BYTES,
@@ -115,18 +162,19 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
       }),
     };
   }
-  const ps = spawnSync("ps", ["-Ao", "pid=,ppid=,rss=,time="], { encoding: "utf8" });
+  const ps = spawnSync("ps", ["-Ao", "pid=,ppid=,rss=,time=,comm="], { encoding: "utf8" });
   if (ps.status !== 0) throw new Error(`ps failed (${ps.status}): ${ps.stderr ?? ps.error}`);
   const rows = ps.stdout
     .trim()
     .split("\n")
-    .map((line) => /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)/.exec(line))
+    .map((line) => /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(line))
     .filter((match) => match != null)
     .map((match) => ({
       pid: Number(match[1]),
       ppid: Number(match[2]),
       rssKiB: Number(match[3]),
       cpu: psTimeSeconds(match[4]),
+      name: match[5].split("/").at(-1)!,
     }));
   const members = descendants(rows, roots);
   return {
@@ -135,6 +183,15 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
     pssBytes: null,
     processes: members.length,
     pids: members.map((member) => member.pid),
+    ...(withMembers && {
+      members: members.map((member) => ({
+        pid: member.pid,
+        name: member.name,
+        cpuSeconds: member.cpu,
+        rssBytes: member.rssKiB * 1024,
+        pssBytes: null,
+      })),
+    }),
   };
 }
 

@@ -280,9 +280,9 @@ fn prop<'a>(
     Ok(())
 }
 
-/// Remove a valued static class/style beside its bound value. Style follows
-/// authored order, as official Vapor does; class keeps the retained lane's
-/// static-first lowering until that separate compatibility gap is resolved.
+/// Remove the static class/style beside its bound value. A valueless
+/// attribute is `""`, as official Vapor binds it. Style follows authored
+/// order; class stays static-first with the retained lane.
 fn static_class_or_style<'a>(
     node: &mut Node<'a>,
     binding: &Binding<'a>,
@@ -295,9 +295,10 @@ fn static_class_or_style<'a>(
     };
     let position = attributes
         .iter()
-        .position(|(name, value, _)| *name == binding.name && value.is_some())?;
-    let (_, _, static_span) = *attributes.get(position)?;
+        .position(|(name, _, _)| *name == binding.name)?;
+    let (_, value, static_span) = *attributes.get(position)?;
     let [name_span, _] = binding.spans;
     let after = binding.name == "style" && static_span.0 > name_span.0;
-    attributes.remove(position).1.map(|value| (value, after))
+    attributes.remove(position);
+    Some((value.unwrap_or(""), after))
 }

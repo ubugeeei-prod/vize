@@ -1,18 +1,39 @@
 ---
 title: "vue/valid-v-html"
+description: "Enforce valid `v-html` directives."
 ---
 
 # `vue/valid-v-html`
 
-Enforce valid `v-html` directives
+Enforce valid `v-html` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+`v-html` lacks its expression or uses an argument/modifier that this directive does not support.
+
+```vue annotate="remove:2,3,4"
+<template>
+<div v-html></div>
+<div v-html:arg="foo"></div>
+<div v-html.mod="foo"></div>
+</template>
+```
+
+## Good
+
+`v-html="html"` supplies a valid expression. Syntax validity does not sanitize HTML or make untrusted content safe.
+
+```vue annotate="add:2"
+<template>
+<div v-html="html"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`v-html` lacks its expression or uses an argument/modifier that this directive does not support.
-
-```vue
-<template>
-<div v-html></div>
-<div v-html:arg="foo"></div>
-<div v-html.mod="foo"></div>
-</template>
-```
-
-## Good
-
-`v-html="html"` supplies a valid expression. Syntax validity does not sanitize HTML or make untrusted content safe.
-
-```vue
-<template>
-<div v-html="html"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28)

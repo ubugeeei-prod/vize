@@ -322,6 +322,9 @@ fn missing_ambiguous_nonlinear_or_interior_subspan_mapping_declines_edits() {
         gen_range: 0..8,
         src_range: 0..8,
     });
+    let mut missing_call_end = sub.clone();
+    missing_call_end.sub_spans[0].gen_range.end += 1;
+    missing_call_end.sub_spans[0].src_range.end += 1;
     for spans in [
         vec![],
         vec![VizeMapping::new(0..script.len(), 0..script.len() + 1)],
@@ -330,6 +333,7 @@ fn missing_ambiguous_nonlinear_or_interior_subspan_mapping_declines_edits() {
             VizeMapping::new(script.len()..script.len() * 2, 0..script.len()),
         ],
         vec![sub],
+        vec![missing_call_end],
     ] {
         let mut result = VirtualTsOutput {
             code: format!("{script}{script}").into(),

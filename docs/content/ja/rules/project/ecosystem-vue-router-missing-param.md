@@ -4,30 +4,15 @@ title: "ecosystem/vue-router-missing-param"
 
 # `ecosystem/vue-router-missing-param`
 
-必須の postId がありません。現在のルートに依存する遷移になります。
+必須のルートパラメーターを省略した名前付き遷移を報告します。
 
-既定の重大度: warning  
-適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント  
-オプション: crossFile と重大度（off/warn/error）  
-自動修正: なし
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし | crossFile と重大度（off/warn/error） |
+
+適用範囲: 到達可能なプロジェクトの宣言と import したコンポーネント
 
 アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-missing-param": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## 共通のプロジェクト ファイル
 
@@ -69,9 +54,9 @@ export const router = createRouter({
 });
 ```
 
-## 悪い
+## 悪い例
 
-`user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
+必須の postId がありません。現在のルートに依存する遷移になります。`user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
 
 `src/UserPost.vue`
 
@@ -84,7 +69,7 @@ router.push({ name: "user-post", params: { userId: "1" } });
 <template><p>Post</p></template>
 ```
 
-## 良い
+## 良い例
 
 `userId` と `postId` を両方明示し、現在のルートのパラメーター値に依存せず遷移できるようにします。
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-missing-param": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [ファイル間ルール一覧](../cross-file.md)

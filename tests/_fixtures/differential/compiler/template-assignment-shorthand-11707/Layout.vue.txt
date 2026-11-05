@@ -1,0 +1,2 @@
+<script setup>let Child = 0; const value = {};</script>
+<template><Control @click="({ Child } = value)" /></template>

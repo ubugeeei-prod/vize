@@ -1,20 +1,41 @@
 ---
 title: "vue/prop-name-casing"
+description: "Enforce a casing for declared prop names."
 ---
 
 # `vue/prop-name-casing`
 
-Enforce a casing for declared prop names
+Enforce a casing for declared prop names.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 Checks declared prop names, not the casing of attributes passed to a child.
+
+## Bad
+
+The declared prop name user_name uses underscore-separated spelling.
+
+```vue annotate="remove:2,4"
+<script setup lang="ts">
+defineProps<{ user_name: string }>();
+</script>
+<template><p>{{ user_name }}</p></template>
+```
+
+## Good
+
+The declaration and its template reference use the camelCase name userName.
+
+```vue annotate="add:2,4"
+<script setup lang="ts">
+defineProps<{ userName: string }>();
+</script>
+<template><p>{{ userName }}</p></template>
+```
 
 ## Configuration (Vite+)
 
@@ -33,32 +54,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The declared prop name user_name uses underscore-separated spelling.
-
-```vue
-<script setup lang="ts">
-defineProps<{ user_name: string }>();
-</script>
-<template><p>{{ user_name }}</p></template>
-```
-
-## Good
-
-The declaration and its template reference use the camelCase name userName.
-
-```vue
-<script setup lang="ts">
-defineProps<{ userName: string }>();
-</script>
-<template><p>{{ userName }}</p></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50)

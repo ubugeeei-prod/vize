@@ -1,18 +1,39 @@
 ---
 title: "musea/no-empty-variant"
+description: "内容のない variant ブロックを検出します。"
 ---
 
 # `musea/no-empty-variant`
 
 内容のない variant ブロックを検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Musea の .art.vue ファイルの art / variant / style  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Musea の .art.vue ファイルの art / variant / style。
+
+## 悪い例
+
+name を primary にしているものの、variant の中身が空で、プレビューする内容がありません。
+
+```vue annotate="remove:2"
+<art title="Button" component="./Button.vue">
+  <variant name="primary" />
+</art>
+```
+
+## 良い例
+
+variant の中に tone="primary" の Button を置き、Save を表示します。
+
+```vue annotate="add:2,3,4"
+<art title="Button" component="./Button.vue">
+  <variant name="primary">
+    <Button tone="primary">Save</Button>
+  </variant>
+</art>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-name を primary にしているものの、variant の中身が空で、プレビューする内容がありません。
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
-
-## 良い
-
-variant の中に tone="primary" の Button を置き、Save を表示します。
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant name="primary">
-    <Button tone="primary">Save</Button>
-  </variant>
-</art>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [全ルール](../all.md)
+- [Musea と CSS のルール](../musea-and-css.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8)

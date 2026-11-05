@@ -14,8 +14,11 @@
 //!
 //! - [`types`] - Type definitions (ScopeId, ScopeKind, ScopeData, ScopeBinding, etc.)
 //! - [`chain`] - Scope and ScopeChain implementations
+//! - `globals` - The standard global scopes, shared by every file
 
 mod chain;
+pub(crate) mod globals;
+pub(crate) use globals::setup_global_scopes;
 mod types;
 
 // Re-export all public types

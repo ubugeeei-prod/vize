@@ -210,8 +210,9 @@ jobs:
             args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
           fi
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
-          # The runner has 128 GB: a server past 96 GiB is killed and reported, not left to take the machine down.
-          args+=(--memory-budget-gib 96 --meta "memory-budget=96GiB")
+          # Below 16 GiB available the session is killed and reported, so no server takes the runner down.
+          args+=(--memory-reserve-gib 16 --meta "memory-reserve=16GiB")
+          free -g; df -h /tmp "$RUNNER_TEMP"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
             --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \

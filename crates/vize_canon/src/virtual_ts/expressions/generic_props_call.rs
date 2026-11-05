@@ -237,8 +237,13 @@ pub(crate) fn generate_slot_host_binding(
             "{indent}const {binding_name} = (undefined as unknown as $SlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof {component_ref}>>)(",
         );
     }
-    let isolated_guard = usage
-        .vif_guard
+    // A `v-else-if` guard restates every earlier branch; only the exclusions
+    // its own discriminant test does not imply are narrowing work.
+    let narrowed_guard = usage.vif_guard.as_ref().map(|guard| {
+        super::implied_guard::drop_implied_exclusions(guard)
+            .unwrap_or_else(|| vize_carton::String::from(guard.as_str()))
+    });
+    let isolated_guard = narrowed_guard
         .as_ref()
         .map(|guard| super::incomplete::isolate_incomplete_expression(guard.as_str()));
     if let Some(guard) = isolated_guard.as_ref() {

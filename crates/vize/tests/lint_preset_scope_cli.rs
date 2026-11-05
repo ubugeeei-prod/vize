@@ -253,7 +253,9 @@ fn six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packet
                 );
                 let warning = enabled && mode == "default";
                 let mut messages = if warning {
-                    vec![case["cliMessage"].clone()]
+                    vec![crate::support::current_rule_documentation::message(
+                        case["cliMessage"].clone(),
+                    )]
                 } else {
                     vec![]
                 };
@@ -272,9 +274,19 @@ fn six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packet
                 {
                     let baseline = case["baselineCliMessages"].as_array().unwrap();
                     if case["baselineCliMessagesFirst"].as_bool() == Some(true) {
-                        messages = baseline.iter().cloned().chain(messages).collect();
+                        messages = baseline
+                            .iter()
+                            .cloned()
+                            .map(crate::support::current_rule_documentation::message)
+                            .chain(messages)
+                            .collect();
                     } else {
-                        messages.extend(baseline.iter().cloned());
+                        messages.extend(
+                            baseline
+                                .iter()
+                                .cloned()
+                                .map(crate::support::current_rule_documentation::message),
+                        );
                     }
                 }
                 let expected = serde_json::json!([{

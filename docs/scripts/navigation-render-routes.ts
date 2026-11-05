@@ -1,6 +1,5 @@
 import { ruleRenderRoutes } from "./rule-render-assertions.ts";
-import { categoryFiles } from "./rules/catalogue-routes.ts";
-import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
+import { ruleGroups } from "./rules/rule-groups.ts";
 
 const pages = [
   "/",
@@ -34,10 +33,6 @@ export const navigationRenderRoutes = [
 export const defaultNavigationRenderRoutes = [
   ...navigationRenderRoutes,
   ...["zh-CN", "pt-BR", "fr"].flatMap((locale) =>
-    ["all", "vue", ...categoryFiles, "cross-file"].map((file) => `/${locale}/rules/${file}`),
+    ["all", ...ruleGroups, "cross-file"].map((file) => `/${locale}/rules/${file}`),
   ),
-  ...Object.entries(catalogueSubgroups).flatMap(([file, subgroup]) => [
-    `/rules/${file}`,
-    ...(subgroup.jaTitle ? [`/ja/rules/${file}`] : []),
-  ]),
 ];

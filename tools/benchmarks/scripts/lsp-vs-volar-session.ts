@@ -24,7 +24,13 @@ import {
   TEMPLATE_CLEAN,
   TEMPLATE_CODE,
 } from "./lsp-vs-volar-fixtures.ts";
-import { type TreeReading, TreeSampler } from "./lsp-vs-volar-metrics.ts";
+import {
+  type TreeReading,
+  TreeSampler,
+  killSurvivors,
+  machineMemory,
+  readTree,
+} from "./lsp-vs-volar-metrics.ts";
 import { OpenDocument } from "./lsp-vs-volar-text.ts";
 
 export interface SessionOptions {
@@ -38,10 +44,11 @@ export interface SessionOptions {
   sampleIntervalMs: number;
   idleMs: number;
   /**
-   * The process tree's memory (PSS, else RSS) past which the session is killed
-   * and reported: a server must not take the measuring machine down with it.
+   * Memory the machine keeps available (Linux `MemAvailable`). Below it the
+   * session's tree is killed and the session reported with where the memory
+   * went, so no server takes the measuring machine down with it.
    */
-  memoryBudgetBytes: number | null;
+  memoryReserveBytes: number | null;
 }
 
 export interface EditSample {
@@ -195,28 +202,26 @@ export async function runSession(
   round: number,
 ): Promise<SessionResult> {
   const sampler = new TreeSampler(() => editor.pids(), options.sampleIntervalMs);
-  const budget = options.memoryBudgetBytes;
-  let overBudget: Error | null = null;
+  const reserve = options.memoryReserveBytes;
+  let starved: Error | null = null;
   let abort: (error: Error) => void = () => {};
   const aborted = new Promise<never>((_, reject) => (abort = reject));
   aborted.catch(() => {});
   sampler.onReading = (reading) => {
-    const bytes = reading.pssBytes ?? reading.rssBytes;
-    if (budget == null || bytes <= budget || overBudget) return;
+    if (reserve == null || starved) return;
+    const machine = machineMemory();
+    if (!machine || machine.availableBytes >= reserve) return;
     const gib = (value: number) => (value / 1073741824).toFixed(1);
-    overBudget = new Error(
-      `process tree passed the ${gib(budget)} GiB memory budget (${gib(bytes)} GiB in ${reading.processes} processes) and was killed`,
+    const tree = reading.pssBytes ?? reading.rssBytes;
+    starved = new Error(
+      `machine memory available fell to ${gib(machine.availableBytes)} GiB (reserve ${gib(reserve)} GiB): ` +
+        `the tree held ${gib(tree)} GiB in ${reading.processes} processes, shmem ${gib(machine.shmemBytes)} GiB, ` +
+        `largest outside the tree (MiB): ${machine.largest(new Set(reading.pids)).join(", ")}; the tree was killed`,
     );
-    for (const pid of reading.pids) {
-      try {
-        process.kill(pid, "SIGKILL");
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
-      }
-    }
-    abort(overBudget);
+    killSurvivors(readTree(reading.pids, false, true));
+    abort(starved);
   };
-  /** Every wait ends when the tree is killed for its memory. */
+  /** Every wait ends when the tree is killed for the machine's memory. */
   const bounded = <T>(promise: Promise<T>) => Promise.race([promise, aborted]);
   const failures: string[] = [];
   const edits: EditSample[] = [];
@@ -243,7 +248,7 @@ export async function runSession(
       failures.push(`cold: planted TS${SCRIPT_CODE} on line ${scriptLine + 1} never appeared`);
 
     const alive = () => {
-      if (overBudget) throw overBudget;
+      if (starved) throw starved;
       const exited = editor.exited();
       if (exited) throw new Error(`${exited}\n${editor.stderr().slice(-4000)}`);
     };
@@ -368,6 +373,11 @@ export async function runSession(
     sampler.stop();
     stopped = true;
     await editor.stop();
+    const survivors = killSurvivors(readTree(idleEnd.pids, false, true));
+    if (survivors.length)
+      failures.push(
+        `${survivors.length} processes outlived shutdown and were killed: ${survivors.join(", ")}`,
+      );
 
     const stride = Math.max(1, Math.ceil(sampler.samples.length / 400));
     const mib = (bytes: number) => Math.round((bytes / 1048576) * 10) / 10;
@@ -409,6 +419,11 @@ export async function runSession(
     };
   } finally {
     sampler.stop();
-    if (!stopped) await editor.stop().catch(() => {});
+    if (!stopped) {
+      const last = sampler.samples.at(-1);
+      await editor.stop().catch(() => {});
+      // An aborted session's processes go with it.
+      if (last) killSurvivors(readTree(last.pids, false, true));
+    }
   }
 }

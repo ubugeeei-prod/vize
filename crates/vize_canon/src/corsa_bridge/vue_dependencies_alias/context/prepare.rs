@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
-use super::{AliasContext, PreparedAliasContext, ProjectMember, RevisionKey, build};
+use super::{AliasContext, PreparedAliasContext, build};
 use crate::batch::ModuleSpecifierFactsCache;
 
 impl AliasContext {
@@ -74,8 +74,22 @@ impl AliasContext {
                 .editor_session
                 .cache()
                 .take_prebuilt(source_path, &fingerprint, overlays);
+        let revised = if prebuilt.is_none() {
+            Self::revise_cached(
+                source_path,
+                content,
+                overlays,
+                &mut fingerprint,
+                environment,
+            )?
+        } else {
+            None
+        };
+        let graph_hit = revised.is_some();
         let mut context = if let Some((context, stamped)) = prebuilt {
             fingerprint = stamped;
+            context
+        } else if let Some(context) = revised {
             context
         } else {
             // Pure syntax facts live through build and its immediate stamp only.
@@ -132,68 +146,14 @@ impl AliasContext {
         }
         let materialize_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_materialize", 1);
-        let mut materialized_changes = Default::default();
-        let mut source_catalog = Default::default();
-        let materialized_sources = context.materialized_sources();
-        if let Some(mirror) = context.mirror.as_mut() {
-            let previous = cache.materialized_snapshot(mirror.virtual_root());
-            mirror.restore_editor_package_links(&previous);
-            let previous_catalog = cache.source_catalog(mirror.virtual_root());
-            source_catalog = cache.include_source_catalog(
-                mirror.virtual_root(),
-                fingerprint.overlay_identity(),
-                materialized_sources,
-            );
-            let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
-            let revision = RevisionKey::new(source_path.clone(), &fingerprint);
-            let expected_files = mirror.expected_materialized_files();
-            let package_links = mirror.desired_package_links();
-            let member_query_paths = mirror.editor_query_paths(&source_path);
-            let mut union = cache.project_union_snapshot(
-                mirror.virtual_root(),
-                &revision,
-                fingerprint.overlay_identity(),
-            );
-            union.query_paths.extend(member_query_paths.iter().cloned());
-            if !source_catalog.shares_revision_with(&previous_catalog) {
-                source_catalog.retain_live_files(&expected_files, &union.files);
-            }
-            union.query_paths.sort();
-            union.query_paths.dedup();
-            let current = mirror
-                .materialize_editor_union(
-                    &previous,
-                    &union.files,
-                    &union.package_links,
-                    &union.query_paths,
-                    union.requires_arbitrary_extensions,
-                )
-                .map_err(|error| match error {
-                    crate::CorsaError::Configuration(message) => {
-                        super::super::super::types::CorsaBridgeError::Configuration(message)
-                    }
-                    error => super::super::super::types::CorsaBridgeError::CommunicationError(
-                        vize_carton::cstr!("Failed to materialize Canon project union: {error}"),
-                    ),
-                })?;
-            materialized_changes = current.diff(&previous);
-            source_catalog =
-                cache.bind_materialized_source_catalog(mirror.virtual_root(), &current);
-            cache.set_materialized_snapshot(mirror.virtual_root().to_path_buf(), current);
-            cache.record_project_member(
-                mirror.virtual_root().to_path_buf(),
-                revision,
-                ProjectMember {
-                    source_paths: mirror.registered_original_paths_sorted(),
-                    expected_files,
-                    package_links,
-                    query_paths: member_query_paths,
-                    stamps: fingerprint.input_stamps(),
-                    overlay_identity: fingerprint.overlay_identity(),
-                    requires_arbitrary_extensions: mirror.requires_arbitrary_extensions(),
-                },
-            );
-        }
+        let (materialized_changes, source_catalog) =
+            super::prepare_materialize::materialize_cached_revision(
+                &mut context,
+                &mut cache,
+                source_path,
+                &fingerprint,
+                graph_hit,
+            )?;
         materialize_phase.finish();
         let context = std::sync::Arc::new(context);
         cache.insert(

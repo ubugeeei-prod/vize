@@ -10,6 +10,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   ssr: boolean;
   vapor: boolean;
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
@@ -35,6 +37,8 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   ssr: boolean;
   vapor: boolean;
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
@@ -64,6 +68,9 @@ export function buildCompileFileOptions(
     ssr: options.ssr,
     vapor: options.vapor,
     ...(options.nuxtPageMeta === undefined ? {} : { nuxtPageMeta: options.nuxtPageMeta }),
+    ...(options.typeResolutionFallbackTsconfig === undefined
+      ? {}
+      : { typeResolutionFallbackTsconfig: options.typeResolutionFallbackTsconfig }),
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
@@ -105,6 +112,9 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ssr: options.ssr,
     vapor: options.vapor,
     ...(options.nuxtPageMeta === undefined ? {} : { nuxtPageMeta: options.nuxtPageMeta }),
+    ...(options.typeResolutionFallbackTsconfig === undefined
+      ? {}
+      : { typeResolutionFallbackTsconfig: options.typeResolutionFallbackTsconfig }),
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
@@ -114,9 +124,9 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     experimentalStrictSlotChildren: options.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
     // Opt into exactly the optional payloads the bundler pipeline consumes:
-    // per-block style metadata, macro artifacts, and HMR content hashes.
-    // Custom blocks are not used in the batch path, so they stay omitted.
+    // per-block style metadata, custom blocks, macro artifacts, and HMR hashes.
     includeStyles: true,
+    includeCustomBlocks: true,
     includeMacroArtifacts: true,
     includeHashes: true,
     // Also part of the pre-compile cache key, so a run that wants maps cannot

@@ -17,6 +17,8 @@ export function isProjectionSourcePath(file) {
   return (
     file === "tools/support/compat/github/unicode-prop-projection-custody.mjs" ||
     file === "tools/support/compat/content-mapper/constructor-projection-parity.ts" ||
+    file === "tools/support/compat/content-mapper/canonical-helper-transition.ts" ||
+    file === "tools/support/compat/content-mapper/producer-unmapped-ignores.ts" ||
     file.endsWith(".rs") ||
     file.endsWith(".d.ts.txt") ||
     file === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" ||

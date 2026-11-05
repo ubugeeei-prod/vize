@@ -83,6 +83,14 @@ pub(super) fn name_document<'a>(
             .get(span.start as usize..span.end as usize)
             .ok_or_else(mismatch)
     };
+    // Preserve the formatter's established head-admission boundary when Vue's
+    // flat attribute grammar retains groups the old callback overwrote.
+    if let Some(argument) = argument {
+        let text = project(argument)?;
+        if open.is_none() && text.contains(['[', ']']) || open.is_some() && text.contains("][") {
+            return Err(mismatch());
+        }
+    }
     if project(prefix)? != spelling
         || separator.is_some_and(|span| project(span) != Ok(":"))
         || open.is_some_and(|span| project(span) != Ok("["))

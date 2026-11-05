@@ -241,6 +241,14 @@ fn assert_parse_recoveries(
 }
 
 #[test]
+fn native_self_closing_syntax_keeps_its_complete_recovery_packet() {
+    let source = "<KeepAlive><div/></KeepAlive>";
+    let allocator = vize_l0::Allocator::default();
+    let (_, errors) = vize_armature::Parser::new(&allocator, source).parse();
+    assert_parse_recoveries(&errors, &[(11, 17)], source);
+}
+
+#[test]
 fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
     use vize_l0::{Allocator, Box};
     use vize_relief::{
@@ -288,16 +296,7 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
             r#"<KeepAlive><div v-show="opened"><Panel :key="identity" /></div></KeepAlive>"#
         };
         let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
-        let recoveries: &[(u32, u32)] = if kind.contains("logical-false") {
-            &[(32, 80)]
-        } else if kind.contains("binary") {
-            &[(32, 71)]
-        } else if kind.ends_with("false") {
-            &[(32, 69)]
-        } else {
-            &[]
-        };
-        assert_parse_recoveries(&errors, recoveries, source);
+        assert_parse_recoveries(&errors, &[], source);
         let TemplateChildNode::Element(keep_alive) = root.children.first_mut().unwrap() else {
             panic!()
         };
@@ -432,7 +431,6 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
         let allocator = &allocator;
         let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
         let recoveries: &[(u32, u32)] = match case["id"].as_str().unwrap() {
-            "constant-and-false-else" => &[(32, 80)],
             "prior-unknown-before-constant-true" => &[(32, 56)],
             _ => &[],
         };

@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto";
+import { historicalClassificationConsumers } from "./language-project-classification-runtime.ts";
 import { validateLanguageProjectProducerPort } from "./language-project-producer-port.ts";
+import {
+  CLASSIFICATION_PRODUCER,
+  historicalClassificationProducer,
+} from "./language-project-classification-successor.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const LANGUAGE_PROJECT_CASE_ID =
@@ -23,6 +28,7 @@ export const LANGUAGE_PROJECT_PRODUCERS = [
   ["generate_vue_language_code", "crates/vize_vitrine/src/napi/language_code.rs"],
   ["init", "npm/typescript-plugin/index.cjs"],
   ["createProjectConfiguration", "npm/typescript-plugin/virtual-modules.cjs"],
+  ["createSourceDocuments", "npm/typescript-plugin/source-documents.cjs"],
   ["createMappedLanguageService", "npm/typescript-plugin/language-service.cjs"],
   ["readProjectFixture", "tests/typescript-plugin/project-fixture.cjs"],
   ["checkInheritedConfig", "tests/typescript-plugin/inherited-config.ts"],
@@ -162,13 +168,16 @@ export function newLanguageProjectCases(
     original.source, "original authored input changed");
   require(Array.isArray(row.tests) &&
     row.tests.length === LANGUAGE_PROJECT_PRODUCERS.length, "all actual producers required");
+  const historicalRead = historicalClassificationConsumers(readFile);
+  validateLanguageProjectProducerPort(historicalRead, row.tests);
   for (const [index, value] of row.tests.entries()) {
     const test = object(value, ["selector", "source", "sha256"]);
     const [selector, source] = LANGUAGE_PROJECT_PRODUCERS[index]!;
     require(test.selector === selector && test.source === source, "unregistered producer");
-    pinned(readFile, source, test.sha256);
+    if (source === CLASSIFICATION_PRODUCER)
+      historicalClassificationProducer(readFile, test.sha256, row);
+    else pinned(historicalRead, source, test.sha256);
   }
-  validateLanguageProjectProducerPort(readFile, row.tests);
   const beforeInputs = files.get("before-inputs.json")!;
   require(digest(beforeInputs) ===
     "8fedd5da81bb3f78ae01dbe525bfad594702933f5ad3ff05b270a719d70f0e43", "original input witness changed");

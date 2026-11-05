@@ -220,12 +220,10 @@ function onFocus(event: FocusEvent): void {
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (
-    !event.defaultPrevented &&
-    !disabledState.value &&
-    event.target === event.currentTarget &&
-    (event.key === "Enter" || event.key === " ")
-  ) {
+  if (event.defaultPrevented || disabledState.value || event.isComposing) {
+    return;
+  }
+  if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
     if (commitActiveSelection(activeValue.value, event)) {
       event.preventDefault();
     }

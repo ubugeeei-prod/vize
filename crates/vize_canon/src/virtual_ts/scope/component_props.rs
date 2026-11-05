@@ -13,7 +13,7 @@ pub(super) use bindings::{
 };
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::{named_dynamic_navigation_reference, named_dynamic_reference};
-use shared_contracts::{SharedComponentContract, shared_component_contracts};
+use shared_contracts::{SharedComponentContract, prop_alias_share, shared_component_contracts};
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
@@ -434,7 +434,7 @@ fn generate_usage_declarations(
         usage,
         component_type_name.as_str(),
         idx,
-        ctx.hoist_shared_preamble,
+        prop_alias_share(summary, idx, ctx.hoist_shared_preamble, shared),
     );
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
 }

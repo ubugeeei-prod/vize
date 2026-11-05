@@ -1,22 +1,10 @@
 //! Text rules belong to the direct owner; pre whitespace also spans descendants.
-use vize_l1::markup::{Element, SurfaceChild};
+use vize_l1::markup::Element;
 use vize_l2::provenance::ProvenanceSink;
 
-use super::Cx;
-
-/// Classify the owner's rule once; text passes need no ancestor/RCDATA join.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum TextWhitespace {
-    Normal,
-    Pre,
-    Rcdata,
-}
+use super::{Cx, TextWhitespace};
 
 impl<'a, P: ProvenanceSink> Cx<'a, P> {
-    pub(crate) fn normalize_pre_newlines(&self) -> bool {
-        self.text_whitespace == TextWhitespace::Pre
-    }
-
     pub(crate) fn enter_text_parent(
         &mut self,
         element: &Element<'a>,
@@ -24,32 +12,11 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
         html: bool,
     ) -> (TextWhitespace, Option<u32>) {
         let previous = (self.text_whitespace, self.ignore_newline_at);
-        let rcdata = html && tag == "textarea";
-        self.text_whitespace = if rcdata {
-            TextWhitespace::Rcdata
-        } else if self.condense_depth > 0 {
-            TextWhitespace::Pre
-        } else {
-            TextWhitespace::Normal
-        };
-        self.ignore_newline_at = if rcdata || (html && tag == "pre") {
-            element
-                .children
-                .iter()
-                .find(|child| match child {
-                    SurfaceChild::Comment(token) => {
-                        self.preserve_comments()
-                            || super::super::leaf::keeps_directive_comment(token.text)
-                    }
-                    _ => true,
-                })
-                .and_then(|child| match child {
-                    SurfaceChild::Text(token) => Some(self.offset(token.text)),
-                    _ => None,
-                })
-        } else {
-            None
-        };
+        // The caller has already pushed this element's own `<pre>` and
+        // `v-pre` suppression, so the lane's subtree flags stand.
+        let lane = self.text_lane().children_of(element, tag, html, false);
+        self.text_whitespace = lane.whitespace;
+        self.ignore_newline_at = lane.ignore_newline_at;
         previous
     }
 }

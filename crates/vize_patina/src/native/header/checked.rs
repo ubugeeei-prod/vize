@@ -256,13 +256,21 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
             _ => return Err(refusal()),
         };
         let valid = match argument {
-            ArgSyntax::Static(range) => range.start == origin && range.end == head.modifiers.start,
+            ArgSyntax::Static(range) => {
+                range.start == origin
+                    && range.end == head.modifiers.start
+                    && !attribute::project(block, range)?.contains(['[', ']'])
+            }
             ArgSyntax::Dynamic(range) => {
                 range.start == origin + 1
                     && range.end < self.head_span.end
                     && range.end + 1 == head.modifiers.start
                     && attribute::project(block, Span::new(origin, origin + 1))? == "["
                     && attribute::project(block, Span::new(range.end, range.end + 1))? == "]"
+                    // Vue's flat attribute state can retain two adjacent argument
+                    // groups. The existing callback overwrites the first group,
+                    // so this native view cannot claim their shared geometry.
+                    && !attribute::project(block, range)?.contains("][")
             }
         };
         if !valid {

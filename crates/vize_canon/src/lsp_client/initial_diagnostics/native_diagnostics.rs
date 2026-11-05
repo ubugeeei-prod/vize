@@ -9,11 +9,14 @@
 
 use std::path::Path;
 
+use super::super::PhasedDiagnostic;
+use crate::corsa_bridge::DiagnosticPhase;
 use corsa::{
     CorsaError,
     api::{ApiClient, ApiDialect, ManagedSnapshot, ProjectResponse},
     runtime::block_on,
 };
+#[cfg(test)]
 use lsp_types::Diagnostic;
 use serde_json::{Value, json};
 use vize_l0::{FxHashMap, String, cstr};
@@ -36,7 +39,7 @@ pub(in crate::lsp_client) fn read(
     snapshot: &ManagedSnapshot,
     project: &ProjectResponse,
     document_uri: &str,
-) -> Result<Option<Vec<Diagnostic>>, String> {
+) -> Result<Option<Vec<PhasedDiagnostic>>, String> {
     let result = (|| {
         let path = file_uri_to_path(document_uri)
             .filter(|path| path.is_absolute())
@@ -52,8 +55,16 @@ pub(in crate::lsp_client) fn read(
             }
             _ => params.clone(),
         };
+        let kinds = required_kinds(&project.compiler_options)?;
+        // A configured API snapshot need not include every editor buffer.
+        // Prove this file's source ownership before asking any compiler kind.
+        let mut texts = FxHashMap::<String, SnapshotText>::default();
+        texts.insert(
+            file.clone(),
+            read_snapshot_source(client, snapshot, project, &file, &params)?,
+        );
         let mut rows = Vec::new();
-        for method in required_kinds(&project.compiler_options)? {
+        for (method, phase) in kinds {
             checkpoint()?;
             let response = block_on(client.raw_json_request(method, kind_params.clone()))
                 .map_err(|error| classify(method, error))?;
@@ -73,50 +84,32 @@ pub(in crate::lsp_client) fn read(
                         "Malformed {method} response: beta fields on the session-snapshots dialect"
                     )));
                 }
-                rows.extend(diagnostics);
+                rows.extend(diagnostics.into_iter().map(|row| (phase, row)));
             }
         }
-        if rows.iter().any(|row| !row.belongs_to(&file)) {
+        if rows.iter().any(|(_, row)| !row.belongs_to(&file)) {
             return Err(Failure::Failed(cstr!(
                 "Native file diagnostic belongs to another source"
             )));
         }
-        let mut texts = FxHashMap::<String, SnapshotText>::default();
-        for name in rows.iter().flat_map(NativeDiagnostic::source_names) {
+        for name in rows.iter().flat_map(|(_, row)| row.source_names()) {
             if texts.contains_key(name) {
                 continue;
             }
-            if !Path::new(name).is_absolute() || name.contains('\0') {
-                return Err(Failure::Failed(cstr!("Invalid native source identity")));
-            }
-            checkpoint()?;
-            let encoded =
-                block_on(client.get_source_file(snapshot.handle.clone(), project.id.clone(), name))
-                    .map_err(|error| classify("getSourceFile", error))?
-                    .ok_or(Failure::Unsupported)?;
-            let text = match decode_snapshot_text(&encoded, name) {
-                Ok(text) => text,
-                Err(SourceTextRefusal::Version) => return Err(Failure::Unsupported),
-                Err(reason) => {
-                    return Err(Failure::Failed(cstr!(
-                        "Malformed native snapshot source {name}: {reason:?}"
-                    )));
-                }
-            };
-            super::trace_source(&params, name, text);
             texts.insert(
                 name.into(),
-                SnapshotText::new(text).map_err(Failure::Failed)?,
+                read_snapshot_source(client, snapshot, project, name, &params)?,
             );
         }
         checkpoint()?;
         rows.into_iter()
-            .map(|row| {
+            .map(|(phase, row)| {
                 row.into_lsp(&file, |name| {
                     texts
                         .get(name)
                         .ok_or_else(|| cstr!("Missing native snapshot source {name}"))
                 })
+                .map(|diagnostic| PhasedDiagnostic { diagnostic, phase })
                 .map_err(Failure::Failed)
             })
             .collect::<Result<Vec<_>, _>>()
@@ -128,11 +121,40 @@ pub(in crate::lsp_client) fn read(
     }
 }
 
+fn read_snapshot_source(
+    client: &ApiClient,
+    snapshot: &ManagedSnapshot,
+    project: &ProjectResponse,
+    name: &str,
+    params: &Value,
+) -> Result<SnapshotText, Failure> {
+    if !Path::new(name).is_absolute() || name.contains('\0') {
+        return Err(Failure::Failed(cstr!("Invalid native source identity")));
+    }
+    checkpoint()?;
+    let encoded =
+        block_on(client.get_source_file(snapshot.handle.clone(), project.id.clone(), name))
+            .map_err(|error| classify("getSourceFile", error))?;
+    checkpoint()?;
+    let encoded = encoded.ok_or(Failure::Unsupported)?;
+    let text = match decode_snapshot_text(&encoded, name) {
+        Ok(text) => text,
+        Err(SourceTextRefusal::Version) => return Err(Failure::Unsupported),
+        Err(reason) => {
+            return Err(Failure::Failed(cstr!(
+                "Malformed native snapshot source {name}: {reason:?}"
+            )));
+        }
+    };
+    super::trace_source(params, name, text);
+    SnapshotText::new(text).map_err(Failure::Failed)
+}
+
 fn checkpoint() -> Result<(), Failure> {
     native_operation::checkpoint().map_err(Failure::Failed)
 }
 
-fn required_kinds(options: &Value) -> Result<Vec<&'static str>, Failure> {
+fn required_kinds(options: &Value) -> Result<Vec<(&'static str, DiagnosticPhase)>, Failure> {
     let options = options.as_object().ok_or_else(|| {
         Failure::Failed(cstr!("Native project compiler options are not an object"))
     })?;
@@ -149,12 +171,12 @@ fn required_kinds(options: &Value) -> Result<Vec<&'static str>, Failure> {
         }
     }
     let mut methods = vec![
-        "getSyntacticDiagnostics",
-        "getSemanticDiagnostics",
-        "getSuggestionDiagnostics",
+        ("getSyntacticDiagnostics", DiagnosticPhase::Syntactic),
+        ("getSemanticDiagnostics", DiagnosticPhase::Semantic),
+        ("getSuggestionDiagnostics", DiagnosticPhase::Suggestion),
     ];
     if declarations {
-        methods.push("getDeclarationDiagnostics");
+        methods.push(("getDeclarationDiagnostics", DiagnosticPhase::Declaration));
     }
     Ok(methods)
 }

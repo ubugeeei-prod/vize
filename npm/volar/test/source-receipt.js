@@ -51,6 +51,11 @@ const receipt = {
       "npm/volar/src/language-service.js",
       "npm/volar/test/service.test.js",
       "npm/volar/test/service-harness.js",
+      "npm/volar/test/public-instance-reference.js",
+      "npm/volar/test/listener-wrapper-reference.js",
+      "npm/volar/test/listener-wrapper-reference.test.js",
+      "npm/volar/test/listener-wrapper-reference.provenance.json",
+      "npm/volar/test/reference-fixtures/listener-wrapper.vue.txt",
       "npm/volar/test/expected-packets.provenance.json",
       ...fs
         .readdirSync("npm/volar/test/expected-packets")

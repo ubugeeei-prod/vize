@@ -2,6 +2,39 @@
 use super::*;
 
 #[test]
+fn initial_phase_and_diagnostic_are_committed_as_one_cache_entry() {
+    use crate::corsa_bridge::{DiagnosticPhase, InitialApiDiagnosticsProvenanceOutcome};
+    let peer = Peer::start(1);
+    let bridge = peer.bridge();
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    peer.release_read(false);
+    let pending = block_on(read);
+    let outcome =
+        block_on(bridge.finish_initial_api_diagnostics_with_provenance(pending, |commit| commit()))
+            .unwrap();
+    let InitialApiDiagnosticsProvenanceOutcome::Complete(rows) = outcome else {
+        panic!("complete provenance result required");
+    };
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].phase, DiagnosticPhase::Semantic);
+    let cached =
+        block_on(bridge.with_client(|client| Ok(client.diagnostics[URI][0].phase))).unwrap();
+    assert_eq!(cached, DiagnosticPhase::Semantic);
+    let legacy = serde_json::to_value(
+        block_on(bridge.with_client(|client| Ok(client.get_diagnostics(URI)))).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(legacy, json!([diagnostic()]));
+    assert!(legacy[0].get("phase").is_none());
+    assert_eq!(peer.finish(bridge), vec![OLD]);
+}
+
+#[test]
 fn cancelled_outer_query_keeps_the_exact_bridge_until_the_entered_read_finishes() {
     let peer = Peer::start(1);
     let bridge = peer.bridge();

@@ -310,15 +310,10 @@ fn dynamic_component_custom_member_handlers_stay_unresolved() {
         "dynamic-component-custom-member-handler",
         &[(
             "src/App.vue",
-            r#"<script setup lang="ts">
-const current = "section"
-function onWheel(ev: WheelEvent) { ev.deltaY }
-</script>
-
-<template>
-  <component :is="current" @headerWheel="onWheel" />
-</template>
-"#,
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/typechecker/dynamic-listener-member-arity/TypedReference.vue.txt"
+            )),
         )],
     );
 

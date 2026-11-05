@@ -1,18 +1,37 @@
 ---
 title: "ecosystem/nuxt-prefer-nuxt-link"
+description: "Nuxt の内部リンクに NuxtLink を使います。"
 ---
 
 # `ecosystem/nuxt-prefer-nuxt-link`
 
 Nuxt の内部リンクに NuxtLink を使います。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+Nuxt の内部ページへの移動に通常の a を使っています。
+
+```vue annotate="remove:2"
+<template>
+  <a href="/settings">Settings</a>
+</template>
+```
+
+## 良い例
+
+同じ移動先を NuxtLink に指定し、Nuxt のルーターを使います。
+
+```vue annotate="add:2"
+<template>
+  <NuxtLink to="/settings">Settings</NuxtLink>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-Nuxt の内部ページへの移動に通常の a を使っています。
-
-```vue
-<template>
-  <a href="/settings">Settings</a>
-</template>
-```
-
-## 良い
-
-同じ移動先を NuxtLink に指定し、Nuxt のルーターを使います。
-
-```vue
-<template>
-  <NuxtLink to="/settings">Settings</NuxtLink>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14)

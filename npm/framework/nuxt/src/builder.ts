@@ -1,6 +1,6 @@
 export type NuxtBuilderKind = "unsupported" | "vite" | "webpack";
 
-export function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
+export function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | 5 | null {
   const nuxtLike = nuxt as
     | {
         _version?: string;
@@ -17,7 +17,7 @@ export function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
   if (!version) return null;
   // Nuxt 2 exposes its public version as Nuxt.version, including a leading v.
   const major = Number.parseInt(version.replace(/^v/, "").split(".")[0] ?? "", 10);
-  return major === 2 || major === 3 || major === 4 ? major : null;
+  return major === 2 || major === 3 || major === 4 || major === 5 ? major : null;
 }
 
 export function isViteNuxtBuilder(builder: unknown): boolean {

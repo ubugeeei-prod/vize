@@ -1,26 +1,32 @@
 ---
-title: "Ecosystem rules"
+title: "Ecosystem and Nuxt rules"
+description: "Checks for Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils and Void Vue projects."
 ---
 
-# Ecosystem rules
+# Ecosystem and Nuxt rules
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
+Checks for Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils and Void Vue projects.
 
+Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-| Rule | Examples | Purpose |
-| --- | --- | --- |
-| [`ecosystem/nuxt-prefer-nuxt-link`](https://vizejs.dev/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-nuxt-prefer-nuxt-link-good) | Prefer NuxtLink for internal application links |
-| [`ecosystem/pinia-prefer-store-to-refs`](https://vizejs.dev/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-pinia-prefer-store-to-refs-good) | Prefer storeToRefs() when destructuring Pinia stores |
-| [`ecosystem/router-link-require-to`](https://vizejs.dev/rules/ecosystem.html#ecosystem-router-link-require-to) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-router-link-require-to-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-router-link-require-to-good) | Require a `to` target on RouterLink and NuxtLink components |
-| [`ecosystem/void-link-require-href`](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-require-href) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-require-href-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-require-href-good) | Require `href` on Void Vue Link components |
-| [`ecosystem/void-link-valid-method`](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-valid-method) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-valid-method-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-void-link-valid-method-good) | Validate static Void Vue Link method props |
-| [`ecosystem/vue-i18n-no-missing-key`](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-i18n-no-missing-key-good) | Report static vue-i18n keys that are absent from local SFC messages |
-| [`ecosystem/vue-router-prefer-named-link`](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-good) | Prefer named route objects over static path strings in RouterLink |
-| [`ecosystem/vue-router-prefer-named-push`](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-good) | Prefer named route objects for Vue Router programmatic navigation |
-| [`ecosystem/vue-test-utils-no-html-snapshot`](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot) | [Bad](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-good) | Avoid snapshotting wrapper.html() in Vue Test Utils tests |
-| [`nuxt/no-nuxt-config-test-key`](https://vizejs.dev/rules/ecosystem.html#nuxt-no-nuxt-config-test-key) | [Bad](https://vizejs.dev/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-good) | Disallow setting `test` key in Nuxt config |
-| [`nuxt/no-page-meta-runtime-values`](https://vizejs.dev/rules/ecosystem.html#nuxt-no-page-meta-runtime-values) | [Bad](https://vizejs.dev/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-good) | Disallow runtime context values inside `definePageMeta` at the eager level, which is extracted into a separate chunk at build time and runs before component setup |
-| [`nuxt/nuxt-config-keys-order`](https://vizejs.dev/rules/ecosystem.html#nuxt-nuxt-config-keys-order) | [Bad](https://vizejs.dev/rules/ecosystem.html#nuxt-nuxt-config-keys-order-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#nuxt-nuxt-config-keys-order-good) | Prefer recommended order of Nuxt config properties |
-| [`nuxt/prefer-import-meta`](https://vizejs.dev/rules/ecosystem.html#nuxt-prefer-import-meta) | [Bad](https://vizejs.dev/rules/ecosystem.html#nuxt-prefer-import-meta-bad) · [Good](https://vizejs.dev/rules/ecosystem.html#nuxt-prefer-import-meta-good) | Prefer using `import.meta.*` over `process.*` |
+## Stricter presets (13)
 
-[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md) · [Attributes across components](./project/vue-cross-file-attrs-fallthrough.md)
+Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
+
+| Rule | What it checks | Presets | Auto-fix |
+| --- | --- | --- | --- |
+| <span id="ecosystem-nuxt-prefer-nuxt-link"></span>[`ecosystem/nuxt-prefer-nuxt-link`](./reference/ecosystem-nuxt-prefer-nuxt-link.md) | Prefer NuxtLink for internal application links. | `nuxt` |  |
+| <span id="ecosystem-pinia-prefer-store-to-refs"></span>[`ecosystem/pinia-prefer-store-to-refs`](./reference/ecosystem-pinia-prefer-store-to-refs.md) | Prefer storeToRefs() when destructuring Pinia stores. | `ecosystem` |  |
+| <span id="ecosystem-router-link-require-to"></span>[`ecosystem/router-link-require-to`](./reference/ecosystem-router-link-require-to.md) | Require a `to` target on RouterLink and NuxtLink components. | `ecosystem` |  |
+| <span id="ecosystem-void-link-require-href"></span>[`ecosystem/void-link-require-href`](./reference/ecosystem-void-link-require-href.md) | Require `href` on Void Vue Link components. | `ecosystem` |  |
+| <span id="ecosystem-void-link-valid-method"></span>[`ecosystem/void-link-valid-method`](./reference/ecosystem-void-link-valid-method.md) | Validate static Void Vue Link method props. | `ecosystem` |  |
+| <span id="ecosystem-vue-i18n-no-missing-key"></span>[`ecosystem/vue-i18n-no-missing-key`](./reference/ecosystem-vue-i18n-no-missing-key.md) | Report static vue-i18n keys that are absent from local SFC messages. | `ecosystem` |  |
+| <span id="ecosystem-vue-router-prefer-named-link"></span>[`ecosystem/vue-router-prefer-named-link`](./reference/ecosystem-vue-router-prefer-named-link.md) | Prefer named route objects over static path strings in RouterLink. | `ecosystem` |  |
+| <span id="ecosystem-vue-router-prefer-named-push"></span>[`ecosystem/vue-router-prefer-named-push`](./reference/ecosystem-vue-router-prefer-named-push.md) | Prefer named route objects for Vue Router programmatic navigation. | `ecosystem` |  |
+| <span id="ecosystem-vue-test-utils-no-html-snapshot"></span>[`ecosystem/vue-test-utils-no-html-snapshot`](./reference/ecosystem-vue-test-utils-no-html-snapshot.md) | Avoid snapshotting wrapper.html() in Vue Test Utils tests. | `ecosystem` |  |
+| <span id="nuxt-no-nuxt-config-test-key"></span>[`nuxt/no-nuxt-config-test-key`](./reference/nuxt-no-nuxt-config-test-key.md) | Disallow setting `test` key in Nuxt config. | `nuxt` |  |
+| <span id="nuxt-no-page-meta-runtime-values"></span>[`nuxt/no-page-meta-runtime-values`](./reference/nuxt-no-page-meta-runtime-values.md) | Disallow runtime context values inside `definePageMeta` at the eager level, which is extracted into a separate chunk at build time and runs before component setup. | `nuxt` |  |
+| <span id="nuxt-nuxt-config-keys-order"></span>[`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | Prefer recommended order of Nuxt config properties. | `nuxt` | ✓ |
+| <span id="nuxt-prefer-import-meta"></span>[`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | Prefer using `import.meta.*` over `process.*`. | `nuxt` | ✓ |
+
+[Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

@@ -1,0 +1,6 @@
+<template>
+  <component :is="as" @contextmenu="onMenu" />
+  <component is="button" @contextmenu="onMenu" />
+  <component :is="view" @openMenu="onMenu" />
+  <Transition @openMenu="onMenu"><Panel /></Transition>
+</template>

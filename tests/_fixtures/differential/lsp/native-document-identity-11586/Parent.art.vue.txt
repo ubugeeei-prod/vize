@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { format } from './format'
+</script>
+<template>{{ format('hello') }}</template>

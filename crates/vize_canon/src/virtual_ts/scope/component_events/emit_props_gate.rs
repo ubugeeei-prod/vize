@@ -1,0 +1,98 @@
+//! Props-independent inference-only emit-props calls.
+//!
+//! `$EmitPropsFactory` resolves each component member through a generic
+//! resolver (a `__vizeResolveEmitProps`/`__vizeResolveProps` function, or a
+//! vue-tsc library export) or through a route whose result is fixed by the
+//! component alone: `__EmitProps<E>`, with `E` inferred from the component
+//! argument, or `{}`. Only a generic resolver reads the props literal. For every
+//! other component the second call's result is the factory's return type, so
+//! `__vize_emit_input` checks the literal against `any`. The authored literal is
+//! still emitted because the type level, not the generator, picks the route.
+//!
+//! The result is equal only where the component type is closed: a deferred
+//! conditional would make the call read both branches. Generic SFCs and
+//! `@vue-generic` bindings keep the direct call. So do literals that span
+//! lines, whose later lines no `@ts-ignore` covers, and spread literals.
+//!
+//! Only a computed `<component :is>` target takes the gate. Its type is often a
+//! union, and a direct union call checks the literal against every member's
+//! input. A static tag checks one input; the module aliases would cost it more
+//! bytes than the gate saves.
+
+use vize_carton::{String, append};
+use vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};
+
+/// `{emit_props_factory}` is the shared `$EmitPropsFactory` reference.
+/// `__vize_emit_input` mirrors that factory's branches: `true` marks a route
+/// that reads the props, `false` one that does not. A union call combines its
+/// members' returns with subtype reduction, which no type alias can spell, so
+/// the cheap call also requires every member to return the identical type.
+const GATE_ALIASES: &str = "type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : false : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : false : false) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
+
+/// Declares the gate aliases once per module that can reach a gated call.
+pub(crate) fn emit_gate_aliases(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_component: bool,
+    legacy_vue2: bool,
+    hoist_shared_preamble: bool,
+) {
+    if !gates_inference(generic_component, legacy_vue2) || !has_gated_candidate(summary) {
+        return;
+    }
+    let emit_props_factory =
+        crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY.select(hoist_shared_preamble);
+    ts.push_str(&GATE_ALIASES.replace("{emit_props_factory}", emit_props_factory));
+}
+
+/// The template's component types are closed and Vue 3 owns the factory.
+pub(crate) const fn gates_inference(generic_component: bool, legacy_vue2: bool) -> bool {
+    !generic_component && !legacy_vue2
+}
+
+/// A computed `:is` usage whose listener can reach the gated call: it has a
+/// static event, at least one valued static prop, and no spread props.
+fn has_gated_candidate(summary: &Croquis) -> bool {
+    let has_component_listener = summary.scopes.iter().any(
+        |scope| matches!(scope.data(), ScopeData::EventHandler(data) if data.target_component.is_some()),
+    );
+    has_component_listener
+        && vize_croquis::facts::component_usage_slice(summary)
+            .iter()
+            .any(|usage| {
+                usage.name == dynamic_component_alias(usage.start)
+                    && usage.spread_props.is_empty()
+                    && usage.events.iter().any(|event| !event.name_is_dynamic)
+                    && usage.props.iter().any(|prop| {
+                        !prop.name_is_dynamic
+                            && prop.name.as_str() != "key"
+                            && prop.name.as_str() != "ref"
+                            && prop.value.is_some()
+                    })
+            })
+}
+
+/// TypeScript's line terminators: a value with one is not covered by the
+/// `@ts-ignore` above its entry.
+pub(super) fn is_single_line(value: &str) -> bool {
+    !value.contains(['\n', '\r', '\u{2028}', '\u{2029}'])
+}
+
+/// The gated call: the first call infers the component's own factory, and the
+/// second reads the props only through a generic resolver.
+pub(super) fn append_gated_call(
+    ts: &mut String,
+    indent: &str,
+    library: &str,
+    component_ref: &str,
+    emit_props: &str,
+    usage_idx: usize,
+) {
+    append!(
+        *ts,
+        "{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+    );
+}
+
+#[cfg(test)]
+mod tests;

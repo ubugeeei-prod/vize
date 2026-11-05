@@ -69,6 +69,11 @@ impl Drawer {
                             TemplateExpressionKind::VText
                         },
                     );
+                } else if dir.name == "memo" {
+                    self.collect_basic_directive_expression(
+                        dir.exp.as_ref(),
+                        TemplateExpressionKind::VMemo,
+                    );
                 } else if dir.name == "model" {
                     self.collect_basic_directive_expression(
                         dir.exp.as_ref(),

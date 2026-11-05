@@ -98,6 +98,7 @@ pub(super) struct ResolvedCompilerFileSettings<'a> {
 
 /// Compile a single `.vue` file with profiling information.
 pub(super) struct CompileFileSettings {
+    pub(super) type_projects: crate::type_projects::ImportedTypeProjects,
     pub(super) ssr: bool,
     pub(super) vapor: bool,
     pub(super) custom_renderer: bool,
@@ -207,6 +208,7 @@ impl CompileFileSettings {
         }
         Self {
             ssr,
+            type_projects: crate::type_projects::ImportedTypeProjects::default(),
             vapor,
             custom_renderer: args.custom_renderer,
             custom_elements: resolve_custom_elements(args, build_config.custom_elements),
@@ -398,145 +400,4 @@ pub(super) fn template_syntax_mode(template_syntax: Option<&str>) -> TemplateSyn
 }
 
 #[cfg(test)]
-mod tests {
-    //! Stats cache must distinguish actual output-affecting whitespace modes.
-
-    use super::super::{cache::StatsCompileCache, compile_stats::compile_file_stats_with_cache};
-    use super::{BuildConfigSettings, CompileFileSettings, load_build_config};
-    use crate::commands::build::{BuildArgs, config::CompileStats};
-    use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_mode};
-    use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-    use vize_l0::config::{CompilerConfigEntry, ConfigExperimentalVueFlags, ConfigFeatureFlags};
-
-    #[test]
-    fn entry_compiler_settings_apply_only_to_matching_files() {
-        let project = tempfile::tempdir().unwrap();
-        let legacy = project.path().join("src/legacy/Old.vue");
-        let modern = project.path().join("src/New.vue");
-        let config = BuildConfigSettings {
-            project_root: Some(project.path().to_path_buf()),
-            compiler_template_syntax: None,
-            compiler_whitespace: Some("preserve"),
-            features: ConfigFeatureFlags::default(),
-            experimental_vue: ConfigExperimentalVueFlags::default(),
-            ssr: None,
-            vapor: None,
-            custom_elements: Vec::new(),
-            dialect: None,
-            host_compiler: None,
-            compiler_entries: vec![CompilerConfigEntry {
-                base_path: None,
-                files: Some(vec!["src/legacy/**".into()]),
-                ignores: Vec::new(),
-                template_syntax: Some("strict"),
-                whitespace: Some("condense".into()),
-                vapor: Some(true),
-                custom_elements: vec!["legacy-*".into()],
-            }],
-            config_dir: project.path().to_path_buf(),
-        };
-        let settings = CompileFileSettings::resolve(&BuildArgs::default(), config);
-        let legacy_settings = settings.compiler_for_path(&legacy);
-        assert_eq!(legacy_settings.whitespace, WhitespaceStrategy::Condense);
-        assert_eq!(
-            legacy_settings.template_syntax,
-            vize_atelier_core::TemplateSyntaxMode::Strict
-        );
-        assert!(legacy_settings.vapor);
-        assert_eq!(legacy_settings.custom_elements, ["legacy-*"]);
-        let modern_settings = settings.compiler_for_path(&modern);
-        assert_eq!(modern_settings.whitespace, WhitespaceStrategy::Preserve);
-        assert_eq!(
-            modern_settings.template_syntax,
-            vize_atelier_core::TemplateSyntaxMode::Standard
-        );
-        assert!(!modern_settings.vapor);
-        assert!(modern_settings.custom_elements.is_empty());
-        assert_ne!(settings.cache_bits(&legacy), settings.cache_bits(&modern));
-
-        let source = include_str!(
-            "../../../../../../tests/_fixtures/differential/compiler/cli-whitespace-7880/App.vue.txt"
-        );
-        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-        let compile = |path| {
-            settings
-                .with_whitespace(path, || {
-                    compile_sfc(&descriptor, SfcCompileOptions::default())
-                })
-                .unwrap()
-                .code
-        };
-        assert_ne!(compile(&modern), compile(&legacy));
-    }
-
-    #[test]
-    fn shared_stats_cache_keeps_whitespace_modes_and_restores_thread_local_parser_state() {
-        let source = include_str!(
-            "../../../../../../tests/_fixtures/differential/compiler/cli-whitespace-7880/App.vue.txt"
-        );
-        let project = tempfile::tempdir().unwrap();
-        let path = project.path().join("App.vue");
-        std::fs::write(&path, source).unwrap();
-        let cache = StatsCompileCache::default();
-        let stats = CompileStats::new(7);
-        let mut lengths = Vec::new();
-        for (mode, hit, entries) in [
-            (None, false, 1),
-            (Some("preserve"), false, 2),
-            (Some("condense"), true, 2),
-            (Some("vue2-line-breaks"), false, 3),
-            (Some("preserve"), true, 3),
-            (None, true, 3),
-            (Some("vue2-line-breaks"), true, 3),
-        ] {
-            let mut config = load_build_config(true, None);
-            config.compiler_whitespace = mode;
-            let settings = CompileFileSettings::resolve(&BuildArgs::default(), config);
-            let (actual, profile) =
-                compile_file_stats_with_cache(&path, &settings, &stats, &cache).unwrap();
-            assert_eq!(cache.entries.lock().unwrap().len(), entries);
-            if hit {
-                assert_eq!(profile.parse_time, std::time::Duration::ZERO);
-                assert_eq!(profile.compile_time, std::time::Duration::ZERO);
-            }
-            let descriptor = parse_sfc(
-                source,
-                SfcParseOptions {
-                    filename: "App.vue".into(),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-            let mut options = SfcCompileOptions::default();
-            options.parse.filename = "App.vue".into();
-            options.script.id = Some(path.to_string_lossy().as_ref().into());
-            options.template.id = Some("App.vue".into());
-            options.style.id = "App.vue".into();
-            let expected =
-                with_whitespace_mode(settings.whitespace, settings.legacy_line_breaks, || {
-                    compile_sfc(&descriptor, options)
-                })
-                .unwrap();
-            assert!(expected.errors.is_empty());
-            assert_eq!(actual, expected.code.len());
-            lengths.push(actual);
-            // The existing RAII scope must leave an ordinary subsequent compile condensed.
-            let ordinary = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
-            assert_eq!(
-                ordinary.code,
-                with_whitespace_mode(WhitespaceStrategy::Condense, false, || compile_sfc(
-                    &descriptor,
-                    SfcCompileOptions::default()
-                ))
-                .unwrap()
-                .code
-            );
-        }
-        assert_ne!(lengths[0], lengths[1]);
-        assert_eq!(lengths[0], lengths[2]);
-        assert_eq!(lengths[1], lengths[4]);
-        assert_eq!(lengths[0], lengths[5]);
-        assert_eq!(lengths[3], lengths[6]);
-        assert_eq!(cache.entries.lock().unwrap().len(), 3);
-    }
-}
+mod tests;

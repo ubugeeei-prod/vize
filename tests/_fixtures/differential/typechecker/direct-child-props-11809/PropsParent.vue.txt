@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import PropsChild from "./PropsChild.vue";
+</script>
+<template><PropsChild :bench-count="'bench-negative'" /></template>

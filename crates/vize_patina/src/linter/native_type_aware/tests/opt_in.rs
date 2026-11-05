@@ -1,6 +1,7 @@
 use super::super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING, has_active_type_aware_rules,
 };
+use super::assertion::{assert_reports, failure_context};
 use crate::{LintPreset, Linter};
 
 #[test]
@@ -47,12 +48,7 @@ const payload: any = { title: "Untyped" };
         "TypeAwareFixture.vue",
     );
 
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "type/corsa-runtime")
-    );
+    assert_reports(&result, "type/corsa-runtime");
 }
 
 const FLOATING: &str = include_str!(
@@ -91,13 +87,7 @@ fn explicit_type_rule_reports_a_missing_provider_under_every_preset() {
     let missing = std::env::temp_dir().join("vize-missing-corsa-10717");
     let missing = missing.to_str().unwrap();
     let opinionated = explicit(LintPreset::Opinionated, FLOATING, Some(missing));
-    assert!(
-        opinionated
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "type/corsa-runtime"),
-        "{opinionated:?}"
-    );
+    assert_reports(&opinionated, "type/corsa-runtime");
     for preset in [
         LintPreset::HappyPath,
         LintPreset::Essential,
@@ -120,7 +110,9 @@ fn explicit_type_rule_output_matches_under_every_preset() {
             opinionated
                 .diagnostics
                 .iter()
-                .all(|diagnostic| diagnostic.rule_name == RULE_NO_FLOATING_PROMISES)
+                .all(|diagnostic| diagnostic.rule_name == RULE_NO_FLOATING_PROMISES),
+            "{}",
+            failure_context(&opinionated)
         );
         for preset in [
             LintPreset::HappyPath,

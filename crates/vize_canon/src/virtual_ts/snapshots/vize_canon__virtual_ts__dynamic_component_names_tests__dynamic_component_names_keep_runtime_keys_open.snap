@@ -27,7 +27,7 @@ declare global {
 type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __EmitFn<T, __S = __EmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __EmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
-type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V ? V : T extends (...args: any[]) => infer V ? V : never;
+type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;
 type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, any> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
 type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropHasBoolean<T> = T extends BooleanConstructor ? true : T extends readonly (infer U)[] ? __RuntimePropHasBoolean<U> : T extends { type: infer U } ? __RuntimePropHasBoolean<U> : false;
@@ -168,14 +168,15 @@ function __setup() {
     // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
     "staticProp": staticValue,
   });
-  type __Child_8_save_inferred_emit_args = (__Child_8__library extends true ? typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {} : typeof __vize_emit_props_0) extends { onSave?: (...args: infer __A) => any } ? __A : unknown[];
+  type __Child_8_save_inferred_emit_args = __Child_8__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onSave?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_0 extends { onSave?: (...args: infer __A) => any } ? __A : unknown[];
   type __Child_8_save_static_emit_args = __Child_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onSave?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __Child_8_save_emit_args = unknown[] extends __Child_8_save_inferred_emit_args ? __Child_8_save_static_emit_args : __Child_8_save_inferred_emit_args;
   type __Child_8_save_args = unknown[] extends __Child_8_save_inferred_emit_args ? (unknown[] extends __Child_8_save_prop_args ? (unknown[] extends __Child_8_save_emit_args ? __Child_8_save_fallthrough_args : __Child_8_save_emit_args) : __Child_8_save_prop_args) : __Child_8_save_inferred_emit_args;
   type __Child_8_save_event = __Child_8_save_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_8_save_return_native_fallthrough = __Child_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __Child_8_save_return = unknown[] extends __Child_8_save_prop_args ? __Child_8_save_return_native_fallthrough : __Child_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __Child_8_save_prop_arrays = __Child_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onSave?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __Child_8__props_members = __Child_8__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __Child_8_save_prop_arrays = __Child_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSave?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_8_save_listener = unknown[] extends __Child_8_save_args ? ((...args: any[]) => any) : ((...args: __Child_8_save_args) => __Child_8_save_return);
   type __Child_8_save_handler = unknown[] extends __Child_8_save_args ? ((...args: any[]) => any) : __Child_8_save_listener;
   void ((...__vize_args: Parameters<__Child_8_save_listener>) => {
@@ -281,8 +282,11 @@ type $EmitOwnedKeys<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?:
 type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $EmitRequiredFields<P> & $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
 type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
-type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
-type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
+type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
+type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
+type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;
+type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;
 type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<$OverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
@@ -301,7 +305,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

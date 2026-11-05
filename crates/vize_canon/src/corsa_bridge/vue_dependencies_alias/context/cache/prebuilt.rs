@@ -91,6 +91,11 @@ impl SessionCache {
             return None;
         }
         let prebuilt = self.prebuilt.take()?;
+        // The adopted revision replaces the host's previous one.
+        self.slots.remove(&super::RevisionKey::new(
+            source_path.to_path_buf(),
+            fingerprint,
+        ));
         Some((prebuilt.context, prebuilt.fingerprint))
     }
 

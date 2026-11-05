@@ -63,7 +63,7 @@ function hook<T extends Function>(value: T | { handler: T } | undefined): T {
   return fn as T;
 }
 
-/** Real Vite configuration plus the plugin's actual buildStart/load consumers. */
+/** Real Vite configuration plus the plugin's actual buildStart and SFC load/compile consumers. */
 export async function startupHost(
   root: string,
   config: InlineConfig,
@@ -95,14 +95,27 @@ export async function startupHost(
     command,
   );
   const plugin = resolved.plugins.find((value) => value.name === "vite-plugin-vize");
-  assert.ok(plugin);
-  const context = { environment: { getTopLevelConfig: () => resolved } };
+  const sfcPlugin = resolved.plugins.find((value) => value.name === "vite-plugin-vize:sfc");
+  assert.ok(plugin && sfcPlugin);
+  const watchedFiles: string[] = [];
+  const context = {
+    environment: { getTopLevelConfig: () => resolved },
+    addWatchFile(file: string) {
+      watchedFiles.push(file);
+    },
+  };
   return {
     resolved,
     candidates,
+    watchedFiles,
     start: () => hook(plugin.buildStart).call(context as never, {} as never),
-    load: (file: string, ssr = false) =>
-      hook(plugin.load).call({ addWatchFile() {} } as never, toVirtualId(file, ssr), { ssr }),
+    load: async (file: string, ssr = false) => {
+      const id = toVirtualId(file, ssr);
+      const pluginContext = { addWatchFile() {}, resolve: async () => null } as never;
+      const loaded = await hook(plugin.load).call(pluginContext, id, { ssr });
+      const source = typeof loaded === "string" ? loaded : (loaded as { code: string }).code;
+      return hook(sfcPlugin.transform).call(pluginContext, source, id, { ssr } as never);
+    },
     close: () => hook(plugin.closeBundle).call(context as never),
   };
 }

@@ -1,18 +1,37 @@
 ---
 title: "script/no-potential-component-option-typo"
+description: "Flag likely typos in Options API component option names."
 ---
 
 # `script/no-potential-component-option-typo`
 
-Flag likely typos in Options API component option names
+Flag likely typos in Options API component option names.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The option is spelled `method`, one edit away from the recognized `methods` option; Vue would not treat it as the intended methods declaration.
+
+```vue annotate="remove:2"
+<script lang="ts">
+export default { method: { save() {} } };
+</script>
+```
+
+## Good
+
+Changing the key to `methods` places `save()` under the recognized component option.
+
+```vue annotate="add:2"
+<script lang="ts">
+export default { methods: { save() {} } };
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The option is spelled `method`, one edit away from the recognized `methods` option; Vue would not treat it as the intended methods declaration.
-
-```vue
-<script lang="ts">
-export default { method: { save() {} } };
-</script>
-```
-
-## Good
-
-Changing the key to `methods` places `save()` under the recognized component option.
-
-```vue
-<script lang="ts">
-export default { methods: { save() {} } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19)

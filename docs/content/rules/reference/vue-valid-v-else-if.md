@@ -1,18 +1,41 @@
 ---
 title: "vue/valid-v-else-if"
+description: "Enforce valid `v-else-if` directives."
 ---
 
 # `vue/valid-v-else-if`
 
-Enforce valid `v-else-if` directives
+Enforce valid `v-else-if` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The examples leave `v-else-if` without a preceding conditional branch or a condition, or give it an argument or modifier.
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<div v-else-if="foo"></div> <!-- without preceding v-if -->
+<div v-if="foo"></div><div v-else-if></div>
+<div v-if="foo"></div><div v-else-if:arg="bar"></div>
+<div v-if="foo"></div><div v-else-if.mod="bar"></div>
+</template>
+```
+
+## Good
+
+Place `v-else-if` with a condition immediately after the `v-if` or `v-else-if` branch it continues.
+
+```vue annotate="add:2,3"
+<template>
+<div v-if="foo"></div>
+<div v-else-if="bar"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The examples leave `v-else-if` without a preceding conditional branch or a condition, or give it an argument or modifier.
-
-```vue
-<template>
-<div v-else-if="foo"></div> <!-- without preceding v-if -->
-<div v-if="foo"></div><div v-else-if></div>
-<div v-if="foo"></div><div v-else-if:arg="bar"></div>
-<div v-if="foo"></div><div v-else-if.mod="bar"></div>
-</template>
-```
-
-## Good
-
-Place `v-else-if` with a condition immediately after the `v-if` or `v-else-if` branch it continues.
-
-```vue
-<template>
-<div v-if="foo"></div>
-<div v-else-if="bar"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else_if.rs#L34)

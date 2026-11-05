@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { slotCliPacket } from "../../tools/benchmarks/scripts/canon-slot-provider-cli.ts";
+import {
+  AUTHENTICATED_PREAMBLE_BYTES,
+  AUTHENTICATED_PREAMBLE_SHA256,
+  applySourceOwnedPreambleTransitions,
+} from "../../tools/benchmarks/scripts/canon-slot-provider-preamble.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -30,8 +36,21 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     )
     .split("\n")[1];
   assert.ok(oldAlias !== undefined && currentAlias !== undefined);
-  const currentPreamble = historical.replace(oldAlias, currentAlias);
+  const currentPreamble = applySourceOwnedPreambleTransitions(
+    historical.replace(oldAlias, currentAlias),
+  );
   assert.notEqual(currentPreamble, historical);
+  assert.equal(Buffer.byteLength(currentPreamble), AUTHENTICATED_PREAMBLE_BYTES);
+  assert.equal(
+    createHash("sha256").update(currentPreamble).digest("hex"),
+    AUTHENTICATED_PREAMBLE_SHA256,
+  );
+  assert.ok(currentPreamble.includes("declare var __vizeTemplateChecker: true;"));
+  assert.ok(
+    currentPreamble.includes(
+      "type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;",
+    ),
+  );
   const stderr = Buffer.from(
     `\n=== __vize_helpers.d.ts ===\n${currentPreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
   );

@@ -7,6 +7,7 @@ use vize_carton::{FxHashMap, String, ToCompactString};
 use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 
 mod exports_patterns;
+pub(crate) mod project;
 
 use self::exports_patterns::{ExportsTypes, exports_types_entry};
 
@@ -89,35 +90,80 @@ pub(crate) fn canonical_base_file(filename: &str) -> PathBuf {
 
 /// Positive resolution cache: `(importing dir, specifier) -> resolved path`.
 /// Misses are not cached so newly created files remain discoverable.
-static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), CachedPath>>> =
+struct CachedResolution {
+    target: CachedPath,
+    revision: Option<[u8; 32]>,
+}
+
+type ResolutionKey = (Option<PathBuf>, PathBuf, String);
+static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<ResolutionKey, CachedResolution>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
+#[cfg(test)]
 pub(crate) fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    let project = project::for_file(current_file).ok()?;
+    resolve_import_path_with_project(current_file, specifier, project.as_deref())
+}
+
+pub(crate) fn resolve_import_path_with_project(
+    current_file: &Path,
+    specifier: &str,
+    project: Option<&project::Project>,
+) -> Option<PathBuf> {
     let dir = current_file.parent()?.to_path_buf();
-    let key = (dir, specifier.to_compact_string());
+    let key = (
+        project.map(|project| project.config.clone()),
+        dir,
+        specifier.to_compact_string(),
+    );
+    let revision = project.map(|project| project.revision);
     let epoch = current_batch_epoch();
     if let Ok(cache) = RESOLVE_CACHE.read()
         && let Some(entry) = cache.get(&key)
-        && cached_path_is_fresh(entry, epoch)
+        && entry.revision == revision
+        && if project.is_some() {
+            // A still-existing previous target does not prove that an earlier
+            // paths fallback has not appeared. Re-probe outside a batch, and
+            // once per new batch, rather than retaining stale target priority.
+            epoch != NO_EPOCH && entry.target.validated_epoch.load(Ordering::Relaxed) == epoch
+        } else {
+            cached_path_is_fresh(&entry.target, epoch)
+        }
     {
-        return Some(entry.path.clone());
+        return Some(entry.target.path.clone());
     }
 
-    let resolved = resolve_import_path_uncached(current_file, specifier)?;
+    let resolved = resolve_import_path_uncached(current_file, specifier, project)?;
     if let Ok(mut cache) = RESOLVE_CACHE.write() {
         cache.insert(
             key,
-            CachedPath {
-                path: resolved.clone(),
-                validated_epoch: AtomicU64::new(epoch),
+            CachedResolution {
+                target: CachedPath {
+                    path: resolved.clone(),
+                    validated_epoch: AtomicU64::new(epoch),
+                },
+                revision,
             },
         );
     }
     Some(resolved)
 }
 
-fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<PathBuf> {
-    if let Some(alias_path) = resolve_at_src_alias(current_file, specifier) {
+fn resolve_import_path_uncached(
+    current_file: &Path,
+    specifier: &str,
+    project: Option<&project::Project>,
+) -> Option<PathBuf> {
+    if !specifier.starts_with('.')
+        && !Path::new(specifier).is_absolute()
+        && let Some(project) = project
+        && let Some(path) = project.resolve(specifier, resolve_candidate_path)
+    {
+        return Some(path);
+    }
+    if project.is_none()
+        && let Some(alias_path) = resolve_at_src_alias(current_file, specifier)
+    {
         return Some(alias_path);
     }
 

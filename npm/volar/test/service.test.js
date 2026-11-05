@@ -4,7 +4,9 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
-import { currentVolarReference } from "./public-instance-reference.js";
+import { publicInstanceReference } from "./public-instance-reference.js";
+import { assertListenerStarts, listenerWrapperReference } from "./listener-wrapper-reference.js";
+import "./listener-wrapper-reference.test.js";
 import {
   directory,
   workspace,
@@ -359,12 +361,7 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     const errors = query("feature-boundary-diagnostics", { file }, () =>
       e.languageService.getSemanticDiagnostics(file),
     );
-    // As vue-tsc and the CLI mapper: one error, at the wrong prop. The listener
-    // check starts in unmapped scaffolding, which Canon ignores (#11472).
-    assert.deepEqual(
-      errors.map((diagnostic) => [diagnostic.code, diagnostic.start, diagnostic.length]),
-      [[2322, eventParent.indexOf("foo-bar"), "foo-bar".length]],
-    );
+    assertListenerStarts(errors, eventParent);
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
       .map((row, index) => ({ row, mapping: root.embeddedCodes[0].mappings[index] }))
@@ -508,5 +505,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(packets, currentVolarReference(expected));
+  assert.deepEqual(packets, listenerWrapperReference(publicInstanceReference(expected)));
 });

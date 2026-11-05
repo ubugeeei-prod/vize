@@ -1,18 +1,37 @@
 ---
 title: "vue/no-template-key"
+description: "Disallow `key` attribute on `<template>`."
 ---
 
 # `vue/no-template-key`
 
-Disallow `key` attribute on `<template>`
+Disallow `key` attribute on `<template>`.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+A non-loop template wrapper has a key even though it is not the keyed iteration boundary.
+
+```vue annotate="remove:2"
+<template>
+<template :key="section"><div>Details</div></template>
+</template>
+```
+
+## Good
+
+The key belongs to a template v-for iteration, where it identifies each repeated fragment.
+
+```vue annotate="add:2"
+<template>
+<template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-A non-loop template wrapper has a key even though it is not the keyed iteration boundary.
-
-```vue
-<template>
-<template :key="section"><div>Details</div></template>
-</template>
-```
-
-## Good
-
-The key belongs to a template v-for iteration, where it identifies each repeated fragment.
-
-```vue
-<template>
-<template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31)

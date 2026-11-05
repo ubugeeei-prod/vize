@@ -31,7 +31,11 @@ pub(super) fn append_model_update_check(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     (component_type_name, idx): (&str, usize),
-    prop: &PassedProp,
+    (usage, prop, source_context): (
+        &ComponentUsage,
+        &PassedProp,
+        super::component_props::ComponentPropSource<'_>,
+    ),
     target: &str,
     target_source: Range<usize>,
     (indent, hoist_shared_preamble): (&str, bool),
@@ -62,6 +66,7 @@ pub(super) fn append_model_update_check(
     ts.push_str(target);
     let target_end = ts.len();
     ts.push_str(" = __vize_model_value; });\n");
+    source_context.record_model_write_back(usage, prop, target_start..target_end);
     mappings.push(VizeMapping {
         gen_range: statement_start..ts.len(),
         src_range: target_source.clone(),

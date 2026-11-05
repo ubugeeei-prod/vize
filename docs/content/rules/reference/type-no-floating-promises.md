@@ -1,20 +1,41 @@
 ---
 title: "type/no-floating-promises"
+description: "Disallow floating (unhandled) Promises."
 ---
 
 # `type/no-floating-promises`
 
-Disallow floating (unhandled) Promises
+Disallow floating (unhandled) Promises.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below.
 
-Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.
+This rule reads type information from your TypeScript project (`tsconfig.json`), so the configuration sets `typeAware: true`. `typeAware` does not turn on opt-in rules by itself.
+
+## Bad
+
+The async `save` function returns a Promise, but the standalone `save()` call neither awaits nor returns it and does not explicitly mark intentional disposal.
+
+```vue annotate="remove:3"
+<script setup lang="ts">
+async function save(): Promise<void> {}
+save();
+</script>
+```
+
+## Good
+
+`void save()` explicitly marks the fire-and-forget intent accepted by this rule. This is an explicit disposal marker, not a rejection handler.
+
+```vue annotate="add:3"
+<script setup lang="ts">
+async function save(): Promise<void> {}
+void save();
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -34,32 +55,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The async `save` function returns a Promise, but the standalone `save()` call neither awaits nor returns it and does not explicitly mark intentional disposal.
-
-```vue
-<script setup lang="ts">
-async function save(): Promise<void> {}
-save();
-</script>
-```
-
-## Good
-
-`void save()` explicitly marks the fire-and-forget intent accepted by this rule. This is an explicit disposal marker, not a rejection handler.
-
-```vue
-<script setup lang="ts">
-async function save(): Promise<void> {}
-void save();
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13)

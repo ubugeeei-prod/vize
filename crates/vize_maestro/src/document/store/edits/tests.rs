@@ -1,12 +1,13 @@
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use tower_lsp::lsp_types::{
-    Diagnostic, DiagnosticRelatedInformation, Location, Position, Range,
+    Diagnostic, DiagnosticRelatedInformation, Location, NumberOrString, Position, Range,
     TextDocumentContentChangeEvent, Url,
 };
 
 use super::super::DocumentStore;
-use crate::ide::diagnostics::NativeFamily;
+use crate::ide::diagnostics::{NativeDiagnostic, NativeFamily};
+use vize_canon::corsa_bridge::DiagnosticPhase;
 
 fn uri() -> Url {
     Url::parse("file:///carried.vue").unwrap()
@@ -50,21 +51,23 @@ fn carried(
     let store = DocumentStore::new();
     store.open(uri(), text.into(), 1, "vue".into());
     let family = NativeFamily {
-        diagnostics,
+        diagnostics: diagnostics.into_iter().map(Into::into).collect(),
         owns_script_syntax: true,
     };
     assert!(store.carry_native(&uri(), 1, family));
+    let edited = !versions.is_empty();
     let mut version = 1;
     for changes in versions {
         version += 1;
         assert!(store.apply_changes(&uri(), changes, version));
     }
     let family = store.carried_native(&uri(), version).unwrap();
-    assert!(family.owns_script_syntax);
+    // A moved family no longer describes the current script syntax (#11626).
+    assert_eq!(family.owns_script_syntax, !edited);
     family
         .diagnostics
         .into_iter()
-        .map(|diagnostic| (diagnostic.message, diagnostic.range))
+        .map(|record| (record.diagnostic.message, record.diagnostic.range))
         .collect()
 }
 
@@ -169,7 +172,7 @@ fn carried_families_belong_to_one_open_version() {
     let store = DocumentStore::new();
     store.open(uri(), "const a = 1;\n".into(), 1, "vue".into());
     let family = |message| NativeFamily {
-        diagnostics: vec![diagnostic(range((0, 6), (0, 7)), message)],
+        diagnostics: vec![diagnostic(range((0, 6), (0, 7)), message).into()],
         owns_script_syntax: false,
     };
     assert!(!store.carry_native(&uri(), 2, family("stale")));
@@ -188,7 +191,10 @@ fn carried_families_belong_to_one_open_version() {
         message: "here".into(),
     }]);
     let family = NativeFamily {
-        diagnostics: vec![related, diagnostic(range((0, 6), (0, 7)), "kept")],
+        diagnostics: vec![
+            related.into(),
+            diagnostic(range((0, 6), (0, 7)), "kept").into(),
+        ],
         owns_script_syntax: false,
     };
     assert!(store.carry_native(&uri(), 1, family));
@@ -200,4 +206,115 @@ fn carried_families_belong_to_one_open_version() {
     store.close(&uri());
     store.open(uri(), "const a = 1;\n".into(), 1, "vue".into());
     assert!(store.carried_native(&uri(), 1).is_none());
+}
+
+/// #11626: a family computed on an earlier text cannot own the current text's
+/// script syntax, so the prompt set keeps the script parser's fresh errors.
+#[test]
+fn carried_native_family_does_not_own_the_edited_script_syntax() {
+    let store = DocumentStore::new();
+    store.open(uri(), "const a: number = 1;\n".into(), 1, "vue".into());
+    let coded = |range, message: &str, code| Diagnostic {
+        code: Some(NumberOrString::Number(code)),
+        ..diagnostic(range, message)
+    };
+    let family = NativeFamily {
+        diagnostics: vec![
+            coded(range((0, 6), (0, 7)), "type", 2322).into(),
+            NativeDiagnostic {
+                diagnostic: coded(range((0, 18), (0, 19)), "syntax", 1109),
+                phase: DiagnosticPhase::Syntactic,
+            },
+        ],
+        owns_script_syntax: true,
+    };
+    assert!(store.carry_native(&uri(), 1, family));
+    assert!(
+        store.carried_native(&uri(), 1).unwrap().owns_script_syntax,
+        "the family owns the text it was computed on"
+    );
+    assert!(store.apply_changes(&uri(), vec![edit(range((1, 0), (1, 0)), "const = ;\n")], 2));
+    let carried = store.carried_native(&uri(), 2).unwrap();
+    assert!(!carried.owns_script_syntax);
+    // Its syntax error described the old text; the type error stays.
+    assert_eq!(
+        carried.diagnostics,
+        vec![coded(range((0, 6), (0, 7)), "type", 2322)]
+    );
+}
+
+#[test]
+fn unrelated_edits_preserve_semantic_diagnostics_in_the_1xxx_range() {
+    let store = DocumentStore::new();
+    store.open(
+        uri(),
+        "import value from './dep';\nvoid value;\n".into(),
+        1,
+        "vue".into(),
+    );
+    let semantic = Diagnostic {
+        code: Some(NumberOrString::Number(1192)),
+        ..diagnostic(
+            range((0, 18), (0, 23)),
+            "Module './dep' has no default export.",
+        )
+    };
+    assert!(store.carry_native(
+        &uri(),
+        1,
+        NativeFamily {
+            diagnostics: vec![semantic.clone().into()],
+            owns_script_syntax: true,
+        },
+    ));
+    assert!(store.apply_changes(&uri(), vec![edit(range((2, 0), (2, 0)), "\n")], 2));
+    let carried = store.carried_native(&uri(), 2).unwrap();
+    assert!(!carried.owns_script_syntax);
+    assert_eq!(carried.diagnostics, vec![semantic]);
+    assert!(store.carried_native(&uri(), 1).is_none());
+    assert!(
+        store
+            .carried_native(&Url::parse("file:///other.vue").unwrap(), 2)
+            .is_none()
+    );
+}
+
+#[test]
+fn carried_diagnostic_retirement_uses_the_observed_phase() {
+    for (phase, code, retained) in [
+        (DiagnosticPhase::Syntactic, 1109, false),
+        (DiagnosticPhase::Semantic, 1192, true),
+        (DiagnosticPhase::Unknown, 1109, true),
+        (DiagnosticPhase::Unknown, 1192, true),
+    ] {
+        let store = DocumentStore::new();
+        store.open(uri(), "const a = 1;\n".into(), 1, "vue".into());
+        let row = NativeDiagnostic {
+            diagnostic: Diagnostic {
+                code: Some(NumberOrString::Number(code)),
+                ..diagnostic(range((0, 6), (0, 7)), "native result")
+            },
+            phase,
+        };
+        assert!(store.carry_native(
+            &uri(),
+            1,
+            NativeFamily {
+                diagnostics: vec![row.clone()],
+                owns_script_syntax: false,
+            }
+        ));
+        assert!(store.apply_changes(&uri(), vec![whole("const a = 1;\n\n")], 2));
+        let carried = store.carried_native(&uri(), 2).unwrap();
+        assert_eq!(
+            carried.diagnostics.len(),
+            usize::from(retained),
+            "{phase:?}"
+        );
+        if retained {
+            assert_eq!(carried.diagnostics[0], row);
+            assert!(store.apply_changes(&uri(), vec![edit(range((2, 0), (2, 0)), "\n")], 3));
+            assert_eq!(store.carried_native(&uri(), 3).unwrap().diagnostics[0], row);
+        }
+    }
 }

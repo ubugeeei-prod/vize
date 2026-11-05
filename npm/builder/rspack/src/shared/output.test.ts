@@ -12,6 +12,12 @@ function nativeShape(code: string) {
   return result.moduleShape;
 }
 
+function hmrModuleId(code: string): string {
+  const match = code.match(/"module":"([0-9a-f]{16})"/);
+  assert.ok(match, "HMR metadata did not include a module id");
+  return match[1];
+}
+
 function compiledModule(code: string, overrides: Partial<CompiledModule> = {}): CompiledModule {
   return {
     code,
@@ -275,6 +281,76 @@ void test("template-only render output gains a default component export", () => 
     output,
     `export function render(_ctx, _cache) {\n  return null;\n}\nconst _sfc_main = { render, __scopeId: "data-v-test1234" };\nexport default _sfc_main;`,
   );
+});
+
+void test("CSS module class maps do not change HMR identity when script and template are unchanged", () => {
+  const hmr = {
+    source: "source-a",
+    script: "script-a",
+    template: "template-a",
+    options: "options-a",
+    canRerender: true,
+  };
+  const styles = [
+    {
+      content: ".button { composes: variantOne; padding: 7px; }",
+      lang: "css",
+      scoped: false,
+      module: true,
+      index: 1,
+    },
+    {
+      content: ".label { composes: thin; }",
+      lang: "css",
+      scoped: false,
+      module: "theme",
+      index: 2,
+    },
+  ];
+  const before = generateOutput(
+    compiledModule('export default { __cssModules: { theme: { label: "offset-a" } } };', {
+      templateAssetUrls: [],
+      hmr,
+      styles,
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  const shiftedClasses = generateOutput(
+    compiledModule('export default { __cssModules: { theme: { label: "offset-b" } } };', {
+      templateAssetUrls: [],
+      hmr: { ...hmr, source: "source-b" },
+      styles,
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  assert.notEqual(before, shiftedClasses);
+  assert.equal(hmrModuleId(before), hmrModuleId(shiftedClasses));
+
+  const templateEdit = generateOutput(
+    compiledModule('export default { __cssModules: { theme: { label: "offset-b" } } };', {
+      templateAssetUrls: [],
+      hmr: { ...hmr, source: "source-c", template: "template-b" },
+      styles,
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  assert.notEqual(hmrModuleId(before), hmrModuleId(templateEdit));
+
+  const plain = generateOutput(
+    compiledModule("export default { name: 'plain-a' };", {
+      templateAssetUrls: [],
+      hmr,
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  const plainEdit = generateOutput(
+    compiledModule("export default { name: 'plain-b' };", {
+      templateAssetUrls: [],
+      hmr: { ...hmr, source: "source-b" },
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  assert.notEqual(hmrModuleId(plain), hmrModuleId(plainEdit));
 });
 
 void test("a hand-built module without moduleShape fails with the compileFile contract", () => {

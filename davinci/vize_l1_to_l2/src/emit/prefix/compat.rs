@@ -105,6 +105,25 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
     fn visit_ts_enum_declaration(&mut self, _it: &oxc_ast_types::TSEnumDeclaration<'a>) {
         self.reject();
     }
+    // TypeScript-only declarations a function body may hold.
+    fn visit_ts_type_alias_declaration(&mut self, _it: &oxc_ast_types::TSTypeAliasDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_interface_declaration(&mut self, _it: &oxc_ast_types::TSInterfaceDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_module_declaration(&mut self, _it: &oxc_ast_types::TSModuleDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_global_declaration(&mut self, _it: &oxc_ast_types::TSGlobalDeclaration<'a>) {
+        self.reject();
+    }
+    fn visit_ts_import_equals_declaration(
+        &mut self,
+        _it: &oxc_ast_types::TSImportEqualsDeclaration<'a>,
+    ) {
+        self.reject();
+    }
     fn visit_decorator(&mut self, _it: &oxc_ast_types::Decorator<'a>) {
         self.reject();
     }
@@ -174,5 +193,29 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
             return;
         }
         walk::walk_unary_expression(self, it);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+    use vize_l0::Allocator;
+
+    use super::js_module_compatible;
+
+    fn compatible(source: &str) -> bool {
+        let allocator = Allocator::new();
+        let expression = Parser::new(allocator.as_oxc(), source, SourceType::ts())
+            .parse_expression()
+            .expect("TypeScript expression");
+        js_module_compatible(&expression, source)
+    }
+
+    #[test]
+    fn typescript_declarations_in_a_function_body_are_not_javascript() {
+        assert!(!compatible("() => { void Child; type T = typeof Other }"));
+        assert!(!compatible("() => { interface I { id: number } pick() }"));
+        assert!(compatible("() => { void Child }"));
     }
 }

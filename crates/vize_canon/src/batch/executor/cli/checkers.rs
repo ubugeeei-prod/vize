@@ -15,6 +15,44 @@ pub(in crate::batch::executor) fn checker_count() -> usize {
     parse_checker_count(std::env::var("VIZE_CHECKERS").ok().as_deref())
 }
 
+/// Checker workers for a program that stays unsharded. Sharding is the only
+/// other parallelism, and an interconnected project collapses into a single
+/// shard, so one pinned checker made its check single-threaded (#11673). Such
+/// a program gets the measured width below, capped by the machine; an
+/// explicit `--checkers` or `VIZE_CHECKERS` still wins. The checker-width
+/// identity gate (1 vs N) guards #3905's divergence.
+pub(in crate::batch::executor) fn unsharded_checker_count(explicit: Option<usize>) -> usize {
+    let threads = std::thread::available_parallelism().map_or(1, std::num::NonZero::get);
+    resolve_unsharded_checker_count(
+        explicit,
+        std::env::var("VIZE_CHECKERS").ok().as_deref(),
+        threads,
+    )
+}
+
+/// Pure half of [`unsharded_checker_count`].
+fn resolve_unsharded_checker_count(
+    explicit: Option<usize>,
+    env: Option<&str>,
+    threads: usize,
+) -> usize {
+    explicit
+        .or_else(|| explicit_checker_count(env))
+        .unwrap_or_else(|| UNSHARDED_CHECKER_WIDTH.min(threads.max(1)))
+}
+
+/// The knee of a 1/2/4/8/16/32 sweep at 2.5k/10k/20k SFCs (#11673): doubling
+/// to 8 still cuts wall time about 28% for at most 10% more CPU and 6% more
+/// RSS, while 16 costs up to 23% more CPU and 13% more RSS for another 15%.
+/// Diagnostics were identical at every width.
+const UNSHARDED_CHECKER_WIDTH: usize = 8;
+
+fn explicit_checker_count(value: Option<&str>) -> Option<usize> {
+    value
+        .and_then(|value| value.parse::<usize>().ok())
+        .filter(|&count| count >= 1)
+}
+
 /// Pure half of [`checker_count`], so the pinning rules are testable without
 /// mutating the process environment shared by every other test.
 fn parse_checker_count(value: Option<&str>) -> usize {
@@ -37,12 +75,38 @@ pub(super) fn rejects_checkers_flag(diagnostics: &[Diagnostic]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_checker_count;
+    use super::{explicit_checker_count, parse_checker_count, resolve_unsharded_checker_count};
 
     /// The default is pinned, not machine-derived — the whole point of #3905.
     #[test]
     fn default_is_one_checker() {
         assert_eq!(parse_checker_count(None), 1);
+    }
+
+    #[test]
+    fn unsharded_programs_take_the_default_width_unless_a_width_is_explicit() {
+        assert_eq!(
+            resolve_unsharded_checker_count(None, None, 32),
+            super::UNSHARDED_CHECKER_WIDTH
+        );
+        // Never more workers than the machine has.
+        assert_eq!(resolve_unsharded_checker_count(None, None, 2), 2);
+        assert_eq!(resolve_unsharded_checker_count(None, None, 0), 1);
+        // `--checkers` and `VIZE_CHECKERS` both pin it, `--checkers` first.
+        assert_eq!(resolve_unsharded_checker_count(Some(1), Some("8"), 32), 1);
+        assert_eq!(resolve_unsharded_checker_count(None, Some("1"), 32), 1);
+        assert_eq!(
+            resolve_unsharded_checker_count(None, Some("wide"), 32),
+            super::UNSHARDED_CHECKER_WIDTH
+        );
+    }
+
+    #[test]
+    fn only_a_valid_override_is_explicit() {
+        assert_eq!(explicit_checker_count(None), None);
+        assert_eq!(explicit_checker_count(Some("0")), None);
+        assert_eq!(explicit_checker_count(Some("wide")), None);
+        assert_eq!(explicit_checker_count(Some("3")), Some(3));
     }
 
     #[test]

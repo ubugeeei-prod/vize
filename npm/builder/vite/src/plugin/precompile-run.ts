@@ -34,6 +34,7 @@ import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
+import { watchTypeProject } from "./type-project-watches.ts";
 
 /** Known SFC diagnostics from speculative startup compilation, without I/O failures. */
 export class PrecompileDiagnosticsError extends Error {
@@ -79,6 +80,7 @@ export async function compileAll(
   state: VizePluginState,
   owners: readonly PrecompileInputOwner[] = [],
   resolve?: HostResolve,
+  addWatchFile?: (path: string) => void,
 ): Promise<void> {
   const startTime = performance.now();
   const files = await glob(state.scanPatterns!, {
@@ -186,8 +188,9 @@ export async function compileAll(
       // The hash is taken from the bytes just read, so a cache hit means the
       // stored output was produced from exactly this source text.
       const sourceHash = cacheEnabled ? hashPrecompileSource(source) : undefined;
-      const restored = sourceHash === undefined ? undefined : cache.get(file, sourceHash);
-      if (restored) {
+      const stored = sourceHash === undefined ? undefined : cache.get(file, sourceHash);
+      if (stored) {
+        const restored = { ...stored, source };
         state.cache.set(file, restored);
         const metadata = currentMetadata.get(file);
         if (metadata) {
@@ -250,6 +253,7 @@ export async function compileAll(
       }
 
       const compiled = state.cache.get(fileResult.path);
+      watchTypeProject(state.cache, fileResult.typeProject, addWatchFile);
       const sourceHash = sourceHashes.get(fileResult.path);
       if (fileResult.warnings.length > 0) {
         // The disk entry does not carry diagnostics. Recompile warned sources

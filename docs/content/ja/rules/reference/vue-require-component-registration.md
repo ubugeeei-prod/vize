@@ -1,20 +1,39 @@
 ---
 title: "vue/require-component-registration"
+description: "使用するコンポーネントを import または登録します。"
 ---
 
 # `vue/require-component-registration`
 
 使用するコンポーネントを import または登録します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated` | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
 アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。
+
+## 悪い例
+
+`MissingWidget` は登録されておらず、設定したグローバルコンポーネント一覧にもありません。
+
+```vue annotate="remove:2"
+<template>
+<MissingWidget />
+</template>
+```
+
+## 良い例
+
+`MyButton` は例の `globals` に含まれます。既知のグローバルコンポーネントを検査対象から除く設定で、import や登録そのものは行いません。
+
+```vue annotate="add:2"
+<template>
+<MyButton />
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -41,30 +60,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`MissingWidget` は登録されておらず、設定したグローバルコンポーネント一覧にもありません。
-
-```vue
-<template>
-<MissingWidget />
-</template>
-```
-
-## 良い
-
-`MyButton` は例の `globals` に含まれます。既知のグローバルコンポーネントを検査対象から除く設定で、import や登録そのものは行いません。
-
-```vue
-<template>
-<MyButton />
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57)

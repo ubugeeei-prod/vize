@@ -1,121 +1,148 @@
 ---
-title: Vue ルール
+title: "Vue ルール"
+description: "SFC のテンプレート・ディレクティブ・コンポーネント・各ブロックについて、正しさ・書き方の統一・Vue 3 への移行を検査します。"
 ---
 
 # Vue ルール
 
-すべての Vue ルールの目的・設定・悪い例・良い例をこのページにまとめています。変更箇所は行の色で示します。コードをコピーすると、省略のないソースコード全体を取得できます。
+SFC のテンプレート・ディレクティブ・コンポーネント・各ブロックについて、正しさ・書き方の統一・Vue 3 への移行を検査します。
 
+各ルールのページに、診断が出る例・出ない例と、そのルールを有効にする設定があります。
 
-| ルール | 例 | 目的 |
+## 基本 (51)
+
+`essential` プリセットに含まれる、正しさを守るルールです。
+
+| ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
-| [`vue/a11y-img-alt`](https://vizejs.dev/ja/rules/vue.html#vue-a11y-img-alt) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-a11y-img-alt-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-a11y-img-alt-good) | 画像に代替テキストの alt 属性を指定します。 |
-| [`vue/attribute-hyphenation`](https://vizejs.dev/ja/rules/vue.html#vue-attribute-hyphenation) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-attribute-hyphenation-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-attribute-hyphenation-good) | コンポーネントの prop 属性名を設定した形式に揃えます。 |
-| [`vue/attribute-order`](https://vizejs.dev/ja/rules/vue.html#vue-attribute-order) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-attribute-order-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-attribute-order-good) | テンプレートの属性を一定の順に並べます。 |
-| [`vue/component-definition-name-casing`](https://vizejs.dev/ja/rules/vue.html#vue-component-definition-name-casing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-component-definition-name-casing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-component-definition-name-casing-good) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 |
-| [`vue/component-name-in-template-casing`](https://vizejs.dev/ja/rules/vue.html#vue-component-name-in-template-casing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-component-name-in-template-casing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-component-name-in-template-casing-good) | テンプレート内のコンポーネント名を指定した形式に揃えます。 |
-| [`vue/html-button-has-type`](https://vizejs.dev/ja/rules/vue.html#vue-html-button-has-type) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-html-button-has-type-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-html-button-has-type-good) | button に有効な type を明示します。 |
-| [`vue/html-quotes`](https://vizejs.dev/ja/rules/vue.html#vue-html-quotes) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-html-quotes-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-html-quotes-good) | HTML 属性値の引用符を揃えます。 |
-| [`vue/html-self-closing`](https://vizejs.dev/ja/rules/vue.html#vue-html-self-closing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-html-self-closing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-html-self-closing-good) | 要素の種類ごとに自己終了タグの形式を揃えます。 |
-| [`vue/max-template-complexity`](https://vizejs.dev/ja/rules/vue.html#vue-max-template-complexity) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-max-template-complexity-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-max-template-complexity-good) | コンポーネント自身のテンプレートの複雑度を制限します。 |
-| [`vue/multi-word-component-names`](https://vizejs.dev/ja/rules/vue.html#vue-multi-word-component-names) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-multi-word-component-names-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-multi-word-component-names-good) | コンポーネント名を複数の単語で構成します。 |
-| [`vue/mustache-interpolation-spacing`](https://vizejs.dev/ja/rules/vue.html#vue-mustache-interpolation-spacing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-mustache-interpolation-spacing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-mustache-interpolation-spacing-good) | mustache 内の空白を揃えます。 |
-| [`vue/no-array-index-key`](https://vizejs.dev/ja/rules/vue.html#vue-no-array-index-key) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-array-index-key-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-array-index-key-good) | v-for の配列インデックスをそのまま key に使う箇所を検出します。 |
-| [`vue/no-bare-strings-in-template`](https://vizejs.dev/ja/rules/vue.html#vue-no-bare-strings-in-template) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-bare-strings-in-template-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-bare-strings-in-template-good) | テンプレートに直接書かれた、国際化の対象となるテキストを検出します。 |
-| [`vue/no-boolean-attr-value`](https://vizejs.dev/ja/rules/vue.html#vue-no-boolean-attr-value) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-boolean-attr-value-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-boolean-attr-value-good) | HTML の真偽属性に不要な値を指定した箇所を検出します。 |
-| [`vue/no-child-content`](https://vizejs.dev/ja/rules/vue.html#vue-no-child-content) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-child-content-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-child-content-good) | v-html / v-text と子コンテンツを同時に指定する箇所を検出します。 |
-| [`vue/no-deprecated-filter`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-filter) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-filter-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-filter-good) | Vue 2 のパイプによるフィルター構文を検出します。 |
-| [`vue/no-deprecated-functional-template`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-functional-template) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-functional-template-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-functional-template-good) | SFC の template で削除済みの functional 属性を検出します。 |
-| [`vue/no-deprecated-html-element-is`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-html-element-is) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-html-element-is-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-html-element-is-good) | 通常の HTML 要素で旧形式の is を使う箇所を検出します。 |
-| [`vue/no-deprecated-inline-template`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-inline-template) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-inline-template-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-inline-template-good) | 削除済みの inline-template 属性を検出します。 |
-| [`vue/no-deprecated-router-link-tag-prop`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-router-link-tag-prop) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-router-link-tag-prop-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-router-link-tag-prop-good) | router-link の削除済み tag prop を検出します。 |
-| [`vue/no-deprecated-scope-attribute`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-scope-attribute) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-scope-attribute-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-scope-attribute-good) | template の削除済み scope 属性を検出します。 |
-| [`vue/no-deprecated-slot-attribute`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-attribute) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-attribute-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-attribute-good) | 削除済みの slot 属性を検出します。 |
-| [`vue/no-deprecated-slot-scope-attribute`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-scope-attribute) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-scope-attribute-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-slot-scope-attribute-good) | 削除済みの slot-scope 属性を検出します。 |
-| [`vue/no-deprecated-v-bind-sync`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-bind-sync) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-bind-sync-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-bind-sync-good) | 削除済みの v-bind の .sync 修飾子を検出します。 |
-| [`vue/no-deprecated-v-is`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-is) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-is-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-is-good) | 非推奨の v-is ディレクティブを検出します。 |
-| [`vue/no-deprecated-v-on-native-modifier`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-native-modifier) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-native-modifier-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-native-modifier-good) | 削除済みの v-on の .native 修飾子を検出します。 |
-| [`vue/no-deprecated-v-on-number-modifiers`](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-number-modifiers) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-good) | v-on の削除済みの数値 keyCode 修飾子を検出します。 |
-| [`vue/no-dupe-v-else-if`](https://vizejs.dev/ja/rules/vue.html#vue-no-dupe-v-else-if) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-dupe-v-else-if-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-dupe-v-else-if-good) | v-if / v-else-if の条件重複を検出します。 |
-| [`vue/no-duplicate-attributes`](https://vizejs.dev/ja/rules/vue.html#vue-no-duplicate-attributes) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-duplicate-attributes-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-duplicate-attributes-good) | 同じ要素の属性重複を検出します。 |
-| [`vue/no-empty-component-block`](https://vizejs.dev/ja/rules/vue.html#vue-no-empty-component-block) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-empty-component-block-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-empty-component-block-good) | 空の SFC ブロックを検出します。 |
-| [`vue/no-inline-style`](https://vizejs.dev/ja/rules/vue.html#vue-no-inline-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-inline-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-inline-style-good) | インラインの style 属性を検出します。 |
-| [`vue/no-invalid-html-attribute`](https://vizejs.dev/ja/rules/vue.html#vue-no-invalid-html-attribute) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-invalid-html-attribute-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-invalid-html-attribute-good) | 静的 HTML 属性の無効な値を検出します。現在は rel が対象です。 |
-| [`vue/no-lone-template`](https://vizejs.dev/ja/rules/vue.html#vue-no-lone-template) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-lone-template-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-lone-template-good) | 不要な template 要素を検出します。 |
-| [`vue/no-multi-spaces`](https://vizejs.dev/ja/rules/vue.html#vue-no-multi-spaces) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-multi-spaces-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-multi-spaces-good) | 連続する不要な空白を検出します。 |
-| [`vue/no-multiple-objects-in-class`](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-objects-in-class) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-objects-in-class-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-objects-in-class-good) | :class 配列内の複数のオブジェクト指定をまとめます。 |
-| [`vue/no-multiple-template-root`](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-template-root) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-template-root-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-multiple-template-root-good) | 単一ルートを要求するテンプレートで複数ルートを検出します。 |
-| [`vue/no-mutating-props`](https://vizejs.dev/ja/rules/vue.html#vue-no-mutating-props) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-mutating-props-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-mutating-props-good) | 親から受け取った prop を子コンポーネントで変更する箇所を検出します。 |
-| [`vue/no-negated-v-if-condition`](https://vizejs.dev/ja/rules/vue.html#vue-no-negated-v-if-condition) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-negated-v-if-condition-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-negated-v-if-condition-good) | v-else がある条件分岐の否定条件を反転して読みやすくします。 |
-| [`vue/no-non-component-keep-alive-child`](https://vizejs.dev/ja/rules/vue.html#vue-no-non-component-keep-alive-child) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-non-component-keep-alive-child-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-non-component-keep-alive-child-good) | KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。 |
-| [`vue/no-preprocessor-lang`](https://vizejs.dev/ja/rules/vue.html#vue-no-preprocessor-lang) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-preprocessor-lang-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-preprocessor-lang-good) | CSS プリプロセッサーより標準の CSS を使う方針を示します。 |
-| [`vue/no-reserved-component-names`](https://vizejs.dev/ja/rules/vue.html#vue-no-reserved-component-names) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-reserved-component-names-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-reserved-component-names-good) | 予約済みのコンポーネント名を検出します。 |
-| [`vue/no-root-v-if`](https://vizejs.dev/ja/rules/vue.html#vue-no-root-v-if) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-root-v-if-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-root-v-if-good) | テンプレートの単一ルートに v-if を指定する箇所を検出します。 |
-| [`vue/no-script-non-standard-lang`](https://vizejs.dev/ja/rules/vue.html#vue-no-script-non-standard-lang) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-script-non-standard-lang-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-script-non-standard-lang-good) | script の非標準の lang 指定を避ける方針を示します。 |
-| [`vue/no-src-attribute`](https://vizejs.dev/ja/rules/vue.html#vue-no-src-attribute) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-src-attribute-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-src-attribute-good) | SFC ブロックの外部 src 指定を検出します。 |
-| [`vue/no-static-inline-styles`](https://vizejs.dev/ja/rules/vue.html#vue-no-static-inline-styles) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-static-inline-styles-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-static-inline-styles-good) | 静的なインライン style 属性を検出します。 |
-| [`vue/no-template-key`](https://vizejs.dev/ja/rules/vue.html#vue-no-template-key) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-key-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-key-good) | v-for 用ではない template の key 指定を検出します。 |
-| [`vue/no-template-lang`](https://vizejs.dev/ja/rules/vue.html#vue-no-template-lang) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-lang-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-lang-good) | template の lang 指定を避ける方針を示します。 |
-| [`vue/no-template-shadow`](https://vizejs.dev/ja/rules/vue.html#vue-no-template-shadow) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-shadow-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-shadow-good) | テンプレート変数が外側の名前を隠す箇所を検出します。 |
-| [`vue/no-template-target-blank`](https://vizejs.dev/ja/rules/vue.html#vue-no-template-target-blank) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-target-blank-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-template-target-blank-good) | target=_blank の外部リンクに適切な rel を指定します。 |
-| [`vue/no-textarea-mustache`](https://vizejs.dev/ja/rules/vue.html#vue-no-textarea-mustache) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-textarea-mustache-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-textarea-mustache-good) | textarea 内の mustache を検出し、v-model の使用を勧めます。 |
-| [`vue/no-undefined-refs`](https://vizejs.dev/ja/rules/vue.html#vue-no-undefined-refs) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-undefined-refs-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-undefined-refs-good) | テンプレート内の未定義変数参照を検出します。 |
-| [`vue/no-unsafe-url`](https://vizejs.dev/ja/rules/vue.html#vue-no-unsafe-url) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unsafe-url-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unsafe-url-good) | 危険なスキームを含む可能性がある URL 属性やバインディングを検出します。 |
-| [`vue/no-unsandboxed-iframe`](https://vizejs.dev/ja/rules/vue.html#vue-no-unsandboxed-iframe) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unsandboxed-iframe-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unsandboxed-iframe-good) | iframe に sandbox 属性を指定します。 |
-| [`vue/no-unused-components`](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-components) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-components-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-components-good) | 登録しているのにテンプレートで使わないコンポーネントを検出します。 |
-| [`vue/no-unused-properties`](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-properties) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-properties-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-properties-good) | defineProps に宣言しているのに使わない prop を検出します。 |
-| [`vue/no-unused-refs`](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-refs) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-refs-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-refs-good) | テンプレートに宣言しているのに参照しない ref を検出します。 |
-| [`vue/no-unused-setup-bindings`](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-setup-bindings) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-setup-bindings-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-setup-bindings-good) | script setup に宣言しているのに読み取らない変数を検出します。 |
-| [`vue/no-unused-vars`](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-vars) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-vars-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-unused-vars-good) | v-for / v-slot に宣言しているのに使わない変数を検出します。 |
-| [`vue/no-use-v-else-with-v-for`](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-else-with-v-for) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-else-with-v-for-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-else-with-v-for-good) | 同じ要素での v-else / v-else-if と v-for の併用を検出します。 |
-| [`vue/no-use-v-if-with-v-for`](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-if-with-v-for) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-if-with-v-for-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-use-v-if-with-v-for-good) | 同じ要素での v-if と v-for の併用を検出します。 |
-| [`vue/no-useless-mustaches`](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-mustaches) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-mustaches-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-mustaches-good) | 文字列リテラルだけの不要な mustache を検出します。 |
-| [`vue/no-useless-template-attributes`](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-template-attributes) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-template-attributes-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-template-attributes-good) | template 要素の効果がない属性を検出します。 |
-| [`vue/no-useless-v-bind`](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-v-bind) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-v-bind-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-useless-v-bind-good) | 文字列リテラルだけの不要な v-bind を検出します。 |
-| [`vue/no-v-for-template-key-on-child`](https://vizejs.dev/ja/rules/vue.html#vue-no-v-for-template-key-on-child) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-for-template-key-on-child-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-for-template-key-on-child-good) | template v-for の key を子ではなく template に指定します。 |
-| [`vue/no-v-html`](https://vizejs.dev/ja/rules/vue.html#vue-no-v-html) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-html-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-html-good) | XSS を防ぐため、v-html を使用した箇所に警告を出します。 |
-| [`vue/no-v-text`](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text-good) | v-text の代わりに mustache を使う方針を適用します。 |
-| [`vue/no-v-text-v-html-on-component`](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text-v-html-on-component) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text-v-html-on-component-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-no-v-text-v-html-on-component-good) | コンポーネントでの v-text / v-html を検出します。 |
-| [`vue/permitted-contents`](https://vizejs.dev/ja/rules/vue.html#vue-permitted-contents) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-permitted-contents-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-permitted-contents-good) | HTML の要素ごとのコンテンツモデルを検査します。 |
-| [`vue/prefer-props-shorthand`](https://vizejs.dev/ja/rules/vue.html#vue-prefer-props-shorthand) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-prefer-props-shorthand-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-prefer-props-shorthand-good) | Vue 3.4 の同名 prop バインディングの省略形を使います。 |
-| [`vue/prefer-true-attribute-shorthand`](https://vizejs.dev/ja/rules/vue.html#vue-prefer-true-attribute-shorthand) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-prefer-true-attribute-shorthand-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-prefer-true-attribute-shorthand-good) | true を指定するバインディングを真偽属性の省略形にします。 |
-| [`vue/prop-name-casing`](https://vizejs.dev/ja/rules/vue.html#vue-prop-name-casing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-prop-name-casing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-prop-name-casing-good) | 宣言する prop 名の形式を揃えます。 |
-| [`vue/require-component-is`](https://vizejs.dev/ja/rules/vue.html#vue-require-component-is) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-require-component-is-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-require-component-is-good) | 動的 component 要素に :is を指定します。 |
-| [`vue/require-component-registration`](https://vizejs.dev/ja/rules/vue.html#vue-require-component-registration) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-require-component-registration-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-require-component-registration-good) | 使用するコンポーネントを import または登録します。 |
-| [`vue/require-scoped-style`](https://vizejs.dev/ja/rules/vue.html#vue-require-scoped-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-require-scoped-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-require-scoped-style-good) | style に scoped を指定する方針を適用します。 |
-| [`vue/require-toggle-inside-transition`](https://vizejs.dev/ja/rules/vue.html#vue-require-toggle-inside-transition) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-require-toggle-inside-transition-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-require-toggle-inside-transition-good) | transition の子要素に表示を切り替える条件を指定します。 |
-| [`vue/require-v-for-key`](https://vizejs.dev/ja/rules/vue.html#vue-require-v-for-key) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-require-v-for-key-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-require-v-for-key-good) | v-for に安定した :key を指定します。 |
-| [`vue/scoped-event-names`](https://vizejs.dev/ja/rules/vue.html#vue-scoped-event-names) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-scoped-event-names-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-scoped-event-names-good) | イベント名を context:event の形式に揃えます。 |
-| [`vue/sfc-element-order`](https://vizejs.dev/ja/rules/vue.html#vue-sfc-element-order) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-sfc-element-order-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-sfc-element-order-good) | SFC のトップレベルブロックを設定した順に並べます。 |
-| [`vue/single-style-block`](https://vizejs.dev/ja/rules/vue.html#vue-single-style-block) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-single-style-block-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-single-style-block-good) | SFC の style を一つのブロックにまとめます。 |
-| [`vue/slot-name-casing`](https://vizejs.dev/ja/rules/vue.html#vue-slot-name-casing) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-slot-name-casing-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-slot-name-casing-good) | 名前付きスロットを kebab-case に揃えます。 |
-| [`vue/this-in-template`](https://vizejs.dev/ja/rules/vue.html#vue-this-in-template) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-this-in-template-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-this-in-template-good) | テンプレートで不要な this. 参照を検出します。 |
-| [`vue/use-unique-element-ids`](https://vizejs.dev/ja/rules/vue.html#vue-use-unique-element-ids) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-use-unique-element-ids-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
-| [`vue/use-v-on-exact`](https://vizejs.dev/ja/rules/vue.html#vue-use-v-on-exact) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-use-v-on-exact-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-use-v-on-exact-good) | 修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。 |
-| [`vue/v-bind-style`](https://vizejs.dev/ja/rules/vue.html#vue-v-bind-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-v-bind-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-v-bind-style-good) | v-bind の表記形式を揃えます。 |
-| [`vue/v-on-event-hyphenation`](https://vizejs.dev/ja/rules/vue.html#vue-v-on-event-hyphenation) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-event-hyphenation-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-event-hyphenation-good) | コンポーネントのカスタムイベント名を設定した形式に揃えます。 |
-| [`vue/v-on-handler-style`](https://vizejs.dev/ja/rules/vue.html#vue-v-on-handler-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-handler-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-handler-style-good) | イベントハンドラーの書き方を参照または関数の形式に揃えます。 |
-| [`vue/v-on-style`](https://vizejs.dev/ja/rules/vue.html#vue-v-on-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-v-on-style-good) | v-on の表記形式を揃えます。 |
-| [`vue/v-slot-style`](https://vizejs.dev/ja/rules/vue.html#vue-v-slot-style) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-v-slot-style-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-v-slot-style-good) | v-slot の表記形式を揃えます。 |
-| [`vue/valid-attribute-name`](https://vizejs.dev/ja/rules/vue.html#vue-valid-attribute-name) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-attribute-name-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-attribute-name-good) | 有効な属性名を指定します。 |
-| [`vue/valid-template-root`](https://vizejs.dev/ja/rules/vue.html#vue-valid-template-root) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-template-root-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-template-root-good) | Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。 |
-| [`vue/valid-v-bind`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-bind) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-bind-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-bind-good) | v-bind の引数・値・修飾子を検査します。 |
-| [`vue/valid-v-cloak`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-cloak) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-cloak-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-cloak-good) | v-cloak の引数・値・修飾子を検査します。 |
-| [`vue/valid-v-else`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else-good) | v-else の位置・引数・値を検査します。 |
-| [`vue/valid-v-else-if`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else-if) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else-if-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-else-if-good) | v-else-if の位置・引数・値を検査します。 |
-| [`vue/valid-v-for`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-for) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-for-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-for-good) | v-for の式と変数宣言を検査します。 |
-| [`vue/valid-v-html`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-html) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-html-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-html-good) | v-html の値・引数・修飾子を検査します。 |
-| [`vue/valid-v-if`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-if) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-if-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-if-good) | v-if に有効な条件式を指定します。 |
-| [`vue/valid-v-is`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-is) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-is-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-is-good) | v-is の適用先・引数・値を検査します。 |
-| [`vue/valid-v-memo`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-memo) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-memo-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-memo-good) | v-memo の値を配列の式にします。 |
-| [`vue/valid-v-model`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-model) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-model-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-model-good) | v-model の値・引数・修飾子を検査します。 |
-| [`vue/valid-v-on`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-on) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-on-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-on-good) | v-on のイベント名・式・修飾子を検査します。 |
-| [`vue/valid-v-once`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-once) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-once-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-once-good) | v-once の引数・値・修飾子を検査します。 |
-| [`vue/valid-v-pre`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-pre) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-pre-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-pre-good) | v-pre の引数・値・修飾子を検査します。 |
-| [`vue/valid-v-show`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-show) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-show-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-show-good) | v-show に有効な条件式を指定します。 |
-| [`vue/valid-v-slot`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-slot) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-slot-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-slot-good) | v-slot の適用先・宣言・修飾子を検査します。 |
-| [`vue/valid-v-text`](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-text) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-text-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-valid-v-text-good) | v-text の値・引数・修飾子を検査します。 |
-| [`vue/warn-custom-block`](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-block) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-block-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-block-good) | SFC のカスタムブロックを検出します。 |
-| [`vue/warn-custom-directive`](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-directive) | [悪い](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-directive-bad) · [良い](https://vizejs.dev/ja/rules/vue.html#vue-warn-custom-directive-good) | 登録が必要なカスタムディレクティブを検出します。 |
+| <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | コンポーネント名を複数の単語で構成します。 |  |
+| <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | v-html / v-text と子コンテンツを同時に指定する箇所を検出します。 |  |
+| <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Vue 2 のパイプによるフィルター構文を検出します。 |  |
+| <span id="vue-no-deprecated-functional-template"></span>[`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | SFC の template で削除済みの functional 属性を検出します。 |  |
+| <span id="vue-no-deprecated-html-element-is"></span>[`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | 通常の HTML 要素で旧形式の is を使う箇所を検出します。 |  |
+| <span id="vue-no-deprecated-inline-template"></span>[`vue/no-deprecated-inline-template`](./reference/vue-no-deprecated-inline-template.md) | 削除済みの inline-template 属性を検出します。 |  |
+| <span id="vue-no-deprecated-router-link-tag-prop"></span>[`vue/no-deprecated-router-link-tag-prop`](./reference/vue-no-deprecated-router-link-tag-prop.md) | router-link の削除済み tag prop を検出します。 |  |
+| <span id="vue-no-deprecated-scope-attribute"></span>[`vue/no-deprecated-scope-attribute`](./reference/vue-no-deprecated-scope-attribute.md) | template の削除済み scope 属性を検出します。 |  |
+| <span id="vue-no-deprecated-slot-attribute"></span>[`vue/no-deprecated-slot-attribute`](./reference/vue-no-deprecated-slot-attribute.md) | 削除済みの slot 属性を検出します。 |  |
+| <span id="vue-no-deprecated-slot-scope-attribute"></span>[`vue/no-deprecated-slot-scope-attribute`](./reference/vue-no-deprecated-slot-scope-attribute.md) | 削除済みの slot-scope 属性を検出します。 |  |
+| <span id="vue-no-deprecated-v-bind-sync"></span>[`vue/no-deprecated-v-bind-sync`](./reference/vue-no-deprecated-v-bind-sync.md) | 削除済みの v-bind の .sync 修飾子を検出します。 |  |
+| <span id="vue-no-deprecated-v-is"></span>[`vue/no-deprecated-v-is`](./reference/vue-no-deprecated-v-is.md) | 非推奨の v-is ディレクティブを検出します。 |  |
+| <span id="vue-no-deprecated-v-on-native-modifier"></span>[`vue/no-deprecated-v-on-native-modifier`](./reference/vue-no-deprecated-v-on-native-modifier.md) | 削除済みの v-on の .native 修飾子を検出します。 |  |
+| <span id="vue-no-deprecated-v-on-number-modifiers"></span>[`vue/no-deprecated-v-on-number-modifiers`](./reference/vue-no-deprecated-v-on-number-modifiers.md) | v-on の削除済みの数値 keyCode 修飾子を検出します。 | ✓ |
+| <span id="vue-no-dupe-v-else-if"></span>[`vue/no-dupe-v-else-if`](./reference/vue-no-dupe-v-else-if.md) | v-if / v-else-if の条件重複を検出します。 |  |
+| <span id="vue-no-duplicate-attributes"></span>[`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | 同じ要素の属性重複を検出します。 |  |
+| <span id="vue-no-mutating-props"></span>[`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | 親から受け取った prop を子コンポーネントで変更する箇所を検出します。 |  |
+| <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。 |  |
+| <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 予約済みのコンポーネント名を検出します。 |  |
+| <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | v-for 用ではない template の key 指定を検出します。 |  |
+| <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | textarea 内の mustache を検出し、v-model の使用を勧めます。 |  |
+| <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 危険なスキームを含む可能性がある URL 属性やバインディングを検出します。 |  |
+| <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 登録しているのにテンプレートで使わないコンポーネントを検出します。 |  |
+| <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | v-for / v-slot に宣言しているのに使わない変数を検出します。 |  |
+| <span id="vue-no-use-v-if-with-v-for"></span>[`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | 同じ要素での v-if と v-for の併用を検出します。 |  |
+| <span id="vue-no-useless-template-attributes"></span>[`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | template 要素の効果がない属性を検出します。 |  |
+| <span id="vue-no-v-for-template-key-on-child"></span>[`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | template v-for の key を子ではなく template に指定します。 |  |
+| <span id="vue-no-v-html"></span>[`vue/no-v-html`](./reference/vue-no-v-html.md) | XSS を防ぐため、v-html を使用した箇所に警告を出します。 |  |
+| <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | コンポーネントでの v-text / v-html を検出します。 |  |
+| <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | 動的 component 要素に :is を指定します。 |  |
+| <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | transition の子要素に表示を切り替える条件を指定します。 |  |
+| <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | v-for に安定した :key を指定します。 |  |
+| <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | 修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。 |  |
+| <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 有効な属性名を指定します。 |  |
+| <span id="vue-valid-template-root"></span>[`vue/valid-template-root`](./reference/vue-valid-template-root.md) | Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。 |  |
+| <span id="vue-valid-v-bind"></span>[`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | v-bind の引数・値・修飾子を検査します。 |  |
+| <span id="vue-valid-v-cloak"></span>[`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | v-cloak の引数・値・修飾子を検査します。 |  |
+| <span id="vue-valid-v-else"></span>[`vue/valid-v-else`](./reference/vue-valid-v-else.md) | v-else の位置・引数・値を検査します。 | ✓ |
+| <span id="vue-valid-v-else-if"></span>[`vue/valid-v-else-if`](./reference/vue-valid-v-else-if.md) | v-else-if の位置・引数・値を検査します。 |  |
+| <span id="vue-valid-v-for"></span>[`vue/valid-v-for`](./reference/vue-valid-v-for.md) | v-for の式と変数宣言を検査します。 |  |
+| <span id="vue-valid-v-html"></span>[`vue/valid-v-html`](./reference/vue-valid-v-html.md) | v-html の値・引数・修飾子を検査します。 |  |
+| <span id="vue-valid-v-if"></span>[`vue/valid-v-if`](./reference/vue-valid-v-if.md) | v-if に有効な条件式を指定します。 |  |
+| <span id="vue-valid-v-is"></span>[`vue/valid-v-is`](./reference/vue-valid-v-is.md) | v-is の適用先・引数・値を検査します。 |  |
+| <span id="vue-valid-v-memo"></span>[`vue/valid-v-memo`](./reference/vue-valid-v-memo.md) | v-memo の値を配列の式にします。 |  |
+| <span id="vue-valid-v-model"></span>[`vue/valid-v-model`](./reference/vue-valid-v-model.md) | v-model の値・引数・修飾子を検査します。 |  |
+| <span id="vue-valid-v-on"></span>[`vue/valid-v-on`](./reference/vue-valid-v-on.md) | v-on のイベント名・式・修飾子を検査します。 |  |
+| <span id="vue-valid-v-once"></span>[`vue/valid-v-once`](./reference/vue-valid-v-once.md) | v-once の引数・値・修飾子を検査します。 |  |
+| <span id="vue-valid-v-pre"></span>[`vue/valid-v-pre`](./reference/vue-valid-v-pre.md) | v-pre の引数・値・修飾子を検査します。 |  |
+| <span id="vue-valid-v-show"></span>[`vue/valid-v-show`](./reference/vue-valid-v-show.md) | v-show に有効な条件式を指定します。 |  |
+| <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | v-slot の適用先・宣言・修飾子を検査します。 |  |
+| <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | v-text の値・引数・修飾子を検査します。 |  |
 
-[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+## 既定 (23)
+
+既定のプリセット `happy-path` で追加されるルールです。
+
+| ルール | 検出する内容 | 自動修正 |
+| --- | --- | --- |
+| <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | コンポーネントの prop 属性名を設定した形式に揃えます。 | ✓ |
+| <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | テンプレートの属性を一定の順に並べます。 |  |
+| <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 |  |
+| <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | HTML 属性値の引用符を揃えます。 | ✓ |
+| <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | mustache 内の空白を揃えます。 | ✓ |
+| <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | 静的 HTML 属性の無効な値を検出します。現在は rel が対象です。 |  |
+| <span id="vue-no-lone-template"></span>[`vue/no-lone-template`](./reference/vue-no-lone-template.md) | 不要な template 要素を検出します。 |  |
+| <span id="vue-no-multi-spaces"></span>[`vue/no-multi-spaces`](./reference/vue-no-multi-spaces.md) | 連続する不要な空白を検出します。 | ✓ |
+| <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | テンプレート変数が外側の名前を隠す箇所を検出します。 |  |
+| <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | target=_blank の外部リンクに適切な rel を指定します。 |  |
+| <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | iframe に sandbox 属性を指定します。 |  |
+| <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | defineProps に宣言しているのに使わない prop を検出します。 |  |
+| <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 同じ要素での v-else / v-else-if と v-for の併用を検出します。 |  |
+| <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | HTML の要素ごとのコンテンツモデルを検査します。 |  |
+| <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 宣言する prop 名の形式を揃えます。 |  |
+| <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | style に scoped を指定する方針を適用します。 |  |
+| <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | SFC のトップレベルブロックを設定した順に並べます。 |  |
+| <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | SFC の style を一つのブロックにまとめます。 |  |
+| <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | テンプレートで不要な this. 参照を検出します。 |  |
+| <span id="vue-v-bind-style"></span>[`vue/v-bind-style`](./reference/vue-v-bind-style.md) | v-bind の表記形式を揃えます。 | ✓ |
+| <span id="vue-v-on-event-hyphenation"></span>[`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | コンポーネントのカスタムイベント名を設定した形式に揃えます。 | ✓ |
+| <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | v-on の表記形式を揃えます。 | ✓ |
+| <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | v-slot の表記形式を揃えます。 | ✓ |
+
+## より厳しいプリセット (27)
+
+`opinionated`・`nuxt`・`ecosystem` のいずれかにだけ含まれます。どれに含まれるかはプリセット列を参照してください。
+
+| ルール | 検出する内容 | プリセット | 自動修正 |
+| --- | --- | --- | --- |
+| <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | テンプレート内のコンポーネント名を指定した形式に揃えます。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-html-button-has-type"></span>[`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | button に有効な type を明示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 要素の種類ごとに自己終了タグの形式を揃えます。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-no-array-index-key"></span>[`vue/no-array-index-key`](./reference/vue-no-array-index-key.md) | v-for の配列インデックスをそのまま key に使う箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-boolean-attr-value"></span>[`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | HTML の真偽属性に不要な値を指定した箇所を検出します。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-no-empty-component-block"></span>[`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 空の SFC ブロックを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-inline-style"></span>[`vue/no-inline-style`](./reference/vue-no-inline-style.md) | インラインの style 属性を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-multiple-objects-in-class"></span>[`vue/no-multiple-objects-in-class`](./reference/vue-no-multiple-objects-in-class.md) | :class 配列内の複数のオブジェクト指定をまとめます。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | v-else がある条件分岐の否定条件を反転して読みやすくします。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | CSS プリプロセッサーより標準の CSS を使う方針を示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | テンプレートの単一ルートに v-if を指定する箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | script の非標準の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | SFC ブロックの外部 src 指定を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | template の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに参照しない ref を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 文字列リテラルだけの不要な mustache を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 文字列リテラルだけの不要な v-bind を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | v-text の代わりに mustache を使う方針を適用します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |
+| <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 使用するコンポーネントを import または登録します。 | `opinionated` |  |
+| <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | イベント名を context:event の形式に揃えます。 | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 名前付きスロットを kebab-case に揃えます。 | `nuxt`, `opinionated` |  |
+| <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 静的 ID の代わりに useId() で一意な ID を生成します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | イベントハンドラーの書き方を参照または関数の形式に揃えます。 | `nuxt`, `opinionated` |  |
+| <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
+
+## 個別に有効化 (7)
+
+どのプリセットにも含まれません。`vue.linter.rules` でルール名を指定して有効にします。
+
+| ルール | 検出する内容 | 自動修正 |
+| --- | --- | --- |
+| <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 |  |
+| <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | コンポーネント自身のテンプレートの複雑度を制限します。 |  |
+| <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | テンプレートに直接書かれた、国際化の対象となるテキストを検出します。 |  |
+| <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | 単一ルートを要求するテンプレートで複数ルートを検出します。 |  |
+| <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 静的なインライン style 属性を検出します。 |  |
+| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | テンプレート内の未定義変数参照を検出します。 |  |
+| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | script setup に宣言しているのに読み取らない変数を検出します。 |  |
+
+[ルールの概要](../rules/index.md) · [ルールのオプション](./options.md) · [ESLint からの移行](./migration.md)

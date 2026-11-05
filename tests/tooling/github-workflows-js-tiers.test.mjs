@@ -149,7 +149,11 @@ void test("PR and merge queue preserve package tests, native declaration, type a
   );
   assert.equal(testStep.if, selectedGroup);
   assert.equal(testStep.run, groupCommand);
-  assert.deepEqual(testStep.env, { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" });
+  assert.deepEqual(testStep.env, {
+    VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}",
+    TEST_CASES_JOB: "PR JS package tests (${{ matrix.group }})",
+    VIZE_TEST_CASES: "${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json",
+  });
   const names = [
     "Check Fresco native declarations and consumer types",
     "Check UI package conformance",

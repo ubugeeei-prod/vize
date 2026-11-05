@@ -272,6 +272,8 @@ test("Unicode source custody retains the existing Rust and Cargo input authoriti
   for (const file of [
     "tools/support/compat/github/unicode-prop-projection-custody.mjs",
     "tools/support/compat/content-mapper/constructor-projection-parity.ts",
+    "tools/support/compat/content-mapper/canonical-helper-transition.ts",
+    "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
     "crates/vize_canon/src/lib.rs",
     "Cargo.toml",
     "crates/vize_canon/Cargo.toml",
@@ -289,7 +291,10 @@ test("Unicode workflow registers the exact certificate, assets and refusal tests
   );
   for (const file of [
     "tools/support/compat/content-mapper/constructor-projection-parity.ts",
+    "tools/support/compat/content-mapper/canonical-helper-transition.ts",
+    "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
     "tests/tooling/constructor-projection-parity.test.ts",
+    "tests/tooling/runtime-prop-projection-certificate.test.ts",
     "tests/tooling/unicode-prop-projection-custody.test.ts",
     ...assets,
   ])

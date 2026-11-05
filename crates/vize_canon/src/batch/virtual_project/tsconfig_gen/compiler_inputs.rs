@@ -4,7 +4,10 @@ use std::cell::{Cell, RefCell};
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::{FxHashMap, profile};
+use vize_carton::typescript_project::{
+    CompilerConfigHost, CompilerOptionsContext, FlattenedCompilerOptions,
+};
+use vize_carton::{FxHashMap, FxHashSet, profile};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::package_route::stamp::{InputStamp, InputStampReadStats, InputStampValidation};
@@ -118,10 +121,12 @@ struct ResolutionKey {
 #[derive(Default)]
 pub(in super::super) struct CompilerInputs {
     parsed: RefCell<FxHashMap<PathBuf, Value>>,
+    failures: RefCell<FxHashMap<PathBuf, vize_carton::String>>,
     content: RefCell<FxHashMap<PathBuf, vize_carton::String>>,
     observations: RefCell<FxHashMap<PathBuf, InputStamp>>,
     parsed_observations: RefCell<Vec<InputStamp>>,
     resolutions: RefCell<FxHashMap<ResolutionKey, Option<PathBuf>>>,
+    config_aliases: RefCell<FxHashMap<PathBuf, PathBuf>>,
     changed_during_capture: Cell<bool>,
 }
 
@@ -157,10 +162,80 @@ impl CompilerInputs {
         if let Some(parsed) = self.parsed.borrow().get(&path) {
             return Ok(parsed.clone());
         }
-        let content = self.read_content(&path)?;
-        let parsed = parse_jsonc_at_path(&path, &content)?;
+        let parsed = self.read_uncached_jsonc(&path)?;
         self.parsed.borrow_mut().insert(path, parsed.clone());
         Ok(parsed)
+    }
+
+    fn read_uncached_jsonc(&self, path: &Path) -> CorsaResult<Value> {
+        self.read_content(path)
+            .and_then(|content| parse_jsonc_at_path(path, &content))
+            .inspect_err(|error| {
+                if let CorsaError::Configuration(message) = error {
+                    self.failures
+                        .borrow_mut()
+                        .insert(path.to_path_buf(), message.clone());
+                }
+            })
+    }
+
+    pub(in super::super) fn record_config_alias(&self, path: &Path, canonical: &Path) {
+        let path = normalize_path_lexically(path);
+        if path != canonical {
+            self.config_aliases
+                .borrow_mut()
+                .insert(path, canonical.to_path_buf());
+        }
+    }
+
+    /// Membership canonicalizes configs; relative extends keeps its authored
+    /// directory for option rebasing. Close only those logical alias branches
+    /// before sealing, using the same consumed bytes without cloning Values.
+    fn capture_config_aliases(&self) {
+        let mut pending = self
+            .config_aliases
+            .borrow()
+            .iter()
+            .map(|(path, canonical)| (path.clone(), canonical.clone()))
+            .collect::<Vec<_>>();
+        let mut seen = FxHashSet::default();
+        while let Some((path, canonical)) = pending.pop() {
+            if !seen.insert(path.clone()) {
+                continue;
+            }
+            if !self.parsed.borrow().contains_key(&canonical)
+                && !self.failures.borrow().contains_key(&canonical)
+                && let Ok(parsed) = self.read_uncached_jsonc(&canonical)
+            {
+                self.parsed.borrow_mut().insert(canonical.clone(), parsed);
+            }
+            self.record_config_alias(&path, &canonical);
+            self.observe(&path);
+            if let Some(content) = self.content.borrow().get(&canonical) {
+                self.observe_source(&path, content.as_bytes());
+            }
+            let parents = match self
+                .parsed
+                .borrow()
+                .get(&canonical)
+                .and_then(|value| value.get("extends"))
+            {
+                Some(Value::String(parent)) => vec![vize_carton::String::from(parent.as_str())],
+                Some(Value::Array(parents)) => parents
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .map(vize_carton::String::from)
+                    .collect(),
+                _ => Vec::new(),
+            };
+            let host = super::compiler_options::CanonConfigHost { inputs: Some(self) };
+            for parent in parents {
+                if let Some(resolved) = host.resolve_extends(&path, &parent) {
+                    let canonical = vize_carton::path::canonicalize_non_verbatim(&resolved);
+                    pending.push((resolved, canonical));
+                }
+            }
+        }
     }
 
     fn read_content(&self, path: &Path) -> CorsaResult<vize_carton::String> {
@@ -266,6 +341,118 @@ impl CompilerInputs {
 
     pub(in super::super) fn paths(&self) -> Vec<PathBuf> {
         self.observations.borrow().keys().cloned().collect()
+    }
+
+    /// Seal the consumed revision without copying successful JSON values.
+    pub(in super::super) fn freeze(
+        self,
+    ) -> CorsaResult<(FrozenCompilerInputs, ConfigurationObservations)> {
+        self.capture_config_aliases();
+        self.validate()?;
+        let mut stamps = self
+            .observations
+            .into_inner()
+            .into_values()
+            .collect::<Vec<_>>();
+        stamps.extend(self.parsed_observations.into_inner());
+        Ok((
+            FrozenCompilerInputs {
+                parsed: self.parsed.into_inner(),
+                failures: self.failures.into_inner(),
+                resolutions: self.resolutions.into_inner(),
+                config_aliases: self.config_aliases.into_inner(),
+            },
+            ConfigurationObservations {
+                stamps,
+                changed_during_capture: self.changed_during_capture.get(),
+            },
+        ))
+    }
+}
+
+/// Immutable input authority shared by membership and lazy option consumers.
+pub(in super::super) struct FrozenCompilerInputs {
+    parsed: FxHashMap<PathBuf, Value>,
+    failures: FxHashMap<PathBuf, vize_carton::String>,
+    resolutions: FxHashMap<ResolutionKey, Option<PathBuf>>,
+    config_aliases: FxHashMap<PathBuf, PathBuf>,
+}
+
+impl FrozenCompilerInputs {
+    pub(in super::super) fn compiler_options(
+        &self,
+        selected: &Path,
+    ) -> CorsaResult<FlattenedCompilerOptions> {
+        let host = FrozenConfigHost {
+            inputs: self,
+            uncaptured_resolution: RefCell::new(None),
+        };
+        let result = CompilerOptionsContext::observed(selected.parent().unwrap_or(Path::new(".")))
+            .load_flattened(Some(selected), &host);
+        // The shared trait represents unresolved extends as None. An authority
+        // miss must not masquerade as a captured, unresolved authored parent.
+        if let Some(message) = host.uncaptured_resolution.into_inner() {
+            return Err(CorsaError::Configuration(message));
+        }
+        result
+    }
+}
+
+/// Per-load state stays on the caller's stack, never in the shared snapshot.
+struct FrozenConfigHost<'a> {
+    inputs: &'a FrozenCompilerInputs,
+    uncaptured_resolution: RefCell<Option<vize_carton::String>>,
+}
+
+impl CompilerConfigHost for FrozenConfigHost<'_> {
+    type Error = CorsaError;
+
+    fn read_jsonc(&self, path: &Path) -> CorsaResult<Value> {
+        let path = normalize_path_lexically(path);
+        let captured = self.inputs.config_aliases.get(&path).unwrap_or(&path);
+        if let Some(parsed) = self.inputs.parsed.get(captured) {
+            return Ok(parsed.clone());
+        }
+        Err(self.configuration_error(
+            self.inputs
+                .failures
+                .get(captured)
+                .cloned()
+                .unwrap_or_else(|| {
+                    vize_carton::cstr!("uncaptured tsconfig input {}", path.display())
+                }),
+        ))
+    }
+
+    fn read_jsonc_observed(&self, path: &Path) -> CorsaResult<Value> {
+        self.read_jsonc(path)
+    }
+
+    fn configuration_error(&self, message: vize_carton::String) -> CorsaError {
+        CorsaError::Configuration(message)
+    }
+
+    fn resolve_extends(&self, path: &Path, specifier: &str) -> Option<PathBuf> {
+        let key = ResolutionKey {
+            kind: "extends",
+            origin: normalize_path_lexically(path),
+            specifier: specifier.into(),
+        };
+        match self.inputs.resolutions.get(&key) {
+            Some(resolved) => resolved.clone(),
+            None => {
+                self.uncaptured_resolution
+                    .borrow_mut()
+                    .get_or_insert_with(|| {
+                        vize_carton::cstr!(
+                            "uncaptured tsconfig extends {:?} from {}",
+                            specifier,
+                            path.display()
+                        )
+                    });
+                None
+            }
+        }
     }
 }
 

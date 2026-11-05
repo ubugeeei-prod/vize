@@ -8,7 +8,8 @@
  * marginal cost between the two smallest (a step in the curve).
  */
 
-import { PLANT_MULTIPLICITY_NOTES } from "./typecheck-scaling-gate.ts";
+import { PLANT_MULTIPLICITY_NOTES } from "./scale-project-plants.ts";
+import type { ScaleKind } from "./scale-project-generator.ts";
 import type { Provenance, ToolId } from "./typecheck-scaling-tools.ts";
 
 export const GROWTH_LIMIT = 1.5;
@@ -28,7 +29,7 @@ export type Cell = {
   tool: ToolId;
   label: string;
   vize: boolean;
-  kind: "project" | "monorepo";
+  kind: ScaleKind;
   sfcs: number;
   plants: number;
   mode: string;
@@ -93,6 +94,7 @@ export function rowOf(cell: Cell): Row {
 type Metric = "wallMs" | "cpuMs" | "rssKb";
 export type Growth = {
   tool: ToolId;
+  kind: ScaleKind;
   label: string;
   vize: boolean;
   sizes: number[];
@@ -106,12 +108,14 @@ export type Growth = {
 const ratio = (a: number | null, b: number | null): number | null =>
   a == null || b == null || !(b > 0) ? null : a / b;
 
-/** Per-tool growth over the single-project sizes that measured. */
+/** Growth per tool and project kind (vue, nuxt) over the sizes that measured. */
 export function growthOf(rows: Row[]): Growth[] {
-  const tools = [...new Set(rows.map((row) => row.cell.tool))];
-  return tools.flatMap((tool) => {
+  const pairs = [...new Set(rows.map((row) => `${row.cell.kind}:${row.cell.tool}`))];
+  return pairs.flatMap((pair) => {
+    const [kind, tool] = pair.split(":") as [ScaleKind, ToolId];
+    if (kind === "monorepo") return [];
     const series = rows
-      .filter((row) => row.cell.tool === tool && row.cell.kind === "project" && row.cpuMs != null)
+      .filter((row) => row.cell.tool === tool && row.cell.kind === kind && row.cpuMs != null)
       .sort((a, b) => a.cell.sfcs - b.cell.sfcs);
     const first = series[0];
     const last = series.at(-1);
@@ -133,7 +137,8 @@ export function growthOf(rows: Row[]): Growth[] {
     };
     const growth: Growth = {
       tool,
-      label: first.cell.label,
+      kind,
+      label: kind === "nuxt" ? `${first.cell.label} (Nuxt)` : first.cell.label,
       vize: first.cell.vize,
       sizes: series.map((row) => row.cell.sfcs),
       perSfc: { wallMs: perSfc("wallMs"), cpuMs: perSfc("cpuMs"), rssKb: perSfc("rssKb") },
@@ -208,9 +213,13 @@ export function renderSummary(results: ScalingResults): string {
       value == null ? "n/a" : (value / cell.sfcs).toFixed(digits);
     return `| ${cell.label} | ${cell.kind === "monorepo" ? `${cell.mode}, ${cell.sfcs}` : cell.sfcs} | ${fixed(row.wallMs, 2, 1000)} | ${fixed(row.cpuMs, 2, 1000)} | ${fixed(row.rssKb, 0, 1024)} | ${per(row.wallMs, 3)} | ${per(row.cpuMs, 3)} | ${per(row.rssKb, 1)} | ${count(row.types)} | ${count(row.instantiations)} | ${fixed(row.checkTimeS, 2)} | ${cell.refused ? "refused" : fixed(cell.cold?.wallMs ?? null, 2, 1000)} | ${cell.refused ? "refused" : fixed(cell.cold?.cpuMs ?? null, 2, 1000)} |`;
   };
-  const project = rows.filter((row) => row.cell.kind === "project");
-  if (project.length > 0) {
-    lines.push("## Single project", "", ...header("project"));
+  for (const [kind, title] of [
+    ["vue", "Single project"],
+    ["nuxt", "Nuxt app"],
+  ] as const) {
+    const project = rows.filter((row) => row.cell.kind === kind);
+    if (project.length === 0) continue;
+    lines.push(`## ${title}`, "", ...header(kind));
     for (const row of [...project].sort(
       (a, b) => a.cell.tool.localeCompare(b.cell.tool) || a.cell.sfcs - b.cell.sfcs,
     )) {

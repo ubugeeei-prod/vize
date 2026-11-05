@@ -1,39 +1,17 @@
 ---
 title: "css/require-font-display"
+description: "Require font-display in @font-face rules."
 ---
 
 # `css/require-font-display`
 
-Require font-display in @font-face rules
+Require font-display in @font-face rules.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
-
-## Configuration (Vite+)
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/require-font-display": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
 
 ## Bad
 
@@ -52,7 +30,7 @@ The font-face declaration defines the font source but omits its font-display pol
 
 `font-display: swap` explicitly selects the fallback-to-font display policy.
 
-```vue
+```vue annotate="add:5"
 <style>
 @font-face {
   font-family: "Inter";
@@ -62,6 +40,27 @@ The font-face declaration defines the font source but omits its font-display pol
 </style>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+## Configuration (Vite+)
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [All rules](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "css/require-font-display": "warn"
+      }
+    },
+  },
+});
+```
+
+Then run `vp run lint`.
+
+## Related
+
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13)

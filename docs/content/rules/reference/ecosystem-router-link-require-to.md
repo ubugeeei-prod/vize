@@ -1,20 +1,39 @@
 ---
 title: "ecosystem/router-link-require-to"
+description: "Require a `to` target on RouterLink and NuxtLink components."
 ---
 
 # `ecosystem/router-link-require-to`
 
-Require a `to` target on RouterLink and NuxtLink components
+Require a `to` target on RouterLink and NuxtLink components.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `ecosystem` | No | None |
 
-Default severity: `error`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.
+
+## Bad
+
+The nested RouterLink has no `to` destination; it cannot rely on root attribute fallthrough.
+
+```vue annotate="remove:2"
+<template>
+<nav><RouterLink>Settings</RouterLink></nav>
+</template>
+```
+
+## Good
+
+`to="/settings"` explicitly supplies the nested link destination.
+
+```vue annotate="add:2"
+<template>
+<nav><RouterLink to="/settings">Settings</RouterLink></nav>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -33,30 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The nested RouterLink has no `to` destination; it cannot rely on root attribute fallthrough.
-
-```vue
-<template>
-<nav><RouterLink>Settings</RouterLink></nav>
-</template>
-```
-
-## Good
-
-`to="/settings"` explicitly supplies the nested link destination.
-
-```vue
-<template>
-<nav><RouterLink to="/settings">Settings</RouterLink></nav>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14)

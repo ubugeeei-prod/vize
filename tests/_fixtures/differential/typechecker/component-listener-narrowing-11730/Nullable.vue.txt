@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import Row from './Row.vue';
+const draft = ref<{ a: string } | null>(null);
+</script>
+
+<template>
+  <div v-if="!draft">Loading</div>
+  <div v-else>
+    <Row v-for="n in ['x', 'y']" :key="n" @act="draft.a = n" />
+  </div>
+</template>

@@ -8,6 +8,8 @@ use std::{
 };
 use vize_l0::cstr;
 
+mod checked_report;
+
 const CONFIG: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/typechecker/vendored-vue-declaration-11496/tsconfig.json.txt"
@@ -78,28 +80,24 @@ fn diagnostics(corsa: &Path, dir: &Path) -> [Vec<(u32, u32, u32)>; 2] {
             Some((line.parse().ok()?, column.parse().ok()?, code.parse().ok()?))
         })
         .collect();
-    let (checked_code, output) = run(Command::new(env!("CARGO_BIN_EXE_vize"))
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(dir)
         .env("CORSA_PATH", corsa)
-        .arg("check"));
-    let checked: Vec<(u32, u32, u32)> = output
-        .lines()
-        .filter_map(|line| {
-            let (site, rest) = line.trim().strip_prefix("error:")?.split_once(" [TS")?;
-            let (line, column) = site.split_once(':')?;
-            let (code, _) = rest.split_once(']')?;
-            Some((line.parse().ok()?, column.parse().ok()?, code.parse().ok()?))
-        })
-        .collect();
+        .args(["check", "--format", "json"])
+        .output()
+        .unwrap();
+    let checked = checked_report::diagnostic_sites(&output.stdout);
     // A crashed checker must not pass for a clean one.
     assert_eq!(
         reference_code,
         Some(if reference.is_empty() { 0 } else { 2 })
     );
     assert_eq!(
-        checked_code,
+        output.status.code(),
         Some(if checked.is_empty() { 0 } else { 1 }),
-        "{output}"
+        "{}\n{}",
+        std::str::from_utf8(&output.stdout).unwrap(),
+        std::str::from_utf8(&output.stderr).unwrap(),
     );
     [reference, checked]
 }

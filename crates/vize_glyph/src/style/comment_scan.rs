@@ -1,6 +1,19 @@
-pub(super) fn has_nested_comment(source: &str) -> bool {
+/// Only comments between complete rules may become standalone CSS chunks.
+pub(super) fn split_standalone_comments(source: &str) -> Option<Vec<CssSegment<'_>>> {
+    if has_rule_comment(source) {
+        None
+    } else {
+        Some(split_top_level_comments(source))
+    }
+}
+
+/// Comments attached to a rule include its prelude and nested content.
+fn has_rule_comment(source: &str) -> bool {
     let bytes = source.as_bytes();
     let mut depth: u32 = 0;
+    let mut parens = 0u32;
+    let mut brackets = 0u32;
+    let mut rule_started = false;
     let mut in_string: Option<u8> = None;
     let mut i = 0usize;
 
@@ -18,17 +31,20 @@ pub(super) fn has_nested_comment(source: &str) -> bool {
         }
 
         if let Some(next) = consume_css_escape(bytes, i) {
+            rule_started = true;
             i = next;
             continue;
         }
 
         if let Some(next) = consume_unquoted_url(bytes, i) {
+            rule_started = true;
             i = next;
             continue;
         }
 
         match c {
             b'"' | b'\'' => {
+                rule_started = true;
                 in_string = Some(c);
                 i += 1;
             }
@@ -38,15 +54,43 @@ pub(super) fn has_nested_comment(source: &str) -> bool {
             }
             b'}' => {
                 depth = depth.saturating_sub(1);
+                if depth == 0 && parens == 0 && brackets == 0 {
+                    rule_started = false;
+                }
+                i += 1;
+            }
+            b'(' => {
+                parens += 1;
+                rule_started = true;
+                i += 1;
+            }
+            b')' => {
+                parens = parens.saturating_sub(1);
+                i += 1;
+            }
+            b'[' => {
+                brackets += 1;
+                rule_started = true;
+                i += 1;
+            }
+            b']' => {
+                brackets = brackets.saturating_sub(1);
+                i += 1;
+            }
+            b';' if depth == 0 && parens == 0 && brackets == 0 => {
+                rule_started = false;
                 i += 1;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                if depth > 0 {
+                if depth > 0 || rule_started {
                     return true;
                 }
                 i = find_comment_end(bytes, i + 2);
             }
-            _ => i += 1,
+            _ => {
+                rule_started |= !is_css_whitespace(c);
+                i += 1;
+            }
         }
     }
 
@@ -65,7 +109,7 @@ pub(super) struct CssSegment<'a> {
 }
 
 /// Split CSS source into alternating code and top-level comment segments.
-pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
+fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
     let bytes = source.as_bytes();
     let mut segments: Vec<CssSegment<'_>> = Vec::new();
     let mut depth: u32 = 0;
@@ -239,7 +283,38 @@ pub(super) fn find_comment_end(bytes: &[u8], from: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{SegmentKind, has_nested_comment, split_top_level_comments};
+    use super::{
+        SegmentKind, has_rule_comment as has_nested_comment, split_standalone_comments,
+        split_top_level_comments,
+    };
+
+    #[test]
+    fn comments_split_only_at_complete_rule_boundaries() {
+        for source in [
+            ".a/* selector */.b {}",
+            "@media /* query */ (width > 1px) {}",
+            "@import /* import */ url(theme.css);",
+            "@custom fn(a; /* value */ b);",
+            "@custom [a; /* value */ b];",
+            ".a { /* declaration */ color: red; }",
+        ] {
+            assert!(split_standalone_comments(source).is_none(), "{source}");
+        }
+        for source in [
+            "/* before */ .a {}",
+            ".a {} /* between */ .b {}",
+            "@import url(theme.css); /* after */",
+            "@custom fn(a; b); /* after */",
+            "@custom [a; b]; /* after */",
+        ] {
+            let segments = split_standalone_comments(source).expect("complete rule boundary");
+            let comments = segments
+                .iter()
+                .filter(|segment| matches!(segment.kind, SegmentKind::Comment))
+                .count();
+            assert_eq!(comments, 1, "{source}");
+        }
+    }
 
     #[test]
     fn css_escapes_do_not_affect_comment_depth() {

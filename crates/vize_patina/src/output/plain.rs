@@ -40,7 +40,7 @@ pub(super) fn format_plain(results: &[LintResult], sources: &[(String, String)])
             view.message
         );
         output.push_str("    Reference: ");
-        output.push_str(view.rule_docs_path);
+        output.push_str(&view.rule_docs_path);
         output.push('\n');
 
         if let Some(help) = view.help_text.as_deref() {

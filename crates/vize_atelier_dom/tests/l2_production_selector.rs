@@ -14,13 +14,13 @@ use vize_atelier_dom::{
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
 use vize_l0::Allocator;
-use vize_l0::profiler::{CounterSummary, global_profiler};
+use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn source_map_free_dom_compile_uses_l2_without_profiler() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<button @click="go">{{ label }}</button>"#;
@@ -51,15 +51,15 @@ fn source_map_free_dom_compile_uses_l2_without_profiler() {
 
 #[test]
 fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<button @click="go">{{ label }}</button>"#;
     let source_map_free = compile(source, DomCompilerOptions::default());
 
-    profiler.enable();
+    profiler.set_enabled(true);
     let mapped = compile(
         source,
         DomCompilerOptions {
@@ -68,7 +68,7 @@ fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
         },
     );
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert_eq!(mapped.preamble, source_map_free.preamble);
@@ -86,8 +86,8 @@ fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
 
 #[test]
 fn unsupported_options_stay_on_compatibility_without_profiler() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
 
     let cases = [
         (
@@ -114,7 +114,7 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
     ];
 
     for (label, options) in cases {
-        profiler.disable();
+        profiler.set_enabled(false);
         profiler.clear();
 
         let result = compile(r#"<button @click="go">{{ label }}</button>"#, options);
@@ -134,11 +134,11 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
 
 #[test]
 fn in_tag_comment_compiles_use_l2_codegen() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
-    profiler.enable();
+    profiler.set_enabled(true);
 
     let selected = compile(
         "<button // keep the parse extension covered\n  @click=\"go\">{{ label }}</button>",
@@ -148,7 +148,7 @@ fn in_tag_comment_compiles_use_l2_codegen() {
         },
     );
     let counters = profiler.counter_summary();
-    profiler.disable();
+    profiler.set_enabled(false);
     profiler.clear();
 
     assert!(selected.sections.is_some());
@@ -157,9 +157,9 @@ fn in_tag_comment_compiles_use_l2_codegen() {
 
 #[test]
 fn sfc_sections_entry_uses_l2_once_sections_land() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     let source = r#"<button @click="go">{{ label }}</button>"#;
@@ -185,9 +185,9 @@ fn sfc_sections_entry_uses_l2_once_sections_land() {
 
 #[test]
 fn sfc_sections_entry_uses_l2_for_foreign_namespace_templates() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
+    let profiler = Profiler::new();
+    let _scope = ProfilerScope::install(&profiler);
+    profiler.set_enabled(false);
     profiler.clear();
 
     for (label, source) in [
@@ -205,10 +205,10 @@ fn sfc_sections_entry_uses_l2_for_foreign_namespace_templates() {
             },
         );
 
-        profiler.enable();
+        profiler.set_enabled(true);
         let selected = compile_sfc_sections_entry(source, DomCompilerOptions::default());
         let counters = profiler.counter_summary();
-        profiler.disable();
+        profiler.set_enabled(false);
         profiler.clear();
 
         assert_eq!(selected.preamble, compat.preamble, "{label} preamble");
@@ -287,11 +287,4 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
-}
-
-fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
-    static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    PROFILER_TEST_LOCK
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }

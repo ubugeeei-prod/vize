@@ -3,10 +3,17 @@ import path from "node:path";
 
 import "../theme/i18n/sitemap.js";
 
+type Section = { page: string; paths?: string[]; namespaces?: string[]; directory?: string };
 type Sitemap = {
   supportedLocales: { code: string }[];
   hiddenPathPatterns: RegExp[];
-  navGroups: { key: string; paths: string[]; pathsByLocale?: Record<string, string[]> }[];
+  navGroups: {
+    key: string;
+    paths: string[];
+    pathsByLocale?: Record<string, string[]>;
+    sections?: Section[];
+  }[];
+  sectionPaths: (section: Section, routes: string[]) => string[];
 };
 type CoveragePage = {
   route: string;
@@ -27,9 +34,7 @@ function authoredPages(directory: string, prefix = ""): string[] {
     if (
       !prefix &&
       entry.isDirectory() &&
-      ["en", "i18n", "generated", ...sitemap.supportedLocales.map(({ code }) => code)].includes(
-        entry.name,
-      )
+      ["en", "i18n", ...sitemap.supportedLocales.map(({ code }) => code)].includes(entry.name)
     ) {
       return [];
     }
@@ -56,12 +61,19 @@ function authoredPages(directory: string, prefix = ""): string[] {
  */
 export function moreGuideRoutes(locale: "en" | "ja"): string[] {
   const localeDirectory = path.join(docsRoot, "content", locale === "en" ? "" : locale);
+  const routes = authoredPages(localeDirectory);
   const used = new Set(
-    sitemap.navGroups.flatMap((group) => group.pathsByLocale?.[locale] ?? group.paths),
+    sitemap.navGroups.flatMap((group) => [
+      ...(group.pathsByLocale?.[locale] ?? group.paths),
+      ...(group.sections ?? []).flatMap((section) => [
+        section.page,
+        ...sitemap.sectionPaths(section, routes),
+      ]),
+    ]),
   );
   const architecture = sitemap.navGroups.find(({ key }) => key === "architecture");
   const guides = architecture?.pathsByLocale?.[locale] ?? architecture?.paths ?? [];
-  const fallback = authoredPages(localeDirectory).filter(
+  const fallback = routes.filter(
     (route) =>
       !used.has(route) && !sitemap.hiddenPathPatterns.some((pattern) => pattern.test(route)),
   );

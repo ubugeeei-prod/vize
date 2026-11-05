@@ -1,18 +1,39 @@
 ---
 title: "vue/no-inline-style"
+description: "Discourage use of inline style attributes."
 ---
 
 # `vue/no-inline-style`
 
-Discourage use of inline style attributes
+Discourage use of inline style attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The static style attribute embeds the color declaration in the element.
+
+```vue annotate="remove:2"
+<template>
+  <div style="color: red">Text</div>
+</template>
+```
+
+## Good
+
+Classes express the fixed color; the ratio-dependent width remains a dynamic style binding, outside the static-attribute check.
+
+```vue annotate="add:2,3,4"
+<template>
+  <div class="text-red">Text</div>
+  <span :class="{ 'text-red': isRed }">Text</span>
+  <div :style="{ width: `${ratio}%` }">Text</div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The static style attribute embeds the color declaration in the element.
-
-```vue
-<template>
-  <div style="color: red">Text</div>
-</template>
-```
-
-## Good
-
-Classes express the fixed color; the ratio-dependent width remains a dynamic style binding, outside the static-attribute check.
-
-```vue
-<template>
-  <div class="text-red">Text</div>
-  <span :class="{ 'text-red': isRed }">Text</span>
-  <div :style="{ width: `${ratio}%` }">Text</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33)

@@ -1,18 +1,40 @@
 ---
 title: "vue/valid-v-bind"
+description: "Enforce valid `v-bind` directives."
 ---
 
 # `vue/valid-v-bind`
 
-Enforce valid `v-bind` directives
+Enforce valid `v-bind` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The bare `v-bind` has no object expression, and the empty argument form has no attribute name.
+
+```vue annotate="remove:2,3"
+<template>
+  <div v-bind></div>
+  <div :></div>
+</template>
+```
+
+## Good
+
+Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name shorthand such as `:loading`.
+
+```vue annotate="add:2,3,4"
+<template>
+  <div :class="panelClass"></div>
+  <div v-bind="{ class: panelClass }"></div>
+  <div :loading></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The bare `v-bind` has no object expression, and the empty argument form has no attribute name.
-
-```vue
-<template>
-  <div v-bind></div>
-  <div :></div>
-</template>
-```
-
-## Good
-
-Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name shorthand such as `:loading`.
-
-```vue
-<template>
-  <div :class="panelClass"></div>
-  <div v-bind="{ class: panelClass }"></div>
-  <div :loading></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30)

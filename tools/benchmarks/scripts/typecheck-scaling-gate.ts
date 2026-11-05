@@ -6,38 +6,18 @@
  */
 
 import { diagnosticFingerprint, normalizeTypecheckResult } from "./typecheck-command.mjs";
-import type { Plant } from "./typecheck-scaling-corpus.ts";
-import type { PlantKind } from "./typecheck-scaling-sfc.ts";
+import { type Plant, expectedPlants } from "./scale-project-plants.ts";
+
+export {
+  PLANT_CODES,
+  PLANT_MULTIPLICITY,
+  PLANT_MULTIPLICITY_NOTES,
+} from "./scale-project-plants.ts";
 
 /** [file, kind, line, column, code, message], as typecheck-command.mjs normalizes it. */
 export type Diagnostic = [string, string, string, string, string, string];
 export type StatEntry = [key: string, value: string];
 export type ProcessOutput = { status: number | null; stdout: string; stderr: string };
-
-/** Codes each plant may raise; TS2769 is the overload form of an emit call mismatch. */
-export const PLANT_CODES: Record<PlantKind, readonly string[]> = {
-  script: ["TS2322"],
-  "emit-script": ["TS2345", "TS2769"],
-  generic: ["TS2322"],
-  slot: ["TS2339"],
-  "emit-template": ["TS2322", "TS2345"],
-  "v-model": ["TS2322"],
-  global: ["TS2322"],
-};
-
-/**
- * Errors per plant where a tool differs from one, keyed by tool id, each with
- * the issue that explains it. A zero is a known miss: the other plants still
- * prove the tool checked the corpus, and a fix fails the gate until the entry
- * is dropped.
- */
-export const PLANT_MULTIPLICITY: Record<string, Partial<Record<PlantKind, number>>> = {
-  "tsc-vize-mapper": { "v-model": 0 },
-  "tsrs-fast-vize-mapper": { "v-model": 0 },
-};
-export const PLANT_MULTIPLICITY_NOTES: readonly string[] = [
-  "The Vize mapper lanes expect no error on the `v-model` plant: the mapper does not check the `update:modelValue` payload against the bound ref (#11643).",
-];
 
 const STATS_START = /^Files:\s+\d+$/u;
 const STAT_LINE = /^(\S.*?):\s+(\d[\d.,]*\s?[A-Za-z%]*)$/u;
@@ -113,22 +93,21 @@ export function gate(toolId: string, diagnostics: Diagnostic[], plants: Plant[])
     const at = key(diagnostic[0], diagnostic[2]);
     byLine.set(at, [...(byLine.get(at) ?? []), diagnostic]);
   }
-  const multiplicity = PLANT_MULTIPLICITY[toolId] ?? {};
   const missing: string[] = [];
   const unexpected: string[] = [];
   let expected = 0;
   const planted = new Set<string>();
-  for (const plant of plants) {
+  for (const plant of expectedPlants(plants, toolId)) {
     const at = key(plant.file, plant.line);
     if (planted.has(at)) throw new Error(`two plants share ${at}`);
     planted.add(at);
-    const want = multiplicity[plant.kind] ?? 1;
+    const want = plant.count;
     expected += want;
     const found = byLine.get(at) ?? [];
-    const allowed = found.filter((d) => PLANT_CODES[plant.kind].includes(d[4]));
+    const allowed = found.filter((d) => plant.codes.includes(d[4]));
     if (allowed.length < want) {
       missing.push(
-        `${at} ${plant.kind}: want ${want} × ${PLANT_CODES[plant.kind].join("|")}, got ${found.map((d) => d[4]).join(",") || "none"}`,
+        `${at} ${plant.kind}: want ${want} × ${plant.codes.join("|")}, got ${found.map((d) => d[4]).join(",") || "none"}`,
       );
     }
     for (const extra of [...allowed.slice(want), ...found.filter((d) => !allowed.includes(d))]) {

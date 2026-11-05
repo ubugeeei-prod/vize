@@ -1,18 +1,40 @@
 ---
 title: "script/prefer-use-id"
+description: "一意な ID の生成に Vue 3.5 の useId() を使います。"
 ---
 
 # `script/prefer-use-id`
 
 一意な ID の生成に Vue 3.5 の useId() を使います。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const id = `input-${Math.random()}`;
+</script>
+<template><label :for="id">Name</label><input :id="id" /></template>
+```
+
+## 良い例
+
+Vue 3.5 以降の `useId()` で識別子を作り、`:for` と `:id` は同じ変数を参照し続けます。ランダムな値の生成を取り除きます。
+
+```vue annotate="add:2,3"
+<script setup lang="ts">
+import { useId } from "vue";
+const id = useId();
+</script>
+<template><label :for="id">Name</label><input :id="id" /></template>
+```
 
 ## 設定（Vite+）
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。
-
-```vue
-<script setup lang="ts">
-const id = `input-${Math.random()}`;
-</script>
-<template><label :for="id">Name</label><input :id="id" /></template>
-```
-
-## 良い
-
-Vue 3.5 以降の `useId()` で識別子を作り、`:for` と `:id` は同じ変数を参照し続けます。ランダムな値の生成を取り除きます。
-
-```vue
-<script setup lang="ts">
-import { useId } from "vue";
-const id = useId();
-</script>
-<template><label :for="id">Name</label><input :id="id" /></template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45)

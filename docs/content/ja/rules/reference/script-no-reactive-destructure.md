@@ -1,18 +1,41 @@
 ---
 title: "script/no-reactive-destructure"
+description: "reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。"
 ---
 
 # `script/no-reactive-destructure`
 
 reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`const { count, name } = state` が `reactive` オブジェクトからプリミティブ値をコピーし、その後のプロパティ更新とのつながりを失います。
+
+```vue annotate="remove:2,4"
+<script setup lang="ts">
+import { reactive } from "vue";
+const state = reactive({ count: 0, name: "Ada" });
+const { count, name } = state;
+</script>
+```
+
+## 良い例
+
+`toRefs(state)` を分割代入して `count` と `name` の ref を作り、それぞれを元のリアクティブなプロパティにつなげます。
+
+```vue annotate="add:2,4"
+<script setup lang="ts">
+import { reactive, toRefs } from "vue";
+const state = reactive({ count: 0, name: "Ada" });
+const { count, name } = toRefs(state);
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`const { count, name } = state` が `reactive` オブジェクトからプリミティブ値をコピーし、その後のプロパティ更新とのつながりを失います。
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-const state = reactive({ count: 0, name: "Ada" });
-const { count, name } = state;
-</script>
-```
-
-## 良い
-
-`toRefs(state)` を分割代入して `count` と `name` の ref を作り、それぞれを元のリアクティブなプロパティにつなげます。
-
-```vue
-<script setup lang="ts">
-import { reactive, toRefs } from "vue";
-const state = reactive({ count: 0, name: "Ada" });
-const { count, name } = toRefs(state);
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43)

@@ -26,6 +26,7 @@ pub(super) fn compile_sfc_inner(
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
     nuxt_page_meta: bool,
+    type_project: Option<&crate::script::SfcTypeProject>,
     capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
     let descriptor = prepare_root_patterned_template(
@@ -42,7 +43,8 @@ pub(super) fn compile_sfc_inner(
             .is_some_and(|options| options.experimental_in_tag_comments),
         template_syntax,
     )?;
-    let (descriptor, dependencies, pug_source_map) = super::pug::prepare_pug_template(&descriptor)?;
+    let (descriptor, mut dependencies, pug_source_map) =
+        super::pug::prepare_pug_template(&descriptor)?;
     let mut result = super::super::compile_sfc_inner(
         &descriptor,
         options,
@@ -52,9 +54,11 @@ pub(super) fn compile_sfc_inner(
         script_output,
         experimental_options,
         nuxt_page_meta,
+        type_project,
         pug_source_map.as_ref(),
         capture,
     )?;
+    dependencies.extend(result.dependencies);
     result.dependencies = dependencies;
     Ok(result)
 }

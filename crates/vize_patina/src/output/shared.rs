@@ -2,27 +2,101 @@
 
 use crate::diagnostic::{HelpRenderTarget, render_help};
 use crate::linter::LintResult;
+use vize_l0::cstr;
 use vize_l0::{FxHashMap, SmallVec, String};
 
-/// Return the local documentation page that explains a rule namespace.
-pub fn rule_docs_path(rule_name: &str) -> &'static str {
-    let namespace = rule_name
-        .split_once('/')
-        .map(|(namespace, _)| namespace)
-        .unwrap_or(rule_name);
+/// Cross-file rules whose pages the docs generator writes under `rules/project/`.
+/// `vize:croquis/*` comes from the cross-file catalogue; these ids are the
+/// composed project pages (`project-render.ts`), not reference rules.
+const PROJECT_RULES: &[&str] = &[
+    "ecosystem/vue-router-extra-param",
+    "ecosystem/vue-router-missing-param",
+    "ecosystem/vue-router-param-type",
+    "ecosystem/vue-router-unknown-route",
+    "html/cross-component-nesting",
+    "vue/cross-file-attrs-fallthrough",
+];
 
-    match namespace {
-        "vue" => "docs/content/rules/vue.md",
-        "a11y" => "docs/content/rules/accessibility.md",
-        "html" => "docs/content/rules/html.md",
-        "ssr" => "docs/content/rules/ssr.md",
-        "vapor" => "docs/content/rules/vapor.md",
-        "musea" | "css" => "docs/content/rules/musea-and-css.md",
-        "type" | "script" => "docs/content/rules/type-and-script.md",
-        "ecosystem" => "docs/content/rules/ecosystem.md",
-        "cross-file" | "vize:croquis" => "docs/content/rules/cross-file.md",
-        _ => "docs/content/rules/index.md",
+/// Return the rule's own documentation page.
+///
+/// The slug matches `ruleSlug`: non-alphanumeric runs become a single `-`,
+/// ASCII letters are lowercased, and leading or trailing hyphens are dropped.
+/// `vue/require-v-for-key` is `docs/content/rules/reference/vue-require-v-for-key.md`.
+pub fn rule_docs_path(rule_name: &str) -> String {
+    // Operational diagnostics are outside the generated rule catalogue.
+    match rule_name {
+        "cross-file" => return String::from("docs/content/rules/cross-file.md"),
+        "type/corsa-runtime" => return String::from("docs/content/rules/type-and-script.md"),
+        "vue/comment-directive" => {
+            return String::from("docs/content/guide/lint-execution.md");
+        }
+        _ => {}
     }
+    let directory = if is_project_rule(rule_name) {
+        "project"
+    } else {
+        "reference"
+    };
+    let slug = rule_slug(rule_name);
+    cstr!("docs/content/rules/{directory}/{slug}.md")
+}
+
+#[cfg(test)]
+mod documentation_authority_tests {
+    #[test]
+    fn operational_diagnostics_use_existing_pages_outside_the_rule_catalogue() {
+        let registry = crate::rule::RuleRegistry::with_all();
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for (rule, page) in [
+            ("cross-file", "docs/content/rules/cross-file.md"),
+            (
+                "type/corsa-runtime",
+                "docs/content/rules/type-and-script.md",
+            ),
+            (
+                "vue/comment-directive",
+                "docs/content/guide/lint-execution.md",
+            ),
+        ] {
+            assert_eq!(
+                registry.has_rule(rule),
+                rule == "vue/comment-directive",
+                "operational diagnostic: {rule}"
+            );
+            assert_eq!(super::rule_docs_path(rule), page);
+            assert!(root.join(page).is_file(), "English page: {page}");
+            assert!(
+                root.join(page.replacen("docs/content/", "docs/content/ja/", 1))
+                    .is_file(),
+                "Japanese page: {page}"
+            );
+        }
+        assert_eq!(
+            super::rule_docs_path("vue/comment-directive-host-control"),
+            "docs/content/rules/reference/vue-comment-directive-host-control.md"
+        );
+    }
+}
+
+fn is_project_rule(rule_name: &str) -> bool {
+    rule_name.starts_with("vize:croquis/") || PROJECT_RULES.contains(&rule_name)
+}
+
+fn rule_slug(id: &str) -> String {
+    let mut slug = String::with_capacity(id.len());
+    let mut hyphen = false;
+    for ch in id.chars() {
+        if ch.is_ascii_alphanumeric() {
+            if hyphen && !slug.is_empty() {
+                slug.push('-');
+            }
+            hyphen = false;
+            slug.push(ch.to_ascii_lowercase());
+        } else {
+            hyphen = true;
+        }
+    }
+    slug
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -37,7 +111,7 @@ pub(super) struct DiagnosticLocation {
 pub(super) struct DiagnosticView<'a> {
     pub file: &'a str,
     pub rule_id: &'static str,
-    pub rule_docs_path: &'static str,
+    pub rule_docs_path: String,
     pub severity: crate::diagnostic::Severity,
     pub message: &'a str,
     pub line: u32,

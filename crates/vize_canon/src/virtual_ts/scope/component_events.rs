@@ -2,11 +2,18 @@
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
+mod emit_props_gate;
+mod emit_resolver_share;
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
 mod listener_return;
 mod native_fallthrough;
+mod prop_array_share;
+pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
+pub(crate) use emit_resolver_share::{
+    flush as flush_emit_resolvers, reset as reset_emit_resolvers,
+};
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
@@ -30,6 +37,8 @@ pub(super) struct ComponentEventTypes {
     /// The handler annotation: the alias, plus any array form the child's
     /// listener prop admits, kept outside the alias so TypeScript prints it.
     pub(super) handler_annotation: Option<String>,
+    /// A loose resolver has no contextual parameter signature, unlike a declared zero-argument emit.
+    pub(super) contextless_listener: Option<String>,
     pub(super) listener_type: String,
     pub(super) listener_type_expr: String,
 }
@@ -57,6 +66,8 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) event_contracts: &'a std::cell::RefCell<FxHashMap<EventContractKey, u32>>,
     pub(super) indent: &'a str,
+    /// A props-independent emit-props call checks its literal against `any`.
+    pub(super) gated_inference: bool,
 }
 
 pub(super) fn generate_component_event_types(
@@ -83,6 +94,7 @@ pub(super) fn generate_component_event_types(
         event_inference_usages,
         event_contracts,
         indent,
+        gated_inference,
     } = ctx;
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
@@ -310,6 +322,8 @@ pub(super) fn generate_component_event_types(
             event_inference_usages,
             indent,
             hoist_shared_preamble,
+            gated_inference: gated_inference && explicit_generic.is_none(),
+            contextual_listener: !legacy_vue2,
         },
     );
 
@@ -319,14 +333,23 @@ pub(super) fn generate_component_event_types(
             "{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\n",
         );
     }
-    if let Some(ref inferred) = inferred_emit_args {
+    if let Some(inference) = inferred_emit_args.as_ref() {
+        let inferred = &inference.arguments;
+        // Missing contextual parameters do not mean that runtime emits have
+        // zero arguments. Keep the loose sentinel wide, while a declared []
+        // keeps its actual empty tuple and its known callback signature.
+        let loose_runtime_args = inference
+            .contextless_listener
+            .as_ref()
+            .map(|loose| cstr!("{loose} extends true ? unknown[] : "))
+            .unwrap_or_default();
         append!(
             *ts,
             "{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\n",
         );
         append!(
             *ts,
-            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
+            "{indent}type {args_type} = {loose_runtime_args}unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
         );
     } else {
         append!(
@@ -393,21 +416,23 @@ pub(super) fn generate_component_event_types(
                 let arrays_type = cstr!(
                     "__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_arrays"
                 );
-                let arrays = cstr!(
-                    "__P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
-                );
                 if first_contract {
-                    if let Some(props) = contextual_props.as_ref() {
-                        append!(
-                            *ts,
-                            "{indent}type {arrays_type} = {props} extends infer __P ? {arrays} : never;\n",
-                        );
-                    } else {
-                        append!(
-                            *ts,
-                            "{indent}type {arrays_type} = {props_box} extends infer __B ? __B extends [infer __P] ? {arrays} : never : never;\n",
-                        );
-                    }
+                    let props_members = cstr!("{component_aliases}_props_members");
+                    prop_array_share::emit(
+                        ts,
+                        prop_array_share::Emit {
+                            contracts: event_contracts,
+                            component: &component_contract,
+                            scope_id,
+                            indent,
+                            is_any,
+                            prop_key: prop_key.as_str(),
+                            arrays_type: arrays_type.as_str(),
+                            direct_props: contextual_props.as_deref(),
+                            props_box: props_box.as_str(),
+                            props_members: props_members.as_str(),
+                        },
+                    );
                 }
                 prop_arrays = Some(arrays_type);
                 cstr!("unknown[] extends {args_type} ? ((...args: any[]) => any) : {listener_type}")
@@ -422,10 +447,13 @@ pub(super) fn generate_component_event_types(
         Some(arrays) => cstr!("{handler} | {arrays}"),
         None => handler.clone(),
     });
+    let contextless_listener =
+        inferred_emit_args.and_then(|inference| inference.contextless_listener);
     Some(ComponentEventTypes {
         event_type,
         handler_type,
         handler_annotation,
+        contextless_listener,
         handler_type_expr,
         listener_type,
         listener_type_expr,

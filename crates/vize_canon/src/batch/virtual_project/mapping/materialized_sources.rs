@@ -24,111 +24,53 @@ pub(crate) struct MaterializedSourceDocument {
 }
 
 impl VirtualProject {
+    /// One authored file's mirror document, without cloning the rest of the graph.
+    pub(crate) fn materialized_source_document(
+        &self,
+        original: &std::path::Path,
+    ) -> Option<MaterializedSourceDocument> {
+        let original = vize_carton::path::canonicalize_non_verbatim(original);
+        self.find_by_original(&original)
+            .map(|file| virtual_file_document(self, file))
+    }
+
+    /// One mirror path's document. Stubs and config files have no source fact.
+    pub(crate) fn materialized_source_document_at(
+        &self,
+        path: &std::path::Path,
+    ) -> Option<MaterializedSourceDocument> {
+        if let Some(file) = self.virtual_files.get(path) {
+            return Some(virtual_file_document(self, file));
+        }
+        if let Some(canonical) = self.package_shadow_files.get(path) {
+            return shadow_document(self, path, canonical);
+        }
+        let source_path = self.passthrough_files.get(path)?;
+        let source = std::fs::read_to_string(source_path).ok()?;
+        Some(MaterializedSourceDocument {
+            materialized_path: path.to_path_buf(),
+            source_path: source_path.clone(),
+            source: source.clone().into(),
+            code: source.into(),
+            mappings: Vec::new(),
+            semantic_links: Vec::new(),
+            prop_default_key_links: Vec::new(),
+            import_source_map: Default::default(),
+            mapping_kind: MaterializedSourceMappingKind::AuthoredIdentity,
+        })
+    }
+
     pub(crate) fn materialized_source_documents(&self) -> Vec<MaterializedSourceDocument> {
         let mut documents = self
             .virtual_files_sorted()
             .into_iter()
-            .map(|file| {
-                let source = self
-                    .original_contents
-                    .get(&file.virtual_path)
-                    .cloned()
-                    .unwrap_or_default();
-                let mappings = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.mappings().to_vec())
-                    .unwrap_or_default();
-                let prop_default_key_links = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.prop_default_key_links().to_vec())
-                    .unwrap_or_default();
-                let semantic_links = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.semantic_links().to_vec())
-                    .unwrap_or_default();
-                MaterializedSourceDocument {
-                    materialized_path: file.virtual_path.clone(),
-                    source_path: file.original_path.clone(),
-                    source,
-                    code: file.content.clone(),
-                    mappings,
-                    semantic_links,
-                    prop_default_key_links,
-                    import_source_map: file.source_map.import_map.clone(),
-                    mapping_kind: MaterializedSourceMappingKind::Generated,
-                }
-            })
+            .map(|file| virtual_file_document(self, file))
             .collect::<Vec<_>>();
 
         for (materialized_path, canonical_path) in &self.package_shadow_files {
-            let Some(file) = self.virtual_files.get(canonical_path) else {
-                continue;
-            };
-            let Ok(code) = self.package_shadow_content(materialized_path, canonical_path) else {
-                continue;
-            };
-            let source = self
-                .original_contents
-                .get(&file.virtual_path)
-                .cloned()
-                .unwrap_or_default();
-            let mapping_kind = if code == file.content {
-                MaterializedSourceMappingKind::Generated
-            } else if code == source {
-                MaterializedSourceMappingKind::AuthoredIdentity
-            } else {
-                MaterializedSourceMappingKind::Synthetic
-            };
-            let mappings = if mapping_kind == MaterializedSourceMappingKind::Generated {
-                file.source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.mappings().to_vec())
-                    .unwrap_or_default()
-            } else {
-                Vec::new()
-            };
-            let semantic_links = if mapping_kind == MaterializedSourceMappingKind::Generated {
-                file.source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.semantic_links().to_vec())
-                    .unwrap_or_default()
-            } else {
-                Vec::new()
-            };
-            let prop_default_key_links = if mapping_kind == MaterializedSourceMappingKind::Generated
-            {
-                file.source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.prop_default_key_links().to_vec())
-                    .unwrap_or_default()
-            } else {
-                Vec::new()
-            };
-            let import_source_map = if mapping_kind == MaterializedSourceMappingKind::Generated {
-                file.source_map.import_map.clone()
-            } else {
-                Default::default()
-            };
-            documents.push(MaterializedSourceDocument {
-                materialized_path: materialized_path.clone(),
-                source_path: file.original_path.clone(),
-                source,
-                code,
-                mappings,
-                semantic_links,
-                prop_default_key_links,
-                import_source_map,
-                mapping_kind,
-            });
+            if let Some(document) = shadow_document(self, materialized_path, canonical_path) {
+                documents.push(document);
+            }
         }
 
         for (materialized_path, source_path) in &self.passthrough_files {
@@ -151,6 +93,112 @@ impl VirtualProject {
         documents.sort_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
         documents.dedup_by(|left, right| left.materialized_path == right.materialized_path);
         documents
+    }
+}
+
+fn shadow_document(
+    project: &VirtualProject,
+    materialized_path: &std::path::Path,
+    canonical_path: &std::path::Path,
+) -> Option<MaterializedSourceDocument> {
+    let file = project.virtual_files.get(canonical_path)?;
+    let code = project
+        .package_shadow_content(materialized_path, canonical_path)
+        .ok()?;
+    let source = project
+        .original_contents
+        .get(&file.virtual_path)
+        .cloned()
+        .unwrap_or_default();
+    let mapping_kind = if code == file.content {
+        MaterializedSourceMappingKind::Generated
+    } else if code == source {
+        MaterializedSourceMappingKind::AuthoredIdentity
+    } else {
+        MaterializedSourceMappingKind::Synthetic
+    };
+    let mappings = if mapping_kind == MaterializedSourceMappingKind::Generated {
+        file.source_map
+            .sfc_map
+            .as_ref()
+            .map(|map| map.mappings().to_vec())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let semantic_links = if mapping_kind == MaterializedSourceMappingKind::Generated {
+        file.source_map
+            .sfc_map
+            .as_ref()
+            .map(|map| map.semantic_links().to_vec())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let prop_default_key_links = if mapping_kind == MaterializedSourceMappingKind::Generated {
+        file.source_map
+            .sfc_map
+            .as_ref()
+            .map(|map| map.prop_default_key_links().to_vec())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let import_source_map = if mapping_kind == MaterializedSourceMappingKind::Generated {
+        file.source_map.import_map.clone()
+    } else {
+        Default::default()
+    };
+    Some(MaterializedSourceDocument {
+        materialized_path: materialized_path.to_path_buf(),
+        source_path: file.original_path.clone(),
+        source,
+        code,
+        mappings,
+        semantic_links,
+        prop_default_key_links,
+        import_source_map,
+        mapping_kind,
+    })
+}
+
+fn virtual_file_document(
+    project: &VirtualProject,
+    file: &super::super::VirtualFile,
+) -> MaterializedSourceDocument {
+    let source = project
+        .original_contents
+        .get(&file.virtual_path)
+        .cloned()
+        .unwrap_or_default();
+    let mappings = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.mappings().to_vec())
+        .unwrap_or_default();
+    let prop_default_key_links = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.prop_default_key_links().to_vec())
+        .unwrap_or_default();
+    let semantic_links = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.semantic_links().to_vec())
+        .unwrap_or_default();
+    MaterializedSourceDocument {
+        materialized_path: file.virtual_path.clone(),
+        source_path: file.original_path.clone(),
+        source,
+        code: file.content.clone(),
+        mappings,
+        semantic_links,
+        prop_default_key_links,
+        import_source_map: file.source_map.import_map.clone(),
+        mapping_kind: MaterializedSourceMappingKind::Generated,
     }
 }
 

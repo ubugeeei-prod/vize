@@ -1,0 +1,70 @@
+---
+title: "vue/require-component-registration"
+description: "Exigir importação ou registro explícito de componentes."
+---
+
+# `vue/require-component-registration`
+
+Exigir importação ou registro explícito de componentes.
+
+| Severidade padrão | Predefinições | Correção automática | Opções |
+| --- | --- | --- | --- |
+| `warning` | `opinionated` | Não | [Opções das regras](/rules/options.md) |
+
+Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
+
+Liste nomes explícitos de componentes fornecidos por plugins da aplicação ou pelo previewSetup do Musea. Grafias PascalCase e kebab-case são aceitas; expressões regulares não são interpretadas. As opções não ativam a regra. Camadas posteriores substituem a lista; uma lista vazia remove os nomes herdados.
+
+## Incorreto
+
+`MissingWidget` não está registrado nem incluído na lista configurada de componentes globais permitidos.
+
+```vue annotate="remove:2"
+<template>
+<MissingWidget />
+</template>
+```
+
+## Correto
+
+`MyButton` consta na opção `globals` do exemplo. Essa opção isenta um componente global conhecido; ela não o registra nem o importa.
+
+```vue annotate="add:2"
+<template>
+<MyButton />
+</template>
+```
+
+## Configuração (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "vue/require-component-registration": "warn"
+      },
+      "ruleOptions": {
+        "vue/require-component-registration": {
+          "globals": [
+            "MyButton",
+            "MyIcon"
+          ]
+        }
+      }
+    },
+  },
+});
+```
+
+Depois, execute `vp run lint`.
+
+## Páginas relacionadas
+
+- [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
+- [Todas as regras](../all.md)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L57)

@@ -156,7 +156,7 @@ test("full Docs checks real preview resources before building and retains the ra
     ].join("\n"),
   );
   const japaneseRoutes = defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"));
-  assert.equal(japaneseRoutes.length, 42);
+  assert.equal(japaneseRoutes.length, 32);
   const fixture = JSON.parse(readRepoFile("tests", "_fixtures", "docs-ja-rule-editorial.json")) as {
     cases: { case: string; route: string }[];
   };

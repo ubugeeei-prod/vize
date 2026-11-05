@@ -32,6 +32,7 @@ mod experimentals;
 mod page_meta_tests;
 mod parse;
 mod thread_pool;
+mod type_projects;
 mod types;
 mod vue_version;
 
@@ -42,4 +43,5 @@ pub use bundler::*;
 pub use compile::*;
 pub use css::*;
 pub use parse::*;
+pub use type_projects::*;
 pub use types::*;

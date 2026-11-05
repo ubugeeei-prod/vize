@@ -11539,6 +11539,38 @@
       }
     },
     {
+      "id": "typechecker/dynamic-listener-member-arity/typed-reference",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::template_handler_ts7006::dynamic_component_custom_member_handlers_stay_unresolved",
+      "sourceRevision": "d342658bc3d4390caf03ad36fe9c899c5cd30b73",
+      "scriptLang": "ts",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-listener-member-arity/TypedReference.vue.txt",
+          "sha256": "4468408a384f1e4e90c7404d93b01772887fe0cb2813a2f8d77d530eea87e55a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Existing real-host dynamic_component_custom_member_handlers_stay_unresolved consumes this exact input; typed WheelEvent reference must remain valid for a dynamic target with no declared emit contract."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/editor-vite-stub-11145/whole-install-ownership",
       "state": "active",
       "targets": [
@@ -11572,6 +11604,38 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/expect-instance-primary-11675",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "65331762308cfe796152dbadfafda0af92f5a2fa",
+      "test": "batch::virtual_project::content_mapper::directive_tests::directive_exact::volar_expect_directive_owns_the_instance_primary_not_a_navigation_copy",
+      "inputs": [
+        {
+          "path": "expect-instance-primary-11675/Directives.vue.txt",
+          "sha256": "2975dbfa0d263d3f3321ce1e5ea300e6b94405aab9b41b4fa9ff1324b157d35e",
+          "role": "physically-consumed-native-projection-ownership-regression"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "scope": "Exact failing Volar Directives.vue input consumed by the named native mapper ownership unit. Input registration only; batch CLI/native after qualification remains a separate Actions gate."
     },
     {
           "id": "typechecker/expect-sibling-interpolation-10871",
@@ -11758,6 +11822,119 @@
       }
     },
     {
+      "id": "typechecker/legacy-js-mixin-receiver-11780/finite-js-methods",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Invalid.vue",
+          "path": "legacy-js-mixin-receiver-11780/src/Invalid.vue.txt",
+          "sha256": "380d5e41d90390c7bff20021e1ccdba3acdac84a05b363aed3370669748848a5"
+        },
+        {
+          "file": "src/Unicode.vue",
+          "path": "legacy-js-mixin-receiver-11780/src/Unicode.vue.txt",
+          "sha256": "42d122a8973d5067904a5d75d8506f2f173e86cd335de672f8537f63ea3b398f"
+        },
+        {
+          "file": "src/Valid.vue",
+          "path": "legacy-js-mixin-receiver-11780/src/Valid.vue.txt",
+          "sha256": "e2d3060f1766ab3191acafe4e1874df1f3362be2ae318e566bf306041e55b6c1"
+        },
+        {
+          "file": "src/mixin.js",
+          "path": "legacy-js-mixin-receiver-11780/src/mixin.js.txt",
+          "sha256": "a8c81ef0171a2a101225c62693370e6f7e6441259e1f131706623cfd8df7be56"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-js-mixin-receiver-11780/tsconfig.json.txt",
+          "sha256": "42e525dbf17c7e9dff546202c16c38bbf4c4f018887391eabb74780a37ca7f4f"
+        },
+        {
+          "file": "vite.config.mjs",
+          "path": "legacy-js-mixin-receiver-11780/vite.config.mjs.txt",
+          "sha256": "1ac3e2b3e0fe9ae25e3798a0a241051512fdc967fd89e6cbd00a069eb28c9f73"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue2-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "required native legacy_js_mixin_receiver fixture checks both strict modes through enable_legacy_vue2(); JavaScript mixin inputs retain authored JSDoc types"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/legacy-js-mixin-return-11780/inferred-return-type",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Invalid.vue",
+          "path": "legacy-js-mixin-return-11780/src/Invalid.vue.txt",
+          "sha256": "953636be1db7bde2b82d9df18fdc9ec4467fa112562f7235475249bb401c740a"
+        },
+        {
+          "file": "src/Unicode.vue",
+          "path": "legacy-js-mixin-return-11780/src/Unicode.vue.txt",
+          "sha256": "77f072a12e1be70e77a30ab696882d28387a1ab8ce31d512563db7e53b40e7d3"
+        },
+        {
+          "file": "src/Valid.vue",
+          "path": "legacy-js-mixin-return-11780/src/Valid.vue.txt",
+          "sha256": "bcb33c9a299975a0def7bf0c330b954a62593d8c2e5689903d880256db3b3f7b"
+        },
+        {
+          "file": "src/mixin.js",
+          "path": "legacy-js-mixin-return-11780/src/mixin.js.txt",
+          "sha256": "a8c81ef0171a2a101225c62693370e6f7e6441259e1f131706623cfd8df7be56"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-js-mixin-return-11780/tsconfig.json.txt",
+          "sha256": "42e525dbf17c7e9dff546202c16c38bbf4c4f018887391eabb74780a37ca7f4f"
+        },
+        {
+          "file": "vite.config.mjs",
+          "path": "legacy-js-mixin-return-11780/vite.config.mjs.txt",
+          "sha256": "1ac3e2b3e0fe9ae25e3798a0a241051512fdc967fd89e6cbd00a069eb28c9f73"
+        },
+        {
+          "file": "controls/mixin-any.js",
+          "path": "legacy-js-mixin-return-11780/controls/mixin-any.js.txt",
+          "sha256": "23c80e12bb0ded575940b775b91fa88ccc40924a7c0f5a83aebc64e2c61f34b7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue2-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "required native legacy_js_mixin_receiver::inferred_return fixture checks inferred JavaScript string returns, authored-any sensitivity control, and exact restoration in both strict modes with Unicode/CRLF negative and positive Vue inputs"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/legacy-typed-mixin-methods/finite-typed-methods",
       "state": "active",
       "targets": [
@@ -11842,6 +12019,81 @@
       }
     },
     {
+      "id": "typechecker/nested-function-guard-11853",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::nested_function_guard_11853::standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors",
+      "inputs": [
+        {
+          "file": "Child.vue",
+          "path": "nested-function-guard-11853/Child.vue.txt",
+          "sha256": "bd427cee5527e10d60f9598460da79352d1ca730f122c8fbedc8dcce4700c42d"
+        },
+        {
+          "file": "Probe.vue",
+          "path": "nested-function-guard-11853/Probe.vue.txt",
+          "sha256": "e90f083ce69ee98e038f44b8280a862fe7f4d4bc097791dd1a9dcc739fc1c0ae"
+        },
+        {
+          "file": "NoFollowingChain.vue",
+          "path": "nested-function-guard-11853/NoFollowingChain.vue.txt",
+          "sha256": "7b2af938fcadd116ac7090e5fab33920891e0b24a45c46f2829d5baab511dab2"
+        },
+        {
+          "file": "DivChain.vue",
+          "path": "nested-function-guard-11853/DivChain.vue.txt",
+          "sha256": "036a3ea377f6a2eb816caad32a7711faba2004968cf0dda15d0bff7dee621b3a"
+        },
+        {
+          "file": "NoOuterGuard.vue",
+          "path": "nested-function-guard-11853/NoOuterGuard.vue.txt",
+          "sha256": "f319ea85d754ff72fc4effb41c000956f9c9fb0582efed0c3399bc7507a1c0f5"
+        },
+        {
+          "file": "UnusedHandler.vue",
+          "path": "nested-function-guard-11853/UnusedHandler.vue.txt",
+          "sha256": "5f2b0246c86ad16683b42b79a170476bf77216e7c0470dbf2f8aba5176172d7f"
+        },
+        {
+          "file": "WrongPayload.vue",
+          "path": "nested-function-guard-11853/WrongPayload.vue.txt",
+          "sha256": "edef5a2de0754d0d211f6dd4d1448a21d33abbc401f46ef4b98a4c0f59957f58"
+        },
+        {
+          "file": "MissingMember.vue",
+          "path": "nested-function-guard-11853/MissingMember.vue.txt",
+          "sha256": "af30299f7d95c32eb1d116d89788a5bf7a84a1eb3f2f938d9dd53b420a106c29"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "nested-function-guard-11853/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        },
+        {
+          "file": "cases.json",
+          "path": "nested-function-guard-11853/cases.json",
+          "sha256": "fdf461c7889607fa00004dadd78b3b0d1b2e4897ba2ceb798772a521a0077f28"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required actual source CLI beta content-mapper protocol; nested guarded listener references and genuine TS2774/TS2322/TS2339 controls."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/options-api-inherited-template-members/declared-member-types",
       "state": "active",
       "targets": [
@@ -11918,6 +12170,40 @@
             ]
           }
         },
+    {
+      "id": "typechecker/page-route-normalization-11776",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "page-route-normalization-11776/Probe.vue.txt",
+          "sha256": "89d656a2689ea2285416aa6fc69efc36506c72e03a164362669985d094799043",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "page-route-normalization-11776/tsconfig.json.txt",
+          "sha256": "ba1be9d335274508794ac8385854f12a95b9b6d8817c58e07de13663921a7a47",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "normalized_typescript_before_route_call_keeps_page_specialization physically consumes these inputs, checks LF/CRLF and decoded/escaped route calls and exact following diagnostic endpoints. Source CLI synthetic-provider clean/wrong-type controls are separate from the unchanged official Router CLI/editor oracle. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
@@ -12041,6 +12327,55 @@
       }
     },
     {
+      "id": "typechecker/regression/capture-free-component-instance-11699",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "capture-free-component-instance-11699/Capture.vue.txt",
+          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/authored.ts.txt",
+          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
+          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/render.ts.txt",
+          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/cold-package-shadow-routes-11265",
       "state": "active",
       "targets": [
@@ -12065,6 +12400,123 @@
               "ts"
             ],
             "selector": "workspace_aliases::dirty_propagation_tests::fixture::prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state; compile-included complete controlled graph inputs; no private Nuxt or native-checker reproduction claim"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-listener-branch-narrowing-11730",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-narrowing-11730/Row.vue.txt",
+          "sha256": "d68525313ca96af15aa04710b9702ba4d79f2613cff800f77dae7281bd01f03a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-narrowing-11730/Union.vue.txt",
+          "sha256": "bfd2e60ff24ebb1a9dc451778b4ebd3f005ef48f48bb3acec759d265d03b4648",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-narrowing-11730/Nullable.vue.txt",
+          "sha256": "8aa8f747f766642834ab529d70025efdd49065ffaad88e4833e6995756f9bf13",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-narrowing-11730/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::component_listener_narrowing_11730::component_listener_branches_keep_narrowing_and_authored_body_errors; reported source/config physically consumed with wrong-member and wrong-payload controls. Input-only registration; original Windows/runtime qualification remains separate."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-v-model-once-11655",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-v-model-once-11655/Component.vue.txt",
+          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/Native.vue.txt",
+          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/SlotContent.vue.txt",
+          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/composed-reserved-binding-spans-11768",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "composed-reserved-binding-spans-11768/Probe.vue.txt",
+          "sha256": "218d81df70acceb09229b8d60a19c31348b5851f142abbc81c25b2e6b6c5730c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "composed-reserved-binding-spans-11768/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reserved_template_substitutions::composed_reserved_keys_preserve_authored_argument_diagnostics; physically consumes this mixed static/from input with UTF8 text, LF/CRLF, exact TS2345 Probe.vue(5,41) wrong-from and wrong-static controls and repair. Input-only registration; no native admission or successful host claim."
           }
         ]
       }
@@ -12158,6 +12610,50 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-helper-abi-11809",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "direct-child-props-11809/PropsChild.vue.txt",
+          "sha256": "16d7b729d60501cc53a1fbea01a86be97a57971c6a935b4ae2c65789a46bd3c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/PropsParent.vue.txt",
+          "sha256": "3378e19998e3834e265d0cee20899da34edff77b55522331a8252fec363b1525",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/tsconfig.vize-no-shim.json.txt",
+          "sha256": "8b8353611a3f97c7e2bac9ba216501d0cf283463acca93f8b8d651967cd252f3",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-helper-abi-11809/cases.json",
+          "sha256": "a83fc34aff24e2bad14029a0f58f46e1b219dfe4740f1e2dd0764e91582790a1",
+          "role": "sdk-abi-contrasts"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "direct-child-helper-abi-11809.ts consumes the pinned eight-case SDK mutation plan and the original two SFC inputs under both installed native hosts. Exact TS2322 and empty stderr are required in all sixteen cases, with declaration bytes restored after each contrast. Source acceptance is pending Actions; no original reporter installation cause or native parity credit is claimed."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/declaration-fallthrough-attrs-11454",
       "state": "active",
       "targets": [
@@ -12192,6 +12688,50 @@
               "ts"
             ],
             "selector": "check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; reported #11454 producer and vue-tsc consumer of the emitted declaration, with two-required, emit-only and attribute variants plus genuine wrong-prop, missing-prop, wrong-listener and checkUnknownProps controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/direct-child-props-11809",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "direct-child-props-11809/PropsChild.vue.txt",
+          "sha256": "16d7b729d60501cc53a1fbea01a86be97a57971c6a935b4ae2c65789a46bd3c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/PropsParent.vue.txt",
+          "sha256": "3378e19998e3834e265d0cee20899da34edff77b55522331a8252fec363b1525",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/Missing.vue.txt",
+          "sha256": "15a51e8bfff4e50d9f6f4d839813fa5897cf537fcf9aa0bcc45e077eeb1f16ee",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/tsconfig.vize-no-shim.json.txt",
+          "sha256": "8b8353611a3f97c7e2bac9ba216501d0cf283463acca93f8b8d651967cd252f3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "tools/support/compat/content-mapper/direct-child-props-11809.ts requires actual Node22 packaged JS/NAPI on both official TypeScript7.1beta and tsrs0.21: numeric prop, valid number and independent missing-property control, three prop spellings and shim/no-shim, 36 complete process outputs plus two separate observed-load contrasts. Ref #11809; reported public failure not reproduced. No production fix or introduced commit claimed."
           }
         ]
       }
@@ -12494,6 +13034,35 @@
       }
     },
     {
+      "id": "typechecker/regression/imported-project-ownership-11794",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "imported-project-ownership-11794/case.json",
+          "sha256": "7347ddc4f6c847efc131a473daef792648abd38b1e8988e54026d43b3b5bcfdd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "type_projects::tests::pinned_reference_project_is_selected_once_and_configuration_changes_reach_compilation; physically consumes all pinned project inputs through Canon ownership snapshot and SFC compile. First unrelated and later owning references, runtime bar:Object/required:false, changed config and snapshot reuse are checked. Input-only registration; no native SDK, diagnostic pack or timing qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/legacy-external-component-props",
       "state": "active",
       "targets": [
@@ -12586,6 +13155,89 @@
               "ts"
             ],
             "selector": "generic_library_children::listener_payloads_of_generic_library_children_use_the_inferred_parameters; #11447 reported vue-tsc library generic export (`VNode & { __ctx }`) whose listener payload must come from the bound-props call, plus unconstrained, dotted, $event, payload-poison, explicit-unknown and no-__ctx controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/listener-anchor-11657",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "listener-anchor-11657/Child.vue.txt",
+          "sha256": "8b5a73c863e02e7bcfef78f5f97be6681e9ca0cd6b73a595d39b09439d90ef0d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "listener-anchor-11657/Forms.vue.txt",
+          "sha256": "f54864ebfce7f3e3e50ef1c1e03aed18397002de22e5b7a502a9f748e587c17b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "listener-anchor-11657/HandlerAndProp.vue.txt",
+          "sha256": "28e24e0098feae7282204476158b4db8f37f6a99ed2d8289d2326a0c714116a4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::listener_anchor_11657::checks_anchored_at_wrapping_parentheses_stay_reported and content_mapper::directive_tests::disjoint::parentheses_opening_an_authored_span_stay_reportable; #11657 every template wrapper form with one authored error is reported through the content mapper, as by vize check, including a wrong listener payload anchored at its wrapping `(`. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/memo-expression-11733",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "memo-expression-11733/Memo.vue.txt",
+          "sha256": "7ffdff08f6defe65af8d7c1de498a6c017134f76b5a8ad9d2af458ad8381534c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/Missing.vue.txt",
+          "sha256": "50f7ad550cedd43a4e327ae6a31498e37f2a382d3681d0537644978462916c81",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/Unused.vue.txt",
+          "sha256": "632fe91631217ef191888774ac416dbcbbddfb926722bff410ceba18df2cbe3b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "memo-expression-11733/util.ts.txt",
+          "sha256": "3d000c5f4f0f4379e4d008a2edad09d2e3e0d05171af42fc35515fea1653e4d3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::memo_expression::memo_dependencies_check_members_and_preserve_unused_controls; reported #11733 valid v-memo dependency reads plus missing-property and unused-import negative controls under real host, LF/CRLF and noUnusedLocals false/true."
           }
         ]
       }
@@ -12821,6 +13473,55 @@
       }
     },
     {
+      "id": "typechecker/regression/nested-dynamic-vfor-11728",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nested-dynamic-vfor-11728/Cell.vue.txt",
+          "sha256": "d9740fabf9530c9b86d280ec86f677270000587f1afa7592792a0605ef261a1c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Clean.vue.txt",
+          "sha256": "510e5867d7e892ce9fd22e3af9f55a45611eb2fa1d51adaebc339f3013706e8f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Errors.vue.txt",
+          "sha256": "dba4238d7b41e2fc6d6cf1f6b5eb7af403e777803f33b32cee4f02c9cb59e839",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/Scoped.vue.txt",
+          "sha256": "c3d07640ff9d8abe6b63acd70583f27a709417a2a2203c503213d95752767a45",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-dynamic-vfor-11728/globals.d.ts.txt",
+          "sha256": "814e696cf0c4587af695430381379f439848ef1df0555fab331c1375fd996c6d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nested_dynamic_component_loops::nested_dynamic_component_loops_keep_lexical_values_and_wrong_payloads; #11728 authored table ancestry, nested component/for scope, colliding instance globals and TS2322 wrong-value negative control. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/package-import-redirects-11317",
       "state": "active",
       "targets": [
@@ -12867,6 +13568,89 @@
           "dialects": ["vue3-sfc", "html-template", "ts"],
           "selector": "virtual_ts::generator::type_only_imports::prepared_tests::pinned_sfc_uses_exact_facts_and_generates_default_and_hoisted_documents; compile-included full SFC feeds both production document modes; planned batch input only, null adapters, no native diagnostic packet or acceptance"
         }]
+      }
+    },
+    {
+      "id": "typechecker/regression/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "qualification-20261105/Child.vue.txt",
+          "sha256": "6e17ae91abb655765e75ec91a7b9e9327ff0ad9c3925658329ae4ad7457464e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "qualification-20261105/Repeated.vue.txt",
+          "sha256": "c014b7aba0a868e17e49cab607764c7d3381af605cb720b7f9ea2c7ed354d297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; vue_document::build::tests::native_union checks exact closed dependency membership after edits; input registration is not native acceptance."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/recovered-attribute-boundary-11731",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "recovered-attribute-boundary-11731/Gap.vue.txt",
+          "sha256": "5597c24ffb988da8f4973909aac7323619ace55df9eb9023100d35e183f972ec",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/Other.vue.txt",
+          "sha256": "239ff0361622141495129b38a19246e7fa7d27e7afda612eeafd4af39071c00b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/package.json.txt",
+          "sha256": "d1279343e83de908139ab4e6fa5e3f1d32c95f395629162b117162a6413928ad",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "recovered-attribute-boundary-11731/Unused.vue.txt",
+          "sha256": "f80814d9348efa42651b7bcfaa143cdc5dcc6a3b498b3fdde383a7f938c2cd62",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics; original reported Gap/Other project, valid repair, independent same-file error and noUnusedLocals false/true under a required real host, LF/CRLF. Native Component/Document token packets and whole mapper packet have separate regression tests. Input-only registration; source-host after qualification is required."
+          }
+        ]
       }
     },
     {
@@ -13336,6 +14120,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reserved-template-substitutions-11729",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "reserved-template-substitutions-11729/Probe.vue.txt",
+          "sha256": "7e0c0caf1841800dc03e39309f44774e0d91e57b8b738a9d86d4d6cf940f8608",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "reserved-template-substitutions-11729/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reserved_template_substitutions::reserved_props_in_substitutions_keep_original_acceptance_and_authored_errors; consumes the exact reporter source/config with genuine wrong-argument and repair controls, LF and CRLF; input-only registration, no frozen native admission or published acceptance claim"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],
@@ -13364,6 +14182,74 @@
           "dialects": ["vue3-sfc", "html-template", "ts"],
           "selector": "content_mapper_tsgo_cli::runtime_null_prop::runtime_null_prop_keeps_original_acceptance_and_authored_error_repair; original Box/config/package physically copied to the checked project, source CLI and mapper; no public version or native admission claim"
         }]
+      }
+    },
+    {
+      "id": "typechecker/regression/semantic-diagnostic-provenance-11626",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "semantic-diagnostic-provenance-11626/App.vue.txt",
+          "sha256": "591a69672055d55d6bb0c20e8a4d39074accedd81d65bf797cdd051a01f9f67b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "tests/tooling/lsp-script-syntax-prompt.test.ts::an unrelated edit retains a semantic TS1xxx diagnostic in the prompt; actual native7.0.2 TS1355 retention and repair through Canon diagnostic provenance, plus vize check full TS1355/repair control. Planned batch input registration, no historical diagnostic pack or backend parity qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/strict-v-model-mapper-11643",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "strict-v-model-mapper-11643/KitField.vue.txt",
+          "sha256": "a136df6e638a79824947d5310d7c855b14244106a649e6861434be2d490a89a4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/MissingTarget.vue.txt",
+          "sha256": "ab64eee13ec4fc635f052ef90eb27510aec20b35e3ad9adc069c373d41811c2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/Page.vue.txt",
+          "sha256": "7d784542c3f5b48883bcb90354d0dd167ed8e6c6737c418a0a9c707bb430c491",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_config::strict_v_model_tests (strict_templates_checks_the_model_write_back, strict_v_model_overrides_strict_templates, default_options_leave_the_model_write_back_unchecked, write_back_owns_the_bound_target_diagnostics); #11643 the content mapper honors strictVModel and its strictTemplates fallback as vize check does, so a v-model update payload that does not fit the bound target is reported, and the write-back owns the target diagnostics so the props literal copy adds no duplicate. Input-only registration, no diagnostic pack."
+          }
+        ]
       }
     },
     {
@@ -13465,6 +14351,55 @@
               "ts"
             ],
             "selector": "check_vendored_vue_declaration_cli::consumers_of_emitted_component_declarations_report_vue_tsc_diagnostics; reported #11496 consumer of a vendored Foo.vue.d.ts emitted by vize check --declaration and by vue-tsc, with a valid control and genuine wrong-value, missing-prop and wrong-listener diagnostics matched against vue-tsc. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/vue-compiler-options-mapper-11688",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "vue-compiler-options-mapper-11688/ComponentRoot.vue.txt",
+          "sha256": "3f3fa9551070bc1aff9e9e5001ec97b5f291c09d11a2878d1f92af75747aecc1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/StyleClasses.vue.txt",
+          "sha256": "57b00f47c8efc73347b5fd0f145a56615a821e4db9e737f596211a795c68ce8c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/StyleImport.vue.txt",
+          "sha256": "80d6befa88911c24095b664408ad6813fd12ce5ecfd6b0f1c4a37959e9264a7e",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/TemplateGlobals.vue.txt",
+          "sha256": "05588a410950e3d625e3189c8cedaa7d6c3f7c30a587e9da74b6c8efdef4c896",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "vue-compiler-options-mapper-11688/VaporDirective.vue.txt",
+          "sha256": "51aae5787cad6964cbbe24fb52cf8eadb2f9a3d3208b991c89b6ca4a6bf413e2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_config::vue_options_projection_tests (every_check_option_changes_the_mapper_projection, every_check_option_has_a_projection_row) and vue_check_options_tests (every_check_option_resolves_identically_in_both_hosts, check_options_are_read_only_by_the_shared_resolver); #11688 vize check and the content mapper resolve every vueCompilerOptions check key through one function, and each key changes the mapper projection. Input-only registration, no diagnostic pack."
           }
         ]
       }
@@ -13579,6 +14514,105 @@
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source native check and independent vue-tsc; not a new semantic program or native mapper authority"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/runtime-proptype-call-result-11734/object-proptype-retains-editor",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "runtime_proptype_keeps_typed_callbacks_and_wrong_assignment",
+      "sourceRevision": "13b901140c193e5d9bc111994b5558e6304ad5b2",
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "path": "runtime-proptype-call-result-11734/Probe.vue.txt",
+          "sha256": "652a3dc70c3d88bd01e811d0ae8699f7b99476e35f5142ad0d65c5d968124a86"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-proptype-call-result-11734/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        },
+        {
+          "file": "contract-provenance.json",
+          "path": "runtime-proptype-call-result-11734/contract-provenance.json",
+          "sha256": "381bb2dbedb2976ed1535241aa99268c317eacfc860fd80d2b0783ea390b1e43"
+        },
+        {
+          "file": "cases.json",
+          "path": "runtime-proptype-call-result-11734/cases.json",
+          "sha256": "4493cb4ecff192edcf9c6d056e54435d47aa4634e6eb2d2b679df77732fa33c0",
+          "role": "complete-production-batch-diagnostic-oracle"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/runtime-proptype-call-result-11734/pinned-vue-3-5-44-proptype-contract",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "runtime_proptype_keeps_typed_callbacks_and_wrong_assignment",
+      "sourceRevision": "13b901140c193e5d9bc111994b5558e6304ad5b2",
+      "inputs": [
+        {
+          "file": "Probe.vue",
+          "path": "runtime-proptype-call-result-11734/Probe-pinned-contract.vue.txt",
+          "sha256": "9346bf5d85e9b81ec54c4608f6637de73b166e68dec30415142c0a4f9d06832c"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-proptype-call-result-11734/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd"
+        },
+        {
+          "file": "PropType-3.5.44.ts",
+          "path": "runtime-proptype-call-result-11734/PropType-3.5.44.ts.txt",
+          "sha256": "6ccbaa74c524e0b0c8524ce36fdc07f61423b5d91c36168a63b670fd369a8455"
+        },
+        {
+          "file": "contract-provenance.json",
+          "path": "runtime-proptype-call-result-11734/contract-provenance.json",
+          "sha256": "381bb2dbedb2976ed1535241aa99268c317eacfc860fd80d2b0783ea390b1e43"
+        },
+        {
+          "file": "cases.json",
+          "path": "runtime-proptype-call-result-11734/cases.json",
+          "sha256": "4493cb4ecff192edcf9c6d056e54435d47aa4634e6eb2d2b679df77732fa33c0",
+          "role": "complete-production-batch-diagnostic-oracle"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
       }
@@ -13708,6 +14742,46 @@
           "file": "src/StaticRef.vue",
           "path": "static-template-ref-runtime-11377/StaticRef.vue.txt",
           "sha256": "a439b4747a8cc8b5c1adf9562d5412d61bbfdfe605886c945f9c2ecd0bf4c7c6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/static-template-ref-uninitialized-runtime-11377",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::dynamic_template_refs::native_cli_static_template_refs_keep_unused_and_shadow_diagnostics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "static-template-ref-runtime-11377/tsconfig.json.txt",
+          "sha256": "44ba7c3bf8f56fc662ff6729db3dc841c9b5646c76db71eecddcd17eb1889181"
+        },
+        {
+          "file": "src/useBox.ts",
+          "path": "static-template-ref-runtime-11377/useBox.ts.txt",
+          "sha256": "8b69196f7909119360e50ac2d72dba8705c29d50155b8d7e6843c27884ec5387"
+        },
+        {
+          "file": "src/StaticRef.vue",
+          "path": "static-template-ref-uninitialized-runtime-11377/StaticRef.vue.txt",
+          "sha256": "b1eb163631e6140ea1919cc2d40acc7a39e9f1694d6a0cb4d759382674929975"
         }
       ],
       "dialectCoverage": {
@@ -16127,7 +17201,12 @@
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "cbd6352f2bc709a5edf6c93463cc4e02718c6e2d5454b2b762c2d79b6e42bbf4"
+          "sha256": "2be3ed0da856b064f9319ea66510810de2734181652452eec92540d77deb8d63"
+        },
+        {
+          "selector": "createSourceDocuments",
+          "source": "npm/typescript-plugin/source-documents.cjs",
+          "sha256": "eb7ee6a42286fde73c7f7361d58816c99a6897e4690ed08f9aa449119e031f81"
         },
         {
           "selector": "createMappedLanguageService",
@@ -16197,6 +17276,440 @@
         "run": 40226962544,
         "artifact": 12610814625
       }
+    }
+  ],
+  "diagnosticPhaseCases": [
+    {
+      "id": "typechecker/protocol/native-diagnostic-phase-11626",
+      "state": "active",
+      "adapter": "native-diagnostic-phase-current-v1",
+      "targets": [
+        "native-diagnostic-phase"
+      ],
+      "sources": [
+        {
+          "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
+          "before": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20",
+          "after": "603e0c54b1d49f71e0216f8b7e02fd4f641897ff6f6d27cf1e903d0fde7262e4"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
+          "before": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98",
+          "after": "8fcd08f2ac4e7fa2313c4737760e5bb9f68507baa5ae0aef554d573266eb9ea8"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "before": "741f997d5bf8327d5894f500daf91e618fc5ce11318b34df35672e073cf3752d",
+          "after": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff"
+        }
+      ],
+      "inputs": [
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json",
+          "sha256": "d0d8a3045e768f817a1583ffe97a0f13c12cdee68086ec8229696b8f2af813d1"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/native7-lsp-receipt.json",
+          "sha256": "e26c7adfaf780e38ea7cdfafdcd48d60621f3573b4fbb9773ce1a0ef07642a7a"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt",
+          "sha256": "591a69672055d55d6bb0c20e8a4d39074accedd81d65bf797cdd051a01f9f67b"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/plain.js.txt",
+          "sha256": "68b4e65262ec232ff810cac451a519ecf62b913a2b8495e18ba821820378cf8e"
+        },
+        {
+          "path": "tests/_fixtures/differential/lsp/plain-script-diagnostics/tsconfig.json",
+          "sha256": "951d9fae696015ef1d295ce248e6134947178477a0ac829d18098d98338f1fce"
+        }
+      ],
+      "tests": [
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics_api.rs",
+          "selector": "lsp_client::diagnostics_api::tests::api_phase_comes_from_the_owned_bucket_not_the_diagnostic_code",
+          "sha256": "bfd126b8fdef2590d0531f63ef1c3f16cd4f0eb11b2e49b6fb233c16a0ec37b7",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::framed_phase_comes_from_each_completed_compiler_kind_not_the_code",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::an_unphased_transport_never_classifies_a_numeric_code",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/native7-lsp-receipt.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::warm_provenance_read_retains_phase_from_one_current_snapshot_and_exact_rpc_order",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/framed-input.json"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::an_unsupported_kind_cannot_publish_a_partial_warm_result_or_reprobe_the_api",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/provenance/tests.rs",
+          "selector": "lsp_client::diagnostics::provenance::tests::a_rejected_current_api_owner_never_probes_compiler_kinds",
+          "sha256": "dbd8a5a77d56d263de219be32431e24602d55672e8d9ef6905e38a89a5cedd28",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/tests.rs",
+          "selector": "corsa_bridge::bridge::initial_diagnostics::tests::refreshed_snapshot_rejects_both_old_success_and_old_error_without_effects",
+          "sha256": "6871d70e3796b03ad61020bb7b6e6571c713f0c3c2ef8f592b6a3acd599e3722",
+          "input": null
+        },
+        {
+          "source": "crates/vize_maestro/src/document/store/edits/tests.rs",
+          "selector": "document::store::edits::tests::carried_diagnostic_retirement_uses_the_observed_phase",
+          "sha256": "0de1c7447291a30bd607f0546a21ff13280549689a065efafec1ba238b3dffe9",
+          "input": null
+        },
+        {
+          "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
+          "selector": "an unrelated edit retains a semantic TS1xxx diagnostic in the prompt",
+          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "input": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::phase_metadata_never_changes_the_legacy_diagnostic_wire",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/diagnostic_phase.rs",
+          "selector": "lsp_client::diagnostic_phase::tests::uri_remapping_preserves_phase_and_the_legacy_wire_shape",
+          "sha256": "210125c30264da0ece70da28b882499d0e6b9de9920ebcd00a579ccb9a97d51b",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::an_absent_snapshot_source_never_enters_compiler_kind_queries",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": null
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::a_failed_snapshot_source_is_not_an_unsupported_or_clean_result",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": null
+        },
+        {
+          "source": "crates/vize/tests/lsp_plain_script_diagnostics_cli.rs",
+          "selector": "lsp_plain_script_diagnostics_cli::javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id",
+          "sha256": "7ec05e0309fc02c221ea95023dcf5c3d74de5904acd49a4aafb4a7e783ec732e",
+          "input": "tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/plain.js.txt"
+        },
+        {
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics/tests.rs",
+          "selector": "lsp_client::initial_diagnostics::native_diagnostics::tests::invalid_compiler_options_do_not_start_source_or_kind_requests",
+          "sha256": "d6364eebb4ff815a1240a9cc6f7d436cfd56cf13897e35fe040e8cb733c711ff",
+          "input": null
+        },
+        {
+          "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
+          "selector": "prompt filters retain the same stale diagnostic for every checker code spelling",
+          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "input": null
+        }
+      ],
+      "legacyProtocol": {
+        "id": "typechecker/protocol/native-beta-diagnostic-dto-10731",
+        "registrationSha256": "a9523b2a7f5ee5eafe46945c30e0df419ac7244fc69355e29f2967fa11e61d4b",
+        "inputs": [
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.bin",
+            "sha256": "8471ad6dc1a7635dc0a1a5d6298fd8683b16480c26517a9a99c89ee1c8a0cbf8"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.json",
+            "sha256": "40211fca517530cc9421b8e19422c9f0a819e785561f16cb0a0c28f888449f65"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/actual-beta-wire.json",
+            "sha256": "896566d20578fc4a69384b945216b9490d0f04aeecd10753627798a5dada2bbd"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/source-pairs.json",
+            "sha256": "512e95f921e6ec064f281ec00d777cab0df66964d69087384cbb8615c22e21b1"
+          }
+        ],
+        "tests": [
+          {
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::actual_pinned_beta_dto_and_source_reproduce_the_complete_semantic_packet",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::metadata_null_unknown_fields_partial_ranges_and_wrong_source_never_become_clean",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9/tests.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::protocol::protocol9::tests::actual_beta_complete_text_is_independent_of_the_opaque_ast_and_source_id",
+            "sha256": "7d4f62460e61a609d2d0cf3ec2caad0c5b7bade9d71feb292ae9d5ca73599eda",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+            "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+            "input": null
+          },
+          {
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
+            "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55",
+            "input": null
+          }
+        ],
+        "workflow": {
+          "path": ".github/workflows/native-beta-diagnostic-dto.yml",
+          "sha256": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310"
+        }
+      },
+      "qualification": "Source registration only. Old ABI laws and actual A/B controls remain required; this row does not claim runtime or performance acceptance."
+    }
+  ],
+  "nativeDocumentIdentityCases": [
+    {
+      "sourceArchive": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/before-source.json.gz",
+        "sha256": "a710123f99bd11849c195e95e6cfc82e80b614db5e46bed00a3acf899a4e0802"
+      },
+      "id": "typechecker/protocol/native-document-identity-11586",
+      "state": "active",
+      "adapter": "native-document-identity-current-v1",
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false,
+      "sources": [
+        {
+          "path": "crates/vize_canon/src/file_uri.rs",
+          "before": "85b658a23451d91b3254ea7dea1525523873fa189af4cb38bed658ea06465ecc",
+          "after": "72de0209ab526472351cbc7231b673751fc5cf2954c35f8e976f06c9b5f7a279"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/diagnostics/tests.rs",
+          "before": "907e373b4b8c0ab5f15c988172a0ada6713583afb8f3e0a67218df47acb3f346",
+          "after": "f4b9c80098cf6752bfccfa778a3ebaa5ab22e4fa2345501cefccc29bf90add05"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+          "before": "212f73cfa86c49adb57802a4a4966bd1c413aa04598933796650fe59bd804a34",
+          "after": "1dce8ea6f221d7667ec3732f48128f5fd7f90f017afe6574adb7db817cc7cf19"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/code_actions.rs",
+          "before": "4eb5dd2c56cd6b62b4d7fda6db0ac684fd2e1699fdaf92c8df2fd2bfb6ddbb0e",
+          "after": "28e3dd87498943ca5397b6014a47d8c09227811cf9751991788a2d12d8249b0c"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/completion_resolve.rs",
+          "before": "d5a3c9f62fce730757a512f3bb1f51dee04ff01f7df4151b84529ec4b62e54d5",
+          "after": "557ce27091e4c97993d4291d26d522cbd0b1181bd7a74dc4fc317dd1f395e8d6"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+          "before": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590",
+          "after": "f0deb52be436379535f0533b544a8f61439dd102cd6476b5b832c6160bf591eb"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/file_rename.rs",
+          "before": "ce3a3d90d0c2d8288e3fb9a5afacd76ab8f46e4126b45527d7c444170234c491",
+          "after": "d6e11a219d115083151c4b1e652c8eb31ebddea5de00005a1d57b67dbfc0bcd0"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs",
+          "before": "0c477b1f2dbab225f4d63935c687f4eb5ae88017966c857692c739dc463448bd",
+          "after": "1d49bb56070fa17707ca1d91e450366fd9be4c5a5cd28f25dec5c269131a030e"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/editor_lsp/logical_disk_control.rs",
+          "before": "702eee0be336161973b0cf6eae647811fd0b3de144285fca550d0ea64824616e",
+          "after": "05def62b4b305681ec3fb657c061e82dd7926fc5eb0bbab6e8249e74b2193c40"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/materialized_refresh.rs",
+          "before": "b6a564e36abaef32661c2b9c1f656cf792c6fde8d266e7fa90fe6b41c509ad11",
+          "after": "721b84f9ee92e2631a8e3863b1af61c67f6f512da2f13d2d2ca2740e3b2b9b77"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/queries.rs",
+          "before": "e5a0d9f3b3ca1777a4a12e006a03f7976063d1f05a79cfb0a64f2105ce0fdd26",
+          "after": "f141a98a7a4384ee75a27b5c166b8f714d858624f183ac6f34af6156ebe4a7ab"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/session_paths.rs",
+          "before": "5a951b183b8ea5ddbabe8b8478ec067a15d8db0ad39f65e3f29442fd163f49d8",
+          "after": "4f50af4f799f5f9a110e36d544be7da05dfddf9e6d6b9202afb4d0575ef546a1"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/session_storage.rs",
+          "before": "c22e38248e8563c9e0fde72c56fb524889cdcf4e53432de48af0fb024573c712",
+          "after": "258a461d1621f3126a0f6ac9d69c230022277737df420d79ace662d40799025e"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/session.rs",
+          "before": "6aa6ae8b13b7848a2b3713d3ee862fe02ce5473c14d110d6ec2523554db5983b",
+          "after": "bf001b72616f76da43abb874e1ad67e4ca4d05f0eb8475d6353804d9b7dc0628"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/session/logical.rs",
+          "before": "f0e680edbe6fa1818e079358bffbf0f8b535ab9b17a1cc094e24cec26f196301",
+          "after": "9dadeb78e0df654893a9799f990636dead1a06873a0f914eaff153dfa8c520d0"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/session/tests.rs",
+          "before": "c63a6f3da9454ae16ff7a42cb329be15c5ef64bc7b9393dea37aaf2e83b8b4d4",
+          "after": "c87f96951c0b78d30ffd08783fae5874442fc36699f89183a4024bac369ceaea"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/utils.rs",
+          "before": "0fbf7d5f4b76755bbfad3b84a033ebec02fd72fa8ea623ea5889d7cb9eadc2a4",
+          "after": "e4493c0471d0a5d90285870a6533094e47f1573a193d1efb82e9e66452d85173"
+        }
+      ],
+      "inputs": [
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/input.json",
+          "sha256": "1d86f99ba17c621fe27dd57a01b7c1785bd245a19239f471e86effaf422de1ca"
+        },
+        {
+          "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/disk-definition-uri.json",
+          "sha256": "5e4dd65358eb94993d527f789b0595b682a24ca530eb5f6f39eec4fd8038514c"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::diagnostics::tests::materialized_diagnostics_and_queries_mirror_one_document_set",
+          "source": "crates/vize_canon/src/lsp_client/diagnostics/tests.rs",
+          "sha256": "f4b9c80098cf6752bfccfa778a3ebaa5ab22e4fa2345501cefccc29bf90add05",
+          "input": "tests/_fixtures/differential/typechecker/native-document-identity-11586/input.json"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::logical_disk_control::tests::native_disk_definition_uses_only_known_caller_identity",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/logical_disk_control.rs",
+          "sha256": "05def62b4b305681ec3fb657c061e82dd7926fc5eb0bbab6e8249e74b2193c40",
+          "input": "tests/_fixtures/differential/typechecker/native-document-identity-11586/disk-definition-uri.json"
+        }
+      ],
+      "legacyProtocol": {
+        "id": "typechecker/protocol/native-beta-diagnostic-dto-10731",
+        "registrationSha256": "a9523b2a7f5ee5eafe46945c30e0df419ac7244fc69355e29f2967fa11e61d4b",
+        "inputs": [
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.bin",
+            "sha256": "8471ad6dc1a7635dc0a1a5d6298fd8683b16480c26517a9a99c89ee1c8a0cbf8"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.json",
+            "sha256": "40211fca517530cc9421b8e19422c9f0a819e785561f16cb0a0c28f888449f65"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/actual-beta-wire.json",
+            "sha256": "896566d20578fc4a69384b945216b9490d0f04aeecd10753627798a5dada2bbd"
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/source-pairs.json",
+            "sha256": "512e95f921e6ec064f281ec00d777cab0df66964d69087384cbb8615c22e21b1"
+          }
+        ],
+        "tests": [
+          {
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::actual_pinned_beta_dto_and_source_reproduce_the_complete_semantic_packet",
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::metadata_null_unknown_fields_partial_ranges_and_wrong_source_never_become_clean",
+            "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+            "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558",
+            "input": null
+          },
+          {
+            "selector": "lsp_client::editor_lsp::snapshot_source::protocol::protocol9::tests::actual_beta_complete_text_is_independent_of_the_opaque_ast_and_source_id",
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9/tests.rs",
+            "sha256": "7d4f62460e61a609d2d0cf3ec2caad0c5b7bade9d71feb292ae9d5ca73599eda",
+            "input": null
+          },
+          {
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+            "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+            "input": null
+          },
+          {
+            "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
+            "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+            "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55",
+            "input": null
+          }
+        ],
+        "workflow": {
+          "path": ".github/workflows/native-beta-diagnostic-dto.yml",
+          "sha256": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310"
+        }
+      }
+    }
+  ],
+  "nativeDocumentIdentitySuccessors": [
+    {
+      "id": "typechecker/protocol/native-document-identity-review-11586",
+      "state": "active",
+      "source": "e3c055bbbe68d4d03f38d116a8a803e96610327f",
+      "tree": "8f00424ff6be4b24eb2953f58e1c119506b6946d",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/current-source.json.gz",
+        "sha256": "ab03fe7250b47fa09c5ce71ba68f292d92b68342a2ca4d3ffe90f46b8c91cb12"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
+    },
+    {
+      "id": "typechecker/protocol/native-document-open-owners-11586",
+      "state": "active",
+      "source": "d7f0daf8a1516afe27fcc79e665a94b3b3bf02e4",
+      "tree": "ecd9ff968a2d164a04b0060184220f68a88cc678",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/open-owner-source.json.gz",
+        "sha256": "582f0bb255321010869031568d814713b5d0829a4d67690eed13b7347ed72924"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
+    },
+    {
+      "id": "typechecker/protocol/native-document-project-imports-11586",
+      "state": "active",
+      "source": "622262a7448d637ca2f10888c168615c29c950f9",
+      "tree": "2c4e59b254e78e3b1b7578b9a463c38b3f3665ca",
+      "image": {
+        "path": "tests/_fixtures/differential/typechecker/native-document-identity-11586/project-import-source.json.gz",
+        "sha256": "20bd121b07a9ad03a98d69e2ece9f217702425e79afbb29276cb0b5ef34d1eca"
+      },
+      "targets": [
+        "native-document-identity"
+      ],
+      "nativeQualification": false
     }
   ]
 }

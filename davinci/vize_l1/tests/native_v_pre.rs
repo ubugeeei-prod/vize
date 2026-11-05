@@ -3,7 +3,9 @@
 #![cfg(test)]
 
 use vize_l0::{Allocator, Span, String, cstr};
-use vize_l1::markup::{DirectiveNameError, parse_component, parse_component_with_authored};
+use vize_l1::markup::{
+    ArgSyntax, DirectiveSyntax, VueDirectives, parse_component, parse_component_with_authored,
+};
 use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 fn interpolations<'a>(children: &[SurfaceChild<'a>]) -> Vec<&'a str> {
@@ -125,21 +127,21 @@ fn matching_ancestors_stray_closes_void_and_self_closing_tags_restore_the_owner_
 }
 
 #[test]
-fn implicit_interactive_recovery_and_foreign_namespaces_share_builder_scope() {
+fn lexical_scope_survives_interactive_recovery_and_foreign_namespaces() {
     for (source, expected, authored) in [
         (
             "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
-            vec!["after", "tail", "end"],
+            vec!["end"],
             true,
         ),
         (
             "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
-            vec!["after", "tail", "end"],
+            vec!["end"],
             true,
         ),
         (
             "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}",
-            vec!["tail", "end"],
+            vec!["end"],
             true,
         ),
         (
@@ -154,14 +156,12 @@ fn implicit_interactive_recovery_and_foreign_namespaces_share_builder_scope() {
         ),
         (
             "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
-            vec!["after", "tail"],
+            vec!["tail"],
             true,
         ),
         (
             "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
-            // This close claims the old, implicitly closed span. The new
-            // shallower span remains open until </section>, including tail.
-            vec![],
+            vec!["tail"],
             true,
         ),
     ] {
@@ -183,7 +183,7 @@ fn implicit_interactive_recovery_and_foreign_namespaces_share_builder_scope() {
 }
 
 #[test]
-fn over_budget_heads_retain_typed_unsupported_facts_and_subsequent_nodes() {
+fn deep_pre_heads_retain_typed_vue_arguments_and_subsequent_nodes() {
     let opens: String = (0..64)
         .map(|i| if i % 2 == 0 { '(' } else { '[' })
         .collect();
@@ -199,19 +199,15 @@ fn over_budget_heads_retain_typed_unsupported_facts_and_subsequent_nodes() {
     let allocator = Allocator::new();
     let parsed = parse_component(&allocator, &source).unwrap();
     let start = source.find(head.as_str()).unwrap() as u32;
-    assert_eq!(parsed.unsupported.len(), 1);
+    assert!(parsed.unsupported.is_empty());
     assert_eq!(
-        parsed.unsupported[0].span,
-        Span::new(start, start + head.len() as u32)
+        VueDirectives.decompose(&head, start).unwrap().unwrap().arg,
+        Some(ArgSyntax::Dynamic(Span::new(
+            start + 7,
+            start + head.len() as u32 - 1
+        )))
     );
-    assert_eq!(
-        parsed.unsupported[0].error,
-        DirectiveNameError::NestingLimit
-    );
-    assert_eq!(
-        interpolations(&parsed.tree.children),
-        [" unresolved ", " tail "]
-    );
+    assert_eq!(interpolations(&parsed.tree.children), [" tail "]);
     assert_eq!(check_fidelity(&parsed.tree), Ok(()));
     let SurfaceChild::Element(div) = &parsed.tree.children[1] else {
         panic!("div")
@@ -228,7 +224,7 @@ fn over_budget_heads_retain_typed_unsupported_facts_and_subsequent_nodes() {
 }
 
 #[test]
-fn same_tag_pre_ignores_unrelated_over_budget_heads_in_both_orders_and_keeps_prior_facts() {
+fn same_tag_pre_ignores_unrelated_deep_heads_in_both_orders_and_keeps_prior_facts() {
     let opens: String = (0..64)
         .map(|i| if i % 2 == 0 { '(' } else { '[' })
         .collect();
@@ -267,14 +263,13 @@ fn same_tag_pre_ignores_unrelated_over_budget_heads_in_both_orders_and_keeps_pri
         );
         let parsed = parse_component(&allocator, &source).unwrap();
         let start = source.find(head.as_str()).unwrap() as u32;
-        assert_eq!(parsed.unsupported.len(), 1, "{source}");
+        assert!(parsed.unsupported.is_empty(), "{source}");
         assert_eq!(
-            parsed.unsupported[0].span,
-            Span::new(start, start + head.len() as u32)
-        );
-        assert_eq!(
-            parsed.unsupported[0].error,
-            DirectiveNameError::NestingLimit
+            VueDirectives.decompose(&head, start).unwrap().unwrap().arg,
+            Some(ArgSyntax::Dynamic(Span::new(
+                start + 8,
+                start + head.len() as u32 - 1
+            )))
         );
         assert_eq!(
             interpolations(&parsed.tree.children),
@@ -290,16 +285,12 @@ fn same_tag_pre_ignores_unrelated_over_budget_heads_in_both_orders_and_keeps_pri
             parsed.unsupported.is_empty(),
             "recovered independent owner: {source}"
         );
-        assert_eq!(
-            interpolations(&parsed.tree.children),
-            [" tail ", " end "],
-            "{source}"
-        );
+        assert_eq!(interpolations(&parsed.tree.children), [" end "], "{source}");
         assert_eq!(check_fidelity(&parsed.tree), Ok(()));
         let authored = parsed
             .authored
             .expect("interactive recovery retains authored projection");
-        assert_eq!(interpolations(&authored.children), [" tail ", " end "]);
+        assert_eq!(interpolations(&authored.children), [" end "]);
         assert_eq!(check_fidelity(&authored), Ok(()));
     }
 }

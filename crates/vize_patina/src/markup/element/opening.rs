@@ -158,7 +158,9 @@ impl<'a> MarkupElement<'a> {
 
     pub(in crate::markup) fn walk_l2_items(&self, visitor: &mut impl FnMut(L2Item<'a>)) {
         match self.inner {
-            MarkupElementInner::L2 { op, doc, surface } => {
+            MarkupElementInner::L2 {
+                op, doc, surface, ..
+            } => {
                 walk_items(doc, op.attributes(), op.bindings(), surface, visitor);
             }
             MarkupElementInner::L2Carrier { element, doc, .. } => {

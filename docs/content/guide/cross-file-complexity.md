@@ -9,8 +9,8 @@ Use complexity reports to find templates that are hard to change or review. Star
 [enable the lint rule](#enable-lint) and run `vp run lint`.
 Use the numeric reference below when investigating a particular score.
 
-Vize calculates complexity from retained expression ASTs, lowered template control regions, and
-resolved project facts. It does not count tokens in source text or estimate runtime execution time.
+Vize calculates complexity from template branches and expressions, together with relationships
+between components. It does not count tokens in source text or estimate runtime execution time.
 The report separates three questions:
 
 | View                  | Question                                                                                   | Used by                                |

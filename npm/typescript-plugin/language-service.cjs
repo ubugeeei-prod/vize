@@ -66,6 +66,7 @@ function createMappedLanguageService(ts, service, support) {
   function query(method, feature, map, combine = false) {
     if (typeof service[method] !== "function") return;
     proxy[method] = (file, position, ...args) => {
+      support?.ensure?.(file);
       const results = positions(file, position, feature).map((offset) =>
         map(service[method](file, offset, ...args), file),
       );
@@ -179,6 +180,7 @@ function createMappedLanguageService(ts, service, support) {
     "getSuggestionDiagnostics",
   ]) {
     proxy[method] = (file) => {
+      if (isSfc(file)) support?.ensure?.(file);
       const document = get(file);
       if (!document)
         return service[method](file).map((value) => ({
@@ -327,8 +329,53 @@ function createMappedLanguageService(ts, service, support) {
     "getEncodedSemanticClassifications",
   ]) {
     if (service[method])
-      proxy[method] = (file, ...args) =>
-        isSfc(file) ? { spans: [], endOfLineState: 0 } : service[method](file, ...args);
+      proxy[method] = (file, range, ...args) => {
+        if (!isSfc(file)) return service[method](file, range, ...args);
+        support?.ensure?.(file);
+        const document = get(file);
+        const feature = shared.SemanticTokens;
+        const end = range.start + range.length;
+        let generatedStart = Infinity,
+          generatedEnd = 0;
+        for (const row of document?.projection?.mappings || []) {
+          if (!(row[5] & feature)) continue;
+          const start = Math.max(range.start, row[2]);
+          const stop = Math.min(end, row[2] + row[3]);
+          if (start >= stop) continue;
+          generatedStart = Math.min(
+            generatedStart,
+            row[4] === 0 ? row[0] + start - row[2] : row[0],
+          );
+          generatedEnd = Math.max(
+            generatedEnd,
+            row[4] === 0 ? row[0] + stop - row[2] : row[0] + row[1],
+          );
+        }
+        if (generatedStart === Infinity)
+          return { spans: [], endOfLineState: ts.EndOfLineState.None };
+        const result = service[method](
+          file,
+          { start: generatedStart, length: generatedEnd - generatedStart },
+          ...args,
+        );
+        const classified = [];
+        for (let index = 0; index < result.spans.length; index += 3) {
+          const mapped = authoredProjectionSpan(
+            document,
+            {
+              start: result.spans[index],
+              length: result.spans[index + 1],
+            },
+            feature,
+          );
+          if (!mapped) continue;
+          const start = Math.max(range.start, mapped.start);
+          const stop = Math.min(end, mapped.start + mapped.length);
+          if (start < stop) classified.push([start, stop - start, result.spans[index + 2]]);
+        }
+        classified.sort((left, right) => left[0] - right[0]);
+        return { ...result, spans: unique(classified).flat() };
+      };
   }
   return proxy;
 }
@@ -343,7 +390,9 @@ function unique(values) {
 }
 function authoredSpan(support, file, value, feature, edit = false) {
   if (!value) return value;
-  const document = support?.get(file);
+  return authoredProjectionSpan(support?.get(file), value, feature, edit);
+}
+function authoredProjectionSpan(document, value, feature, edit = false) {
   if (!document) return value;
   if (!document.projection) return undefined;
   const rows = document.projection.mappings.filter(

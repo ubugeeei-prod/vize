@@ -1,18 +1,37 @@
 ---
 title: "nuxt/nuxt-config-keys-order"
+description: "Nuxt 設定のプロパティを推奨順に並べます。"
 ---
 
 # `nuxt/nuxt-config-keys-order`
 
 Nuxt 設定のプロパティを推奨順に並べます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `nuxt` | あり | なし |
 
-既定の重大度: `error`  
-プリセット: `nuxt`  
-自動修正: 対応している診断で利用できます  
-適用範囲: Nuxt 設定ファイル（nuxt.config.ts）  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Nuxt 設定ファイル（nuxt.config.ts）。
+
+## 悪い例
+
+設定内で `ssr` が `modules` より先に置かれ、このルールが推奨する Nuxt 設定キーの順序が逆になっています。
+
+`nuxt.config.ts`
+
+```ts annotate="remove:1"
+export default defineNuxtConfig({ ssr: true, modules: [] });
+```
+
+## 良い例
+
+`modules` を `ssr` より前に移し、各値を保ったまま指定の順序にそろえます。変更するのは配置であり、設定値の意味ではありません。
+
+`nuxt.config.ts`
+
+```ts annotate="add:1"
+export default defineNuxtConfig({ modules: [], ssr: true });
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-設定内で `ssr` が `modules` より先に置かれ、このルールが推奨する Nuxt 設定キーの順序が逆になっています。
-
-`nuxt.config.ts`
-
-```ts
-export default defineNuxtConfig({ ssr: true, modules: [] });
-```
-
-## 良い
-
-`modules` を `ssr` より前に移し、各値を保ったまま指定の順序にそろえます。変更するのは配置であり、設定値の意味ではありません。
-
-`nuxt.config.ts`
-
-```ts
-export default defineNuxtConfig({ modules: [], ssr: true });
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24)

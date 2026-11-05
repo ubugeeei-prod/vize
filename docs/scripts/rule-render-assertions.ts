@@ -1,29 +1,21 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
 import { verifyRenderedRuleIndentation } from "./rule-indentation-render-assertions.ts";
-import {
-  expectedVueRulePackets,
-  verifyRenderedVueRulePackets,
-} from "./vue-rule-render-assertions.ts";
-import {
-  expectedCategoryPackets,
-  verifyRenderedCategoryPackets,
-} from "./category-rule-render-assertions.ts";
-import { categoryFiles } from "./rules/catalogue-routes.ts";
-import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
-import { verifyJapaneseRuleEditorial } from "./ja-rule-editorial-render-assertions.ts";
-import {
-  expectedRuleOverview,
-  verifyRenderedRuleOverview,
-} from "./all-rules-overview-render-assertions.ts";
+import { groupIncludes, ruleGroups } from "./rules/rule-groups.ts";
+import { ruleHeadings } from "./rules/rule-page.ts";
+
+const root = resolve(import.meta.dirname, "../..");
+const locales = ["en", "ja", "zh-CN", "pt-BR", "fr"] as const;
+type Locale = (typeof locales)[number];
+const prefix = (locale: Locale) => (locale === "en" ? "" : `${locale}/`);
 
 export const ruleRenderRoutes = [
+  "/rules",
   "/rules/all",
-  "/rules/vue",
-  ...categoryFiles.map((file) => `/rules/${file}`),
+  ...ruleGroups.map((group) => `/rules/${group}`),
   "/rules/cross-file",
   "/rules/reference/script-define-props-destructuring",
   "/rules/reference/a11y-form-control-has-label",
@@ -31,137 +23,255 @@ export const ruleRenderRoutes = [
   "/rules/project/vize-croquis-cf-array-mutation",
   "/rules/project/vize-croquis-cf-circular-reactive-dependency",
 ];
-const root = resolve(import.meta.dirname, "../..");
 
-type RuleRouteKind = "vue" | "category" | "overview" | "references";
+interface EditorialCase {
+  case: string;
+  rule: string;
+  section: "purpose" | "bad" | "good";
+  before: string;
+  after: string;
+}
+const editorial = JSON.parse(
+  readFileSync(resolve(root, "tests/_fixtures/docs-ja-rule-editorial.json"), "utf8"),
+) as { originalSourceSha: string; cases: EditorialCase[] };
+const editorialText = (markdown: string) =>
+  markdown
+    .replace(/`([^`]+)`/g, "$1")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replace(/\s+/g, " ")
+    .trim();
 
-export function ruleRouteKind(route: string): RuleRouteKind | null {
-  if (/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/vue$/.test(route)) return "vue";
-  const category = route.match(/^\/(ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/([^/]+)$/);
-  if (
-    category &&
-    (categoryFiles.includes(category[2] as (typeof categoryFiles)[number]) ||
-      category[2] === "cross-file" ||
-      (category[2] in catalogueSubgroups &&
-        (!category[1] || (category[1] === "ja/" && catalogueSubgroups[category[2]].jaTitle))))
-  )
-    return "category";
-  if (!/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/all$/.test(route)) return null;
-  return /^\/(?:ja\/)?rules\/all$/.test(route) ? "references" : "overview";
+/** Which rule index a route renders, if any. */
+export function ruleRouteKind(route: string) {
+  return routeOf(route)?.kind ?? null;
 }
 
-export function expectedRuleReferences(route: string) {
-  const ja = route.startsWith("/ja/");
-  const locale = ja ? "ja/" : "";
-  const expected = ["reference", "project"].flatMap((section) =>
-    readdirSync(resolve(root, `docs/content/${locale}rules/${section}`)).map((file) => {
-      const source = readFileSync(
-        resolve(root, `docs/content/${locale}rules/${section}/${file}`),
-        "utf8",
-      );
-      for (const heading of ja ? ["悪い", "良い"] : ["Bad", "Good"]) {
-        const example = source.split(`## ${heading}\n`)[1]?.split("\n## ")[0];
-        assert.match(example ?? "", /```(?:vue|ts|html)\n/, `${file}: actual ${heading} source`);
-      }
-      const graphs = [...source.matchAll(/```text\n([\s\S]*?)\n```/g)];
-      if (file === "vize-croquis-cf-circular-reactive-dependency.md") {
-        assert.equal(graphs.length, 2, "both retained Bad/Good graph packets are rendered");
-        assert.match(
-          source,
-          ja
-            ? /例の検証状況: `illustrative-source-pair`/
-            : /Example qualification: `illustrative-source-pair`/,
-        );
-      }
-      const id = source.match(/^# `([^`]+)`/m)?.[1];
-      assert.ok(id, `${file}: authored rule heading`);
-      return {
-        route: `/${locale}rules/${section}/${file.replace(/\.md$/, "")}`,
-        id,
-        code: [...source.matchAll(/```\w+\n([\s\S]*?)\n```/g)].map((match) => match[1]),
-        sourceSha256: createHash("sha256").update(source).digest("hex"),
-        graphBlocks: graphs.length,
-      };
-    }),
+function routeOf(route: string) {
+  const match = route.match(/^\/(?:(ja|zh-CN|pt-BR|fr)\/)?rules\/([^/]+)$/);
+  if (!match) return null;
+  const locale = (match[1] ?? "en") as Locale;
+  const page = match[2];
+  if (page === "all") return { kind: "all" as const, locale, page };
+  if (page === "cross-file" || ruleGroups.includes(page))
+    return { kind: "index" as const, locale, page };
+  return null;
+}
+
+const fences = (source: string) =>
+  [...source.matchAll(/^```[^\n]*\n([\s\S]*?)\n```$/gm)].map((match) => match[1]);
+/** The first fenced block after a heading: the executed Bad or Good source. */
+function exampleAfter(source: string, heading: string) {
+  const section = source.split(`\n## ${heading}\n`)[1];
+  const code = section?.match(/^```[^\n]*\n([\s\S]*?)\n```$/m)?.[1];
+  assert.ok(code !== undefined, `missing ${heading} example`);
+  return code;
+}
+
+/** Every rule page of one locale, with the code the English linter test executes. */
+export function expectedRulePages(locale: Locale) {
+  const pages = ["reference", "project"].flatMap((section) =>
+    readdirSync(resolve(root, `docs/content/rules/${section}`))
+      .sort()
+      .map((file) => {
+        const read = (at: Locale) =>
+          readFileSync(resolve(root, `docs/content/${prefix(at)}rules/${section}/${file}`), "utf8");
+        const source = read(locale);
+        const english = read("en");
+        const id = source.match(/^# `([^`]+)`/m)?.[1];
+        assert.equal(id, english.match(/^# `([^`]+)`/m)?.[1], `${locale} ${file}: rule identity`);
+        const headings = ruleHeadings[locale];
+        for (const [key, heading] of [
+          ["bad", headings.bad],
+          ["good", headings.good],
+        ] as const)
+          assert.equal(
+            exampleAfter(source, heading),
+            exampleAfter(english, key === "bad" ? "Bad" : "Good"),
+            `${locale} ${file}: ${key} source matches the executed English example`,
+          );
+        return {
+          route: `/${prefix(locale)}rules/${section}/${file.replace(/\.md$/, "")}`,
+          id: id!,
+          code: fences(source),
+          sourceSha256: createHash("sha256").update(source).digest("hex"),
+        };
+      }),
   );
-  assert.equal(expected.length, 333, "267 source rules plus 66 project entries per locale");
-  return { ja, locale, expected };
+  assert.equal(pages.length, 333, "267 single-file rules plus 66 project rules per locale");
+  return pages;
+}
+
+/** The rule pages an index lists, from its committed Markdown. */
+function expectedIndexLinks(locale: Locale, page: string) {
+  const source = readFileSync(
+    resolve(root, `docs/content/${prefix(locale)}rules/${page}.md`),
+    "utf8",
+  );
+  const linked = [
+    ...source.matchAll(
+      /^\| <span id="[^"]+"><\/span>\[`([^`]+)`\]\(\.\/(reference|project)\/([^)]+)\.md\)/gm,
+    ),
+  ].map(([, id, section, slug]) => ({ id, section, slug }));
+  for (const { section, slug } of linked)
+    assert.ok(
+      existsSync(resolve(root, `docs/content/${prefix(locale)}rules/${section}/${slug}.md`)),
+      `${locale} ${page}: ${slug} has a page`,
+    );
+  const ids = (section: string) =>
+    readdirSync(resolve(root, `docs/content/rules/${section}`)).map(
+      (file) =>
+        readFileSync(resolve(root, `docs/content/rules/${section}/${file}`), "utf8").match(
+          /^# `([^`]+)`/m,
+        )![1],
+    );
+  const expected =
+    page === "all"
+      ? [...ids("reference"), ...ids("project")]
+      : page === "cross-file"
+        ? ids("project")
+        : ids("reference").filter((id) => groupIncludes(page, id));
+  assert.deepEqual(
+    linked.map(({ id }) => id).sort(),
+    [...expected].sort(),
+    `${locale} ${page}: the index lists exactly its rules`,
+  );
+  assert.doesNotMatch(
+    source,
+    new RegExp(`\\[${ruleHeadings[locale].bad}\\]\\(#`),
+    `${locale} ${page}: no Bad/Good jump-link columns`,
+  );
+  return linked;
 }
 
 /** The review's source-side rule pins, for the merge queue's browser-free run. */
 export function verifyRuleSources(route: string) {
-  const kind = ruleRouteKind(route);
-  if (kind === "vue") expectedVueRulePackets(route);
-  if (kind === "category") expectedCategoryPackets(route);
-  if (kind === "overview" || kind === "references") expectedRuleOverview(route);
-  if (kind === "references") expectedRuleReferences(route);
+  const target = routeOf(route);
+  if (!target) return;
+  expectedIndexLinks(target.locale, target.page);
+  if (target.kind === "all") expectedRulePages(target.locale);
+}
+
+function rulePageRoute(locale: Locale, id: string) {
+  const slug = id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+  const section = existsSync(resolve(root, `docs/content/rules/project/${slug}.md`))
+    ? "project"
+    : "reference";
+  return `/${prefix(locale)}rules/${section}/${slug}`;
+}
+
+async function verifyJapaneseEditorial(page: Page) {
+  const cases = editorial.cases.map((entry) => ({
+    ...entry,
+    route: rulePageRoute("ja", entry.rule),
+  }));
+  const actual = await page.evaluate(
+    async ({ cases, headings }) =>
+      Promise.all(
+        cases.map(async (entry) => {
+          const response = await fetch(`${entry.route}/index.html`);
+          const document = new DOMParser().parseFromString(await response.text(), "text/html");
+          const anchor =
+            entry.section === "purpose"
+              ? document.querySelector(".content h1")
+              : [...document.querySelectorAll(".content h2")].find(
+                  (heading) =>
+                    heading.textContent?.trim() ===
+                    (entry.section === "bad" ? headings.bad : headings.good),
+                );
+          let next = anchor?.nextElementSibling;
+          while (next && !(next instanceof HTMLParagraphElement)) next = next.nextElementSibling;
+          return {
+            case: entry.case,
+            status: response.status,
+            text: next?.textContent?.replace(/\s+/g, " ").trim() ?? "",
+          };
+        }),
+      ),
+    { cases, headings: ruleHeadings.ja },
+  );
+  for (const [index, entry] of cases.entries()) {
+    assert.equal(actual[index].status, 200, entry.route);
+    assert.equal(actual[index].text, editorialText(entry.after), `${entry.rule}: ${entry.section}`);
+    assert.notEqual(actual[index].text, editorialText(entry.before), `${entry.rule}: old wording`);
+  }
+  return {
+    originalSourceSha: editorial.originalSourceSha,
+    paragraphs: actual.map(({ case: id, text }) => ({
+      case: id,
+      wholeTextSha256: createHash("sha256").update(text).digest("hex"),
+    })),
+  };
 }
 
 export async function verifyRenderedRulePackets(page: Page, route: string) {
-  const japaneseEditorial = await verifyJapaneseRuleEditorial(page, route);
-  const kind = ruleRouteKind(route);
-  if (kind === "vue")
-    return { ...(await verifyRenderedVueRulePackets(page, route)), japaneseEditorial };
-  if (kind === "category")
-    return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
-  if (!kind) return null;
-  const overview = await verifyRenderedRuleOverview(page, route);
-  if (kind === "overview") return { overview, japaneseEditorial };
-  const { ja, locale, expected } = expectedRuleReferences(route);
-  const indentation = await verifyRenderedRuleIndentation(page, locale);
+  const target = routeOf(route);
+  if (!target) return null;
+  const links = expectedIndexLinks(target.locale, target.page);
+  const rendered = await page.evaluate(() =>
+    [...document.querySelectorAll(".content table a[href]")]
+      .map((link) => new URL(link.getAttribute("href")!, location.href).pathname)
+      .filter((path) => /\/rules\/(?:reference|project)\//.test(path)),
+  );
+  assert.equal(rendered.length, links.length, `${route}: every listed rule renders a link`);
+  const statuses = await page.evaluate(
+    async (paths) => Promise.all(paths.map(async (path) => (await fetch(path)).status)),
+    rendered,
+  );
+  assert.deepEqual(new Set(statuses), new Set([200]), `${route}: every rule link resolves`);
+  if (target.kind === "index") return { route, links: rendered.length };
+
+  const expected = expectedRulePages(target.locale);
+  const headings = ruleHeadings[target.locale];
   const receipts = [];
   for (let offset = 0; offset < expected.length; offset += 12) {
     const packet = expected.slice(offset, offset + 12);
     const actual = await page.evaluate(
-      async ({ packet, ja }) => {
-        return Promise.all(
+      async ({ packet, headings }) =>
+        Promise.all(
           packet.map(async ({ route }) => {
             const response = await fetch(`${route}/index.html`);
             const document = new DOMParser().parseFromString(await response.text(), "text/html");
+            const h2 = [...document.querySelectorAll(".content h2")].map((heading) =>
+              heading.textContent?.trim(),
+            );
             return {
-              route,
               status: response.status,
               id: document.querySelector("h1")?.textContent?.trim(),
-              bad: Boolean(document.getElementById(ja ? "悪い" : "bad")),
-              good: Boolean(document.getElementById(ja ? "良い" : "good")),
-              code: [...document.querySelectorAll(".content pre code")].map((element) => {
-                const text = element.textContent;
-                if (text === null) throw new Error(`Missing rendered rule code ${route}`);
-                return text.replace(/\n$/, "");
-              }),
+              bad: h2.includes(headings.bad),
+              good: h2.includes(headings.good),
+              code: [...document.querySelectorAll(".content pre code")]
+                .filter(
+                  (element) =>
+                    !element.closest(".vize-command-tabs") ||
+                    element.hasAttribute("data-command-tabs-original"),
+                )
+                .map((element) => (element.textContent ?? "").replace(/\n$/, "")),
             };
           }),
-        );
-      },
-      { packet, ja },
+        ),
+      { packet, headings },
     );
-    for (let index = 0; index < packet.length; index += 1) {
-      const authored = packet[index];
-      const rendered = actual[index];
-      assert.equal(rendered.status, 200, authored.route);
-      assert.equal(rendered.id, authored.id, authored.route);
-      assert.equal(rendered.bad, true, `${authored.route}: Bad anchor`);
-      assert.equal(rendered.good, true, `${authored.route}: Good anchor`);
-      assert.deepEqual(
-        rendered.code,
-        authored.code,
-        `${authored.route}: whole authored code packets`,
-      );
+    for (const [index, authored] of packet.entries()) {
+      const page_ = actual[index];
+      assert.equal(page_.status, 200, authored.route);
+      assert.equal(page_.id, authored.id, authored.route);
+      assert.equal(page_.bad, true, `${authored.route}: Bad heading`);
+      assert.equal(page_.good, true, `${authored.route}: Good heading`);
+      assert.deepEqual(page_.code, authored.code, `${authored.route}: whole authored code`);
       receipts.push({
         route: authored.route,
         sourceSha256: authored.sourceSha256,
-        wholeCodeSha256: createHash("sha256").update(JSON.stringify(rendered.code)).digest("hex"),
-        codeBlocks: rendered.code.length,
-        graphBlocks: authored.graphBlocks,
+        wholeCodeSha256: createHash("sha256").update(JSON.stringify(page_.code)).digest("hex"),
+        codeBlocks: page_.code.length,
       });
     }
   }
   return {
-    locale: locale || "en",
+    locale: target.locale,
     pages: receipts.length,
     receipts,
-    indentation,
-    japaneseEditorial,
-    overview,
+    indentation: await verifyRenderedRuleIndentation(page, prefix(target.locale), headings),
+    japaneseEditorial: target.locale === "ja" ? await verifyJapaneseEditorial(page) : undefined,
   };
 }

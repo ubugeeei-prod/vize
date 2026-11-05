@@ -1,18 +1,37 @@
 ---
 title: "a11y/role-has-required-aria-props"
+description: "ARIA role が必要とする属性を指定します。"
 ---
 
 # `a11y/role-has-required-aria-props`
 
 ARIA role が必要とする属性を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+checkbox の role に、選択状態を示す aria-checked がありません。
+
+```vue annotate="remove:2"
+<template>
+  <span role="checkbox">Receive updates</span>
+</template>
+```
+
+## 良い例
+
+`aria-checked="false"` を追加し、checkbox に必要な状態を指定します。
+
+```vue annotate="add:2"
+<template>
+  <span role="checkbox" aria-checked="false">Receive updates</span>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-checkbox の role に、選択状態を示す aria-checked がありません。
-
-```vue
-<template>
-  <span role="checkbox">Receive updates</span>
-</template>
-```
-
-## 良い
-
-`aria-checked="false"` を追加し、checkbox に必要な状態を指定します。
-
-```vue
-<template>
-  <span role="checkbox" aria-checked="false">Receive updates</span>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L37) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L37)

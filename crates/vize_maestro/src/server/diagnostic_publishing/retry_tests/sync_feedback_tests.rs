@@ -287,7 +287,7 @@ fn carried_type_error(line: u32) -> Diagnostic {
 
 fn carry_type_error(fixture: &Fixture) {
     let family = NativeFamily {
-        diagnostics: vec![carried_type_error(3)],
+        diagnostics: vec![carried_type_error(3).into()],
         owns_script_syntax: true,
     };
     let documents = &fixture.service.inner().state.documents;

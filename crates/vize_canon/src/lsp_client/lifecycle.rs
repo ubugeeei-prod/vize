@@ -243,7 +243,7 @@ impl CorsaProjectClient {
             Err(CorsaError::Unsupported(_)) => {
                 self.overlay_api_disabled = true;
                 for (uri, _) in documents {
-                    self.document_texts.remove(*uri);
+                    self.document_texts.remove(uri);
                     self.overlay_versions.remove(*uri);
                 }
                 self.synchronize_materialized_project_documents(documents)

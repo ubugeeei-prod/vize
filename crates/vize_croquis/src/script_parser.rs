@@ -12,7 +12,6 @@
 //!
 //! - [`parse`] - Public parse entry points (script setup / plain)
 //! - [`result`] - [`ScriptParseResult`] and option/metadata types
-//! - [`globals`] - Global-name tables and scope hierarchy setup
 //! - [`process`] - Statement and variable processing
 //! - [`extract`] - Props/emits extraction and reactivity detection
 //! - [`walk`] - Scope walking functions
@@ -22,7 +21,6 @@ mod define_art;
 mod execution_facts;
 mod expose;
 mod extract;
-mod globals;
 mod module_exports;
 mod module_reads;
 mod occurrences;
@@ -125,3 +123,6 @@ mod reexecuted_map_tests;
 
 #[cfg(test)]
 mod value_binding_origins_tests;
+
+#[cfg(test)]
+mod value_binding_origins_callable_tests;

@@ -1,18 +1,37 @@
 ---
 title: "nuxt/no-nuxt-config-test-key"
+description: "Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。"
 ---
 
 # `nuxt/no-nuxt-config-test-key`
 
 Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `nuxt` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Nuxt 設定ファイル（nuxt.config.ts）  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Nuxt 設定ファイル（nuxt.config.ts）。
+
+## 悪い例
+
+エクスポートした Nuxt 設定で `test` キーに真偽値 `true` を指定しており、このルールが拒否する旧形式の設定です。
+
+`nuxt.config.ts`
+
+```ts annotate="remove:1"
+export default defineNuxtConfig({ test: true });
+```
+
+## 良い例
+
+空の設定にすることで、真偽値の `test` プロパティを取り除きます。テスト設定のオブジェクトまで禁止する例ではありません。
+
+`nuxt.config.ts`
+
+```ts annotate="add:1"
+export default defineNuxtConfig({});
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-エクスポートした Nuxt 設定で `test` キーに真偽値 `true` を指定しており、このルールが拒否する旧形式の設定です。
-
-`nuxt.config.ts`
-
-```ts
-export default defineNuxtConfig({ test: true });
-```
-
-## 良い
-
-空の設定にすることで、真偽値の `test` プロパティを取り除きます。テスト設定のオブジェクトまで禁止する例ではありません。
-
-`nuxt.config.ts`
-
-```ts
-export default defineNuxtConfig({});
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [全ルール](../all.md)
+- [エコシステムと Nuxt のルール](../ecosystem.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16)

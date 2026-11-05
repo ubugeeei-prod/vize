@@ -1,18 +1,41 @@
 ---
 title: "musea/require-component"
+description: "Require component attribute in <art> block."
 ---
 
 # `musea/require-component`
 
-Require component attribute in &lt;art&gt; block
+Require component attribute in &lt;art&gt; block.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Musea .art.vue art, variant, and style blocks.
+
+## Bad
+
+The art block supplies a title but does not identify the component being previewed.
+
+```vue annotate="remove:1"
+<art title="Button">
+  <variant name="primary" />
+</art>
+```
+
+## Good
+
+defineArt supplies ./Button.vue as the component for the art block.
+
+```vue annotate="add:1,2,3,4,5"
+<script setup>
+defineArt("./Button.vue", { title: "Button" });
+</script>
+
+<art>
+  <variant name="primary" />
+</art>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The art block supplies a title but does not identify the component being previewed.
-
-```vue
-<art title="Button">
-  <variant name="primary" />
-</art>
-```
-
-## Good
-
-defineArt supplies ./Button.vue as the component for the art block.
-
-```vue
-<script setup>
-defineArt("./Button.vue", { title: "Button" });
-</script>
-
-<art>
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11)

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "native-disk-definition-uri-11586",
+  "range": {
+    "start": { "line": 0, "character": 13 },
+    "end": { "line": 0, "character": 18 }
+  },
+  "rejects": [
+    "missing-definition",
+    "null-definition",
+    "missing-entry",
+    "extra-entry",
+    "missing-uri",
+    "foreign-target",
+    "same-name-other-file",
+    "wrong-caller-target"
+  ]
+}

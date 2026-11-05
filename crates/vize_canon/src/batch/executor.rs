@@ -93,6 +93,11 @@ impl CorsaExecutor {
         self.checker_count.unwrap_or_else(cli::checker_count)
     }
 
+    /// Width for a program that is checked unsharded (see `unsharded_checker_count`).
+    fn unsharded_checkers(&self) -> usize {
+        cli::unsharded_checker_count(self.checker_count)
+    }
+
     pub fn corsa_path(&self) -> &Path {
         &self.corsa_path
     }
@@ -158,7 +163,12 @@ impl CorsaExecutor {
         if servers > 1 {
             match profile!(
                 "canon.corsa.cli",
-                check_with_cli_sharded(&self.corsa_path, project, servers, self.checkers())
+                check_with_cli_sharded(
+                    &self.corsa_path,
+                    project,
+                    servers,
+                    (self.checkers(), self.unsharded_checkers()),
+                )
             ) {
                 Ok(result) => return Ok(result),
                 Err(cli_error) => {
@@ -173,7 +183,7 @@ impl CorsaExecutor {
 
         let cli_error = match profile!(
             "canon.corsa.cli",
-            check_with_cli_classified(&self.corsa_path, project, self.checkers())
+            check_with_cli_classified(&self.corsa_path, project, self.unsharded_checkers())
         ) {
             Ok(result) => return Ok(result),
             Err(cli_error) => {

@@ -1,7 +1,39 @@
 //! Literal names use the head boundary without interpreting the argument.
 
-use super::frozen_attribute_name;
+use super::{VueDirectives, frozen_attribute_name};
+use crate::markup::directive::{ArgSyntax, DirectiveSyntax};
 use vize_l0::Allocator;
+
+#[test]
+fn directive_argument_boundaries_match_vue_tokenizer_states() {
+    // Oracle: compiler-core baseParse, including recovered error 27 for `:[`.
+    for (authored, expected_arg, expected_modifiers) in [
+        (":[a]b", Some((false, "a]")), ""),
+        (":foo[bar]", Some((true, "foo[bar]")), ""),
+        (":[", Some((false, "")), ""),
+        (":[a[b]].camel", Some((false, "a[b]")), ".camel"),
+        (":title.camel", Some((true, "title")), ".camel"),
+        (":[title].camel", Some((false, "title")), ".camel"),
+    ] {
+        let offset = 17;
+        let decomposed = VueDirectives.decompose(authored, offset).unwrap().unwrap();
+        let content = |span: vize_l0::Span| {
+            authored
+                .get((span.start - offset) as usize..(span.end - offset) as usize)
+                .unwrap()
+        };
+        let actual_arg = decomposed.arg.map(|arg| match arg {
+            ArgSyntax::Static(span) => (true, content(span)),
+            ArgSyntax::Dynamic(span) => (false, content(span)),
+        });
+        assert_eq!(actual_arg, expected_arg, "{authored}");
+        assert_eq!(
+            content(decomposed.modifiers),
+            expected_modifiers,
+            "{authored}"
+        );
+    }
+}
 
 #[test]
 fn frozen_longhand_names_keep_quoted_brackets_and_all_modifiers() {

@@ -6,25 +6,23 @@ title: 静的解析
 
 # 静的解析
 
-Vize の解析結果は、コンパイラー、リンター、型チェッカー、言語サーバー、Musea で共有します。Vue SFC を一度解析して得た意味情報を診断やコード生成に再利用し、それぞれのコマンドで同じ解析を繰り返すことを避けます。
+lint で Vue の誤りやチームの規約を検査し、型チェックで props、イベント、テンプレートの式の型を検査します。どちらも元のソース上に診断を表示するため、CI とエディターで同じコードを確認できます。
 
-以下の例では、`vize` npm パッケージをインストールし、アプリケーションの `package.json` に登録したスクリプトから実行します。
+以下の例では、プロジェクトに `vize` npm パッケージをインストールし、`package.json` のスクリプトから実行します。
 
 <span id="パイプライン"></span>
 
-## 解析の流れ
+## 検査の選び方
 
-| レイヤー | 役割 | 利用する機能 |
+| 検査したい内容 | コマンド・連携 | 設定ガイド |
 | --- | --- | --- |
-| Armature | パーサー: Vue テンプレートと SFC の構造を字句解析・構文解析する | コンパイラー、リンター、フォーマッター |
-| Croquis | 解析器: スコープ、バインディング、マクロ情報、ファイル間のグラフを構築する | コンパイラー、lint、型情報を使う検査 |
-| Patina | リンター: Vue、スクリプト、CSS、アクセシビリティ、SSR、Vapor、Musea、型情報の lint ルールを実行する | `vize lint`、エディターの診断、Oxlint 連携 |
-| Canon | 型チェッカー: 仮想 TypeScript を生成し、診断を元の Vue ファイルに対応付ける | Content Mapper、`vize check` |
-| Maestro | 言語サーバー: LSP を通じて診断とエディターの機能を提供する | `vize lsp`、VS Code、Zed |
+| Vue のルール、アクセシビリティ、スクリプト・CSS の規約 | `vize lint src` | [lint の実行設定](./lint-execution.md) |
+| props、イベント、テンプレートの型 | Content Mapper または `vize check` | [型チェック](./type-checking.md) |
+| コンポーネント間の関係 | `vize lint --cross-file src` | [コンポーネントツリーと複雑度](./cross-file-complexity.md) |
+| 編集中の診断 | Vize の言語サーバー | [エディターの設定](./language-server.md) |
+| 既存の Oxlint と同時に Vue を検査 | `oxlint-plugin-vize` | [Oxlint 連携](./oxlint.md) |
 
-静的解析には lint 以外も含まれます。テンプレートのバインディング、コンパイラーマクロ、コンポーネントのメタデータ、provide/inject の関係、リアクティビティの流れ、仮想 TypeScript、コンポーネントギャラリーの情報も、共通の解析結果を利用します。
-
-実際のルール名、既定の設定、ファイル間診断のコードは[ルール一覧](../rules/index.md)で確認できます。
+各ルールの既定の重大度、プリセット、オプション、例は[ルールリファレンス](../rules/index.md)で確認できます。
 
 <span id="糸くず"></span>
 
@@ -92,9 +90,11 @@ vp run vize:lint:strict-reactivity
 
 <span id="緑青ルールモデル"></span>
 
-## Patina のルールモデル
+<span id="patina-のルールモデル"></span>
 
-Patina は Vize のリンターです（`vize patina` は `vize lint` の別名です）。各ルールは SFC のソース、テンプレートのルートや要素、ディレクティブ、`v-for`、`v-if`、補間などを訪問して検査します。ルール名、カテゴリ、既定の重大度、説明、自動修正の可否をメタデータとして持ちます。プリセットは、一緒に有効にするルールをまとめたものです。
+## lint ルールとプリセット
+
+各 lint ルールは特定の問題を検査し、重大度、オプション、例を持ちます。プリセットでルールをまとめて選び、個別のルール設定で有効・無効や重大度を変更できます。自動修正に対応したルールは `vize lint --fix src` で適用し、コミット前に差分を確認してください。
 
 | 分野 | ルールの例 | 検査する内容 |
 | --- | --- | --- |
@@ -125,7 +125,7 @@ Patina は Vize のリンターです（`vize patina` は `vize lint` の別名�
 
 ## 抑制コメントの移行とカスタムルール
 
-Patina は、対応するルール名について `eslint-disable`、`eslint-enable`、`eslint-disable-next-line`、`eslint-disable-line` を受け付けます。`vue/require-v-for-key` などのルールを移行するときに、すべての抑制コメントを先に書き換える必要はありません。
+Vize は、対応するルール名について `eslint-disable`、`eslint-enable`、`eslint-disable-next-line`、`eslint-disable-line` を受け付けます。`vue/require-v-for-key` などのルールを移行するときに、すべての抑制コメントを先に書き換える必要はありません。
 
 プロジェクト固有の JavaScript ルールを実行する安定した API は、まだありません。移行中は、そのルールを ESLint や Oxlint で `vize lint` と併用するか、`incremental` プリセットで方針に合う組み込みルールだけを有効にします。`rules` で、組み込みルールごとに重大度を指定できます。
 
@@ -161,7 +161,7 @@ Patina は、対応するルール名について `eslint-disable`、`eslint-ena
 
 ## ファイル間のルール
 
-Croquis のファイル間解析を、Patina の診断を通じて lint から利用します。解析対象の Vue ファイル全体からモジュール一覧、インポートグラフ、コンポーネントの利用関係、索引を構築するため、明示的に有効にする機能です。
+ファイル間の lint は、単一のコンポーネントだけでは判定できない関係を検査します。既定では無効です。関連する Vue ファイルを同じ実行に含めて有効にしてください。
 
 現在の `vize lint --cross-file` は、provide/inject の対応、要素 ID の一意性、リアクティビティ、非同期処理の競合を検査します。`--cross-file-tree` を追加すると、診断に加えて provide/inject のツリーも表示します。
 
@@ -170,24 +170,7 @@ vp run vize:lint:cross-file
 vp run vize:lint:cross-file-tree
 ```
 
-下位レイヤーのファイル間解析には、現在の CLI で公開する範囲より多くの機能があります。
-
-| ファイル間のオプション | 対象となる診断や情報 |
-| --- | --- |
-| `provide_inject` | 対応しない inject、未使用の provide、文字列キー、リアクティブでない値の流れ |
-| `unique_ids` | 重複する ID や、ループ内で一意でなくなる ID |
-| `reactivity_tracking` | props の分割代入、別名参照、コンポーネント間のリアクティビティ消失 |
-| `race_conditions` | provide や共有状態を通じて競合する非同期の状態更新 |
-| `fallthrough_attrs` | `$attrs`、`inheritAttrs`、複数ルートへの属性の引き継ぎによる問題 |
-| `component_emits` | 未宣言・未使用の emit、対応する emit のないリスナー |
-| `event_bubbling` | 処理されずにコンポーネントの境界を越えるイベント |
-| `server_client_boundary` | SSR とクライアントの境界付近のブラウザー API やハイドレーションの問題 |
-| `error_suspense_boundary` | 適切な Suspense やエラー境界のない非同期コンポーネント |
-| `circular_dependencies` | 循環インポートや深いインポートの連鎖 |
-| `component_resolution` | 未登録・未解決のコンポーネント |
-| `props_validation` | 必須 props の欠落や、子コンポーネントに渡す props の型の不一致 |
-
-単一ファイルの lint は既定で高速に保ちます。ファイル間の検査は成熟したものから明示的に公開し、信頼できるプロジェクト情報を CLI、Oxlint 連携、エディター共通の診断に反映する方針です。
+レポートの読み方は[コンポーネントツリーと複雑度](./cross-file-complexity.md)、利用可能な検査は[ファイル間ルールの例](../rules/cross-file.md)を参照してください。
 
 ## 型チェック
 
@@ -203,7 +186,7 @@ vp run vize:lint:cross-file-tree
 }
 ```
 
-同梱チェッカーの `vize check` は Vue SFC の仮想 TypeScript を生成し、Corsa のプロジェクトセッションで診断を取得します。`.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、診断を元のソースファイルに対応付けます。
+`vize check` はプロジェクトの `.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、元のソース上に診断を表示します。
 
 ```json
 {

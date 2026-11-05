@@ -357,7 +357,7 @@ exec "$native" "$@"
             *editor_owner.as_ref().unwrap(),
             "the third topology reload retains the complete editor answer and owner",
         );
-        client.document_texts = documents;
+        client.document_texts = documents.into();
         client.activate_materialized_project_session().unwrap();
         assert!(client.has_project_session());
         assert!(

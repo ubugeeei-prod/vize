@@ -97,10 +97,17 @@ pub(crate) const RULE_NO_DEPRECATED_MODEL_DEFINITION: &str =
 pub(crate) const RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES: &str =
     "script/no-deprecated-vue-config-keycodes";
 pub(crate) const RULE_REQUIRE_RENDER_RETURN: &str = "script/require-render-return";
+pub(crate) const RULE_JSX_USES_VARS: &str = "vue/jsx-uses-vars";
 pub(crate) const RULE_REQUIRE_SLOTS_AS_FUNCTIONS: &str = "script/require-slots-as-functions";
 pub(crate) const RULE_ONE_COMPONENT_PER_FILE: &str = "script/one-component-per-file";
 pub(crate) const RULE_ORDER_IN_COMPONENTS: &str = "script/order-in-components";
 pub(crate) const RULE_PREFER_DEFINE_EMITS_BINDING: &str = "script/prefer-define-emits-binding";
+pub(crate) const RULE_NO_REF_OBJECT_REACTIVITY_LOSS: &str = "vue/no-ref-object-reactivity-loss";
+pub(crate) const RULE_NO_SETUP_PROPS_REACTIVITY_LOSS: &str = "vue/no-setup-props-reactivity-loss";
+pub(crate) const RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER: &str = "vue/no-this-in-before-route-enter";
+pub(crate) const RULE_REQUIRE_EXPOSE: &str = "vue/require-expose";
+pub(crate) const RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST: &str = "vue/prefer-prop-type-boolean-first";
+pub(crate) const RULE_VALID_MODEL_DEFINITION: &str = "vue/valid-model-definition";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -182,10 +189,17 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_MODEL_DEFINITION,
     RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
     RULE_REQUIRE_RENDER_RETURN,
+    RULE_JSX_USES_VARS,
     RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
     RULE_ONE_COMPONENT_PER_FILE,
     RULE_ORDER_IN_COMPONENTS,
     RULE_PREFER_DEFINE_EMITS_BINDING,
+    RULE_NO_REF_OBJECT_REACTIVITY_LOSS,
+    RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
+    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
+    RULE_REQUIRE_EXPOSE,
+    RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
+    RULE_VALID_MODEL_DEFINITION,
 ];
 
 #[cfg(test)]
@@ -267,8 +281,15 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_MODEL_DEFINITION,
     RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
     RULE_REQUIRE_RENDER_RETURN,
+    RULE_JSX_USES_VARS,
     RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
     RULE_ONE_COMPONENT_PER_FILE,
     RULE_ORDER_IN_COMPONENTS,
     RULE_PREFER_DEFINE_EMITS_BINDING,
+    RULE_NO_REF_OBJECT_REACTIVITY_LOSS,
+    RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
+    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
+    RULE_REQUIRE_EXPOSE,
+    RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
+    RULE_VALID_MODEL_DEFINITION,
 ];

@@ -1,18 +1,41 @@
 ---
 title: "ssr/no-browser-globals-in-ssr"
+description: "SSR で実行されるコードのブラウザー専用グローバル参照を検出します。"
 ---
 
 # `ssr/no-browser-globals-in-ssr`
 
 SSR で実行されるコードのブラウザー専用グローバル参照を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+setup の実行時に `window.innerWidth` を直接読みますが、サーバー上のコンポーネント実行時には `window` が存在しません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const width = window.innerWidth;
+</script>
+```
+
+## 良い例
+
+幅を ref(0) で初期化し、ブラウザー API の参照をクライアントで実行される `onMounted` に移します。これにより、SSR の setup ではブラウザー API を参照しません。
+
+```vue annotate="add:2,3,4,5,6"
+<script setup lang="ts">
+const width = ref(0);
+
+onMounted(() => {
+  width.value = window.innerWidth;
+});
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-setup の実行時に `window.innerWidth` を直接読みますが、サーバー上のコンポーネント実行時には `window` が存在しません。
-
-```vue
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
-
-## 良い
-
-幅を ref(0) で初期化し、ブラウザー API の参照をクライアントで実行される `onMounted` に移します。これにより、SSR の setup ではブラウザー API を参照しません。
-
-```vue
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L157) · [全ルール](../all.md)
+- [SSR ルール](../ssr.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L157)

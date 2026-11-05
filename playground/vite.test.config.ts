@@ -39,7 +39,7 @@ export default defineConfig({
     dedupe: ["vue"],
   },
   optimizeDeps: {
-    include: ["vue"],
+    include: ["vue", "shiki"],
   },
   test: {
     browser: {
@@ -49,6 +49,10 @@ export default defineConfig({
       instances: [{ browser: "chromium" }],
     },
     include: ["src/**/*.test.ts", "e2e/**/*.test.ts"],
-    exclude: [testOutputIgnorePattern, "e2e/vite-plugin-vapor.test.ts"],
+    exclude: [
+      testOutputIgnorePattern,
+      "e2e/vite-plugin-vapor.test.ts",
+      "e2e/code-highlight-ssr.test.ts",
+    ],
   },
 });

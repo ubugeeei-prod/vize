@@ -1,18 +1,17 @@
 ---
 title: "vue/use-v-on-exact"
+description: "修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。"
 ---
 
 # `vue/use-v-on-exact`
 
 修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
 ## ハンドラーが重なる条件
 
@@ -21,6 +20,34 @@ title: "vue/use-v-on-exact"
 システム修飾子は、押している必要があるキーを指定します。`@keydown.alt.shift` は Ctrl+Alt+Shift でも動くため、`@keydown.alt.ctrl.shift` と重なる場合は広い方に `.exact` を追加します。`.exact` は指定したシステムキーを許可し、それ以外の Ctrl、Shift、Alt、Meta を拒否します。
 
 複数のキーボード修飾子は選択肢です。`@keydown.up.down` は上・下のどちらでも動き、Ctrl+下では `@keydown.ctrl.down` と重なります。診断範囲は `.exact` が必要なディレクティブのキーで、ハンドラー式は含みません。
+
+## 悪い例
+
+通常の click ハンドラーも Ctrl キーを押しながらのクリックで動くため、別の `.ctrl` ハンドラーと重複します。
+
+```vue annotate="remove:2"
+<template>
+  <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
+    Save
+  </button>
+</template>
+```
+
+## 良い例
+
+`.exact` で通常のハンドラーを修飾キーのない click に限定し、Ctrl 専用のハンドラーと分けます。
+
+```vue annotate="add:2,3,4,5,6"
+<template>
+  <button
+    type="button"
+    @click.exact="handleClick"
+    @click.ctrl="handleCtrlClick"
+  >
+    Save
+  </button>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -39,38 +66,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-通常の click ハンドラーも Ctrl キーを押しながらのクリックで動くため、別の `.ctrl` ハンドラーと重複します。
-
-```vue
-<template>
-  <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
-    Save
-  </button>
-</template>
-```
-
-## 良い
-
-`.exact` で通常のハンドラーを修飾キーのない click に限定し、Ctrl 専用のハンドラーと分けます。
-
-```vue
-<template>
-  <button
-    type="button"
-    @click.exact="handleClick"
-    @click.ctrl="handleCtrlClick"
-  >
-    Save
-  </button>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L31) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L31)

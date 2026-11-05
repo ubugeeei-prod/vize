@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
 import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
 import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
@@ -12,6 +13,10 @@ import {
   validateModelBindingSourceUnit,
 } from "./lsp-model-binding-source-unit.ts";
 import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
+import {
+  FORMATTER_WARNING_CAPTURE_ID,
+  loadFormatterWarningCapture,
+} from "./lsp-formatter-warning-capture.ts";
 import { FORMATTER_ON_POLICY_ID, loadFormatterOnPolicy } from "./lsp-formatter-on-policy.ts";
 import { FORMATTER_SLOT_POLICY_ID, loadFormatterSlotPolicy } from "./lsp-formatter-slot-policy.ts";
 import { AUTO_IMPORT_SYMLINK_ID, loadAutoImportSymlink } from "./lsp-auto-import-manifest.ts";
@@ -26,6 +31,7 @@ import {
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 /** The actual didOpen profile is authored evidence, independent of a filename. */
 export function fixtureLanguageId(data: FixtureData): string {
@@ -143,6 +149,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = loadAutoImportSymlink(data, files, expected);
     } else if (data.id === FORMATTER_BIND_POLICY_ID) {
       requests = loadFormatterBindPolicy(data, files, expected);
+    } else if (data.id === FORMATTER_WARNING_CAPTURE_ID) {
+      requests = loadFormatterWarningCapture(repositoryRoot, data, files, expected);
     } else if (data.id === FORMATTER_ON_POLICY_ID) {
       requests = loadFormatterOnPolicy(data, files, expected);
     } else if (data.id === FORMATTER_SLOT_POLICY_ID) {
@@ -208,8 +216,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentSymbol") {
       assert.equal(data.hierarchicalDocumentSymbols, true);
-      assert(Array.isArray(expected) && expected.length === 2);
-      assert(data.provenance.witness, "original issue custody is required");
+      const symbolCount = data.id === "lsp/regression/qualification-20261105" ? 5 : 2;
+      assert(Array.isArray(expected) && expected.length === symbolCount);
+      assert(data.provenance.witness, "original source custody is required");
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {

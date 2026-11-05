@@ -16,6 +16,7 @@ Register the transformer and named component pipeline in `.parcelrc`:
 ```json
 {
   "extends": "@parcel/config-default",
+  "reporters": ["@vizejs/parcel-transformer/dev-cache", "..."],
   "transformers": {
     "*.vue": ["@vizejs/parcel-transformer"],
     "vize-component:*.vue": ["@vizejs/parcel-transformer"],
@@ -78,13 +79,14 @@ browser rendering, scoped and preprocessed styles, assets, aliases, source maps,
 SSR, and failure cases. Source and public-provider preflight receipts are
 recorded separately.
 
-Production, SSR, CSS/Sass dependency updates and ordinary component HMR are
-qualified separately from post-error recovery. Parcel 2.16.4 can reload a stale
-HTTP-cached document after rapid compilation-error recovery
-([tracked issue](https://github.com/ubugeeei-prod/vize/issues/10736)). This remains
-an explicit failing frontier; content hashing alone is not a qualified workaround.
-The `test:recovery-frontier` script retains strict latest-source assertions
-with browser caching enabled.
+Development bundles keep stable names. Parcel 2.16.4 answers HTTP 304 when
+`Last-Modified` stays in the same UTC second, so a reload after rapid
+compilation-error recovery can keep the previous bundle
+([tracked issue](https://github.com/ubugeeei-prod/vize/issues/10736)). The
+`dev-cache` reporter, listed ahead of the dev server, advances that timestamp
+to the next second only when the output bytes change. It does not content-hash
+HMR assets. The `test:recovery-frontier` script retains strict latest-source
+assertions with browser caching enabled.
 
 Parcel tracing (`shouldTrace: true`) records individual native compiler, parser,
 asset and CSS operations. These spans measure each NAPI call's inclusive wall

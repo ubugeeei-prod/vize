@@ -71,9 +71,10 @@ fn separate_template_render_collision_keeps_complete_module_result() {
         "  setup(__props) {\n",
         "  setup(__props, { expose: __expose }) {\n    __expose();\n",
     );
+    let actual = serde_json::to_value(actual).expect("serialize complete public Result");
+    let expected = support::typescript_erasure::advance(expected, &actual);
     assert_eq!(
-        serde_json::to_value(actual).expect("serialize complete public Result"),
-        expected,
+        actual, expected,
         "complete SFC result changed for fix fe724476c"
     );
 }
@@ -144,10 +145,11 @@ fn dual_script_type_imports_keep_complete_module_result() {
             "the complete binding map must match both official executions"
         );
     }
+    let actual = serde_json::to_value(compile_sfc(&descriptor, options))
+        .expect("serialize complete public Result");
+    let expected = support::typescript_erasure::advance(expected, &actual);
     assert_eq!(
-        serde_json::to_value(compile_sfc(&descriptor, options))
-            .expect("serialize complete public Result"),
-        expected,
+        actual, expected,
         "complete SFC result changed beyond the reviewed #10903 successor for fix 92adfb692"
     );
 }

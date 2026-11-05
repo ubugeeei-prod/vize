@@ -29,7 +29,7 @@ pub(super) enum CollectFailure {
 }
 
 pub(in crate::ide::diagnostics) enum CorsaDiagnostics {
-    Complete(Vec<Diagnostic>),
+    Complete(Vec<super::super::NativeDiagnostic>),
     Unavailable(Vec<Diagnostic>),
 }
 
@@ -123,7 +123,7 @@ impl DiagnosticService {
     async fn try_collect_corsa_diagnostics(
         state: &ServerState,
         uri: &Url,
-    ) -> Result<Vec<Diagnostic>, CollectFailure> {
+    ) -> Result<Vec<super::super::NativeDiagnostic>, CollectFailure> {
         tracing::info!("collect_corsa_diagnostics: {}", uri);
 
         if super::collect_script::is_script_uri(uri) {
@@ -207,6 +207,7 @@ impl DiagnosticService {
                 return Ok(
                     super::virtual_ts_art::invalid_art_diagnostic(&content, &descriptor)
                         .into_iter()
+                        .map(Into::into)
                         .collect(),
                 );
             };

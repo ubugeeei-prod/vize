@@ -1,18 +1,40 @@
 ---
 title: "vue/valid-v-else"
+description: "Enforce valid `v-else` directives."
 ---
 
 # `vue/valid-v-else`
 
-Enforce valid `v-else` directives
+Enforce valid `v-else` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The examples give `v-else` an expression, combine it with `v-if`, or omit its adjacent preceding conditional branch.
+
+```vue annotate="remove:2,3"
+<template>
+  <div v-else="ready"></div>
+  <div v-else v-if="ready"></div>
+  <div v-else></div>
+</template>
+```
+
+## Good
+
+Place bare `v-else` immediately after the corresponding `v-if` branch.
+
+```vue annotate="add:2"
+<template>
+  <div v-if="ready"></div>
+  <div v-else></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The examples give `v-else` an expression, combine it with `v-if`, or omit its adjacent preceding conditional branch.
-
-```vue
-<template>
-  <div v-else="ready"></div>
-  <div v-else v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
-
-## Good
-
-Place bare `v-else` immediately after the corresponding `v-if` branch.
-
-```vue
-<template>
-  <div v-if="ready"></div>
-  <div v-else></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L31)

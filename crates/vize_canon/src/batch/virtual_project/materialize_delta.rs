@@ -161,20 +161,7 @@ impl VirtualProject {
             if let Some(parent) = path.parent() {
                 ensure_dir(parent)?;
             }
-            // Match the cold path's final writer when canonical paths overlap
-            // authored package shadows, passthrough modules or virtual files.
-            if let Some(original) = self.package_shadow_manifests.get(path) {
-                write_if_changed(path, &std::fs::read(original)?)?;
-            } else if let Some(canonical) = self.package_shadow_files.get(path) {
-                let content = self.package_shadow_content(path, canonical)?;
-                write_if_changed(path, content.as_bytes())?;
-            } else if let Some(original) = self.passthrough_files.get(path) {
-                write_if_changed(path, &std::fs::read(original)?)?;
-            } else if let Some(file) = self.virtual_files.get(path) {
-                write_if_changed(path, file.content.as_bytes())?;
-            } else if !self.is_current_generated_path(path) {
-                remove_file_if_present(path)?;
-            }
+            self.write_owned_candidate(path)?;
         }
 
         self.ensure_workspace_alias_targets()?;
@@ -221,7 +208,25 @@ impl VirtualProject {
         })
     }
 
-    fn is_current_generated_path(&self, path: &Path) -> bool {
+    /// Match the cold path's final writer when canonical paths overlap
+    /// authored package shadows, passthrough modules or virtual files.
+    pub(super) fn write_owned_candidate(&self, path: &Path) -> CorsaResult<()> {
+        if let Some(original) = self.package_shadow_manifests.get(path) {
+            write_if_changed(path, &std::fs::read(original)?)?;
+        } else if let Some(canonical) = self.package_shadow_files.get(path) {
+            let content = self.package_shadow_content(path, canonical)?;
+            write_if_changed(path, content.as_bytes())?;
+        } else if let Some(original) = self.passthrough_files.get(path) {
+            write_if_changed(path, &std::fs::read(original)?)?;
+        } else if let Some(file) = self.virtual_files.get(path) {
+            write_if_changed(path, file.content.as_bytes())?;
+        } else if !self.is_current_generated_path(path) {
+            remove_file_if_present(path)?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn is_current_generated_path(&self, path: &Path) -> bool {
         path == self.virtual_root.join(PACKAGE_BOUNDARY_FILE)
             || path == self.generated_tsconfig_path()
             || path == self.virtual_root.join(VUE_MODULE_STUBS_FILE)
@@ -304,6 +309,28 @@ impl MaterializedFileSnapshot {
         &self.package_links
     }
 
+    pub(super) fn is_empty(&self) -> bool {
+        self.revisions.is_empty() && self.package_links.is_empty()
+    }
+
+    /// Replace hashes for `paths` and keep every other file's recorded hash.
+    pub(crate) fn revise_files(&self, paths: &FxHashSet<PathBuf>) -> CorsaResult<Self> {
+        let mut next = self.clone();
+        for path in paths {
+            match std::fs::read(path) {
+                Ok(bytes) => {
+                    next.revisions
+                        .insert(path.clone(), hash_materialized_file(&bytes));
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    next.revisions.remove(path);
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+        Ok(next)
+    }
+
     #[cfg(test)]
     pub(crate) fn capture(paths: &FxHashSet<PathBuf>) -> CorsaResult<Self> {
         Self::capture_with_links(paths, &FxHashMap::default())
@@ -362,7 +389,21 @@ impl MaterializedFileSnapshot {
 }
 
 fn revision(path: &Path) -> CorsaResult<u64> {
-    Ok(hash_bytes(&std::fs::read(path)?))
+    Ok(hash_materialized_file(&std::fs::read(path)?))
+}
+
+fn hash_materialized_file(bytes: &[u8]) -> u64 {
+    HASHED_MATERIALIZED_FILES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    hash_bytes(bytes)
+}
+
+static HASHED_MATERIALIZED_FILES: std::sync::atomic::AtomicUsize =
+    std::sync::atomic::AtomicUsize::new(0);
+
+/// Files read to hash a mirror snapshot since the previous take.
+#[cfg(test)]
+pub(crate) fn take_materialized_hash_count() -> usize {
+    HASHED_MATERIALIZED_FILES.swap(0, std::sync::atomic::Ordering::Relaxed)
 }
 
 #[cfg(test)]

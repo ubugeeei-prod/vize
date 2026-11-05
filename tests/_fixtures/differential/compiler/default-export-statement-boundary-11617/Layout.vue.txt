@@ -1,0 +1,2 @@
+<script>export default { name: "Boundary" }; globalThis.after = true</script>
+<template><p /></template>

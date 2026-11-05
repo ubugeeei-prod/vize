@@ -133,3 +133,44 @@ body:not(.entry-page) summary.nav-title:focus-visible {
   outline: 2px solid var(--octc-color-primary);
   outline-offset: 2px;
 }
+
+/* Nested sections inside a sidebar group: rule categories and rule options. */
+body:not(.entry-page) .nav-section.nav-subsection {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+body:not(.entry-page) summary.nav-title.nav-subtitle {
+  min-height: 0;
+  margin-bottom: 0 !important;
+  padding: 0.4rem 0.65rem 0.4rem 0.95rem !important;
+  color: color-mix(in srgb, var(--octc-color-text) 70%, var(--octc-color-text-muted)) !important;
+  font-family: inherit !important;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35;
+  letter-spacing: normal !important;
+}
+
+body:not(.entry-page) summary.nav-title.nav-subtitle:hover {
+  color: var(--octc-color-text) !important;
+}
+
+body:not(.entry-page) .nav-section.nav-subsection > .nav-list {
+  margin-left: 0.95rem;
+  padding-top: 0 !important;
+  border-left: 1px solid color-mix(in srgb, var(--octc-color-border) 80%, transparent);
+}
+
+body:not(.entry-page) .nav-subsection .nav-link {
+  padding-left: 0.75rem !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+body:not(.entry-page)
+  .nav-subsection
+  .nav-link:is([href*="/rules/reference/"], [href*="/rules/project/"]) {
+  font-family: var(--octc-font-mono) !important;
+  font-size: 0.74rem !important;
+}

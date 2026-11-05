@@ -1,18 +1,39 @@
 ---
 title: "a11y/landmark-roles"
+description: "Validate landmark role placement and uniqueness."
 ---
 
 # `a11y/landmark-roles`
 
-Validate landmark role placement and uniqueness
+Validate landmark role placement and uniqueness.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+Two `main` elements declare duplicate main landmarks in the same template.
+
+```vue annotate="remove:3"
+<template>
+  <main>Dashboard</main>
+  <main>Settings</main>
+</template>
+```
+
+## Good
+
+The dashboard remains the main landmark; the settings area becomes a named navigation landmark.
+
+```vue annotate="add:3"
+<template>
+  <main>Dashboard</main>
+  <nav aria-label="Settings">...</nav>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Two `main` elements declare duplicate main landmarks in the same template.
-
-```vue
-<template>
-  <main>Dashboard</main>
-  <main>Settings</main>
-</template>
-```
-
-## Good
-
-The dashboard remains the main landmark; the settings area becomes a named navigation landmark.
-
-```vue
-<template>
-  <main>Dashboard</main>
-  <nav aria-label="Settings">...</nav>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44)

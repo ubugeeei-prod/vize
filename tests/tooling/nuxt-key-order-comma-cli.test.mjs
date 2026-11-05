@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -117,7 +118,7 @@ await test("source CLI preserves Nuxt comma style through full lint/fix/check/id
           bytes: output.length,
           sha256: sha256(output),
         };
-        observation.expected = expectedJson(entry, mode !== "lint");
+        observation.expected = currentRuleDocumentationPacket(expectedJson(entry, mode !== "lint"));
         persist();
         assert.equal(observation.error, null, entry.id);
         assert.equal(run.signal, null, entry.id);

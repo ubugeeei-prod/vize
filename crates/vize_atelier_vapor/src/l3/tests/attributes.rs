@@ -97,9 +97,15 @@ fn simple_once_element_uses_native_one_shot_operations() {
 
 #[test]
 fn once_plain_descendants_are_mount_only() {
-    for source in [
-        r#"<div v-once><span :title="tip">{{ value }}</span></div>"#,
-        r#"<main><div v-once><span><b :title="tip">{{ value }}</b></span></div><i>{{ live }}</i></main>"#,
+    for (source, effects) in [
+        (
+            r#"<div v-once><span :title="tip">{{ value }}</span></div>"#,
+            0,
+        ),
+        (
+            r#"<main><div v-once><span><b :title="tip">{{ value }}</b></span></div><i>{{ live }}</i></main>"#,
+            1,
+        ),
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
@@ -119,7 +125,7 @@ fn once_plain_descendants_are_mount_only() {
             assert!(compiled.error_messages.is_empty(), "{source}");
             assert_eq!(
                 compiled.code.matches("_renderEffect(() =>").count(),
-                usize::from(source.contains("{{ live }}")),
+                effects,
                 "{source}: {}",
                 compiled.code
             );
@@ -128,16 +134,15 @@ fn once_plain_descendants_are_mount_only() {
 }
 
 #[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records complete generated modules and template lists"
+)]
 fn static_and_bound_styles_merge_in_authored_order() {
-    for (source, effect) in [
-        (
-            r#"<div style="color: red;" :style="theme"></div>"#,
-            "_setStyle(n0, [\"color: red;\", _ctx.theme])",
-        ),
-        (
-            r#"<div :style="theme" style="color: red;"></div>"#,
-            "_setStyle(n0, [_ctx.theme, \"color: red;\"])",
-        ),
+    let mut outputs = Vec::new();
+    for source in [
+        r#"<div style="color: red;" :style="theme"></div>"#,
+        r#"<div :style="theme" style="color: red;"></div>"#,
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
@@ -158,17 +163,71 @@ fn static_and_bound_styles_merge_in_authored_order() {
             "{source}: {:?}",
             compiled.error_messages
         );
-        assert!(
-            compiled.code.contains(effect),
-            "{source}: {}",
-            compiled.code
-        );
-        assert!(
-            compiled.code.contains("_template(\"<div></div>\", true)"),
-            "{source}: {}",
-            compiled.code
-        );
+        outputs.push((source, compiled.code, compiled.templates));
     }
+    insta::assert_debug_snapshot!("authored_style_order", outputs);
+}
+
+/// Official Vapor binds a bare attribute as `""`. Style keeps authored order
+/// on the native lane; class, and every retained merge, stays static-first.
+#[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records both complete generation lanes for every option"
+)]
+fn valueless_static_class_and_style_merge_as_empty_strings() {
+    let mut outputs = Vec::new();
+    for (source, equal) in [
+        (r#"<div style :style="s"></div>"#, true),
+        (r#"<div :style="s" style></div>"#, false),
+        (r#"<div class :class="c"></div>"#, true),
+        (r#"<div :class="c" class></div>"#, true),
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporL3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+            };
+            let native = compile(false);
+            let retained = compile(true);
+            assert!(
+                native.error_messages.is_empty() && retained.error_messages.is_empty(),
+                "{source}: {:?} {:?}",
+                native.error_messages,
+                retained.error_messages
+            );
+            if equal {
+                assert_eq!(native.code, retained.code, "{source}");
+                assert_eq!(native.templates, retained.templates, "{source}");
+            } else {
+                assert_ne!(native.code, retained.code, "{source}");
+            }
+            // Keep both complete modules and their static DOM lists. In
+            // particular, only native style follows the authored order.
+            outputs.push((
+                source,
+                prefix_identifiers,
+                native.code,
+                native.templates,
+                retained.code,
+                retained.templates,
+            ));
+        }
+    }
+    insta::assert_debug_snapshot!("valueless_static_attributes", outputs);
 }
 
 #[test]
@@ -234,8 +293,6 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
     for (source, reason) in [
         (r#"<div v-html="markup"><b>child</b></div>"#, Structure),
         (r#"<div v-text="label">child</div>"#, Structure),
-        (r#"<div style :style="s"></div>"#, Binding),
-        (r#"<div class :class="c"></div>"#, Binding),
         (r#"<div :class="a" :class="b"></div>"#, Binding),
         (r#"<input :type="kind" v-model="value">"#, Binding),
         (r#"<div v-focus="value"></div>"#, Operation),
@@ -278,6 +335,10 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
 }
 
 #[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records complete original and mutated operand modules"
+)]
 fn retained_asts_never_describe_stale_operand_text() {
     let source = r#"<div :title="a + b">{{ c * d }}</div>"#;
     let lower = |allocator: &Allocator, text: Option<&'static str>| {
@@ -303,11 +364,6 @@ fn retained_asts_never_describe_stale_operand_text() {
     };
     let allocator = Allocator::new();
     let code = lower(&allocator, None);
-    assert!(
-        code.contains("_setProp(n0, \"title\", _ctx.a + _ctx.b)"),
-        "{code}"
-    );
-    assert!(code.contains("_toDisplayString(_ctx.c * _ctx.d)"), "{code}");
     // Replacing the operand text orphans the retained parse: the artifact is
     // refused instead of emitting either the stale tree or reparsed text.
     assert_eq!(
@@ -315,9 +371,6 @@ fn retained_asts_never_describe_stale_operand_text() {
         "Legacy(ExpressionOrEncoding)"
     );
     // A direct reference needs no AST and drives generation from the payload.
-    let code = lower(&allocator, Some("changed"));
-    assert!(
-        code.contains("_setProp(n0, \"title\", _ctx.changed)"),
-        "{code}"
-    );
+    let changed = lower(&allocator, Some("changed"));
+    insta::assert_debug_snapshot!("retained_operand_text", (code, changed));
 }

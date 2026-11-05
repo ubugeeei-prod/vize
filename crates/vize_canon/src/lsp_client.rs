@@ -5,7 +5,6 @@
 #![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use corsa::api::{CapabilitiesResponse, ProjectSession};
-use lsp_types::Diagnostic;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
@@ -14,7 +13,9 @@ use vize_l0::{FxHashMap, String};
 
 mod bootstrap;
 mod completion_order;
+mod diagnostic_phase;
 mod diagnostics;
+pub(crate) use diagnostic_phase::PhasedDiagnostic;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
@@ -33,6 +34,7 @@ mod retained_text_tests;
 mod session;
 mod session_paths;
 mod session_storage;
+mod tracked_documents;
 pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
@@ -67,11 +69,11 @@ pub struct CorsaProjectClient {
     /// Exact mapped member and config retained across materialized refreshes.
     materialized_project_preference: Option<(PathBuf, String)>,
     /// Cached diagnostics keyed by document URI.
-    pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,
+    pub(crate) diagnostics: FxHashMap<String, Vec<PhasedDiagnostic>>,
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
     overlay_versions: FxHashMap<String, i32>,
     /// Current in-memory contents for virtual overlays and offset mapping.
-    document_texts: FxHashMap<String, String>,
+    document_texts: tracked_documents::TrackedDocumentTexts,
     /// Mapping from caller-facing URIs to the session-local URIs Corsa sees.
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
@@ -187,7 +189,7 @@ pub struct LspPosition {
 pub(crate) use initial_diagnostics::InitialDiagnosticsRead;
 
 pub(crate) struct DiagnosticFetch {
-    pub(crate) diagnostics: Vec<Diagnostic>,
+    pub(crate) diagnostics: Vec<PhasedDiagnostic>,
     pub(crate) used_cache: bool,
 }
 

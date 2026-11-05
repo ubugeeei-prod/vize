@@ -217,6 +217,11 @@ example. In a checkout, run `pnpm gallery:ui` in `examples/vite-musea`: it regen
 
 ## Versioning and safe updates
 
+Each file is written to a temporary sibling before it is created or replaced. If the process is
+interrupted, an existing file contains either its old bytes or the complete replacement; a new file
+is either absent or complete. Writes do not use `fsync`, so survival across power loss is not
+guaranteed. A pull spanning multiple files can be interrupted between file writes.
+
 `vize-lib.lock.json` (commit it) records, per item, the package and exact version it came from, the
 registry `contentHash`, whether you requested it or it came in as a dependency, and the SHA-256 of
 every file as pulled. Those digests are the merge base for a three-way comparison between **your

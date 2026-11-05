@@ -382,12 +382,16 @@ await test("sealed facades exercise all original consumer refusal assertions", (
 
 await test("the JSR publish job bounds the CLI poll and waits for public evidence", () => {
   const publish = workflow("release-jsr.yml").jobs.publish;
-  assert.ok((publish["timeout-minutes"] ?? 0) >= 105);
+  assert.ok((publish["timeout-minutes"] ?? 0) >= 140);
   const steps = publish.steps ?? [];
   const publication = steps.find(
     (step) => step.name === "Publish through the repository's JSR OIDC link",
   );
-  assert.match(publication?.run ?? "", /timeout --signal=INT --kill-after=30s 5m deno publish/);
+  assert.match(
+    publication?.run ?? "",
+    /timeout --signal=INT --kill-after=30s 20m node "\$GITHUB_WORKSPACE\/tools\/support\/release\/jsr\/publish-with-fresh-provenance\.ts" -- deno publish --config jsr\.json/,
+  );
+  assert.doesNotMatch(publication?.run ?? "", /\b75m\b/);
   assert.match(publication?.run ?? "", /status -ne 0 && \$status -ne 124/);
   const publicWait = steps.find(
     (step) => step.name === "Wait for the immutable public JSR version",

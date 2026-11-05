@@ -6,26 +6,11 @@ title: "vize:croquis/cf/async-boundary"
 
 Reactive state crosses an async boundary and can be observed stale.
 
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| error | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/async-boundary": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: Analyzed component graph and the supported facts described below
 
 ## Shared project files
 
@@ -141,7 +126,25 @@ watch(
 </script>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/async-boundary": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

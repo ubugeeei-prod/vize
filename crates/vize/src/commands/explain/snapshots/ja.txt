@@ -508,7 +508,7 @@ a11y/alt-text · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-alt-text.md
 
 不正な例:
   <img src="photo.jpg" />
@@ -530,7 +530,7 @@ a11y/anchor-has-content · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-anchor-has-content.md
 
 ヒント:
   テキストコンテンツ、alt属性を持つ画像、またはaria-label属性を追加してください
@@ -543,7 +543,7 @@ a11y/anchor-is-valid · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-anchor-is-valid.md
 
 不正な例:
   <a href="">Link</a>
@@ -573,7 +573,7 @@ a11y/aria-props · lint ルール
 重大度: エラー
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-aria-props.md
 
 ヒント:
   理由: 無効なARIA属性は、支援技術がユーザーに意図した意味を伝えることを妨げます。
@@ -601,7 +601,7 @@ ARIA roleを持つ要素は、有効で非抽象的なARIA roleを使用する�
 重大度: エラー
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-aria-role.md
 
 ヒント:
   理由: 無効なARIA roleは、支援技術がユーザーに意図した意味を伝えることを妨げます。
@@ -630,7 +630,7 @@ ARIA属性をサポートしない要素でのARIA属性を禁止する
 重大度: エラー
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-aria-unsupported-elements.md
 
 ヒント:
   ARIA属性またはroleを削除してください。<meta>、<html>、<script>、<style>などの要素はレンダリングされず、ARIAをサポートしません
@@ -643,7 +643,7 @@ a11y/click-events-have-key-events · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-click-events-have-key-events.md
 
 ヒント:
   @keydownまたは@keyupハンドラを追加するか、<button>のようなインタラクティブ要素を使用してください
@@ -656,7 +656,7 @@ a11y/form-control-has-label · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-form-control-has-label.md
 
 ヒント:
   aria-label、aria-labelledby、またはfor/idが一致する<label>要素を追加してください
@@ -669,7 +669,7 @@ a11y/heading-has-content · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-heading-has-content.md
 
 ヒント:
   テキストコンテンツまたはaria-label属性を追加してください
@@ -682,7 +682,7 @@ a11y/heading-levels · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-heading-levels.md
 
 不正な例:
   <template>
@@ -708,7 +708,7 @@ iframe要素にtitle属性を必須にする
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-iframe-has-title.md
 
 ヒント:
   スクリーンリーダー用にiframeの内容を説明するtitle="..."を追加してください
@@ -721,7 +721,7 @@ a11y/img-alt · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-img-alt.md
 
 ヒント:
   情報を伝える画像にはalt="説明"を、装飾的な画像にはalt=""を追加してください
@@ -734,7 +734,7 @@ a11y/interactive-supports-focus · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-interactive-supports-focus.md
 
 不正な例:
   <div role="button" @click="handle">Click</div>
@@ -760,7 +760,7 @@ a11y/label-has-for · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-label-has-for.md
 
 不正な例:
   <label>Name</label>
@@ -786,7 +786,7 @@ a11y/landmark-roles · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-landmark-roles.md
 
 不正な例:
   <template>
@@ -809,7 +809,7 @@ a11y/media-has-caption · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-media-has-caption.md
 
 不正な例:
   <video src="movie.mp4"></video>
@@ -837,7 +837,7 @@ a11y/mouse-events-have-key-events · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-mouse-events-have-key-events.md
 
 不正な例:
   <div @mouseenter="show">...</div>
@@ -866,7 +866,7 @@ accesskey属性の使用を禁止する
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-access-key.md
 
 ヒント:
   accesskey属性を削除してください。アクセスキーはプラットフォーム間で不一致なキーボードショートカットを作成し、支援技術のショートカットと競合します
@@ -879,7 +879,7 @@ a11y/no-aria-hidden-on-focusable · lint ルール
 重大度: エラー
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-aria-hidden-on-focusable.md
 
 ヒント:
   aria-hidden="true"を削除してください。tabindex="-1"でもプログラムからはフォーカスできます
@@ -892,7 +892,7 @@ autofocus属性の使用を禁止する
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-autofocus.md
 
 ヒント:
   autofocus属性を削除してください。必要な場合はrefとfocus()を使用してプログラムでフォーカスを管理してください
@@ -905,7 +905,7 @@ a11y/no-distracting-elements · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-distracting-elements.md
 
 ヒント:
   この要素を削除するか、動きを抑制したCSSアニメーションを使用してください
@@ -918,7 +918,7 @@ a11y/no-i-for-icon · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-i-for-icon.md
 
 不正な例:
   <template>
@@ -948,7 +948,7 @@ a11y/no-redundant-roles · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: あり
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 不正な例:
   <nav role="navigation">...</nav>
@@ -969,7 +969,7 @@ a11y/no-refer-to-non-existent-id · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-refer-to-non-existent-id.md
 
 不正な例:
   <template>
@@ -997,7 +997,7 @@ a11y/no-role-presentation-on-focusable · lint ルール
 重大度: エラー
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-role-presentation-on-focusable.md
 
 ヒント:
   role属性を削除するか、要素をフォーカス不可にしてください。presentationロールは要素がフォーカス可能なまま意味的な意味を削除します
@@ -1010,7 +1010,7 @@ a11y/no-static-element-interactions · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-no-static-element-interactions.md
 
 不正な例:
   <div @click="handleClick">Click</div>
@@ -1037,7 +1037,7 @@ required の select にプレースホルダーの option を必須にする
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-placeholder-label-option.md
 
 不正な例:
   <template>
@@ -1068,7 +1068,7 @@ ARIAロールに必須プロパティを要求する
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-role-has-required-aria-props.md
 
 不正な例:
   <div role="checkbox">Check</div>
@@ -1093,7 +1093,7 @@ a11y/tabindex-no-positive · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-tabindex-no-positive.md
 
 ヒント:
   フォーカス可能な要素にはtabindex="0"を、プログラムによるフォーカスのみにはtabindex="-1"を使用してください
@@ -1106,7 +1106,7 @@ a11y/use-list · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/accessibility.md
+ドキュメント: docs/content/rules/reference/a11y-use-list.md
 
 不正な例:
   <template>
@@ -1134,7 +1134,7 @@ display: none の代わりに v-show を使うよう提案する
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-display-none.md
 === css/no-hardcoded-values
 css/no-hardcoded-values · lint ルール
 ハードコードされた値の代わりに CSS 変数を使うよう提案する
@@ -1144,7 +1144,7 @@ css/no-hardcoded-values · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-hardcoded-values.md
 === css/no-id-selectors
 css/no-id-selectors · lint ルール
 CSS での ID セレクターの使用を非推奨とする
@@ -1154,7 +1154,7 @@ CSS での ID セレクターの使用を非推奨とする
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-id-selectors.md
 === css/no-important
 css/no-important · lint ルール
 CSS での !important の使用を非推奨とする
@@ -1164,7 +1164,7 @@ CSS での !important の使用を非推奨とする
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-important.md
 === css/no-utility-classes
 css/no-utility-classes · lint ルール
 コンポーネントのスタイルでユーティリティクラスを実装することを警告する
@@ -1174,7 +1174,7 @@ css/no-utility-classes · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-utility-classes.md
 
 不正な例:
   .flex { display: flex; }
@@ -1192,7 +1192,7 @@ CSS の v-bind() によるパフォーマンスコストを警告する
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-no-v-bind-performance.md
 === css/prefer-logical-properties
 css/prefer-logical-properties · lint ルール
 国際化に対応しやすい CSS 論理プロパティを推奨する
@@ -1202,7 +1202,7 @@ css/prefer-logical-properties · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-prefer-logical-properties.md
 === css/prefer-nested-selectors
 css/prefer-nested-selectors · lint ルール
 子孫セレクターには CSS ネストを推奨する
@@ -1212,7 +1212,7 @@ css/prefer-nested-selectors · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-prefer-nested-selectors.md
 === css/prefer-slotted
 css/prefer-slotted · lint ルール
 スロットの内容のスタイル指定には ::v-slotted() を推奨する
@@ -1222,7 +1222,7 @@ css/prefer-slotted · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-prefer-slotted.md
 === css/require-font-display
 css/require-font-display · lint ルール
 @font-face ルールで font-display を必須にする
@@ -1232,7 +1232,7 @@ css/require-font-display · lint ルール
 重大度: 警告
 カテゴリー: css
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/css-require-font-display.md
 === ecosystem/nuxt-prefer-nuxt-link
 ecosystem/nuxt-prefer-nuxt-link · lint ルール
 アプリ内部へのリンクには NuxtLink を推奨する
@@ -1242,7 +1242,7 @@ ecosystem/nuxt-prefer-nuxt-link · lint ルール
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-nuxt-prefer-nuxt-link.md
 === ecosystem/pinia-prefer-store-to-refs
 ecosystem/pinia-prefer-store-to-refs · lint ルール
 Pinia ストアを分割代入するときは storeToRefs() を推奨する
@@ -1252,7 +1252,7 @@ Pinia ストアを分割代入するときは storeToRefs() を推奨する
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-pinia-prefer-store-to-refs.md
 === ecosystem/router-link-require-to
 ecosystem/router-link-require-to · lint ルール
 RouterLink と NuxtLink コンポーネントに遷移先の `to` を必須にする
@@ -1262,7 +1262,7 @@ RouterLink と NuxtLink コンポーネントに遷移先の `to` を必須に�
 重大度: エラー
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-router-link-require-to.md
 === ecosystem/void-link-require-href
 ecosystem/void-link-require-href · lint ルール
 Void Vue の Link コンポーネントに `href` を必須にする
@@ -1272,7 +1272,7 @@ Void Vue の Link コンポーネントに `href` を必須にする
 重大度: エラー
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-void-link-require-href.md
 === ecosystem/void-link-valid-method
 ecosystem/void-link-valid-method · lint ルール
 Void Vue の Link コンポーネントに静的に渡した method を検証する
@@ -1282,7 +1282,7 @@ Void Vue の Link コンポーネントに静的に渡した method を検証す
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-void-link-valid-method.md
 === ecosystem/vue-i18n-no-missing-key
 ecosystem/vue-i18n-no-missing-key · lint ルール
 SFC ローカルのメッセージに存在しない静的な vue-i18n キーを報告する
@@ -1292,7 +1292,7 @@ SFC ローカルのメッセージに存在しない静的な vue-i18n キーを
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-vue-i18n-no-missing-key.md
 === ecosystem/vue-router-prefer-named-link
 ecosystem/vue-router-prefer-named-link · lint ルール
 RouterLink では静的なパス文字列より名前付きルートのオブジェクトを推奨する
@@ -1302,7 +1302,7 @@ RouterLink では静的なパス文字列より名前付きルートのオブジ
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-vue-router-prefer-named-link.md
 === ecosystem/vue-router-prefer-named-push
 ecosystem/vue-router-prefer-named-push · lint ルール
 Vue Router のプログラムによるナビゲーションでは名前付きルートのオブジェクトを推奨する
@@ -1312,7 +1312,7 @@ Vue Router のプログラムによるナビゲーションでは名前付きル
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-vue-router-prefer-named-push.md
 === ecosystem/vue-test-utils-no-html-snapshot
 ecosystem/vue-test-utils-no-html-snapshot · lint ルール
 Vue Test Utils のテストで wrapper.html() をスナップショットに取ることを避ける
@@ -1322,7 +1322,7 @@ Vue Test Utils のテストで wrapper.html() をスナップショットに取�
 重大度: 警告
 カテゴリー: ecosystem
 自動修正: なし
-ドキュメント: docs/content/rules/ecosystem.md
+ドキュメント: docs/content/rules/reference/ecosystem-vue-test-utils-no-html-snapshot.md
 === html/deprecated-attr
 html/deprecated-attr · lint ルール
 非推奨の HTML 属性を禁止する
@@ -1332,7 +1332,7 @@ html/deprecated-attr · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-deprecated-attr.md
 
 不正な例:
   <template>
@@ -1357,7 +1357,7 @@ html/deprecated-element · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-deprecated-element.md
 
 不正な例:
   <template>
@@ -1383,7 +1383,7 @@ html/id-duplication · lint ルール
 重大度: エラー
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-id-duplication.md
 
 不正な例:
   <template>
@@ -1408,7 +1408,7 @@ html/no-consecutive-br · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-no-consecutive-br.md
 
 不正な例:
   <template>
@@ -1432,7 +1432,7 @@ html/no-dupe-style-properties · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-no-dupe-style-properties.md
 
 不正な例:
   <template>
@@ -1457,7 +1457,7 @@ html/no-duplicate-class · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-no-duplicate-class.md
 
 不正な例:
   <template>
@@ -1480,7 +1480,7 @@ html/no-duplicate-dt · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-no-duplicate-dt.md
 
 不正な例:
   <template>
@@ -1513,7 +1513,7 @@ html/no-empty-palpable-content · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-no-empty-palpable-content.md
 
 不正な例:
   <template>
@@ -1540,7 +1540,7 @@ html/require-datetime · lint ルール
 重大度: 警告
 カテゴリー: html-conformance
 自動修正: なし
-ドキュメント: docs/content/rules/html.md
+ドキュメント: docs/content/rules/reference/html-require-datetime.md
 
 不正な例:
   <template>
@@ -1565,7 +1565,7 @@ musea/no-empty-variant · lint ルール
 重大度: 警告
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-no-empty-variant.md
 === musea/prefer-design-tokens
 musea/prefer-design-tokens · lint ルール
 ハードコードされたプリミティブ値よりデザイントークンの CSS 変数を推奨する
@@ -1575,7 +1575,7 @@ musea/prefer-design-tokens · lint ルール
 重大度: 警告
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-prefer-design-tokens.md
 
 不正な例:
   .button {
@@ -1595,7 +1595,7 @@ musea/require-component · lint ルール
 重大度: 警告
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-require-component.md
 === musea/require-title
 musea/require-title · lint ルール
 artブロックにtitle属性を必須にする
@@ -1605,7 +1605,7 @@ artブロックにtitle属性を必須にする
 重大度: エラー
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-require-title.md
 
 不正な例:
   <art component="./Button.vue">
@@ -1631,7 +1631,7 @@ musea/unique-variant-names · lint ルール
 重大度: エラー
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-unique-variant-names.md
 === musea/valid-variant
 musea/valid-variant · lint ルール
 <variant> ブロックに name 属性を必須にする
@@ -1641,7 +1641,7 @@ musea/valid-variant · lint ルール
 重大度: エラー
 カテゴリー: musea
 自動修正: なし
-ドキュメント: docs/content/rules/musea-and-css.md
+ドキュメント: docs/content/rules/reference/musea-valid-variant.md
 === nuxt/no-nuxt-config-test-key
 nuxt/no-nuxt-config-test-key · lint ルール
 Nuxt の設定で `test` キーを指定することを禁止する
@@ -1651,7 +1651,7 @@ Nuxt の設定で `test` キーを指定することを禁止する
 重大度: エラー
 カテゴリー: nuxt
 自動修正: なし
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/nuxt-no-nuxt-config-test-key.md
 === nuxt/no-page-meta-runtime-values
 nuxt/no-page-meta-runtime-values · lint ルール
 `definePageMeta` の直下でランタイムの値を参照することを禁止する（ビルド時に別チャンクへ抽出され、コンポーネントの setup より前に実行されるため）
@@ -1661,7 +1661,7 @@ nuxt/no-page-meta-runtime-values · lint ルール
 重大度: エラー
 カテゴリー: nuxt
 自動修正: なし
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/nuxt-no-page-meta-runtime-values.md
 === nuxt/nuxt-config-keys-order
 nuxt/nuxt-config-keys-order · lint ルール
 Nuxt の設定プロパティを推奨の順序で書くことを推奨する
@@ -1671,7 +1671,7 @@ Nuxt の設定プロパティを推奨の順序で書くことを推奨する
 重大度: エラー
 カテゴリー: nuxt
 自動修正: あり
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/nuxt-nuxt-config-keys-order.md
 === nuxt/prefer-import-meta
 nuxt/prefer-import-meta · lint ルール
 `process.*` より `import.meta.*` を推奨する
@@ -1681,7 +1681,7 @@ nuxt/prefer-import-meta · lint ルール
 重大度: エラー
 カテゴリー: nuxt
 自動修正: あり
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/nuxt-prefer-import-meta.md
 === petite-vue/no-unsupported-directive
 petite-vue/no-unsupported-directive · lint ルール
 petite-vueがサポートしないディレクティブを禁止する
@@ -1691,7 +1691,7 @@ petite-vueがサポートしないディレクティブを禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/petite-vue-no-unsupported-directive.md
 
 不正な例:
   <div v-memo="[a, b]"></div>
@@ -1713,7 +1713,7 @@ v-effectに空でない式を要求する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/petite-vue-valid-v-effect.md
 
 不正な例:
   <div v-effect></div>
@@ -1735,7 +1735,7 @@ v-scopeにオブジェクトリテラルをバインドすることを必須に�
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/index.md
+ドキュメント: docs/content/rules/reference/petite-vue-valid-v-scope.md
 
 不正な例:
   <div v-scope="count"></div>
@@ -1760,7 +1760,7 @@ script/component-options-name-casing · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-component-options-name-casing.md
 
 不正な例:
   export default {
@@ -1780,7 +1780,7 @@ script/custom-event-name-casing · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-custom-event-name-casing.md
 
 不正な例:
   const emit = defineEmits(['my-event'])
@@ -1798,7 +1798,7 @@ defineEmits にはランタイム・配列形式ではなく型ベースの defi
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-define-emits-declaration.md
 
 不正な例:
   // Runtime array form
@@ -1824,7 +1824,7 @@ script/define-macros-order · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-define-macros-order.md
 
 不正な例:
   // defineEmits before defineProps
@@ -1846,7 +1846,7 @@ defineProps にはランタイム・オブジェクト形式ではなく型ベ�
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-define-props-declaration.md
 
 不正な例:
   // Runtime / object form
@@ -1873,7 +1873,7 @@ script/define-props-destructuring · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-define-props-destructuring.md
 
 不正な例:
   const props = defineProps<{ foo: string }>()
@@ -1889,7 +1889,7 @@ Options API の watch ハンドラーにアロー関数を使うことを禁止�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-arrow-functions-in-watch.md
 
 不正な例:
   export default {
@@ -1925,7 +1925,7 @@ computedプロパティでの非同期関数を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-async-in-computed.md
 
 不正な例:
   const data = computed(async () => {
@@ -1962,7 +1962,7 @@ Boolean 型の props にデフォルト値を指定することを禁止する
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-boolean-default.md
 
 不正な例:
   export default {
@@ -1994,7 +1994,7 @@ script/no-computed-properties-in-data · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-computed-properties-in-data.md
 
 不正な例:
   export default {
@@ -2024,7 +2024,7 @@ definePropsでの深くネストした分割代入を禁止する
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deep-destructure-in-props.md
 
 不正な例:
   // Deep nested destructuring
@@ -2052,7 +2052,7 @@ script/no-deprecated-data-object-declaration · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-data-object-declaration.md
 
 不正な例:
   export default {
@@ -2077,7 +2077,7 @@ Vue 3 で削除された Vue 2 の $set と $delete を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-delete-set.md
 
 不正な例:
   export default {
@@ -2101,7 +2101,7 @@ script/no-deprecated-destroyed-lifecycle · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: あり
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-destroyed-lifecycle.md
 === script/no-deprecated-dollar-listeners-api
 script/no-deprecated-dollar-listeners-api · lint ルール
 Vue 3 で削除された $listeners インスタンスプロパティを禁止する（$attrs に統合）
@@ -2111,7 +2111,7 @@ Vue 3 で削除された $listeners インスタンスプロパティを禁止�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-dollar-listeners-api.md
 
 不正な例:
   <script>
@@ -2142,7 +2142,7 @@ Vue 3 で削除された $scopedSlots インスタンスプロパティを禁止
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.md
 
 不正な例:
   const header = this.$scopedSlots.header
@@ -2162,7 +2162,7 @@ script/no-deprecated-events-api · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-events-api.md
 
 不正な例:
   <script>
@@ -2196,7 +2196,7 @@ Vue 3 で削除された Vue 2 の model オプションを禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-model-definition.md
 
 不正な例:
   export default {
@@ -2220,7 +2220,7 @@ props の default・validator 関数の中での `this` を禁止する（Vue 3 
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-props-default-this.md
 
 不正な例:
   export default {
@@ -2268,7 +2268,7 @@ Vue 3 で削除された Vue.config.keyCodes を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-deprecated-vue-config-keycodes.md
 
 不正な例:
   Vue.config.keyCodes.enter = 13
@@ -2284,7 +2284,7 @@ Options API の props・data・computed・methods・setup・inject の間での�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-dupe-keys.md
 
 不正な例:
   export default {
@@ -2319,7 +2319,7 @@ script/no-duplicate-attr-inheritance · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-duplicate-attr-inheritance.md
 
 不正な例:
   <script setup></script>
@@ -2337,7 +2337,7 @@ script/no-export-in-script-setup · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-export-in-script-setup.md
 === script/no-expose-after-await
 script/no-expose-after-await · lint ルール
 await の後の expose() と defineExpose() を禁止する
@@ -2347,7 +2347,7 @@ await の後の expose() と defineExpose() を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-expose-after-await.md
 
 不正な例:
   await loadData()
@@ -2365,7 +2365,7 @@ getCurrentInstance()を禁止する
 重大度: エラー
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-get-current-instance.md
 
 不正な例:
   import { getCurrentInstance } from 'vue'
@@ -2390,7 +2390,7 @@ script/no-import-compiler-macros · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-import-compiler-macros.md
 
 不正な例:
   import { defineProps, defineEmits } from 'vue'
@@ -2414,7 +2414,7 @@ Vue の内部モジュールからのインポートを禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-internal-imports.md
 
 不正な例:
   import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
@@ -2431,7 +2431,7 @@ setup() 内で await の後にライフサイクルフックを登録するこ�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-lifecycle-after-await.md
 
 不正な例:
   import { onMounted } from 'vue'
@@ -2459,7 +2459,7 @@ script/no-multiple-slot-args · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-multiple-slot-args.md
 
 不正な例:
   slots.default(foo, bar)
@@ -2481,7 +2481,7 @@ Vapor 向けのコンポーネントで nextTick() を使うことを禁止す�
 重大度: エラー
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-next-tick.md
 
 不正な例:
   import { nextTick } from 'vue'
@@ -2504,7 +2504,7 @@ Options APIパターンを禁止する
 重大度: エラー
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-options-api.md
 
 不正な例:
   export default {
@@ -2532,7 +2532,7 @@ Options API のコンポーネントオプション名にありがちなタイ�
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-potential-component-option-typo.md
 === script/no-reactive-destructure
 script/no-reactive-destructure · lint ルール
 リアクティビティが失われる、リアクティブオブジェクトの分割代入を禁止する
@@ -2542,7 +2542,7 @@ script/no-reactive-destructure · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-reactive-destructure.md
 
 不正な例:
   const state = reactive({ count: 0, name: 'foo' })
@@ -2572,7 +2572,7 @@ ref をオペランドとして使うときは `.value` 経由でアクセスす
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-ref-as-operand.md
 === script/no-required-prop-with-default
 script/no-required-prop-with-default · lint ルール
 required: true とデフォルト値の両方を持つ props を禁止する
@@ -2582,7 +2582,7 @@ required: true とデフォルト値の両方を持つ props を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-required-prop-with-default.md
 === script/no-reserved-identifiers
 script/no-reserved-identifiers · lint ルール
 Vue コンパイラーの予約識別子を使うことを禁止する
@@ -2592,7 +2592,7 @@ Vue コンパイラーの予約識別子を使うことを禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-reserved-identifiers.md
 
 不正な例:
   const __props = { name: 'test' }
@@ -2612,7 +2612,7 @@ Options API の props・data・computed・methods・setup のキーに Vue の�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-reserved-keys.md
 
 不正な例:
   export default {
@@ -2629,7 +2629,7 @@ script/no-reserved-props · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-reserved-props.md
 
 不正な例:
   export default {
@@ -2659,7 +2659,7 @@ script/no-restricted-globals · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-restricted-globals.md
 
 不正な例:
   const flag = process.env.FEATURE_FLAG
@@ -2682,7 +2682,7 @@ script/no-restricted-members · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-restricted-members.md
 
 不正な例:
   const token = window.localStorage.getItem('auth.token')
@@ -2699,7 +2699,7 @@ Options API の computed ゲッターでの副作用を禁止する
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-side-effects-in-computed-properties.md
 
 不正な例:
   export default {
@@ -2740,7 +2740,7 @@ script/no-top-level-ref-in-script · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-top-level-ref-in-script.md
 
 不正な例:
   <script>
@@ -2787,7 +2787,7 @@ setup や render 関数の中でコンポーネントを定義することを禁
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-unstable-nested-components.md
 === script/no-unused-emit-declarations
 script/no-unused-emit-declarations · lint ルール
 宣言されているのに一度も発行されないイベントを検出する
@@ -2797,7 +2797,7 @@ script/no-unused-emit-declarations · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-unused-emit-declarations.md
 
 不正な例:
   const emit = defineEmits(['change', 'unused'])
@@ -2816,7 +2816,7 @@ Options API の算出プロパティをメソッドのように呼び出すこ�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-use-computed-property-like-method.md
 === script/no-watch-after-await
 script/no-watch-after-await · lint ルール
 setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止する
@@ -2826,7 +2826,7 @@ setup() 内で await の後に停止ハンドルを保持せずにウォッチ�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-watch-after-await.md
 
 不正な例:
   import { watch } from 'vue'
@@ -2854,7 +2854,7 @@ withDefaults を非推奨とし、分割代入でのデフォルト値を推奨�
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-no-with-defaults.md
 
 不正な例:
   // Using withDefaults (verbose)
@@ -2884,7 +2884,7 @@ script/one-component-per-file · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-one-component-per-file.md
 
 不正な例:
   export default {
@@ -2907,7 +2907,7 @@ script/order-in-components · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-order-in-components.md
 
 不正な例:
   export default {
@@ -2933,7 +2933,7 @@ script/prefer-computed · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-computed.md
 === script/prefer-define-emits-binding
 script/prefer-define-emits-binding · lint ルール
 テンプレートの $emit より defineEmits で捕捉した関数を優先する
@@ -2943,7 +2943,7 @@ script/prefer-define-emits-binding · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: あり
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-define-emits-binding.md
 === script/prefer-define-options
 script/prefer-define-options · lint ルール
 name や inheritAttrs を設定するだけの通常の <script> より defineOptions() を推奨する
@@ -2953,7 +2953,7 @@ name や inheritAttrs を設定するだけの通常の <script> より defineOp
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-define-options.md
 
 不正な例:
   export default { name: 'MyComponent', inheritAttrs: false }
@@ -2973,7 +2973,7 @@ script/prefer-import-from-vue · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: あり
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-import-from-vue.md
 
 不正な例:
   import { ref } from '@vue/runtime-core'
@@ -2991,7 +2991,7 @@ script/prefer-ref-over-reactive · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-ref-over-reactive.md
 
 不正な例:
   // reactive requires careful handling to avoid losing reactivity
@@ -3020,7 +3020,7 @@ context.attrs より useAttrs() を推奨する
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-use-attrs.md
 
 不正な例:
   // In Options API style
@@ -3046,7 +3046,7 @@ script/prefer-use-id · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-use-id.md
 
 不正な例:
   // Manual ID generation (not SSR-safe)
@@ -3070,7 +3070,7 @@ context.slots より useSlots() を推奨する
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-use-slots.md
 
 不正な例:
   // In Options API style
@@ -3096,7 +3096,7 @@ script/prefer-use-template-ref · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-prefer-use-template-ref.md
 
 不正な例:
   <script setup lang="ts">
@@ -3128,7 +3128,7 @@ Boolean 以外の省略可能な props にデフォルト値を必須にする
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-default-prop.md
 
 不正な例:
   export default {
@@ -3156,7 +3156,7 @@ script/require-explicit-emits · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-explicit-emits.md
 === script/require-explicit-slots
 script/require-explicit-slots · lint ルール
 useSlots() で使うスロットに defineSlots<...>() での明示的な型付けを必須にする
@@ -3166,7 +3166,7 @@ useSlots() で使うスロットに defineSlots<...>() での明示的な型付�
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-explicit-slots.md
 
 不正な例:
   const props = defineProps<{ id: number }>()
@@ -3184,7 +3184,7 @@ script/require-function-return-type · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-function-return-type.md
 
 不正な例:
   const add = (a: number, b: number) => {
@@ -3212,7 +3212,7 @@ props の `type` には文字列リテラルではなくコンストラクター
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-prop-type-constructor.md
 
 不正な例:
   export default {
@@ -3241,7 +3241,7 @@ script/require-prop-types · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-prop-types.md
 
 不正な例:
   export default {
@@ -3271,7 +3271,7 @@ script/require-render-return · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-render-return.md
 
 不正な例:
   export default {
@@ -3297,7 +3297,7 @@ $slots のプロパティを関数として呼び出すことを必須にする
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-slots-as-functions.md
 
 不正な例:
   export default {
@@ -3321,7 +3321,7 @@ provide・inject のインジェクションキーには Symbol を推奨する
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-symbol-provide.md
 
 不正な例:
   // String keys can collide
@@ -3349,7 +3349,7 @@ script/require-typed-object-prop · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-typed-object-prop.md
 
 不正な例:
   const props = defineProps({
@@ -3374,7 +3374,7 @@ script/require-typed-ref · lint ルール
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-typed-ref.md
 
 不正な例:
   import { ref } from 'vue'
@@ -3398,7 +3398,7 @@ props のデフォルト値が宣言した型に合っていることを必須�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-require-valid-default-prop.md
 
 不正な例:
   export default {
@@ -3429,7 +3429,7 @@ script/return-in-computed-property · lint ルール
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-return-in-computed-property.md
 === script/return-in-emits-validator
 script/return-in-emits-validator · lint ルール
 Vue のすべての emits バリデーターで値を返すことを必須にする
@@ -3439,7 +3439,7 @@ Vue のすべての emits バリデーターで値を返すことを必須にす
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-return-in-emits-validator.md
 
 不正な例:
   export default {
@@ -3469,7 +3469,7 @@ defineEmits() の正しい使い方を強制する（型とランタイム引数
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-valid-define-emits.md
 
 不正な例:
   const local = ['change']
@@ -3490,7 +3490,7 @@ defineOptions() の正しい使い方を強制する（引数はオブジェク�
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-valid-define-options.md
 
 不正な例:
   defineOptions({ props: ['foo'] })   // use defineProps instead
@@ -3509,7 +3509,7 @@ defineProps() の正しい使い方を強制する（呼び出しは 1 回だけ
 重大度: エラー
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-valid-define-props.md
 
 不正な例:
   defineProps<{ foo: string }>({ foo: String }) // both type and runtime args
@@ -3530,7 +3530,7 @@ nextTick() の結果を await するか、チェーンするか、コールバ�
 重大度: 警告
 カテゴリー: script
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/script-valid-next-tick.md
 
 不正な例:
   import { nextTick } from 'vue'
@@ -3555,7 +3555,7 @@ SSRコンテキストでブラウザ専用グローバルを禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/ssr.md
+ドキュメント: docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md
 
 ヒント:
   ブラウザ専用のコードはonMounted()などのクライアントライフサイクルフックに移動するか、<ClientOnly>を使用してください
@@ -3568,7 +3568,7 @@ ssr/no-hydration-mismatch · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/ssr.md
+ドキュメント: docs/content/rules/reference/ssr-no-hydration-mismatch.md
 
 ヒント:
   一意のIDにはuseId()を使用するか、クライアント専用の値には<ClientOnly>でラップしてください
@@ -3581,7 +3581,7 @@ type/no-floating-promises · lint ルール
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-no-floating-promises.md
 === type/no-reactivity-loss
 type/no-reactivity-loss · lint ルール
 代入や関数呼び出しでリアクティブな値がただのスナップショットになることを禁止する
@@ -3591,7 +3591,7 @@ type/no-reactivity-loss · lint ルール
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-no-reactivity-loss.md
 === type/no-unsafe-template-binding
 type/no-unsafe-template-binding · lint ルール
 安全でない型に解決されるテンプレートのバインディングを禁止する
@@ -3601,7 +3601,7 @@ type/no-unsafe-template-binding · lint ルール
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-no-unsafe-template-binding.md
 === type/require-typed-emits
 type/require-typed-emits · lint ルール
 defineEmits に型定義を必須にする
@@ -3611,7 +3611,7 @@ defineEmits に型定義を必須にする
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-require-typed-emits.md
 
 不正な例:
   <script setup>
@@ -3636,7 +3636,7 @@ defineProps に型定義を必須にする
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-require-typed-props.md
 
 不正な例:
   <script setup>
@@ -3661,7 +3661,7 @@ type/strict-boolean-expressions · lint ルール
 重大度: 警告
 カテゴリー: type-aware
 自動修正: なし
-ドキュメント: docs/content/rules/type-and-script.md
+ドキュメント: docs/content/rules/reference/type-strict-boolean-expressions.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint ルール
 非推奨のinline-template属性を禁止する
@@ -3671,7 +3671,7 @@ vapor/no-inline-template · lint ルール
 重大度: エラー
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/vapor.md
+ドキュメント: docs/content/rules/reference/vapor-no-inline-template.md
 
 不正な例:
   <my-component inline-template>
@@ -3696,7 +3696,7 @@ vapor/no-vue-lifecycle-events · lint ルール
 重大度: エラー
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/vapor.md
+ドキュメント: docs/content/rules/reference/vapor-no-vue-lifecycle-events.md
 
 不正な例:
   <div @vue:mounted="handler"></div>
@@ -3722,7 +3722,7 @@ vapor/prefer-static-class · lint ルール
 重大度: 警告
 カテゴリー: vapor
 自動修正: あり
-ドキュメント: docs/content/rules/vapor.md
+ドキュメント: docs/content/rules/reference/vapor-prefer-static-class.md
 
 不正な例:
   <div :class="'static-class'"></div>
@@ -3744,7 +3744,7 @@ script setup に vapor 属性を付けるよう提案する
 重大度: 警告
 カテゴリー: vapor
 自動修正: なし
-ドキュメント: docs/content/rules/vapor.md
+ドキュメント: docs/content/rules/reference/vapor-require-vapor-attribute.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint ルール
 アクセシビリティのために画像にalt属性を必須にする
@@ -3754,7 +3754,7 @@ vue/a11y-img-alt · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-a11y-img-alt.md
 
 不正な例:
   <img src="/photo.jpg" />
@@ -3781,7 +3781,7 @@ vue/attribute-hyphenation · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-attribute-hyphenation.md
 
 不正な例:
   <MyComponent myProp="value" />
@@ -3803,7 +3803,7 @@ vue/attribute-order · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-attribute-order.md
 
 不正な例:
   <div @click="onClick" v-if="show" id="main"></div>
@@ -3813,6 +3813,16 @@ vue/attribute-order · lint ルール
 
 ヒント:
   推奨される順序に属性を並び替えてください
+=== vue/comment-directive
+vue/comment-directive · lint ルール
+Support comment directives in `<template>`
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint ルール
 コンポーネントファイル名にPascalCaseまたはkebab-caseを強制する
@@ -3822,7 +3832,7 @@ vue/component-definition-name-casing · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-component-definition-name-casing.md
 
 不正な例:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
@@ -3848,7 +3858,7 @@ vue/component-name-in-template-casing · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-component-name-in-template-casing.md
 
 不正な例:
   <script setup>import MyComponent from "./MyComponent.vue";</script>
@@ -3867,7 +3877,7 @@ button要素に明示的で有効なtypeを必須にする
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-html-button-has-type.md
 
 不正な例:
   <button>Click</button>
@@ -3881,6 +3891,26 @@ button要素に明示的で有効なtypeを必須にする
 
 ヒント:
   '<button>' の type は既定で "submit" となり、囲っているフォームを送信します。明示的に type="button"、"submit"、"reset" のいずれかを指定してください。
+=== vue/html-end-tags
+vue/html-end-tags · lint ルール
+Require end tags on HTML elements that may omit them
+
+精度: complete
+対象: HTML conformance of native elements with static attributes in SFC templates
+重大度: 警告
+カテゴリー: strongly-recommended
+自動修正: あり
+ドキュメント: docs/content/rules/reference/vue-html-end-tags.md
+
+不正な例:
+  <ul><li>a</ul>
+  <p>hello
+
+正しい例:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint ルール
 HTML属性の引用符スタイルを強制する
@@ -3890,7 +3920,7 @@ HTML属性の引用符スタイルを強制する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-html-quotes.md
 
 不正な例:
   <div class='foo'></div>
@@ -3911,7 +3941,7 @@ vue/html-self-closing · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-html-self-closing.md
 
 不正な例:
   <div></div>  <!-- should be <div /> when empty -->
@@ -3926,6 +3956,39 @@ vue/html-self-closing · lint ルール
 
 ヒント:
   セルフクロージング構文を使用してください
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint ルール
+Treat variables used in JSX element names as used
+
+精度: complete
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+不正な例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+正しい例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
+=== vue/match-component-file-name
+vue/match-component-file-name · lint ルール
+Require a component name to match its file name
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-match-component-file-name.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint ルール
 コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける
@@ -3935,7 +3998,7 @@ vue/max-template-complexity · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-max-template-complexity.md
 
 不正な例:
   <template>
@@ -3960,7 +4023,7 @@ vue/multi-word-component-names · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-multi-word-component-names.md
 
 不正な例:
   Item.vue
@@ -3982,7 +4045,7 @@ vue/mustache-interpolation-spacing · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-mustache-interpolation-spacing.md
 
 不正な例:
   <div>{{text}}</div>
@@ -4002,7 +4065,7 @@ v-forのインデックス変数をそのまま :key に使うことを禁止す
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-array-index-key.md
 
 不正な例:
   <li v-for="(item, index) in list" :key="index">{{ item }}</li>
@@ -4024,7 +4087,7 @@ vue/no-bare-strings-in-template · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-bare-strings-in-template.md
 
 不正な例:
   <div>hello</div>
@@ -4050,7 +4113,7 @@ HTML の真偽値属性に明示的な値を指定することを禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-boolean-attr-value.md
 
 不正な例:
   <template>
@@ -4077,7 +4140,7 @@ v-htmlまたはv-text使用時に子コンテンツを禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-child-content.md
 
 不正な例:
   <div v-html="content">child</div>
@@ -4090,6 +4153,16 @@ v-htmlまたはv-text使用時に子コンテンツを禁止する
 
 ヒント:
   v-htmlまたはv-textを使用する場合、子コンテンツは無視されます。子コンテンツを削除してください
+=== vue/no-custom-modifiers-on-v-model
+vue/no-custom-modifiers-on-v-model · lint ルール
+Disallow custom modifiers on `v-model` used on a component
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: 警告
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint ルール
 非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する
@@ -4099,7 +4172,7 @@ vue/no-deprecated-filter · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-filter.md
 
 不正な例:
   {{ message | capitalize }}
@@ -4123,7 +4196,7 @@ SFCの`<template>`への`functional`属性を禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-functional-template.md
 
 不正な例:
   <template functional>
@@ -4146,7 +4219,7 @@ vue/no-deprecated-html-element-is · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-html-element-is.md
 
 不正な例:
   <template>
@@ -4170,7 +4243,7 @@ vue/no-deprecated-inline-template · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-inline-template.md
 
 ヒント:
   マークアップを子コンポーネントへ移すか、inline-templateの代わりにスロットで渡してください。
@@ -4183,7 +4256,7 @@ vue/no-deprecated-router-link-tag-prop · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-router-link-tag-prop.md
 
 不正な例:
   <template>
@@ -4208,7 +4281,7 @@ vue/no-deprecated-scope-attribute · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-scope-attribute.md
 
 不正な例:
   <Foo>
@@ -4232,7 +4305,7 @@ vue/no-deprecated-slot-attribute · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-slot-attribute.md
 
 不正な例:
   <template>
@@ -4260,7 +4333,7 @@ vue/no-deprecated-slot-scope-attribute · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-slot-scope-attribute.md
 
 不正な例:
   <Foo>
@@ -4283,7 +4356,7 @@ vue/no-deprecated-v-bind-sync · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-v-bind-sync.md
 
 不正な例:
   <MyComponent :title.sync="title" />
@@ -4305,7 +4378,7 @@ vue/no-deprecated-v-is · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-v-is.md
 
 不正な例:
   <tr v-is="'MyRow'"></tr>
@@ -4325,7 +4398,7 @@ vue/no-deprecated-v-on-native-modifier · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-v-on-native-modifier.md
 
 不正な例:
   <MyComponent @click.native="handler" />
@@ -4347,7 +4420,7 @@ v-on の非推奨な数値 keyCode 修飾子を禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-deprecated-v-on-number-modifiers.md
 
 不正な例:
   <input @keyup.13="submit" />
@@ -4369,7 +4442,7 @@ v-ifチェーンでの重複条件を禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-dupe-v-else-if.md
 
 不正な例:
   <div v-if="foo"></div>
@@ -4395,7 +4468,7 @@ vue/no-duplicate-attributes · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-duplicate-attributes.md
 
 不正な例:
   <div id="foo" id="bar"></div>
@@ -4416,7 +4489,7 @@ vue/no-empty-component-block · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-empty-component-block.md
 
 不正な例:
   <template></template>
@@ -4450,7 +4523,7 @@ vue/no-inline-style · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-inline-style.md
 
 不正な例:
   <div style="color: red">text</div>
@@ -4471,7 +4544,7 @@ HTML属性の無効な静的値を禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-invalid-html-attribute.md
 
 ヒント:
   この要素で許可されている標準のrelトークンだけを使ってください。例: リンクのnoopener noreferrer、link要素のstylesheet。
@@ -4484,7 +4557,7 @@ vue/no-lone-template · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-lone-template.md
 
 不正な例:
   <template>
@@ -4513,7 +4586,7 @@ vue/no-multi-spaces · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-multi-spaces.md
 
 不正な例:
   <div  class="foo"></div>
@@ -4534,7 +4607,7 @@ vue/no-multiple-objects-in-class · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-multiple-objects-in-class.md
 
 不正な例:
   <div :class="[{ a }, { b }]"></div>
@@ -4556,7 +4629,7 @@ vue/no-multiple-template-root · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-multiple-template-root.md
 
 ヒント:
   テンプレートを1つの描画要素で囲み、条件分岐は1つのv-ifチェーンにまとめてください。
@@ -4569,7 +4642,7 @@ vue/no-mutating-props · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-mutating-props.md
 === vue/no-negated-v-if-condition
 vue/no-negated-v-if-condition · lint ルール
 v-elseを伴う連鎖で否定されたv-if条件を禁止する
@@ -4579,7 +4652,7 @@ v-elseを伴う連鎖で否定されたv-if条件を禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-negated-v-if-condition.md
 
 不正な例:
   <div v-if="!ok">A</div>
@@ -4605,7 +4678,7 @@ vue/no-non-component-keep-alive-child · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-non-component-keep-alive-child.md
 
 ヒント:
   条件やkeyをコンポーネントの子へ移すか、<component :is="...">で動的コンポーネントを直接描画してください
@@ -4618,7 +4691,17 @@ CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨す�
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-ref-object-reactivity-loss
+vue/no-ref-object-reactivity-loss · lint ルール
+Disallow copying a ref value in the same scope
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint ルール
 予約されたコンポーネント名を禁止する
@@ -4628,7 +4711,7 @@ vue/no-reserved-component-names · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-reserved-component-names.md
 
 不正な例:
   export default {
@@ -4651,7 +4734,7 @@ vue/no-root-v-if · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-root-v-if.md
 
 不正な例:
   <template>
@@ -4676,7 +4759,17 @@ vue/no-script-non-standard-lang · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-script-non-standard-lang.md
+=== vue/no-setup-props-reactivity-loss
+vue/no-setup-props-reactivity-loss · lint ルール
+Disallow setup prop reads that lose reactivity
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint ルール
 SFC ブロックでの src 属性を非推奨とする
@@ -4686,7 +4779,7 @@ SFC ブロックでの src 属性を非推奨とする
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-src-attribute.md
 === vue/no-static-inline-styles
 vue/no-static-inline-styles · lint ルール
 静的なインラインの style 属性を禁止する
@@ -4696,7 +4789,7 @@ vue/no-static-inline-styles · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-static-inline-styles.md
 === vue/no-template-key
 vue/no-template-key · lint ルール
 template要素でのkey属性を禁止する
@@ -4706,7 +4799,7 @@ template要素でのkey属性を禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-template-key.md
 
 不正な例:
   <template :key="section">
@@ -4729,7 +4822,7 @@ template ブロックでの lang 属性を非推奨とする
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-template-lang.md
 === vue/no-template-shadow
 vue/no-template-shadow · lint ルール
 v-forでの変数シャドーイングを禁止する
@@ -4739,7 +4832,7 @@ v-forでの変数シャドーイングを禁止する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-template-shadow.md
 
 不正な例:
   <!-- Nested v-for with same variable name -->
@@ -4763,7 +4856,7 @@ rel="noopener noreferrer"のないtarget="_blank"を禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-template-target-blank.md
 
 不正な例:
   <a href="https://example.com" target="_blank">x</a>
@@ -4782,7 +4875,7 @@ textareaでのマスタッシュ補間を禁止する
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-textarea-mustache.md
 
 不正な例:
   <textarea>{{ message }}</textarea>
@@ -4792,6 +4885,16 @@ textareaでのマスタッシュ補間を禁止する
 
 ヒント:
   textareaではマスタッシュ補間の代わりにv-modelを使用してください
+=== vue/no-this-in-before-route-enter
+vue/no-this-in-before-route-enter · lint ルール
+Disallow `this` in `beforeRouteEnter`
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-this-in-before-route-enter.md
 === vue/no-undefined-refs
 vue/no-undefined-refs · lint ルール
 テンプレート内の未定義参照を禁止する
@@ -4801,7 +4904,7 @@ vue/no-undefined-refs · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-undefined-refs.md
 
 ヒント:
   変数がインポートされているか、<script setup>で定義されていることを確認してください
@@ -4814,7 +4917,7 @@ vue/no-unsafe-url · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unsafe-url.md
 
 ヒント:
   javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください
@@ -4827,7 +4930,7 @@ iframe要素にsandbox属性を必須にする
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unsandboxed-iframe.md
 
 不正な例:
   <iframe src="/embed"></iframe>
@@ -4847,7 +4950,7 @@ vue/no-unused-components · lint ルール
 重大度: 警告
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unused-components.md
 
 不正な例:
   <script setup>
@@ -4875,7 +4978,7 @@ defineProps で定義したのに使われない props を禁止する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unused-properties.md
 
 不正な例:
   <script setup lang="ts">
@@ -4909,7 +5012,7 @@ vue/no-unused-refs · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unused-refs.md
 
 不正な例:
   <template><input ref="unused" /></template>
@@ -4932,7 +5035,7 @@ vue/no-unused-setup-bindings · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unused-setup-bindings.md
 === vue/no-unused-vars
 vue/no-unused-vars · lint ルール
 v-forディレクティブで未使用の変数定義を禁止する
@@ -4942,7 +5045,7 @@ v-forディレクティブで未使用の変数定義を禁止する
 重大度: 警告
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-unused-vars.md
 
 不正な例:
   <!-- 'index' is defined but never used -->
@@ -4975,7 +5078,7 @@ v-forと同じ要素でのv-else-ifまたはv-elseの使用を禁止する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-use-v-else-with-v-for.md
 
 ヒント:
   条件ディレクティブをv-for要素を囲むラッパー要素に移動してください。
@@ -4988,7 +5091,7 @@ v-forと同じ要素でのv-ifの使用を禁止する
 重大度: 警告
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-use-v-if-with-v-for.md
 
 不正な例:
   <li v-for="item in items" v-if="item.active">{{ item }}</li>
@@ -5013,7 +5116,7 @@ vue/no-useless-mustaches · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-useless-mustaches.md
 
 不正な例:
   <div>{{ 'x' }}</div>
@@ -5037,7 +5140,7 @@ vue/no-useless-template-attributes · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-useless-template-attributes.md
 
 不正な例:
   <template v-if="show" class="foo"><div /></template>
@@ -5060,7 +5163,7 @@ vue/no-useless-v-bind · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-useless-v-bind.md
 
 不正な例:
   <div :foo="'bar'"></div>
@@ -5073,6 +5176,26 @@ vue/no-useless-v-bind · lint ルール
 
 ヒント:
   バインディングを静的属性に置き換えてください（:foo='bar' ではなく foo=bar）。
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint ルール
+Disallow `key` on `<template v-for>`
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+不正な例:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+正しい例:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint ルール
 `<template v-for>`の子要素への`key`を禁止する
@@ -5082,7 +5205,7 @@ vue/no-v-for-template-key-on-child · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-v-for-template-key-on-child.md
 
 不正な例:
   <template v-for="item in items">
@@ -5105,7 +5228,7 @@ XSS攻撃を防ぐためにv-htmlの使用を禁止する
 重大度: 警告
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-v-html.md
 
 不正な例:
   <div v-html="userContent"></div>
@@ -5133,7 +5256,7 @@ v-textディレクティブを禁止し、マスタッシュ補間を推奨す�
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-v-text.md
 
 不正な例:
   <div v-text="message"></div>
@@ -5152,7 +5275,7 @@ vue/no-v-text-v-html-on-component · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-no-v-text-v-html-on-component.md
 
 不正な例:
   <MyComponent v-html="content" />
@@ -5174,7 +5297,7 @@ HTMLコンテンツモデルルールを強制
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-permitted-contents.md
 
 不正な例:
   <template>
@@ -5198,6 +5321,16 @@ HTMLコンテンツモデルルールを強制
   - <a>と<button>は互いにネスト不可
   - <ul>/<ol>の直接の子は<li>のみ
   - <table>の直接の子は<thead>、<tbody>、<tfoot>、<tr>、<caption>のみ
+=== vue/prefer-prop-type-boolean-first
+vue/prefer-prop-type-boolean-first · lint ルール
+Enforce `Boolean` comes first in component prop types
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md
 === vue/prefer-props-shorthand
 vue/prefer-props-shorthand · lint ルール
 同名propsバインディングに省略構文を強制する
@@ -5207,7 +5340,7 @@ vue/prefer-props-shorthand · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-prefer-props-shorthand.md
 
 不正な例:
   <MyComponent :foo="foo" />
@@ -5239,7 +5372,7 @@ trueをバインドする真偽値属性は省略形を推奨する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md
 
 不正な例:
   <input :disabled="true" />
@@ -5261,7 +5394,7 @@ vue/prop-name-casing · lint ルール
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-prop-name-casing.md
 
 不正な例:
   <script setup>
@@ -5289,7 +5422,7 @@ vue/require-component-is · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-require-component-is.md
 
 不正な例:
   <component />
@@ -5310,7 +5443,17 @@ vue/require-component-registration · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-expose
+vue/require-expose · lint ルール
+Require declare public properties using `expose`
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-require-expose.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint ルール
 styleブロックにscoped属性またはmodule属性を必須にする
@@ -5320,7 +5463,7 @@ styleブロックにscoped属性またはmodule属性を必須にする
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-require-scoped-style.md
 
 不正な例:
   <style>
@@ -5356,7 +5499,7 @@ vue/require-toggle-inside-transition · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-require-toggle-inside-transition.md
 
 不正な例:
   <transition>
@@ -5379,7 +5522,7 @@ v-forディレクティブにv-bind:keyを必須にする
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-require-v-for-key.md
 
 不正な例:
   <li v-for="item in items">{{ item }}</li>
@@ -5398,7 +5541,7 @@ vue/scoped-event-names · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-scoped-event-names.md
 
 ヒント:
   汎用的な名前の代わりに'update:modelValue'のようなスコープ付きイベント名を使用してください
@@ -5411,7 +5554,7 @@ SFC のトップレベル要素の順序を統一する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-sfc-element-order.md
 
 不正な例:
   <style>...</style>
@@ -5430,7 +5573,7 @@ style ブロックを 1 つにまとめることを推奨する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint ルール
 v-slotで使用する名前付きスロットにケバブケースを強制する
@@ -5440,7 +5583,7 @@ v-slotで使用する名前付きスロットにケバブケースを強制す�
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-slot-name-casing.md
 
 不正な例:
   <MyComponent>
@@ -5465,7 +5608,7 @@ vue/this-in-template · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-this-in-template.md
 
 不正な例:
   <div>{{ this.message }}</div>
@@ -5489,7 +5632,7 @@ vue/use-unique-element-ids · lint ルール
 重大度: 警告
 カテゴリー: accessibility
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-use-unique-element-ids.md
 
 不正な例:
   <template>
@@ -5535,7 +5678,7 @@ vue/use-v-on-exact · lint ルール
 重大度: 警告
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-use-v-on-exact.md
 
 不正な例:
   <button @click="handleClick" @click.ctrl="handleCtrlClick">Click</button>
@@ -5555,7 +5698,7 @@ v-bindディレクティブのスタイルを強制する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-v-bind-style.md
 
 不正な例:
   <div v-bind:class="foo"></div>
@@ -5574,7 +5717,7 @@ vue/v-on-event-hyphenation · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-v-on-event-hyphenation.md
 
 不正な例:
   <MyComponent @myEvent="handler" />
@@ -5597,7 +5740,7 @@ v-onハンドラをメソッド参照またはインライン関数として記�
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-v-on-handler-style.md
 
 不正な例:
   <button @click="count++"></button>
@@ -5621,7 +5764,7 @@ v-onディレクティブのスタイルを強制する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-v-on-style.md
 
 不正な例:
   <div v-on:click="handleClick"></div>
@@ -5640,7 +5783,7 @@ v-slotディレクティブのスタイルを強制する
 重大度: 警告
 カテゴリー: strongly-recommended
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-v-slot-style.md
 
 不正な例:
   <template v-slot:header>...</template>
@@ -5663,7 +5806,7 @@ vue/valid-attribute-name · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-attribute-name.md
 
 不正な例:
   <div my"attr="value"></div>
@@ -5675,6 +5818,16 @@ vue/valid-attribute-name · lint ルール
 
 ヒント:
   属性名にスペース、引用符、>、/、=、制御文字を含めることはできません
+=== vue/valid-model-definition
+vue/valid-model-definition · lint ルール
+Require valid keys in the model option
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint ルール
 Vue 3のフラグメントセマンティクスに対して有効な `<template>` ルートを強制する
@@ -5684,7 +5837,7 @@ Vue 3のフラグメントセマンティクスに対して有効な `<template>
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-template-root.md
 
 不正な例:
   <template>
@@ -5707,7 +5860,7 @@ vue/valid-v-bind · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-bind.md
 
 不正な例:
   <div v-bind></div>
@@ -5730,7 +5883,7 @@ vue/valid-v-cloak · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-cloak.md
 
 不正な例:
   <div v-cloak="foo"></div>
@@ -5751,7 +5904,7 @@ vue/valid-v-else · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: あり
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-else.md
 
 不正な例:
   <div v-else="foo"></div>
@@ -5773,7 +5926,7 @@ vue/valid-v-else-if · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-else-if.md
 
 不正な例:
   <div v-else-if="foo"></div> <!-- without preceding v-if -->
@@ -5796,7 +5949,7 @@ vue/valid-v-for · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-for.md
 
 不正な例:
   <div v-for></div>
@@ -5818,7 +5971,7 @@ vue/valid-v-html · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-html.md
 
 不正な例:
   <div v-html></div>
@@ -5839,7 +5992,7 @@ vue/valid-v-if · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-if.md
 
 不正な例:
   <div v-if></div>
@@ -5861,7 +6014,7 @@ vue/valid-v-is · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-is.md
 
 不正な例:
   <tr v-is:arg="'MyRow'"></tr>
@@ -5883,7 +6036,7 @@ vue/valid-v-memo · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-memo.md
 
 不正な例:
   <div v-memo></div>
@@ -5902,7 +6055,7 @@ vue/valid-v-model · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-model.md
 
 不正な例:
   <div v-model="foo"></div>
@@ -5925,7 +6078,7 @@ vue/valid-v-on · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-on.md
 
 不正な例:
   <div v-on></div>
@@ -5948,7 +6101,7 @@ vue/valid-v-once · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-once.md
 
 不正な例:
   <div v-once="foo"></div>
@@ -5969,7 +6122,7 @@ vue/valid-v-pre · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-pre.md
 
 不正な例:
   <div v-pre:arg></div>
@@ -5990,7 +6143,7 @@ vue/valid-v-show · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-show.md
 
 不正な例:
   <div v-show></div>
@@ -6011,7 +6164,7 @@ vue/valid-v-slot · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-slot.md
 
 不正な例:
   <div v-slot:header></div>                 <!-- not on component -->
@@ -6034,7 +6187,7 @@ vue/valid-v-text · lint ルール
 重大度: エラー
 カテゴリー: essential
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-valid-v-text.md
 
 不正な例:
   <div v-text></div>
@@ -6055,7 +6208,7 @@ SFC ファイル内のカスタムブロックを警告する
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-warn-custom-block.md
 === vue/warn-custom-directive
 vue/warn-custom-directive · lint ルール
 登録が必要なカスタムディレクティブを警告する
@@ -6065,7 +6218,7 @@ vue/warn-custom-directive · lint ルール
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
-ドキュメント: docs/content/rules/vue.md
+ドキュメント: docs/content/rules/reference/vue-warn-custom-directive.md
 
 正しい例:
   <div v-if="show"></div>

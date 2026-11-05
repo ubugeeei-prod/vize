@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "id": "lsp/regression/qualification-20261105",
+  "provenance": {
+    "fixCommit": "8c83f43291eeec881a47e42ffcc34c85faf5e050",
+    "inputOrigin": "Exact split_script_checker_document_maps_both_blocks source; now pinned and included by the original unit test.",
+    "contractOrigin": "Complete hierarchical documentSymbol response observed using published v0.691.0 and reviewed against all source block and declaration spans; candidate source Actions still required.",
+    "witness": {
+      "path": "qualification-20261105/AllBlocks.vue.txt",
+      "sha256": "5fbc935b127edeb8e77b18f08fd6d035c2cce8eaf64788ae5619ecb168b6555c"
+    }
+  },
+  "files": [
+    {
+      "source": "AllBlocks.vue.txt",
+      "runtimePath": "AllBlocks.vue",
+      "sha256": "5fbc935b127edeb8e77b18f08fd6d035c2cce8eaf64788ae5619ecb168b6555c"
+    }
+  ],
+  "entry": "AllBlocks.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "f6a988643d4dbc31f13ce12cba8f12effe7f2e45201e8d87b8199acfdcca08b4"
+  },
+  "method": "textDocument/documentSymbol",
+  "documentVersion": 1,
+  "hierarchicalDocumentSymbols": true,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  }
+}

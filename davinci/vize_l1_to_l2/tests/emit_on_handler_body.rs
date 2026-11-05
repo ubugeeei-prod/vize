@@ -21,11 +21,16 @@ use vize_l1_to_l2::{
 };
 
 fn assembled_with_options(source: &str, is_ts: bool) -> String {
+    assembled_prefixed(source, false, is_ts)
+}
+
+fn assembled_prefixed(source: &str, prefix_identifiers: bool, is_ts: bool) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
         emit_dom_with_options(
             lowered,
             facts,
             &DomEmitOptions {
+                prefix_identifiers,
                 is_ts,
                 ..DomEmitOptions::DEFAULT
             },
@@ -41,11 +46,16 @@ fn assembled(source: &str) -> String {
 }
 
 fn shipped_with_options(source: &str, is_ts: bool) -> String {
+    shipped_prefixed(source, false, is_ts)
+}
+
+fn shipped_prefixed(source: &str, prefix_identifiers: bool, is_ts: bool) -> String {
     let allocator = Allocator::new();
     let (_, errors, old) = vize_atelier_dom::compile_template_legacy_with_options(
         &allocator,
         source,
         vize_atelier_dom::DomCompilerOptions {
+            prefix_identifiers,
             is_ts,
             ..vize_atelier_dom::DomCompilerOptions::default()
         },
@@ -152,6 +162,48 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
         refused_reason(r#"<div @click="let value; let value"></div>"#),
         Some(Reason::OnHandlerNotJs)
     );
+}
+
+/// Vue forwards an erased identifier or member as the handler itself.
+/// `onPick!` and `onPick as any` used to compile to `$event => (_ctx.onPick)`,
+/// which evaluates the function and never calls it.
+#[test]
+fn ts_erased_handler_references_are_called_like_identifiers() {
+    for prefix in [false, true] {
+        let plain = assembled_prefixed(r#"<div @click="onPick"></div>"#, prefix, true);
+        let reference = if prefix { "_ctx.onPick" } else { "onPick" };
+        let expected = format!(
+            "const {{ openBlock: _openBlock, createElementBlock: _createElementBlock }} = Vue\n\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {{\n  return (_openBlock(), _createElementBlock(\"div\", {{ onClick: {reference} }}, null, 8 /* PROPS */, [\"onClick\"]))\n}}"
+        );
+        assert_eq!(plain, expected, "untyped control prefix={prefix}");
+        assert_eq!(
+            assembled_prefixed(r#"<div @click="onPick"></div>"#, prefix, false),
+            expected,
+            "JavaScript control prefix={prefix}",
+        );
+        for source in [
+            r#"<div @click="onPick!"></div>"#,
+            r#"<div @click="onPick as any"></div>"#,
+        ] {
+            let emitted = assembled_prefixed(source, prefix, true);
+            assert_eq!(emitted, plain, "prefix={prefix} {source}");
+            assert_eq!(
+                emitted,
+                shipped_prefixed(source, prefix, true),
+                "prefix={prefix} {source}"
+            );
+        }
+    }
+}
+
+#[test]
+fn unchanged_js_handler_padding_keeps_legacy_layout_in_typescript_mode() {
+    let source = r#"<div @click=" onPick "></div>"#;
+    for prefix in [false, true] {
+        let emitted = assembled_prefixed(source, prefix, true);
+        assert_eq!(emitted, shipped_prefixed(source, prefix, true));
+        assert_eq!(emitted, assembled_prefixed(source, prefix, false));
+    }
 }
 
 #[test]

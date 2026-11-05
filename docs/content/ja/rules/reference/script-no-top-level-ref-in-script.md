@@ -1,45 +1,23 @@
 ---
 title: "script/no-top-level-ref-in-script"
+description: "通常の script のトップレベルで、リクエスト間に共有される状態を作る箇所を検出します。"
 ---
 
 # `script/no-top-level-ref-in-script`
 
 通常の script のトップレベルで、リクエスト間に共有される状態を作る箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | なし | なし | なし |
 
-既定の重大度: `error`  
-プリセット: _none_  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
-## 設定（Vite+）
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-top-level-ref-in-script": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
-
-## 悪い
+## 悪い例
 
 通常の `<script>` がモジュール直下で `count` と `user` を初期化しています。SSR では、この状態がコンポーネントインスタンスやリクエスト間で共有され得ます。
 
-```vue
+```vue annotate="remove:1,2,4,8"
 <script>
 // This state is shared across all requests in SSR!
 const count = ref(0)
@@ -53,11 +31,11 @@ export default {
 </script>
 ```
 
-## 良い
+## 良い例
 
 script setup の ref はコンポーネントごとに初期化されます。通常の script には定数、状態を作る関数、`setup()` 内で作る ref を置き、モジュール直下でリアクティブな状態を作りません。
 
-```vue
+```vue annotate="add:1,2,4,6,7,8,9,10,11,12,13,14,17,18,19"
 <script setup>
 // Script setup creates fresh state per request
 const count = ref(0)
@@ -82,6 +60,27 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+## 設定（Vite+）
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [全ルール](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-top-level-ref-in-script": "error"
+      }
+    },
+  },
+});
+```
+
+設定したら `vp run lint` を実行します。
+
+## 関連ページ
+
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63)

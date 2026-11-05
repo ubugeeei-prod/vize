@@ -333,9 +333,12 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
                 .unwrap()
                 .unwrap();
             let result = read
-                .run()
+                .run_with_provenance()
                 .unwrap()
-                .expect("all Other compiler kinds must complete");
+                .expect("all Other compiler kinds must complete")
+                .into_iter()
+                .map(|row| row.diagnostic)
+                .collect::<Vec<_>>();
             assert!(client.initial_diagnostics_read_is_current(&read));
             result
         });
@@ -349,9 +352,12 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         let prepared_project = client.project_session().unwrap().project().clone();
         let snapshot = client.project_session().unwrap().snapshot_lease();
         let prepared = read
-            .run()
+            .run_with_provenance()
             .unwrap()
-            .expect("all compiler kinds must complete");
+            .expect("all compiler kinds must complete")
+            .into_iter()
+            .map(|row| row.diagnostic)
+            .collect::<Vec<_>>();
         assert!(client.initial_diagnostics_read_is_current(&read));
         let texts = project
             .documents

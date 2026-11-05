@@ -49,6 +49,9 @@ pub mod path;
 
 pub mod timing_observer;
 
+/// Shared selected-project TypeScript compiler-option loading.
+pub mod typescript_project;
+
 /// The Vize version users see (`vize --version`, LSP server info).
 ///
 /// Release builds receive the exact planned version explicitly so Cargo tracks

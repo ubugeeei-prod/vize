@@ -38,7 +38,15 @@ jobs:
       engines: ${{ steps.plan.outputs.engines }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 2 }
+        with:
+          fetch-depth: 2
+          # Plan diffs read Git trees; only the selector runtime needs blobs.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/plan-check-inputs.ts
+            /tools/support/compat/github/comparison-base.ts
+            /tools/support/github/opinionated-source-inputs.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Validate explicit release qualification
@@ -235,6 +243,9 @@ jobs:
       - name: Check package engine matrix
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.ts tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+      - name: Check content mapper helper ABI
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        run: node npm/cli/scripts/content-mapper-helper-abi.ts --check
       - name: Report unchanged inputs
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
@@ -442,6 +453,18 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+          # The gate and downloaded-packet reporter need no product source checkout.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/require-needs-success.ts
+            /tools/support/compat/github/comment-test-report.ts
+            /tools/support/compat/github/test-cases.ts
+            /tools/support/compat/github/test-report-markdown.ts
+            /tools/support/compat/github/test-areas.ts
+            /tools/support/json-value.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every needed job to succeed

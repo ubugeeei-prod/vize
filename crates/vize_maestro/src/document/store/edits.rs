@@ -9,21 +9,30 @@ use tower_lsp::lsp_types::{Diagnostic, Range, Url};
 use super::{Document, DocumentText, next_revision};
 use crate::utils::position_to_offset;
 #[cfg(feature = "native")]
-use crate::{ide::diagnostics::NativeFamily, utils::offset_to_position};
+use crate::{
+    ide::diagnostics::{NativeDiagnostic, NativeFamily},
+    utils::offset_to_position,
+};
 
 /// The latest native family of an earlier revision, anchored to byte offsets
 /// of the current text. An edit overlapping an anchor drops that diagnostic.
 #[cfg(feature = "native")]
 #[derive(Debug)]
 pub(super) struct CarriedNative {
-    anchored: Vec<(usize, usize, Diagnostic)>,
+    anchored: Vec<(usize, usize, NativeDiagnostic)>,
+    /// Holds only for the text the family was computed on: after an edit the
+    /// script parser alone describes the current syntax (#11626).
     owns_script_syntax: bool,
 }
 
 #[cfg(feature = "native")]
 impl CarriedNative {
     fn replace(&mut self, start: usize, end: usize, inserted: usize) {
-        self.anchored.retain_mut(|(from, to, _)| {
+        self.owns_script_syntax = false;
+        self.anchored.retain_mut(|(from, to, record)| {
+            if record.phase == vize_canon::corsa_bridge::DiagnosticPhase::Syntactic {
+                return false;
+            }
             if *to <= start {
                 return true;
             }
@@ -159,9 +168,12 @@ impl super::DocumentStore {
                     start: offset_to_position(&document.content, *start)?,
                     end: offset_to_position(&document.content, *end)?,
                 };
-                Some(Diagnostic {
-                    range,
-                    ..diagnostic.clone()
+                Some(NativeDiagnostic {
+                    diagnostic: Diagnostic {
+                        range,
+                        ..diagnostic.diagnostic.clone()
+                    },
+                    phase: diagnostic.phase,
                 })
             })
             .collect();

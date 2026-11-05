@@ -91,6 +91,9 @@ impl Linter {
         template_source: &str,
         sfc_source: Option<&str>,
     ) -> usize {
+        let Some(prefix) = self.registry.ecosystem_template_prefix() else {
+            return self.registry.rules().len();
+        };
         if !matches!(self.preset, Some(LintPreset::Ecosystem))
             || self.enabled_rules.is_some()
             || !self.disabled_rules.is_empty()
@@ -99,10 +102,7 @@ impl Linter {
             return self.registry.rules().len();
         }
 
-        self.registry
-            .rules()
-            .len()
-            .saturating_sub(crate::rules::ecosystem::TEMPLATE_RULE_COUNT)
+        prefix
     }
 
     fn lint_sfc_level<'a>(

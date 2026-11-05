@@ -1,18 +1,37 @@
 ---
 title: "script/valid-define-emits"
+description: "defineEmits の重複や型と実行時引数の併用を検出します。"
 ---
 
 # `script/valid-define-emits`
 
 defineEmits の重複や型と実行時引数の併用を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+同じ `defineEmits` に型引数と実行時配列 `["save"]` の両方を渡し、併用できない二つの宣言形式を混ぜています。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineEmits<{ save: [] }>(["save"]);
+</script>
+```
+
+## 良い例
+
+実行時の引数を除き、`save` の宣言を型ベースの一つの形式に統一します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineEmits<{ save: [] }>();
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-同じ `defineEmits` に型引数と実行時配列 `["save"]` の両方を渡し、併用できない二つの宣言形式を混ぜています。
-
-```vue
-<script setup lang="ts">
-defineEmits<{ save: [] }>(["save"]);
-</script>
-```
-
-## 良い
-
-実行時の引数を除き、`save` の宣言を型ベースの一つの形式に統一します。
-
-```vue
-<script setup lang="ts">
-defineEmits<{ save: [] }>();
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45)

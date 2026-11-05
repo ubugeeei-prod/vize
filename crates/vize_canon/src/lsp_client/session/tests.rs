@@ -8,6 +8,80 @@ use crate::file_uri::path_to_file_uri;
 use corsa::CorsaError;
 use corsa::api::{ApiMode, DocumentIdentifier};
 
+#[test]
+fn moving_one_spelling_preserves_the_other_native_identity_owner() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let mut client = super::CorsaProjectClient::empty_for_test(root);
+    let first = "file:///workspace/a.ts";
+    let second = "file:///workspace/a%2Ets";
+    let native = "file:///native/a.ts";
+    client.remember_session_document_uri(first, native.into());
+    client.remember_session_document_uri(second, native.into());
+    client.remember_session_document_uri(first, "file:///native/moved.ts".into());
+    assert_eq!(
+        client
+            .external_document_uris
+            .get(native)
+            .map(|uri| uri.as_str()),
+        Some(second)
+    );
+    assert_eq!(client.session_document_uris.get(second).unwrap(), native);
+    assert_eq!(
+        client.session_document_uris.get(first).unwrap(),
+        "file:///native/moved.ts"
+    );
+}
+
+#[test]
+fn releasing_either_normalized_owner_keeps_the_other_until_the_last_close() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let first = "file:///workspace/a.ts";
+    let second = "file:///workspace/a%2Ets";
+    let native = "file:///native/a.ts";
+    for (closed, remaining) in [(first, second), (second, first)] {
+        let mut client = super::CorsaProjectClient::empty_for_test(root.clone());
+        client.remember_session_document_uri(first, native.into());
+        client.remember_session_document_uri(second, native.into());
+        assert_eq!(
+            client.forget_session_document_uri(closed).as_deref(),
+            Some(native)
+        );
+        assert_eq!(
+            client
+                .external_document_uris
+                .get(native)
+                .map(|uri| uri.as_str()),
+            Some(remaining)
+        );
+        assert_eq!(
+            client.forget_session_document_uri(remaining).as_deref(),
+            Some(native)
+        );
+        assert!(client.session_document_uris.is_empty());
+        assert!(client.external_document_uris.is_empty());
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn linked_workspace_virtual_documents_keep_their_import_namespace() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("workspace");
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    std::fs::write(root.join("src/Widget.art.vue"), "<art />").unwrap();
+    let alias = directory.path().join("linked-workspace");
+    std::os::unix::fs::symlink(&root, &alias).unwrap();
+    let canonical_root = root.canonicalize().unwrap();
+    let uri = path_to_file_uri(&alias.join("src/Widget.art.vue.art_variant_0.template.ts"));
+    let storage = super::super::session_storage::SessionStorage::new(&canonical_root).unwrap();
+    assert_eq!(
+        build_session_document_uri(&uri, &canonical_root, storage.root(), true),
+        uri
+    );
+}
+
 // Keep in-project virtual `.vue.ts` overlays at real paths so relative
 // script imports resolve against the source tree.
 #[test]

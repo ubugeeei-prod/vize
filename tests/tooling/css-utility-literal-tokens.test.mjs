@@ -1,3 +1,7 @@
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -69,6 +73,11 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
         assert.equal(expectedBytes.length, entry.expectedBytes);
         assert.equal(sha256(expectedBytes), entry.expectedSha256);
         const expected = JSON.parse(expectedBytes.toString("utf8"));
+        const expectedJson = currentRuleDocumentationPacket(expected.json);
+        const expectedPlain = currentRuleDocumentationPlain(
+          expected.plain,
+          "css/no-utility-classes",
+        );
         const physical = path.join(directory, entry.filename);
         fs.writeFileSync(physical, source);
         const captures = [];
@@ -101,7 +110,7 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
                 : null,
               stdoutBase64: (result.stdout ?? Buffer.alloc(0)).toString("base64"),
               stderrBase64: (result.stderr ?? Buffer.alloc(0)).toString("base64"),
-              expected: expected[format],
+              expected: format === "json" ? expectedJson : expectedPlain,
             };
             captures.push(row);
             evidence.runs.push(row);
@@ -114,9 +123,9 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
             if (format === "json") {
               row.actual = JSON.parse(stdout);
               persist();
-              assert.deepEqual(row.actual, expected.json, entry.id);
+              assert.deepEqual(row.actual, expectedJson, entry.id);
             } else {
-              assert.equal(stdout, expected.plain, entry.id);
+              assert.equal(stdout, expectedPlain, entry.id);
             }
             assert.deepEqual(fs.readFileSync(physical), source);
             assert.equal(

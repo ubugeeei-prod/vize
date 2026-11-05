@@ -1,18 +1,37 @@
 ---
 title: "css/prefer-nested-selectors"
+description: "Recommend using CSS nesting for descendant selectors."
 ---
 
 # `css/prefer-nested-selectors`
 
-Recommend using CSS nesting for descendant selectors
+Recommend using CSS nesting for descendant selectors.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The `.card .title` descendant selector repeats the parent selector in a flat rule.
+
+```vue annotate="remove:2"
+<style scoped>
+.card .title { color: red; }
+</style>
+```
+
+## Good
+
+The `.title` rule is nested inside `.card`, keeping the parent-child styling relationship together.
+
+```vue annotate="add:2"
+<style scoped>
+.card { .title { color: red; } }
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `.card .title` descendant selector repeats the parent selector in a flat rule.
-
-```vue
-<style scoped>
-.card .title { color: red; }
-</style>
-```
-
-## Good
-
-The `.title` rule is nested inside `.card`, keeping the parent-child styling relationship together.
-
-```vue
-<style scoped>
-.card { .title { color: red; } }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14)

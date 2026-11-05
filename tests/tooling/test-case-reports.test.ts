@@ -1,18 +1,20 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { parse } from "yaml";
-
+import {
+  jsPackageRoot,
+  nodeTestArguments,
+  vitestArguments,
+  wrappedNodeArguments,
+} from "../../tools/support/compat/github/js-test-cases.ts";
 import { TEST_AREAS, areaFor } from "../../tools/support/compat/github/test-areas.ts";
 import {
   nextestCases,
-  readPackets,
+  nodeTestCases,
+  vitestCases,
   workspaceCrates,
 } from "../../tools/support/compat/github/test-cases.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 const crates = workspaceCrates(root);
 
@@ -47,6 +49,215 @@ test("nextest cases keep their final outcome, crate path and decoded name", () =
   assert.throws(() => nextestCases(`<testcase name="x"/>`, crates), /no classname or name/);
 });
 
+test("node and vitest reports use the same case packet", () => {
+  assert.equal(jsPackageRoot({}), root);
+  assert.equal(jsPackageRoot({ VIZE_TEST_CASES_ROOT: "/tmp/cases/" }), "/tmp/cases");
+  const ui = path.join(root, "npm/ui/src/one.test.ts");
+  assert.deepEqual(
+    nodeTestCases(
+      [
+        {
+          type: "test:pass",
+          data: { name: "passes", file: ui, details: { type: "test" } },
+        },
+        {
+          type: "test:fail",
+          data: { name: ui, file: ui, details: { type: "test" } },
+        },
+        { type: "test:pass", data: { name: "suite", file: ui, details: { type: "suite" } } },
+      ],
+      root,
+    ),
+    [
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › passes",
+        outcome: "passed",
+      },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts", outcome: "failed" },
+    ],
+  );
+  assert.deepEqual(
+    vitestCases(
+      {
+        testResults: [
+          {
+            name: ui,
+            status: "failed",
+            assertionResults: [
+              {
+                ancestorTitles: ["one.test.ts", "group"],
+                title: "passes",
+                status: "passed",
+              },
+              { ancestorTitles: [], title: "fails", status: "failed" },
+              { ancestorTitles: ["group"], title: "later", status: "todo" },
+              { ancestorTitles: ["group"], title: "holds", status: "pending" },
+            ],
+          },
+          {
+            name: path.join(root, "npm/builder/vite/src/load.test.ts"),
+            status: "failed",
+            assertionResults: [],
+          },
+        ],
+      },
+      root,
+    ),
+    [
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › passes",
+        outcome: "passed",
+      },
+      { path: "npm/ui/src/one.test.ts", name: "npm/ui/src/one.test.ts › fails", outcome: "failed" },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › later",
+        outcome: "skipped",
+      },
+      {
+        path: "npm/ui/src/one.test.ts",
+        name: "npm/ui/src/one.test.ts › group › holds",
+        outcome: "skipped",
+      },
+      {
+        path: "npm/builder/vite/src/load.test.ts",
+        name: "npm/builder/vite/src/load.test.ts",
+        outcome: "failed",
+      },
+    ],
+  );
+  assert.throws(
+    () =>
+      vitestCases(
+        {
+          testResults: [
+            { name: ui, assertionResults: [{ ancestorTitles: [], title: "x", status: "unknown" }] },
+          ],
+        },
+        root,
+      ),
+    /status unknown/,
+  );
+  const reporter = path.join(root, "tools/support/compat/github/test-case-reporter.ts");
+  assert.deepEqual(nodeTestArguments(["--test", "a.test.ts"], reporter, "/tmp/out.json"), [
+    "--test",
+    "--test-reporter=spec",
+    "--test-reporter-destination=stdout",
+    `--test-reporter=${reporter}`,
+    "--test-reporter-destination=/tmp/out.json",
+    "a.test.ts",
+  ]);
+  assert.deepEqual(
+    nodeTestArguments(["--test-reporter=tap", "--test", "a.test.ts"], reporter, "/tmp/out.json"),
+    [
+      "--test-reporter=tap",
+      "--test",
+      `--test-reporter=${reporter}`,
+      "--test-reporter-destination=/tmp/out.json",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(nodeTestArguments(["plain.mjs", "--test"], reporter, "/tmp/out.json"), null);
+  assert.deepEqual(
+    nodeTestArguments(["--test", `--test-reporter=${reporter}`], reporter, "/tmp/out.json"),
+    ["--test", `--test-reporter=${reporter}`],
+  );
+  assert.deepEqual(
+    vitestArguments(["test", "run", "--config", "vite.config.ts"], "/tmp/out.json"),
+    [
+      "test",
+      "run",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=/tmp/out.json",
+      "--config",
+      "vite.config.ts",
+    ],
+  );
+  assert.deepEqual(
+    vitestArguments(["test", "run", "--reporter=dot", "a.test.ts"], "/tmp/out.json"),
+    [
+      "test",
+      "run",
+      "--reporter=json",
+      "--outputFile.json=/tmp/out.json",
+      "--reporter=dot",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(vitestArguments(["test", "watch"], "/tmp/out.json"), null);
+  assert.equal(vitestArguments(["pack"], "/tmp/out.json"), null);
+  const vp = "/pkg/node_modules/vite-plus/bin/vp";
+  const tsx = "/pkg/node_modules/tsx/dist/cli.mjs";
+  assert.deepEqual(
+    wrappedNodeArguments(
+      [vp, "test", "run", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    [
+      vp,
+      "test",
+      "run",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=/tmp/vitest.json",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(
+    wrappedNodeArguments(
+      [vp, "exec", "tsx", "--test", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    null,
+  );
+  assert.equal(
+    wrappedNodeArguments(
+      [vp, "test", "run", "--outputFile.json=/tmp/already.json"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    null,
+  );
+  assert.deepEqual(
+    wrappedNodeArguments(
+      [tsx, "--test", "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    [
+      tsx,
+      "--test",
+      "--test-reporter=spec",
+      "--test-reporter-destination=stdout",
+      `--test-reporter=${reporter}`,
+      "--test-reporter-destination=/tmp/node.json",
+      "a.test.ts",
+    ],
+  );
+  assert.equal(
+    wrappedNodeArguments([tsx, "src/file.ts"], reporter, "/tmp/node.json", "/tmp/vitest.json"),
+    null,
+  );
+  assert.equal(
+    wrappedNodeArguments(
+      [tsx, "--test", `--test-reporter=${reporter}`, "a.test.ts"],
+      reporter,
+      "/tmp/node.json",
+      "/tmp/vitest.json",
+    ),
+    null,
+  );
+});
+
 test("every workspace crate belongs to a named product area", () => {
   assert.equal(crates.get("vize"), "crates/vize");
   assert.equal(crates.get("vize_benchmarks"), "tools/benchmarks/crates/vize");
@@ -68,145 +279,4 @@ test("every workspace crate belongs to a named product area", () => {
     for (const other of owners)
       assert.ok(owner === other || !other.startsWith(`${owner}/`), `${other} nests in ${owner}`);
   assert.equal(new Set(owners).size, owners.length);
-});
-
-function withDirectory(check: (directory: string) => void) {
-  return () => {
-    const directory = mkdtempSync(path.join(tmpdir(), "vize-test-cases-"));
-    try {
-      check(directory);
-    } finally {
-      rmSync(directory, { recursive: true, force: true });
-    }
-  };
-}
-
-void test(
-  "the node test reporter records what Node counts as tests, load failures included",
-  withDirectory((directory) => {
-    writeFileSync(
-      path.join(directory, "a.test.ts"),
-      `import { describe, test } from "node:test";
-test("passes", () => {});
-test("fails", () => { throw new Error("no"); });
-test("skips", { skip: true }, () => {});
-test("todo", { todo: true }, () => {});
-describe("group", () => { test("inner", () => {}); });
-`,
-    );
-    writeFileSync(path.join(directory, "b.test.ts"), `throw new Error("load");\n`);
-    const out = path.join(directory, "packet.json");
-    const reporter = path.join(root, "tools/support/compat/github/test-case-reporter.ts");
-    // A nested run must not look like a subtest of this one.
-    const { NODE_TEST_CONTEXT: _context, ...nested } = process.env;
-    const result = spawnSync(
-      process.execPath,
-      [`--test-reporter=${reporter}`, `--test-reporter-destination=${out}`, "--test"].concat([
-        "a.test.ts",
-        "b.test.ts",
-      ]),
-      {
-        cwd: directory,
-        encoding: "utf8",
-        env: { ...nested, TEST_CASES_JOB: "Affected tooling (x)", GITHUB_RUN_ATTEMPT: "3" },
-      },
-    );
-    assert.equal(result.status, 1, result.stderr);
-    const packet = JSON.parse(readFileSync(out, "utf8")) as Record<string, unknown>;
-    assert.deepEqual(packet, {
-      version: 1,
-      job: "Affected tooling (x)",
-      attempt: 3,
-      cases: [
-        { path: "a.test.ts", name: "a.test.ts › passes", outcome: "passed" },
-        { path: "a.test.ts", name: "a.test.ts › fails", outcome: "failed" },
-        { path: "a.test.ts", name: "a.test.ts › skips", outcome: "skipped" },
-        { path: "a.test.ts", name: "a.test.ts › todo", outcome: "skipped" },
-        { path: "a.test.ts", name: "a.test.ts › inner", outcome: "passed" },
-        { path: "b.test.ts", name: "b.test.ts", outcome: "failed" },
-      ],
-    });
-  }),
-);
-
-void test(
-  "each job's latest attempt is read and contradictory packets are refused",
-  withDirectory((directory) => {
-    const write = (file: string, job: string, attempt: number) => {
-      mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
-      const cases = [{ path: "crates/vize", name: `${job} ${attempt}`, outcome: "passed" }];
-      writeFileSync(
-        path.join(directory, file),
-        JSON.stringify({ version: 1, job, attempt, cases }),
-      );
-    };
-    write("a/one.json", "Rust tests (A)", 1);
-    write("b/two.json", "Rust tests (A)", 2);
-    write("three.json", "Rust tests (B)", 1);
-    const read = readPackets(directory, 2)
-      .map((packet) => [packet.job, packet.attempt])
-      .sort(([left], [right]) => String(left).localeCompare(String(right)));
-    assert.deepEqual(read, [
-      ["Rust tests (A)", 2],
-      ["Rust tests (B)", 1],
-    ]);
-    assert.throws(() => readPackets(directory, 1), /later attempt 2/);
-    write("c/again.json", "Rust tests (B)", 1);
-    assert.throws(() => readPackets(directory, 2), /Two packets for Rust tests \(B\) 1/);
-  }),
-);
-
-type Step = { id?: string; name?: string; if?: string; uses?: string; run?: string };
-type Job = {
-  name?: string;
-  env?: Record<string, string>;
-  steps: Array<Step & { env?: Record<string, string>; with?: Record<string, string> }>;
-};
-const workflow = (file: string) =>
-  parse(readRepoFile(".github", "workflows", file)) as { jobs: Record<string, Job> };
-
-test("each test job names its case packet after itself and the report downloads them all", () => {
-  const consumer = workflow("check.yml").jobs["test-report"].steps.find(
-    (step) => step.id === "cases",
-  );
-  assert.deepEqual(consumer?.with, {
-    pattern: "test-cases-*",
-    path: "${{ runner.temp }}/test-cases",
-  });
-
-  const rust = workflow("pr-rust-products.yml").jobs["pr-rust-shard"];
-  const record = rust.steps.find((step) => step.id === "cases");
-  assert.equal(record?.env?.TEST_CASES_JOB, rust.name);
-  assert.equal(rust.name, "Rust tests (${{ matrix.name }})");
-  const rustUpload = rust.steps[rust.steps.indexOf(record ?? {}) + 1];
-  assert.deepEqual(
-    rustUpload.with?.name,
-    "test-cases-rust-${{ matrix.cohort }}-${{ github.run_attempt }}",
-  );
-  assert.ok(record?.run?.endsWith(`"$RUNNER_TEMP/test-cases-rust-$COHORT.json"`));
-  assert.equal(
-    rustUpload.with?.path,
-    "${{ runner.temp }}/test-cases-rust-${{ matrix.cohort }}.json",
-  );
-
-  const tooling = workflow("pr-source-checks.yml").jobs["affected-tooling"];
-  const action = tooling.steps.find(
-    (step) => step.uses === "./.github/actions/test-affected-tooling",
-  );
-  assert.equal(action?.with?.job, tooling.name);
-  const composite = parse(
-    readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
-  ) as {
-    runs: Job;
-  };
-  const steps = composite.runs.steps;
-  const tests = steps.find((step) => step.id === "tests");
-  const upload = steps[steps.indexOf(tests ?? {}) + 1];
-  assert.equal(tests?.env?.TEST_CASES_JOB, "${{ inputs.job }}");
-  assert.equal(tests?.env?.VIZE_TEST_CASES, upload.with?.path);
-  assert.equal(
-    upload.with?.name,
-    "test-cases-tooling-${{ inputs.shard }}-${{ github.run_attempt }}",
-  );
-  assert.equal(upload.if, "${{ !cancelled() && steps.tests.outcome != 'skipped' }}");
 });

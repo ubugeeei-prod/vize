@@ -6,26 +6,11 @@ title: "vize:croquis/cf/unused-provide"
 
 provide したキーが一度も inject されていません。
 
-既定の重大度: warning  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/unused-provide": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -54,7 +39,7 @@ export interface Theme { color: string; }
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-## 悪い
+## 悪い例
 
 `App.vue` に `ThemeKey` の provide がありますが、描画する `Dashboard.vue` の下に使用側がありません。
 
@@ -83,7 +68,7 @@ provide(ThemeKey, theme);
 </template>
 ```
 
-## 良い
+## 良い例
 
 `Dashboard.vue` が `ThemeLabel.vue` を描画するようにし、`ThemeLabel.vue` で祖先が使うものと同一の `ThemeKey` を inject します。
 
@@ -127,7 +112,25 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/unused-provide": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

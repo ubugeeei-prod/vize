@@ -120,9 +120,8 @@ impl ServerState {
                 &resolved.rule_options,
                 snapshot.options.normalize_directive_shorthands,
             )
-            .map_err(|error| {
-                tracing::warn!("Refusing formatter request for {}: {error}", path.display());
-                error
+            .inspect_err(|error| {
+                warn_formatter_refusal(path, error.as_str());
             })?;
         }
         Ok(FormatterContext {
@@ -145,6 +144,37 @@ impl ServerState {
             tracing::info!("Loaded format config from {}", source_path.display());
         }
     }
+}
+
+/// Record the refusal on the current subscriber.
+///
+/// `warn!` reads the process-wide callsite interest and max level. A rebuild
+/// from a thread whose dispatcher is `NoSubscriber` stores `Interest::never`
+/// while `has_just_one` is set, so the handler still returns null and the
+/// WARN event never reaches the thread-local subscriber.
+fn warn_formatter_refusal(path: &Path, error: &str) {
+    use tracing::callsite::Callsite as _;
+
+    static __CALLSITE: tracing::callsite::DefaultCallsite = tracing::callsite2! {
+        name: "formatter_refusal",
+        kind: tracing::metadata::Kind::EVENT,
+        target: module_path!(),
+        level: tracing::Level::WARN,
+        fields: message
+    };
+    let meta = __CALLSITE.metadata();
+    tracing::dispatcher::get_default(|dispatch| {
+        if !dispatch.enabled(meta) {
+            return;
+        }
+        let record = |values: tracing::field::ValueSet<'_>| {
+            dispatch.event(&tracing::event::Event::new(meta, &values));
+        };
+        record(tracing::valueset!(
+            meta.fields(),
+            message = format_args!("Refusing formatter request for {}: {error}", path.display())
+        ));
+    });
 }
 
 fn format_options_from_config(profile: &FormatterProfile) -> vize_glyph::FormatOptions {

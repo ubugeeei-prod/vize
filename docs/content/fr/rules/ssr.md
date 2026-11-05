@@ -1,15 +1,21 @@
 ---
 title: "Règles SSR"
+description: "Le code qui casse ou se comporte autrement pendant le rendu serveur et l’hydratation."
 ---
 
 # Règles SSR
 
-Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+Le code qui casse ou se comporte autrement pendant le rendu serveur et l’hydratation.
 
+Chaque page de règle montre un exemple qui échoue, un exemple qui passe et la configuration qui active la règle.
 
-| Règle | Exemples | Objectif |
+## Par défaut (2)
+
+Ajoutées par `happy-path`, le préréglage par défaut.
+
+| Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
-| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [Mauvais](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [Bon](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | Interdire les variables globales propres au navigateur dans un contexte SSR |
-| [`ssr/no-hydration-mismatch`](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch) | [Mauvais](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [Bon](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch-good) | Interdire les valeurs non déterministes qui causent des divergences d’hydratation |
+| <span id="ssr-no-browser-globals-in-ssr"></span>[`ssr/no-browser-globals-in-ssr`](./reference/ssr-no-browser-globals-in-ssr.md) | Interdire les variables globales propres au navigateur dans un contexte SSR. |  |
+| <span id="ssr-no-hydration-mismatch"></span>[`ssr/no-hydration-mismatch`](./reference/ssr-no-hydration-mismatch.md) | Interdire les valeurs non déterministes qui causent des divergences d’hydratation. |  |
 
-[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[Vue d’ensemble des règles](../rules/index.md) · [Options des règles](/rules/options.md) · [Migrer depuis ESLint](/rules/migration.md)

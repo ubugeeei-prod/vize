@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+defineProps<{ loading?: boolean; actions?: Map<string, boolean>; handler?: (action: string) => void }>();
+</script>
+
+<template>
+  <div v-if="actions && handler">
+    <Child v-if="actions && handler && actions.size" :more-menu-actions="actions" @more-menu-action="handler" />
+  </div>
+</template>

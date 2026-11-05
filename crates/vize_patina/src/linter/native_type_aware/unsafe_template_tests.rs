@@ -1,3 +1,4 @@
+use super::tests::assertion::{assert_absent_note, failure_context};
 use super::{RULE_NO_UNSAFE_TEMPLATE_BINDING, lint_sfc_with_corsa, tests::corsa_available};
 use crate::{Linter, rules::opinionated::type_aware::NoUnsafeTemplateBinding};
 
@@ -168,14 +169,7 @@ let value: any = []
   <button :disabled="!getUnsafe()" />
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "UnsafeTemplateControls.vue");
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "type/corsa-runtime"),
-        "runtime failure: {:?}",
-        result.diagnostics
-    );
+    assert_absent_note(&result, "type/corsa-runtime", "runtime failure");
     let actual: Vec<_> = result
         .diagnostics
         .iter()
@@ -352,7 +346,7 @@ const unsafeCheck: any = check;
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
         .collect();
-    assert_eq!(warnings.len(), 1, "{warnings:#?}");
+    assert_eq!(warnings.len(), 1, "{}", failure_context(&result));
     let unsafe_start = source.rfind("unsafeCheck").unwrap() as u32;
     assert_eq!(warnings[0].start, unsafe_start);
     assert_eq!(warnings[0].end, unsafe_start + "unsafeCheck".len() as u32);
@@ -384,7 +378,7 @@ const unsafeProps: any = { title: "unsafe" };
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
         .collect();
-    assert_eq!(warnings.len(), 1, "{warnings:#?}");
+    assert_eq!(warnings.len(), 1, "{}", failure_context(&result));
     let unsafe_start = source.rfind("unsafeProps").unwrap() as u32;
     assert_eq!(warnings[0].start, unsafe_start);
     assert_eq!(warnings[0].end, unsafe_start + "unsafeProps".len() as u32);

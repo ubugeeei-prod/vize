@@ -18,7 +18,13 @@ import {
   plantProbes,
   type RequestSpec,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-fixtures.ts";
-import { percentile, psTimeSeconds } from "../../tools/benchmarks/scripts/lsp-vs-volar-metrics.ts";
+import {
+  killSurvivors,
+  machineMemory,
+  percentile,
+  psTimeSeconds,
+  readTree,
+} from "../../tools/benchmarks/scripts/lsp-vs-volar-metrics.ts";
 import { markdown, summarize } from "../../tools/benchmarks/scripts/lsp-vs-volar-report.ts";
 import { judge, runSession } from "../../tools/benchmarks/scripts/lsp-vs-volar-session.ts";
 import { OpenDocument } from "../../tools/benchmarks/scripts/lsp-vs-volar-text.ts";
@@ -128,59 +134,73 @@ test("a location reached through a workspace symlink is the file it links to", (
   }
 });
 
-test("a server past the memory budget is killed whole and the session reports why", async () => {
-  let child: ChildProcess | undefined;
-  const never = () => new Promise<never>(() => {});
-  const editor: Editor = {
-    label: "hog",
-    kind: "vize",
-    pids: () => (child?.pid ? [child.pid] : []),
-    start: async () => {
-      child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
-    },
-    open: () => {},
-    change: () => {},
-    diagnostics: never,
-    hover: never,
-    completion: never,
-    definition: never,
-    references: never,
-    rename: never,
-    semanticTokens: never,
-    stop: async () => {
-      child?.kill("SIGKILL");
-    },
-    stderr: () => "",
-    exited: () => null,
-  };
-  const [fixture] = FIXTURES;
-  const source = `${fixture.scriptProbeAfter}\n${fixture.templateProbeAfter}`;
-  const options = {
-    cycles: 1,
-    coldTimeoutMs: 60_000,
-    diagnosticsTimeoutMs: 60_000,
-    requestTimeoutMs: 60_000,
-    warmBudgetMs: 60_000,
-    sampleIntervalMs: 20,
-    idleMs: 0,
-  };
-  const exit = () => new Promise((resolve) => child!.once("exit", (_, signal) => resolve(signal)));
-  const killed = runSession(
-    editor,
-    fixture,
-    "/w",
-    "/w/a.vue",
-    plantProbes(fixture, source),
-    { ...options, memoryBudgetBytes: 1 },
-    1,
-  );
-  const signal = exit();
-  await assert.rejects(
-    killed,
-    /passed the 0\.0 GiB memory budget \(\d+\.\d GiB in 1 processes\) and was killed/,
-  );
-  assert.equal(await signal, "SIGKILL");
+test("survivors of a shutdown are killed and named", async () => {
+  const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+  const exit = new Promise((resolve) => child.once("exit", (_, signal) => resolve(signal)));
+  const reading = readTree([child.pid!], false, true);
+  assert.deepEqual(killSurvivors(reading), [reading.members![0].name]);
+  assert.equal(await exit, "SIGKILL");
+  assert.deepEqual(killSurvivors(reading), [], "a dead process is not a survivor");
 });
+
+const meminfo = machineMemory();
+test(
+  "below the machine's memory reserve the session is killed and says where memory went",
+  { skip: meminfo == null && "no /proc/meminfo" },
+  async () => {
+    let child: ChildProcess | undefined;
+    const never = () => new Promise<never>(() => {});
+    const editor: Editor = {
+      label: "hog",
+      kind: "vize",
+      pids: () => (child?.pid ? [child.pid] : []),
+      start: async () => {
+        child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+      },
+      open: () => {},
+      change: () => {},
+      diagnostics: never,
+      hover: never,
+      completion: never,
+      definition: never,
+      references: never,
+      rename: never,
+      semanticTokens: never,
+      // A server that ignores shutdown: only the reserve can end it.
+      stop: async () => {},
+      stderr: () => "",
+      exited: () => null,
+    };
+    const [fixture] = FIXTURES;
+    const source = `${fixture.scriptProbeAfter}\n${fixture.templateProbeAfter}`;
+    const options = {
+      cycles: 1,
+      coldTimeoutMs: 60_000,
+      diagnosticsTimeoutMs: 60_000,
+      requestTimeoutMs: 60_000,
+      warmBudgetMs: 60_000,
+      sampleIntervalMs: 20,
+      idleMs: 0,
+    };
+    const exit = () =>
+      new Promise((resolve) => child!.once("exit", (_, signal) => resolve(signal)));
+    const killed = runSession(
+      editor,
+      fixture,
+      "/w",
+      "/w/a.vue",
+      plantProbes(fixture, source),
+      { ...options, memoryReserveBytes: Number.MAX_SAFE_INTEGER },
+      1,
+    );
+    const signal = exit();
+    await assert.rejects(
+      killed,
+      /machine memory available fell to [\d.]+ GiB \(reserve [\d.]+ GiB\): the tree held [\d.]+ GiB in 1 processes, shmem [\d.]+ GiB, largest outside the tree \(MiB\): .+; the tree was killed/,
+    );
+    assert.equal(await signal, "SIGKILL");
+  },
+);
 
 test("protocol answers normalize across both editors' shapes", () => {
   assert.deepEqual(

@@ -1,18 +1,40 @@
 ---
 title: "vue/valid-v-for"
+description: "Enforce valid `v-for` directives."
 ---
 
 # `vue/valid-v-for`
 
-Enforce valid `v-for` directives
+Enforce valid `v-for` directives.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The loops omit their iteration expression or add an unsupported `.stop` modifier.
+
+```vue annotate="remove:2,3,4"
+<template>
+  <div v-for></div>
+  <div v-for=""></div>
+  <div v-for.stop="item in items"></div>
+</template>
+```
+
+## Good
+
+Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.
+
+```vue annotate="add:2,3"
+<template>
+  <div v-for="item in items" :key="item.id"></div>
+  <div v-for="(item, index) of items" :key="index"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The loops omit their iteration expression or add an unsupported `.stop` modifier.
-
-```vue
-<template>
-  <div v-for></div>
-  <div v-for=""></div>
-  <div v-for.stop="item in items"></div>
-</template>
-```
-
-## Good
-
-Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.
-
-```vue
-<template>
-  <div v-for="item in items" :key="item.id"></div>
-  <div v-for="(item, index) of items" :key="index"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L39) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L39)

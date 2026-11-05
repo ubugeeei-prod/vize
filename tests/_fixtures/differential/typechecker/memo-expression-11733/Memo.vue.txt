@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { isHidden } from './util';
+defineProps<{ rows: { id: number }[] }>();
+</script>
+<template>
+  <div v-for="row in rows" :key="row.id" v-memo="[row.id, isHidden()]">{{ row.id }}</div>
+</template>

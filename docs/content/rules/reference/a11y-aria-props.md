@@ -1,18 +1,37 @@
 ---
 title: "a11y/aria-props"
+description: "Disallow invalid ARIA attributes."
 ---
 
 # `a11y/aria-props`
 
-Disallow invalid ARIA attributes
+Disallow invalid ARIA attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+`aria-lable` is misspelled and is not a supported ARIA attribute.
+
+```vue annotate="remove:2"
+<template>
+  <button aria-lable="Save changes">Save</button>
+</template>
+```
+
+## Good
+
+The supported `aria-label` attribute supplies the button name.
+
+```vue annotate="add:2"
+<template>
+  <button aria-label="Save changes">Save</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`aria-lable` is misspelled and is not a supported ARIA attribute.
-
-```vue
-<template>
-  <button aria-lable="Save changes">Save</button>
-</template>
-```
-
-## Good
-
-The supported `aria-label` attribute supplies the button name.
-
-```vue
-<template>
-  <button aria-label="Save changes">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L20) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L20)

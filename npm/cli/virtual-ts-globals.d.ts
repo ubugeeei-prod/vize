@@ -3,23 +3,6 @@ declare global {
   // Global script: one copy of these declarations per program replaces the
   // preamble previously embedded in every generated .vue.ts module.
 
-  // ImportMeta augmentation (reference existing framework types)
-  // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
-  interface ImportMeta {
-    client: boolean;
-    server: boolean;
-    dev: boolean;
-    prod: boolean;
-    ssr: boolean;
-  }
-
-  namespace JSX {
-    interface IntrinsicAttributes {
-      class?: unknown;
-      style?: unknown;
-    }
-  }
-
   // Shared type helpers used by generated virtual modules
   type __EmitShape<T> = T extends (...args: any[]) => any
     ? T
@@ -45,9 +28,9 @@ declare global {
       : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void
         ? __I
         : never;
-  type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V
+  type __RuntimePropValue<T> = T extends (...args: any[]) => infer V
     ? V
-    : T extends (...args: any[]) => infer V
+    : T extends abstract new (...args: any[]) => infer V
       ? V
       : never;
   type __RuntimePropCtorInner<T> = T extends null | undefined

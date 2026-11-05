@@ -1,18 +1,48 @@
 ---
 title: "script/no-deprecated-dollar-listeners-api"
+description: "Vue 3 で $attrs に統合された $listeners を検出します。"
 ---
 
 # `script/no-deprecated-dollar-listeners-api`
 
 Vue 3 で $attrs に統合された $listeners を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+スクリプトが削除済みの `$listeners` を参照しています。テンプレートでもコンポーネントの `$listeners` を転送しています。所有元を確認できた同名の setup 変数やテンプレートローカル変数は別の値として扱います。
+
+```vue annotate="remove:4,5,9"
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
+</script>
+<template><Child v-on="$listeners" /></template>
+```
+
+## 良い例
+
+`this.$attrs` と `v-bind="$attrs"` で Vue 3 の属性とリスナーを参照・転送します。スクリプト内の参照元のオブジェクトや参照方法に対する、既存の広い検出範囲は変わりません。
+
+```vue annotate="add:4,8"
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
+</script>
+<template><Child v-bind="$attrs" /></template>
+```
 
 ## 設定（Vite+）
 
@@ -31,41 +61,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-スクリプトが削除済みの `$listeners` を参照しています。テンプレートでもコンポーネントの `$listeners` を転送しています。所有元を確認できた同名の setup 変数やテンプレートローカル変数は別の値として扱います。
-
-```vue
-<script>
-export default {
-  mounted() {
-    const vm = this
-    return vm.$listeners
-  }
-}
-</script>
-<template><Child v-on="$listeners" /></template>
-```
-
-## 良い
-
-`this.$attrs` と `v-bind="$attrs"` で Vue 3 の属性とリスナーを参照・転送します。スクリプト内の参照元のオブジェクトや参照方法に対する、既存の広い検出範囲は変わりません。
-
-```vue
-<script>
-export default {
-  mounted() {
-    return this.$attrs
-  }
-}
-</script>
-<template><Child v-bind="$attrs" /></template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54)

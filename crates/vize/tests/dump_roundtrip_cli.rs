@@ -94,7 +94,7 @@ fn l1_preserves_unicode_crlf_empty_and_recoverable_source() {
 }
 
 #[test]
-fn l1_roundtrip_checks_bytes_of_typed_unsupported_heads_without_admitting_syntax() {
+fn l1_roundtrip_preserves_deep_vue_argument_bytes_and_verbatim_scope() {
     let opens: String = (0..64)
         .map(|i| if i % 2 == 0 { '(' } else { '[' })
         .collect();
@@ -106,11 +106,11 @@ fn l1_roundtrip_checks_bytes_of_typed_unsupported_heads_without_admitting_syntax
     let source = cstr!("<div v-pre:[{opens}key{closes}]>{{{{ unresolved }}}}</div>{{{{ tail }}}}");
     let allocator = Allocator::default();
     let parsed = vize_l1::markup::parse_component(&allocator, &source).unwrap();
-    assert_eq!(parsed.unsupported.len(), 1);
-    assert_eq!(
-        parsed.unsupported[0].error,
-        vize_l1::markup::DirectiveNameError::NestingLimit
-    );
+    assert!(parsed.unsupported.is_empty());
+    let vize_l1::markup::SurfaceChild::Element(div) = &parsed.tree.children[0] else {
+        panic!("div")
+    };
+    assert!(div.open.is_verbatim());
     assert_success("l1", source.as_bytes());
 }
 

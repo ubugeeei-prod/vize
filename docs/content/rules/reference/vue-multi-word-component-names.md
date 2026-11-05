@@ -1,41 +1,19 @@
 ---
 title: "vue/multi-word-component-names"
+description: "Require component names to be multi-word."
 ---
 
 # `vue/multi-word-component-names`
 
-Require component names to be multi-word
+Require component names to be multi-word.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 The filename is the finding. Rename the same component; changing a child tag does not fix it.
-
-## Configuration (Vite+)
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/multi-word-component-names": "error"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Bad
 
@@ -57,6 +35,27 @@ TodoItem.vue gives the same template a multi-word component name.
 <template><p>Item</p></template>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+## Configuration (Vite+)
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [All rules](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "vue/multi-word-component-names": "error"
+      }
+    },
+  },
+});
+```
+
+Then run `vp run lint`.
+
+## Related
+
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34)

@@ -1,37 +1,36 @@
-import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from "@vue/server-renderer";
+import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<!--[--><ul>`);
-  _push(`<!--[-->`);
+  _push(`<!--[--><ul>`)
+  _push(`<!--[-->`)
   _ssrRenderList($setup.rows, (row, index) => {
-    _push(`<li>${_ssrInterpolate(index)}: ${_ssrInterpolate(row.label)} ${_ssrInterpolate($setup.rows.map((item) => item.label).join(","))}</li>`);
-  });
-  _push(`<!--]-->`);
-  _push(`</ul><p>${_ssrInterpolate(((value) => value ?? 0)($setup.count))}</p><!--]-->`);
+    _push(`<li>${_ssrInterpolate(index)}: ${_ssrInterpolate(row.label)} ${_ssrInterpolate($setup.rows.map((item) => item.label).join(","))}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul><p>${_ssrInterpolate(((value) => value ?? 0)($setup.count))}</p><!--]-->`)
 }
-import { ref } from "vue";
+import { ref } from 'vue'
+
+
 export default {
-  __name: "Layout",
-  ssrRender,
+  __name: 'Layout',
+  ssrRender: ssrRender,
   setup(__props, { expose: __expose }) {
-    __expose();
-    const rows = ref([{
-      id: 1,
-      label: "one"
-    }]);
-    const count = ref(0);
-    function pick(row) {
-      count.value = row.id;
-    }
-    const __returned__ = {
-      pick,
-      ref,
-      rows,
-      count
-    };
-    Object.defineProperty(__returned__, "__isScriptSetup", {
-      enumerable: false,
-      value: true
-    });
-    return __returned__;
-  }
-};
+  __expose();
+
+const rows = ref([{
+  id: 1,
+  label: "one"
+}]);
+const count = ref(0);
+function pick(row) {
+  count.value = row.id;
+}
+
+const __returned__ = { pick, ref, rows, count }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

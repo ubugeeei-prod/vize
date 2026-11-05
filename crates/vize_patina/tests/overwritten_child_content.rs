@@ -116,6 +116,20 @@ fn complete_native_api_and_public_json_reports_repeat_exactly() {
         let id = case["id"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let expected = read(corpus().join("native").join(cstr!("{id}.json").as_str())).unwrap();
+        let mut current_packet = expected["packet"].clone();
+        for row in current_packet.as_array_mut().unwrap() {
+            for message in row["messages"].as_array_mut().unwrap() {
+                let current = match message["ruleId"].as_str().unwrap() {
+                    "vue/no-child-content" => {
+                        "docs/content/rules/reference/vue-no-child-content.md"
+                    }
+                    "vue/no-v-html" => "docs/content/rules/reference/vue-no-v-html.md",
+                    rule => panic!("unreviewed overwritten-content documentation rule: {rule}"),
+                };
+                assert_eq!(message["ruleDocsPath"], "docs/content/rules/vue.md");
+                message["ruleDocsPath"] = Value::String(current.to_owned());
+            }
+        }
         for _ in 0..2 {
             let filename = cstr!("{id}.vue");
             let result = linter.lint_sfc(source, &filename);
@@ -126,7 +140,7 @@ fn complete_native_api_and_public_json_reports_repeat_exactly() {
                 OutputFormat::Json,
             ))
             .unwrap();
-            assert_eq!(report, expected["packet"], "{id}");
+            assert_eq!(report, current_packet, "{id}");
         }
     }
 }

@@ -7,6 +7,18 @@ const BEFORE = 'import type {} from "vize/virtual-ts";';
 const AFTER = 'import type {} from "vize/virtual-ts-checker";';
 const SHIFT = Buffer.byteLength(AFTER) - Buffer.byteLength(BEFORE);
 
+// The import-only transition owns this frozen population even when CURRENT advances.
+function readCheckerEntryFixture() {
+  const fixture = readGlobalsFixture();
+  return {
+    ...fixture,
+    authority: {
+      ...fixture.authority,
+      currentSourcePackets: "source-packets-current-949a579fb06d.json",
+    },
+  };
+}
+
 type Result = {
   text: string;
   mappings: number[][];
@@ -53,7 +65,7 @@ function beforeCheckerEntry(result: Result): Result {
 }
 
 test("the checker-entry population moves only the import and the coordinates after it", () => {
-  const { authority, files, cases } = readGlobalsFixture();
+  const { authority, files, cases } = readCheckerEntryFixture();
   const golden = selectPacketGoldens(authority, files, cases)!;
   assert.equal(authority.currentSourcePackets, "source-packets-current-949a579fb06d.json");
   const previous = selectPacketGoldens(
@@ -100,7 +112,7 @@ test("the checker-entry population moves only the import and the coordinates aft
 });
 
 test("the checker-entry inverse refuses any other change", () => {
-  const { authority, files, cases } = readGlobalsFixture();
+  const { authority, files, cases } = readCheckerEntryFixture();
   const packet = selectPacketGoldens(authority, files, cases)!.packets[0]!;
   const result = packet.result as unknown as Result;
   for (const mutated of [

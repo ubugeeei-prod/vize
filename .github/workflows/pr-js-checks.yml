@@ -60,9 +60,21 @@ jobs:
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
         run: node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP"
       - name: Test JS package group
+        id: tests
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
-        env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
+        env:
+          VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}"
+          TEST_CASES_JOB: "PR JS package tests (${{ matrix.group }})"
+          VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+      - name: Upload JS package test cases
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-js-${{ matrix.group }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Preserve complete Rspack JSX producer and bundle
         if: ${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -265,5 +277,48 @@ jobs:
         with:
           name: source-css-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/css-compile-source-maps/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Verify packaged direct-child props with source native on Node 22
+        if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/direct-child-props-source-11809"
+          mkdir -p "$capture"
+          node npm/native/scripts/native-build-receipt.mjs >"$capture/producer.stdout" 2>"$capture/producer.stderr"
+          (cd npm/cli && vp pack) >"$capture/cli-pack.stdout" 2>"$capture/cli-pack.stderr"
+          node tools/support/compat/content-mapper/direct-child-props-11809.ts --capture "$capture" >"$capture/consumer.stdout" 2>"$capture/consumer.stderr"
+      - name: Retain source reporter archives and whole outcomes
+        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-child-props-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/direct-child-props-source-11809/
+            !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules
+            !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 14
+      - name: Verify imported type projects with the built native image
+        if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        shell: bash
+        env:
+          VIZE_IMPORTED_TYPES_REQUIRE_SOURCE: "1"
+          VIZE_IMPORTED_TYPES_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bindings=("$GITHUB_WORKSPACE"/npm/native/*.node)
+          test "${#bindings[@]}" -eq 1
+          capture="$RUNNER_TEMP/imported-type-project"
+          mkdir -p "$capture"
+          node tests/native/imported-type-project-stats.ts "${bindings[0]}" "$capture/receipt.json"
+      - name: Retain imported type project inputs and source receipts
+        if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: imported-type-project-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/imported-type-project/
           if-no-files-found: error
           retention-days: 14

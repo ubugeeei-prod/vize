@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import KitField from "./KitField.vue";
+import List from "./List.vue";
+const fields = ref([{ id: "a" }]);
+</script>
+<template>
+  <List :items="fields">
+    <template #default="{ item }">
+      <KitField v-model="item.name" />
+    </template>
+  </List>
+</template>

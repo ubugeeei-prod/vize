@@ -107,6 +107,52 @@ mod tests {
     use crate::ide::IdeContext;
     use crate::server::ServerState;
 
+    #[cfg(all(unix, feature = "native"))]
+    #[test]
+    fn resolved_import_alias_keeps_the_authored_workspace_spelling() {
+        let directory = tempfile::tempdir().unwrap();
+        let physical = directory.path().canonicalize().unwrap().join("workspace");
+        let linked = directory.path().join("linked");
+        std::fs::create_dir_all(&physical).unwrap();
+        std::os::unix::fs::symlink(&physical, &linked).unwrap();
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/lsp/native-document-identity-11586/Parent.art.vue.txt"
+        ));
+        std::fs::write(physical.join("Parent.art.vue"), source).unwrap();
+        std::fs::write(
+            physical.join("format.ts"),
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/lsp/native-document-identity-11586/format.ts.txt"
+            )),
+        )
+        .unwrap();
+        let uri = Url::from_file_path(linked.join("Parent.art.vue")).unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(linked.clone());
+        state
+            .documents
+            .open(uri.clone(), source.into(), 1, "art-vue".into());
+        let offset = source.rfind("format('hello')").unwrap() + 1;
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let alias = scalar_at(&uri, source, source.find("format }").unwrap(), 6);
+        let expected = Url::from_file_path(linked.join("format.ts")).unwrap();
+        let response = normalize_bound_name_definition(&ctx, alias).unwrap();
+        let GotoDefinitionResponse::Scalar(location) = response else {
+            panic!("scalar definition")
+        };
+        assert_eq!(location.uri, expected);
+        assert_eq!(location.range.start, Position::new(0, 16));
+
+        let foreign = Url::from_file_path(directory.path().join("foreign.ts")).unwrap();
+        let external = scalar_at(&foreign, "export const foreign = 1", 13, 7);
+        assert_eq!(
+            normalize_bound_name_definition(&ctx, external.clone()),
+            Some(external)
+        );
+    }
+
     fn scalar_at(uri: &Url, content: &str, offset: usize, len: usize) -> GotoDefinitionResponse {
         let (line, character) = crate::ide::offset_to_position(content, offset);
         GotoDefinitionResponse::Scalar(Location {

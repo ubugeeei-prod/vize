@@ -1,0 +1,2 @@
+src/Panel.vue
+  error:7:16 [TS2339] Property 'description' does not exist on type 'Partial<$Slots>'.

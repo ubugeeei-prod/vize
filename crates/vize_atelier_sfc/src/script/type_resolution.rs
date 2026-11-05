@@ -150,7 +150,32 @@ pub(crate) fn resolve_type_to_object_body(
     type_aliases: &FxHashMap<String, String>,
 ) -> Option<String> {
     let mut stack = FxHashSet::default();
-    resolve_type_to_object_body_inner(type_expr, interfaces, type_aliases, &mut stack)
+    resolve_type_to_object_body_inner(
+        type_expr,
+        interfaces,
+        type_aliases,
+        &mut stack,
+        &mut |_| {},
+        false,
+    )
+}
+
+/// Find unresolved references that determine the property shape, excluding value types.
+pub(crate) fn unresolved_property_shape_references(
+    type_expr: &str,
+    interfaces: &FxHashMap<String, String>,
+    type_aliases: &FxHashMap<String, String>,
+) -> Vec<String> {
+    let mut missing = Vec::new();
+    let _ = resolve_type_to_object_body_inner(
+        type_expr,
+        interfaces,
+        type_aliases,
+        &mut FxHashSet::default(),
+        &mut |name| missing.push(name.to_compact_string()),
+        true,
+    );
+    missing
 }
 
 fn resolve_type_to_object_body_inner(
@@ -158,6 +183,8 @@ fn resolve_type_to_object_body_inner(
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
+    missing: &mut impl FnMut(&str),
+    collect_missing: bool,
 ) -> Option<String> {
     let trimmed = type_expr.trim();
     if trimmed.is_empty() {
@@ -166,16 +193,28 @@ fn resolve_type_to_object_body_inner(
 
     let union_parts = split_top_level(trimmed, '|');
     if union_parts.len() > 1 {
-        return union::resolve_members(&union_parts, interfaces, type_aliases, stack);
+        return union::resolve_members(
+            &union_parts,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        );
     }
 
     let parts = split_top_level(trimmed, '&');
     if parts.len() > 1 {
         let mut merged = String::default();
         for part in parts {
-            let Some(body) =
-                resolve_type_to_object_body_inner(&part, interfaces, type_aliases, stack)
-            else {
+            let Some(body) = resolve_type_to_object_body_inner(
+                &part,
+                interfaces,
+                type_aliases,
+                stack,
+                missing,
+                collect_missing,
+            ) else {
                 continue;
             };
             let body = body.trim();
@@ -199,7 +238,14 @@ fn resolve_type_to_object_body_inner(
         .strip_prefix('(')
         .and_then(|rest| rest.strip_suffix(')'))
     {
-        return resolve_type_to_object_body_inner(inner, interfaces, type_aliases, stack);
+        return resolve_type_to_object_body_inner(
+            inner,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        );
     }
 
     if let Some(inner) = trimmed
@@ -210,7 +256,14 @@ fn resolve_type_to_object_body_inner(
     }
 
     // Resolve utility types structurally when their inner type is known.
-    if let Some(body) = resolve_utility_type(trimmed, interfaces, type_aliases, stack) {
+    if let Some(body) = resolve_utility_type(
+        trimmed,
+        interfaces,
+        type_aliases,
+        stack,
+        missing,
+        collect_missing,
+    ) {
         return Some(body);
     }
 
@@ -219,8 +272,20 @@ fn resolve_type_to_object_body_inner(
         return None;
     }
 
-    let resolved = resolve_single_type_ref(base_name, interfaces, type_aliases)
-        .and_then(|body| resolve_type_to_object_body_inner(&body, interfaces, type_aliases, stack));
+    let resolved = match resolve_single_type_ref(base_name, interfaces, type_aliases) {
+        Some(body) => resolve_type_to_object_body_inner(
+            &body,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        ),
+        None => {
+            missing(base_name);
+            None
+        }
+    };
 
     stack.remove(base_name);
     resolved
@@ -234,6 +299,8 @@ fn resolve_utility_type(
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
+    missing: &mut impl FnMut(&str),
+    collect_missing: bool,
 ) -> Option<String> {
     let (name, args) = split_generic_call(type_expr)?;
     let type_args = split_top_level(args, ',');
@@ -241,7 +308,14 @@ fn resolve_utility_type(
     match name {
         "Partial" | "Required" | "Readonly" => {
             let inner = type_args.first()?;
-            let body = resolve_type_to_object_body_inner(inner, interfaces, type_aliases, stack)?;
+            let body = resolve_type_to_object_body_inner(
+                inner,
+                interfaces,
+                type_aliases,
+                stack,
+                missing,
+                collect_missing,
+            )?;
             let mut members = parse_members(&body);
             let (optional, readonly) = match name {
                 "Partial" => (Some(true), false),
@@ -257,7 +331,14 @@ fn resolve_utility_type(
         "Pick" | "Omit" => {
             let inner = type_args.first()?;
             let keys_arg = type_args.get(1)?;
-            let body = resolve_type_to_object_body_inner(inner, interfaces, type_aliases, stack)?;
+            let body = resolve_type_to_object_body_inner(
+                inner,
+                interfaces,
+                type_aliases,
+                stack,
+                missing,
+                collect_missing,
+            )?;
             let keys = parse_string_literal_union(keys_arg);
             let members: Vec<Member> = parse_members(&body)
                 .into_iter()
@@ -360,96 +441,4 @@ fn split_top_level(input: &str, delimiter: char) -> Vec<String> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn build(source: &str) -> String {
-        let name_end = source
-            .find('<')
-            .or_else(|| source.find(" extends"))
-            .unwrap_or(source.find('{').unwrap());
-        let body_start = source.find('{').unwrap();
-        build_interface_type_source(source, name_end, body_start, source.len())
-    }
-
-    #[test]
-    fn merges_heritage_clause_of_plain_interface() {
-        let merged = build("interface Props extends Base { a: string }");
-        assert_eq!(merged.as_str(), "Base & { a: string }");
-    }
-
-    #[test]
-    fn merges_heritage_clause_of_generic_interface() {
-        // Regression: the type-parameter constraint `extends` used to be
-        // mistaken for the heritage clause, dropping the inherited members
-        // (e.g. nuxt-ui DashboardSidebarProps extends Pick<UseResizableProps, ...>).
-        let merged = build(
-            "interface Props<T extends string = string> extends Pick<P, 'side'> { mode?: T }",
-        );
-        assert_eq!(merged.as_str(), "Pick<P, 'side'> & { mode?: T }");
-    }
-
-    #[test]
-    fn generic_interface_without_heritage_returns_body() {
-        let merged = build("interface Props<T extends string = string> { mode?: T }");
-        assert_eq!(merged.as_str(), "{ mode?: T }");
-    }
-
-    #[test]
-    fn heritage_scan_survives_arrow_types_in_generic_defaults() {
-        let merged = build("interface Props<F = () => void> extends Base { cb?: F }");
-        assert_eq!(merged.as_str(), "Base & { cb?: F }");
-    }
-
-    #[test]
-    fn pick_resolves_members_with_jsdoc_comments() {
-        // Regression: JSDoc comments were glued to member keys, so Pick's key
-        // filter matched nothing and the inherited props vanished
-        // (e.g. nuxt-ui UseResizableProps members all carry JSDoc).
-        let mut aliases = FxHashMap::default();
-        aliases.insert(
-            String::from("P"),
-            String::from(
-                "{\n  /**\n   * The side, e.g. 'left' | 'right'.\n   * @defaultValue 'left'\n   */\n  side?: 'left' | 'right'\n  // line comment\n  resizable?: boolean\n}",
-            ),
-        );
-        let resolved = resolve_type_to_object_body(
-            "Pick<P, 'side' | 'resizable'>",
-            &FxHashMap::default(),
-            &aliases,
-        )
-        .unwrap();
-        assert!(resolved.contains("side?:"), "side missing: {resolved}");
-        assert!(
-            resolved.contains("resizable?:"),
-            "resizable missing: {resolved}"
-        );
-    }
-
-    #[test]
-    fn pick_filters_newline_separated_members() {
-        let mut interfaces = FxHashMap::default();
-        let mut aliases = FxHashMap::default();
-        aliases.insert(
-            String::from("UseResizableProps"),
-            String::from("{\n  /**\n   * The id.\n   * @defaultValue useId()\n   */\n  id?: string\n  /**\n   * The side.\n   * @defaultValue 'left'\n   */\n  side?: 'left' | 'right'\n  minSize?: number\n  storage?: 'cookie' | 'local'\n  unit?: '%' | 'rem' | 'px'\n}"),
-        );
-        interfaces.insert(
-            String::from("DashboardSidebarProps"),
-            String::from("Pick<UseResizableProps, 'id' | 'side' | 'minSize'> & {\n  mode?: T\n}"),
-        );
-        let r = resolve_type_args("DashboardSidebarProps<T>", &interfaces, &aliases);
-        assert!(!r.contains("storage"), "storage leaked: {r}");
-        assert!(!r.contains("unit"), "unit leaked: {r}");
-        assert!(r.contains("id?:"), "id missing: {r}");
-        assert!(r.contains("side?:"), "side missing: {r}");
-        assert!(r.contains("minSize?:"), "minSize missing: {r}");
-        assert!(r.contains("mode?:"), "mode missing: {r}");
-    }
-
-    #[test]
-    fn strip_comments_preserves_string_literals() {
-        let stripped = strip_comments("a?: 'http://x' /* c */ | 'b' // tail");
-        assert_eq!(stripped.as_str(), "a?: 'http://x'  | 'b' ");
-    }
-}
+mod tests;

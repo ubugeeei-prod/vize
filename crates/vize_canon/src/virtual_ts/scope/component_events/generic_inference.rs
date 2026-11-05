@@ -1,6 +1,9 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::{Croquis, EventHandlerScopeData, Scope, analysis::ComponentUsage};
+use vize_croquis::{
+    Croquis, EventHandlerScopeData, Scope,
+    analysis::{ComponentUsage, PassedProp},
+};
 
 use crate::virtual_ts::{
     expressions::rewrite_reserved_template_binding, helpers::to_camel_case,
@@ -8,8 +11,8 @@ use crate::virtual_ts::{
 };
 
 use crate::virtual_ts::expressions::{
-    ComponentPropSource, append_props_literal, append_spread_value,
-    callback_parameters_on_ignored_line_with_ranges, generated_prop_span,
+    CallbackParameterRewrite, ComponentPropSource, PropSpan, append_props_literal,
+    append_spread_value, callback_parameters_on_ignored_line_with_ranges, generated_prop_span,
     map_rewritten_template_binding, prop_entry_sub_spans_with_synthetic_value_gaps,
     prop_value_source_range,
 };
@@ -33,23 +36,41 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) indent: &'a str,
     pub(super) hoist_shared_preamble: bool,
+    /// The module declares the gate aliases and this component's type is closed.
+    pub(super) gated_inference: bool,
+    /// Modern consumers use loose ownership for runtime args and callback context.
+    pub(super) contextual_listener: bool,
+}
+
+/// Argument shape and listener-context ownership are independent facts.
+pub(super) struct InferredEmitArgs {
+    pub(super) arguments: String,
+    pub(super) contextless_listener: Option<String>,
 }
 
 pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_, '_>,
-) -> Option<String> {
+) -> Option<InferredEmitArgs> {
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
-    if usage.spread_props.is_empty()
-        && !usage.props.iter().any(|prop| {
+    let dynamic_alias =
+        crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage);
+    let dynamic_component = dynamic_alias
+        || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
+    // `:is` is not a passed prop. A listener-only `<component :is>` still has
+    // to call the factory: a loose target returns `$LooseEmitProps`. Its marker
+    // must remain distinct from an actual declared empty tuple. Other components need a valued
+    // prop or a spread before that call infers anything.
+    let has_inference_prop = !usage.spread_props.is_empty()
+        || usage.props.iter().any(|prop| {
             !prop.name_is_dynamic
                 && prop.name.as_str() != "key"
                 && prop.name.as_str() != "ref"
                 && prop.value.is_some()
-        })
-    {
+        });
+    if !has_inference_prop && !dynamic_component {
         return None;
     }
 
@@ -65,9 +86,6 @@ pub(super) fn generate_inferred_emit_args(
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
     let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
         .select(ctx.hoist_shared_preamble);
-    let dynamic_component =
-        crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage)
-            || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
     let guard = usage
         .vif_guard
         .as_ref()
@@ -136,18 +154,42 @@ pub(super) fn generate_inferred_emit_args(
             });
         }
     }
+    let entries = if first_listener && usage.spread_props.is_empty() {
+        inference_entries(&usage, ctx.template_binding_access)
+    } else {
+        Vec::new()
+    };
+    // An empty literal is not a gated candidate: the gate aliases are emitted
+    // only when a valued prop exists, and a loose `:is` must keep the marker.
+    let gated = has_inference_prop
+        && ctx.gated_inference
+        && dynamic_alias
+        && guard.is_none()
+        && usage.spread_props.is_empty()
+        && entries
+            .iter()
+            .all(|entry| super::emit_props_gate::is_single_line(entry.value()));
+    let (indent, library, component_ref) = (ctx.indent, ctx.library, ctx.component_ref);
     // A vue-tsc library export is called itself, so the bound props
     // instantiate its generics and its `__ctx` carries the listener props.
-    if first_listener {
-        append!(
-            *ts,
-            "{}type {resolver_type} = {} extends true ? (component: typeof {}) => typeof {} : {emit_props_factory}<typeof {}>;\n",
-            ctx.indent,
-            ctx.library,
-            ctx.component_ref,
-            ctx.component_ref,
-            ctx.component_ref,
-        );
+    if first_listener && !gated {
+        let share = super::emit_resolver_share::ResolverShare {
+            component_type_name: ctx.component_type_name,
+            component_ref,
+            factory: emit_props_factory,
+            dynamic: dynamic_component,
+            parent_scope: ctx.scope.parent().map(|parent| parent.as_u32()),
+            block: super::super::open_chained_vif_guard_block(),
+        };
+        if let Some(canonical) = super::emit_resolver_share::alias_target(&share) {
+            append!(*ts, "{indent}type {resolver_type} = {canonical};\n");
+        } else {
+            append!(
+                *ts,
+                "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
+            );
+            super::emit_resolver_share::record_inline(&share, resolver_type.as_str());
+        }
     }
     if first_listener && let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
@@ -170,12 +212,21 @@ pub(super) fn generate_inferred_emit_args(
                 ctx.indent
             );
         }
-        append!(
-            *ts,
-            "{}const {emit_props} = (undefined as unknown as {resolver_type})({})(",
-            ctx.indent,
-            ctx.component_ref,
-        );
+        if gated {
+            super::emit_props_gate::append_gated_call(
+                ts,
+                indent,
+                library,
+                component_ref,
+                &emit_props,
+                usage_idx,
+            );
+        } else {
+            append!(
+                *ts,
+                "{indent}const {emit_props} = (undefined as unknown as {resolver_type})({component_ref})(",
+            );
+        }
     }
     if first_listener {
         if !usage.spread_props.is_empty() {
@@ -204,25 +255,9 @@ pub(super) fn generate_inferred_emit_args(
             }
         } else {
             ts.push_str("{\n");
-            // A static `class` next to `:class` is one Vue prop; a second key in
-            // this literal would be TS1117 on authored markup that vue-tsc accepts.
-            let mut emitted = vize_carton::FxHashSet::default();
-            for prop in &usage.props {
-                if prop.name_is_dynamic
-                    || prop.name.as_str() == "key"
-                    || prop.name.as_str() == "ref"
-                {
-                    continue;
-                }
-                let Some(generated_value) = generated_prop_span(prop, ctx.template_binding_access)
-                else {
-                    continue;
-                };
-                let camel_prop_name = to_camel_case(prop.name.as_str());
-                if !emitted.insert(camel_prop_name.clone()) {
-                    continue;
-                }
-                if is_inline_callback_prop(prop) {
+            for entry in &entries {
+                let prop = entry.prop;
+                if entry.inline_callback {
                     append!(
                         *ts,
                         "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
@@ -239,31 +274,13 @@ pub(super) fn generate_inferred_emit_args(
                 }
                 append!(*ts, "{call_indent}  ");
                 let entry_start = ts.len();
-                append!(*ts, "\"{camel_prop_name}\"");
+                append!(*ts, "\"{}\"", entry.name);
                 let key_end = ts.len();
                 ts.push_str(": ");
                 let value_start = ts.len();
-                let inline_callback = is_inline_callback_prop(prop);
-                let raw_value = if inline_callback {
-                    generated_value.text.trim_start()
-                } else {
-                    generated_value.text.as_str()
-                };
-                let owned = if inline_callback {
-                    if generated_value.omits_tail() {
-                        None
-                    } else {
-                        callback_parameters_on_ignored_line_with_ranges(raw_value)
-                    }
-                } else {
-                    None
-                };
-                let value = owned
-                    .as_ref()
-                    .map_or(raw_value, |owned| owned.text.as_str());
-                ts.push_str(value);
-                let entry_end = if generated_value.omits_tail() {
-                    generated_value.mapped_limit(value_start)
+                ts.push_str(entry.value());
+                let entry_end = if entry.generated.omits_tail() {
+                    entry.generated.mapped_limit(value_start)
                 } else {
                     ts.len()
                 };
@@ -277,7 +294,8 @@ pub(super) fn generate_inferred_emit_args(
                         prop,
                         entry_start..key_end,
                         value_start..entry_end,
-                        owned
+                        entry
+                            .owned
                             .as_ref()
                             .map_or(&[], |rewrite| rewrite.synthetic_ranges.as_slice()),
                     ),
@@ -290,7 +308,7 @@ pub(super) fn generate_inferred_emit_args(
                 );
                 if !ctx.template_binding_access.is_empty()
                     && prop.is_dynamic
-                    && !is_inline_callback_prop(prop)
+                    && !entry.inline_callback
                     && let Some(value) = prop.value.as_ref()
                     && let Some(source) = prop_value_source_range(ctx.source_context, prop)
                 {
@@ -314,14 +332,83 @@ pub(super) fn generate_inferred_emit_args(
             ctx.indent
         );
     }
+    let prop_key = ctx.prop_key;
     append!(
         *ts,
-        "{}type {inferred_args} = ({} extends true ? typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}} : typeof {emit_props}) extends {{ {}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
-        ctx.indent,
-        ctx.library,
-        ctx.prop_key,
+        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
     );
-    Some(inferred_args)
+    let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
+        let contextless_listener = cstr!(
+        "__{}_{}_{}_contextless_listener",
+        ctx.component_type_name,
+        scope_id,
+        ctx.safe_event_name
+    );
+    append!(
+        *ts,
+        "{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\n"
+    );
+        contextless_listener
+    });
+    Some(InferredEmitArgs {
+        arguments: inferred_args,
+        contextless_listener,
+    })
+}
+
+/// One static prop of the inference literal, with the text it emits.
+struct InferenceEntry<'u> {
+    prop: &'u PassedProp,
+    generated: PropSpan<'u>,
+    name: String,
+    inline_callback: bool,
+    owned: Option<CallbackParameterRewrite>,
+}
+
+impl InferenceEntry<'_> {
+    fn value(&self) -> &str {
+        if let Some(owned) = self.owned.as_ref() {
+            owned.text.as_str()
+        } else if self.inline_callback {
+            self.generated.text.trim_start()
+        } else {
+            self.generated.text.as_str()
+        }
+    }
+}
+
+fn inference_entries<'u>(
+    usage: &'u ComponentUsage,
+    template_binding_access: &TemplateBindingAccess<'_>,
+) -> Vec<InferenceEntry<'u>> {
+    // A static `class` next to `:class` is one Vue prop; a second key in
+    // this literal would be TS1117 on authored markup that vue-tsc accepts.
+    let mut emitted = FxHashSet::default();
+    let mut entries = Vec::new();
+    for prop in &usage.props {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            continue;
+        }
+        let Some(generated) = generated_prop_span(prop, template_binding_access) else {
+            continue;
+        };
+        let name = to_camel_case(prop.name.as_str());
+        if !emitted.insert(name.clone()) {
+            continue;
+        }
+        let inline_callback = is_inline_callback_prop(prop);
+        let owned = (inline_callback && !generated.omits_tail())
+            .then(|| callback_parameters_on_ignored_line_with_ranges(generated.text.trim_start()))
+            .flatten();
+        entries.push(InferenceEntry {
+            prop,
+            generated,
+            name,
+            inline_callback,
+            owned,
+        });
+    }
+    entries
 }
 
 pub(super) fn find_component_usage_for_event(

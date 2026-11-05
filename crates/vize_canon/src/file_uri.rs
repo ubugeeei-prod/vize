@@ -32,6 +32,22 @@ pub(crate) fn file_uri_to_path(uri: &str) -> Option<PathBuf> {
     file_uri_to_path_in(uri, HOST_STYLE).map(|path| PathBuf::from(path.as_str()))
 }
 
+pub(crate) fn file_uri_identity(uri: &str) -> String {
+    file_uri_identity_in(uri, HOST_STYLE).unwrap_or_else(|| uri.into())
+}
+
+fn file_uri_identity_in(uri: &str, style: PathStyle) -> Option<String> {
+    let path = file_uri_to_path_in(uri, style)?;
+    let path = typescript_name_in(&path, style);
+    let path = if style == PathStyle::Windows && has_drive_prefix(&path) {
+        let (drive, rest) = path.split_at_checked(1)?;
+        String::from(drive.to_ascii_uppercase()) + rest
+    } else {
+        path
+    };
+    Some(path_to_file_uri_in(&path, style))
+}
+
 fn typescript_name_in(path: &str, style: PathStyle) -> String {
     if style == PathStyle::Posix {
         return String::from(path);
@@ -154,8 +170,8 @@ fn hex_value(byte: u8) -> Option<u8> {
 #[cfg(test)]
 mod tests {
     use super::{
-        PathStyle, decode_uri_path, file_uri_to_path, file_uri_to_path_in, path_to_file_uri,
-        path_to_file_uri_in, typescript_name_in,
+        PathStyle, decode_uri_path, file_uri_identity_in, file_uri_to_path, file_uri_to_path_in,
+        path_to_file_uri, path_to_file_uri_in, typescript_name_in,
     };
     use std::path::{Path, PathBuf};
 
@@ -241,6 +257,23 @@ mod tests {
                 "{uri} -> {path}"
             );
         }
+    }
+
+    #[test]
+    fn native_drive_spellings_share_identity_without_folding_posix_segments() {
+        for uri in [
+            "file:///c%3A/work/日本語%20name.ts",
+            "file:///C:/work/日本語%20name.ts",
+        ] {
+            assert_eq!(
+                file_uri_identity_in(uri, PathStyle::Windows).as_deref(),
+                Some("file:///C:/work/%E6%97%A5%E6%9C%AC%E8%AA%9E%20name.ts")
+            );
+        }
+        assert_eq!(
+            file_uri_identity_in("file:///c%3A/work/name.ts", PathStyle::Posix).as_deref(),
+            Some("file:///c:/work/name.ts")
+        );
     }
 
     #[test]

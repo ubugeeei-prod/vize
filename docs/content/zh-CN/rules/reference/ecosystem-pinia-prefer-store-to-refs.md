@@ -1,0 +1,60 @@
+---
+title: "ecosystem/pinia-prefer-store-to-refs"
+description: "解构 Pinia store 时优先使用 storeToRefs()。"
+---
+
+# `ecosystem/pinia-prefer-store-to-refs`
+
+解构 Pinia store 时优先使用 storeToRefs()。
+
+| 默认严重程度 | 预设 | 自动修复 | 选项 |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | 不支持 | 无 |
+
+适用范围：Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式。
+
+## 错误示例
+
+直接从 store 解构 `name`，使该值脱离了响应式 store 访问。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const { name } = useUserStore();
+</script>
+```
+
+## 正确示例
+
+store 保持完整，storeToRefs 为 name 创建响应式引用。
+
+```vue annotate="add:2,3"
+<script setup lang="ts">
+const store = useUserStore();
+const { name } = storeToRefs(store);
+</script>
+```
+
+## 配置（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "ecosystem/pinia-prefer-store-to-refs": "warn"
+      }
+    },
+  },
+});
+```
+
+然后运行 `vp run lint`。
+
+## 相关页面
+
+- [生态系统与 Nuxt 规则](../ecosystem.md)
+- [全部规则](../all.md)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20)

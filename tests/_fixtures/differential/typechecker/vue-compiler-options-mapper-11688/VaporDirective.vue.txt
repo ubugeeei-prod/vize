@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { Directive } from "vue";
+const vFocus: Directive<HTMLElement, number> = {};
+const count = 1;
+</script>
+<template><input v-focus="count" /></template>

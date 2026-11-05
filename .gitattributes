@@ -45,8 +45,6 @@ crates/vize/tests/check_jsx_slot_parameter_types_cli/attribute_expressions.rs te
 *.snap linguist-generated=true
 # Retain the compiler's authored whole-output whitespace in project config oracles.
 crates/vize/tests/snapshots/project_config_cli__project_settings_build_*.snap whitespace=-blank-at-eol
-docs/content/generated/rules/en/all.md linguist-generated=true -text whitespace=-blank-at-eol
-docs/content/generated/rules/ja/all.md linguist-generated=true -text whitespace=-blank-at-eol
 docs/content/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
 docs/content/ja/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
 **/__snapshots__/** linguist-generated=true
@@ -262,3 +260,14 @@ tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.tx
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json -text
 tests/_fixtures/differential/linter/slot-conditional-arms-10822/source-provenance.json -text
+
+# Content Mapper SDK ABI inputs are hashed byte-for-byte on every host.
+npm/cli/*.d.ts text eol=lf
+npm/cli/*.d.mts text eol=lf
+npm/cli/*.d.cts text eol=lf
+npm/cli/generated/*.d.ts text eol=lf
+crates/vize/src/commands/content_mapper/helper-abi.json text eol=lf
+
+# Complete retained static-ref initialization regression inputs.
+tests/_fixtures/differential/typechecker/static-template-ref-runtime-11377/StaticRef.vue.txt -text
+tests/_fixtures/differential/typechecker/static-template-ref-uninitialized-runtime-11377/StaticRef.vue.txt -text

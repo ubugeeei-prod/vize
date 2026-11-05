@@ -316,6 +316,71 @@
       }
     },
     {
+      "id": "compiler/project/imported-props-path-alias-11794",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "imported-props-path-alias-11794",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "b8f3955191d8daba9a343af1700b2a8203e91ed80934df751c2b68f31c791997"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "config",
+            "sha256": "dd26bc7457e5c1882f77c7b6bb0b97426cf0d2d2289e976094b1ccb94cf417bd"
+          },
+          {
+            "path": "src/FooProps.ts.txt",
+            "role": "dependency",
+            "sha256": "8ed644dd40636e82c7759b7b0c4a0936edabc560576970fd9e88d635bb6b167e"
+          }
+        ]
+      },
+      "reference": {
+        "path": "imported-props-path-alias-11794/module.expected.txt",
+        "sha256": "899e4a902414b55468b9717c3df5ce3a13a0e4ffd8b5b3443dc5e800d4a42c4d",
+        "source": "Source-built CLI 660a2257a86988a38f63bad4204423820b1f336a; exact finite TypeScript paths project, runtime props AST Object/required:false and whole SSR facets verified."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-project-v1",
+        "native": null,
+        "reasons": {
+          "native": "This fixture authenticates source-built CLI whole SSR output; the SDK native imported-type project cohort is qualified separately."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-project-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-project-v1 project inputs with TypeScript paths"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
       "targets": ["ssr"],
@@ -624,6 +689,48 @@
       }
     },
     {
+      "id": "compiler/sfc/default-export-statement-boundary-11617",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "default-export-statement-boundary-11617",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "664a4965374bc6190d2c573d404a87a549fc49c92a151ad442bc65e4d991d99f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "default-export-statement-boundary-11617/module.expected.txt",
+        "sha256": "a4ffa7656e264d55a7d9bacda98a38569cb8dc2afd69c679acfdb6d2afae8773",
+        "source": "crates/vize_atelier_sfc/src/rewrite_default/tests.rs:default_export_statement_boundary_has_a_pinned_ssr_module"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/element-v-once-10875",
       "state": "active",
       "targets": ["ssr"],
@@ -773,7 +880,7 @@
       },
       "reference": {
         "path": "generic-keyof-operands-skip-check/module.expected.txt",
-        "sha256": "062ae5ae856747152fb70c5b6227db8d32a74496f64c3fbcd53bf9ef17165f3c",
+        "sha256": "9dbc94404f7a74341f038da43e151173725d4be99dfc31a577b4eb126d269f3e",
         "source": "crates/vize_atelier_sfc/src/compile_script/props/ast_resolve/runtime_type_combine/tests.rs:unknown_union_members_keep_boolean_and_function_with_skip_check"
       },
       "adapters": {
@@ -816,7 +923,7 @@
       },
       "reference": {
         "path": "generic-union-skip-check-11466/module.expected.txt",
-        "sha256": "c9dba899226535ff24606885a36b4007493649091d58b2e6228fa17643abb339",
+        "sha256": "8151e9258178993c1ef15e4660f92b3714ce2f81812c62777b52fe187f2197ba",
         "source": "crates/vize_atelier_sfc/src/compile_script/props/ast_resolve/runtime_type_combine/tests.rs:unknown_union_members_keep_boolean_and_function_with_skip_check"
       },
       "adapters": {
@@ -1249,6 +1356,118 @@
       }
     },
     {
+      "id": "compiler/sfc/module-export-trivia-11764",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "module-export-trivia-11764",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ccde935e133afd61b47b0e5ad604691980586355754776dea72a50955543ade3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "module-export-trivia-11764/module.expected.txt",
+        "sha256": "2eae9ff94cb688d2f86e1db76554b0f1ae6886b53358eb1d89b68897b9d3f09c",
+        "source": "Published vize 0.676.0 CLI build Layout.vue --format json --output out --ssr --no-config; module bytes remain unchanged by #11764; native geometry and builder splice are asserted by module_export_trivia.rs and module-export-trivia.test.ts"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/nested-dynamic-vfor-11728",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "nested-dynamic-vfor-11728",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "510e5867d7e892ce9fd22e3af9f55a45611eb2fa1d51adaebc339f3013706e8f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "nested-dynamic-vfor-11728/module.expected.txt",
+        "sha256": "ba96f9acc62d4201bb1079d6216e6330446ebc7ce345fb236487151e61d81378",
+        "source": "Exact source CLI a3169b6e4fd2e15e7dd12e083b54ee3b30da8508 build --ssr --no-config full-module observation; parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop consumes this pinned authored input."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The whole-product native compiler remains unavailable; this source-built SSR compatibility observation grants no native-only or independent compiler parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11728",
+        "reporter": "makarasty"
+      }
+    },
+    {
       "id": "compiler/sfc/ordered-object-props-10458",
       "state": "active",
       "targets": ["ssr"],
@@ -1306,7 +1525,7 @@
       },
       "reference": {
         "path": "package-import-prop-type-9894/module.expected.txt",
-        "sha256": "bcbcc0c98163905a804b834690842d8f2cc24ab80d6813c1293cfbc9c57ab769",
+        "sha256": "008a493626f832749f3b805c1a565269d67da06f490f31f32aec76bb7d531669",
         "source": "crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs:test_define_props_resolves_type_from_package_import"
       },
       "adapters": {
@@ -1349,7 +1568,7 @@
       },
       "reference": {
         "path": "plain-script-import-10903/module.expected.txt",
-        "sha256": "f1f6bb4be9272e5b70f84fe852ce65955b82d2b84d53a9c73afa8fdabaf5489d",
+        "sha256": "4b097a86df23638ac76fa8e9a157a8054522172f992095ed007fcbc69daefc17",
         "source": "Authenticated CLI 3bfe310301328e45bb33ffa56cc3d2fbfe7f3945; https://github.com/ubugeeei-prod/vize/actions/runs/40558736347/job/122381720310; two identical executions; complete raw CLI packet and producer/replay custody retained in ssr.source-output.json.txt and ssr-reference.json."
       },
       "adapters": {
@@ -1419,6 +1638,114 @@
       }
     },
     {
+      "id": "compiler/sfc/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "qualification-20261105",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6e65f9b441ddbdaa7420b2217b9071ae9a6ad1dbe1f65c762da284bafe0fe3c9",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "qualification-20261105/module.expected.txt",
+        "sha256": "be71d02220e20a77ed8f1f2751b3e0ffd02adb4660f1c0472222af1a577c2368",
+        "source": "crates/vize_atelier_sfc/src/compile_template/duplicates/preflight_tests.rs:actual_dom_dispatch_observes_native_parse_or_original_compatibility_once; complete SSR observed with published v0.691.0 source 6c1d71493990c76d40f8bf1a2b8825040e59e2d9; candidate Actions qualification pending"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/recovered-attribute-boundary-11731",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "recovered-attribute-boundary-11731",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ec5ef1fd8cfac0782e310acde13ff03bd3e8bf83a2974ff89b5edb32e704df25",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "recovered-attribute-boundary-11731/module.expected.txt",
+        "sha256": "670e14cdf69b3d75b3a21e770878c1c3d939f7b59f4d2971237498ffdfebe150",
+        "source": "Unchanged Standard renderer control for #11731: vize0.680.0 public NAPI and CLI produced identical complete 669-byte SSR modules; the original adjacent input is separately pinned in the typechecker fixture and consumed by the explicit SFC parser regression. Public native image SHA256 09e2f5615c78b5b7250b8c802b7a1d245a3986980c67d852f08bcc1bac0d17a6."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "This whole-product SSR adapter retains the legacy build recipe; explicit SFC parser grammar has independent native packet tests."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/root-text-patch-flag-10168",
       "state": "active",
       "targets": ["ssr"],
@@ -1434,7 +1761,7 @@
       },
       "reference": {
         "path": "root-text-patch-flag-10168/module.expected.txt",
-        "sha256": "0fa4d79f148b0243482b904fe1f030d6dabe1d82851bfdd57452643718a822b8",
+        "sha256": "57f02c172409199a65838501caa87911441e37b71fc0790c9702bffab7e99d8e",
         "source": "crates/vize_atelier_dom/tests/runtime_patch_flags.rs:static_root_props_keep_text_patch_flags"
       },
       "adapters": {
@@ -1709,7 +2036,7 @@
       },
       "reference": {
         "path": "scoped-slot-closure-10169/module.expected.txt",
-        "sha256": "e75f0c543bd3573aab098df4f141bbde15d805adde3dc8d90252a3f4717641eb",
+        "sha256": "a315b90a11c379bea0ba5efe246f77b1ab793fe3756e9b9dfd3a0a5b3c74adca",
         "source": "crates/vize_atelier_dom/tests/runtime_patch_flags.rs:static_root_props_keep_text_patch_flags"
       },
       "adapters": {
@@ -1972,7 +2299,7 @@
       },
       "reference": {
         "path": "sibling-script-import-reads-10616/module.expected.txt",
-        "sha256": "725f54682558b1af8699663b472dfcf871a3cd7f36cb77ed81f75583ff90dc0e",
+        "sha256": "0f7a5a2dca78798522b4395e19b8004d220f283390246710c9bac2d772b7b464",
         "source": "Verified public 0.567.0 CLI before the change: build Layout.vue --format json --output out --ssr --no-config; binary SHA256 1c19c303ccd9f52f204fe83a6c687c247943c1a4f758423250ab744b310bde62"
       },
       "adapters": {
@@ -2214,6 +2541,60 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-v-for-erasure-mode-11815",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-v-for-erasure-mode-11815",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "81858c1e940af1af590309805e6a37ee00b0226ab46fdadc39a4669ad8edefad"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-v-for-erasure-mode-11815/module.expected.txt",
+        "sha256": "9b59e55248e63cafcbd4f9aa25937e46765269e00e06333c2d9dae94552d454d",
+        "source": "Independent public @vizejs/native 0.680.0 untyped control: complete SSR module. This JavaScript-mode v-for input exercises the unchanged-output erasure path; l4::tests::type_annotated_v_for_aliases_stay_in_scope separately compares both typed SSR lanes to the same complete renderer and helper-import oracle. Current source CLI execution remains an Actions qualification."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler equivalence is not established by this source-CLI fixture; the independent published SDK control supplies the frozen output oracle."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "js"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-asset-markup-10761",
       "state": "active",
       "targets": ["ssr"],
@@ -2298,6 +2679,48 @@
       }
     },
     {
+      "id": "compiler/sfc/template-assignment-shorthand-11707",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-assignment-shorthand-11707",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "dc6a427449a112d1bec22260b620dc391397b030bec96b50f59718dc13f35d20",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-assignment-shorthand-11707/module.expected.txt",
+        "sha256": "f4f34110121d868aef9225b97b124f6984b234caa6e44d3fd3956d8d812021b7",
+        "source": "crates/vize_atelier_sfc/tests/template_assignment_patterns.rs:assignment_shorthand_has_a_pinned_ssr_module; DOM inline/separate, SSR and Vapor syntax regression in destructuring_assignment_targets_emit_javascript_in_every_lane"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-global-prefix-10927",
       "state": "active",
       "targets": ["ssr"],
@@ -2313,7 +2736,7 @@
       },
       "reference": {
         "path": "template-global-prefix-10927/module.expected.txt",
-        "sha256": "83597a2a3828e0444c177e0c7939ea1b72f8bb89d07447501f69568c822441aa",
+        "sha256": "f5f1b4c3eaf76e908613eb4543894b79217c87a5d620479b4064bc36481c0dfd",
         "source": "Source-built CLI SSR output for #10927; template-global-policy.yml and the complete core snapshot separately require typed handler prefixing."
       },
       "adapters": {
@@ -2344,6 +2767,49 @@
       }
     },
     {
+      "id": "compiler/sfc/template-handler-typescript-declaration",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "template-handler-typescript-declaration",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "a7f017a29d74f156b6bcb3c702f53add29b0252f46a67d4b02ca2c8a2992180a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-handler-typescript-declaration/module.expected.txt",
+        "sha256": "9685878b63a206ef0164904c900b93e34227abb36b7a885dc6c51e84bb5df62c",
+        "source": "crates/vize_atelier_sfc/tests/template_handler_typescript.rs:typescript_declarations_in_a_handler_body_are_erased_in_every_lane"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards template type erasure of a statement-handler body."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/template-host-globals-10927",
       "state": "active",
       "targets": ["ssr"],
@@ -2359,7 +2825,7 @@
       },
       "reference": {
         "path": "template-host-globals-10927/module.expected.txt",
-        "sha256": "3bf686b7e9465402d51ac01f70d5b9c1c15dfcfcb6d3e8ec7e7e94e5dcda9add",
+        "sha256": "29e7388acf68fc99b2ae12dd931b3ea742af5df35a8aef18720d30b73f51e861",
         "source": "Actual exact CLI-options producer capture at732fc74c61df740c5189a0d79f978dd0df90c74a, run40522195378/artifact12741544660, legacy-fixture.json packet810ecea25e5e30aad7f8ac48ef0a9f577868a1a66aa506ef25911963c7a4f38f; no code transformations. Full DOM/Vapor/SSR runtimes are independently qualified."
       },
       "adapters": {
@@ -2447,7 +2913,7 @@
       },
       "reference": {
         "path": "template-ts-unscanned-erasure/module.expected.txt",
-        "sha256": "11ea28c47e731b492c3a949235aafe1f3be99fe6471690022c5240ba106b1e2a",
+        "sha256": "381fe0d5da7ff69fb62670da62397a6b5b0b0bcff92b5f2f2a6e8a3e128e1df0",
         "source": "crates/vize_atelier_dom/tests/l2_is_ts.rs:unscanned_typescript_is_prefixed_after_erasure"
       },
       "adapters": {
@@ -2455,6 +2921,307 @@
         "native": null,
         "reasons": {
           "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards the legacy template type erasure only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-inline-type-specifier",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-inline-type-specifier",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6229c70fbf1815c76140ab72f7b90e45d4b1d4923190390da5fa31084aced42f",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-inline-type-specifier/module.expected.txt",
+        "sha256": "c32512534d695110298a827dd7b040a4f77236a8f5adc72e86bf6512ccc15cf8",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:inline_type_specifiers_are_removed"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-reexported",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-reexported",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "36568a4106a62381b95d19d533ee7e56e005f913aea350cee0fd091a34c57773",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-reexported/module.expected.txt",
+        "sha256": "831263ec43f85d2a2242c4a0caffe4c44d57d1ea6f497ac7d90e9d35bebd556e",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:a_reexported_import_is_kept"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-side-effect",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-side-effect",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "92d880906e943e3cf96574d40d32125eb8490943043b1aecdd655d9007721568",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-side-effect/module.expected.txt",
+        "sha256": "35741a921fe1d19e30cc23d8b5d3c762dc5b169f019256250c3006653ae17e0e",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:side_effect_imports_are_kept"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-type-declaration",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-type-declaration",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "4d6f416d9bf019775d5d7331508a9d329f405b4edde3f59b063f9520908c1b72",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-type-declaration/module.expected.txt",
+        "sha256": "c32512534d695110298a827dd7b040a4f77236a8f5adc72e86bf6512ccc15cf8",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:import_type_declarations_are_removed"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-used-as-type",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-used-as-type",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9d2231b1b46e94f73e04f4ee79a9a1550e7c041516913c5095b20e259eb6bc68",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-used-as-type/module.expected.txt",
+        "sha256": "b99bf15813dc317598b219cff66fe9f3d3d3278daea4a5547874361ae4a7abdc",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:an_import_used_only_as_a_type_is_elided"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-used-as-type-and-in-template",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-used-as-type-and-in-template",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "522abda42d00a632c52094abdf887dfc651546531bda2e7f69b9f189b5157fb7",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-used-as-type-and-in-template/module.expected.txt",
+        "sha256": "d71ab6426e91245a4aca7ece568862c16f9338fe517938baf93e4266f73cf3a7",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:an_import_used_as_a_type_and_in_the_template_is_kept"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ts-import-used-in-template",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "ts-import-used-in-template",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "c79f70c860060bc58d2b1102c77d2346b0df2ced4ed8c2b634e142f9e2703170",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ts-import-used-in-template/module.expected.txt",
+        "sha256": "c46933566a3d859f07746b2c19899405a0c875d4e96e38296514e96c637bf241",
+        "source": "crates/vize_atelier_sfc/tests/typescript_import_elision.rs:an_import_used_only_in_the_template_is_kept"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards TypeScript import elision in the legacy script compiler."
         }
       },
       "comparison": {
@@ -2490,7 +3257,7 @@
       },
       "reference": {
         "path": "tsx-setup-jsx-bindings/module.expected.txt",
-        "sha256": "a5e79934af41a6fd0a693edd766ad85ed89453d798b30a6a8a23d323f4afbaad",
+        "sha256": "73be27ef9a3271d180c35edafb1b80c51d3622f00974ff7fc3031846938ce1b1",
         "source": "crates/vize_atelier_sfc/src/script/tsx_setup_tests.rs:tsx_setup_keeps_macros_and_bindings_beside_jsx"
       },
       "adapters": {
@@ -2512,6 +3279,59 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "tsx"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/unicode-script-line-comments-11798",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "unicode-script-line-comments-11798",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "unicode-script-line-comments-11798/module.expected.txt",
+        "sha256": "7158113bffc492ee142391b5a01fe2a71bdaf59cf530b135b70a9322364817c8",
+        "source": "Authored script-only JavaScript identity oracle, independently parsed by Node. The source CLI, NAPI 36-case shape test and real WASM 36-case packet test qualify separate adapters; published676/678 reject this existing LS comment input."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "No full native compiler differential adapter is registered for this case; separate real NAPI and WASM entry-point tests do not establish native/legacy product parity."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]

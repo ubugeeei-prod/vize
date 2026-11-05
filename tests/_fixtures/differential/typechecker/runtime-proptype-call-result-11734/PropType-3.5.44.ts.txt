@@ -1,0 +1,11 @@
+export type PropType<T> = PropConstructor<T> | (PropConstructor<T> | null)[];
+type PropConstructor<T = any> = {
+    new (...args: any[]): T & {};
+} | {
+    (): T;
+} | PropMethod<T>;
+type PropMethod<T, TConstructor = any> = {
+    new (): TConstructor;
+    (): T;
+    readonly prototype: TConstructor;
+};

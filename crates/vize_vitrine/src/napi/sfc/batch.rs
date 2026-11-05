@@ -9,8 +9,8 @@ use vize_l0::FxHashMap;
 use super::vue_version::resolve_sfc_vue_version;
 use super::{
     batch_helpers::{
-        BatchCompileJob, BatchCompileKey, BatchStats, batch_compile_key, batch_options_bits,
-        should_cache_batch_compile,
+        BatchCompileCandidateKey, BatchCompileJob, BatchStats, batch_compile_candidate_key,
+        batch_options_bits, should_cache_batch_compile,
     },
     experimentals::ExperimentalTemplateOptions,
     thread_pool::BatchThreadPool,
@@ -18,6 +18,9 @@ use super::{
 };
 use crate::template_syntax::resolve_template_syntax;
 use crate::whitespace::resolve_whitespace;
+
+#[cfg(test)]
+mod stats_tests;
 
 /// Compiles a glob of Vue SFCs and returns aggregate stats for the native API.
 ///
@@ -44,15 +47,12 @@ fn compile_sfc_batch_inner(
 ) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-        StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter_with_experimental_options,
-        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,
+        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
+        parse_sfc as sfc_parse,
     };
-    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {
-        compile_sfc_for_adapter_with_nuxt_page_meta
-    } else {
-        compile_sfc_for_adapter_with_experimental_options
-    };
+    let type_projects = vize::type_projects::ImportedTypeProjects::new(
+        opts.type_resolution_fallback_tsconfig.as_deref(),
+    );
 
     let files: Vec<_> = glob(&pattern)
         .map_err(|e| {
@@ -118,10 +118,10 @@ fn compile_sfc_batch_inner(
         .collect();
 
     let mut stats = BatchStats::default();
-    let mut grouped = FxHashMap::<BatchCompileKey, usize>::default();
+    let mut grouped = FxHashMap::<BatchCompileCandidateKey, usize>::default();
     let mut jobs = Vec::<BatchCompileJob>::new();
 
-    for input in read_inputs {
+    for (input_index, input) in read_inputs.into_iter().enumerate() {
         let (path, source) = match input {
             Ok(input) => input,
             Err(()) => {
@@ -135,10 +135,11 @@ fn compile_sfc_batch_inner(
             .and_then(|name| name.to_str())
             .unwrap_or("");
         if should_cache_batch_compile(&source, component_name) {
-            let key = batch_compile_key(&path, &source, component_name, option_bits);
+            let key = batch_compile_candidate_key(&path, &source, component_name, option_bits);
             if let Some(job) = grouped.get(&key).and_then(|&index| jobs.get_mut(index)) {
                 job.repeats += 1;
                 job.input_bytes += source.len();
+                job.remaining.push(input_index);
                 continue;
             }
 
@@ -148,101 +149,141 @@ fn compile_sfc_batch_inner(
         jobs.push(BatchCompileJob::single(path, source));
     }
 
+    let compile_one = |path: &std::path::Path, source: &str| {
+        let source_len = source.len();
+        let filename: vize_l0::CompactString = path.to_string_lossy().as_ref().into();
+        let parse_opts = SfcParseOptions {
+            filename: filename.clone(),
+            ..Default::default()
+        };
+        let descriptor = match sfc_parse(source, parse_opts) {
+            Ok(d) => d,
+            Err(_) => {
+                return (
+                    BatchStats {
+                        failed: 1,
+                        input_bytes: source_len,
+                        ..Default::default()
+                    },
+                    true,
+                );
+            }
+        };
+        let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+        let compile_opts = SfcCompileOptions {
+            parse: SfcParseOptions {
+                filename: filename.clone(),
+                ..Default::default()
+            },
+            script: ScriptCompileOptions {
+                id: Some(filename.clone()),
+                inline_template: shape.standalone,
+                is_ts,
+                ..Default::default()
+            },
+            template: TemplateCompileOptions {
+                id: Some(filename.clone()),
+                scoped: has_scoped,
+                ssr,
+                is_ts,
+                is_prod: shape.is_prod,
+                custom_renderer,
+                dialect: vue_version,
+                compiler_options: {
+                    let mut dom_options = experimentals.dom_options();
+                    if let Some(value) = opts.template_cache_handlers {
+                        dom_options.cache_handlers = value;
+                    }
+                    if let Some(value) = opts.template_comments {
+                        dom_options.comments = value;
+                    }
+                    if let Some(value) = opts.template_hoist_static {
+                        dom_options.hoist_static = value;
+                    }
+                    if let Some(value) = opts.template_prefix_identifiers {
+                        dom_options.prefix_identifiers = value;
+                    }
+                    Some(dom_options)
+                },
+                ..Default::default()
+            },
+            style: StyleCompileOptions {
+                id: filename,
+                scoped: has_scoped,
+                trim: opts.style_trim.unwrap_or(false),
+                ..Default::default()
+            },
+            vapor,
+            scope_id: None,
+        };
+
+        let compile_result =
+            type_projects
+                .for_descriptor(&descriptor, path)
+                .and_then(|type_project| {
+                    let contextual = type_project.cache_identity(path).is_some();
+                    whitespace.apply(|| {
+                        compile_sfc_for_adapter_with_project(
+                            &descriptor,
+                            compile_opts,
+                            template_syntax,
+                            custom_elements.clone(),
+                            sfc_codegen_options(
+                                false,
+                                opts.runtime_module_name.as_deref(),
+                                opts.runtime_global_name.as_deref(),
+                            ),
+                            script_output,
+                            experimentals.sfc_options(),
+                            opts.nuxt_page_meta.unwrap_or(false),
+                            type_project.as_deref(),
+                        )
+                        .map(|result| (type_project.track(result), contextual))
+                    })
+                });
+
+        match compile_result {
+            Ok((result, contextual)) => (
+                BatchStats {
+                    success: 1,
+                    input_bytes: source_len,
+                    output_bytes: result.code.len(),
+                    failed: 0,
+                },
+                contextual,
+            ),
+            Err(_) => (
+                BatchStats {
+                    failed: 1,
+                    input_bytes: source_len,
+                    ..Default::default()
+                },
+                true,
+            ),
+        }
+    };
+
+    // Candidate buckets are only source-equivalence hints. The representative
+    // compile records its real AST facts; contextual and failed inputs always
+    // execute again with each complete importer and its selected authority.
     let compile_stats = jobs
         .par_iter()
         .map(|job| {
-            let source_len = job.input_bytes;
-            let filename: vize_l0::CompactString = job.path.to_string_lossy().as_ref().into();
-            let parse_opts = SfcParseOptions {
-                filename: filename.clone(),
-                ..Default::default()
-            };
-            let descriptor = match sfc_parse(&job.source, parse_opts) {
-                Ok(d) => d,
-                Err(_) => {
-                    return BatchStats {
-                        failed: job.repeats,
-                        input_bytes: source_len,
-                        ..Default::default()
-                    };
+            let (first, contextual) = compile_one(&job.path, &job.source);
+            if contextual {
+                let remaining = job
+                    .remaining
+                    .par_iter()
+                    .map(|&index| compile_one(&files[index], &job.source).0)
+                    .reduce(BatchStats::default, BatchStats::add);
+                first.add(remaining)
+            } else {
+                BatchStats {
+                    success: first.success * job.repeats,
+                    failed: first.failed * job.repeats,
+                    input_bytes: job.input_bytes,
+                    output_bytes: first.output_bytes * job.repeats,
                 }
-            };
-            let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-            let compile_opts = SfcCompileOptions {
-                parse: SfcParseOptions {
-                    filename: filename.clone(),
-                    ..Default::default()
-                },
-                script: ScriptCompileOptions {
-                    id: Some(filename.clone()),
-                    inline_template: shape.standalone,
-                    is_ts,
-                    ..Default::default()
-                },
-                template: TemplateCompileOptions {
-                    id: Some(filename.clone()),
-                    scoped: has_scoped,
-                    ssr,
-                    is_ts,
-                    is_prod: shape.is_prod,
-                    custom_renderer,
-                    dialect: vue_version,
-                    compiler_options: {
-                        let mut dom_options = experimentals.dom_options();
-                        if let Some(value) = opts.template_cache_handlers {
-                            dom_options.cache_handlers = value;
-                        }
-                        if let Some(value) = opts.template_comments {
-                            dom_options.comments = value;
-                        }
-                        if let Some(value) = opts.template_hoist_static {
-                            dom_options.hoist_static = value;
-                        }
-                        if let Some(value) = opts.template_prefix_identifiers {
-                            dom_options.prefix_identifiers = value;
-                        }
-                        Some(dom_options)
-                    },
-                    ..Default::default()
-                },
-                style: StyleCompileOptions {
-                    id: filename,
-                    scoped: has_scoped,
-                    trim: opts.style_trim.unwrap_or(false),
-                    ..Default::default()
-                },
-                vapor,
-                scope_id: None,
-            };
-
-            let compile_result = whitespace.apply(|| {
-                sfc_compile_for_adapter(
-                    &descriptor,
-                    compile_opts,
-                    template_syntax,
-                    custom_elements.clone(),
-                    sfc_codegen_options(
-                        false,
-                        opts.runtime_module_name.as_deref(),
-                        opts.runtime_global_name.as_deref(),
-                    ),
-                    script_output,
-                    experimentals.sfc_options(),
-                )
-            });
-
-            match compile_result {
-                Ok(result) => BatchStats {
-                    success: job.repeats,
-                    input_bytes: source_len,
-                    output_bytes: result.code.len() * job.repeats,
-                    failed: 0,
-                },
-                Err(_) => BatchStats {
-                    failed: job.repeats,
-                    input_bytes: source_len,
-                    ..Default::default()
-                },
             }
         })
         .reduce(BatchStats::default, BatchStats::add);

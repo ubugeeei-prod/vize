@@ -167,6 +167,9 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
     pub(crate) hoist_shared_preamble: bool,
+    /// The template runs inside the SFC's generic setup signature, so a
+    /// component binding's type may be a type parameter.
+    pub(crate) generic_component: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
     pub(super) dynamic_aliases: &'a DynamicComponentAliases,
     /// Component usages whose props have already been materialized for event
@@ -252,6 +255,8 @@ pub(crate) struct VForPropsContext<'a, 'template> {
 
 pub(super) struct EventHandlerExprContext<'a> {
     pub(super) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    pub(super) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) data: &'a EventHandlerScopeData,
     /// Whether handler assignability and payload types should be checked.
     /// When disabled, authored handler bodies are still emitted as statements
@@ -259,6 +264,8 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) check_emits: bool,
     pub(super) event_type: &'a str,
     pub(super) event_handler_type: Option<&'a str>,
+    /// Resolver-owned unknown context; never inferred from an empty argument tuple.
+    pub(super) event_handler_contextless: Option<&'a str>,
     /// For component `@event` handlers, the synthesized listener type
     /// (e.g. `__Child_1_test_listener`) that captures the full emit argument
     /// tuple (or the single `$event` fallback when the emit stays unresolved).

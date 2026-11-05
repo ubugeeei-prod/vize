@@ -58,7 +58,17 @@ fn template_may_call_i18n(bytes: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
+    #![expect(
+        clippy::disallowed_macros,
+        reason = "compare complete diagnostic Debug packets"
+    )]
+
     use super::source_may_contain_ecosystem_template_rule;
+    use crate::context::LintContext;
+    use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+    use crate::rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
+    use crate::{LintPreset, Linter};
+    use vize_relief::ElementNode;
 
     #[test]
     fn ecosystem_template_hint_ignores_plain_internal_anchor() {
@@ -79,5 +89,169 @@ const links = [{ url: '/docs' }]
             template,
             Some(sfc)
         ));
+    }
+
+    static CUSTOM_META: RuleMeta = RuleMeta {
+        name: "custom/button",
+        description: "Check host buttons",
+        category: RuleCategory::Ecosystem,
+        fixable: true,
+        default_severity: Severity::Error,
+    };
+
+    struct CustomButtonRule(&'static RuleMeta);
+
+    impl Rule for CustomButtonRule {
+        fn meta(&self) -> &'static RuleMeta {
+            self.0
+        }
+
+        fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+            if element.tag != "button" {
+                return;
+            }
+            let start = element.loc.span.start;
+            let end = start + 7;
+            ctx.report(
+                LintDiagnostic::error(self.meta().name, "Host button rule", start, end)
+                    .with_help("Keep the host-provided rule active.")
+                    .with_label("Button", start, end)
+                    .with_fix(Fix::new(
+                        "Rename button",
+                        TextEdit::replace(start + 1, end, "input"),
+                    )),
+            );
+        }
+    }
+
+    #[test]
+    fn ecosystem_source_pruning_preserves_custom_rules() {
+        enum Input {
+            Template,
+            Sfc,
+            Html,
+        }
+
+        for (source, input) in [
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"
+                ),
+                Input::Template,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"
+                ),
+                Input::Html,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.vue.txt"
+                ),
+                Input::Sfc,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/ButtonAndLink.html.txt"
+                ),
+                Input::Template,
+            ),
+            (
+                include_str!(
+                    "../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/ButtonAndLink.vue.txt"
+                ),
+                Input::Sfc,
+            ),
+        ] {
+            let expected =
+                Linter::with_ecosystem().with_rule(Box::new(CustomButtonRule(&CUSTOM_META)));
+            let actual = Linter::with_preset(LintPreset::Ecosystem)
+                .with_rule(Box::new(CustomButtonRule(&CUSTOM_META)));
+            let lint = |linter: &Linter| match input {
+                Input::Sfc => linter.lint_sfc(source, "Custom.vue"),
+                Input::Html => linter.lint_standalone_html(source, "Custom.html"),
+                Input::Template => linter.lint_template(source, "Custom.vue"),
+            };
+            let expected = lint(&expected);
+            let actual = lint(&actual);
+            assert_eq!(
+                actual
+                    .diagnostics
+                    .iter()
+                    .filter(|d| d.rule_name == "custom/button")
+                    .count(),
+                1,
+                "{source}: {:?}",
+                actual.diagnostics,
+            );
+            assert_eq!(
+                format!("{:?}", actual.diagnostics),
+                format!("{:?}", expected.diagnostics),
+                "{source}"
+            );
+            assert_eq!(
+                (actual.error_count, actual.warning_count),
+                (expected.error_count, expected.warning_count)
+            );
+        }
+    }
+
+    #[test]
+    fn ecosystem_source_pruning_keeps_the_pristine_builtin_prefix() {
+        let prefix = RuleRegistry::with_happy_path().rules().len();
+        for (linter, expected_count) in [
+            (Linter::with_preset(LintPreset::Ecosystem), Some(prefix)),
+            (Linter::with_ecosystem(), None),
+            (Linter::with_registry(RuleRegistry::with_ecosystem()), None),
+        ] {
+            assert_eq!(
+                linter.template_rule_count_for_source("<div />", None),
+                expected_count.unwrap_or(linter.registry().rules().len()),
+            );
+            assert_eq!(
+                linter.template_rule_count_for_source("<RouterLink />", None),
+                linter.registry().rules().len(),
+            );
+            let result = linter.lint_template("<RouterLink />", "Custom.vue");
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .any(|d| d.rule_name == "ecosystem/router-link-require-to")
+            );
+        }
+    }
+
+    #[test]
+    fn ecosystem_source_pruning_preserves_replaced_rule_instances() {
+        static REPLACEMENT_META: RuleMeta = RuleMeta {
+            name: "ecosystem/router-link-require-to",
+            description: "Host replacement checks buttons",
+            category: RuleCategory::Ecosystem,
+            fixable: true,
+            default_severity: Severity::Error,
+        };
+        let mut registry = RuleRegistry::with_ecosystem();
+        registry.replace(Box::new(CustomButtonRule(&REPLACEMENT_META)));
+        assert!(registry.ecosystem_template_prefix().is_none());
+        let linter = Linter::with_registry(registry);
+        let result = linter.lint_template(include_str!("../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/Button.html.txt"), "Custom.vue");
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| d.rule_name == REPLACEMENT_META.name)
+            .expect("host replacement must run on its own source shape");
+        assert_eq!((diagnostic.start, diagnostic.end), (0, 7));
+        assert_eq!(diagnostic.message, "Host button rule");
+        assert!(diagnostic.fix.is_some());
+
+        let clean = linter.lint_template(include_str!("../../../../../tests/_fixtures/differential/linter/ecosystem-host-rules-11772/NoButton.html.txt"), "Custom.vue");
+        assert!(
+            clean
+                .diagnostics
+                .iter()
+                .all(|d| d.rule_name != REPLACEMENT_META.name)
+        );
     }
 }

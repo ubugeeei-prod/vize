@@ -152,7 +152,7 @@ mod tests {
             preamble_before(preamble).replacen(FILES[1].before, FILES[1].after, 1),
             super::super::required_keys_short_circuit::preamble_before(preamble)
         );
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
         retain_provenance(&mut manifest);

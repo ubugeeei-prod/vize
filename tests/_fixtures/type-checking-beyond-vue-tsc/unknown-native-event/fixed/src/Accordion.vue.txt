@@ -1,0 +1,11 @@
+<script setup lang="ts">
+function beforeEnter(el: Element) {
+  (el as HTMLElement).style.height = "0";
+}
+</script>
+
+<template>
+  <TransitionGroup tag="div" class="accordion" @before-enter="beforeEnter">
+    <slot />
+  </TransitionGroup>
+</template>

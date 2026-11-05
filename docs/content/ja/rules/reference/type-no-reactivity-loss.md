@@ -1,20 +1,43 @@
 ---
 title: "type/no-reactivity-loss"
+description: "リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。"
 ---
 
 # `type/no-reactivity-loss`
 
 リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
+このルールは TypeScript プロジェクト（`tsconfig.json`）の型情報を使うため、設定で `typeAware: true` を指定しています。`typeAware` だけでは、個別に有効化するルールは有効になりません。
+
+## 悪い例
+
+`const count = state.count` がリアクティブなプロパティから数値のスナップショットを取り、その後の `state.count` の更新が変数へ反映されなくなります。
+
+```vue annotate="remove:2,4"
+<script setup lang="ts">
+import { reactive } from "vue";
+const state = reactive({ count: 0 });
+const count = state.count;
+</script>
+```
+
+## 良い例
+
+`toRef(state, "count")` で現在のプリミティブ値をコピーせず、`count` を元のリアクティブなプロパティにつなげます。
+
+```vue annotate="add:2,4"
+<script setup lang="ts">
+import { reactive, toRef } from "vue";
+const state = reactive({ count: 0 });
+const count = toRef(state, "count");
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -34,34 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`const count = state.count` がリアクティブなプロパティから数値のスナップショットを取り、その後の `state.count` の更新が変数へ反映されなくなります。
-
-```vue
-<script setup lang="ts">
-import { reactive } from "vue";
-const state = reactive({ count: 0 });
-const count = state.count;
-</script>
-```
-
-## 良い
-
-`toRef(state, "count")` で現在のプリミティブ値をコピーせず、`count` を元のリアクティブなプロパティにつなげます。
-
-```vue
-<script setup lang="ts">
-import { reactive, toRef } from "vue";
-const state = reactive({ count: 0 });
-const count = toRef(state, "count");
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12)

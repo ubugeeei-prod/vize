@@ -16,6 +16,7 @@ pub mod micro_hash;
 mod micro_hash_macros;
 mod micro_macros;
 mod report;
+mod scope;
 mod shard;
 mod snapshot;
 
@@ -28,6 +29,7 @@ pub use cache::CacheStats;
 pub use core::{ProfileGuard, Profiler, Timer, global_profiler};
 pub use metrics::{CounterMetrics, Metrics};
 pub use report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
+pub use scope::{ProfilerScope, active_profiler_is_enabled, with_active_profiler};
 
 /// Macro for profiling a block of code.
 ///

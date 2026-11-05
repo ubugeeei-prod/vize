@@ -1,15 +1,21 @@
 ---
-title: "Regras da SSR"
+title: "Regras de SSR"
+description: "Código que quebra ou se comporta de outro jeito durante a renderização no servidor e a hidratação."
 ---
 
-# Regras da SSR
+# Regras de SSR
 
-Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
+Código que quebra ou se comporta de outro jeito durante a renderização no servidor e a hidratação.
 
+Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 
-| Regra | Exemplos | Finalidade |
+## Padrão (2)
+
+Adicionadas por `happy-path`, a predefinição padrão.
+
+| Regra | O que verifica | Correção automática |
 | --- | --- | --- |
-| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [Incorreto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | Proibir variáveis globais exclusivas do navegador no contexto de SSR |
-| [`ssr/no-hydration-mismatch`](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch) | [Incorreto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch-good) | Proibir valores não determinísticos que causam divergências na hidratação |
+| <span id="ssr-no-browser-globals-in-ssr"></span>[`ssr/no-browser-globals-in-ssr`](./reference/ssr-no-browser-globals-in-ssr.md) | Proibir variáveis globais exclusivas do navegador no contexto de SSR. |  |
+| <span id="ssr-no-hydration-mismatch"></span>[`ssr/no-hydration-mismatch`](./reference/ssr-no-hydration-mismatch.md) | Proibir valores não determinísticos que causam divergências na hidratação. |  |
 
-[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[Visão geral das regras](../rules/index.md) · [Opções das regras](/rules/options.md) · [Migração do ESLint](/rules/migration.md)

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { hash } from "./canon-instance-directives-io.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
+import { applySourceOwnedPreambleTransitions } from "./canon-slot-provider-preamble.ts";
 
 export function slotCliPacket(
   process: { stdout: Buffer; stderr: Buffer; status: number | null },
@@ -43,7 +44,7 @@ export function slotCliPacket(
   assert.equal(text.split(previous).length, 2);
   for (const declaration of declarations)
     if (declaration !== replacement) assert.equal(text.split(declaration).length, 2);
-  const currentPreamble = text.replace(previous, replacement);
+  const currentPreamble = applySourceOwnedPreambleTransitions(text.replace(previous, replacement));
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");
   const expected =

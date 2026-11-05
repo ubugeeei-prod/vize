@@ -247,11 +247,12 @@ fn transform_with_shared_sources(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
-    let (mut diagnostic_echoes, callback_primaries) = diagnostic_ownership
+    let (mut diagnostic_echoes, callback_primaries, diagnostic_primaries) = diagnostic_ownership
         .map(|collector| {
             let mut ownership = collector.into_inner();
-            let primaries = ownership.take_callback_primaries();
-            (ownership.into_echoes(), primaries)
+            let callback_primaries = ownership.take_callback_primaries();
+            let primaries = ownership.diagnostic_primaries();
+            (ownership.into_echoes(), callback_primaries, primaries)
         })
         .unwrap_or_default();
     for echo in &mut diagnostic_echoes {
@@ -270,6 +271,7 @@ fn transform_with_shared_sources(
                             &descriptor,
                             &spans,
                             &diagnostic_echoes,
+                            &diagnostic_primaries,
                         ),
                         generic_copies.as_ref(),
                     );
@@ -423,17 +425,21 @@ fn protocol_spans(
     spans
 }
 
-/// The generated quotes around a mapped name, when no authored span owns them.
+/// Generated quotes or parentheses around a mapped span that no authored span owns.
 ///
-/// TypeScript reports a string-literal node (a quoted property key, a CSS
-/// module name) from its opening quote, and maps a position in an unmapped gap
-/// to the end of the preceding span. Diagnostic-only atoms on both quotes keep
-/// such a diagnostic on the authored name instead of the previous attribute.
+/// TypeScript reports a quoted key from its opening quote, and a listener
+/// check from the `(` of `= ((value) => ...)`. A start in that gap maps to the
+/// preceding span's end — the attribute `=` — instead of the authored value.
+/// Diagnostic-only atoms on both wrappers keep the anchor on that value
+/// (#9753, #11675).
 fn synthetic_delimiters(generated: &str, range: &Range<usize>) -> Option<(usize, usize)> {
+    let bytes = generated.as_bytes();
     let open = range.start.checked_sub(1)?;
-    let quote = *generated.as_bytes().get(open)?;
-    (matches!(quote, b'"' | b'\'') && generated.as_bytes().get(range.end) == Some(&quote))
-        .then_some((open, range.end))
+    let open_byte = *bytes.get(open)?;
+    let close_byte = *bytes.get(range.end)?;
+    let wrapped = (matches!(open_byte, b'"' | b'\'') && close_byte == open_byte)
+        || (open_byte == b'(' && close_byte == b')');
+    wrapped.then_some((open, range.end))
 }
 
 fn candidate(

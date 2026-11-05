@@ -6,26 +6,11 @@ title: "vize:croquis/cf/browser-api-ssr"
 
 サーバーでも描画され得る場所で、ブラウザ専用 API を使っています。
 
-既定の重大度: warning  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/browser-api-ssr": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -46,7 +31,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 setup 中に `window.innerWidth` を読み、ブラウザの `window` がない SSR 環境でも実行されます。
 
@@ -59,7 +44,7 @@ const width = window.innerWidth;
 <template><p>Content</p></template>
 ```
 
-## 良い
+## 良い例
 
 サーバーでも安全に使える初期値で ref を作り、クライアントでのマウント後に実行される `onMounted` 内で `window` を読みます。
 
@@ -74,7 +59,25 @@ onMounted(() => { width.value = window.innerWidth; });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/browser-api-ssr": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

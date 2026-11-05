@@ -8,6 +8,7 @@ use std::{
 };
 
 mod constructor_without_args;
+mod current_generated_constructor;
 mod current_updates;
 mod provider_roster;
 
@@ -240,6 +241,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     }
     manifest["provenance"]["currentSlotOutletAliasUpdate"] = slot_update;
     current_updates::apply(&mut manifest, &mut members);
+    current_generated_constructor::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

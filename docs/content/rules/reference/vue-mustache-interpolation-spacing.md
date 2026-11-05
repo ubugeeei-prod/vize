@@ -1,18 +1,41 @@
 ---
 title: "vue/mustache-interpolation-spacing"
+description: "Enforce consistent spacing inside mustache interpolations."
 ---
 
 # `vue/mustache-interpolation-spacing`
 
-Enforce consistent spacing inside mustache interpolations
+Enforce consistent spacing inside mustache interpolations.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | [Rule options](../options.md) |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: See [typed options and defaults](../options.md).
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The text interpolation is missing a space at one or both delimiter boundaries.
+
+```vue annotate="remove:2,3,4"
+<template>
+  <div>{{text}}</div>
+  <div>{{ text}}</div>
+  <div>{{text }}</div>
+</template>
+```
+
+## Good
+
+Spaces separate the expression from both opening and closing mustache delimiters.
+
+```vue annotate="add:2,3,4"
+<template>
+  <div>{{ text }}</div>
+  <div>{{ foo.bar }}</div>
+  <div>{{ foo + bar }}</div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The text interpolation is missing a space at one or both delimiter boundaries.
-
-```vue
-<template>
-  <div>{{text}}</div>
-  <div>{{ text}}</div>
-  <div>{{text }}</div>
-</template>
-```
-
-## Good
-
-Spaces separate the expression from both opening and closing mustache delimiters.
-
-```vue
-<template>
-  <div>{{ text }}</div>
-  <div>{{ foo.bar }}</div>
-  <div>{{ foo + bar }}</div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L34) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [Rule options](../options.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L34)

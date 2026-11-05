@@ -18,7 +18,8 @@ export function hasHmrChanges(prev: CompiledModule | undefined, next: CompiledMo
   return (
     hasViteHmrChanges(toHmrHashes(prev), toHmrHashes(next)) ||
     runtimeFingerprint(prev) !== runtimeFingerprint(next) ||
-    styleFingerprint(prev) !== styleFingerprint(next)
+    styleFingerprint(prev) !== styleFingerprint(next) ||
+    hasCustomBlockChanges(prev, next)
   );
 }
 
@@ -38,6 +39,12 @@ export function detectHmrUpdateType(
   }
 
   if (prev.scriptHash !== next.scriptHash) {
+    return "full-reload";
+  }
+
+  // A custom block sets component options, so a template or style hash must
+  // not keep the update on the rerender/CSS path.
+  if (hasCustomBlockChanges(prev, next)) {
     return "full-reload";
   }
 
@@ -77,6 +84,14 @@ export function hasStyleChanges(prev: CompiledModule | undefined, next: Compiled
   return prev.styleHash !== next.styleHash || styleFingerprint(prev) !== styleFingerprint(next);
 }
 
+/** Whether custom-block content changed, including the first time blocks appear. */
+export function hasCustomBlockChanges(
+  prev: CompiledModule | undefined,
+  next: CompiledModule,
+): boolean {
+  return customBlockFingerprint(prev) !== customBlockFingerprint(next);
+}
+
 function toHmrHashes(module: CompiledModule | undefined) {
   return module
     ? {
@@ -109,6 +124,18 @@ function runtimeFingerprint(module: CompiledModule): string {
     })),
     dependencies: [...(module.dependencies ?? [])].sort(),
   });
+}
+
+function customBlockFingerprint(module: CompiledModule | undefined): string {
+  return JSON.stringify(
+    (module?.customBlocks ?? []).map((block) => ({
+      type: block.type,
+      content: block.content,
+      src: block.src ?? null,
+      attrs: block.attrs,
+      index: block.index,
+    })),
+  );
 }
 
 function styleFingerprint(module: CompiledModule): string {

@@ -6,26 +6,11 @@ title: "vize:croquis/cf/provide-without-symbol"
 
 `provide` が `InjectionKey` のシンボルではなく素のキーを使っています。
 
-既定の重大度: warning  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/provide-without-symbol": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -46,7 +31,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 両コンポーネントが文字列 `"theme"` を使い、無関係な機能とキーが衝突する可能性があります。
 
@@ -76,7 +61,7 @@ const theme = inject("theme");
 </script>
 ```
 
-## 良い
+## 良い例
 
 型付きのシンボル `ThemeKey` を一つだけ export し、provide 側と inject 側で同じ値を import します。説明文字列が同じでも、別々に作ったシンボルでは両者を結び付けられません。
 
@@ -120,7 +105,25 @@ export interface Theme {
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/provide-without-symbol": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

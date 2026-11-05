@@ -1,18 +1,41 @@
 ---
 title: "script/component-options-name-casing"
+description: "コンポーネントの name オプションを PascalCase に揃えます。"
 ---
 
 # `script/component-options-name-casing`
 
 コンポーネントの name オプションを PascalCase に揃えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+コンポーネントの `name: 'my-component'` が kebab-case です。このルールは文字列リテラルのコンポーネント名に PascalCase を求めます。
+
+```vue annotate="remove:3"
+<script lang="ts">
+export default {
+  name: 'my-component' // kebab-case
+}
+</script>
+```
+
+## 良い例
+
+`MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。
+
+```vue annotate="add:3"
+<script lang="ts">
+export default {
+  name: 'MyComponent'
+}
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-コンポーネントの `name: 'my-component'` が kebab-case です。このルールは文字列リテラルのコンポーネント名に PascalCase を求めます。
-
-```vue
-<script lang="ts">
-export default {
-  name: 'my-component' // kebab-case
-}
-</script>
-```
-
-## 良い
-
-`MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。
-
-```vue
-<script lang="ts">
-export default {
-  name: 'MyComponent'
-}
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44)

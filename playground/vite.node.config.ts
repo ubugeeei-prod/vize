@@ -5,6 +5,10 @@ export default defineConfig({
   plugins: [vize()],
   test: {
     environment: "node",
-    include: ["e2e/vite-plugin-vapor.test.ts", "e2e/vite-plugin-package-imports-mock.test.ts"],
+    include: [
+      "e2e/vite-plugin-vapor.test.ts",
+      "e2e/vite-plugin-package-imports-mock.test.ts",
+      "e2e/code-highlight-ssr.test.ts",
+    ],
   },
 });

@@ -9,6 +9,7 @@ import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.ts";
+import { typecheckerRunStatus } from "./typechecker-qualification.ts";
 
 /**
  * The matrix artifacts a divergence run is allowed to trust, split out of
@@ -45,7 +46,7 @@ export function readAndValidateSummary(reportDir, project) {
 export function readAndValidateVizeRun(reportDir, project, summary) {
   const projectSummary = summary.projects.find((entry) => entry.id === project.id);
   const runs = projectSummary.runs.filter((run) => run.tool === "typechecker");
-  if (runs.length !== 1 || !["ok", "findings"].includes(runs[0].status)) {
+  if (runs.length !== 1 || !["ok", "findings", "configuration"].includes(runs[0].status)) {
     throw new Error(`Fixture matrix summary has no successful typechecker run for ${project.id}`);
   }
   const expectedName = `${project.id}-typechecker.json`;
@@ -107,7 +108,7 @@ export function readAndValidateVizeRun(reportDir, project, summary) {
   if (canonicalJson(expectedCoverage) !== canonicalJson(payload.typecheckerCoverage)) {
     throw new Error(`Fixture matrix typechecker coverage is inconsistent for ${project.id}`);
   }
-  const expectedStatus = payload.exitCode === 0 ? "ok" : "findings";
+  const expectedStatus = typecheckerRunStatus(payload.exitCode, payload.parsed);
   if (runs[0].status !== expectedStatus) {
     throw new Error(`Fixture matrix typechecker status is inconsistent for ${project.id}`);
   }
@@ -120,6 +121,11 @@ export function readAndValidateVizeRun(reportDir, project, summary) {
   ) {
     throw new Error(
       `Fixture matrix typechecker summary coverage is inconsistent for ${project.id}`,
+    );
+  }
+  if (expectedStatus === "configuration") {
+    throw new Error(
+      `configuration-only typechecker run is not semantic qualification for ${project.id}`,
     );
   }
   return {

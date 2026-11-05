@@ -33,25 +33,23 @@ withDefaults(defineProps<TableColumnProps<Row>>(), {
     let code = result.code;
     assert_eq!(
         code.as_str(),
-        r#"import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
+        r#"import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
 export default {
-  __name: "anonymous",
+  __name: 'anonymous',
   props: {
-    showOverflowTooltip: {
-      type: [Boolean, Object],
-      required: false,
-      default: undefined
-    },
-    tooltipFormatter: {
-      type: Function,
-      required: false
-    }
+    showOverflowTooltip: { type: [Boolean, Object], required: false, default: undefined },
+    tooltipFormatter: { type: Function, required: false }
   },
   setup(__props) {
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("div");
-    };
-  }
-};"#
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div"))
+}
+}
+
+}"#
     );
 }

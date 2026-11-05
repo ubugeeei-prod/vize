@@ -46,13 +46,13 @@ const vizeDocsI18nNavigation = (() => {
     return path;
   }
 
-  function createSection(title, items, open = false) {
+  function createSection(title, items, open = false, nested = false) {
     const section = document.createElement("details");
-    section.className = "nav-section";
+    section.className = nested ? "nav-section nav-subsection" : "nav-section";
     if (open) section.setAttribute("open", "");
 
     const heading = document.createElement("summary");
-    heading.className = "nav-title";
+    heading.className = nested ? "nav-title nav-subtitle" : "nav-title";
     heading.textContent = title;
     section.append(heading);
 
@@ -76,6 +76,17 @@ const vizeDocsI18nNavigation = (() => {
     return section;
   }
 
+  function localizeLink(link, locale, active) {
+    if (locale !== "en") {
+      const url = new URL(link.getAttribute("href"), window.location.origin);
+      link.setAttribute("href", `/${locale}${url.pathname}${url.search}${url.hash}`);
+    }
+    const classes = link.className.split(/\s+/).filter((name) => name && name !== "active");
+    link.className = (active ? [...classes, "active"] : classes).join(" ");
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute?.("aria-current");
+  }
+
   function isHiddenFallbackPath(path) {
     return sitemap().hiddenPathPatterns.some((pattern) => pattern.test(path));
   }
@@ -97,12 +108,9 @@ const vizeDocsI18nNavigation = (() => {
         continue;
       }
 
+      // The rendered sidebar lists English pages only: one copy per locale would
+      // grow every page with every locale. Placed links point at the reader's locale.
       const href = link.getAttribute("href");
-      const url = new URL(href, window.location.origin);
-      if (pathLocale(url.pathname) !== locale) {
-        continue;
-      }
-
       const path = canonicalPath(href);
       link.textContent = label(locale, path, link.textContent.trim());
       if (itemsByPath.has(path)) {
@@ -114,26 +122,46 @@ const vizeDocsI18nNavigation = (() => {
 
     const nextNav = document.createDocumentFragment();
     const used = new Set();
+    const current = canonicalPath(window.location.pathname);
+    const isActive = (path) =>
+      path === "/" ? current === "/" : current === path || current.startsWith(`${path}/`);
+    const take = (path) => {
+      used.add(path);
+      const item = itemsByPath.get(path);
+      if (item) localizeLink(item.querySelector(".nav-link"), locale, path === current);
+      return item;
+    };
     for (const group of sitemap().navGroups) {
       const paths = group.pathsByLocale?.[locale] ?? group.paths;
-      const items = paths
-        .map((path) => {
-          used.add(path);
-          return itemsByPath.get(path);
-        })
-        .filter(Boolean);
+      const items = paths.map(take).filter(Boolean);
+      let active = paths.some(isActive);
+      // A section is one collapsible list under its own page; a locale without
+      // that page omits the section.
+      for (const section of group.sections ?? []) {
+        // Without its page a section is skipped and its pages fall to "More".
+        if (!itemsByPath.has(section.page)) continue;
+        if (section.locales && !section.locales.includes(locale)) continue;
+        const page = take(section.page);
+        const paths = sitemap().sectionPaths(section, [...itemsByPath.keys()]);
+        const children = paths.map(take).filter(Boolean);
+        const open = section.page === current || paths.includes(current);
+        active ||= open;
+        const title = page.querySelector(".nav-link").textContent;
+        page.querySelector(".nav-link").textContent = ui.overview;
+        const item = document.createElement("li");
+        item.className = "nav-item nav-item-section";
+        item.append(createSection(title, [page, ...children], open, true));
+        items.push(item);
+      }
 
       if (items.length > 0) {
-        const current = canonicalPath(window.location.pathname);
-        const active = paths.some((path) =>
-          path === "/" ? current === "/" : current === path || current.startsWith(`${path}/`),
-        );
         nextNav.append(createSection(ui.groups[group.key], items, group.key === "start" || active));
       }
     }
 
+    // Unfiled pages are English pages, so only English readers get the fallback.
     const remainingItems = [...itemsByPath]
-      .filter(([path]) => !used.has(path) && !isHiddenFallbackPath(path))
+      .filter(([path]) => locale === "en" && !used.has(path) && !isHiddenFallbackPath(path))
       .map(([, item]) => item)
       .concat(unusedItems);
     if (remainingItems.length > 0) {

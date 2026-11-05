@@ -11,6 +11,9 @@ export default defineConfig({
     __VIZE_VERSION__: JSON.stringify(vizePackage.version),
   },
   plugins: [vize({ vapor: true })],
+  worker: {
+    format: "es",
+  },
   resolve: {
     alias: [
       { find: "@mdi/js", replacement: "@mdi/js/mdi.js" },

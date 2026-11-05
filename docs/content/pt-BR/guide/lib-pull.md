@@ -177,6 +177,12 @@ exemplo. No repositório, rode `pnpm gallery:ui` em `examples/vite-musea`: ele r
 
 ## Versionamento e atualizações seguras
 
+Cada arquivo é escrito em um arquivo temporário no mesmo diretório antes de ser criado ou
+substituído. Se o processo for interrompido, um arquivo existente mantém o conteúdo anterior ou o
+novo conteúdo completo; um arquivo novo fica ausente ou completo. As escritas não usam `fsync`,
+portanto não garantem a preservação dos dados após uma queda de energia. Uma operação com vários
+arquivos pode ser interrompida entre as escritas.
+
 `vize-lib.lock.json` (faça commit dele) registra, por item, o pacote e a versão exata de origem, o
 `contentHash` do registro, se você o pediu ou se ele veio como dependência, e o SHA-256 de cada arquivo no momento
 do pull. Esses digests são a base de merge de uma comparação de três vias entre **o seu arquivo**, **o arquivo

@@ -6,26 +6,11 @@ title: "vize:croquis/cf/async-boundary"
 
 reactive な状態が async 境界を越え、古い値が見えることがあります。
 
-既定の重大度: error  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| error | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/async-boundary": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -56,7 +41,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 }
 ```
 
-## 悪い
+## 悪い例
 
 ウォッチャーに無効化時のクリーンアップ処理がないため、古い検索への応答が新しい検索への応答より遅く届き、`result` を上書きする可能性があります。
 
@@ -94,7 +79,7 @@ watch(
 </script>
 ```
 
-## 良い
+## 良い例
 
 `await` より前にクリーンアップ処理を登録します。以前のリクエストを中止して `active` を無効にし、まだ有効なリクエストの応答だけを代入します。
 
@@ -141,7 +126,25 @@ watch(
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/async-boundary": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

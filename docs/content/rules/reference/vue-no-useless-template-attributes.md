@@ -1,18 +1,37 @@
 ---
 title: "vue/no-useless-template-attributes"
+description: "Disallow useless attributes on `<template>` elements."
 ---
 
 # `vue/no-useless-template-attributes`
 
-Disallow useless attributes on `<template>` elements
+Disallow useless attributes on `<template>` elements.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The conditional template has a class, but this structural wrapper does not render a DOM element to receive it.
+
+```vue annotate="remove:2"
+<template>
+<section><template v-if="ready" class="notice"><p>Ready</p></template></section>
+</template>
+```
+
+## Good
+
+The class moves to the paragraph that actually renders while v-if stays on the structural template.
+
+```vue annotate="add:2"
+<template>
+<section><template v-if="ready"><p class="notice">Ready</p></template></section>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The conditional template has a class, but this structural wrapper does not render a DOM element to receive it.
-
-```vue
-<template>
-<section><template v-if="ready" class="notice"><p>Ready</p></template></section>
-</template>
-```
-
-## Good
-
-The class moves to the paragraph that actually renders while v-if stays on the structural template.
-
-```vue
-<template>
-<section><template v-if="ready"><p class="notice">Ready</p></template></section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32)

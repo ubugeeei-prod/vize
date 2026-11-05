@@ -22,12 +22,12 @@ use super::super::props::{
     normalize_destructure_default_value_with_factory as normalize_default, runtime_prop_key,
     validate_macro_scope_and_props,
 };
-use super::super::typescript::transform_typescript_to_js;
 use super::expose::emit_expose;
 use super::helpers::{is_reserved_word, runtime_identifier_references};
-use super::imports::dedupe_imports;
+use super::imports::{dedupe_imports, insert_imports};
 use super::model::emit_model_bindings;
 use super::prop_types::{prop_types_from_context, resolve_prop_type};
+use crate::compile_script::erasure::Erasure;
 
 /// Compile script setup content following Vue.js core format
 pub fn compile_script_setup(
@@ -52,6 +52,7 @@ pub fn compile_script_setup(
     let mut ctx = ScriptCompileContext::new(content);
     ctx.analyze();
     validate_macro_scope_and_props(&ctx, 0, content)?;
+    let mut erasure = Erasure::for_javascript(!is_ts, &mut ctx);
 
     // Assembled in the heap buffer that becomes the returned code.
     let mut output: Vec<u8> = Vec::with_capacity(4096);
@@ -116,12 +117,9 @@ pub fn compile_script_setup(
         runtime.push_import(&mut output, "useModel as _useModel");
     }
 
-    // Output imports (filtering out type-only imports + dedupe)
-    let deduped_imports = dedupe_imports(&imports, false);
-    for import in &deduped_imports {
-        output.extend_from_slice(import.as_bytes());
-    }
-    super::module_scope::emit_module_scope(&mut output, &module_scope);
+    // Imports (type-only ones filtered, deduplicated) are placed here last.
+    let imports_at = output.len();
+    super::module_scope::emit_module_scope(&mut output, &module_scope, erasure.as_mut());
 
     output.push(b'\n');
 
@@ -225,13 +223,14 @@ pub fn compile_script_setup(
 
     // defineModel bindings: const model = _useModel(__props, 'modelValue')
     // Collect model binding names for __returned__
-    let model_binding_names = emit_model_bindings(&mut output, &ctx);
+    let model_binding_names = emit_model_bindings(&mut output, &ctx, erasure.as_mut());
 
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
         transform_destructured_props(&setup_code, destructure)?
     } else {
         setup_code.into()
     };
+    let transformed_setup = Erasure::erase_statements(erasure.as_mut(), transformed_setup);
 
     // Indent the setup code
     for line in transformed_setup.lines() {
@@ -286,6 +285,8 @@ pub fn compile_script_setup(
         output.extend_from_slice(b"});\n"); // Close _defineComponent(
     }
 
+    let imports = dedupe_imports(&imports, false);
+    insert_imports(&mut output, imports_at, &imports, erasure);
     // SAFETY: this byte buffer is a fast append target for valid UTF-8 script
     // fragments: original source ranges, OXC codegen output, and ASCII component
     // wrapper text. There is no API in this module that appends arbitrary binary
@@ -296,12 +297,7 @@ pub fn compile_script_setup(
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output) };
 
-    // Transform TypeScript to JavaScript only when output is not TS.
-    let mut final_code: String = if is_ts {
-        output_str.into()
-    } else {
-        transform_typescript_to_js(&output_str)
-    };
+    let mut final_code: String = output_str.into();
     if let Some(transform) = lazy_hydration_transform {
         let mut code = transform.preamble;
         code.push_str(&final_code);

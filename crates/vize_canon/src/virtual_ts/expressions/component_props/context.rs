@@ -111,11 +111,17 @@ impl super::ComponentPropSource<'_> {
         let value_source = prop_value_source_range(self, prop).or_else(|| name_source.clone());
         // Do not retain a RefCell borrow while another emitter runs.
         let mut ledger = collector.borrow_mut();
-        let mut record = |owner, generated, source| {
+        // The props literal repeats a `v-model` target that its write-back
+        // already reports; only the literal's key keeps its own diagnostics.
+        let value_echo = !self.inert
+            && ordinary_owner.is_some()
+            && matches!(generated, Some((_, false)))
+            && ledger.writes_back_model(owner);
+        let mut record = |owner, generated, source, inference: bool| {
             if self.inert {
                 ledger.record_inert(owner, generated, source);
             } else if ordinary_owner.is_some() {
-                ledger.record(owner, generated, source, self.inference_only);
+                ledger.record(owner, generated, source, inference);
             } else {
                 // The root relocation proof classifies the callback's creation.
                 // Its contextual body still owns diagnostics; this record only
@@ -124,10 +130,36 @@ impl super::ComponentPropSource<'_> {
             }
         };
         if let Some(source) = name_source {
-            record(owner.with_role(InputRole::Name), name, source);
+            record(
+                owner.with_role(InputRole::Name),
+                name,
+                source,
+                self.inference_only,
+            );
         }
         if let Some(source) = value_source {
-            record(owner, value, source);
+            record(owner, value, source, self.inference_only || value_echo);
+        }
+    }
+
+    /// Record the `strictVModel` write-back of `prop`'s bound target.
+    pub(crate) fn record_model_write_back(
+        self,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        prop: &vize_croquis::croquis::PassedProp,
+        target: std::ops::Range<usize>,
+    ) {
+        let (Some(collector), Some(owner), Some(source)) = (
+            self.diagnostic_ownership,
+            crate::virtual_ts::diagnostic_ownership::InputOwner::for_prop(usage, prop),
+            prop_value_source_range(self, prop),
+        ) else {
+            return;
+        };
+        if !self.inference_only {
+            collector
+                .borrow_mut()
+                .record_model_write_back(owner, target, source);
         }
     }
 

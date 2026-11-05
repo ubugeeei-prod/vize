@@ -1,18 +1,45 @@
 ---
 title: "ecosystem/void-link-require-href"
+description: "Require `href` on Void Vue Link components."
 ---
 
 # `ecosystem/void-link-require-href`
 
-Require `href` on Void Vue Link components
+Require `href` on Void Vue Link components.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `ecosystem` | No | None |
 
-Default severity: `error`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The Link imported from @void/vue omits its href destination.
+
+```vue annotate="remove:6"
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link>Settings</Link>
+</template>
+```
+
+## Good
+
+The same imported Link receives the settings destination through href.
+
+```vue annotate="add:6"
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/settings">Settings</Link>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The Link imported from @void/vue omits its href destination.
-
-```vue
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link>Settings</Link>
-</template>
-```
-
-## Good
-
-The same imported Link receives the settings destination through href.
-
-```vue
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/settings">Settings</Link>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13)

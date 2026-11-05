@@ -6,7 +6,7 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
   ],
   "vize:croquis/cf/object-identity-comparison": [
     "响应式对象按身份比较，解包后身份会改变。",
-    "`proxy === raw` 比较包装对象身份，因此即使二者代表同一用户记录，结果也是 false。应用希望比较记录身份，而非包装对象身份。",
+    "此约定示例在意图判断记录身份时比较稳定的记录 ID。`proxy === raw` 比较包装对象身份，因此即使二者代表同一用户记录，结果也是 false。应用希望比较记录身份，而非包装对象身份。",
     "比较稳定的记录 `id`，回答预期问题，不依赖对象是原始对象还是代理。",
   ],
   "vize:croquis/cf/pinia-getter": [
@@ -151,7 +151,7 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
   ],
   "vize:croquis/cf/watcheffect-async": [
     "`watchEffect` 启动异步任务，却无法清理上一轮执行。",
-    "异步 `watchEffect` 将隐式依赖收集与等待请求混合，且没有失效保护。",
+    "此处的异步 watchEffect 没有失效清理，也没有防止过期响应的保护。异步 `watchEffect` 将隐式依赖收集与等待请求混合，且没有失效保护。",
     "显式的 `watch(() => props.query, ...)` 声明来源、注册请求清理，并在失效后拒绝过期响应。",
   ],
   "vize:croquis/cf/watcher-outside-setup": [

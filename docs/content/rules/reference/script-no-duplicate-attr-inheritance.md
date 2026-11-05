@@ -1,18 +1,35 @@
 ---
 title: "script/no-duplicate-attr-inheritance"
+description: "Flag a component that applies its fallthrough attributes twice."
 ---
 
 # `script/no-duplicate-attr-inheritance`
 
-Flag a component that applies its fallthrough attributes twice
+Flag a component that applies its fallthrough attributes twice.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+The component keeps automatic attribute inheritance and also forwards `$attrs` to its button. The same fallthrough attributes can be applied twice.
+
+```vue annotate="remove:1"
+<script setup></script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
+```
+
+## Good
+
+`inheritAttrs: false` disables automatic inheritance, leaving the explicit button binding as the single forwarding path.
+
+```vue annotate="add:1"
+<script setup>defineOptions({ inheritAttrs: false })</script>
+<template><div><button v-bind="$attrs">Save</button></div></template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,28 +48,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The component keeps automatic attribute inheritance and also forwards `$attrs` to its button. The same fallthrough attributes can be applied twice.
-
-```vue
-<script setup></script>
-<template><div><button v-bind="$attrs">Save</button></div></template>
-```
-
-## Good
-
-`inheritAttrs: false` disables automatic inheritance, leaving the explicit button binding as the single forwarding path.
-
-```vue
-<script setup>defineOptions({ inheritAttrs: false })</script>
-<template><div><button v-bind="$attrs">Save</button></div></template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35)
