@@ -100,6 +100,50 @@ mod transform_expression_tests {
     }
 
     #[test]
+    fn constructor_callees_preserve_unref_call_precedence() {
+        // #11915, reported by Jimmy Chen (@Q16solver). Vue wraps the unref
+        // call itself so `new` receives the constructor, including members.
+        let cases = [
+            (
+                "new Vector3(0, 0.75, 0)",
+                "new (_unref(Vector3))(0, 0.75, 0)",
+            ),
+            ("new Vector3", "new (_unref(Vector3))"),
+            ("new Foo.Bar(1)", "new (_unref(Foo)).Bar(1)"),
+            ("new Foo[key](1)", "new (_unref(Foo))[_unref(key)](1)"),
+            (
+                "new Foo.Bar(new Vector3(1))",
+                "new (_unref(Foo)).Bar(new (_unref(Vector3))(1))",
+            ),
+            ("new (Vector3)(1)", "new (_unref(Vector3))(1)"),
+            ("new RefClass(1)", "new RefClass.value(1)"),
+            ("new ConstClass(1)", "new ConstClass(1)"),
+            ("Vector3(1)", "_unref(Vector3)(1)"),
+            ("new ConstClass(Vector3)", "new ConstClass(_unref(Vector3))"),
+            ("Vector3 => new Vector3(1)", "Vector3 => new Vector3(1)"),
+        ];
+        for (source, expected) in cases {
+            for binding_type in [BindingType::SetupLet, BindingType::SetupMaybeRef] {
+                let allocator = Allocator::new();
+                let mut ctx = test_context(&allocator, source);
+                let bindings = &mut ctx.options.binding_metadata.as_mut().unwrap().bindings;
+                for name in ["Vector3", "Foo", "key"] {
+                    bindings.insert(name.into(), binding_type);
+                }
+                bindings.insert("RefClass".into(), BindingType::SetupRef);
+                bindings.insert("ConstClass".into(), BindingType::SetupConst);
+                let expr = compound_expression(&allocator, source);
+                let result = process_expression(&mut ctx, &expr, false);
+                let ExpressionNode::Simple(result) = result else {
+                    panic!("expected rewritten constructor expression");
+                };
+                assert_eq!(result.content, expected, "{binding_type:?}: {source}");
+                assert_eq!(ctx.errors.len(), 0, "{source}: {:?}", ctx.errors);
+            }
+        }
+    }
+
+    #[test]
     fn test_expression_nesting_depth_counts_parens() {
         assert_eq!(expression_nesting_depth("a + b"), 0);
         assert_eq!(expression_nesting_depth("(a + b)"), 1);

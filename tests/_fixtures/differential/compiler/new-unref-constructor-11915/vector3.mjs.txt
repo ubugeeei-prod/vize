@@ -1,0 +1,5 @@
+export class Vector3 { constructor(x,y,z) { Object.assign(this,{x,y,z}) } }
+export function constructVector(x,y,z) { Object.assign(this,{x,y,z}) }
+export const Foo = { Bar: Vector3 };
+export const makeClass = () => Vector3;
+export const makeVector = (x,y,z) => ({ x,y,z });
