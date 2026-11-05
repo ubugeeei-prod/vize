@@ -71,7 +71,7 @@ fn inline_unref_constructors_execute_like_vue_with_ordinary_call_controls() {
     }
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")
-        .arg(root.join("tests/tooling/new-unref-constructor-runtime.mjs"))
+        .arg(root.join("tests/tooling/new-unref-constructor-runtime.ts"))
         .current_dir(&root)
         .env("NODE_ENV", "production")
         .stdin(Stdio::piped())

@@ -1486,7 +1486,7 @@
       "reference": {
         "path": "new-unref-constructor-11915/module.expected.txt",
         "sha256": "6b373a760992cf368fddc91821b24b2d8f948d56ae825f046749904869f79ac4",
-        "source": "Public vize 0.691.0 CLI SSR separate-template control; runtime regression and Vue reference witness: crates/vize_atelier_sfc/tests/new_unref_constructor_11915.rs and tests/tooling/new-unref-constructor-runtime.mjs"
+        "source": "Public vize 0.691.0 CLI SSR separate-template control; runtime regression and Vue reference witness: crates/vize_atelier_sfc/tests/new_unref_constructor_11915.rs and tests/tooling/new-unref-constructor-runtime.ts"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

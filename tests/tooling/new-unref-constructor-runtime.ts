@@ -5,11 +5,26 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+type ConstructorCase = {
+  id: string;
+  script: string;
+  expression: string;
+};
+type CompilerPacket = { code: string; map?: unknown };
+type CapturedCase = {
+  id: string;
+  source: string;
+  result: CompilerPacket;
+  mapped?: CompilerPacket;
+};
+
 const fixtures = new URL(
   "../_fixtures/differential/compiler/new-unref-constructor-11915/",
   import.meta.url,
 );
-const cases = JSON.parse(fs.readFileSync(new URL("cases.json", fixtures), "utf8"));
+const cases: ConstructorCase[] = JSON.parse(
+  fs.readFileSync(new URL("cases.json", fixtures), "utf8"),
+);
 const provider = process.argv[2];
 const require = createRequire(
   provider
@@ -18,7 +33,8 @@ const require = createRequire(
 );
 const compiler = require("@vue/compiler-sfc");
 const runtime = require("vue");
-const dataUrl = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
+const dataUrl = (code: string) =>
+  `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 const vueUrl = dataUrl(
   `import runtime from ${JSON.stringify(pathToFileURL(require.resolve("vue")).href)};\n` +
     [
@@ -41,11 +57,11 @@ const vueUrl = dataUrl(
       .join("\n"),
 );
 const vectorsUrl = dataUrl(fs.readFileSync(new URL("vector3.mjs.txt", fixtures), "utf8"));
-const sourceFor = (row) =>
+const sourceFor = (row: ConstructorCase) =>
   `<script setup>\n${row.script}\n</script>\n<template><Cam :look-at="${row.expression}" /></template>\n`;
 const sourceCases = cases.map((row) => ({ id: row.id, source: sourceFor(row) }));
 assert.equal(sourceCases[0].source, fs.readFileSync(new URL("Layout.vue.txt", fixtures), "utf8"));
-let captured;
+let captured: CapturedCase[];
 if (provider) {
   const { compileSfc } = require("@vizejs/native");
   captured = sourceCases.map(({ id, source }) => ({
@@ -78,11 +94,12 @@ for (const row of captured) {
     isProd: true,
   });
   const renders = [];
-  for (const [name, code] of [
+  const modules: [string, string][] = [
     ["vue", reference.content],
     ["vize", row.result.code],
-    ...(row.mapped ? [["vize-mapped", row.mapped.code]] : []),
-  ]) {
+  ];
+  if (row.mapped) modules.push(["vize-mapped", row.mapped.code]);
+  for (const [name, code] of modules) {
     const loadable = code
       .replaceAll('from "vue"', `from ${JSON.stringify(vueUrl)}`)
       .replaceAll("from 'vue'", `from ${JSON.stringify(vueUrl)}`)

@@ -18,7 +18,7 @@ After publishing, install `@vizejs/native@<released-version>`, `vue@3.5.44`, and
 `@vue/compiler-sfc@3.5.44` into a fresh directory and run:
 
 ```sh
-NODE_ENV=production node tests/tooling/new-unref-constructor-runtime.mjs /absolute/provider/directory
+NODE_ENV=production node tests/tooling/new-unref-constructor-runtime.ts /absolute/provider/directory
 ```
 
 The command must exit zero. Its JSON retains the exact loaded native version,
