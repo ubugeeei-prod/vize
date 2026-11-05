@@ -89,7 +89,10 @@ test(
   "unrelated overlays preserve complete answers while imported overlays invalidate them",
   { timeout: 240_000 },
   async (t) => {
-    if (process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD !== "1") {
+    if (
+      process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD !== "1" ||
+      !process.env.VIZE_EDITOR_CONFIG_VUE_ROOT
+    ) {
       t.skip("exact-source overlay graph qualification runs in the native LSP lane");
       return;
     }

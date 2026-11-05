@@ -49,11 +49,12 @@ const changed =
       ? Buffer.from("unregistered source mutation")
       : read(side, path);
 
-test("current source custody inverts only the two complete reviewed successors", () => {
+test("current source custody inverts only the complete reviewed successors", () => {
   const image = JSON.parse(gunzipSync(fs.readFileSync(rows[2].image.path)).toString("utf8")) as {
     headImages: Record<string, string>;
   };
   const paths = [
+    "crates/vize_canon/src/lsp_client/session_paths.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
     "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
   ];
@@ -70,6 +71,11 @@ test("current source custody inverts only the two complete reviewed successors",
 
 test("whole source custody leaves missing, duplicated, partial and unrelated edits unregistered", () => {
   for (const [path, currentEdit, partialEdit] of [
+    [
+      "crates/vize_canon/src/lsp_client/session_paths.rs",
+      "        .is_ok_and(|physical| is_within_project_namespace(&physical, root))",
+      "        .is_ok_and(|physical| is_within_project_namespace(root, &physical))",
+    ],
     [
       "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
       "                session.synchronize_tracked(&mut self.document_texts)?;",

@@ -120,6 +120,18 @@ function actualSources(read: Read, side: "base" | "head", images: Record<string,
 }
 const currentSourceTransitions = [
   {
+    // The physical containment check is additive; recover the complete prior
+    // URI producer without granting new native qualification to this reader.
+    path: "crates/vize_canon/src/lsp_client/session_paths.rs",
+    before: "pub(super) fn build_materialized_session_document_uri(",
+    after: `pub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {
+    path.canonicalize()
+        .is_ok_and(|physical| is_within_project_namespace(&physical, root))
+}
+
+pub(super) fn build_materialized_session_document_uri(`,
+  },
+  {
     // The tracked logical delta replaced the full document mirror after the
     // project-import image. Materialized identities still use the full mirror.
     path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
@@ -190,7 +202,10 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
     if (!current.equals(expected)) return current;
     const after = current.toString("utf8");
     assert.equal(after.split(transition.after).length, 2);
-    assert.equal(after.split(transition.before).length, 1);
+    assert.equal(
+      after.split(transition.before).length,
+      transition.after.split(transition.before).length,
+    );
     assert.deepEqual(Buffer.from(after.replace(transition.after, transition.before)), original);
     return original;
   };

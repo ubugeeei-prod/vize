@@ -212,7 +212,16 @@ fs.mkdirSync('out');fs.writeFileSync('out/Layout.json',JSON.stringify({filename:
       );
       fs.chmodSync(binaryPath, 0o755);
       writeBuildReceipt(repo);
-      const result = runCompilerPack({ manifestPath, binaryPath, sourceRevision, repoRoot: repo });
+      const result: {
+        rows: Array<{
+          legacy: {
+            verdict: string;
+            error?: string;
+            configuredProjectInputs?: Array<{ path: string; sha256: string }>;
+          };
+          native: { state: string };
+        }>;
+      } = runCompilerPack({ manifestPath, binaryPath, sourceRevision, repoRoot: repo });
       assert.equal(result.rows[0].legacy.verdict, "matched-reference", result.rows[0].legacy.error);
       assert.deepEqual(
         result.rows[0].legacy.configuredProjectInputs,
