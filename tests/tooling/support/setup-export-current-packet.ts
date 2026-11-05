@@ -23,9 +23,9 @@ const digest = (value: unknown): string =>
 // #19f7ff0de8 added vue/require-expose for an Options API object without
 // expose. Only this all-rules route contains an export-default object.
 // The original 70 packets remain immutable; actual diagnostics are untouched.
-export function setupExportCurrentPacket(
+export function setupExportCurrentPacket<Route extends { readonly id: string }>(
   entry: { readonly id: string; readonly sourceSha256: string },
-  route: { readonly id: string },
+  route: Route,
   expected: unknown,
 ): unknown {
   if (entry.id !== successor.case || route.id !== successor.route) return expected;
