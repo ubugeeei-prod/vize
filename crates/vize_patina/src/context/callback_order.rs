@@ -102,6 +102,11 @@ impl CallbackOrder {
 }
 
 impl LintContext<'_> {
+    #[inline]
+    pub(crate) fn callback_order_enabled(&self) -> bool {
+        self.callback_order.is_some()
+    }
+
     pub(crate) fn enable_callback_order(&mut self) {
         self.callback_order = Some(Box::new(CallbackOrder::new()));
     }

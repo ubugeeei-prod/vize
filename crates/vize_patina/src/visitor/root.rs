@@ -34,21 +34,20 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // happens for every file, so profiling once around the callback batch is
         // cheaper than creating a span for every individual rule callback.
         let keep_mask = self.keep_mask;
-        self.ctx.record_callback_site(CallbackSite::Template);
         profile!("patina.rules.run_on_template", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                self.ctx.set_callback_rule(index);
-                self.ctx.current_rule = rule_name;
-                if hook(index, self.ctx) || !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                rule.run_on_template(self.ctx, root);
-            }
+            Self::callback_rules::<true>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::Template,
+                |index, rule, ctx| {
+                    if hook(index, ctx) || !Self::rule_active(keep_mask, index) {
+                        return;
+                    }
+                    rule.run_on_template(ctx, root);
+                },
+            );
         });
 
         // Visit children

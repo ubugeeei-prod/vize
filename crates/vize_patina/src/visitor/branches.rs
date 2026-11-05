@@ -10,22 +10,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     pub(super) fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
         // Run if checks
         let keep_mask = self.keep_mask;
-        self.ctx
-            .record_callback_site(CallbackSite::Conditional(if_node.loc.span.start));
         profile!("patina.rules.check_if", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.set_callback_rule(index);
-                self.ctx.current_rule = rule_name;
-                rule.check_if(self.ctx, if_node);
-            }
+            Self::callback_rules::<false>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::Conditional(if_node.loc.span.start),
+                |_, rule, ctx| rule.check_if(ctx, if_node),
+            );
         });
 
         // Visit branches
@@ -40,22 +33,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     pub(super) fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
         // Run for checks
         let keep_mask = self.keep_mask;
-        self.ctx
-            .record_callback_site(CallbackSite::List(for_node.loc.span.start));
         profile!("patina.rules.check_for", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.set_callback_rule(index);
-                self.ctx.current_rule = rule_name;
-                rule.check_for(self.ctx, for_node);
-            }
+            Self::callback_rules::<false>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::List(for_node.loc.span.start),
+                |_, rule, ctx| rule.check_for(ctx, for_node),
+            );
         });
 
         // Visit children

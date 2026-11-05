@@ -144,8 +144,13 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         });
     }
     profile!("patina.sfc.facade.visit", {
+        let ordered = ctx.callback_order_enabled();
         let mut markup_ctx = MarkupContext::new(ctx, &document);
-        document.visit_with(&batch::Rules(&selected), &mut markup_ctx);
+        if ordered {
+            document.visit_with(&batch::Rules::<true>(&selected), &mut markup_ctx);
+        } else {
+            document.visit_with(&batch::Rules::<false>(&selected), &mut markup_ctx);
+        }
     });
 }
 
