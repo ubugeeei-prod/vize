@@ -19,6 +19,7 @@ pub(super) fn should_recurse_at_rule(statement: &str) -> bool {
         "layer",
         "media",
         "scope",
+        "starting-style",
         "supports",
     ]
     .iter()
@@ -42,6 +43,8 @@ mod tests {
             "@supports(display:grid)",
             "@container(width>1px)",
             "@scope(.root)",
+            "@starting-style",
+            "@STARTING-STYLE/*entry*/",
             "@layer/*layer*/",
             "@document url-prefix()",
             "@-MOZ-document url-prefix()",
@@ -55,6 +58,7 @@ mod tests {
             "@media_custom(width>1px)",
             "@mediaé(width>1px)",
             "@supports-custom(display:grid)",
+            "@starting-style-custom",
             "@keyframes spin",
             "@font-face",
             "media(width>1px)",
@@ -70,6 +74,8 @@ mod tests {
             "@MEDIA(min-width:1px)",
             "@supports(display:grid)",
             "@container(width>1px)",
+            "@starting-style",
+            "@STARTING-STYLE",
         ] {
             let mut source = vize_carton::String::from(".a{");
             source.push_str(condition);
@@ -82,5 +88,32 @@ mod tests {
             scope_css_for_pipeline("@mediax(x){.a{color:red}}", "data-v-x").as_str(),
             "@mediax(x){.a{color:red}}"
         );
+    }
+
+    #[test]
+    fn starting_style_scopes_top_level_and_nested_entry_transitions() {
+        for (source, expected) in [
+            (
+                "@starting-style{.x[open]{opacity:0}}",
+                "@starting-style{.x[open][data-v-x]{opacity:0}}",
+            ),
+            (
+                ".x{&[open]{opacity:1;@starting-style{opacity:0;}}}",
+                ".x[open][data-v-x]{opacity:1;}@starting-style{.x[open][data-v-x]{opacity:0;}}",
+            ),
+            (
+                ".x{&:popover-open{@starting-style{@media(min-width:1px){opacity:0}}}}",
+                "@starting-style{@media(min-width:1px){.x[data-v-x]:popover-open{opacity:0}}}",
+            ),
+            (
+                "@media(min-width:1px){@starting-style{.x{opacity:0}}}",
+                "@media(min-width:1px){@starting-style{.x[data-v-x]{opacity:0}}}",
+            ),
+        ] {
+            assert_eq!(
+                scope_css_for_pipeline(source, "data-v-x").as_str(),
+                expected
+            );
+        }
     }
 }
