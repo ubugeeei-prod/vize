@@ -367,3 +367,54 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
             .matches("import(\"../__vize_helpers.js\").__EmitProps")
             .count(),
         4,
+        "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
+    );
+    assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);
+    assert!(
+        !out_dir.join("shared/runtime.d.ts").exists(),
+        "an inferred dependency outside rootDir must not become public output"
+    );
+    assert_eq!(
+        std::fs::read_to_string(out_dir.join("widen-trigger.d.ts")).unwrap(),
+        "export declare const buildFlag: boolean;\n//# sourceMappingURL=widen-trigger.d.ts.map",
+        "the widening trigger must not retain a path to the pruned dependency"
+    );
+
+    let nested_map_path = out_dir.join("nested/Nested.vue.d.ts.map");
+    let nested_map: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&nested_map_path).unwrap()).unwrap();
+    assert_eq!(nested_map["file"], "Nested.vue.d.ts");
+    assert_eq!(nested_map["sourceRoot"], "");
+    let nested_sources = nested_map["sources"].as_array().unwrap();
+    assert_eq!(nested_sources.len(), 1);
+    let nested_source = nested_sources[0].as_str().unwrap();
+    assert_eq!(
+        std::fs::canonicalize(nested_map_path.parent().unwrap().join(nested_source)).unwrap(),
+        std::fs::canonicalize(project_root.join("src/nested/Nested.vue")).unwrap(),
+        "the relocated declaration map must still resolve to the authored SFC"
+    );
+
+    let downstream_dir = project_root.join("downstream");
+    std::fs::create_dir_all(&downstream_dir).unwrap();
+    let downstream = downstream_dir.join("verify.tsx");
+    let exact_declaration =
+        EXACT_JSX.replacen("./SingleRequired.vue", "../types/SingleRequired.vue", 1);
+    std::fs::write(&downstream, format!("{DOWNSTREAM}\n{exact_declaration}")).unwrap();
+    assert_downstream_compiler(&tsgo, &downstream);
+    if let Some(tsc) = resolve_javascript_tsc() {
+        assert_downstream_compiler(&tsc, &downstream);
+    }
+
+    let emitted_paths: Vec<_> = emitted
+        .files
+        .iter()
+        .map(|file| relative_path(&out_dir, &file.path))
+        .collect();
+    assert!(
+        emitted_paths
+            .iter()
+            .any(|path| path == "__vize_helpers.d.ts"),
+        "declaration emit must use the shared helper semantic source: {emitted_paths:?}"
+    );
+    let _ = std::fs::remove_dir_all(&project_root);
+}
