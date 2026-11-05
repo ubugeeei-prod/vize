@@ -181,7 +181,7 @@ fn block_rebases_all_error_and_admission_facts_without_modifying_original_carrie
         .unwrap();
     let owner = NativeComponent::parse_in(&a, block).unwrap();
     assert!(!owner.carrier().errors.is_empty());
-    assert!(!owner.carrier().unsupported.is_empty());
+    assert_eq!(owner.carrier().unsupported.len(), 0);
     let mut builder = Builder::new(&a, &file).unwrap();
     let produced = owner.construct_in(&mut builder.region(), Lang::Js).unwrap();
     assert!(!produced.is_supported());
@@ -195,22 +195,26 @@ fn block_rebases_all_error_and_admission_facts_without_modifying_original_carrie
                     && hole.span == Span::new(at, at))
         );
     }
-    for admission in &produced.component.carrier().unsupported {
-        let span = Span::new(
-            block.start() + admission.span.start,
-            block.start() + admission.span.end,
-        );
-        assert!(produced.holes.iter().any(|hole| hole.kind
-            == NativeHoleKind::DirectiveAdmission(admission.error)
-            && hole.span == span));
-    }
+    let pre: Vec<_> = produced
+        .holes
+        .iter()
+        .filter(|hole| hole.kind == NativeHoleKind::PreCarrier)
+        .map(|hole| hole.span)
+        .collect();
+    assert_eq!(
+        pre,
+        [Span::new(
+            block.start() + 15,
+            block.start() + content.len() as u32
+        )]
+    );
     for diagnostic in &produced.diagnostics {
         assert!(block.contains_block_span(diagnostic.span));
     }
     let artifact = builder.finish().unwrap();
     assert_eq!(artifact.source().as_ptr(), file.as_ptr());
-    assert_eq!(artifact.node_count(), 2);
-    assert_eq!(produced.embeds.len(), 1);
+    assert_eq!(artifact.node_count(), 0);
+    assert_eq!(produced.embeds.len(), 0);
 }
 
 #[test]
@@ -228,3 +232,4 @@ fn same_root_pointer_with_a_different_length_cannot_enter_the_factory() {
     assert_eq!(rejected.component.block().source(), file);
     assert_eq!(builder.finish().unwrap().node_count(), 0);
 }
+use alloc::vec::Vec;

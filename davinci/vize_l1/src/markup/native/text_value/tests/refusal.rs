@@ -126,28 +126,25 @@ fn genuine_missing_parent_close_keeps_full_raw_token_even_without_diagnostic_row
 }
 
 #[test]
-fn original_unsupported_carrier_refuses_and_retains_prefix_text_and_diagnostics() {
+fn long_vue_directive_arguments_preserve_original_decoded_prefix_text() {
     let arena = Allocator::default();
     let source = "<template>&amp;<div v-pre:[([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([key])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]>body</div></template>";
     let owner = selected(&arena, source);
-    assert_eq!(owner.component().carrier().unsupported.len(), 1);
-    assert_eq!(
-        owner.component().carrier().unsupported[0].error,
-        crate::markup::DirectiveNameError::NestingLimit
-    );
+    assert_eq!(owner.component().carrier().unsupported.len(), 0);
     let child = owner.children().next().unwrap();
     let original = child.surface();
     let before = arena.allocated_bytes();
-    let failure = owner.observe_text_value(child).err().unwrap();
-    assert_eq!(failure.kind(), NativeTextValueError::RecoveredComponent);
-    assert_eq!(arena.allocated_bytes(), before);
-    assert_eq!(failure.token().unwrap().text, "&amp;");
-    assert_eq!(failure.span(), Some(Span::new(10, 15)));
+    let value = owner.observe_text_value(child).unwrap();
+    assert_eq!(arena.allocated_bytes() - before, 21);
+    assert_eq!(value.raw_text(), "&amp;");
+    assert_eq!(value.source().text(), "&");
+    assert_eq!(value.span(), Span::new(10, 15));
+    assert!(core::ptr::eq(value.source().authored_root(), source));
     assert!(core::ptr::eq(
         owner.children().next().unwrap().surface(),
         original
     ));
-    assert_eq!(owner.component().carrier().unsupported.len(), 1);
+    assert_eq!(owner.component().carrier().unsupported.len(), 0);
     crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
