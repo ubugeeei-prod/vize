@@ -64,10 +64,22 @@ impl SessionCache {
             })
             .flat_map(|member| member.source_paths.iter().cloned())
             .collect::<vize_carton::FxHashSet<_>>();
+        // A source can outlive the independent graph that first admitted it.
+        // Its latest bytes then belong to this host's refreshed input set. A
+        // catalog hit proves text equality, not that another member will keep
+        // the source after this host replaces its old graph.
+        let carried = self
+            .project_members
+            .get(virtual_root)
+            .into_iter()
+            .flat_map(|members| members.iter())
+            .filter(|(key, _)| key.source_path == host)
+            .flat_map(|(_, member)| member.refreshed_sources.iter().cloned())
+            .collect::<vize_carton::FxHashSet<_>>();
         sources.retain(|path| {
             path != host
                 && overlays.contains_key(path)
-                && (!current.contains(path) || stale.contains(path))
+                && (!current.contains(path) || stale.contains(path) || carried.contains(path))
         });
         sources
     }
