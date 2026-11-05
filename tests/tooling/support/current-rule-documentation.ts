@@ -87,25 +87,28 @@ export function currentRuleDocumentationMessages(expected: unknown): Record<stri
 export function currentRuleDocumentationPlain(expected: string, rule?: string): string {
   if (rule === undefined) {
     let selected: string | undefined;
-    return expected.split(/(?<=\n)/u).map((line) => {
-      const finding = /^\s+\S+:\d+:\d+ (?:warning|error|info) (\S+) /u.exec(line);
-      if (finding) selected = finding[1];
-      const prefix = "    Reference: ";
-      if (!line.startsWith(prefix)) return line;
-      assert.ok(selected, "preceding authored diagnostic rule");
-      const ending = line.endsWith("\r\n") ? "\r\n" : line.endsWith("\n") ? "\n" : "";
-      const reference = line.slice(prefix.length, ending ? -ending.length : undefined);
-      const link = documentation(selected);
-      assert.equal(reference, link.before, "frozen plain documentation URL");
-      return prefix + link.after + ending;
-    }).join("");
+    return expected
+      .split(/(?<=\n)/u)
+      .map((line) => {
+        const finding = /^\s+\S+:\d+:\d+ (?:warning|error|info) (\S+) /u.exec(line);
+        if (finding) selected = finding[1];
+        const prefix = "    Reference: ";
+        if (!line.startsWith(prefix)) return line;
+        assert.ok(selected, "preceding authored diagnostic rule");
+        const ending = line.endsWith("\r\n") ? "\r\n" : line.endsWith("\n") ? "\n" : "";
+        const reference = line.slice(prefix.length, ending ? -ending.length : undefined);
+        const link = documentation(selected);
+        assert.equal(reference, link.before, "frozen rule documentation URL");
+        return prefix + link.after + ending;
+      })
+      .join("");
   }
   const link = documentation(rule);
   return expected
     .split("\n")
     .map((line) => {
       if (!line.includes("Reference: ")) return line;
-      assert.equal(line, `    Reference: ${link.before}`, "frozen plain documentation URL");
+      assert.equal(line, `    Reference: ${link.before}`, "frozen rule documentation URL");
       return `    Reference: ${link.after}`;
     })
     .join("\n");
@@ -121,13 +124,25 @@ export function currentRuleDocumentationPacket(expected: unknown): {
   assert.ok(Array.isArray(expected), "authored CLI packet array");
   return expected.map((entry: unknown) => {
     const row = asRecord(entry);
-    assert.deepEqual(Object.keys(row).sort(), ["errorCount", "file", "messages", "warningCount"]);
+    assert.deepEqual(
+      Object.keys(row).sort(),
+      ["errorCount", "file", "messages", "warningCount"],
+      "complete authored packet fields",
+    );
     assert.ok(typeof row.file === "string");
     assert.ok(typeof row.errorCount === "number" && typeof row.warningCount === "number");
     assert.ok(Array.isArray(row.messages));
     const messages = row.messages.map(currentRuleDocumentationMessage);
-    assert.equal(row.errorCount, messages.filter((message) => message.severity === 2).length);
-    assert.equal(row.warningCount, messages.filter((message) => message.severity === 1).length);
+    assert.equal(
+      row.errorCount,
+      messages.filter((message) => message.severity === 2).length,
+      "authored error counter",
+    );
+    assert.equal(
+      row.warningCount,
+      messages.filter((message) => message.severity === 1).length,
+      "authored warning counter",
+    );
     return {
       ...row,
       file: row.file,

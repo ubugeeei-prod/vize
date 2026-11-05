@@ -137,7 +137,7 @@ crates/vize_canon/src/batch/type_checker/tests/recent_issues/empty_required_prop
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/exact_optional_props.rs	2
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/optional_boolean_props.rs	5
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/options_api_declaration_instance.rs	9
-crates/vize_canon/src/batch/type_checker/tests/recent_issues/public_instance_contract.rs	9
+crates/vize_canon/src/batch/type_checker/tests/recent_issues/public_instance_contract.rs	8
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/real_project_parity.rs	2
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/reference_path_dot_directory.rs	2
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/reference_path_module.rs	1
