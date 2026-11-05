@@ -3,7 +3,7 @@ import { test } from "node:test";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { checkHostErrors } from "./run-errors.mjs";
+import { checkHostErrors } from "../../npm/builder/turbopack/test/run-errors.mjs";
 
 interface HostResponse {
   readonly status: number;
