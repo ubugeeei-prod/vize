@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::{String, cstr};
 use vize_patina::{LintPreset, Linter};
 
+mod documented_catalogue_additions;
 mod public_expression_reports;
 
 #[test]
@@ -32,7 +33,27 @@ fn verify_examples(type_aware: bool) {
         .filter(|path| path.extension().is_some_and(|ext| ext == "md"))
         .collect();
     paths.sort();
-    assert_eq!(paths.len(), 267, "all current rule implementations");
+    let operational_pages = [
+        "parser-template.md",
+        "parser-sfc.md",
+        "parser-jsx.md",
+        "type-project-configuration.md",
+    ];
+    assert_eq!(
+        paths.len(),
+        279 + operational_pages.len(),
+        "all current rule implementations and authored operational diagnostics"
+    );
+    for page in operational_pages {
+        assert!(
+            reference_root().join(page).is_file(),
+            "operational page: {page}"
+        );
+    }
+    // Parser/project examples have their own full-report and failure controls.
+    // Keep the complete registered-rule preset/configuration corpus.
+    paths.retain(|path| !operational_pages.contains(&path.file_name().unwrap().to_str().unwrap()));
+    assert_eq!(paths.len(), 279, "all current rule implementations");
     let mut checked = 0;
     let mut unavailable = 0;
     let mut parser_owned = 0;
@@ -57,13 +78,20 @@ fn verify_examples(type_aware: bool) {
             "only the audited unsupported SFC boundaries"
         );
         unavailable += usize::from(no_finding);
-        let parser_diagnostic = page.contains("Bad diagnostic: `parser/template`");
+        let bad_diagnostic = page.lines().find_map(|line| {
+            line.strip_prefix("Bad diagnostic: `")
+                .and_then(|id| id.strip_suffix('`'))
+        });
         assert_eq!(
-            parser_diagnostic,
-            rule == "vue/valid-attribute-name",
-            "parser-owned invalid attribute spelling"
+            bad_diagnostic,
+            match rule {
+                "vue/valid-attribute-name" => Some("parser/template"),
+                "vue/jsx-uses-vars" => Some("vue/no-unused-components"),
+                _ => None,
+            },
+            "only the documented parser ownership and JSX usage-marking producer"
         );
-        parser_owned += usize::from(parser_diagnostic);
+        parser_owned += usize::from(bad_diagnostic == Some("parser/template"));
         let config = configuration(&page);
         let linter = configure(rule, &config);
         for (heading, should_report) in [("## Bad", true), ("## Good", false)] {
@@ -75,11 +103,7 @@ fn verify_examples(type_aware: bool) {
             } else {
                 linter.lint_sfc(&source, &filename)
             };
-            let expected_id = if should_report && parser_diagnostic {
-                "parser/template"
-            } else {
-                rule
-            };
+            let expected_id = bad_diagnostic.unwrap_or(rule);
             let reports = result
                 .diagnostics
                 .iter()
@@ -102,7 +126,7 @@ fn verify_examples(type_aware: bool) {
             }
         }
     }
-    assert_eq!(checked, if type_aware { 6 } else { 261 });
+    assert_eq!(checked, if type_aware { 6 } else { 273 });
     assert_eq!(unavailable, if type_aware { 0 } else { 2 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(
@@ -247,9 +271,40 @@ fn configuration_page(config: &Value, fluent: bool) -> std::string::String {
 }
 
 fn configure(rule: &str, config: &Value) -> Linter {
+    let enabled = config["rules"]
+        .as_object()
+        .map(|rules| {
+            rules
+                .iter()
+                .filter(|(_, severity)| severity.as_str() != Some("off"))
+                .map(|(name, _)| String::from(name.as_str()))
+                .collect()
+        })
+        .unwrap_or_else(|| vec![rule.into()]);
     let mut linter = Linter::with_preset(LintPreset::Incremental)
-        .with_additional_rules(vec![rule.into()])
-        .with_type_aware_lint(config["typeAware"].as_bool().unwrap_or(false));
+        .with_additional_rules(enabled)
+        .with_type_aware_lint(config["typeAware"].as_bool().unwrap_or(false))
+        .with_report_unused_disable_directives(
+            config["reportUnusedDisableDirectives"]
+                .as_bool()
+                .unwrap_or(false),
+        );
+    if let Some(rules) = config["rules"].as_object() {
+        linter = linter.with_rule_severity_overrides(
+            rules
+                .iter()
+                .filter_map(|(name, severity)| {
+                    let severity = match severity.as_str()? {
+                        "error" => vize_patina::Severity::Error,
+                        "warn" | "warning" => vize_patina::Severity::Warning,
+                        "off" => return None,
+                        other => panic!("unsupported authored severity: {other}"),
+                    };
+                    Some((name.as_str().into(), severity))
+                })
+                .collect(),
+        );
+    }
     let options = &config["ruleOptions"][rule];
     if rule == "vue/valid-v-on"
         && let Some(modifiers) = options["modifiers"].as_array()

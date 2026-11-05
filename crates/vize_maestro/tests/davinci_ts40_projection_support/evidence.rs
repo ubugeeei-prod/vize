@@ -291,9 +291,32 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             delimiter_successor,
         );
 
+        let owned_constructor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-owned-constructor-20261105/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-owned-constructor-20261105/receipt.json"
+            ),
+            "c05d7950767445ae627b602eb5292418530e9b54f3a5613314c168ea63321a5b",
+            11919,
+            delimiter_successor,
+            owned_constructor,
+        );
+        let non_text_fields = |record: &str| {
+            record
+                .lines()
+                .filter(|line| !line.starts_with("text="))
+                .map(str::to_owned)
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            non_text_fields(delimiter_successor),
+            non_text_fields(owned_constructor)
+        );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            delimiter_successor
+            owned_constructor
         );
     }
 }

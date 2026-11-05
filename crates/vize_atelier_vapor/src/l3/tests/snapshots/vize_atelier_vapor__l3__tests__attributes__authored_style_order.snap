@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_vapor/src/l3/tests/attributes.rs
+assertion_line: 168
+expression: outputs
+---
+[
+    (
+        "<div style=\"color: red;\" :style=\"theme\"></div>",
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [\"color: red;\", _ctx.theme]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+    (
+        "<div :style=\"theme\" style=\"color: red;\"></div>",
+        "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, [_ctx.theme, \"color: red;\"]))\n  return n0\n}\n",
+        [
+            "<div></div>",
+        ],
+    ),
+]

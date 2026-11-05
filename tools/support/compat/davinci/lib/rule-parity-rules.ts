@@ -53,6 +53,86 @@ export interface ParsedRuleFile {
   kind?: "test" | "module" | "helper";
 }
 
+function lexicalScope(source: string, end: number): string {
+  const opens: number[] = [];
+  for (let at = 0; at < end; at += 1) {
+    if ("{([".includes(source[at])) opens.push(at);
+    else if ("})]".includes(source[at])) opens.pop();
+  }
+  return opens.join(",");
+}
+
+function expressionEnd(source: string, start: number, end: number, delimiter: string): number {
+  let depth = 0;
+  for (let at = start; at < end; at += 1) {
+    const token = source[at];
+    if (depth === 0 && token === delimiter) return at;
+    if ("{([".includes(token)) depth += 1;
+    else if ("})]".includes(token)) depth -= 1;
+  }
+  return end;
+}
+
+function literalRuleName(expression: string): string | null {
+  if (!/^"(?:[^"\\]|\\(?:[nrt0\\"']|x[\da-fA-F]{2}|u\{[\da-fA-F_]+\}))*"$/su.test(expression)) {
+    return null;
+  }
+  return expression
+    .slice(1, -1)
+    .replace(
+      /\\(u\{([\da-fA-F_]+)\}|x([\da-fA-F]{2})|.)/gu,
+      (_, escape: string, unicode: string | undefined, ascii: string | undefined) => {
+        if (unicode !== undefined)
+          return String.fromCodePoint(Number.parseInt(unicode.replaceAll("_", ""), 16));
+        if (ascii !== undefined) return String.fromCodePoint(Number.parseInt(ascii, 16));
+        return (
+          ({ n: "\n", r: "\r", t: "\t", "0": "\0" } as Record<string, string>)[escape] ?? escape
+        );
+      },
+    );
+}
+
+function metaRuleName(
+  code: string,
+  stripped: string,
+  open: number,
+  close: number,
+  metaAt: number,
+  abs: string,
+): string {
+  const scope = lexicalScope(stripped, open + 1);
+  const fields = [...stripped.slice(open + 1, close).matchAll(/\bname\s*:/g)]
+    .map((match) => ({ at: open + 1 + match.index, length: match[0].length }))
+    .filter(({ at }) => lexicalScope(stripped, at) === scope);
+  if (fields.length !== 1) throw new Error(`META without one name in ${abs}`);
+  const start = fields[0].at + fields[0].length;
+  const end = expressionEnd(stripped, start, close, ",");
+  const expression = code.slice(start, end).trim();
+  const literal = literalRuleName(expression);
+  if (literal !== null && literal.length > 0) return literal;
+  if (!/^[A-Z][A-Z0-9_]*$/.test(expression))
+    throw new Error(`META name is not a literal or local string constant in ${abs}`);
+
+  const owner = lexicalScope(stripped, metaAt);
+  const declarations = [
+    ...stripped.matchAll(new RegExp(`\\bconst\\s+${expression}\\b`, "g")),
+  ].filter((match) => lexicalScope(stripped, match.index) === owner);
+  if (declarations.length !== 1)
+    throw new Error(`META name requires one local const ${expression} in ${abs}`);
+  const at = declarations[0].index;
+  const initializer = new RegExp(
+    `^const\\s+${expression}\\s*:\\s*&(?:'static\\s+)?str\\s*=\\s*`,
+  ).exec(code.slice(at));
+  if (!initializer)
+    throw new Error(`META name const ${expression} is not a literal &str in ${abs}`);
+  const valueStart = at + initializer[0].length;
+  const valueEnd = expressionEnd(stripped, valueStart, stripped.length, ";");
+  const value = literalRuleName(code.slice(valueStart, valueEnd).trim());
+  if (value === null || value.length === 0)
+    throw new Error(`META name const ${expression} is not a literal &str in ${abs}`);
+  return value;
+}
+
 export function parseRuleFile(abs: string, model: HookModel): ParsedRuleFile {
   return parseRuleSource(
     readFileSync(abs, "utf8"),
@@ -73,15 +153,16 @@ export function parseRuleSource(
 
   // --- meta ---------------------------------------------------------------
   const metaMatch =
-    /static\s+META\s*:\s*(RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*=/.exec(code);
+    /\bstatic\s+META\s*:\s*(RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*=/.exec(stripped);
   let meta: ParsedRuleFile["meta"] = null;
   if (metaMatch) {
-    const open = code.indexOf("{", metaMatch.index);
-    const close = matchBraceBlock(code, open);
-    const body = code.slice(open + 1, close);
-    const nameMatch = /name:\s*"([^"]+)"/.exec(body);
-    if (!nameMatch) throw new Error(`META without name in ${abs}`);
-    meta = { kind: metaMatch[1], name: nameMatch[1] };
+    const open = stripped.indexOf("{", metaMatch.index + metaMatch[0].length);
+    const close = matchBraceBlock(stripped, open);
+    if (open === -1 || close === -1) throw new Error(`META without a complete body in ${abs}`);
+    meta = {
+      kind: metaMatch[1],
+      name: metaRuleName(code, stripped, open, close, metaMatch.index, abs),
+    };
   }
 
   // --- impl blocks + hook sets ---------------------------------------------

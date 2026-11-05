@@ -18,7 +18,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::Span;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_carton::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 #[derive(Default)]
 pub(super) struct Scan {

@@ -47,8 +47,8 @@ test("live runtime successors preserve seven original consumers and leave base a
     );
   }
   assert.deepEqual(
-    historical("head", "npm/typescript-plugin/index.cjs"),
-    read("head", "npm/typescript-plugin/index.cjs"),
+    historical("head", "npm/typescript-plugin/provider.cjs"),
+    read("head", "npm/typescript-plugin/provider.cjs"),
   );
   assert.equal(historical("head", "unknown-future.cjs"), null);
 });

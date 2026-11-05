@@ -3975,7 +3975,7 @@ vue/attribute-order · lint 规则
   按推荐顺序重新排列属性
 === vue/comment-directive
 vue/comment-directive · lint 规则
-Support comment directives in `<template>`
+支持 `<template>` 中的注释指令
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -4053,7 +4053,7 @@ vue/html-button-has-type · lint 规则
   '<button>' 的 type 默认为 "submit"，会提交其所在的表单。请显式设置 type="button"、"submit" 或 "reset"。
 === vue/html-end-tags
 vue/html-end-tags · lint 规则
-Require end tags on HTML elements that may omit them
+要求为允许省略结束标签的 HTML 元素显式编写结束标签
 
 精度层级: complete
 适用范围: HTML conformance of native elements with static attributes in SFC templates
@@ -4118,7 +4118,7 @@ vue/html-self-closing · lint 规则
   使用自闭合语法
 === vue/jsx-uses-vars
 vue/jsx-uses-vars · lint 规则
-Treat variables used in JSX element names as used
+将 JSX 元素名称中引用的变量视为已使用
 
 精度层级: complete
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -4141,7 +4141,7 @@ Treat variables used in JSX element names as used
   <template><div /></template>
 === vue/match-component-file-name
 vue/match-component-file-name · lint 规则
-Require a component name to match its file name
+要求组件名称与文件名一致
 
 精度层级: exact
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -4325,7 +4325,7 @@ vue/no-child-content · lint 规则
   使用v-html或v-text时，子内容会被忽略。请删除子内容
 === vue/no-custom-modifiers-on-v-model
 vue/no-custom-modifiers-on-v-model · lint 规则
-Disallow custom modifiers on `v-model` used on a component
+禁止在组件的 `v-model` 上使用自定义修饰符
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -4893,7 +4893,7 @@ vue/no-preprocessor-lang · lint 规则
 文档: docs/content/rules/reference/vue-no-preprocessor-lang.md
 === vue/no-ref-object-reactivity-loss
 vue/no-ref-object-reactivity-loss · lint 规则
-Disallow copying a ref value in the same scope
+禁止在同一作用域中复制 ref 的值
 
 精度层级: exact
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -4971,7 +4971,7 @@ vue/no-script-non-standard-lang · lint 规则
 文档: docs/content/rules/reference/vue-no-script-non-standard-lang.md
 === vue/no-setup-props-reactivity-loss
 vue/no-setup-props-reactivity-loss · lint 规则
-Disallow setup prop reads that lose reactivity
+禁止导致响应性丢失的 setup prop 读取
 
 精度层级: exact
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -5121,7 +5121,7 @@ vue/no-textarea-mustache · lint 规则
     <textarea v-model="message"></textarea>
 === vue/no-this-in-before-route-enter
 vue/no-this-in-before-route-enter · lint 规则
-Disallow `this` in `beforeRouteEnter`
+禁止在 `beforeRouteEnter` 中使用 `this`
 
 精度层级: exact
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -5434,7 +5434,7 @@ vue/no-useless-v-bind · lint 规则
   请将该绑定替换为静态属性（用 foo=bar 代替 :foo='bar'）。
 === vue/no-v-for-template-key
 vue/no-v-for-template-key · lint 规则
-Disallow `key` on `<template v-for>`
+禁止在 `<template v-for>` 上设置 `key`
 
 精度层级: exact
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5589,7 +5589,7 @@ vue/permitted-contents · lint 规则
   - <table>的直接子元素只能是<thead>、<tbody>、<tfoot>、<tr>或<caption>
 === vue/prefer-prop-type-boolean-first
 vue/prefer-prop-type-boolean-first · lint 规则
-Enforce `Boolean` comes first in component prop types
+要求组件 prop 类型中的 `Boolean` 排在首位
 
 精度层级: exact
 适用范围: Options API component definitions written as object literals
@@ -5712,7 +5712,7 @@ vue/require-component-registration · lint 规则
 文档: docs/content/rules/reference/vue-require-component-registration.md
 === vue/require-expose
 vue/require-expose · lint 规则
-Require declare public properties using `expose`
+要求使用 `expose` 声明公共属性
 
 精度层级: exact
 适用范围: Options API component definitions written as object literals
@@ -6100,7 +6100,7 @@ vue/valid-attribute-name · lint 规则
   属性名不能包含空格、引号、>、/、=或控制字符
 === vue/valid-model-definition
 vue/valid-model-definition · lint 规则
-Require valid keys in the model option
+要求 model 选项使用有效的键
 
 精度层级: exact
 适用范围: Options API component definitions written as object literals

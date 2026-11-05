@@ -15,7 +15,7 @@ use scan::{Scan, scan_block};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profile;
 
-use vize_carton::{String, cstr};
+use vize_l0::{String, cstr};
 
 const RULE: &str = "vue/match-component-file-name";
 const HELP: &str = "Rename the component so its name matches the file name.";

@@ -9,12 +9,14 @@ Verificações de correção, convenções e migração para o Vue 3 em template
 
 Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 
-## Essenciais (51)
+## Essenciais (53)
 
 Regras de correção da predefinição `essential`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Aceita comentários de controle de diagnósticos em `<template>`. |  |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Considera usadas as variáveis referenciadas nos nomes dos elementos JSX. |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Exigir nomes de componentes com mais de uma palavra. |  |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | Proibir conteúdo filho ao usar v-html ou v-text. |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Proibir a sintaxe obsoleta de filtros do Vue 2 com o operador de barra vertical. |  |
@@ -67,7 +69,7 @@ Regras de correção da predefinição `essential`.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Exigir diretivas `v-slot` válidas. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Exigir diretivas `v-text` válidas. |  |
 
-## Padrão (23)
+## Padrão (24)
 
 Adicionadas por `happy-path`, a predefinição padrão.
 
@@ -76,6 +78,7 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Aplicar um padrão de nomes de atributos em componentes personalizados. | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Aplicar uma ordem consistente aos atributos. |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Exigir PascalCase ou kebab-case nos nomes de definição de componentes. |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | Exige tags de fechamento explícitas para elementos HTML cujo fechamento pode ser omitido. | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | Aplicar um padrão de aspas aos atributos HTML. | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Aplicar espaçamento consistente dentro das interpolações com chaves duplas. | ✓ |
 | <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | Proibir valores estáticos inválidos para atributos HTML. |  |
@@ -131,18 +134,27 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Opcionais (7)
+## Opcionais (16)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `vue.linter.rules`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exigir o atributo alt nas imagens para garantir acessibilidade. |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Exige que o nome declarado do componente corresponda ao nome do arquivo. |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limitar a complexidade do próprio template de um componente, tanto ciclomática quanto cognitiva. |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Proibir texto legível por pessoas diretamente no template quando ele deve ser internacionalizado. |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | Proíbe modificadores personalizados no `v-model` de componentes para manter compatibilidade com Vue 2. |  |
 | <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | Proibir vários nós raiz em um template. |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Proíbe copiar o valor de um ref no mesmo escopo e perder suas atualizações reativas. |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Proíbe cópias dos valores das props de setup que perdem as atualizações reativas. |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Proibir atributos estáticos de estilo inline. |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Proíbe acessar com `this` uma instância ainda não criada em `beforeRouteEnter`. |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Proibir referências a variáveis não definidas nos templates. |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Proibir variáveis de script setup que nunca são lidas. |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige que a key de `template v-for` fique em um filho real para manter compatibilidade com Vue 2. |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Exige que componentes da Options API declarem explicitamente suas propriedades públicas com `expose`. |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Exige chaves válidas na opção `model` do Vue 2. |  |
 
 [Visão geral das regras](../rules/index.md) · [Opções das regras](/rules/options.md) · [Migração do ESLint](/rules/migration.md)

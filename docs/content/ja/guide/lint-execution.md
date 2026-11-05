@@ -70,6 +70,20 @@ Vite+ の Lint タスクには、対象のパスと `--fix` を渡せます。
 Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vue` に指定してください。
 たとえば `vp run lint -- src` を実行すると、それぞれの設定を使って両方の Lint が実行されます。
 
+## 構文解析とプロジェクト設定の診断
+
+Lint のレポートには、ソースの構文解析や型情報を使うプロジェクトの設定読み込みに
+失敗した診断も含まれます。これらの診断 ID はプリセットのルール一覧には含まれません。
+メッセージと参照ページに従って入力を修正し、Lint を再実行してください。
+
+| 診断 | 参照ページ |
+| --- | --- |
+| `parser/template` | [テンプレート構文とパーサーの回復](../rules/reference/parser-template.md) |
+| `parser/sfc` | [単一ファイルコンポーネントの構造](../rules/reference/parser-sfc.md) |
+| `parser/jsx` | [JSX/TSX の構文解析と変換](../rules/reference/parser-jsx.md) |
+| `type/project-configuration` | [TypeScript プロジェクトの設定](../rules/reference/type-project-configuration.md) |
+
+
 ## 静的な class 属性の既定のチェック
 
 `html/no-duplicate-class` は、`class="button button"` のように、静的な

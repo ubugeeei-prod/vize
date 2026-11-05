@@ -308,4 +308,23 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/valid-v-text": "v-text の値・引数・修飾子を検査します。",
   "vue/warn-custom-block": "SFC のカスタムブロックを検出します。",
   "vue/warn-custom-directive": "登録が必要なカスタムディレクティブを検出します。",
+  "vue/comment-directive":
+    "テンプレート内の診断抑制コメントを扱い、設定に応じて未使用のコメントを検出します。",
+  "vue/html-end-tags": "HTML で省略できる終了タグも明示するよう求めます。",
+  "vue/jsx-uses-vars": "JSX のタグで参照する変数を、コンポーネントの使用として扱います。",
+  "vue/match-component-file-name": "宣言したコンポーネント名をファイル名と一致させます。",
+  "vue/no-custom-modifiers-on-v-model":
+    "Vue 2 の互換性のため、コンポーネントの v-model に独自の修飾子を使う箇所を検出します。",
+  "vue/no-ref-object-reactivity-loss":
+    "同じスコープで ref の値をコピーし、更新に追従しなくなる箇所を検出します。",
+  "vue/no-setup-props-reactivity-loss":
+    "setup の props をコピーし、更新に追従しなくなる箇所を検出します。",
+  "vue/no-this-in-before-route-enter":
+    "beforeRouteEnter で未生成のインスタンスを this で参照する箇所を検出します。",
+  "vue/no-v-for-template-key":
+    "Vue 2 の互換性のため、template v-for の key を実体のある子に指定します。",
+  "vue/prefer-prop-type-boolean-first":
+    "prop の型コンストラクター配列で Boolean を先頭に置きます。",
+  "vue/require-expose": "Options API のコンポーネントが公開するプロパティを expose で明示します。",
+  "vue/valid-model-definition": "Vue 2 の model オプションに有効なキーを指定します。",
 };
