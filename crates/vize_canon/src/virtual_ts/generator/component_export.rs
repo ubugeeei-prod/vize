@@ -120,6 +120,7 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: Authore
     }
 }
 
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
@@ -133,6 +134,7 @@ pub(super) fn emit_default_export_declaration(
         VirtualTsCheckOptions,
         bool,
     ),
+    component_type: Option<&str>,
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
     let static_slots_ref =
@@ -205,7 +207,11 @@ pub(super) fn emit_default_export_declaration(
             " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
         );
     }
-    ts.push_str("declare const __vize_component__: ");
+    // A named type prints as the component, not as its generated members.
+    match component_type {
+        Some(name) => append!(*ts, "type {name} = "),
+        None => ts.push_str("declare const __vize_component__: "),
+    }
     if authored_default != AuthoredDefaultKind::None {
         // A normal script may export a primitive. Adding the generated Vue
         // constructor to that value would change its authored public type.
@@ -280,60 +286,93 @@ pub(super) fn emit_default_export_declaration(
         ts.push_str(" : $AuthoredComponent");
     }
     ts.push_str(";\n");
+    if let Some(name) = component_type {
+        append!(*ts, "declare const __vize_component__: {name};\n");
+    }
 }
 
-pub(super) fn emit_component_default_export_for_generation(
-    ts: &mut String,
+/// The public names of a Content Mapper component, from its file: the
+/// exported value and its type. `export default` carries every meaning of
+/// the value's name, so the type takes its own.
+pub(super) struct ComponentNames {
+    pub(super) value: String,
+    pub(super) type_name: String,
+}
+
+impl ComponentNames {
+    pub(super) fn type_name(&self) -> &str {
+        &self.type_name
+    }
+}
+
+pub(super) fn names(
+    ts: &str,
     summary: &Croquis,
     generation: VirtualTsGenerationOptions<'_>,
     authored_script: Option<&str>,
-) {
-    crate::virtual_ts::generated_names::emit_forwarded_helpers(ts);
-    let component_name_is_setup_binding = generation
-        .component_name
-        .is_some_and(|name| crate::virtual_ts::script_facts::contains_binding(summary, name));
-    emit_component_default_export(
-        ts,
-        generation.component_name,
-        component_name_is_setup_binding,
-        authored_script,
-    );
+) -> Option<ComponentNames> {
+    let component_name = generation.component_name?;
+    // Both names are declared at module scope after `__setup`, but lexical
+    // resolution still exposes them inside that function. Only keep the
+    // filename spelling when setup owns the same binding; otherwise
+    // `error.vue` would turn an authored `new Error(message)` into a
+    // component constructor call. Inspect the authored script rather than
+    // generated setup helpers so a synthetic self-component reference cannot
+    // rename an existing export. A setup value owns no type, so the type name
+    // always avoids authored text.
+    let setup_binding = crate::virtual_ts::script_facts::contains_binding(summary, component_name);
+    let mut type_name = String::from(component_name);
+    type_name.push_str("Component");
+    Some(ComponentNames {
+        value: public_name(
+            ts,
+            String::from(component_name),
+            "VueComponent",
+            setup_binding,
+            authored_script,
+        ),
+        type_name: public_name(ts, type_name, "", false, authored_script),
+    })
 }
 
-fn emit_component_default_export(
-    ts: &mut String,
-    component_name: Option<&str>,
-    component_name_is_setup_binding: bool,
+fn public_name(
+    ts: &str,
+    mut name: String,
+    suffix: &str,
+    setup_binding: bool,
     authored_script: Option<&str>,
-) {
-    let Some(component_name) = component_name else {
-        ts.push_str("export default __vize_component__;\n");
-        return;
-    };
-    let mut export_name = String::from(component_name);
-    // The public name is declared at module scope after `__setup`, but lexical
-    // resolution still exposes it inside that function. Only keep the filename
-    // spelling when setup owns the same binding; otherwise `error.vue` would
-    // turn an authored `new Error(message)` into a component constructor call.
-    // Inspect the authored script rather than generated setup helpers so a
-    // synthetic self-component reference cannot rename an existing export.
-    if module_scope_contains_identifier(ts, export_name.as_str())
-        || (!component_name_is_setup_binding
-            && authored_script
-                .is_some_and(|source| contains_identifier(source, export_name.as_str())))
+) -> String {
+    let authored =
+        |name: &str| authored_script.is_some_and(|source| contains_identifier(source, name));
+    if module_scope_contains_identifier(ts, name.as_str())
+        || (!setup_binding && authored(name.as_str()))
     {
-        export_name.push_str("VueComponent");
-        while module_scope_contains_identifier(ts, export_name.as_str())
-            || authored_script
-                .is_some_and(|source| contains_identifier(source, export_name.as_str()))
-        {
-            export_name.push('_');
+        name.push_str(suffix);
+        while module_scope_contains_identifier(ts, name.as_str()) || authored(name.as_str()) {
+            name.push('_');
         }
     }
+    name
+}
+
+/// Emit the default export. A named export returns its declared name's
+/// range, whose authored counterpart is the SFC itself.
+pub(super) fn default_export(
+    ts: &mut String,
+    names: Option<&ComponentNames>,
+) -> Option<std::ops::Range<usize>> {
+    crate::virtual_ts::generated_names::emit_forwarded_helpers(ts);
+    let Some(ComponentNames { value, .. }) = names else {
+        ts.push_str("export default __vize_component__;\n");
+        return None;
+    };
+    ts.push_str("declare const ");
+    let start = ts.len();
     append!(
         *ts,
-        "declare const {export_name}: typeof __vize_component__;\nexport default {export_name};\n",
+        "{value}: typeof __vize_component__;\nexport default {value};\n"
     );
+    Some(start..start + value.len())
 }
 
 fn module_scope_contains_identifier(ts: &str, name: &str) -> bool {

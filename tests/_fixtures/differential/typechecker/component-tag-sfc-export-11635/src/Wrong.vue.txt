@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import MkNoteHeader from './MkNoteHeader.vue';
+</script>
+<template>
+  <MkNoteHeader :note="1" />
+</template>

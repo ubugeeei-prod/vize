@@ -62,3 +62,10 @@ Both dialect jobs produced the same complete record. Canon and the content
 mapper grow by 85 bytes; packet, mapping, semantic-link, diagnostic and authored
 hit counts are unchanged, so the changed coordinate hashes are authenticated as
 derived relocation rather than lost coverage.
+
+`successor-11635` records the content mapper's component export change for
+issues #11635 and #11637: the component's type is named after its file
+(`type OptionsApiSlotsComponent = ...; declare const __vize_component__: OptionsApiSlotsComponent;`,
+58 more bytes) and the exported name maps to the SFC's start (one more mapping
+row). Canon and Maestro records are byte-identical; diagnostic and authored-hit
+counts are unchanged.

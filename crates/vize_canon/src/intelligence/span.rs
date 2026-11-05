@@ -48,6 +48,7 @@ impl From<ProjectionSpanKind> for CursorContext {
             ProjectionSpanKind::VForVar => CursorContext::VForVar,
             ProjectionSpanKind::SlotBinding
             | ProjectionSpanKind::ComponentRef
+            | ProjectionSpanKind::ComponentExport
             | ProjectionSpanKind::Unknown => CursorContext::Unknown,
         }
     }

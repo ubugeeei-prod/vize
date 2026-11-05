@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import type { Note } from './types';
+defineProps<{ note: Note; mini?: boolean }>();
+</script>
+<template>
+  <header>{{ note.user.name }}</header>
+</template>

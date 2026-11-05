@@ -439,6 +439,16 @@ runs:
         }, null, 2) + '\n');
         if (failure !== null) throw new Error(failure);
         NODE
+    - name: Test TypeScript 7.1 LSP editor answers over the content mapper
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
+      run: |
+        set -euo pipefail
+        test "$("$VIZE_TEST_CONTENT_MAPPER_TSGO" --version)" = "Version 7.1.0-beta"
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy:: --nocapture 2>&1 | tee "$RUNNER_TEMP/editor-accuracy.log"
+        grep -Eq '^test result: ok\. [1-9][0-9]* passed; 0 failed' "$RUNNER_TEMP/editor-accuracy.log"
     - name: Preserve actual native inputs and responses
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

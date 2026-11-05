@@ -277,7 +277,20 @@ const message = "hello"
             );
         }
     }
-    assert!(result.mappings.iter().all(|mapping| {
+    let (sfc, ordinary): (Vec<&ContentMapperSpan>, Vec<_>) = result
+        .mappings
+        .iter()
+        .partition(|mapping| mapping.0[2] == 0 && mapping.0[3] == 0);
+    assert_eq!(
+        sfc.iter()
+            .map(|mapping| (mapping.0[4], mapping.0[5]))
+            .collect::<Vec<_>>(),
+        [(
+            ContentMapperSpanKind::Atom as usize,
+            CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET
+        )]
+    );
+    assert!(ordinary.iter().all(|mapping| {
         diagnostic_anchors.iter().any(|anchor| mapping.0 == *anchor)
             || mapping.0[5]
                 == match mapping.0[4] {
