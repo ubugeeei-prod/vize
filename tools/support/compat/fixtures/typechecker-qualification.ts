@@ -1,6 +1,9 @@
-/** Separate configuration failure from semantic typechecker qualification. */
+/** Coverage is transport evidence; unavailable project inputs prevent semantic qualification. */
 
-const CONFIGURATION_CODE = /TS(?:2688|6053)\b/;
+const diagnosticPattern = /^error:[1-9]\d*:[1-9]\d* \[TS(\d+)\] /u;
+const unavailableInputCodes = new Set([
+  2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003,
+]);
 
 export type TypecheckerRunStatus = "ok" | "configuration" | "findings";
 
@@ -20,7 +23,6 @@ export function typecheckerRunStatus(
   if (exitCode === 0) return "ok";
   const packet = parsed as QualificationPacket | null | undefined;
   const files: readonly unknown[] = Array.isArray(packet?.files) ? packet.files : [];
-  let sawDiagnostic = false;
   for (const file of files) {
     const entry = file as QualificationFile | null | undefined;
     const path = typeof entry?.file === "string" ? entry.file : "";
@@ -28,15 +30,19 @@ export function typecheckerRunStatus(
       ? entry.diagnostics
       : [];
     for (const diagnostic of diagnostics) {
-      sawDiagnostic = true;
+      if (typeof diagnostic !== "string") continue;
+      const match = diagnosticPattern.exec(diagnostic);
+      if (match == null) continue;
+      // Missing modules/generated declarations can introduce `any` into later
+      // checks. An authored error elsewhere cannot qualify this partial run.
       if (
-        typeof diagnostic !== "string" ||
-        !path.endsWith("tsconfig.json") ||
-        !CONFIGURATION_CODE.test(diagnostic)
+        path.endsWith(".json") ||
+        path.endsWith(".jsonc") ||
+        unavailableInputCodes.has(Number(match[1]))
       ) {
-        return "findings";
+        return "configuration";
       }
     }
   }
-  return sawDiagnostic ? "configuration" : "findings";
+  return "findings";
 }

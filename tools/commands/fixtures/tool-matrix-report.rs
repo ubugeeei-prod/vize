@@ -14,15 +14,19 @@
 //! edition = "2024"
 //! ```
 
-use vize_tool_support::common as common;
+use vize_tool_support::common;
 mod fixture_inputs;
 mod fixture_programs;
+mod typechecker_qualification;
+#[cfg(test)]
+mod typechecker_qualification_tests;
 
 use serde::Serialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
-    env, fs, io::Read,
+    env, fs,
+    io::Read,
     path::{Path, PathBuf},
     process::{Child, Command, ExitCode, Stdio},
     time::{Duration, Instant},
@@ -708,6 +712,11 @@ fn run_tool(
         "failed"
     } else if payload.get("parseError").is_some() {
         "failed"
+    } else if tool == "typechecker" {
+        typechecker_qualification::typechecker_run_status(
+            i64::from(output.exit_code.unwrap_or(1)),
+            &payload["parsed"],
+        )
     } else if output.exit_code == Some(0) {
         "ok"
     } else {
