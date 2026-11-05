@@ -4,6 +4,7 @@
 //! certify a previous exact read. Recent files and other platforms keep the
 //! original full read; desired text is always compared by its strong digest.
 
+#[cfg(test)]
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 #[cfg(any(unix, test))]
@@ -93,24 +94,27 @@ impl CanonFileCache {
         self.files.clear();
     }
 
-    pub(super) fn synchronize(&mut self, path: &Path, expected: &str) -> std::io::Result<bool> {
-        self.synchronize_at(path, expected, SystemTime::now())
+    pub(super) fn synchronize_with_digest(
+        &mut self,
+        path: &Path,
+        expected: &str,
+        desired: impl FnOnce() -> [u8; 32],
+    ) -> std::io::Result<bool> {
+        self.synchronize_at_with_digest(path, expected, SystemTime::now(), desired)
     }
 
-    fn synchronize_at(
+    fn synchronize_at_with_digest(
         &mut self,
         path: &Path,
         expected: &str,
         now: SystemTime,
+        desired: impl FnOnce() -> [u8; 32],
     ) -> std::io::Result<bool> {
         let before = FileIdentity::capture(path);
         let desired = before
             .as_ref()
             .filter(|identity| identity.settled(now))
-            .map(|_| {
-                let digest: [u8; 32] = Sha256::digest(expected.as_bytes()).into();
-                digest
-            });
+            .map(|_| desired());
         if let (Some(identity), Some(desired)) = (before.as_ref(), desired)
             && self
                 .files
@@ -139,6 +143,23 @@ impl CanonFileCache {
             self.files.remove(path);
         }
         Ok(false)
+    }
+
+    #[cfg(test)]
+    fn synchronize(&mut self, path: &Path, expected: &str) -> std::io::Result<bool> {
+        self.synchronize_at(path, expected, SystemTime::now())
+    }
+
+    #[cfg(test)]
+    fn synchronize_at(
+        &mut self,
+        path: &Path,
+        expected: &str,
+        now: SystemTime,
+    ) -> std::io::Result<bool> {
+        self.synchronize_at_with_digest(path, expected, now, || {
+            Sha256::digest(expected.as_bytes()).into()
+        })
     }
     fn retain_verified_observation(
         &mut self,
@@ -246,6 +267,65 @@ mod tests {
             assert!(cache.synchronize(&path, ORIGINAL).unwrap());
             assert_eq!(std::fs::read(&path).unwrap(), ORIGINAL.as_bytes());
             assert_eq!(cache.reads, 2);
+        }
+    }
+
+    #[test]
+    fn retaining_a_new_desired_revision_before_a_failed_batch_does_not_acknowledge_old_disk_bytes()
+    {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("A.vue.ts");
+        let uri = "file:///workspace/A.vue.ts";
+        std::fs::write(&path, ORIGINAL).unwrap();
+        let mut documents = crate::lsp_client::tracked_documents::TrackedDocumentTexts::default();
+        let mut cache = CanonFileCache::default();
+        let now = settled_clock();
+        documents.insert(uri.into(), ORIGINAL.into());
+        assert!(
+            !cache
+                .synchronize_at_with_digest(&path, ORIGINAL, now, || {
+                    documents.desired_digest(uri, ORIGINAL)
+                })
+                .unwrap()
+        );
+        // A namespace or write failure after retain leaves this new desired
+        // revision in memory, while the physical observation still names old
+        // bytes. Repeating the equal retain must not reuse that old digest.
+        documents.insert(uri.into(), CHANGED.into());
+        let expected_digest: [u8; 32] = Sha256::digest(CHANGED.as_bytes()).into();
+        assert_eq!(documents.desired_digest(uri, CHANGED), expected_digest);
+        documents.insert(uri.into(), CHANGED.into());
+        assert!(
+            cache
+                .synchronize_at_with_digest(&path, CHANGED, now, || {
+                    documents.desired_digest(uri, CHANGED)
+                })
+                .unwrap()
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), CHANGED.as_bytes());
+    }
+
+    #[test]
+    fn one_physical_path_keeps_every_duplicate_and_encoded_uri_row_on_its_own_desired_bytes() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("A.vue.ts");
+        let uri = "file:///workspace/A.vue.ts";
+        let alias = "file:///workspace/%41.vue.ts";
+        std::fs::write(&path, ORIGINAL).unwrap();
+        let mut documents = crate::lsp_client::tracked_documents::TrackedDocumentTexts::default();
+        let rows = [(uri, ORIGINAL), (uri, CHANGED), (alias, ORIGINAL)];
+        for (uri, content) in rows {
+            documents.insert(uri.into(), content.into());
+        }
+        let mut cache = CanonFileCache::default();
+        let now = settled_clock();
+        for (uri, content) in rows {
+            cache
+                .synchronize_at_with_digest(&path, content, now, || {
+                    documents.desired_digest(uri, content)
+                })
+                .unwrap();
+            assert_eq!(std::fs::read(&path).unwrap(), content.as_bytes());
         }
     }
 

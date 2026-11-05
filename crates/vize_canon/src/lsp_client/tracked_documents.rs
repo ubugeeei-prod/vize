@@ -4,6 +4,7 @@ use std::ops::Deref;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde::{Serialize, Serializer};
+use sha2::{Digest, Sha256};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
 static NEXT_OWNER: AtomicU64 = AtomicU64::new(1);
@@ -17,6 +18,9 @@ pub(super) struct DocumentCheckpoint {
 #[derive(Debug)]
 pub(super) struct TrackedDocumentTexts {
     documents: FxHashMap<String, String>,
+    desired_digests: FxHashMap<String, [u8; 32]>,
+    #[cfg(test)]
+    digest_computations: usize,
     owner: u64,
     revision: u64,
     baseline: u64,
@@ -35,6 +39,9 @@ impl From<FxHashMap<String, String>> for TrackedDocumentTexts {
     fn from(documents: FxHashMap<String, String>) -> Self {
         Self {
             documents,
+            desired_digests: FxHashMap::default(),
+            #[cfg(test)]
+            digest_computations: 0,
             owner: NEXT_OWNER.fetch_add(1, Ordering::Relaxed),
             revision: 0,
             baseline: 0,
@@ -53,6 +60,9 @@ impl TrackedDocumentTexts {
 
     pub(super) fn insert(&mut self, uri: String, text: String) -> Option<String> {
         let changed = self.documents.get(uri.as_str()) != Some(&text);
+        if changed {
+            self.desired_digests.remove(uri.as_str());
+        }
         let previous = self.documents.insert(uri.clone(), text);
         if changed {
             self.record_change(uri);
@@ -61,6 +71,7 @@ impl TrackedDocumentTexts {
     }
 
     pub(super) fn remove(&mut self, uri: &str) -> Option<String> {
+        self.desired_digests.remove(uri);
         let previous = self.documents.remove(uri);
         if previous.is_some() {
             self.record_change(uri.into());
@@ -69,6 +80,7 @@ impl TrackedDocumentTexts {
     }
 
     pub(super) fn clear(&mut self) {
+        self.desired_digests.clear();
         if self.documents.is_empty() {
             return;
         }
@@ -83,6 +95,25 @@ impl TrackedDocumentTexts {
         if !self.documents.contains_key(uri.as_str()) {
             self.insert(uri, text);
         }
+    }
+
+    /// Hash a retained revision once, only when a physical observation needs
+    /// its digest. The expected row can precede another row for the same URI
+    /// in a batch; that earlier text must never borrow the final row's digest.
+    pub(super) fn desired_digest(&mut self, uri: &str, expected: &str) -> [u8; 32] {
+        let retained = self.documents.get(uri).map(String::as_str) == Some(expected);
+        if retained && let Some(digest) = self.desired_digests.get(uri) {
+            return *digest;
+        }
+        #[cfg(test)]
+        {
+            self.digest_computations += 1;
+        }
+        let digest = Sha256::digest(expected.as_bytes()).into();
+        if retained {
+            self.desired_digests.insert(uri.into(), digest);
+        }
+        digest
     }
 
     pub(super) fn changes_since(
@@ -171,3 +202,6 @@ impl IntoIterator for TrackedDocumentTexts {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod digest_tests;

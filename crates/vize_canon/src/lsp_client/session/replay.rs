@@ -93,7 +93,9 @@ impl CorsaProjectClient {
             self.clear_document_state(uri);
             if self
                 .canon_file_cache
-                .synchronize(&path, content)
+                .synchronize_with_digest(&path, content, || {
+                    self.document_texts.desired_digest(uri, content)
+                })
                 .map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
