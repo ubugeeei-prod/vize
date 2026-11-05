@@ -27,7 +27,6 @@ The outer `template` block is never closed, even though the inner element is com
 ```vue
 <template>
   <div>Notice</div>
-</template>
 ```
 
 ## Good

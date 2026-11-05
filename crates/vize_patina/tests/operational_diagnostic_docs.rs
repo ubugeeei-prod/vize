@@ -49,12 +49,14 @@ fn operational_diagnostic_paths_resolve_to_their_own_bilingual_authority() {
         for locale in ["", "ja/"] {
             let page = root.join(format!("docs/content/{locale}rules/reference/{slug}.md"));
             let source = std::fs::read_to_string(&page).unwrap();
-            assert_eq!(
-                source.lines().find(|line| line.starts_with("# ")),
-                Some(format!("# `{id}`").as_str()),
-                "{}",
-                page.display()
-            );
+            let heading = source
+                .split_once("\n# ")
+                .unwrap()
+                .1
+                .split_once('\n')
+                .unwrap()
+                .0;
+            assert_eq!(heading, format!("`{id}`"), "{}", page.display());
         }
     }
 }

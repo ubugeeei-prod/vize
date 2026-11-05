@@ -29,7 +29,6 @@ Art の variant 処理でも、variant を元の SFC ソース内に位置付け
 ```vue
 <template>
   <div>Notice</div>
-</template>
 ```
 
 ## 良い例

@@ -438,7 +438,13 @@ fn rule_docs_path_exists_for_every_published_rule() {
     let mut missing = vize_l0::String::new("");
     for (id, relative) in pages {
         let path = rule_docs_path(id);
-        let expected = vize_l0::cstr!("docs/content/rules/{relative}");
+        // This operational check retains its established guide authority. The
+        // generated rule page supplies examples and links back to that guide.
+        let expected = if id == "vue/comment-directive" {
+            vize_l0::String::from("docs/content/guide/lint-execution.md")
+        } else {
+            vize_l0::cstr!("docs/content/rules/{relative}")
+        };
         assert_eq!(path, expected, "{id}");
         if !rules_dir.join(relative).is_file() {
             if !missing.is_empty() {

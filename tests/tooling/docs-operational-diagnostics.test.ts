@@ -33,6 +33,11 @@ void test("operational diagnostic references retain their own English/Japanese a
     );
     assert.deepEqual(fences(japanese), fences(english), `${id}: complete example source`);
     assert.equal(fences(english).length, 2, `${id}: failing and repaired input`);
+    assert.notDeepEqual(
+      fences(english)[0],
+      fences(english)[1],
+      `${id}: Bad remains an unrepaired input`,
+    );
     for (const locale of ["", "ja/"]) {
       const path = pageAt(locale, slug);
       const source = read(path);
