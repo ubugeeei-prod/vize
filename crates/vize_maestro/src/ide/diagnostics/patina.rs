@@ -73,10 +73,15 @@ impl DiagnosticService {
         } else {
             linter.lint_sfc(content, uri.path())
         };
-        // Publish authored lint identities in the same order as CLI and actions.
-        result
-            .diagnostics
-            .sort_by_key(|diagnostic| (diagnostic.start, diagnostic.end, diagnostic.rule_name));
+        // Preserve configured rule precedence when visitors share a source range.
+        let rule_names = linter.registry().rule_names();
+        result.diagnostics.sort_by_cached_key(|diagnostic| {
+            let rule_index = rule_names
+                .iter()
+                .position(|name| *name == diagnostic.rule_name)
+                .unwrap_or(usize::MAX);
+            (diagnostic.start, diagnostic.end, rule_index)
+        });
 
         result
             .diagnostics
