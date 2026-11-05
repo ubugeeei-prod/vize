@@ -12,7 +12,7 @@ const integratedRecordUrl = new URL(
   "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
   import.meta.url,
 );
-const integratedRecordSha256 = "f7cf79ee7e8a233d7ba3df8a35e9144aea62c2850fa017512a11c7a5b4318503";
+const integratedRecordSha256 = "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518";
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const identity = (bytes: Buffer) => ({ bytes: bytes.length, sha256: digest(bytes) });
 

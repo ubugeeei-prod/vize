@@ -10,6 +10,79 @@ struct File {
     base_sha: &'static str,
 }
 
+struct RepairFile {
+    path: &'static str,
+    before_bytes: usize,
+    before_sha: &'static str,
+    after_bytes: usize,
+    after_sha: &'static str,
+    before: &'static str,
+    after: &'static str,
+}
+
+const COMPONENT_INSTANCE_BEFORE: &str = "$ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>>";
+const COMPONENT_INSTANCE_AFTER: &str = "$ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never>";
+const GENERATED_INSTANCE_BEFORE: &str = concat!(
+    "            Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &\n",
+    "              $ComponentInputProps<T, Declared> &\n",
+    "              $ComponentMissingInputGuard<T, Jsx>"
+);
+const GENERATED_INSTANCE_AFTER: &str = concat!(
+    "            T extends unknown\n",
+    "              ? Pick<\n",
+    "                  $AuthoredKeyWitness<Jsx>,\n",
+    "                  keyof Jsx & keyof $ComponentInputProps<T, Declared>\n",
+    "                > &\n",
+    "                  $ComponentInputProps<T, Declared> &\n",
+    "                  $ComponentMissingInputGuard<T, Jsx>\n",
+    "              : never"
+);
+const GLOBAL_INSTANCE_BEFORE: &str = concat!(
+    "              Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &\n",
+    "                $ComponentInputProps<T, Declared> &\n",
+    "                $ComponentMissingInputGuard<T, Jsx>"
+);
+const GLOBAL_INSTANCE_AFTER: &str = concat!(
+    "              T extends unknown\n",
+    "                ? Pick<\n",
+    "                    $AuthoredKeyWitness<Jsx>,\n",
+    "                    keyof Jsx & keyof $ComponentInputProps<T, Declared>\n",
+    "                  > &\n",
+    "                    $ComponentInputProps<T, Declared> &\n",
+    "                    $ComponentMissingInputGuard<T, Jsx>\n",
+    "                : never"
+);
+
+const REPAIRS: [RepairFile; 3] = [
+    RepairFile {
+        path: "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+        before_bytes: 5819,
+        before_sha: "5a2b00dd75e8e6ade9a79db43b84b20532d3125514f0d1a4c5c6314f97591d76",
+        after_bytes: 5847,
+        after_sha: "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d",
+        before: COMPONENT_INSTANCE_BEFORE,
+        after: COMPONENT_INSTANCE_AFTER,
+    },
+    RepairFile {
+        path: "npm/cli/generated/content-mapper-types.d.ts",
+        before_bytes: 12005,
+        before_sha: "ef6af6da1991dddf75504f7b5e4743127d7fd0dae8c7085dd385f7d228844c6c",
+        after_bytes: 12123,
+        after_sha: "a0b8256f90095ea7e6f16f8e9e154d63c31f138dcd47e35fbfbacb4dc1be1a0a",
+        before: GENERATED_INSTANCE_BEFORE,
+        after: GENERATED_INSTANCE_AFTER,
+    },
+    RepairFile {
+        path: "npm/cli/virtual-ts-globals.d.ts",
+        before_bytes: 17057,
+        before_sha: "fcb7574e88374a8de27f330be3733e486d1be465f372122965ea1302f34512b8",
+        after_bytes: 17185,
+        after_sha: "ad293c067fbdb952343569882f0076e12ec671a8ccc9473cf5c31c171e02bba4",
+        before: GLOBAL_INSTANCE_BEFORE,
+        after: GLOBAL_INSTANCE_AFTER,
+    },
+];
+
 const FILES: [File; 13] = [
     File {
         path: "npm/cli/virtual-ts.d.ts",
@@ -109,6 +182,33 @@ fn authenticate(text: &str, bytes: usize, sha: &str) {
     assert_eq!(support::hash(text.as_bytes()), sha);
 }
 
+fn repair_before(path: &str, current: String) -> String {
+    let Some(repair) = REPAIRS.iter().find(|repair| repair.path == path) else {
+        return current;
+    };
+    authenticate(&current, repair.after_bytes, repair.after_sha);
+    assert_eq!(current.matches(repair.after).count(), 1);
+    let previous = current.replacen(repair.after, repair.before, 1);
+    authenticate(&previous, repair.before_bytes, repair.before_sha);
+    previous
+}
+
+fn repaired_preamble_before(current: &str) -> String {
+    authenticate(
+        current,
+        46_534,
+        "7be160e1798f4368642597b67db232b1a72309dc18eb637a4ec7d868f3457bcb",
+    );
+    assert_eq!(current.matches(COMPONENT_INSTANCE_AFTER).count(), 1);
+    let previous = current.replacen(COMPONENT_INSTANCE_AFTER, COMPONENT_INSTANCE_BEFORE, 1);
+    authenticate(
+        &previous,
+        46_506,
+        "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
+    );
+    previous
+}
+
 pub(super) fn overload_before(path: &str, mut current: String) -> String {
     let (before, after) = match path {
         "npm/cli/virtual-ts.d.ts" | "npm/cli/virtual-ts.d.mts" | "npm/cli/virtual-ts.d.cts" => (
@@ -139,7 +239,8 @@ pub(super) fn overload_before(path: &str, mut current: String) -> String {
 }
 
 pub(super) fn preamble_before_input_and_overload(current: &str) -> String {
-    let current = super::jsx_exact_keys::preamble_edits_before(current.to_owned());
+    let current = repaired_preamble_before(current);
+    let current = super::jsx_exact_keys::preamble_edits_before(current);
     let current = super::input_channels::preamble_edits_before(current);
     overload_before(
         "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
@@ -151,6 +252,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
+    let current = repair_before(path, current);
     authenticate(&current, file.current_bytes, file.current_sha);
     let previous = match path {
         "npm/cli/virtual-ts.d.ts" | "npm/cli/virtual-ts.d.mts" | "npm/cli/virtual-ts.d.cts" => {
@@ -217,12 +319,13 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = repaired_preamble_before(current);
     authenticate(
-        current,
+        &current,
         46_506,
         "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
     );
-    let current = super::jsx_exact_keys::preamble_edits_before(current.to_owned());
+    let current = super::jsx_exact_keys::preamble_edits_before(current);
     let mut current = super::input_channels::preamble_edits_before(current);
     assert_eq!(
         current
@@ -262,6 +365,25 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
             "beforeSha256": "317bad0e932dd8054c21bc22e75ac319243448867bfbc40b4052ff7403e7e3e1",
             "afterBytes": 46506,
             "afterSha256": "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
+        },
+    });
+    manifest["provenance"]["discriminatedJsxUnionRepair11964"] = json!({
+        "kind": "exact-source-finite-inverse",
+        "pullRequest": 11964,
+        "observedRegressionRun": 42086332303_i64,
+        "nativeAcceptanceCredit": false,
+        "files": REPAIRS.iter().map(|repair| json!({
+            "path": repair.path,
+            "beforeBytes": repair.before_bytes,
+            "beforeSha256": repair.before_sha,
+            "afterBytes": repair.after_bytes,
+            "afterSha256": repair.after_sha,
+        })).collect::<Vec<_>>(),
+        "compiledPreamble": {
+            "beforeBytes": 46506,
+            "beforeSha256": "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
+            "afterBytes": 46534,
+            "afterSha256": "7be160e1798f4368642597b67db232b1a72309dc18eb637a4ec7d868f3457bcb",
         },
     });
 }

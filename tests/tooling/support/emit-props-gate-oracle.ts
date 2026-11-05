@@ -67,12 +67,12 @@ function historicalProducer(
 ): string {
   if (
     path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
-    sha256(current) === "f7b9a5948077a80b50a9753691b6ff046b4184008e0bde21396ae4c34ccf373b"
+    sha256(current) === "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d"
   ) {
     const raw = read(integratedSourceTransition);
     assert.equal(
       sha256(raw),
-      "f7cf79ee7e8a233d7ba3df8a35e9144aea62c2850fa017512a11c7a5b4318503",
+      "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518",
       "selected integrated component helper transition",
     );
     const transition = JSON.parse(raw) as {

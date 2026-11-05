@@ -91,7 +91,7 @@ export function currentCallbackSourceEdits(
   const digest = (text: string) => createHash("sha256").update(text).digest("hex");
   assert.equal(
     digest(transitionRaw),
-    "f7cf79ee7e8a233d7ba3df8a35e9144aea62c2850fa017512a11c7a5b4318503",
+    "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518",
     "certified integrated component helper transition",
   );
   const transition = JSON.parse(transitionRaw) as {

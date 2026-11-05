@@ -24,8 +24,8 @@
       "sha256": "3371eb7d3919662cbfde16a142a58c3a36739aefa127daa706307ce578808cab"
     },
     "after": {
-      "bytes": 5849,
-      "sha256": "f7b9a5948077a80b50a9753691b6ff046b4184008e0bde21396ae4c34ccf373b"
+      "bytes": 5847,
+      "sha256": "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d"
     },
     "edits": [
       {
@@ -38,9 +38,9 @@
       },
       {
         "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
-        "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & (T extends unknown ? keyof $ComponentInputProps<T, Declared> : never)> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
+        "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
       }
     ]
   },
-  "scope": "Finite join of current main with the reviewed constructor and TSX input-channel heads, followed by the distributive union-key repair. The exact source is reconstructed in both directions and grants no native TypeScript consumer acceptance credit."
+  "scope": "Finite join of current main with the reviewed constructor and TSX input-channel heads, followed by the branch-distributive JSX union repair. The exact source is reconstructed in both directions and grants no native TypeScript consumer acceptance credit."
 }
