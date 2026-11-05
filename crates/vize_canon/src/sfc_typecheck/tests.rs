@@ -64,17 +64,6 @@ fn test_type_check_result() {
 }
 
 #[test]
-fn test_type_check_options_default() {
-    let options = SfcTypeCheckOptions::new("test.vue");
-    assert_eq!(options.filename, "test.vue");
-    assert!(!options.strict);
-    assert!(options.check_props);
-    assert!(options.check_emits);
-    assert!(options.check_template_bindings);
-    assert!(!options.include_virtual_ts);
-}
-
-#[test]
 fn test_type_check_options_strict() {
     let options = SfcTypeCheckOptions::new("test.vue").strict();
     assert!(options.strict);
@@ -1422,4 +1411,22 @@ const count = 1
     );
 }
 
-mod setup_wrapper;
+#[test]
+fn test_script_setup_only_virtual_ts_has_no_define_component_wrapper() {
+    let source = r#"<script setup lang="ts">
+const count = 1
+</script>
+<template>
+  <div>{{ count }}</div>
+</template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual TS should be generated");
+
+    assert!(
+        !virtual_ts.contains("__vizeDefineComponent"),
+        "script setup virtual TS must stay untouched:\n{virtual_ts}"
+    );
+}
+
+mod options_defaults;
