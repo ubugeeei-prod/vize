@@ -1,0 +1,46 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/11885",
+  "run": "https://github.com/ubugeeei-prod/vize/actions/runs/41931794731/attempts/1",
+  "beforeSource": "db5c35c12124086f034563b6800dbdab8605cdc0",
+  "candidateSource": "7d6cd034dca13ad476a508c5233337e9e0f80e95",
+  "workspaceRoot": "/home/runner/_work/vize/vize",
+  "policy": "Byte-preserved artifact entries. Metadata advance covers only constant-controls src/App.vue in all four existing option rows. Six inline App rows for original/named-alias/default-unknown remain outside the historical same-work packet comparator; this fixture does not qualify their code/module-shape drift.",
+  "files": [
+    {
+      "file": "before-full-module-packets.json.txt",
+      "sha256": "e7c0f1c8b456e8339c3c386e960f8a72578789b193c97a3569b3f80f80a23cf0",
+      "artifactId": 13372511600,
+      "entry": "full-module-packets.json"
+    },
+    {
+      "file": "before-native-identity.json.txt",
+      "sha256": "983a15d0ed8d73e09b99b8113c489a741e7ddaac06e2da272d0686216a174283",
+      "artifactId": 13372511600,
+      "entry": "native-identity.json"
+    },
+    {
+      "file": "before-performance.json.txt",
+      "sha256": "808c81753ff1fc2ff31b371984fe0b8d92a69c7aff5060f7c7a9f9d48bd3a0a4",
+      "artifactId": 13372511600,
+      "entry": "performance.json"
+    },
+    {
+      "file": "candidate-full-module-packets.json.txt",
+      "sha256": "9154528bebe16ded24a67288287afb5738aa8d4a8e68473096e1533385d86750",
+      "artifactId": 13373040836,
+      "entry": "full-module-packets.json"
+    },
+    {
+      "file": "candidate-native-identity.json.txt",
+      "sha256": "7de47fa51b63cebf6e7ce4dbd01ae34e1bf946afa9b81cca7df243cbcc239e3a",
+      "artifactId": 13373040836,
+      "entry": "native-identity.json"
+    },
+    {
+      "file": "candidate-performance.json.txt",
+      "sha256": "43ffbccc2abdfa6bbcc1e141a4cc8d8ca68ed3efe945ebd92159e6ca58b5c592",
+      "artifactId": 13373040836,
+      "entry": "performance.json"
+    }
+  ]
+}
