@@ -75,6 +75,7 @@ pub use super::return_in_computed_property::ReturnInComputedProperty;
 pub use super::valid_define_emits::ValidDefineEmits;
 pub use super::valid_define_options::ValidDefineOptions;
 pub use super::valid_define_props::ValidDefineProps;
+pub use super::valid_model_definition::ValidModelDefinition;
 pub use super::valid_next_tick::ValidNextTick;
 pub use super::vue_router_prefer_named_push::VueRouterPreferNamedPush;
 pub use super::vue_test_utils_no_html_snapshot::VueTestUtilsNoHtmlSnapshot;

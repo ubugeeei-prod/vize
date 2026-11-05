@@ -84,6 +84,7 @@ mod template_scan;
 mod valid_define_emits;
 mod valid_define_options;
 mod valid_define_props;
+mod valid_model_definition;
 mod valid_next_tick;
 mod vue_object;
 mod vue_router_prefer_named_push;
