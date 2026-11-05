@@ -1,0 +1,76 @@
+name: Component input projection packets
+on:
+  workflow_dispatch:
+    inputs:
+      base-sha:
+        description: Exact original source commit
+        required: true
+        type: string
+      head-sha:
+        description: Exact component input source commit
+        required: true
+        type: string
+permissions: { contents: read }
+concurrency:
+  group: component-input-packets-${{ github.run_id }}
+  cancel-in-progress: false
+jobs:
+  packets:
+    name: Complete default and legacy packets (${{ matrix.role }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix: { role: [base, head] }
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      SOURCE_SHA: ${{ matrix.role == 'base' && inputs.base-sha || inputs.head-sha }}
+      EVIDENCE: ${{ runner.temp }}/component-input-packets
+      INSTA_UPDATE: new
+      INSTA_FORCE_PASS: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - name: Bind the complete capture to its source and driver
+        env: { DRIVER_SHA: "${{ github.sha }}" }
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p "$EVIDENCE"
+          git rev-parse HEAD 'HEAD^{tree}' > "$EVIDENCE/source.txt"
+          printf '%s\n' "$DRIVER_SHA" > "$EVIDENCE/driver.txt"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: component-input-packets
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ matrix.role }}"
+      - name: Run both complete projection modes without accepting pending output
+        run: |
+          set -euo pipefail
+          default_status=0
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$EVIDENCE/default" \
+            cargo test --locked --profile ci -p vize_maestro --test davinci_ts40_projection -- --nocapture \
+            > "$EVIDENCE/default.stdout" 2> "$EVIDENCE/default.stderr" || default_status=$?
+          legacy_status=0
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$EVIDENCE/legacy" \
+            cargo test --locked --profile ci -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture \
+            > "$EVIDENCE/legacy.stdout" 2> "$EVIDENCE/legacy.stderr" || legacy_status=$?
+          printf '{"default":%s,"legacy":%s,"nativeConsumerAcceptance":false}\n' \
+            "$default_status" "$legacy_status" > "$EVIDENCE/status.json"
+          test "$default_status" = 0
+          test "$legacy_status" = 0
+      - name: Retain complete packets, original failures, and exact source identity
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: component-input-packets-${{ matrix.role }}-${{ env.SOURCE_SHA }}-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.EVIDENCE }}/
+            crates/vize_maestro/**/*.snap.new
