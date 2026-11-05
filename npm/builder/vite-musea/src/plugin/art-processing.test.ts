@@ -157,3 +157,46 @@ void test("reportArtStatusWarnings is a no-op when the native export is missing"
   reportArtStatusWarnings({}, "<art></art>", "button.art.vue", (message) => messages.push(message));
   assert.deepEqual(messages, []);
 });
+
+void test("inline Art retains the native custom-block index after another block", async () => {
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-inline-index-"));
+  const file = path.join(root, "Card.vue");
+  try {
+    await fs.promises.writeFile(
+      file,
+      `<script setup>const label = '<art title="script text" />';</script>
+<template><div>{{ label }}</div></template>
+<docs>Owned by another plugin.</docs>
+<art title="Registered" status="ready"><variant name="Default"><Self /></variant></art>`,
+    );
+    const art = await processMuseaArtFile(file, { root, command: "build" });
+    assert.ok(art);
+    assert.deepEqual(
+      {
+        isInline: art.isInline,
+        componentPath: art.componentPath,
+        inlineArtBlockIndex: art.inlineArtBlockIndex,
+        metadata: art.metadata,
+        variants: art.variants,
+      },
+      {
+        isInline: true,
+        componentPath: file,
+        inlineArtBlockIndex: 1,
+        metadata: {
+          title: "Registered",
+          description: undefined,
+          component: undefined,
+          category: undefined,
+          tags: [],
+          status: "ready",
+          order: undefined,
+          actionEvents: undefined,
+        },
+        variants: [{ name: "Default", template: "<Self />", isDefault: false, skipVrt: false }],
+      },
+    );
+  } finally {
+    await fs.promises.rm(root, { recursive: true, force: true });
+  }
+});
