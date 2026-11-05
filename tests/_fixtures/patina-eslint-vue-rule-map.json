@@ -896,8 +896,10 @@
       "status": "mapped"
     },
     "vue/no-ref-object-reactivity-loss": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-ref-object-reactivity-loss",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-required-prop-with-default": {
       "patinaPresets": [
@@ -2011,8 +2013,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 143,
-    "unimplemented": 107
+    "mapped": 144,
+    "unimplemented": 106
   },
   "upstream": {
     "package": "eslint-plugin-vue",

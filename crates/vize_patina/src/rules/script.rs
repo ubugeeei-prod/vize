@@ -42,6 +42,7 @@ mod no_page_meta_runtime_values;
 mod no_potential_component_option_typo;
 mod no_reactive_destructure;
 mod no_ref_as_operand;
+mod no_ref_object_reactivity_loss;
 mod no_reserved_identifiers;
 mod no_reserved_keys;
 mod no_restricted_globals;
