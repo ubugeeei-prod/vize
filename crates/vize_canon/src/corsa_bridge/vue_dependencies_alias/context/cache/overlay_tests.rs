@@ -100,9 +100,13 @@ fn unrelated_overlay_edits_refresh_the_sibling_without_rebuilding_the_host() {
                 .preparation_import_facts_snapshot(),
             expected
         );
-        assert!(reused.materialized_changes.changed.contains(&sibling_path));
-        assert!(reused.materialized_changes.created.is_empty());
-        assert!(reused.materialized_changes.deleted.is_empty());
+        assert_eq!(
+            reused.materialized_changes,
+            crate::batch::virtual_project::MaterializedFileDelta {
+                changed: vec![sibling_path.clone()],
+                ..Default::default()
+            }
+        );
         let updated = reused.source_catalog.get(&sibling_path).unwrap();
         assert_eq!(old_mapping.source.as_str(), OTHER);
         assert_eq!(updated.source.as_str(), edited);
@@ -450,8 +454,9 @@ fn reopening_a_retired_cached_host_restores_every_closed_dependency() {
     assert!(!child_path.exists());
     overlays.insert(workspace.host.clone(), HOST);
     let reopened = workspace.open(&workspace.host, HOST, &overlays, &[]);
-    assert!(reopened.materialized_changes.created.contains(&host_path));
-    assert!(reopened.materialized_changes.created.contains(&child_path));
+    let mut expected_created = vec![host_path, child_path.clone()];
+    expected_created.sort();
+    assert_eq!(reopened.materialized_changes.created, expected_created);
     let restored = reopened.source_catalog.get(&child_path).unwrap();
     assert_eq!(restored.source.as_str(), CHILD);
     assert_eq!(
@@ -585,6 +590,8 @@ fn workspace_implementations_keep_an_unchanged_tsx_root_when_a_vue_class_is_remo
         let initial = open(&workspace.host, CONTRACT, &overlays, &requested);
         let beta_path = initial.mirror_virtual_path(&beta).unwrap();
         let previous_beta = initial.source_catalog.get(&beta_path).unwrap();
+        let expected_config =
+            std::fs::read(initial.mirror.as_ref().unwrap().generated_tsconfig_path()).unwrap();
         drop(initial);
         let changed = ALPHA.replace("/* 😀 */", "/* 雪😀 changed */");
         let removed = "<script lang='ts'>\r\nimport type { Formatter } from './Host.vue'\r\nexport const removed = true\r\nexport default {}\r\n</script>\r\n<template><span /></template>";
@@ -623,13 +630,16 @@ fn workspace_implementations_keep_an_unchanged_tsx_root_when_a_vue_class_is_remo
                 == &crate::file_uri::path_to_file_uri(&beta_path)
                 && code == &previous_beta.code));
             let config =
-                std::fs::read_to_string(current.mirror.as_ref().unwrap().generated_tsconfig_path())
-                    .unwrap();
-            assert!(config.contains("Beta.tsx"), "{config}");
+                std::fs::read(current.mirror.as_ref().unwrap().generated_tsconfig_path()).unwrap();
+            assert_eq!(config, expected_config);
         }
         workspace.session.clear();
         let requested = [(workspace.other.clone(), removed), (beta.clone(), BETA)];
         let cold = open(&workspace.host, CONTRACT, &overlays, &requested);
         assert_eq!(last_native, native_documents(&cold));
+        assert_eq!(
+            std::fs::read(cold.mirror.as_ref().unwrap().generated_tsconfig_path()).unwrap(),
+            expected_config
+        );
     }
 }

@@ -105,6 +105,9 @@ jobs:
           git checkout --detach "$SOURCE_SHA"
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --porcelain --untracked-files=no)"
+      - uses: ./.github/actions/setup-rust-script
+      - name: Enforce exact assertions without adding allowlist or ratchet debt
+        run: node --test tests/tooling/davinci-assertion-lint.test.ts > "$OBSERVATION_ROOT/assertion-lint.stdout" 2> "$OBSERVATION_ROOT/assertion-lint.stderr"
       - name: Assert all cache, source map and lifecycle regressions at the literal candidate
         run: |
           set -euo pipefail
