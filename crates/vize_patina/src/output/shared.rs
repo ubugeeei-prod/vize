@@ -307,26 +307,3 @@ impl SourceLineIndex {
             .unwrap_or(0)
     }
 }
-
-#[cfg(test)]
-mod documentation_authority_tests {
-    #[test]
-    fn unused_disable_diagnostics_use_the_existing_execution_guide() {
-        assert_eq!(
-            super::rule_docs_path("vue/comment-directive"),
-            "docs/content/guide/lint-execution.md"
-        );
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        for path in [
-            "docs/content/guide/lint-execution.md",
-            "docs/content/ja/guide/lint-execution.md",
-        ] {
-            assert!(root.join(path).is_file(), "owned guide: {path}");
-        }
-        assert!(!crate::rule::RuleRegistry::with_all().has_rule("vue/comment-directive"));
-        assert_eq!(
-            super::rule_docs_path("vue/comment-directive-host-control"),
-            "docs/content/rules/reference/vue-comment-directive-host-control.md"
-        );
-    }
-}

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "pullRequest": 11629,
+  "nativeAcceptanceCredit": false,
+  "predecessor": {
+    "path": "successor-11629/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "743ee286b847f3010ca17ab10d0360c3a7e77bcf3cc69596cc8108caf9081e36"
+  },
+  "successor": {
+    "path": "successor-11629-2/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "78932eec9d5a6ca43a155d6b479b8cd72faa333bc7e67e8a4f4775f2deca5725"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 56,
+    "maestroGeneratedTextBytes": 56,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "qualification": {
+    "beforeSource": "727db3b16a8eb5151d326c73725d275498f9d54d",
+    "afterSource": "fd8b45e6da6ca95d75fa791613e93ced574089cc",
+    "run": 41997939487,
+    "beforeCompletePacketArtifact": 13400549452,
+    "afterCompletePacketArtifact": 13400688994,
+    "mode": "legacy-enabled",
+    "completePayloadInverse": "Exact JSX witness inversion, embedded generated map annotations, complete import maps and every probe, mapping, semantic link and authored hit; every other byte unchanged."
+  },
+  "supersedesReceipt": {
+    "path": "successor-11629-2/receipt.json",
+    "sha256": "85782da294ba5f59f1a173ccc28b4955fa801feb669cd0b7bfe77a95b4296129",
+    "reason": "The original shorthand applied the 56-byte TSX witness delta to Canon, but the mixed Vue 2 Canon projection remains byte-stable."
+  },
+  "scope": "The explicit legacy capture preserves the original immutable receipt while correcting its overbroad per-projection byte shorthand. Complete records prove a zero-byte Canon delta and 56-byte content-mapper and Maestro deltas; no native TypeScript consumer acceptance credit is granted."
+}

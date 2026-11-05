@@ -7,8 +7,8 @@ use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
     CONTENT_MAPPER_SPAN_FEATURES_ATOM, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
     CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperSpanKind, content_mapper_span_features,
-    generate_vue_content_mapper_transform,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperSpan, ContentMapperSpanKind,
+    content_mapper_span_features, generate_vue_content_mapper_transform,
 };
 use crate::batch::ContentMapperTransform;
 

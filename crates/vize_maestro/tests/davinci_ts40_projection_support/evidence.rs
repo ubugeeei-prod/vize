@@ -317,9 +317,17 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         let jsx_witness_successor = include_str!(
             "fixtures/public-instance-mixed-vue2/successor-11629-2/projection-record.txt"
         );
+        assert_eq!(
+            sha256(include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-11629-2/receipt.json"
+            )),
+            "85782da294ba5f59f1a173ccc28b4955fa801feb669cd0b7bfe77a95b4296129"
+        );
         authenticate_successor_receipt(
-            include_str!("fixtures/public-instance-mixed-vue2/successor-11629-2/receipt.json"),
-            "85782da294ba5f59f1a173ccc28b4955fa801feb669cd0b7bfe77a95b4296129",
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-11629-2/receipt-integrated.json"
+            ),
+            "2b8d918dc0a08559fbe155f5b67d1b54f84a6bf33ea3e1f33f7d3e1d0ad38545",
             11629,
             input_channels_successor,
             jsx_witness_successor,
