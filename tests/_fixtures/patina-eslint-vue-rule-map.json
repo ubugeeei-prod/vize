@@ -1796,8 +1796,10 @@
       "status": "mapped"
     },
     "vue/valid-model-definition": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/valid-model-definition",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/valid-next-tick": {
       "patinaPresets": [
@@ -2023,8 +2025,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 149,
-    "unimplemented": 101
+    "mapped": 150,
+    "unimplemented": 100
   },
   "upstream": {
     "package": "eslint-plugin-vue",
