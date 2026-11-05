@@ -2,7 +2,8 @@
 // new pinned differential input for each affected product. Native parity is not
 // judged here; it stays a report until native product adapters exist.
 import { execFileSync, spawnSync } from "node:child_process";
-import { checkCompilerCase, requirePinned } from "./compiler-fixture-contract.ts";
+import { createHash } from "node:crypto";
+import { checkCompilerCase as checkCompilerDomCase } from "./compiler-fixture-contract.ts";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
@@ -33,8 +34,9 @@ import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
 import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
+import { COMPILER_DOM_ID } from "../../../../tests/differential/compiler-dom.ts";
 
-import { checkCompilerCase } from "./compiler-project-fixture-contract.ts";
+import { checkCompilerCase as checkCompilerProjectCase } from "./compiler-project-fixture-contract.ts";
 
 import { enforced, failingProducts, formatSummary } from "./legacy-fix-fixture-report.ts";
 export {
@@ -234,6 +236,8 @@ function checkProduct(
         }
         if (product === "compiler") {
           if (root === undefined) throw new Error(`missing compiler input root: ${id}`);
+          const checkCompilerCase =
+            entry.id === COMPILER_DOM_ID ? checkCompilerDomCase : checkCompilerProjectCase;
           checkCompilerCase(entry, root, files, readFile);
         }
         return id;
