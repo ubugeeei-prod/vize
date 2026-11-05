@@ -1007,8 +1007,10 @@
       "status": "mapped"
     },
     "vue/no-setup-props-reactivity-loss": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-setup-props-reactivity-loss",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-shared-component-data": {
       "patinaPresets": [
@@ -2013,8 +2015,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 144,
-    "unimplemented": 106
+    "mapped": 145,
+    "unimplemented": 105
   },
   "upstream": {
     "package": "eslint-plugin-vue",
