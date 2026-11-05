@@ -57,6 +57,26 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  // #11913 changes only the static loose-arity producer. Recover the exact
+  // already reviewed resolver producer before entering its frozen custody chain.
+  if (
+    path === producers[0] &&
+    sha256(current) === "17fec691f4f92415b730dd4ce4d684056719c3045f31dc4b749e5c480aa2b771"
+  ) {
+    assert.equal(Buffer.byteLength(current), 18626, "selected emit gate producer successor");
+    const addition =
+      '    // A static component\'s loose sentinel means undeclared runtime arity,\n    // not a declared zero-argument event. Dynamic targets retain the empty\n    // contextual tuple; their contextless marker widens runtime args later.\n    let (loose_marker, loose_args) = if dynamic_component {\n        ("infer __L extends unknown[]", "__L")\n    } else {\n        ("unknown[]", "unknown[]")\n    };\n    append!(\n        *ts,\n        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: {loose_marker} }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n",\n';
+    assert.equal(current.split(addition).length, 2, "selected emit gate producer successor");
+    current = current.replace(
+      addition,
+      '    append!(\n        *ts,\n        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n",\n',
+    );
+    assert.equal(
+      sha256(current),
+      "f231db13ede1284c8aa291ccd67bec0c50f7e68a510a1969b83e8e6c1fa70186",
+      "selected emit gate producer successor",
+    );
+  }
   if (!producers.includes(path) || sha256(current) === expected) return current;
   const context = "selected emit gate producer successor";
   const raw = read(successorFixture);
