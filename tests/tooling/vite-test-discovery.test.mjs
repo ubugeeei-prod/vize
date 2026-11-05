@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "npm/builder/vite/package.json")));
 
-test("the actual Vite package command discovers new tests and preserves failures", () => {
+void test("the actual Vite package command discovers new tests and preserves failures", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-test-discovery-"));
   const records = path.join(directory, "observed.jsonl");
   try {
@@ -76,7 +76,9 @@ test(${JSON.stringify(file)}, () => {
     const expectFiles = (observed, files) => {
       assert.deepEqual(
         observed.slice(1).sort((left, right) => left.file.localeCompare(right.file)),
-        [...files].sort().map((file) => ({ phase: "test", file })),
+        [...files]
+          .sort((left, right) => left.localeCompare(right))
+          .map((file) => ({ phase: "test", file })),
       );
     };
     const initial = ["src/root.test.ts", "src/plugin/nested.test.ts", "src/vite-plus/task.test.ts"];
