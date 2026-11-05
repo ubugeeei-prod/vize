@@ -33,12 +33,17 @@ async function capture(directory: string, configuration: string) {
   const child = spawn(command[0], command.slice(1), { stdio: ["pipe", "pipe", "pipe"] });
   let error: string | null = null;
   const recordInput = (bytes: Buffer) => writeSync(input, bytes);
-  child.once("error", (cause) => {
-    error = cause.message;
-  });
-  child.stdin.on("error", (cause) => {
-    error = cause.message;
-  });
+  const fail = (cause: Error) => {
+    error ??= cause.message;
+    child.kill("SIGTERM");
+  };
+  child.once("error", fail);
+  child.stdin.on("error", fail);
+  process.stdin.on("error", fail);
+  child.stdout.on("error", fail);
+  child.stderr.on("error", fail);
+  process.stdout.on("error", fail);
+  process.stderr.on("error", fail);
   process.stdin.on("data", recordInput);
   child.stdout.on("data", (bytes: Buffer) => writeSync(output, bytes));
   child.stderr.on("data", (bytes: Buffer) => writeSync(errors, bytes));
