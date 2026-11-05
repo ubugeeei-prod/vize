@@ -40,23 +40,41 @@ assert.equal(
 const constructorSuccessor = JSON.parse(
   constructorReceipt.toString("utf8"),
 ) as ConstructorSuccessor;
+const buildConstructorReceipt = fs.readFileSync(
+  path.join(
+    repoRoot,
+    "tests/_fixtures/differential/typechecker/declaration-slot-export-own-instance/build-constructor-successor.json",
+  ),
+);
+assert.equal(
+  createHash("sha256").update(buildConstructorReceipt).digest("hex"),
+  "e309d8792cda10725f2c92f3e87e8c1b016516ae626dc3da07b483dc8cb5b22b",
+);
+const buildConstructorSuccessor = JSON.parse(
+  buildConstructorReceipt.toString("utf8"),
+) as ConstructorSuccessor;
+const constructorSuccessors = [constructorSuccessor, buildConstructorSuccessor];
 const identity = (bytes: Buffer): Identity => ({
   sha256: createHash("sha256").update(bytes).digest("hex"),
   bytes: bytes.length,
 });
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
 
-function constructorTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+function constructorTransition(
+  current: Buffer,
+  direction: "forward" | "inverse",
+  successor = constructorSuccessor,
+): Buffer {
   const [from, to] =
     direction === "forward" ? (["before", "after"] as const) : (["after", "before"] as const);
-  assert.deepEqual(identity(current), constructorSuccessor.output[from]);
-  const before = encoded(constructorSuccessor.edit[from]);
-  const after = encoded(constructorSuccessor.edit[to]);
+  assert.deepEqual(identity(current), successor.output[from]);
+  const before = encoded(successor.edit[from]);
+  const after = encoded(successor.edit[to]);
   const text = current.toString("utf8");
   assert.equal(text.split(before).length - 1, 1);
   assert.equal(text.split(after).length - 1, 0);
   const changed = Buffer.from(text.replace(before, after));
-  assert.deepEqual(identity(changed), constructorSuccessor.output[to]);
+  assert.deepEqual(identity(changed), successor.output[to]);
   return changed;
 }
 
@@ -89,6 +107,39 @@ test("the declaration constructor successor authenticates the whole source and b
     ]) {
       assert.notEqual(changed, text);
       assert.throws(() => constructorTransition(Buffer.from(changed), direction));
+    }
+  }
+});
+
+test("the build declaration constructor adds a reversible receipt without changing older packets", () => {
+  const { source, output, edit } = buildConstructorSuccessor;
+  assert.deepEqual(identity(fs.readFileSync(path.join(repoRoot, source.path))), {
+    sha256: source.sha256,
+    bytes: source.bytes,
+  });
+  const current = fs.readFileSync(path.join(repoRoot, output.path));
+  const previous = constructorTransition(current, "inverse", buildConstructorSuccessor);
+  assert.deepEqual(constructorTransition(previous, "forward", buildConstructorSuccessor), current);
+  for (const [bytes, direction, from, to] of [
+    [previous, "forward", edit.before, edit.after],
+    [current, "inverse", edit.after, edit.before],
+  ] as const) {
+    const text = bytes.toString("utf8"),
+      selected = encoded(from);
+    for (const changed of [
+      `${text}\n`,
+      text.replace(selected, ""),
+      `${text}${selected}`,
+      `${selected}${text.replace(selected, "")}`,
+      text.replace(selected, encoded(to)),
+      text.replace("count?: number", "count?: string"),
+      text.replace("Button.vue.d.ts", "Foreign.vue.d.ts"),
+      text.replace('"status": 0', '"status": 1'),
+    ]) {
+      assert.notEqual(changed, text);
+      assert.throws(() =>
+        constructorTransition(Buffer.from(changed), direction, buildConstructorSuccessor),
+      );
     }
   }
 });
@@ -177,10 +228,12 @@ for (const [name, digest, successorDigest] of originals) {
     const current = fs.readFileSync(path.join(snapshotRoot, `${name}.snap`));
     const original = historicalSnapshot(current, digest);
     const currentSlot = fs.readFileSync(path.join(snapshotRoot, `${name}_slot_reexport.snap`));
-    const predecessorSlot =
-      `${name}_slot_reexport.snap` === path.basename(constructorSuccessor.output.path)
-        ? constructorTransition(currentSlot, "inverse")
-        : currentSlot;
+    const constructor = constructorSuccessors.find(
+      (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
+    );
+    const predecessorSlot = constructor
+      ? constructorTransition(currentSlot, "inverse", constructor)
+      : currentSlot;
     const successor = historicalSnapshot(predecessorSlot, successorDigest);
     const before = "export type Slots = $Slots;";
     const after = "export type { $Slots as Slots };";
