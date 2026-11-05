@@ -166,7 +166,7 @@ export function createClassSourceInverse(
     const rule = "html/no-duplicate-class";
     for (const preset of ["happy_path", "ecosystem", "opinionated", "nuxt"]) {
       const names = table[preset];
-      assert.equal(names.filter((name) => name === rule).length, 1);
+      assert.equal(names.filter((name: string) => name === rule).length, 1);
       assert.equal(names[names.indexOf("html/require-datetime") + 1], rule);
       names.splice(names.indexOf(rule), 1);
       if (preset === "opinionated" || preset === "nuxt")
