@@ -1,0 +1,18 @@
+{
+  "run": "https://github.com/ubugeeei-prod/vize/actions/runs/41640196425",
+  "artifactId": 13234566048,
+  "sourceSha": "59b884200eaa00b2cebd50bcb62561a5c4d813f2",
+  "payloadSha256": "27f55cfe41bcf816ecc66e0f7a483b659eeedf49c37b1b223bb48a7f37b621a2",
+  "diagnosticFile": {
+    "diagnostics": [
+      "error:1:1 [TS2688] Cannot find type definition file for '../@n8n/design-system/src/shims-modules.d.ts'.\nThe file is in the program because:\nEntry point of type library '../@n8n/design-system/src/shims-modules.d.ts' specified in compilerOptions",
+      "error:1:1 [TS2688] Cannot find type definition file for 'unplugin-icons/types/vue'.\nThe file is in the program because:\nEntry point of type library 'unplugin-icons/types/vue' specified in compilerOptions",
+      "error:1:1 [TS2688] Cannot find type definition file for 'vite-svg-loader'.\nThe file is in the program because:\nEntry point of type library 'vite-svg-loader' specified in compilerOptions",
+      "error:1:1 [TS2688] Cannot find type definition file for 'vitest/globals'.\nThe file is in the program because:\nEntry point of type library 'vitest/globals' specified in compilerOptions",
+      "error:2:13 [TS6053] File '@n8n/typescript-config/tsconfig.frontend.json' not found."
+    ],
+    "file": "packages/frontend/editor-ui/tsconfig.json"
+  },
+  "requestedFileCount": 1369,
+  "checkedFileCount": 3362
+}

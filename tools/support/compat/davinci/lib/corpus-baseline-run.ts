@@ -17,6 +17,7 @@ import path from "node:path";
 import { asArray, asNumber, asRecord, at, isRecord } from "../../../json-value.ts";
 import type { JsonRecord } from "../../../json-value.ts";
 import type { CorpusRow } from "./corpus-baseline-artifact.ts";
+import { typecheckerRunStatus } from "../../fixtures/typechecker-qualification.ts";
 import { HASHED_FIELDS } from "./corpus-baseline-contract.ts";
 import { assertHydratedGitlinkFixtures } from "./corpus-hydration.ts";
 import { byKey } from "./ordering.ts";
@@ -223,6 +224,15 @@ function reduceRun(shardDir: string, projectId: string, run: JsonRecord): Corpus
       const detail = typeof failure === "string" ? failure : JSON.stringify(failure);
       throw new Error(`${projectId}/${tool} payload carries ${field}: ${detail}`);
     }
+  }
+  if (
+    tool === "typechecker" &&
+    typecheckerRunStatus(asNumber(payload.exitCode, "typechecker exit code"), payload.parsed) ===
+      "configuration"
+  ) {
+    throw new Error(
+      `${projectId}/${tool} payload cannot qualify semantic checking: unavailable project inputs`,
+    );
   }
   const hashedFields = Object.hasOwn(HASHED_FIELDS, tool) ? HASHED_FIELDS[tool] : undefined;
   if (hashedFields == null) throw new Error(`unsupported surface: ${tool}`);

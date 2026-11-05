@@ -1,5 +1,8 @@
 //! Shared implementation for the repository's Rust commands.
 pub mod common;
+pub mod fixtures {
+    pub mod typechecker_qualification;
+}
 pub mod editors {
     pub mod archive;
     pub mod e2e;
