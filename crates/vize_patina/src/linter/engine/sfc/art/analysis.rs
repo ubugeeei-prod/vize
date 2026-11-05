@@ -9,7 +9,11 @@ use vize_croquis::{Croquis, Drawer, DrawerOptions};
 use vize_l0::Allocator;
 use vize_relief::RootNode;
 
-pub(super) fn script_summary(linter: &Linter, descriptor: &SfcDescriptor<'_>) -> Croquis {
+pub(super) fn script_summary(
+    linter: &Linter,
+    descriptor: &SfcDescriptor<'_>,
+    scripts: &crate::linter::sfc_scripts::SfcScripts<'_>,
+) -> Croquis {
     let unused = linter.has_unused_bindings_demand();
     let allocator = Allocator::default();
     // An Art file can also own an ordinary template. Its reads participate in
@@ -22,10 +26,8 @@ pub(super) fn script_summary(linter: &Linter, descriptor: &SfcDescriptor<'_>) ->
     let root = parsed.as_ref().and_then(|(root, errors)| {
         (!Linter::has_fatal_template_parse_errors(errors)).then_some(root)
     });
-    let script_allocator = oxc_allocator::Allocator::default();
-    let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let mut summary =
-        super::super::super::analyze_descriptor_for_lint(&scripts, root, unused, false);
+        super::super::super::analyze_descriptor_for_lint(scripts, root, unused, false);
     if let Some(root) = root {
         let reads = v_for_source_reads(root);
         summary.unused_bindings.retain(|name| !reads.contains(name));

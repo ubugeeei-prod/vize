@@ -74,6 +74,37 @@ test("the current release delta does not silently move the frozen parity provide
   ]);
 });
 
+test("new configurable mappings retain their exact presets without claiming typed options", () => {
+  const additions = {
+    "vue/comment-directive": {
+      patinaPresets: ["ecosystem", "essential", "general-recommended", "nuxt", "opinionated"],
+      patinaRule: "vue/comment-directive",
+      patinaSeverity: "error",
+      status: "mapped",
+    },
+    "vue/match-component-file-name": {
+      patinaPresets: [],
+      patinaRule: "vue/match-component-file-name",
+      patinaSeverity: "warning",
+      status: "mapped",
+    },
+  };
+  for (const [upstreamRule, entry] of Object.entries(additions)) {
+    assert.deepEqual(ruleMap.entries[upstreamRule], entry, upstreamRule);
+    assert.ok(audit.configurableRules.includes(upstreamRule), upstreamRule);
+    assert.equal(
+      audit.mappedWithTypedOptions.some(([rule]: [string, string]) => rule === upstreamRule),
+      false,
+      `${upstreamRule} has no typed-option parity claim`,
+    );
+    assert.equal(
+      Object.hasOwn(schema.definitions.LintRuleOptions.properties, entry.patinaRule),
+      false,
+      `${entry.patinaRule} must not acquire an unaudited typed-option claim`,
+    );
+  }
+});
+
 test("every claimed mapped option is present in the public typed config schema", () => {
   const properties = schema.definitions.LintRuleOptions.properties;
   assert.equal(audit.mappedWithTypedOptions.length, audit.summary.mappedWithTypedOptions);

@@ -9,18 +9,22 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 
 プリセット列は、そのルールを有効にする最小のプリセットです。すべてのプリセットは各ルールのページに載っています。各プリセットの内容は[プリセット](../rules/index.md#プリセット)を参照してください。
 
-## Vue ルール (108)
+## Vue ルール (120)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | コンポーネントの prop 属性名を設定した形式に揃えます。 | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | テンプレートの属性を一定の順に並べます。 | `happy-path` |  |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | テンプレート内の診断抑制コメントを扱い、設定に応じて未使用のコメントを検出します。 | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | テンプレート内のコンポーネント名を指定した形式に揃えます。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-html-button-has-type"></span>[`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | button に有効な type を明示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | HTML で省略できる終了タグも明示するよう求めます。 | `happy-path` | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | HTML 属性値の引用符を揃えます。 | `happy-path` | ✓ |
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 要素の種類ごとに自己終了タグの形式を揃えます。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | JSX のタグで参照する変数を、コンポーネントの使用として扱います。 | `essential` |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 宣言したコンポーネント名をファイル名と一致させます。 | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | コンポーネント自身のテンプレートの複雑度を制限します。 | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | コンポーネント名を複数の単語で構成します。 | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | mustache 内の空白を揃えます。 | `happy-path` | ✓ |
@@ -28,6 +32,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | テンプレートに直接書かれた、国際化の対象となるテキストを検出します。 | — |  |
 | <span id="vue-no-boolean-attr-value"></span>[`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | HTML の真偽属性に不要な値を指定した箇所を検出します。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | v-html / v-text と子コンテンツを同時に指定する箇所を検出します。 | `essential` |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | Vue 2 の互換性のため、コンポーネントの v-model に独自の修飾子を使う箇所を検出します。 | — |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Vue 2 のパイプによるフィルター構文を検出します。 | `essential` |  |
 | <span id="vue-no-deprecated-functional-template"></span>[`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | SFC の template で削除済みの functional 属性を検出します。 | `essential` |  |
 | <span id="vue-no-deprecated-html-element-is"></span>[`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | 通常の HTML 要素で旧形式の is を使う箇所を検出します。 | `essential` |  |
@@ -53,9 +58,11 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | v-else がある条件分岐の否定条件を反転して読みやすくします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。 | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | CSS プリプロセッサーより標準の CSS を使う方針を示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 同じスコープで ref の値をコピーし、更新に追従しなくなる箇所を検出します。 | — |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 予約済みのコンポーネント名を検出します。 | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | テンプレートの単一ルートに v-if を指定する箇所を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | script の非標準の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | setup の props をコピーし、更新に追従しなくなる箇所を検出します。 | — |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | SFC ブロックの外部 src 指定を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 静的なインライン style 属性を検出します。 | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | v-for 用ではない template の key 指定を検出します。 | `essential` |  |
@@ -63,6 +70,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | テンプレート変数が外側の名前を隠す箇所を検出します。 | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | target=_blank の外部リンクに適切な rel を指定します。 | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | textarea 内の mustache を検出し、v-model の使用を勧めます。 | `essential` |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | beforeRouteEnter で未生成のインスタンスを this で参照する箇所を検出します。 | — |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | テンプレート内の未定義変数参照を検出します。 | — |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 危険なスキームを含む可能性がある URL 属性やバインディングを検出します。 | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | iframe に sandbox 属性を指定します。 | `happy-path` |  |
@@ -76,16 +84,19 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 文字列リテラルだけの不要な mustache を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-template-attributes"></span>[`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | template 要素の効果がない属性を検出します。 | `essential` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 文字列リテラルだけの不要な v-bind を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Vue 2 の互換性のため、template v-for の key を実体のある子に指定します。 | — |  |
 | <span id="vue-no-v-for-template-key-on-child"></span>[`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | template v-for の key を子ではなく template に指定します。 | `essential` |  |
 | <span id="vue-no-v-html"></span>[`vue/no-v-html`](./reference/vue-no-v-html.md) | XSS を防ぐため、v-html を使用した箇所に警告を出します。 | `essential` |  |
 | <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | v-text の代わりに mustache を使う方針を適用します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | コンポーネントでの v-text / v-html を検出します。 | `essential` |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | HTML の要素ごとのコンテンツモデルを検査します。 | `happy-path` |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 宣言する prop 名の形式を揃えます。 | `happy-path` |  |
 | <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | 動的 component 要素に :is を指定します。 | `essential` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 使用するコンポーネントを import または登録します。 | `opinionated` |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Options API のコンポーネントが公開するプロパティを expose で明示します。 | — |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | style に scoped を指定する方針を適用します。 | `happy-path` |  |
 | <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | transition の子要素に表示を切り替える条件を指定します。 | `essential` |  |
 | <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | v-for に安定した :key を指定します。 | `essential` |  |
@@ -102,6 +113,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | v-on の表記形式を揃えます。 | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | v-slot の表記形式を揃えます。 | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 有効な属性名を指定します。 | `essential` |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Vue 2 の model オプションに有効なキーを指定します。 | — |  |
 | <span id="vue-valid-template-root"></span>[`vue/valid-template-root`](./reference/vue-valid-template-root.md) | Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。 | `essential` |  |
 | <span id="vue-valid-v-bind"></span>[`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | v-bind の引数・値・修飾子を検査します。 | `essential` |  |
 | <span id="vue-valid-v-cloak"></span>[`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | v-cloak の引数・値・修飾子を検査します。 | `essential` |  |

@@ -114,7 +114,10 @@ mod tests {
     #[test]
     fn current_assets_and_preamble_reconstruct_only_the_runtime_prop_call_layer() {
         for file in &FILES {
-            let body = std::fs::read_to_string(support::repository().join(file.path)).unwrap();
+            let body = super::super::checker_augmentations::source_before(
+                file.path,
+                std::fs::read_to_string(support::repository().join(file.path)).unwrap(),
+            );
             assert_eq!(
                 source_before(file.path, body.clone()).replacen(file.before, file.after, 1),
                 body

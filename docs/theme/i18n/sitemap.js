@@ -44,7 +44,15 @@
   // pages only some locales have; each list must repeat the common paths.
   // `section` derives both from one ordered list: zh-CN, pt-BR and fr publish
   // every page except these.
+  // Operational failures belong beside lint execution, outside the configurable catalogue.
+  const operationalDiagnosticPaths = [
+    "/rules/reference/parser-template",
+    "/rules/reference/parser-sfc",
+    "/rules/reference/parser-jsx",
+    "/rules/reference/type-project-configuration",
+  ];
   const englishAndJapaneseOnly = new Set([
+    ...operationalDiagnosticPaths,
     "/guide/init",
     "/guide/vite-plus",
     "/guide/migration",
@@ -100,6 +108,7 @@
   sitemap.sectionPaths = (section, routes) =>
     section.paths ??
     routes
+      .filter((route) => !operationalDiagnosticPaths.includes(route))
       .filter((route) =>
         section.directory
           ? route.startsWith(section.directory)
@@ -140,6 +149,7 @@
       "/guide/comment-annotations",
       "/guide/cross-file-complexity",
       "/guide/oxlint",
+      ...operationalDiagnosticPaths,
     ]),
     section("formatter", [
       "/guide/formatter",

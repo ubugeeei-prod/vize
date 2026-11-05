@@ -135,7 +135,7 @@ impl VirtualProject {
     /// Sources registered since this project was created.
     #[cfg(test)]
     pub(crate) fn source_registrations(&self) -> usize {
-        self.incremental_source_nodes_rebuilt
+        self.source_registration_count
     }
 
     /// Original paths registered in this project, in deterministic order.

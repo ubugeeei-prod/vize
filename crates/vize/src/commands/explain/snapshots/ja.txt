@@ -3813,6 +3813,16 @@ vue/attribute-order · lint ルール
 
 ヒント:
   推奨される順序に属性を並び替えてください
+=== vue/comment-directive
+vue/comment-directive · lint ルール
+`<template>` 内のコメント指令に対応する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint ルール
 コンポーネントファイル名にPascalCaseまたはkebab-caseを強制する
@@ -3881,6 +3891,26 @@ button要素に明示的で有効なtypeを必須にする
 
 ヒント:
   '<button>' の type は既定で "submit" となり、囲っているフォームを送信します。明示的に type="button"、"submit"、"reset" のいずれかを指定してください。
+=== vue/html-end-tags
+vue/html-end-tags · lint ルール
+省略できる HTML 要素の終了タグを明示することを必須にする
+
+精度: complete
+対象: HTML conformance of native elements with static attributes in SFC templates
+重大度: 警告
+カテゴリー: strongly-recommended
+自動修正: あり
+ドキュメント: docs/content/rules/reference/vue-html-end-tags.md
+
+不正な例:
+  <ul><li>a</ul>
+  <p>hello
+
+正しい例:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint ルール
 HTML属性の引用符スタイルを強制する
@@ -3926,6 +3956,39 @@ vue/html-self-closing · lint ルール
 
 ヒント:
   セルフクロージング構文を使用してください
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint ルール
+JSX 要素名で参照する変数を使用済みとして扱う
+
+精度: complete
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+不正な例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+正しい例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
+=== vue/match-component-file-name
+vue/match-component-file-name · lint ルール
+コンポーネント名をファイル名と一致させることを必須にする
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-match-component-file-name.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint ルール
 コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける
@@ -4090,6 +4153,16 @@ v-htmlまたはv-text使用時に子コンテンツを禁止する
 
 ヒント:
   v-htmlまたはv-textを使用する場合、子コンテンツは無視されます。子コンテンツを削除してください
+=== vue/no-custom-modifiers-on-v-model
+vue/no-custom-modifiers-on-v-model · lint ルール
+コンポーネントで使う `v-model` の独自修飾子を禁止する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: 警告
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint ルール
 非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する
@@ -4619,6 +4692,16 @@ CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨す�
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-ref-object-reactivity-loss
+vue/no-ref-object-reactivity-loss · lint ルール
+同じスコープで ref の値をコピーすることを禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint ルール
 予約されたコンポーネント名を禁止する
@@ -4677,6 +4760,16 @@ vue/no-script-non-standard-lang · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-no-script-non-standard-lang.md
+=== vue/no-setup-props-reactivity-loss
+vue/no-setup-props-reactivity-loss · lint ルール
+リアクティビティを失う setup の props 参照を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint ルール
 SFC ブロックでの src 属性を非推奨とする
@@ -4792,6 +4885,16 @@ textareaでのマスタッシュ補間を禁止する
 
 ヒント:
   textareaではマスタッシュ補間の代わりにv-modelを使用してください
+=== vue/no-this-in-before-route-enter
+vue/no-this-in-before-route-enter · lint ルール
+`beforeRouteEnter` 内の `this` を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-this-in-before-route-enter.md
 === vue/no-undefined-refs
 vue/no-undefined-refs · lint ルール
 テンプレート内の未定義参照を禁止する
@@ -5073,6 +5176,26 @@ vue/no-useless-v-bind · lint ルール
 
 ヒント:
   バインディングを静的属性に置き換えてください（:foo='bar' ではなく foo=bar）。
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint ルール
+`<template v-for>` 上の `key` を禁止する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+不正な例:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+正しい例:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint ルール
 `<template v-for>`の子要素への`key`を禁止する
@@ -5198,6 +5321,16 @@ HTMLコンテンツモデルルールを強制
   - <a>と<button>は互いにネスト不可
   - <ul>/<ol>の直接の子は<li>のみ
   - <table>の直接の子は<thead>、<tbody>、<tfoot>、<tr>、<caption>のみ
+=== vue/prefer-prop-type-boolean-first
+vue/prefer-prop-type-boolean-first · lint ルール
+コンポーネントの props の型で `Boolean` を先頭に置くことを必須にする
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md
 === vue/prefer-props-shorthand
 vue/prefer-props-shorthand · lint ルール
 同名propsバインディングに省略構文を強制する
@@ -5311,6 +5444,16 @@ vue/require-component-registration · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-expose
+vue/require-expose · lint ルール
+`expose` を使って公開プロパティを宣言することを必須にする
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-require-expose.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint ルール
 styleブロックにscoped属性またはmodule属性を必須にする
@@ -5675,6 +5818,16 @@ vue/valid-attribute-name · lint ルール
 
 ヒント:
   属性名にスペース、引用符、>、/、=、制御文字を含めることはできません
+=== vue/valid-model-definition
+vue/valid-model-definition · lint ルール
+model オプションに有効なキーを指定することを必須にする
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint ルール
 Vue 3のフラグメントセマンティクスに対して有効な `<template>` ルートを強制する

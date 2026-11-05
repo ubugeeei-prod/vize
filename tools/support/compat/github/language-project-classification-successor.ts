@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 
 import { historicalClassificationConsumers } from "./language-project-classification-runtime.ts";
+import { historicalClassificationRegistration } from "./language-project-current-20261105.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const CLASSIFICATION_PRODUCER = "npm/typescript-plugin/language-service.cjs";
@@ -94,7 +95,9 @@ export function validateClassificationSuccessorRecord(
     "historical predecessor differs",
   );
   requireCustody(
-    digest(Buffer.from(JSON.stringify(historicalRow))) === predecessor.registrationSha256,
+    digest(
+      Buffer.from(JSON.stringify(historicalClassificationRegistration(rawRead, historicalRow))),
+    ) === predecessor.registrationSha256,
     "historical registration bytes differ",
   );
   const before = object(record.before, ["path", "sha256", "bytes", "gzip"]);

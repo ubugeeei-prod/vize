@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { historicalDemandedSfcSource } from "../../tools/support/compat/github/language-project-demanded-sfc-20261105.ts";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -173,4 +174,47 @@ void test("metadata instrumentation retains whole predecessor custody and refuse
       ),
     /unreviewed producer registration/,
   );
+});
+
+void test("lazy SFC source successors refuse missing, partial, duplicate, future and repinned producers", () => {
+  const record = JSON.parse(
+    read(
+      "head",
+      "tests/_fixtures/tooling/language-project-current-20261105/plugin-source-successor.json",
+    )!.toString("utf8"),
+  );
+  // Exercise this retained transition against its authenticated whole current
+  // producer. The demanded-SFC successor has separate live mutation controls.
+  const retained = (side: "base" | "head", file: string) =>
+    historicalDemandedSfcSource(read, side, file, read(side, file));
+  for (const entry of record.transitions) {
+    if (!entry.path.startsWith("npm/typescript-plugin/")) continue;
+    const source = entry.path;
+    const current = retained("head", source)!.toString("utf8");
+    const edit = entry.edits[0];
+    assert.equal(current.split(edit.after).length, 2);
+    for (const body of [
+      null,
+      Buffer.from(`// unregistered prefix\n${current}`),
+      Buffer.from(`${current}\n`),
+      Buffer.from(current.replace(edit.after, "")),
+      Buffer.from(current.replace(edit.after, `${edit.after}${edit.after}`)),
+      Buffer.from(current.replace(edit.after, edit.after.replace("const ", "let "))),
+    ]) {
+      if (body) assert.notDeepEqual(body, Buffer.from(current));
+      const altered = (side: "base" | "head", file: string) =>
+        side === "head" && file === source ? body : retained(side, file);
+      assert.throws(() => newLanguageProjectCases(undefined, rows, altered), {
+        message: `invalid language project case: missing or stale input: ${source}`,
+      });
+      if (!body) continue;
+      const repinned = copy();
+      const producer = repinned[0].tests.find((test: { source: string }) => test.source === source);
+      producer.sha256 = createHash("sha256").update(body).digest("hex");
+      assert.throws(
+        () => newLanguageProjectCases(undefined, repinned, altered),
+        /historical registration bytes differ/,
+      );
+    }
+  }
 });

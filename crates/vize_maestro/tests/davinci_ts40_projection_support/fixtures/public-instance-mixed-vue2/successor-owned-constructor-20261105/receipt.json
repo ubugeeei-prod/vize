@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pullRequest": 11919,
+  "predecessor": {
+    "path": "successor-11675-main-11863/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "48e67e34753e44fe483d1c8f1907209319388304bd1598a9c627c42ff644f822"
+  },
+  "successor": {
+    "path": "successor-owned-constructor-20261105/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "de349199246fc5ab13fe6ab8bcce501313af3a2b55bd0bfd7ac52d6c57949328"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 178,
+    "maestroGeneratedTextBytes": 121,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "capture": {
+    "runId": 41982401584,
+    "jobId": 127095457391,
+    "artifactId": 13394920505,
+    "artifactSha256": "8a8f2366b6df48c3ee114ec75669d9752b02d1604726002a4e8ccf96a6a6309b",
+    "artifact": "projection-import-geometry-legacy-51068a15905111560e90ca69aa611b7c5430f319-1",
+    "sourceRevision": "51068a15905111560e90ca69aa611b7c5430f319",
+    "pullRequestHead": "2cf455a4062b069d175afc0796fdcf5262952962",
+    "baseRevision": "bc91d1ee0186d4a11fe2ebd857f672016b06d451",
+    "observedLanes": ["canon", "content-mapper", "maestro"]
+  },
+  "scope": "Legacy-feature Vue 2 capture retains every Canon field. Moving public instance extras outside mapped owned props changes only the complete content-mapper and Maestro generated text identities. Exact constructor inverses recover the prior whole content-mapper source and every Maestro document and aggregate hash; mappings, diagnostics and authored hits remain byte-identical. The earlier custody and all successors remain unchanged."
+}

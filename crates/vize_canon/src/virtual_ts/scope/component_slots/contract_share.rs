@@ -107,13 +107,13 @@ fn component_key(share: &Share<'_>) -> String {
 
 fn fresh_name(type_name: &str, hoisted: &FxHashMap<String, String>) -> String {
     let base = cstr!("__{type_name}_slot_contract");
-    if hoisted.values().all(|name| name != &base) {
+    if hoisted.values().all(|name| name != base) {
         return base;
     }
     let mut nth = 2u32;
     loop {
         let name = cstr!("{base}_{nth}");
-        if hoisted.values().all(|existing| existing != &name) {
+        if hoisted.values().all(|existing| existing != name) {
             return name;
         }
         nth += 1;

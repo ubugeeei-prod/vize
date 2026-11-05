@@ -2,7 +2,6 @@
 
 const crypto = require("node:crypto");
 const path = require("node:path");
-const RELATIVE_SFC = /['"](\.[^'"\n]*\.(?:vue|art))['"]/g;
 
 function createSourceDocuments(
   info,
@@ -70,7 +69,7 @@ function createSourceDocuments(
 }
 
 // tsserver asks for every external SFC while a project loads. Generate only
-// the file a language-service request names, plus its direct relative imports.
+// the file a language-service request names and its resolved source dependencies.
 function createLazySfcScripts({
   ts,
   get,
@@ -79,11 +78,15 @@ function createLazySfcScripts({
   sourceDocuments,
   snapshots,
   isSfc,
+  getSnapshot,
   readFile,
-  readSource,
+  resolveImport,
+  changed,
+  openFiles,
   project,
 }) {
   const eager = new Set();
+  const imports = new Map();
   let updating = false;
   const configuration = () => {
     options();
@@ -118,25 +121,59 @@ function createLazySfcScripts({
     version: (name) => prepared(name)?.version,
     ensure(fileName) {
       if (typeof fileName !== "string" || updating) return;
-      const added = [];
-      if (isSfc(fileName) && mark(fileName)) added.push(fileName);
-      if (!/\.d\.ts$/i.test(fileName)) {
-        const source = isSfc(fileName) ? readSource(fileName) : readFile(fileName);
-        if (typeof source === "string") {
-          for (const match of source.matchAll(RELATIVE_SFC)) {
-            const resolved = path.resolve(path.dirname(fileName), match[1]);
-            if (mark(resolved)) added.push(resolved);
-          }
-        }
-      }
-      const stale = added.some((name) => {
-        const cached = snapshots.get(name);
-        return cached?.stubSnapshot && cached.configuration === undefined;
-      });
-      if (!stale) return;
       updating = true;
       try {
-        project?.updateGraph?.();
+        // References in an ordinary TS file also need the SFCs imported by
+        // open entrypoints. Unrequested external SFC roots remain excluded.
+        const pending = [fileName, ...openFiles()],
+          seen = new Set();
+        let promoted = false,
+          stale = false;
+        while (pending.length) {
+          const name = pending.pop(),
+            key = path.normalize(name);
+          // Global component declarations describe all project roots. Reading
+          // one is not a request to generate every declared component.
+          if (seen.has(key) || /\.d\.[cm]?ts$/i.test(name)) continue;
+          seen.add(key);
+          let source;
+          if (isSfc(name)) {
+            if (mark(name)) {
+              promoted = true;
+              const cached = snapshots.get(name);
+              stale ||= !!cached?.stubSnapshot && cached.configuration === undefined;
+            }
+            // The canonical projection owns which authored imports survive.
+            // Template text and quoted import-like strings are not dependencies.
+            source = get(name)?.projection?.text;
+          } else {
+            const snapshot = getSnapshot(name);
+            source = snapshot?.getText(0, snapshot.getLength()) ?? readFile(name);
+          }
+          if (typeof source !== "string") continue;
+          let scan = imports.get(key);
+          if (scan?.source !== source) {
+            scan = { source, files: ts.preProcessFile(source, true, true).importedFiles };
+            if (scan.files.length)
+              scan.file = ts.createSourceFile(
+                name,
+                source,
+                ts.ScriptTarget.Latest,
+                true,
+                ts.ScriptKind.TSX,
+              );
+            imports.set(key, scan);
+          }
+          for (const imported of scan.files) {
+            const resolved = resolveImport(imported, scan.file)?.resolvedFileName;
+            if (resolved && /\.(?:[cm]?[jt]sx?|vue|art)$/i.test(resolved)) pending.push(resolved);
+          }
+        }
+        // TypeScript skips all snapshot/version checks when the project version
+        // is unchanged. Promoting a cached stub is a real program change even
+        // when no authored source or tsserver project version changed.
+        if (promoted) changed();
+        if (stale) project?.updateGraph?.();
       } finally {
         updating = false;
       }

@@ -89,7 +89,7 @@ jobs:
             # Packet-only JSON leaves enter the existing cohort artifact; no project links.
             printf 'VIZE_JSX_ATTRIBUTE_PACKET_DIR=%s\n' "$GITHUB_WORKSPACE/target/nextest/$NEXTEST_PROFILE/jsx-attribute-packets/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$GITHUB_SHA" >> "$GITHUB_ENV"
           fi
-          if [[ "$COHORT" == "typechecker" || "$COHORT" == "language-server" ]]; then
+          if [[ "$COHORT" == "typechecker" || "$COHORT" == "language-server" || "$COHORT" == "vapor-compiler" ]]; then
             # Insta's CI default writes no pending observations. NewFile retains
             # actual .snap.new bytes while every mismatch still fails the test.
             test "${INSTA_FORCE_PASS:-0}" = "0"
@@ -169,6 +169,15 @@ jobs:
         with:
           name: pending-maestro-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: crates/vize_maestro/**/*.snap.new
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Retain genuine pending Vapor snapshot observations
+        # Pending observations never accept or hide the original failure.
+        if: ${{ failure() && matrix.cohort == 'vapor-compiler' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pending-vapor-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: crates/vize_atelier_vapor/**/*.snap.new
           if-no-files-found: ignore
           retention-days: 7
       - name: Preserve actual Rust build units and fresh timing HTML

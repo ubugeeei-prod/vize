@@ -179,7 +179,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, __EmitProps<Emits>> & $ComponentInputGuard<Props, __EmitProps<Emits>, $AuthoredProps>>;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, __EmitProps<Emits>> & $ComponentInputGuard<Props, __EmitProps<Emits>, $AuthoredProps>> & $ComponentPublicBase;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

@@ -2,6 +2,7 @@ import type { CodeExample, RuleExample, RuleExampleOptions } from "./types.ts";
 import { runtimeOverrides } from "./runtime-overrides.ts";
 import { verifiedOverrides } from "./verified-examples.ts";
 import { scopedOverrides } from "./scoped-examples.ts";
+import { catalogueAdditionExamples } from "./catalogue-addition-examples.ts";
 
 const vue = (source: string): CodeExample => ({ language: "vue", source });
 const template = (source: string) => vue(`<template>\n${source}\n</template>`);
@@ -15,6 +16,7 @@ const pair = (
 ): RuleExample => ({ bad, good, evidence, ...extra });
 
 export const overrides: Record<string, RuleExample> = {
+  ...catalogueAdditionExamples,
   ...scopedOverrides,
   ...verifiedOverrides,
   "css/prefer-nested-selectors": pair(

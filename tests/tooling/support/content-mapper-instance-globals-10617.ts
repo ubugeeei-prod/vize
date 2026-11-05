@@ -4,7 +4,6 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { withParenthesisDiagnosticMappings } from "./content-mapper-parenthesis-mappings-11675.ts";
 
 export type GlobalCase = {
   id: string;
@@ -209,7 +208,7 @@ export function assertErrorMappings(source: string, entry: GlobalCase, result: T
 export function assertWholeTransform(actual: Transform, expected: Transform) {
   assert.equal(
     JSON.stringify(actual),
-    JSON.stringify(withParenthesisDiagnosticMappings(expected)),
+    JSON.stringify(expected),
     "complete generated text, mapping order, directives and all opaque fields",
   );
 }
@@ -225,7 +224,7 @@ const hasUnusedExpects = (result: Transform) =>
     ?.unusedExpectDirectiveDiagnostics?.length ?? 0) > 0;
 
 export function fullPacketMutations(golden: Transform, foreign: Transform) {
-  const current = withParenthesisDiagnosticMappings(golden);
+  const current = structuredClone(golden);
   assertWholeTransform(current, golden);
   const changes: Array<(copy: Transform) => void> = [
     (copy) => {
@@ -286,7 +285,7 @@ export function fullPacketMutations(golden: Transform, foreign: Transform) {
     );
     assert.throws(() => assertWholeTransform(copy, golden));
   }
-  const currentForeign = withParenthesisDiagnosticMappings(foreign);
+  const currentForeign = structuredClone(foreign);
   assert.notEqual(JSON.stringify(currentForeign), JSON.stringify(current));
   assert.throws(
     () => assertWholeTransform(currentForeign, golden),

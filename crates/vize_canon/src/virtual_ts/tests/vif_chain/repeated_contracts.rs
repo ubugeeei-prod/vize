@@ -205,6 +205,10 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
 }
 
 #[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records complete prop projections and every mapping field"
+)]
 fn repeated_prop_value_type_is_emitted_once() {
     let script = "import MyChild from './MyChild.vue'\nconst first = 'first'\nconst second = 'second'\nconst extra = 1\n";
     let template = "<div><MyChild :label=\"first\" /><MyChild :label=\"second\" /><MyChild :label=\"() => extra\" /></div>";
@@ -217,6 +221,7 @@ fn repeated_prop_value_type_is_emitted_once() {
         })
         .collect::<Vec<_>>();
     let mut anchors = Vec::new();
+    let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
         let prop_value = if hoist {
@@ -233,10 +238,15 @@ fn repeated_prop_value_type_is_emitted_once() {
             "one component emits the prop value type once; hoist={hoist}: {}",
             output.code
         );
-        assert!(
+        assert_eq!(
             output
                 .code
-                .contains("type __MyChild_1_prop_label = __MyChild_0_prop_label;"),
+                .lines()
+                .filter(
+                    |line| line.trim() == "type __MyChild_1_prop_label = __MyChild_0_prop_label;"
+                )
+                .count(),
+            1,
             "the second static use aliases the shared prop type; hoist={hoist}: {}",
             output.code
         );
@@ -245,17 +255,27 @@ fn repeated_prop_value_type_is_emitted_once() {
         } else {
             "$CallableProp<"
         };
-        assert!(
+        let callable_alias =
+            cstr!("type __MyChild_2_prop_label = {callable}__MyChild_0_prop_label>;");
+        assert_eq!(
             output
                 .code
-                .contains(cstr!("type __MyChild_2_prop_label = {callable}").as_str()),
+                .lines()
+                .filter(|line| line.trim() == callable_alias.as_str())
+                .count(),
+            1,
             "an inline callback keeps its own wrapper; hoist={hoist}: {}",
             output.code
         );
-        assert!(
-            !output
+        assert_eq!(
+            output
                 .code
-                .contains("type __MyChild_2_prop_label = __MyChild_0_prop_label;"),
+                .lines()
+                .filter(
+                    |line| line.trim() == "type __MyChild_2_prop_label = __MyChild_0_prop_label;"
+                )
+                .count(),
+            0,
             "a callback must not reuse the static prop type; hoist={hoist}: {}",
             output.code
         );
@@ -304,10 +324,16 @@ fn repeated_prop_value_type_is_emitted_once() {
         } else {
             assert_eq!(anchors, found, "hoisting must not move diagnostic anchors");
         }
+        outputs.push((hoist, output));
     }
+    insta::assert_debug_snapshot!("repeated_prop_value_projection", outputs);
 }
 
 #[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records complete emit projections and every mapping field"
+)]
 fn repeated_emit_resolver_is_emitted_once() {
     let script = "import KeyPad from './KeyPad.vue'\nconst kind = 'k0'\nconst a0 = 'a0'\nconst b0 = 'b0'\nconst a1 = 'a1'\nconst b1 = 'b1'\nconst onPress = (key: string) => key\n";
     let template = "<div><template v-if=\"kind === 'k0'\"><KeyPad :label=\"a0\" @press=\"onPress\" /><KeyPad :label=\"b0\" @press=\"onPress\" /></template><template v-else-if=\"kind === 'k1'\"><KeyPad :label=\"a1\" @press=\"onPress\" /><KeyPad :label=\"b1\" @press=\"onPress\" /></template></div>";
@@ -328,6 +354,7 @@ fn repeated_emit_resolver_is_emitted_once() {
         })
         .collect::<Vec<_>>();
     let mut anchors = Vec::new();
+    let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
         let factory = if hoist {
@@ -352,8 +379,13 @@ fn repeated_emit_resolver_is_emitted_once() {
         );
         for idx in 0..4 {
             let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_emit_resolver;");
-            assert!(
-                output.code.contains(alias.as_str()),
+            assert_eq!(
+                output
+                    .code
+                    .lines()
+                    .filter(|line| line.trim() == alias.as_str())
+                    .count(),
+                1,
                 "use {idx} aliases the first resolver; hoist={hoist}: {}",
                 output.code
             );
@@ -409,7 +441,9 @@ fn repeated_emit_resolver_is_emitted_once() {
         } else {
             assert_eq!(anchors, found, "hoisting must not move diagnostic anchors");
         }
+        outputs.push((hoist, output));
     }
+    insta::assert_debug_snapshot!("repeated_emit_resolver_projection", outputs);
 }
 
 fn label_name_ranges(template: &str) -> Vec<std::ops::Range<usize>> {

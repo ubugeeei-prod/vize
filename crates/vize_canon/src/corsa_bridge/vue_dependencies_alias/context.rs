@@ -9,9 +9,9 @@ use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 
 mod build;
 mod cache;
+use cache::ContextFingerprint;
 pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
-use cache::ContextFingerprint;
 mod namespace;
 mod prebuild;
 mod prepare;

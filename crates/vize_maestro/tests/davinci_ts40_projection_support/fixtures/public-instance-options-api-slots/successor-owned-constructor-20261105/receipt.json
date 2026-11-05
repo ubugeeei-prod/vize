@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "pullRequest": 11919,
+  "predecessor": {
+    "path": "successor-11675-main-11863/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "64fef1d5892867f04a90b1b7ddb0fad3864153aa92b53d757afd5f992eb26fdd"
+  },
+  "successor": {
+    "path": "successor-owned-constructor-20261105/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "6496191943ec3a16c44b1c50f15423bfc9a41f7aa9dfd572f39c32b10a9024fa"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 121,
+    "contentMapperGeneratedTextBytes": 178,
+    "maestroGeneratedTextBytes": 121,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "capture": {
+    "run": 41978661951,
+    "job": 127083863577,
+    "artifact": "rust-test-cohort-language-server-41978661951-1",
+    "sourceRevision": "9deea2e9dc9491ef3c1da8faa1660099ee09c32a",
+    "testedMerge": "3104173bb6d60bac0df0b71742b0e694c967ab5c"
+  },
+  "scope": "Move public instance extras outside mapped owned props. Inverting the exact constructor rewrite recovers all prior whole producer hashes; mapping, diagnostics, and authored hits remain exact. The earlier custody and all successors remain byte-identical."
+}

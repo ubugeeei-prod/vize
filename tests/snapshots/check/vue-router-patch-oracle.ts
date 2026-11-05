@@ -8,10 +8,10 @@ import { pathToFileURL } from "node:url";
 
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
-  assertRouterImportedPropsSuccessor,
-  importedRouterProps,
-  routerImportedPropsSuccessor,
-} from "../../_helpers/vue-router-imported-props-successor.ts";
+  assertAuthoredPieceCompilerSuccessor,
+  authoredPieceRouterProps,
+  authoredPieceCompilerSuccessor,
+} from "../../_helpers/compiler-authored-piece-successors.ts";
 import {
   assertFailedBuild,
   type BuildResult,
@@ -100,7 +100,7 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       const cleanSecond = runBuild(fixture.workspaceDir, ".vize-compiler-clean-second");
       assertSuccessfulBuild(cleanFirst);
       assertSuccessfulBuild(cleanSecond);
-      assertRouterImportedPropsSuccessor("vue-router-clean", cleanFirst.outputText, {
+      assertAuthoredPieceCompilerSuccessor("vue-router-clean", cleanFirst.outputText, {
         packetSha256: cleanOutputSha256,
         codeSha256: cleanCodeSha256,
       });
@@ -131,15 +131,15 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
           warnings: [],
         },
       );
-      assert.equal(output.code, routerImportedPropsSuccessor("vue-router-clean").output.code);
+      assert.equal(output.code, authoredPieceCompilerSuccessor("vue-router-clean").output.code);
       assertParsesAsModule(output.code, "vue-router AppLink.json#code");
       for (const expected of [
         "renderSlot as _renderSlot, mergeProps as _mergeProps",
-        '__name: "AppLink"',
-        importedRouterProps,
+        "__name: 'AppLink'",
+        authoredPieceRouterProps,
         "href: String(__props.to)",
         "href: _unref(href)",
-        "onClick: _cache[0] || (_cache[0] = (...args) => _unref(navigate) && _unref(navigate)(...args))",
+        "onClick: _cache[0] || (_cache[0] = (...args) => (_unref(navigate) && _unref(navigate)(...args)))",
       ]) {
         assert.equal(count(output.code, expected), 1, `${expected}\n${output.code}`);
       }
@@ -455,7 +455,7 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assertRouterImportedPropsSuccessor("vue-router-broken", compiler.outputText, {
+  assertAuthoredPieceCompilerSuccessor("vue-router-broken", compiler.outputText, {
     packetSha256: brokenOutputSha256,
     codeSha256: brokenCodeSha256,
   });
@@ -479,7 +479,10 @@ function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): 
       warnings: [],
     },
   );
-  assert.equal(compiler.output.code, routerImportedPropsSuccessor("vue-router-broken").output.code);
+  assert.equal(
+    compiler.output.code,
+    authoredPieceCompilerSuccessor("vue-router-broken").output.code,
+  );
   assertParsesAsModule(compiler.output.code, "broken vue-router AppLink.json#code");
   assert.equal(compiler.output.code.includes("_createElementBlock"), false, compiler.output.code);
   assert.equal(count(compiler.output.code, "return {"), 1, compiler.output.code);

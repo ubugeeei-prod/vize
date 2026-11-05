@@ -29,6 +29,8 @@ import { ruleGroups } from "../../docs/scripts/rules/rule-groups.ts";
 import { ruleHeadings } from "../../docs/scripts/rules/rule-page.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
+import { isOperationalDiagnosticReference } from "../../docs/scripts/rules/operational-diagnostics.ts";
+import { rustMetadataString } from "../../docs/scripts/rules/rust-metadata.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
@@ -40,10 +42,11 @@ function implementations(directory = "crates/vize_patina/src/rules") {
     if (entry.isDirectory() && entry.name !== "snapshots") {
       for (const name of implementations(path)) found.add(name);
     } else if (entry.isFile() && entry.name.endsWith(".rs")) {
-      for (const meta of read(path).matchAll(
+      const source = read(path);
+      for (const meta of source.matchAll(
         /static\s+[A-Z_]*META[A-Z_]*\s*:\s*(?:RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*=\s*\w+\s*\{([\s\S]*?)\n\};/g,
       )) {
-        const name = meta[1].match(/name:\s*"([^"]+)"/)?.[1];
+        const name = rustMetadataString(meta[1], "name", source);
         if (name) found.add(name);
       }
     }
@@ -79,7 +82,7 @@ const projectLayout: Record<(typeof locales)[number], readonly [string, string, 
 
 await test("every implemented rule has one readable page per locale with the executed examples inline", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
-  assert.equal(names.length, 267);
+  assert.equal(names.length, 279);
   for (const locale of locales) {
     const { bad, good } = ruleHeadings[locale];
     for (const name of names) {
@@ -135,9 +138,12 @@ await test("Good scripts and illustrative Bad sources have valid module grammar 
   for (const { file, language, source: example } of validatedExamples()) {
     const sources =
       language === "ts"
-        ? [example]
-        : [...example.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-    for (const source of sources) {
+        ? [{ source: example, jsx: false }]
+        : [...example.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map((match) => ({
+            source: match[2],
+            jsx: /\blang=["'](?:jsx|tsx)["']/.test(match[1]),
+          }));
+    for (const { source, jsx } of sources) {
       scripts += 1;
       assert.doesNotThrow(
         () =>
@@ -146,7 +152,7 @@ await test("Good scripts and illustrative Bad sources have valid module grammar 
             sourceType: "module",
             configFile: false,
             babelrc: false,
-            plugins: [tsSyntax],
+            plugins: [jsx ? [tsSyntax, { isTSX: true }] : tsSyntax],
           }),
         file,
       );
@@ -170,26 +176,28 @@ await test("Good Vue scripts and illustrative Bad sources have valid compiler-ma
 
 function validatedExamples() {
   return ["reference", "project"].flatMap((section) =>
-    readdirSync(resolve(root, `docs/content/rules/${section}`)).flatMap((file) => {
-      const source = read(`docs/content/rules/${section}/${file}`);
-      const parts = [source.split("## Good\n")[1].split("\n## ")[0]];
-      if (source.includes("Example qualification: `illustrative-source-pair`")) {
-        // This input explains a retained graph contract, not an emitted CLI finding.
-        // Validate its complete shared context and Bad source as well as Good.
-        assert.equal(file, "vize-croquis-cf-circular-reactive-dependency.md");
-        parts.push(
-          source.split("## Bad\n")[1].split("## Good\n")[0],
-          source.split("## Shared project files\n")[1].split("## Bad\n")[0],
+    readdirSync(resolve(root, `docs/content/rules/${section}`))
+      .filter((file) => section !== "reference" || !isOperationalDiagnosticReference(file))
+      .flatMap((file) => {
+        const source = read(`docs/content/rules/${section}/${file}`);
+        const parts = [source.split("## Good\n")[1].split("\n## ")[0]];
+        if (source.includes("Example qualification: `illustrative-source-pair`")) {
+          // This input explains a retained graph contract, not an emitted CLI finding.
+          // Validate its complete shared context and Bad source as well as Good.
+          assert.equal(file, "vize-croquis-cf-circular-reactive-dependency.md");
+          parts.push(
+            source.split("## Bad\n")[1].split("## Good\n")[0],
+            source.split("## Shared project files\n")[1].split("## Bad\n")[0],
+          );
+        }
+        return parts.flatMap((part) =>
+          [...part.matchAll(/```(vue|ts|html)(?: [^\n]*)?\n([\s\S]*?)\n```/g)].map((match) => ({
+            file: `${section}/${file}`,
+            language: match[1],
+            source: match[2],
+          })),
         );
-      }
-      return parts.flatMap((part) =>
-        [...part.matchAll(/```(vue|ts|html)(?: [^\n]*)?\n([\s\S]*?)\n```/g)].map((match) => ({
-          file: `${section}/${file}`,
-          language: match[1],
-          source: match[2],
-        })),
-      );
-    }),
+      }),
   );
 }
 
@@ -205,8 +213,8 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
       Object.keys(inventory.entries).sort((a, b) => a.localeCompare(b)),
     );
     assert.match(page, /252/);
-    assert.match(page, /111/);
-    assert.match(page, /139/);
+    assert.match(page, /99/);
+    assert.match(page, /151/);
     assert.match(page, /component-definition-name-casing/);
     assert.match(page, /```ts annotate="remove:1,2;add:3,4,5,6"/);
     assert.match(page, /^ import vue/m);

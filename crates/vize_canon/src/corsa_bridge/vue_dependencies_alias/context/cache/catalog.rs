@@ -49,8 +49,14 @@ impl SessionCache {
         root: &Path,
         overlay_identity: u64,
         sources: Vec<CorsaMaterializedSource>,
+        preserves_dependency_graph: bool,
     ) -> CorsaSourceCatalog {
-        if !self.project_revision_is_current(root, overlay_identity) {
+        // A validated host-only patch supplies only its changed sources. Keep
+        // the prior catalog's closed dependencies until retain_live_files prunes
+        // against the complete current mirror; rebuilding from the patch alone
+        // loses them from later queries through another open host.
+        if !preserves_dependency_graph && !self.project_revision_is_current(root, overlay_identity)
+        {
             self.project_catalogs
                 .insert(root.to_path_buf(), CorsaSourceCatalog::default());
         }

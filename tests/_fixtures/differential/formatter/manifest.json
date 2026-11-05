@@ -2542,6 +2542,127 @@
       ]
     },
     {
+      "id": "formatter/sfc/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "qualification-20261105",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "530b4514647be6befaecb50b4b3ca873ca9b34b1e3129fcec9fafceb880ee28a",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "8c83f43291eeec881a47e42ffcc34c85faf5e050",
+            "role": "native admission boundary",
+            "paths": [
+              "crates/vize_glyph/src/native_doc/directive.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "8c83f43291eeec881a47e42ffcc34c85faf5e050",
+            "path": "crates/vize_glyph/tests/native_template_full.rs",
+            "symbol": "malformed_or_recovered_heads_keep_original_parse_observations_on_refusal"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/native_template_full.rs",
+          "symbol": "malformed_or_recovered_heads_keep_original_parse_observations_on_refusal",
+          "executor": "rust-test",
+          "asserts": [
+            "full-source-custody",
+            "precise-native-refusal"
+          ],
+          "limitations": [
+            "Generic formatter comparison preserves existing legacy full output; native document refusal is checked by the Rust witness and earns no whole-product native credit."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "css-scoped"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI adapter registered. Captured baseline uses independently identified Release candidate; branch CI execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "qualification-20261105/reference.expected.txt",
+              "sha256": "92a79ff4f0c94feb23c3b16b7f69eebca6658324495a8bc9b74f9e911858782e",
+              "role": "existing-test-reference",
+              "provenance": {
+                "revision": "6c1d71493990c76d40f8bf1a2b8825040e59e2d9",
+                "release": "v0.691.0",
+                "assertion": "Complete published fmt --no-config --write bytes, reviewed against unchanged opaque head; candidate source Actions still required."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; CLI raw logs retained separately"
+          ],
+          "baselineRevision": "6c1d71493990c76d40f8bf1a2b8825040e59e2d9"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/safe-mixed-text-wrap",
       "state": "active",
       "targets": [

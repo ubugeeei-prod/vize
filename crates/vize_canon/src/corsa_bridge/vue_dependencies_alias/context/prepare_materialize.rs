@@ -50,6 +50,7 @@ pub(super) fn materialize_cached_revision(
         mirror.virtual_root(),
         fingerprint.overlay_identity(),
         sources,
+        narrow,
     );
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let revision = RevisionKey::new(source_path.clone(), fingerprint);

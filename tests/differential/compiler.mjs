@@ -25,6 +25,7 @@ import {
   loadDialectInput,
 } from "./compiler-dialect.ts";
 import { closedSetupReference } from "../tooling/support/script-setup-default-expose.ts";
+import { currentCompilerModuleReference } from "./compiler-module-reference.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -121,8 +122,12 @@ export function loadCompilerManifest(manifestPath) {
       // Authenticate the original reference before applying the reviewed
       // closed-by-default setup contract. Candidate bytes remain untouched.
       const expected = Buffer.from(
-        closedSetupReference({ code: archivedExpected.toString("utf8") }, input.toString("utf8"))
-          .code,
+        closedSetupReference(
+          {
+            code: currentCompilerModuleReference(root, fixture, archivedExpected).toString("utf8"),
+          },
+          input.toString("utf8"),
+        ).code,
       );
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {

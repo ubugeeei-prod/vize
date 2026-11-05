@@ -169,6 +169,14 @@ try {
     ],
   });
   await client.send("open", { file: main, fileContent: mainText }, false);
+  // Demand component types from TypeScript before any SFC hover/open can
+  // materialize them. Later opening those SFCs must preserve the whole packet.
+  const coldTsDiagnostics = await request<Diagnostic[]>(
+    "cold-ts-diagnostics",
+    "semanticDiagnosticsSync",
+    main,
+    mainText,
+  );
   await client.send("open", { file: vue, fileContent: vueText, scriptKindName: "TS" }, false);
   await client.send("open", { file: art, fileContent: artText, scriptKindName: "TS" }, false);
   const classificationQualification = await checkPackedClassifications(
@@ -262,6 +270,7 @@ try {
     main,
     mainText,
   );
+  assert.deepEqual(tsDiagnostics.body, coldTsDiagnostics.body);
   assert(
     tsDiagnostics.body.some((entry) => entry.code === 2307 && entry.text.includes("Missing.vue")),
     JSON.stringify(tsDiagnostics),

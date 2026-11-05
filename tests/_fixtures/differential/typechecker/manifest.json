@@ -9629,133 +9629,6 @@
       }
     },
     {
-      "id": "typechecker/regression/capture-free-component-instance-11699",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "capture-free-component-instance-11699/Capture.vue.txt",
-          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/authored.ts.txt",
-          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
-          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/render.ts.txt",
-          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
-          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/component-v-model-once-11655",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "component-v-model-once-11655/Component.vue.txt",
-          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-v-model-once-11655/Native.vue.txt",
-          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-v-model-once-11655/SlotContent.vue.txt",
-          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/strict-v-model-mapper-11643",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "strict-v-model-mapper-11643/KitField.vue.txt",
-          "sha256": "a136df6e638a79824947d5310d7c855b14244106a649e6861434be2d490a89a4",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "strict-v-model-mapper-11643/MissingTarget.vue.txt",
-          "sha256": "ab64eee13ec4fc635f052ef90eb27510aec20b35e3ad9adc069c373d41811c2a",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "strict-v-model-mapper-11643/Page.vue.txt",
-          "sha256": "7d784542c3f5b48883bcb90354d0dd167ed8e6c6737c418a0a9c707bb430c491",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper_config::strict_v_model_tests (strict_templates_checks_the_model_write_back, strict_v_model_overrides_strict_templates, default_options_leave_the_model_write_back_unchecked, write_back_owns_the_bound_target_diagnostics); #11643 the content mapper honors strictVModel and its strictTemplates fallback as vize check does, so a v-model update payload that does not fit the bound target is reported, and the write-back owns the target diagnostics so the props literal copy adds no duplicate. Input-only registration, no diagnostic pack."
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
       "state": "active",
       "targets": [
@@ -12454,6 +12327,55 @@
       }
     },
     {
+      "id": "typechecker/regression/capture-free-component-instance-11699",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "capture-free-component-instance-11699/Capture.vue.txt",
+          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/authored.ts.txt",
+          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
+          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/render.ts.txt",
+          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/cold-package-shadow-routes-11265",
       "state": "active",
       "targets": [
@@ -12522,6 +12444,45 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::component_listener_narrowing_11730::component_listener_branches_keep_narrowing_and_authored_body_errors; reported source/config physically consumed with wrong-member and wrong-payload controls. Input-only registration; original Windows/runtime qualification remains separate."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-v-model-once-11655",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-v-model-once-11655/Component.vue.txt",
+          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/Native.vue.txt",
+          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/SlotContent.vue.txt",
+          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
           }
         ]
       }
@@ -13610,6 +13571,40 @@
       }
     },
     {
+      "id": "typechecker/regression/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "qualification-20261105/Child.vue.txt",
+          "sha256": "6e17ae91abb655765e75ec91a7b9e9327ff0ad9c3925658329ae4ad7457464e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "qualification-20261105/Repeated.vue.txt",
+          "sha256": "c014b7aba0a868e17e49cab607764c7d3381af605cb720b7f9ea2c7ed354d297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; vue_document::build::tests::native_union checks exact closed dependency membership after edits; input registration is not native acceptance."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/recovered-attribute-boundary-11731",
       "state": "active",
       "targets": [
@@ -14214,6 +14209,45 @@
               "ts"
             ],
             "selector": "tests/tooling/lsp-script-syntax-prompt.test.ts::an unrelated edit retains a semantic TS1xxx diagnostic in the prompt; actual native7.0.2 TS1355 retention and repair through Canon diagnostic provenance, plus vize check full TS1355/repair control. Planned batch input registration, no historical diagnostic pack or backend parity qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/strict-v-model-mapper-11643",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "strict-v-model-mapper-11643/KitField.vue.txt",
+          "sha256": "a136df6e638a79824947d5310d7c855b14244106a649e6861434be2d490a89a4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/MissingTarget.vue.txt",
+          "sha256": "ab64eee13ec4fc635f052ef90eb27510aec20b35e3ad9adc069c373d41811c2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/Page.vue.txt",
+          "sha256": "7d784542c3f5b48883bcb90354d0dd167ed8e6c6737c418a0a9c707bb430c491",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_config::strict_v_model_tests (strict_templates_checks_the_model_write_back, strict_v_model_overrides_strict_templates, default_options_leave_the_model_write_back_unchecked, write_back_owns_the_bound_target_diagnostics); #11643 the content mapper honors strictVModel and its strictTemplates fallback as vize check does, so a v-model update payload that does not fit the bound target is reported, and the write-back owns the target diagnostics so the props literal copy adds no duplicate. Input-only registration, no diagnostic pack."
           }
         ]
       }

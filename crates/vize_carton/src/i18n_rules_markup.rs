@@ -32,6 +32,78 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
 /// `(key, en, ja, zh)`.
 static ENTRIES: &[(&str, &str, &str, &str)] = &[
     (
+        "vue/comment-directive.description",
+        "Support comment directives in `<template>`",
+        "`<template>` 内のコメント指令に対応する",
+        "支持 `<template>` 中的注释指令",
+    ),
+    (
+        "vue/html-end-tags.description",
+        "Require end tags on HTML elements that may omit them",
+        "省略できる HTML 要素の終了タグを明示することを必須にする",
+        "要求为允许省略结束标签的 HTML 元素显式编写结束标签",
+    ),
+    (
+        "vue/jsx-uses-vars.description",
+        "Treat variables used in JSX element names as used",
+        "JSX 要素名で参照する変数を使用済みとして扱う",
+        "将 JSX 元素名称中引用的变量视为已使用",
+    ),
+    (
+        "vue/match-component-file-name.description",
+        "Require a component name to match its file name",
+        "コンポーネント名をファイル名と一致させることを必須にする",
+        "要求组件名称与文件名一致",
+    ),
+    (
+        "vue/no-custom-modifiers-on-v-model.description",
+        "Disallow custom modifiers on `v-model` used on a component",
+        "コンポーネントで使う `v-model` の独自修飾子を禁止する",
+        "禁止在组件的 `v-model` 上使用自定义修饰符",
+    ),
+    (
+        "vue/no-ref-object-reactivity-loss.description",
+        "Disallow copying a ref value in the same scope",
+        "同じスコープで ref の値をコピーすることを禁止する",
+        "禁止在同一作用域中复制 ref 的值",
+    ),
+    (
+        "vue/no-setup-props-reactivity-loss.description",
+        "Disallow setup prop reads that lose reactivity",
+        "リアクティビティを失う setup の props 参照を禁止する",
+        "禁止导致响应性丢失的 setup prop 读取",
+    ),
+    (
+        "vue/no-this-in-before-route-enter.description",
+        "Disallow `this` in `beforeRouteEnter`",
+        "`beforeRouteEnter` 内の `this` を禁止する",
+        "禁止在 `beforeRouteEnter` 中使用 `this`",
+    ),
+    (
+        "vue/no-v-for-template-key.description",
+        "Disallow `key` on `<template v-for>`",
+        "`<template v-for>` 上の `key` を禁止する",
+        "禁止在 `<template v-for>` 上设置 `key`",
+    ),
+    (
+        "vue/prefer-prop-type-boolean-first.description",
+        "Enforce `Boolean` comes first in component prop types",
+        "コンポーネントの props の型で `Boolean` を先頭に置くことを必須にする",
+        "要求组件 prop 类型中的 `Boolean` 排在首位",
+    ),
+    (
+        "vue/require-expose.description",
+        "Require declare public properties using `expose`",
+        "`expose` を使って公開プロパティを宣言することを必須にする",
+        "要求使用 `expose` 声明公共属性",
+    ),
+    (
+        "vue/valid-model-definition.description",
+        "Require valid keys in the model option",
+        "model オプションに有効なキーを指定することを必須にする",
+        "要求 model 选项使用有效的键",
+    ),
+    (
         "a11y/heading-levels.description",
         "Disallow skipping heading levels",
         "見出しレベルを飛ばすことを禁止する",

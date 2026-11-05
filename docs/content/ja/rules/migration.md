@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 252 件で、対応付け 139 件、意図的な差異 2 件、未実装 111 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 252 件で、対応付け 151 件、意図的な差異 2 件、未実装 99 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
@@ -40,7 +40,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/comma-dangle` | — | 未実装 |
 | `vue/comma-spacing` | — | 未実装 |
 | `vue/comma-style` | — | 未実装 |
-| `vue/comment-directive` | — | 未実装 |
+| `vue/comment-directive` | [`vue/comment-directive`](./reference/vue-comment-directive.md) | 対応付け |
 | `vue/component-api-style` | — | 未実装 |
 | `vue/component-definition-name-casing` | — | 意図的な差異 |
 | `vue/component-name-in-template-casing` | [`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | 対応付け |
@@ -62,14 +62,14 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/html-comment-content-newline` | — | 未実装 |
 | `vue/html-comment-content-spacing` | — | 未実装 |
 | `vue/html-comment-indent` | — | 未実装 |
-| `vue/html-end-tags` | — | 未実装 |
+| `vue/html-end-tags` | [`vue/html-end-tags`](./reference/vue-html-end-tags.md) | 対応付け |
 | `vue/html-indent` | — | 未実装 |
 | `vue/html-quotes` | [`vue/html-quotes`](./reference/vue-html-quotes.md) | 対応付け |
 | `vue/html-self-closing` | [`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 対応付け |
-| `vue/jsx-uses-vars` | — | 未実装 |
+| `vue/jsx-uses-vars` | [`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | 対応付け |
 | `vue/key-spacing` | — | 未実装 |
 | `vue/keyword-spacing` | — | 未実装 |
-| `vue/match-component-file-name` | — | 未実装 |
+| `vue/match-component-file-name` | [`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 対応付け |
 | `vue/match-component-import-name` | — | 未実装 |
 | `vue/max-attributes-per-line` | — | 未実装 |
 | `vue/max-len` | — | 未実装 |
@@ -90,7 +90,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-computed-properties-in-data` | [`script/no-computed-properties-in-data`](./reference/script-no-computed-properties-in-data.md) | 対応付け |
 | `vue/no-console` | — | 未実装 |
 | `vue/no-constant-condition` | — | 未実装 |
-| `vue/no-custom-modifiers-on-v-model` | — | 未実装 |
+| `vue/no-custom-modifiers-on-v-model` | [`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | 対応付け |
 | `vue/no-deprecated-data-object-declaration` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | 対応付け |
 | `vue/no-deprecated-delete-set` | [`script/no-deprecated-delete-set`](./reference/script-no-deprecated-delete-set.md) | 対応付け |
 | `vue/no-deprecated-destroyed-lifecycle` | [`script/no-deprecated-destroyed-lifecycle`](./reference/script-no-deprecated-destroyed-lifecycle.md) | 対応付け |
@@ -139,7 +139,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-parsing-error` | — | 未実装 |
 | `vue/no-potential-component-option-typo` | [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | 対応付け |
 | `vue/no-ref-as-operand` | [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | 対応付け |
-| `vue/no-ref-object-reactivity-loss` | — | 未実装 |
+| `vue/no-ref-object-reactivity-loss` | [`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 対応付け |
 | `vue/no-required-prop-with-default` | [`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | 対応付け |
 | `vue/no-reserved-component-names` | [`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 対応付け |
 | `vue/no-reserved-keys` | [`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | 対応付け |
@@ -157,7 +157,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-restricted-v-bind` | — | 未実装 |
 | `vue/no-restricted-v-on` | — | 未実装 |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 対応付け |
-| `vue/no-setup-props-reactivity-loss` | — | 未実装 |
+| `vue/no-setup-props-reactivity-loss` | [`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 対応付け |
 | `vue/no-shared-component-data` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | 対応付け |
 | `vue/no-side-effects-in-computed-properties` | [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | 対応付け |
 | `vue/no-spaces-around-equal-signs-in-attribute` | — | 未実装 |
@@ -167,7 +167,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-template-shadow` | [`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | 対応付け |
 | `vue/no-template-target-blank` | [`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | 対応付け |
 | `vue/no-textarea-mustache` | [`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | 対応付け |
-| `vue/no-this-in-before-route-enter` | — | 未実装 |
+| `vue/no-this-in-before-route-enter` | [`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 対応付け |
 | `vue/no-undef-components` | — | 未実装 |
 | `vue/no-undef-directives` | — | 未実装 |
 | `vue/no-undef-properties` | — | 未実装 |
@@ -184,7 +184,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-useless-mustaches` | [`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 対応付け |
 | `vue/no-useless-template-attributes` | [`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | 対応付け |
 | `vue/no-useless-v-bind` | [`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 対応付け |
-| `vue/no-v-for-template-key` | — | 未実装 |
+| `vue/no-v-for-template-key` | [`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | 対応付け |
 | `vue/no-v-for-template-key-on-child` | [`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | 対応付け |
 | `vue/no-v-html` | [`vue/no-v-html`](./reference/vue-no-v-html.md) | 対応付け |
 | `vue/no-v-model-argument` | — | 未実装 |
@@ -203,7 +203,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/padding-lines-in-component-definition` | — | 未実装 |
 | `vue/prefer-define-options` | [`script/prefer-define-options`](./reference/script-prefer-define-options.md) | 対応付け |
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | 対応付け |
-| `vue/prefer-prop-type-boolean-first` | — | 未実装 |
+| `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 対応付け |
 | `vue/prefer-separate-static-class` | — | 未実装 |
 | `vue/prefer-single-event-payload` | — | 未実装 |
 | `vue/prefer-template` | — | 未実装 |
@@ -219,7 +219,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/require-emit-validator` | — | 未実装 |
 | `vue/require-explicit-emits` | [`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | 対応付け |
 | `vue/require-explicit-slots` | [`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | 対応付け |
-| `vue/require-expose` | — | 未実装 |
+| `vue/require-expose` | [`vue/require-expose`](./reference/vue-require-expose.md) | 対応付け |
 | `vue/require-macro-variable-name` | — | 未実装 |
 | `vue/require-name-property` | — | 未実装 |
 | `vue/require-prop-comment` | — | 未実装 |
@@ -257,7 +257,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/valid-define-emits` | [`script/valid-define-emits`](./reference/script-valid-define-emits.md) | 対応付け |
 | `vue/valid-define-options` | [`script/valid-define-options`](./reference/script-valid-define-options.md) | 対応付け |
 | `vue/valid-define-props` | [`script/valid-define-props`](./reference/script-valid-define-props.md) | 対応付け |
-| `vue/valid-model-definition` | — | 未実装 |
+| `vue/valid-model-definition` | [`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | 対応付け |
 | `vue/valid-next-tick` | [`script/valid-next-tick`](./reference/script-valid-next-tick.md) | 対応付け |
 | `vue/valid-template-root` | [`vue/valid-template-root`](./reference/vue-valid-template-root.md) | 対応付け |
 | `vue/valid-v-bind` | [`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | 対応付け |

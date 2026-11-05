@@ -15,7 +15,7 @@ impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(
         &self,
         input: SfcTemplateLintInput<'a>,
-        scripts: &SfcScripts<'_>,
+        scripts: &'a SfcScripts<'_>,
     ) -> (LintResult, LintResult) {
         let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
@@ -27,6 +27,7 @@ impl Linter {
                 root: input.root,
                 env: TemplateRuleEnv {
                     sfc_descriptor: Some(input.descriptor),
+                    sfc_scripts: Some(scripts),
                     art_script_analysis: None,
                     dialect: VueDialect::Vue,
                     facade_rules: facade::RULES,
@@ -289,6 +290,7 @@ impl Linter {
             true,
             TemplateRuleEnv {
                 sfc_descriptor: None,
+                sfc_scripts: None,
                 art_script_analysis: None,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,

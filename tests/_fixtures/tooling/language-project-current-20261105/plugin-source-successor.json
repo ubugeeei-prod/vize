@@ -1,0 +1,88 @@
+{
+  "schema": "vize.languageProjectCurrentSourceSuccessor.v1",
+  "qualificationCredit": false,
+  "predecessor": {
+    "path": "tests/_fixtures/tooling/language-project-current-20261105/custody.json",
+    "bytes": 3051,
+    "sha256": "6adafa56360823c8f6d39f5f3035c45e482ab7f9d06f6800b4bc50c6bb125b4d"
+  },
+  "transitions": [
+    {
+      "path": "npm/typescript-plugin/index.cjs",
+      "before": {
+        "bytes": 7124,
+        "sha256": "728bd36e03f2e4c6cb9fe48332c804ac5606102b72c3a07999391b6b1616cdf8"
+      },
+      "after": {
+        "bytes": 7755,
+        "sha256": "97b1fbe39f60b72339257dee8a25d8c96d8b7869bab81cc4e76b79716df5a062"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/index.before.cjs.gz",
+        "bytes": 2153,
+        "sha256": "cda1b522bac00933d7c8bca5bdfda9a4b9aadbb37c5060df211bceb1a0685475"
+      },
+      "beforeRevision": "9cf182252ba15f6c42565f4ada0a5978a03bb5a6",
+      "afterRevision": "1f9e7e6ab9e491ec3351f0d498389efbfee0f191",
+      "edits": [
+        {
+          "before": "function discoverSfcFiles(ts, configFile) {\n  const config = ts.readConfigFile(configFile, ts.sys.readFile);\n  if (config.error) return [];\n  const parsed = ts.parseJsonConfigFileContent(\n    config.config,\n    ts.sys,\n",
+          "after": "const PRUNED_DIRECTORIES = [\n  \"node_modules\",\n  \".git\",\n  \"dist\",\n  \".output\",\n  \".data\",\n  \"coverage\",\n  \".cache\",\n  \".turbo\",\n  \".vercel\",\n  \".netlify\",\n];\n\nfunction discoverSfcFiles(ts, configFile) {\n  const config = ts.readConfigFile(configFile, ts.sys.readFile);\n  if (config.error) return [];\n  // Nuxt's generated include walks `../**/*`. Skip dependency and build\n  // directories during that second walk. A Vue file inside one is not a root.\n  const pruned = PRUNED_DIRECTORIES.map((name) => `**/${name}`);\n  const parsed = ts.parseJsonConfigFileContent(\n    config.config,\n    {\n      ...ts.sys,\n      readDirectory: (rootDir, extensions, excludes, includes, depth) =>\n        ts.sys.readDirectory(\n          rootDir,\n          extensions,\n          [...(excludes || []), ...pruned],\n          includes,\n          depth,\n        ),\n    },\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/typescript-plugin/source-documents.cjs",
+      "before": {
+        "bytes": 2374,
+        "sha256": "eb7ee6a42286fde73c7f7361d58816c99a6897e4690ed08f9aa449119e031f81"
+      },
+      "after": {
+        "bytes": 5007,
+        "sha256": "7ae5c061ecc432edc33fd92aa16e95b52abc28845a824a1bed70777639f4f293"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/source-documents.before.cjs.gz",
+        "bytes": 847,
+        "sha256": "a05a31c87633f0ed42f21e219eb6a921891288869b2f8789620671da0041eb18"
+      },
+      "beforeRevision": "f7affdff6e5b39205eba7a6e8449a530ba90b7ef",
+      "afterRevision": "1f9e7e6ab9e491ec3351f0d498389efbfee0f191",
+      "edits": [
+        {
+          "before": "\"use strict\";\n\nfunction createSourceDocuments(",
+          "after": "\"use strict\";\n\nconst crypto = require(\"node:crypto\");\nconst path = require(\"node:path\");\nconst RELATIVE_SFC = /['\"](\\.[^'\"\\n]*\\.(?:vue|art))['\"]/g;\n\nfunction createSourceDocuments("
+        },
+        {
+          "before": "module.exports = { createSourceDocuments };\n",
+          "after": "// tsserver asks for every external SFC while a project loads. Generate only\n// the file a language-service request names, plus its direct relative imports.\nfunction createLazySfcScripts({\n  ts,\n  get,\n  options,\n  settings,\n  sourceDocuments,\n  snapshots,\n  isSfc,\n  readFile,\n  readSource,\n  project,\n}) {\n  const eager = new Set();\n  let updating = false;\n  const configuration = () => {\n    options();\n    return settings().project.configuration;\n  };\n  const stub = (cached, current) => {\n    if (!cached.stubSnapshot) cached.stubSnapshot = ts.ScriptSnapshot.fromString(\"export {};\\n\");\n    if (cached.stubConfiguration !== current || cached.stubSource !== cached.source) {\n      cached.stubVersion = `stub:${crypto.createHash(\"sha256\").update(cached.source).update(\"\\0\").update(current).digest(\"hex\")}`;\n      cached.stubConfiguration = current;\n      cached.stubSource = cached.source;\n    }\n    return { snapshot: cached.stubSnapshot, version: cached.stubVersion };\n  };\n  const prepared = (name) => {\n    if (!isSfc(name)) return undefined;\n    const cached = sourceDocuments.get(name);\n    if (!cached) return undefined;\n    const current = configuration();\n    if (cached.configuration === current) return cached;\n    if (!eager.has(path.normalize(name))) return stub(cached, current);\n    return get(name);\n  };\n  const mark = (name) => {\n    const key = path.normalize(name);\n    if (eager.has(key)) return false;\n    eager.add(key);\n    return true;\n  };\n  return {\n    snapshot: (name) => prepared(name)?.snapshot,\n    version: (name) => prepared(name)?.version,\n    ensure(fileName) {\n      if (typeof fileName !== \"string\" || updating) return;\n      const added = [];\n      if (isSfc(fileName) && mark(fileName)) added.push(fileName);\n      if (!/\\.d\\.ts$/i.test(fileName)) {\n        const source = isSfc(fileName) ? readSource(fileName) : readFile(fileName);\n        if (typeof source === \"string\") {\n          for (const match of source.matchAll(RELATIVE_SFC)) {\n            const resolved = path.resolve(path.dirname(fileName), match[1]);\n            if (mark(resolved)) added.push(resolved);\n          }\n        }\n      }\n      const stale = added.some((name) => {\n        const cached = snapshots.get(name);\n        return cached?.stubSnapshot && cached.configuration === undefined;\n      });\n      if (!stale) return;\n      updating = true;\n      try {\n        project?.updateGraph?.();\n      } finally {\n        updating = false;\n      }\n    },\n  };\n}\n\nmodule.exports = { createSourceDocuments, createLazySfcScripts };\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/tooling/language-project-classification-runtime.test.ts",
+      "before": {
+        "bytes": 14785,
+        "sha256": "3a6630dfa7e31f10320eca59637d1deb37ff411bc5a0ad65f2aa853863bebd22"
+      },
+      "after": {
+        "bytes": 14791,
+        "sha256": "b8b7010ee6278f46ede52852cc157fa809233fd5841ebe7a04502baa3833c65b"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/classification-runtime-test.before.ts.gz",
+        "bytes": 4085,
+        "sha256": "4a00392707918f4574ec4592464e2aa6a0c7fa677d4f2eadb620a5311026f476"
+      },
+      "beforeRevision": "e3fb5baa88be61002b00f76dd4518d3e5fa03586",
+      "afterRevision": null,
+      "scope": "The unrelated-file control follows the newly registered plugin source scope; every original assertion remains present.",
+      "edits": [
+        {
+          "before": "  assert.deepEqual(\n    historical(\"head\", \"npm/typescript-plugin/index.cjs\"),\n    read(\"head\", \"npm/typescript-plugin/index.cjs\"),\n  );",
+          "after": "  assert.deepEqual(\n    historical(\"head\", \"npm/typescript-plugin/provider.cjs\"),\n    read(\"head\", \"npm/typescript-plugin/provider.cjs\"),\n  );"
+        }
+      ]
+    }
+  ]
+}

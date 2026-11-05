@@ -19,7 +19,10 @@ import { toVirtualId } from "../virtual.ts";
     previousSource,
   );
   assert.equal(previousCompiled.customBlocks?.length, 1);
-  assert.equal(previousCompiled.customBlocks?.[0]?.content.includes("Hello from custom block"), true);
+  assert.equal(
+    previousCompiled.customBlocks?.[0]?.content.includes("Hello from custom block"),
+    true,
+  );
 
   const blockId = `${vueFile}?vue&type=message&index=0`;
   const blockModule = { url: blockId };

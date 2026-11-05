@@ -25,7 +25,12 @@ assert.equal(
 );
 const observed = JSON.parse(observedBytes.toString());
 const { authority, files, cases } = readGlobalsFixture();
-const golden = selectPacketGoldens(authority, files, cases)!;
+// This recorded transition owns the historical population as CURRENT advances.
+const golden = selectPacketGoldens(
+  { ...authority, currentSourcePackets: "source-packets-current-2d46a96fbefd.json" },
+  files,
+  cases,
+)!;
 
 void test("main's genuine LF and CRLF Unicode packets keep complete historical identity plus known atoms", () => {
   for (const row of observed.packets) {
@@ -33,7 +38,7 @@ void test("main's genuine LF and CRLF Unicode packets keep complete historical i
     assert.equal(row.sourceSha256, old.sourceSha256);
     assert.equal(row.globalsSha256, old.globalsSha256);
     assertTransformEnvelope(row.response, row.response.id);
-    assertWholeTransform(row.response.result, old.result);
+    assertWholeTransform(row.response.result, withParenthesisDiagnosticMappings(old.result));
   }
 });
 
@@ -110,12 +115,13 @@ void test("all actual atom fields, old mapping fields and opaque payload mutatio
   for (const row of observed.packets) {
     const old = golden.packets.find((packet) => packet.label === row.label)!;
     const current = row.response.result;
-    assertWholeTransform(current, old.result);
+    const expected = withParenthesisDiagnosticMappings(old.result);
+    assertWholeTransform(current, expected);
     for (let index = 0; index < current.mappings.length; index++) {
       for (let field = 0; field < 6; field++) {
         const copy = structuredClone(current);
         copy.mappings[index][field]++;
-        assert.throws(() => assertWholeTransform(copy, old.result), /complete generated text/u);
+        assert.throws(() => assertWholeTransform(copy, expected), /complete generated text/u);
       }
     }
     const mutations = [
@@ -141,7 +147,7 @@ void test("all actual atom fields, old mapping fields and opaque payload mutatio
     for (const mutate of mutations) {
       const copy = structuredClone(current);
       mutate(copy);
-      assert.throws(() => assertWholeTransform(copy, old.result), /complete generated text/u);
+      assert.throws(() => assertWholeTransform(copy, expected), /complete generated text/u);
     }
   }
 });

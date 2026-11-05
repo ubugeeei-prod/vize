@@ -5,8 +5,6 @@
 //! Reports are dropped by the caller when the count is greater than one.
 
 use super::casing::names_match;
-use crate::rules::script::script_source_type;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, CallExpression, ExportDefaultDeclaration, ExportDefaultDeclarationKind, Expression,
     NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
@@ -15,9 +13,10 @@ use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_export_default_declaration, walk_new_expression},
 };
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_span::Span;
 use vize_atelier_sfc::SfcScriptBlock;
+use vize_l0::{String, ToCompactString};
 
 #[derive(Default)]
 pub(super) struct Scan {
@@ -31,12 +30,16 @@ pub(super) struct Miss {
     pub(super) end: u32,
 }
 
-pub(super) fn scan_block(block: &SfcScriptBlock<'_>, setup: bool, stem: &str, scan: &mut Scan) {
+pub(super) fn scan_block(
+    block: &SfcScriptBlock<'_>,
+    parsed: &ParserReturn<'_>,
+    setup: bool,
+    stem: &str,
+    scan: &mut Scan,
+) {
     if block.src.is_some() || block.content.is_empty() {
         return;
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, block.content.as_ref(), script_source_type()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return;
     }
@@ -82,7 +85,7 @@ impl Scanner<'_> {
             return;
         }
         self.scan.misses.push(Miss {
-            name: name.to_string(),
+            name: name.to_compact_string(),
             start: self.offset + span.start,
             end: self.offset + span.end,
         });
@@ -183,11 +186,11 @@ fn object_argument<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpressio
 fn static_name(expression: &Expression<'_>) -> Option<(String, Span)> {
     match expression.get_inner_expression() {
         Expression::StringLiteral(literal) => {
-            Some((literal.value.as_str().to_string(), literal.span))
+            Some((literal.value.as_str().to_compact_string(), literal.span))
         }
         Expression::TemplateLiteral(template) => {
             let value = template.single_quasi()?;
-            Some((value.as_str().to_string(), template.span))
+            Some((value.as_str().to_compact_string(), template.span))
         }
         _ => None,
     }

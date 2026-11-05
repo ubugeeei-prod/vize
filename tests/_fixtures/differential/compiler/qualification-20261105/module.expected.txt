@@ -1,0 +1,11 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
+import { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  let _temp0
+  _push(`<div${_ssrRenderAttrs(_temp0 = _mergeProps(_attrs, _ssrGetDirectiveProps(_ctx, _resolveDirective("x"), _ctx.x, _ctx.a)))}>${("textContent" in _temp0) ? _ssrInterpolate(_temp0.textContent) : _temp0.innerHTML ?? ''}</div>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

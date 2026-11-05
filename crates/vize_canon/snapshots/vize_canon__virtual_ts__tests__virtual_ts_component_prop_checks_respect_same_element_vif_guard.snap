@@ -215,10 +215,11 @@ function __setup() {
     (undefined as unknown as __LinkComp_Check_0)({
       "to": item.name,
     });
-    type $SlotContract_0 = $StructuralSlots<typeof LinkComp>;
+    type $SlotContract_0 = __LinkComp_slot_contract;
     const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
     void __vize_required_slots_0;
   }
+  type __LinkComp_slot_contract = $StructuralSlots<typeof LinkComp>;
 
   // Mark used components as referenced
   void LinkComp;

@@ -10,30 +10,9 @@ use vize_maestro::VirtualCodeGenerator;
 
 #[test]
 fn split_script_checker_document_maps_both_blocks() {
-    let source = r#"<script lang="ts">
-export default {}
-</script>
-
-<script setup lang="ts">
-const x = 1
-</script>
-
-<template>
-  <div>{{ x }}</div>
-</template>
-
-<style scoped>
-.a {
-  color: red;
-}
-</style>
-
-<style module="m">
-.b {
-  color: blue;
-}
-</style>
-"#;
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/lsp/qualification-20261105/AllBlocks.vue.txt"
+    );
     let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
     let mut generator = VirtualCodeGenerator::new();
     let docs = generator.generate(&descriptor, "AllBlocks.vue");

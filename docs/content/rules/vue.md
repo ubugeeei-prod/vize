@@ -9,12 +9,14 @@ Correctness, conventions and Vue 3 migration checks for SFC templates, directive
 
 Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-## Essential (51)
+## Essential (53)
 
 Correctness rules in the `essential` preset.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Support comment directives in `<template>`. |  |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Treat variables used in JSX element names as used. |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Require component names to be multi-word. |  |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | Disallow child content when using v-html or v-text. |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Disallow deprecated Vue 2 filter syntax using the pipe operator. |  |
@@ -67,7 +69,7 @@ Correctness rules in the `essential` preset.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Enforce valid `v-slot` directives. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Enforce valid `v-text` directives. |  |
 
-## Default (23)
+## Default (24)
 
 Added by `happy-path`, the default preset.
 
@@ -76,6 +78,7 @@ Added by `happy-path`, the default preset.
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Enforce attribute naming style on custom components. | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Enforce a consistent order of attributes. |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Enforce PascalCase or kebab-case for component definition names. |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | Require end tags on HTML elements that may omit them. | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | Enforce quotes style of HTML attributes. | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Enforce consistent spacing inside mustache interpolations. | ✓ |
 | <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | Disallow invalid static values for HTML attributes. |  |
@@ -131,18 +134,27 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Warn about custom blocks in SFC files. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Warn about custom directives that need registration. | `nuxt`, `opinionated` |  |
 
-## Opt-in (7)
+## Opt-in (16)
 
 Not in any preset. Turn them on by name in `vue.linter.rules`.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Require alt attribute on images for accessibility. |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Require a component name to match its file name. |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limit a component's own template complexity (cyclomatic and cognitive). |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Disallow raw human-readable text in the template that should be internationalized. |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | Disallow custom modifiers on `v-model` used on a component. |  |
 | <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | Disallow multiple root nodes in a template. |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Disallow copying a ref value in the same scope. |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Disallow setup prop reads that lose reactivity. |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Disallow static inline style attributes. |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Disallow `this` in `beforeRouteEnter`. |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Disallow undefined variable references in templates. |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Disallow unread script setup bindings. |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Disallow `key` on `<template v-for>`. |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Enforce `Boolean` comes first in component prop types. |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Require declare public properties using `expose`. |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Require valid keys in the model option. |  |
 
 [Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

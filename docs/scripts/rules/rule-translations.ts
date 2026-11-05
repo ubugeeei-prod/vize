@@ -12,14 +12,20 @@ import { portugueseVue1 } from "./vue-locales/pt-1.ts";
 import { portugueseVue2, portugueseVueNotes } from "./vue-locales/pt-2.ts";
 import { commonVueText } from "./rule-phrases.ts";
 import type { RuleLocale } from "./rule-groups.ts";
+import { catalogueAdditionNotes, catalogueAdditionPackets } from "./catalogue-additions-locales.ts";
 
 export type TranslatedLocale = Exclude<RuleLocale, "en" | "ja">;
 type Packet = readonly [purpose: string, bad: string, good: string];
 
 const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
-  "zh-CN": { ...chineseVue0, ...chineseVue1, ...chineseVue2 },
-  "pt-BR": { ...portugueseVue0, ...portugueseVue1, ...portugueseVue2 },
-  fr: { ...frenchVue0, ...frenchVue1, ...frenchVue2 },
+  "zh-CN": { ...chineseVue0, ...chineseVue1, ...chineseVue2, ...catalogueAdditionPackets["zh-CN"] },
+  "pt-BR": {
+    ...portugueseVue0,
+    ...portugueseVue1,
+    ...portugueseVue2,
+    ...catalogueAdditionPackets["pt-BR"],
+  },
+  fr: { ...frenchVue0, ...frenchVue1, ...frenchVue2, ...catalogueAdditionPackets.fr },
 };
 const otherPackets: Record<TranslatedLocale, Record<string, Packet>> = {
   "zh-CN": chinesePackets,
@@ -31,16 +37,19 @@ const phrases: Record<TranslatedLocale, Map<string, string>> = {
     ...commonVueText("zh-CN"),
     ...Object.entries(chineseShared),
     ...Object.entries(chineseVueNotes),
+    ...Object.entries(catalogueAdditionNotes["zh-CN"]),
   ]),
   "pt-BR": new Map([
     ...commonVueText("pt-BR"),
     ...Object.entries(portugueseShared),
     ...Object.entries(portugueseVueNotes),
+    ...Object.entries(catalogueAdditionNotes["pt-BR"]),
   ]),
   fr: new Map([
     ...commonVueText("fr"),
     ...Object.entries(frenchShared),
     ...Object.entries(frenchVueNotes),
+    ...Object.entries(catalogueAdditionNotes.fr),
   ]),
 };
 

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Foo from "./Foo.vue";
+</script>
+
+<template>
+  <Foo :bar="1" />
+  <Foo :bar="2" />
+</template>

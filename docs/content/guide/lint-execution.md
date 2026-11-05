@@ -68,6 +68,20 @@ even when configuration is `false`. Only rules executed by Vize count, so commen
 for external linters are left alone. This uses the existing native template pragma
 check; script/style and `vize-disable` comments do not produce unused reports.
 
+## Parser and project diagnostics
+
+Lint reports also include failures from parsing source or loading a type-aware
+project. These diagnostic IDs are outside the preset rule catalogue. Follow the
+message and reference page to repair the input, then run lint again.
+
+| Diagnostic | Reference |
+| --- | --- |
+| `parser/template` | [Template syntax and parser recovery](../rules/reference/parser-template.md) |
+| `parser/sfc` | [Single-file component structure](../rules/reference/parser-sfc.md) |
+| `parser/jsx` | [JSX/TSX parsing and lowering](../rules/reference/parser-jsx.md) |
+| `type/project-configuration` | [TypeScript project configuration](../rules/reference/type-project-configuration.md) |
+
+
 ## Static class defaults
 
 `html/no-duplicate-class` warns when the same token appears more than once in a
