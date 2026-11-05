@@ -133,10 +133,8 @@ fn virtual_vue_overlay_diagnostics_materializes_for_lsp_fallback() {
     );
 }
 
-// #11548: diagnostics (native materialized identity) and position queries
-// (the caller's identity) read one mirrored set. Alternating them must not
-// close and reopen the project under either identity: each document opens
-// once per identity and nothing closes.
+// Diagnostics and position queries share one native document identity.
+// Alternating them never opens a second program for the caller's spelling.
 #[cfg(unix)]
 #[test]
 fn materialized_diagnostics_and_queries_mirror_one_document_set() {
@@ -151,19 +149,31 @@ fn materialized_diagnostics_and_queries_mirror_one_document_set() {
         &script,
         include_str!("../editor_lsp/native_shutdown/peer.ts.txt")
             .replace("LOG_PATH", &serde_json::to_string(&transcript).unwrap())
-            .replace("REPLY_MODE", "\"ok\""),
+            .replace("REPLY_MODE", "\"ok\"")
+            .replace("request.method === \"textDocument/hover\"", "[\"textDocument/hover\",\"textDocument/definition\",\"textDocument/completion\",\"textDocument/codeAction\",\"textDocument/inlayHint\"].includes(request.method)"),
     )
     .unwrap();
     fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
     let mut client = CorsaProjectClient::batch_editor_peer_for_test(&script, &root).unwrap();
     client.materialized_project_session = true;
-    let uris = ["App", "Child", "Leaf"]
-        .map(|name| path_to_file_uri(&root.join(format!("src/{name}.vue.ts"))));
-    for (index, uri) in uris.iter().enumerate() {
-        client.document_texts.insert(
-            uri.clone(),
-            format!("export const value{index} = {index};").into(),
-        );
+    let input: Value = serde_json::from_slice(include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/native-document-identity-11586/input.json"
+    )))
+    .unwrap();
+    let sources = input["documents"].as_array().unwrap();
+    assert_eq!(sources.len(), 3);
+    let uris = sources
+        .iter()
+        .map(|source| {
+            let name = source["name"].as_str().unwrap();
+            path_to_file_uri(&root.join(format!("src/{name}.vue.ts")))
+        })
+        .collect::<Vec<_>>();
+    for (source, uri) in sources.iter().zip(&uris) {
+        client
+            .document_texts
+            .insert(uri.clone(), source["source"].as_str().unwrap().into());
     }
     client.editor_lsp_documents_dirty = true;
 
@@ -172,16 +182,18 @@ fn materialized_diagnostics_and_queries_mirror_one_document_set() {
             .request_diagnostics_batch_via_lsp_chunk_once(std::slice::from_ref(&uris[0]))
             .unwrap();
         client.hover_via_editor_lsp(&uris[0], 0, 0).unwrap();
+        client.definition_via_editor_lsp(&uris[0], 0, 0).unwrap();
+        client.completion_via_editor_lsp(&uris[0], 0, 0).unwrap();
+        client
+            .source_actions_via_editor_lsp(&uris[0], &["source.organizeImports".into()])
+            .unwrap();
+        client.inlay_hints_raw(&uris[0], (0, 0), (0, 1)).unwrap();
     }
     let native = uris
         .iter()
         .map(|uri| std::string::String::from(client.editor_document_uri(uri).as_str()))
         .collect::<Vec<_>>();
     assert_ne!(native[0], uris[0].as_str());
-    let external = uris
-        .iter()
-        .map(|uri| std::string::String::from(uri.as_str()))
-        .collect::<Vec<_>>();
     client.shutdown().unwrap();
 
     let requests = fs::read_to_string(&transcript)
@@ -209,11 +221,18 @@ fn materialized_diagnostics_and_queries_mirror_one_document_set() {
     );
     let mut opened = documents("textDocument/didOpen");
     opened.sort();
-    let mut expected = [native, external.clone()].concat();
+    let mut expected = native.clone();
     expected.sort();
-    assert_eq!(opened, expected, "each document opens once per identity");
-    assert_eq!(
-        documents("textDocument/hover"),
-        vec![external[0].clone(); 3]
-    );
+    assert_eq!(opened, expected, "each document opens under one identity");
+    let methods = [
+        "textDocument/hover",
+        "textDocument/definition",
+        "textDocument/completion",
+        "textDocument/codeAction",
+        "textDocument/inlayHint",
+    ];
+    assert_eq!(input["methods"], serde_json::json!(methods));
+    for method in methods {
+        assert_eq!(documents(method), vec![native[0].clone(); 3], "{method}");
+    }
 }

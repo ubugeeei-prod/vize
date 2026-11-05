@@ -224,6 +224,9 @@ fn split_rename(part: &str) -> (&str, &str) {
 
 /// The declaration of `word` inside `target`, following re-export barrels.
 fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -> Option<Location> {
+    #[cfg(feature = "native")]
+    let uri = crate::ide::corsa_support::authored_file_uri(ctx, target)?;
+    #[cfg(not(feature = "native"))]
     let uri = Url::from_file_path(target).ok()?;
     if target
         .extension()
