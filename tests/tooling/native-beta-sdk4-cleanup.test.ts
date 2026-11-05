@@ -279,8 +279,8 @@ test("API26 full metadata/handles/config/dependencies cannot be elided or replac
       object(object(f.owners[0]!.apiServer[1]).result).errors = [{ code: 1 }];
     },
     (f) => {
-      object(f.owners[0]!.apiServer[4]).result = {};
-      delete object(f.owners[0]!.apiServer[4]).error;
+      object(f.owners[0]!.apiServer[5]).result = {};
+      delete object(f.owners[0]!.apiServer[5]).error;
     },
     (f) => {
       object(object(f.owners[0]!.apiClient[7]).params).snapshot = 999;

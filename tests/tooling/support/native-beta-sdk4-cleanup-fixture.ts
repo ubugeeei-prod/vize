@@ -110,16 +110,16 @@ export function sdk4CleanupFixture() {
   api("parseConfigFile", { file: config }, parsed);
   api("createSnapshot", open, snapshot(100, true));
   api("updateSnapshot", { changes: open, snapshot: 100 }, snapshot(101, false));
+  api("release", { handle: "100", snapshot: 100 }, true);
   api("describeCapabilities", null, null);
-  owner.apiServer[4] = {
+  owner.apiServer[5] = {
     jsonrpc: "2.0",
-    id: 5,
+    id: 6,
     error: {
       code: -32603,
       message: 'api: invalid request: unknown API method "describeCapabilities"',
     },
   };
-  api("release", { handle: "100", snapshot: 100 }, true);
   for (let handle = 102; handle <= 111; handle++) {
     api("createSnapshot", open, snapshot(handle, true));
     api("release", { handle: String(handle - 1), snapshot: handle - 1 }, true);
