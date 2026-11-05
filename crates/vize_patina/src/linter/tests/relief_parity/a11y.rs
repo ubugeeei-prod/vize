@@ -5,13 +5,15 @@ use crate::rules::a11y::{
     AltText, AnchorHasContent, AnchorIsValid, AriaProps, AriaRole, AriaUnsupportedElements,
     ClickEventsHaveKeyEvents, FormControlHasLabel, HeadingHasContent, IframeHasTitle, ImgAlt,
     InteractiveSupportsFocus, LabelHasFor, MediaHasCaption, MouseEventsHaveKeyEvents, NoAccessKey,
-    NoAriaHiddenOnFocusable, NoAutofocus, NoDistractingElements, NoIForIcon,
+    NoAriaHiddenOnFocusable, NoAutofocus, NoDistractingElements, NoIForIcon, NoRedundantRoles,
     NoReferToNonExistentId, NoRolePresentationOnFocusable, NoStaticElementInteractions,
     RoleHasRequiredAriaProps, TabindexNoPositive,
 };
 use crate::rules::html::{
     DeprecatedAttr, DeprecatedElement, NoConsecutiveBr, NoDuplicateDt, RequireDatetime,
 };
+use crate::rules::opinionated::a11y::PlaceholderLabelOption;
+use crate::rules::vapor::{NoVueLifecycleEvents, PreferStaticClass};
 
 fn family() -> Vec<Box<dyn Rule>> {
     vec![
@@ -46,7 +48,9 @@ fn existing_family() -> Vec<Box<dyn Rule>> {
         Box::new(NoAutofocus),
         Box::new(NoDistractingElements),
         Box::new(NoIForIcon),
+        Box::new(NoRedundantRoles),
         Box::new(NoRolePresentationOnFocusable),
+        Box::new(PlaceholderLabelOption),
         Box::new(TabindexNoPositive),
     ]
 }
@@ -61,7 +65,14 @@ fn html_family() -> Vec<Box<dyn Rule>> {
     ]
 }
 
+fn vapor_family() -> Vec<Box<dyn Rule>> {
+    vec![Box::new(NoVueLifecycleEvents), Box::new(PreferStaticClass)]
+}
+
 const TEMPLATES: &[&str] = &[
+    r#"<button role="button">Redundant</button><button>Native</button><div role="button">Explicit</div>"#,
+    r#"<select required><option value="jp">Japan</option></select><select required><option value="">Choose</option><option value="jp">Japan</option></select>"#,
+    r#"<div @vue:mounted="f"></div><div @click="f"></div><div :class="'static'"></div><div class="static"></div><div :class="dynamic"></div>"#,
     // The HTML facade's element-only rules use the same traversal contract.
     r#"<div align="center">Text</div><div style="text-align:center">Text</div><font>Old</font><span>New</span>"#,
     r#"<div><br><br></div><div><br><span>Text</span><br></div>"#,
@@ -142,6 +153,9 @@ const TEMPLATES: &[&str] = &[
 ];
 
 const JSX: &[&str] = &[
+    r#"const A = () => <div><button role="button">Redundant</button><button>Native</button><div role="button">Explicit</div></div>;"#,
+    r#"const A = () => <div><select required><option value="jp">Japan</option></select><select required><option value="">Choose</option><option value="jp">Japan</option></select></div>;"#,
+    r#"const A = () => <div><div class={'static'} /><div class="static" /><div class={dynamic} /></div>;"#,
     r#"const A = () => <div><div align="center">Text</div><div style={{textAlign: 'center'}}>Text</div><font>Old</font><span>New</span></div>;"#,
     r#"const A = () => <div><div><br /><br /></div><div><br /><span>Text</span><br /></div></div>;"#,
     r#"const A = () => <div><dl><dt>Term</dt><dt>Term</dt><dd>Definition</dd></dl><dl><dt>One</dt><dt>Two</dt><dd>Definition</dd></dl></div>;"#,
@@ -189,6 +203,11 @@ fn existing_a11y_traversals_preserve_complete_diagnostics() {
 #[test]
 fn existing_html_traversals_preserve_complete_diagnostics() {
     super::assert_traversal_parity(html_family, TEMPLATES, JSX);
+}
+
+#[test]
+fn existing_vapor_traversals_preserve_complete_diagnostics() {
+    super::assert_traversal_parity(vapor_family, TEMPLATES, JSX);
 }
 
 /// An ignored nested form and a self-closing nested a keep their v-pre
