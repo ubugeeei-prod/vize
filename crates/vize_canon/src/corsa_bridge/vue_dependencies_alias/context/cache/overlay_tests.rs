@@ -209,3 +209,157 @@ fn an_imported_overlay_edit_rebuilds_and_matches_a_complete_cold_projection() {
         expected
     );
 }
+
+fn native_documents(
+    context: &PreparedAliasContext,
+) -> Vec<(vize_carton::String, vize_carton::String)> {
+    let mut documents = Vec::new();
+    context.source_catalog.extend_native_project_documents(
+        context.mirror.as_ref().unwrap().virtual_root(),
+        &mut documents,
+    );
+    documents.sort();
+    documents
+}
+
+#[test]
+fn background_preparation_refreshes_the_sibling_and_preserves_the_queried_graph() {
+    let workspace = Workspace::new(true);
+    let mut overlays = FxHashMap::from_iter([
+        (workspace.host.clone(), HOST),
+        (workspace.other.clone(), OTHER),
+    ]);
+    let original = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    drop(workspace.open(&workspace.other, OTHER, &overlays, &[]));
+    let edited = OTHER.replace("日本語", "a changed 🦀 prefix");
+    overlays.insert(workspace.other.clone(), &edited);
+    let environment = CorsaProjectEnvironment {
+        virtual_ts_options: &Default::default(),
+        package_routes: &Default::default(),
+        project_root: None,
+        tsconfig_path: None,
+        editor_session: &workspace.session,
+    };
+    assert!(!AliasContext::hosts_are_prepared(
+        &workspace.host,
+        HOST,
+        &overlays,
+        &[],
+        Default::default(),
+        environment
+    ));
+    AliasContext::prebuild_for_hosts(
+        &workspace.host,
+        HOST,
+        &overlays,
+        &[],
+        Default::default(),
+        environment,
+    )
+    .unwrap();
+    let prepared = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    assert!(Arc::ptr_eq(&original.context, &prepared.context));
+    assert_eq!(prepared.mirror.as_ref().unwrap().source_registrations(), 2);
+    assert!(!prepared.materialized_changes.is_empty());
+    let sibling = workspace.open(&workspace.other, &edited, &overlays, &[]);
+    let path = sibling.mirror_virtual_path(&workspace.other).unwrap();
+    let source = prepared.source_catalog.get(&path).unwrap();
+    assert_eq!(source.source.as_str(), edited);
+    assert_eq!(std::fs::read_to_string(path).unwrap(), source.code.as_str());
+}
+
+#[test]
+fn closed_dependency_disk_edits_refresh_open_siblings_before_an_unrelated_query() {
+    const B: &str = "<script setup lang='ts'>import { value } from './model'; const label = value;</script><template>{{ label }}</template>";
+    const MODEL: &str = "export const value: number = 1;";
+    for watched in [false, true] {
+        for deleted in [false, true] {
+            let workspace = Workspace::new(watched);
+            let model = workspace.host.with_file_name("model.ts");
+            std::fs::write(&model, MODEL).unwrap();
+            std::fs::write(&workspace.other, B).unwrap();
+            let overlays = FxHashMap::from_iter([
+                (workspace.host.clone(), HOST),
+                (workspace.other.clone(), B),
+            ]);
+            drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+            let sibling = workspace.open(&workspace.other, B, &overlays, &[]);
+            let model_path = sibling.mirror_virtual_path(&model).unwrap();
+            let old_catalog = sibling.source_catalog.clone();
+            let old_model = old_catalog.get(&model_path).unwrap();
+            assert_eq!(old_model.source.as_str(), MODEL);
+            drop(sibling);
+            if deleted {
+                std::fs::remove_file(&model).unwrap();
+            } else {
+                std::fs::write(&model, "export const value: string = 'changed 🦀';").unwrap();
+            }
+            if watched {
+                workspace.session.invalidate_disk_inputs();
+            }
+            let refreshed = workspace.open(&workspace.host, HOST, &overlays, &[]);
+            let current_native = native_documents(&refreshed);
+            if deleted {
+                assert!(refreshed.source_catalog.get(&model_path).is_none());
+                assert!(!model_path.exists());
+            } else {
+                let current = refreshed.source_catalog.get(&model_path).unwrap();
+                assert_eq!(
+                    current.source.as_str(),
+                    "export const value: string = 'changed 🦀';"
+                );
+                assert_eq!(
+                    std::fs::read_to_string(&model_path).unwrap(),
+                    current.code.as_str()
+                );
+            }
+            assert_eq!(old_catalog.get(&model_path).unwrap().source.as_str(), MODEL);
+            workspace.session.clear();
+            drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+            drop(workspace.open(&workspace.other, B, &overlays, &[]));
+            let cold = workspace.open(&workspace.host, HOST, &overlays, &[]);
+            assert_eq!(current_native, native_documents(&cold));
+        }
+    }
+}
+
+#[test]
+fn shape_changing_host_edits_retire_old_workspace_artifacts_and_keep_old_query_maps() {
+    for remove_import in [false, true] {
+        let workspace = Workspace::new(false);
+        let initial = if remove_import {
+            HOST.to_owned()
+        } else {
+            HOST.replace("lang='ts'", "lang='tsx'")
+        };
+        let edited = if remove_import {
+            HOST.replace("import Child from './Child.vue'; ", "")
+                .replace("<Child />", "")
+        } else {
+            HOST.to_owned()
+        };
+        let mut overlays = FxHashMap::from_iter([(workspace.host.clone(), initial.as_str())]);
+        let requested = [(workspace.other.clone(), OTHER)];
+        let references = workspace.open(&workspace.host, &initial, &overlays, &requested);
+        let obsolete = if remove_import {
+            references.mirror_virtual_path(&workspace.child).unwrap()
+        } else {
+            references.mirror_virtual_path(&workspace.host).unwrap()
+        };
+        let old_catalog = references.source_catalog.clone();
+        let old_source = old_catalog.get(&obsolete).unwrap();
+        drop(references);
+        overlays.insert(workspace.host.clone(), &edited);
+        let current = workspace.open(&workspace.host, &edited, &overlays, &[]);
+        assert!(!obsolete.exists());
+        assert!(current.source_catalog.get(&obsolete).is_none());
+        assert_eq!(
+            old_catalog.get(&obsolete).unwrap().source,
+            old_source.source
+        );
+        let expected = native_documents(&current);
+        workspace.session.clear();
+        let cold = workspace.open(&workspace.host, &edited, &overlays, &[]);
+        assert_eq!(native_documents(&cold), expected);
+    }
+}

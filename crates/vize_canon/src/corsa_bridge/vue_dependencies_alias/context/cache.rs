@@ -138,18 +138,23 @@ impl SessionCache {
             return None;
         }
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
-        let valid = (self.trust_watched_disk_inputs
-            || cached.fingerprint.stamps_still_valid(&mut observed))
-            && cached.context.mirror.as_ref().is_none_or(|mirror| {
-                !self.project_members.contains_key(mirror.virtual_root())
-                    || self.project_revision_is_current_with_cache(
-                        mirror.virtual_root(),
-                        fingerprint.overlay_identity(),
-                        &mut observed,
-                    )
-            });
-        if !valid {
+        let inputs_current =
+            self.trust_watched_disk_inputs || cached.fingerprint.stamps_still_valid(&mut observed);
+        if !inputs_current {
             self.slots.remove(&key);
+            return None;
+        }
+        let valid = cached.context.mirror.as_ref().is_none_or(|mirror| {
+            !self.project_members.contains_key(mirror.virtual_root())
+                || self.project_revision_is_current_with_cache(
+                    mirror.virtual_root(),
+                    fingerprint.overlay_identity(),
+                    &mut observed,
+                )
+        });
+        if !valid {
+            // Preserve this graph while another member awaits its own refresh
+            // inside the native transaction.
             return None;
         }
         self.clock = self.clock.wrapping_add(1);
@@ -228,10 +233,12 @@ impl SessionCache {
         fingerprint: &ContextFingerprint,
     ) -> ProjectUnion {
         let mut retired_members = false;
+        let validate_disk = !self.trust_watched_disk_inputs
+            || !self.project_overlay_identities.contains_key(virtual_root);
         if let Some(members) = self.project_members.get_mut(virtual_root) {
             members.retain(|_, member| {
                 let retained = fingerprint.preserves_member(&member.fingerprint)
-                    && (self.trust_watched_disk_inputs
+                    && (!validate_disk
                         || member
                             .fingerprint
                             .stamps_still_valid(&mut Default::default()));

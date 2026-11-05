@@ -11,6 +11,7 @@ use crate::batch::ModuleSpecifierFactsCache;
 pub(crate) struct ContextFingerprint {
     host_content: u64,
     host_path: PathBuf,
+    host_graph: Option<u64>,
     /// Requested roots, independently of the open-buffer set.
     dependencies: u64,
     overlays: u64,
@@ -64,6 +65,7 @@ impl ContextFingerprint {
         Self {
             host_content: host.finish(),
             host_path,
+            host_graph: None,
             dependencies: dependencies.finish(),
             overlays: overlay_hash.finish(),
             overlay_inputs,
@@ -93,6 +95,10 @@ impl ContextFingerprint {
         context: &AliasContext,
         facts: Option<&mut ModuleSpecifierFactsCache>,
     ) {
+        use std::hash::{Hash, Hasher};
+        let mut graph = vize_l0::micro_default_hasher!("canon.context.host_graph");
+        context.host_facts.hash(&mut graph);
+        self.host_graph = Some(graph.finish());
         let mut paths = vec![self.host_path.clone()];
         if let Some(mirror) = context.mirror.as_ref() {
             // The immutable compiler epoch belongs to this editor session.
@@ -190,8 +196,11 @@ impl ContextFingerprint {
     /// the other revision still owns unchanged dependency files. A close, or a
     /// changed dependency buffer, does retire the member.
     pub(super) fn preserves_member(&self, previous: &Self) -> bool {
-        self.overlay_inputs.contains_key(&previous.host_path)
-            == previous.overlay_inputs.contains_key(&previous.host_path)
+        (self.host_path != previous.host_path
+            || self.host_content == previous.host_content
+            || (self.host_graph.is_some() && self.host_graph == previous.host_graph))
+            && self.overlay_inputs.contains_key(&previous.host_path)
+                == previous.overlay_inputs.contains_key(&previous.host_path)
             && self.dependency_overlays_match(previous)
     }
 
@@ -209,6 +218,7 @@ impl ContextFingerprint {
     /// Disk inputs do not move with the host's buffer; a revision keeps them.
     pub(in super::super) fn adopt_stamps(&mut self, previous: &Self) {
         self.stamps.clone_from(&previous.stamps);
+        self.host_graph = previous.host_graph;
     }
 
     pub(super) fn workspace(&self) -> bool {

@@ -41,11 +41,33 @@ impl SessionCache {
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> Vec<PathBuf> {
         let mut sources = self.project_sources_to_refresh(virtual_root, overlay_identity);
+        let epoch = self.project_overlay_identities.get(virtual_root);
+        // Missing epochs are explicit disk/lifecycle invalidations. Equal
+        // epochs with refresh work mean standalone disk validation failed.
+        if epoch.is_none() || epoch == Some(&overlay_identity) {
+            sources.retain(|path| path != host && overlays.contains_key(path));
+            return sources;
+        }
         let current = self
             .source_catalog(virtual_root)
             .current_overlay_sources(overlays);
-        sources
-            .retain(|path| path != host && overlays.contains_key(path) && !current.contains(path));
+        let mut observed = crate::package_route::stamp::InputStampValidation::default();
+        let stale = if self.trust_watched_disk_inputs {
+            Default::default()
+        } else {
+            self.project_members
+                .get(virtual_root)
+                .into_iter()
+                .flat_map(|members| members.values())
+                .filter(|member| !member.fingerprint.stamps_still_valid(&mut observed))
+                .flat_map(|member| member.source_paths.iter().cloned())
+                .collect::<vize_carton::FxHashSet<_>>()
+        };
+        sources.retain(|path| {
+            path != host
+                && overlays.contains_key(path)
+                && (!current.contains(path) || stale.contains(path))
+        });
         sources
     }
 

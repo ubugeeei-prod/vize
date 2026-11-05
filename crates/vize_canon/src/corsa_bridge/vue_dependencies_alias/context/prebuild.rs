@@ -85,6 +85,44 @@ impl AliasContext {
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
     ) -> Result<(), CorsaBridgeError> {
+        let fingerprint = Self::request_fingerprint(
+            source_path,
+            content,
+            overlays,
+            requested_sources,
+            options,
+            environment,
+        );
+        let sibling = environment.editor_session.cache().changed_overlay_sibling(
+            source_path,
+            &fingerprint,
+            overlays,
+        );
+        if let Some((sibling, _, _)) = sibling {
+            if let Some(source) = overlays.get(&sibling) {
+                // Prepare only the changed member outside the transaction;
+                // the unchanged caller adopts its native delta later.
+                return Self::prebuild_host(&sibling, source, overlays, &[], options, environment);
+            }
+        }
+        Self::prebuild_host(
+            source_path,
+            content,
+            overlays,
+            requested_sources,
+            options,
+            environment,
+        )
+    }
+
+    fn prebuild_host(
+        source_path: &Path,
+        content: &str,
+        overlays: &FxHashMap<PathBuf, &str>,
+        requested_sources: &[(PathBuf, &str)],
+        options: CorsaVueVirtualDocumentOptions,
+        environment: CorsaProjectEnvironment<'_>,
+    ) -> Result<(), CorsaBridgeError> {
         let mut fingerprint = Self::request_fingerprint(
             source_path,
             content,
