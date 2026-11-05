@@ -1,0 +1,16 @@
+import { defineComponent } from 'vue';
+export const AnyArrayEmits = defineComponent({
+  props: { tag: { type: String, default: 'div' } },
+  emits: [] as any[],
+});
+export const NamedArrayEmits = defineComponent({
+  props: { tag: { type: String, default: 'div' } },
+  emits: ['end'],
+});
+export const NoEmits = defineComponent({
+  props: { tag: { type: String, default: 'div' } },
+});
+export const TypedEmits = defineComponent({
+  props: { tag: { type: String, default: 'div' } },
+  emits: { end: (_event: MouseEvent) => true, close: () => true },
+});
