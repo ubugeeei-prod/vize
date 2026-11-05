@@ -2,14 +2,49 @@ import assert from "node:assert/strict";
 import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./harness.mjs";
 
+interface CompilerResult {
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  stdout?: Buffer | null;
+  stderr?: Buffer | null;
+  error?: Error | null;
+}
+
+interface CompilerOutput {
+  filename: unknown;
+  code: unknown;
+  css: unknown;
+  errors: unknown;
+  warnings: unknown;
+  script_lang: unknown;
+  macro_artifacts: unknown;
+}
+
+interface CompilerObservation {
+  exitStatus: number | null;
+  signal: NodeJS.Signals | null;
+  stdoutBase64: string;
+  stderrBase64: string;
+  processError: string | null;
+  jsonBase64: string | null;
+  jsonSha256: string | null;
+  codeBase64: string | null;
+  codeSha256: string | null;
+  cssBase64: string | null;
+  cssSha256: string | null;
+  referenceComparison: ReturnType<typeof compareBytes> | null;
+  cssReferenceComparison: ReturnType<typeof compareBytes> | null;
+  facetError: string | null;
+}
+
 export function compilerAttempt(
-  result,
-  output,
-  expected,
+  result: CompilerResult,
+  output: Buffer | null,
+  expected: Buffer,
   expectedScriptLang = "js",
-  expectedCss = null,
-) {
-  const observation = {
+  expectedCss: Buffer | null = null,
+): CompilerObservation {
+  const observation: CompilerObservation = {
     exitStatus: result.status,
     signal: result.signal,
     stdoutBase64: result.stdout?.toString("base64") ?? "",
@@ -27,7 +62,7 @@ export function compilerAttempt(
   };
   if (output) {
     try {
-      const parsed = JSON.parse(output.toString("utf8"));
+      const parsed = JSON.parse(output.toString("utf8")) as CompilerOutput;
       assert.deepEqual(Object.keys(parsed), [
         "filename",
         "code",
@@ -57,7 +92,7 @@ export function compilerAttempt(
         observation.cssReferenceComparison = compareBytes(expectedCss, css);
       }
     } catch (error) {
-      observation.facetError = error.message;
+      observation.facetError = error instanceof Error ? error.message : String(error);
     }
   }
   return observation;

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { auditPackets } from "../../tools/benchmarks/scripts/canon-slot-constructor-audit.ts";
+import { assertConstructorWrapperMappings } from "../../tools/benchmarks/scripts/canon-slot-constructor-wrapper-mappings.ts";
 
 function fixture() {
   const beforeText = 'historical\nconst q = "name";\nvoid (item)';
@@ -56,6 +57,34 @@ const clone = <T>(value: T): T => structuredClone(value);
 void test("the constructor audit admits only the certified additive wrapper transition", () => {
   const { before, after } = fixture();
   assert.equal(auditPackets(before, after).mappings, 6);
+});
+void test("the constructor audit admits only the exact named component navigation successor", () => {
+  const text =
+    'const q = "name";\ntype TinyComponent = { readonly tiny: true };\ndeclare const __vize_component__: TinyComponent;\ndeclare const Tiny: typeof __vize_component__;\nexport default Tiny;\n';
+  const q = Buffer.from(text).indexOf("name");
+  const name = Buffer.from(text).indexOf("Tiny", Buffer.from(text).indexOf("declare const Tiny:"));
+  const before = {
+    text,
+    rows: [[q, 4, 20, 4, 0, 1048575]] as Array<[number, number, number, number, number, number]>,
+  };
+  const current = {
+    text,
+    rows: [
+      [q, 4, 20, 4, 0, 1048575],
+      [name, 4, 0, 0, 1, 248],
+    ] as Array<[number, number, number, number, number, number]>,
+  };
+  const producer = fs.readFileSync(
+    new URL("../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs", import.meta.url),
+  );
+  assertConstructorWrapperMappings(before, current, (value) => value, producer);
+  for (const field of [0, 1, 2, 3, 4, 5]) {
+    const changed = clone(current);
+    changed.rows[1]![field]! += 1;
+    assert.throws(() =>
+      assertConstructorWrapperMappings(before, changed, (value) => value, producer),
+    );
+  }
 });
 void test("the actual constructor audit refuses missing, reordered, foreign and modified rows", () => {
   const { before, after } = fixture();

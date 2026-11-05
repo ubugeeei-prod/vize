@@ -69,7 +69,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const receipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
   assert.equal(
     createHash("sha256").update(receipt).digest("hex"),
-    "567a290706e244d3472cd5ed24cdeca4966e4a3ae1e66f94be98ea3e59cbb3d4",
+    "5ed5d324fe566f4d5de43b31bd0e4695b1e6ce2fb359ee493e03d40b56fd54be",
   );
   const successor = JSON.parse(receipt.toString("utf8"));
   assert.equal(successor.schema, "vize.experimental-router-generated-transition.v1");

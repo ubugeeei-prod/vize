@@ -73,7 +73,7 @@ type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentIn
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
+type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -137,7 +137,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 16246:16275 -> 0:76
+  // @vize-map: 16269:16298 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -171,9 +171,9 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17848:17853 -> 18:23
+  // @vize-map: 17871:17876 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17931:17942 -> 40:51
+  // @vize-map: 17954:17965 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;

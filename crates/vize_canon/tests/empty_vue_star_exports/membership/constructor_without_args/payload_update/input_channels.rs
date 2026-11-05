@@ -1,6 +1,6 @@
 //! Invert only the #11629 split of template and TSX input channels before #11630.
 use super::support;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 const F0_BEFORE_0: &str = "type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;\ntype $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\ntype $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;\n";
 const F0_AFTER_0: &str = "type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;\ntype $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\ntype $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;\n";
@@ -177,7 +177,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 #[cfg(test)]
 mod tests {
     use super::{
-        FILES, PREAMBLE_EDITS, preamble_edits_before, retain_provenance, source_edits_before,
+        preamble_edits_before, retain_provenance, source_edits_before, FILES, PREAMBLE_EDITS,
     };
     use serde_json::json;
 
@@ -196,14 +196,17 @@ mod tests {
     fn current_assets_preamble_and_sdk_reconstruct_only_the_input_channels_layer() {
         for file in &FILES {
             let body = current(file.path);
+            let body = super::super::integrated_source::repair_before(file.path, body);
             let layer = super::super::jsx_exact_keys::source_edits_before(file.path, body);
             assert_eq!(
                 redo(source_edits_before(file.path, layer.clone()), file.edits),
                 layer
             );
         }
-        let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        let layer = super::super::jsx_exact_keys::preamble_edits_before(preamble.to_owned());
+        let preamble = super::super::integrated_source::repaired_preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
+        let layer = super::super::jsx_exact_keys::preamble_edits_before(preamble);
         assert_eq!(
             redo(preamble_edits_before(layer.clone()), PREAMBLE_EDITS),
             layer
@@ -219,7 +222,8 @@ mod tests {
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
             let body =
-                super::super::jsx_exact_keys::source_edits_before(file.path, current(file.path));
+                super::super::integrated_source::repair_before(file.path, current(file.path));
+            let body = super::super::jsx_exact_keys::source_edits_before(file.path, body);
             let (before, after) = file.edits[0];
             for mutated in [
                 body.replacen(after, "", 1),

@@ -9,7 +9,7 @@ import {
   expectedBuildIdentity,
   validateBuildReceipt,
 } from "./build-receipt.ts";
-import { compilerAttempt } from "./compiler-attempt.mjs";
+import { compilerAttempt } from "./compiler-attempt.ts";
 import { compilerCssApiReport, loadCompilerCssApiCases } from "./compiler-css-api.ts";
 import {
   COMPILER_PROJECT_CONTRACT,

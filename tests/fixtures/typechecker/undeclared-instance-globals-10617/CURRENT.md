@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-ccf36f226d00.json`: all 80 whole transform results from [source Actions 42094909442](https://github.com/ubugeeei-prod/vize/actions/runs/42094909442/job/127483376951), synthetic merge producer `ccf36f226d005ecd6a7d9d2e0778d3912917baf4` for PR head `90acb2a9783c4ac4a4d129b52ad6417974040bf0`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Exactly the 80 historical whole-packet comparisons changed after integrating the component-constructor and native-fallthrough projections; every non-whole-packet outcome and all three real-host controls passed. The complete current result objects are retained without a normalizer, filter, or relabelled historical packet.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-ccf36f226d00-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-245bb0b6f1cb.json`: all 80 whole transform results from [source Actions 41990064443](https://github.com/ubugeeei-prod/vize/actions/runs/41990064443/job/127121264248), actual merge producer `245bb0b6f1cb0dd618268aa48cbe9c1d2e01c3cc`. Its tree is identical to PR head `45ee61bd932ca84657d90326f2dee4c1aa70fe55`; the launch receipt binds the physical source CLI.
 
 The original capture remains **unqualified**: all 318 semantic, protocol and geometry outcomes passed, and all 80 historical whole-packet comparisons failed. The reviewed text difference has exactly two forms: 78 constructors inline their four owned instance fields before intersecting the public base, and the two Options API constructors additionally retain the authored instance members. These spellings add 121 or 178 bytes. The 32 changed mapping arrays also retain every old ordered mapping and add diagnostic-only atoms for synthetic parentheses: 28 packets add two atoms and four add four. Their ignore rows exclude those single-byte anchors. All remaining result fields are unchanged apart from the generated coordinates that move after the constructor. The complete finite comparisons and mutation refusals live in `content-mapper-instance-globals-constructor-packets.test.ts`.

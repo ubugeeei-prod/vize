@@ -1,6 +1,7 @@
 {
   "schema": "vize.experimental-router-generated-transition.v1",
   "qualificationCredit": false,
+  "observedRun": 42094909495,
   "ownedConstructor": {
     "path": "owned-constructor-20261105.json",
     "sha256": "e1b0adcb4d2b92fc782d08449f6fed6bcd755e6db7f64347ce4c2df938acdc2a"
@@ -9,9 +10,13 @@
     "path": "../../typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
     "sha256": "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518"
   },
-  "currentEdit": {
+  "previousCurrentEdit": {
     "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, $AuthoredKeyWitness<Jsx> & $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
     "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
+  },
+  "currentEdit": {
+    "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
+    "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
   },
   "entries": [
     {
@@ -19,42 +24,48 @@
       "baselineSha256": "a3ad4ac4ba604f262b0639f2c4790772bcd0bcb7ea220f621f79c54c276f7677",
       "ownedConstructorSha256": "d57f3391d2559e43d1c289b3ed363268b07c1d064597bbfbde41d44adaee6e57",
       "joinedSourceSha256": "60c9d78d1a7e3af5bc415be788911137a37d6f2acf4d735d628ef9e028cabbe5",
-      "currentSha256": "687bab10bbc8554b38f1bb704bc295ee9527dae283313fc52dc90e346270c46b"
+      "previousCurrentSha256": "687bab10bbc8554b38f1bb704bc295ee9527dae283313fc52dc90e346270c46b",
+      "currentSha256": "e760435e1e76a55dd683fef155fee98d31a1dd4122254b547b2f7eb30644b97b"
     },
     {
       "file": "crlf.valid.virtual.ts.txt",
       "baselineSha256": "0f139df25e3f8ecd21115c5f236a3da8a599b667a89231697524c3438d83e5ac",
       "ownedConstructorSha256": "3229fbd49e5c03218274304bca2e92642df944b818fa1f03ac87e0b607b18ce3",
       "joinedSourceSha256": "5a0b32810f318c55cd40480f6023b0d72d9e38432ed5e2d2ed31b25bdf274d37",
-      "currentSha256": "d23713f4d8ab64edb770c98ce4327611d2ed3fcca28d57124402d066241fab51"
+      "previousCurrentSha256": "d23713f4d8ab64edb770c98ce4327611d2ed3fcca28d57124402d066241fab51",
+      "currentSha256": "a5df69d608335303f5dd5dc75d4dee9f29ad8e3c9f42c0c1605b400387d39159"
     },
     {
       "file": "explicit.invalid.virtual.ts.txt",
       "baselineSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
       "ownedConstructorSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a",
       "joinedSourceSha256": "bb2cc0e83e524ff79f8f6c1ecc9291bd9ff55caa876435a123a816cdb79cb480",
-      "currentSha256": "b9131cc3f1257c971a284e608ebe37b0543214697850215d5e565997f02f2617"
+      "previousCurrentSha256": "b9131cc3f1257c971a284e608ebe37b0543214697850215d5e565997f02f2617",
+      "currentSha256": "63803fa4e430ece84058deccce80badcc3d7a11b64ed549de7db5b4316b54db3"
     },
     {
       "file": "explicit.valid.virtual.ts.txt",
       "baselineSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
       "ownedConstructorSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a",
       "joinedSourceSha256": "bb2cc0e83e524ff79f8f6c1ecc9291bd9ff55caa876435a123a816cdb79cb480",
-      "currentSha256": "b9131cc3f1257c971a284e608ebe37b0543214697850215d5e565997f02f2617"
+      "previousCurrentSha256": "b9131cc3f1257c971a284e608ebe37b0543214697850215d5e565997f02f2617",
+      "currentSha256": "63803fa4e430ece84058deccce80badcc3d7a11b64ed549de7db5b4316b54db3"
     },
     {
       "file": "lf.invalid.virtual.ts.txt",
       "baselineSha256": "4b68bc2889ef2007664b7f9d5ffd201bdac417997128c970948a1e451ba94a42",
       "ownedConstructorSha256": "7976df4c8b8c1607ae2a531de510541f99ba1b5f175dc184dfee12886d253224",
       "joinedSourceSha256": "1ac2e30cc77f4a667156f2951d70b6cf9e09bc2c3ba0dc4876f7f3f285f1760b",
-      "currentSha256": "72177436021fc544ce2568fd0ff4f4d8d6378c979c32d7f31a1259af5e3fb6a8"
+      "previousCurrentSha256": "72177436021fc544ce2568fd0ff4f4d8d6378c979c32d7f31a1259af5e3fb6a8",
+      "currentSha256": "57501b21c90281e74f4879c78ae3d67f87468021c68d7af26658b7462fd358eb"
     },
     {
       "file": "lf.valid.virtual.ts.txt",
       "baselineSha256": "cb7a16664ad5a88fb4f78583c15e454f06fad8b7881e25f00740ab8e79e74055",
       "ownedConstructorSha256": "32ecb04b38ae278c620ca5303e083f6edcd8cb52be54148c3cff27b3c808394e",
       "joinedSourceSha256": "ef3d4d8921929f0d523ac91c27de3cefc69538121bcb029604b9495e09195cfc",
-      "currentSha256": "1f05831c8d99c459eea20a1ac62e22e5a6d5a490332119025c9662cfe24ed8a7"
+      "previousCurrentSha256": "1f05831c8d99c459eea20a1ac62e22e5a6d5a490332119025c9662cfe24ed8a7",
+      "currentSha256": "0ae07f50033de36808a20a74e0cb71a5816e9108f7ea1b28ca2774e9fbc2bca5"
     }
   ]
 }

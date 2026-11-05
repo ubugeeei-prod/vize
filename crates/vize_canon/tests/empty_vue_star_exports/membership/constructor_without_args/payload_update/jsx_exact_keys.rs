@@ -1,6 +1,6 @@
 //! Authenticate the TSX-only exact-key change before the older input-channel layer.
 use super::support;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 const RECORD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -102,7 +102,7 @@ mod tests {
     use super::{
         load, preamble_edits_before, retain_provenance, source_before, source_edits_before,
     };
-    use serde_json::{Value, json};
+    use serde_json::{json, Value};
 
     fn forward(mut previous: String, record: &Value) -> String {
         for edit in record["edits"].as_array().unwrap().iter().rev() {
@@ -121,14 +121,14 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+            let body = super::super::integrated_source::repair_before(path, body);
             assert_eq!(forward(source_edits_before(path, body.clone()), file), body);
         }
-        let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let preamble = super::super::integrated_source::repaired_preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         assert_eq!(
-            forward(
-                preamble_edits_before(preamble.to_owned()),
-                &record["preamble"]
-            ),
+            forward(preamble_edits_before(preamble.clone()), &record["preamble"]),
             preamble
         );
         assert_eq!(
@@ -147,6 +147,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+            let body = super::super::integrated_source::repair_before(path, body);
             let before = file["edits"][0]["before"].as_str().unwrap();
             let after = file["edits"][0]["after"].as_str().unwrap();
             for mutated in [
@@ -165,7 +166,9 @@ mod tests {
                 assert!(rejected_edit || rejected_whole);
             }
         }
-        let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned();
+        let body = super::super::integrated_source::repaired_preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         let file = &record["preamble"];
         let before = file["edits"][0]["before"].as_str().unwrap();
         let after = file["edits"][0]["after"].as_str().unwrap();

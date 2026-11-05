@@ -1,4 +1,4 @@
-/** Expected-side admission for the known #11675 additive mapping transition. */
+/** Expected-side admission for #11675 plus the named component-export successor. */
 import assert from "node:assert/strict";
 import { isDeepStrictEqual } from "node:util";
 import { assertWrapperMappingProducer } from "../../support/compat/content-mapper/wrapper-mapping-producer.ts";
@@ -103,6 +103,31 @@ export function assertConstructorWrapperMappings(
       expected.push(retained);
       cursor++;
     }
+  }
+  const declarations = [
+    ...current.text.matchAll(/^declare const ([A-Za-z_$][\w$]*): typeof __vize_component__;$/gmu),
+  ];
+  const exported = declarations.find((match) =>
+    current.text.includes(`type ${match[1]}Component =`),
+  );
+  if (exported) {
+    assert.equal(
+      declarations.filter((match) => match[1] === exported[1]).length,
+      1,
+      "one named component export owns the navigation successor",
+    );
+    const name = exported[1]!;
+    const start = Buffer.byteLength(
+      current.text.slice(0, exported.index! + "declare const ".length),
+    );
+    const navigation: Tuple = [start, Buffer.byteLength(name), 0, 0, 1, 248];
+    assert.deepEqual(
+      current.rows[cursor],
+      navigation,
+      "the named component export maps only its exact name to the SFC start",
+    );
+    expected.push(contract(current, navigation, canonical));
+    cursor++;
   }
   assert.deepEqual(
     current.rows.map((row) => contract(current, row, canonical)),

@@ -202,7 +202,6 @@
       "tests/differential/browser-origin-current-reference.mjs",
       "tests/differential/check-deletion-readiness.mjs",
       "tests/differential/compare.mjs",
-      "tests/differential/compiler-attempt.mjs",
       "tests/differential/compiler.mjs",
       "tests/differential/deletion-readiness.mjs",
       "tests/differential/formatter-api-build.mjs",

@@ -138,8 +138,7 @@ void test("the sole retired WIT clause replays every complete archived Check pac
         symbolLike = true;
       } catch {}
     }
-    if (symbolLike)
-      throw new TypeError("Cannot convert a Symbol value to a string");`;
+    if (symbolLike) throw new TypeError("Cannot convert a Symbol value to a string");`;
   const previousSymbolGuard = `    if (typeof eventName === "symbol")
       throw new TypeError("Cannot convert a Symbol value to a string");`;
   assert.equal(source.split(currentSymbolGuard).length, 2, "one boxed-symbol successor");
