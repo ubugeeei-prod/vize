@@ -22,7 +22,91 @@ interface EmitGateOracle {
 
 const fixture = "tests/_fixtures/tooling/emit-props-gate-11697.json";
 const fixtureSha256 = "cf5afd61920c8a2c85fb680d701570f7d7572c988ff28b77f61608e4d543335d";
+const successorFixture = "tests/_fixtures/tooling/emit-props-gate-current-source-20261105.json";
+const successorSha256 = "0de58b21496792302fc4139a2acea9fa24d66f6972e7361a9e5e31ffc30fb824";
+const producers = [
+  "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+  "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+];
+const resolver = "crates/vize_canon/src/virtual_ts/scope/component_events/emit_resolver_share.rs";
+const arrays = "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs";
 const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
+
+interface SourceIdentity {
+  bytes: number;
+  sha256: string;
+}
+interface CurrentSourceSuccessor {
+  schema: string;
+  credit: { compiled: boolean; native: boolean; performance: boolean };
+  predecessor: SourceIdentity & { path: string };
+  sources: Array<{
+    path: string;
+    before: SourceIdentity;
+    after: SourceIdentity;
+    hunks: Array<{ before: string; after: string }>;
+  }>;
+  dependencies: Array<SourceIdentity & { path: string }>;
+}
+
+// This inverse authenticates source custody only. Callers keep reading the
+// actual generator templates and helpers when checking the current candidate.
+function historicalProducer(
+  read: (path: string) => string,
+  path: string,
+  current: string,
+  expected: string,
+): string {
+  if (!producers.includes(path) || sha256(current) === expected) return current;
+  const context = "selected emit gate producer successor";
+  const raw = read(successorFixture);
+  assert.equal(sha256(raw), successorSha256, context);
+  const successor = JSON.parse(raw) as CurrentSourceSuccessor;
+  assert.equal(successor.schema, "vize.emitPropsGateCurrentSource.v1", context);
+  assert.deepEqual(
+    successor.credit,
+    { compiled: false, native: false, performance: false },
+    context,
+  );
+  assert.equal(successor.predecessor.path, fixture, context);
+  assert.equal(successor.predecessor.sha256, fixtureSha256, context);
+  assert.equal(Buffer.byteLength(read(fixture)), successor.predecessor.bytes, context);
+  assert.deepEqual(
+    successor.sources.map((entry) => entry.path),
+    producers,
+    context,
+  );
+  const source = successor.sources.find((entry) => entry.path === path)!;
+  assert.equal(source.before.sha256, expected, context);
+  assert.equal(Buffer.byteLength(current), source.after.bytes, context);
+  assert.equal(sha256(current), source.after.sha256, context);
+  assert.deepEqual(
+    successor.dependencies.map((entry) => entry.path),
+    [resolver, arrays],
+    context,
+  );
+  for (const dependency of successor.dependencies) {
+    const body = read(dependency.path);
+    assert.equal(Buffer.byteLength(body), dependency.bytes, context);
+    assert.equal(sha256(body), dependency.sha256, context);
+  }
+  assert.equal(source.hunks.length, path === producers[0] ? 1 : 2, context);
+  let before = current;
+  for (const hunk of source.hunks) {
+    assert.notEqual(hunk.before, hunk.after, context);
+    assert.equal(before.split(hunk.after).length, 2, context);
+    before = before.replace(hunk.after, hunk.before);
+  }
+  assert.equal(Buffer.byteLength(before), source.before.bytes, context);
+  assert.equal(sha256(before), source.before.sha256, context);
+  let forward = before;
+  for (const hunk of [...source.hunks].reverse()) {
+    assert.equal(forward.split(hunk.before).length, 2, context);
+    forward = forward.replace(hunk.before, hunk.after);
+  }
+  assert.equal(forward, current, context);
+  return before;
+}
 
 /** Select the authored successor only for its complete, physical producer image. */
 export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
@@ -31,7 +115,11 @@ export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
   const oracle = JSON.parse(raw) as EmitGateOracle;
   assert.equal(sha256(oracle.historical.inference), oracle.historical.inferenceSha256);
   for (const [path, expected] of Object.entries(oracle.current.sourceHashes)) {
-    assert.equal(sha256(read(path)), expected, `selected emit gate producer: ${path}`);
+    assert.equal(
+      sha256(historicalProducer(read, path, read(path), expected)),
+      expected,
+      `selected emit gate producer: ${path}`,
+    );
   }
   return oracle;
 }
