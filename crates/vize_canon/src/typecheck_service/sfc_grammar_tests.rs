@@ -51,6 +51,12 @@ fn adjacent_quoted_attributes_reach_the_native_service_with_identical_output() {
         root.path().join("node_modules"),
     )
     .unwrap();
+    std::fs::write(
+        root.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","types":[]},"include":["SfcGrammar.vue.ts"]}"#,
+    )
+    .unwrap();
+    std::fs::write(root.path().join("SfcGrammar.vue.ts"), "export {};\n").unwrap();
     let filename = root.path().join("SfcGrammar.vue");
     let filename = filename.to_str().unwrap();
     let service = TypeCheckService {
