@@ -38,6 +38,7 @@ mod no_unused_vars;
 mod no_use_v_else_with_v_for;
 mod no_use_v_if_with_v_for;
 mod no_useless_template_attributes;
+mod no_v_for_template_key;
 mod no_v_for_template_key_on_child;
 mod no_v_text_v_html_on_component;
 mod prop_name_casing;
@@ -129,6 +130,7 @@ pub use no_unused_vars::NoUnusedVars;
 pub use no_use_v_else_with_v_for::NoUseVElseWithVFor;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
+pub use no_v_for_template_key::NoVForTemplateKey;
 pub use no_v_for_template_key_on_child::NoVForTemplateKeyOnChild;
 pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
@@ -273,6 +275,9 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-multiple-template-root") {
         registry.register(Box::new(NoMultipleTemplateRoot));
+    }
+    if !registry.has_rule("vue/no-v-for-template-key") {
+        registry.register(Box::new(NoVForTemplateKey));
     }
     if !registry.has_rule("vue/no-use-v-else-with-v-for") {
         registry.register(Box::new(NoUseVElseWithVFor));
