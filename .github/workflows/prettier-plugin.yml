@@ -53,7 +53,41 @@ jobs:
       - name: Check real host options, complete goldens, AST/render semantics and format counts
         run: node npm/native/scripts/test-preparation.mjs node --test npm/prettier/src/plugin.test.ts
       - name: Install the tarball in a fresh consumer and exercise actual CLI and configuration
-        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --output "$RUNNER_TEMP/prettier-source-consumer"
+        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --expected-node 24.14.0 --output "$RUNNER_TEMP/prettier-source-consumer"
+      - name: Install the declared minimum Node consumer runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "22.0.0", package-manager-cache: false }
+      - name: Qualify the same tarball and native image on Node 22.0.0
+        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --expected-node 22.0.0 --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" --output "$RUNNER_TEMP/prettier-node22-consumer"
+      - name: Compare installed runtime identity and complete output across consumers
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const report = name => JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/prettier-${name}-consumer/report.json`, 'utf8'));
+          const current = report('source');
+          const minimum = report('node22');
+          assert.equal(current.node, 'v24.14.0');
+          assert.equal(minimum.node, 'v22.0.0');
+          const identity = value => ({
+            tarball: value.adapterTarballSha256,
+            source: {
+              head: value.sourcePreparation.head,
+              tree: value.sourcePreparation.tree,
+              workingDiff: value.sourcePreparation.workingDiff,
+              binding: value.sourcePreparation.binding,
+              sha256: value.sourcePreparation.sha256,
+            },
+            nativePackage: value.nativePackage,
+            pluginVersion: value.pluginVersion,
+            prettier: value.prettier,
+            golden: value.golden,
+            art: value.art,
+            ignored: value.ignored,
+          });
+          assert.deepEqual(identity(minimum), identity(current));
+          JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -65,5 +99,10 @@ jobs:
             ${{ runner.temp }}/prettier-source-consumer/project*/prettier.config.mjs
             ${{ runner.temp }}/prettier-source-consumer/project*/.prettierignore
             ${{ runner.temp }}/prettier-source-consumer/project*/src/**
+            ${{ runner.temp }}/prettier-node22-consumer/*.json
+            ${{ runner.temp }}/prettier-node22-consumer/project*/package*.json
+            ${{ runner.temp }}/prettier-node22-consumer/project*/prettier.config.mjs
+            ${{ runner.temp }}/prettier-node22-consumer/project*/.prettierignore
+            ${{ runner.temp }}/prettier-node22-consumer/project*/src/**
           if-no-files-found: error
           retention-days: 14
