@@ -64,6 +64,27 @@ test("the actual asynchronous capability error/release order remains whole and u
     [6, 5],
   );
 });
+test("the two source-started capability and release request orders remain exact", () => {
+  const f = fixture(),
+    requests = f.owners[0]!.apiClient,
+    responses = f.owners[0]!.apiServer,
+    release = object(requests[4]),
+    capability = object(requests[5]),
+    releaseResponse = object(responses[4]),
+    capabilityResponse = object(responses[5]);
+  requests[4] = { ...capability, id: release.id };
+  requests[5] = { ...release, id: capability.id };
+  responses[4] = { ...capabilityResponse, id: release.id };
+  responses[5] = { ...releaseResponse, id: capability.id };
+  const proof = verify(f),
+    result = object(object(proof.owners[0]!.sourceSupplement).sourceCleanup);
+  assert.equal(result.apiClient, requests);
+  assert.equal(result.apiServer, responses);
+  assert.deepEqual(
+    requests.slice(4, 6).map((row) => object(row).method),
+    ["describeCapabilities", "release"],
+  );
+});
 test("historical source/SDK2 and wrong image/observer/helper/input never acquire cleanup authority", () => {
   changesRefuse([
     (f) => {

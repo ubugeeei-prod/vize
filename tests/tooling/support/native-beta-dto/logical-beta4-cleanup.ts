@@ -83,22 +83,27 @@ function configuration(owner: AttachedOwner, attached: Row) {
   call(1, "parseConfigFile", { file: config }, parsed);
   const first = snapshot(2, "createSnapshot", open, true);
   let current = snapshot(3, "updateSnapshot", { changes: open, snapshot: first }, false);
-  call(4, "release", { handle: String(first), snapshot: first }, true);
-  assert.deepEqual(pairs[5]!.request, {
+  // The source starts these independent requests together, so either can enter
+  // the captured client stream first. Keep both whole rather than normalizing
+  // their request or response order.
+  const releaseIndex = pairs[4]!.request.method === "release" ? 4 : 5,
+    capabilityIndex = releaseIndex === 4 ? 5 : 4;
+  call(releaseIndex, "release", { handle: String(first), snapshot: first }, true);
+  assert.deepEqual(pairs[capabilityIndex]!.request, {
     jsonrpc: "2.0",
-    id: pairs[5]!.request.id,
+    id: pairs[capabilityIndex]!.request.id,
     method: "describeCapabilities",
     params: null,
   });
-  assert.deepEqual(pairs[5]!.response, {
+  assert.deepEqual(pairs[capabilityIndex]!.response, {
     jsonrpc: "2.0",
-    id: pairs[5]!.request.id,
+    id: pairs[capabilityIndex]!.request.id,
     error: {
       code: -32603,
       message: 'api: invalid request: unknown API method "describeCapabilities"',
     },
   });
-  assert.ok(seen.get(current)! < server.indexOf(pairs[4]!.response));
+  assert.ok(seen.get(current)! < server.indexOf(pairs[releaseIndex]!.response));
   // The c75 source's retained mutations and final two partial closes fork ten
   // new lineages. Each releases the previous handle without closing the owner.
   for (let index = 6; index < 26; index += 2) {
