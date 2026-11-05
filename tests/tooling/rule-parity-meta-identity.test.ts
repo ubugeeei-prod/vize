@@ -13,9 +13,9 @@ const model = {
   templateHooks: ["enter_element", "check_directive"],
   markupHooks: ["enter_directive"],
 };
-const meta = (name) =>
+const meta = (name: string): string =>
   `static META: RuleMeta = RuleMeta { name: ${name}, description: "Example" };`;
-const parse = (source) => parseRuleSource(source, "sample.rs", model);
+const parse = (source: string) => parseRuleSource(source, "sample.rs", model);
 
 void test("literal and file-local const names retain every rule signal and hook", () => {
   const body = `
@@ -40,7 +40,7 @@ void test("literal and file-local const names retain every rule signal and hook"
   assert.equal(constant.jsxLowered, true);
   assert.equal(constant.scriptUsesAst, true);
   assert.deepEqual([...constant.croquisItems], [["Croquis", 1]]);
-  assert.equal(parse(meta('"vue/\\u{65}xample"')).meta.name, "vue/example");
+  assert.equal(parse(meta('"vue/\\u{65}xample"')).meta?.name, "vue/example");
 });
 
 void test("comments, strings and nested declarations cannot supply a local const", () => {
@@ -61,14 +61,14 @@ void test("comments, strings and nested declarations cannot supply a local const
   const actual = 'const RULE: &str = "vue/actual";\n';
   const decoys =
     '/* const RULE: &str = "vue/foreign"; */\nmod foreign { const RULE: &str = "vue/foreign"; }\n';
-  assert.equal(parse(decoys + actual + meta("RULE")).meta.name, "vue/actual");
+  assert.equal(parse(decoys + actual + meta("RULE")).meta?.name, "vue/actual");
   assert.equal(
     parse('const TEXT: &str = r#"static META: RuleMeta = RuleMeta { name: "foreign/rule" };"#;')
       .meta,
     null,
   );
   assert.equal(
-    parse('const TEXT: &str = r#"name: "foreign/rule""#;\n' + meta('"vue/actual"')).meta.name,
+    parse('const TEXT: &str = r#"name: "foreign/rule""#;\n' + meta('"vue/actual"')).meta?.name,
     "vue/actual",
   );
   for (const field of [
@@ -120,7 +120,7 @@ void test("missing, duplicate, nonliteral and foreign references fail closed", (
 });
 
 void test("all current RuleMeta names are discovered without changing source files", () => {
-  const files = (directory) =>
+  const files = (directory: string): string[] =>
     fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
       const child = path.join(directory, entry.name);
       return entry.isDirectory() ? files(child) : entry.name.endsWith(".rs") ? [child] : [];
@@ -129,8 +129,9 @@ void test("all current RuleMeta names are discovered without changing source fil
     .map((file) => parseRuleFile(file, model))
     .filter((file) => file.meta);
   assert.equal(rules.length, 279);
-  assert.equal(new Set(rules.map((rule) => rule.meta.name)).size, 279);
+  assert.equal(new Set(rules.map((rule) => rule.meta?.name)).size, 279);
   const actual = rules.find((rule) => rule.rel === "script/no_ref_object_reactivity_loss.rs");
+  assert(actual);
   assert.deepEqual(actual.meta, {
     kind: "ScriptRuleMeta",
     name: "vue/no-ref-object-reactivity-loss",
