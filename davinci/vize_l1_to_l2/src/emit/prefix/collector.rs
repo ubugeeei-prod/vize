@@ -13,10 +13,11 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_assignment_target, walk_object_property,
-        walk_update_expression,
+        walk_assignment_expression, walk_assignment_target, walk_new_expression,
+        walk_object_property, walk_update_expression,
     },
 };
+use oxc_span::GetSpan;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::String;
 
@@ -46,6 +47,8 @@ pub(super) struct IdentifierCollector<'s, 'a> {
     pub(super) rewrites: StdVec<(usize, String)>,
     pub(super) suffix_rewrites: StdVec<(usize, String)>,
     pub(super) assignment_targets: StdVec<usize>,
+    /// A helper call inserted at this callee start must remain inside `new`.
+    constructor_callee_start: Option<usize>,
 }
 
 impl<'s, 'a> IdentifierCollector<'s, 'a> {
@@ -63,6 +66,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
             rewrites: StdVec::new(),
             suffix_rewrites: StdVec::new(),
             assignment_targets: StdVec::new(),
+            constructor_callee_start: None,
         }
     }
 
@@ -139,6 +143,7 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         let start = self.at(ident.span.start);
         let end = self.at(ident.span.end);
         let needs_unref = self.scope.needs_unref(name);
+        let constructor = self.constructor_callee_start == Some(start);
         let is_assignment_target = self.assignment_targets.contains(&start);
         if is_assignment_target {
             if let Some(prefix) = self.scope.identifier_prefix(name) {
@@ -154,8 +159,16 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             // implies inline, where the prefix is never `$setup.` — but
             // the shipped branch order is what decides the other two.
             Some(prefix) if needs_unref && prefix == "$setup." => {
-                self.push_prefix(start, "_unref($setup.");
-                self.suffix_rewrites.push((end, String::from(")")));
+                self.push_prefix(
+                    start,
+                    if constructor {
+                        "(_unref($setup."
+                    } else {
+                        "_unref($setup."
+                    },
+                );
+                self.suffix_rewrites
+                    .push((end, String::from(if constructor { "))" } else { ")" })));
                 self.used_unref = true;
             }
             Some(prefix) => self.push_prefix(start, prefix),
@@ -163,12 +176,20 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
                 self.suffix_rewrites.push((end, String::from(".value")));
             }
             None if needs_unref => {
-                self.push_prefix(start, "_unref(");
-                self.suffix_rewrites.push((end, String::from(")")));
+                self.push_prefix(start, if constructor { "(_unref(" } else { "_unref(" });
+                self.suffix_rewrites
+                    .push((end, String::from(if constructor { "))" } else { ")" })));
                 self.used_unref = true;
             }
             None => {}
         }
+    }
+
+    fn visit_new_expression(&mut self, expr: &oxc_ast_types::NewExpression<'_>) {
+        let start = self.at(expr.callee.span().start);
+        let previous = self.constructor_callee_start.replace(start);
+        walk_new_expression(self, expr);
+        self.constructor_callee_start = previous;
     }
 
     fn visit_member_expression(&mut self, expr: &oxc_ast_types::MemberExpression<'_>) {
