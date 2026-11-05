@@ -144,14 +144,22 @@ fn profile_unrelated_overlays() {
                 &mut native,
             );
             native.sort();
-            assert_eq!(
-                native.len(),
-                expected
-                    .iter()
-                    .filter(|(_, packet)| packet["mapping_kind"] != "Synthetic")
-                    .count()
-                    + 1
-            );
+            let mut expected_native = expected
+                .iter()
+                .filter(|(_, packet)| packet["mapping_kind"] != "Synthetic")
+                .map(|(path, packet)| {
+                    (
+                        crate::file_uri::path_to_file_uri(path),
+                        vize_carton::String::from(packet["code"].as_str().unwrap()),
+                    )
+                })
+                .collect::<Vec<_>>();
+            expected_native.push((
+                crate::file_uri::path_to_file_uri(&b_path),
+                current_b.code.clone(),
+            ));
+            expected_native.sort();
+            assert_eq!(native, expected_native);
             rows.push(serde_json::json!({
                 "cycle": cycle, "elapsed_ms": elapsed_ms,
                 "host_context_reused": Arc::ptr_eq(&original.context, &query.context),

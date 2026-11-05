@@ -4,8 +4,14 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
-use super::{AliasContext, PreparedAliasContext, build};
+use super::{AliasContext, ContextFingerprint, PreparedAliasContext, build};
 use crate::batch::ModuleSpecifierFactsCache;
+
+struct HostRevision<'a> {
+    source_path: &'a Path,
+    content: &'a str,
+    fingerprint: ContextFingerprint,
+}
 
 impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host_cached(
@@ -27,6 +33,10 @@ impl AliasContext {
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        let capture_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_fingerprint",
+            overlays.len(),
+        );
         let fingerprint = Self::request_fingerprint(
             source_path,
             content,
@@ -35,6 +45,7 @@ impl AliasContext {
             options,
             environment,
         );
+        capture_phase.finish();
         let sibling = environment.editor_session.cache().changed_overlay_sibling(
             source_path,
             &fingerprint,
@@ -45,17 +56,31 @@ impl AliasContext {
                 // This non-recursive entry refreshes all changed live sources
                 // once; several dirty buffers cannot recursively prepare each
                 // other. The unchanged caller retains its own graph.
-                drop(Self::prepare_hosts_cached(
+                let sibling_fingerprint = Self::request_fingerprint(
                     &sibling,
                     source,
                     overlays,
                     &[],
                     options,
                     environment,
+                );
+                drop(Self::prepare_hosts_cached(
+                    HostRevision {
+                        source_path: &sibling,
+                        content: source,
+                        fingerprint: sibling_fingerprint,
+                    },
+                    overlays,
+                    &[],
+                    options,
+                    environment,
                 )?);
                 let mut prepared = Self::prepare_hosts_cached(
-                    source_path,
-                    content,
+                    HostRevision {
+                        source_path,
+                        content,
+                        fingerprint,
+                    },
                     overlays,
                     requested_sources,
                     options,
@@ -70,8 +95,11 @@ impl AliasContext {
             }
         }
         Self::prepare_hosts_cached(
-            source_path,
-            content,
+            HostRevision {
+                source_path,
+                content,
+                fingerprint,
+            },
             overlays,
             requested_sources,
             options,
@@ -81,28 +109,19 @@ impl AliasContext {
 
     #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     fn prepare_hosts_cached(
-        source_path: &Path,
-        content: &str,
+        host: HostRevision<'_>,
         overlays: &FxHashMap<PathBuf, &str>,
         requested_sources: &[(PathBuf, &str)],
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
-        // One preparation validates each package-route input once.
-        let _route_validation = environment.package_routes.validation_scope();
-        let capture_phase = crate::corsa_bridge::preparation_trace::Phase::start(
-            "alias_fingerprint",
-            overlays.len(),
-        );
-        let mut fingerprint = Self::request_fingerprint(
+        let HostRevision {
             source_path,
             content,
-            overlays,
-            requested_sources,
-            options,
-            environment,
-        );
-        capture_phase.finish();
+            mut fingerprint,
+        } = host;
+        // One preparation validates each package-route input once.
+        let _route_validation = environment.package_routes.validation_scope();
         let cache_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
         let (cached, cache_generation) = {
