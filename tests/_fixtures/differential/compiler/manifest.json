@@ -526,6 +526,65 @@
       }
     },
     {
+      "id": "compiler/project/sfc-entry-grammar-11869",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "sfc-entry-grammar-11869",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "7d78864e1d1cb1587cd9d1f9ef47f12a020981187c000e67ad758212a5ce4092"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "role": "config",
+            "sha256": "e1f467be0c103a7533b191addd4ab242cc2772fc58f91707faad90babe65a53c"
+          }
+        ]
+      },
+      "reference": {
+        "path": "sfc-entry-grammar-11869/module.expected.txt",
+        "sha256": "f43941c5c3f68c922f08450d6a20f29fe4dafb512db9141cd456478b32f04340",
+        "source": "Public v0.691.0 Darwin CLI whole SSR module for the archived spaced-control.vue.txt with the same pinned vite.config.mjs enabling experimentals.patternedTemplate. The reference control inserts spaces before v-match and data-note; the candidate compiles the original adjacent-attribute Layout.vue.txt. The public original input fails with Missing whitespace between attributes; this is a transformed-input reference, not a successful pre-fix observation."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-configured-project-v1",
+        "native": null,
+        "reasons": {
+          "native": "This case checks the production CLI SSR path with an explicitly configured experimental patterned-template feature; it does not establish whole-product native-only acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-configured-project-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "js"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-configured-project-v1 pinned vite.config.mjs enables patterned templates"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
       "targets": [
@@ -2610,6 +2669,65 @@
       }
     },
     {
+      "id": "compiler/sfc/scoped-starting-style-11850",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "scoped-starting-style-11850",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6f79368983b5bd4e0290c0b6477c3f57d0c016b8853f0f21bd14759e507770f6",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-starting-style-11850/module.expected.txt",
+        "sha256": "cf9bc6ab717d5159535acc00900736ca743114f4e8ad8af2a552fb7e38726469",
+        "cssPath": "scoped-starting-style-11850/style.expected.css",
+        "cssSha256": "2a7ab2aab4980a759d5ceca5656bd0a51caf29119317ee163cdfba35dbe4d3c0",
+        "source": "crates/vize_atelier_sfc/tests/scoped_starting_style.rs:starting_style_keeps_scoped_css_and_complete_ssr_module"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11850",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/scoped-where-nesting-9830",
       "state": "active",
       "targets": [
@@ -4513,124 +4631,6 @@
               "html-template"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
-          }
-        ]
-      }
-    },
-    {
-      "id": "compiler/sfc/scoped-starting-style-11850",
-      "state": "active",
-      "targets": [
-        "ssr"
-      ],
-      "inputs": {
-        "root": "scoped-starting-style-11850",
-        "files": [
-          {
-            "path": "Layout.vue.txt",
-            "sha256": "6f79368983b5bd4e0290c0b6477c3f57d0c016b8853f0f21bd14759e507770f6",
-            "role": "entry"
-          }
-        ]
-      },
-      "reference": {
-        "path": "scoped-starting-style-11850/module.expected.txt",
-        "sha256": "cf9bc6ab717d5159535acc00900736ca743114f4e8ad8af2a552fb7e38726469",
-        "cssPath": "scoped-starting-style-11850/style.expected.css",
-        "cssSha256": "2a7ab2aab4980a759d5ceca5656bd0a51caf29119317ee163cdfba35dbe4d3c0",
-        "source": "crates/vize_atelier_sfc/tests/scoped_starting_style.rs:starting_style_keeps_scoped_css_and_complete_ssr_module"
-      },
-      "adapters": {
-        "legacy": "compiler-cli-ssr-v1",
-        "native": null,
-        "reasons": {
-          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
-        }
-      },
-      "comparison": {
-        "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
-            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
-          }
-        ]
-      },
-      "provenance": {
-        "issue": "https://github.com/ubugeeei-prod/vize/issues/11850",
-        "reporter": "ubugeeei"
-      }
-    },
-    {
-      "id": "compiler/project/sfc-entry-grammar-11869",
-      "state": "active",
-      "targets": [
-        "ssr"
-      ],
-      "inputs": {
-        "root": "sfc-entry-grammar-11869",
-        "files": [
-          {
-            "path": "Layout.vue.txt",
-            "role": "entry",
-            "sha256": "7d78864e1d1cb1587cd9d1f9ef47f12a020981187c000e67ad758212a5ce4092"
-          },
-          {
-            "path": "vite.config.mjs.txt",
-            "role": "config",
-            "sha256": "e1f467be0c103a7533b191addd4ab242cc2772fc58f91707faad90babe65a53c"
-          }
-        ]
-      },
-      "reference": {
-        "path": "sfc-entry-grammar-11869/module.expected.txt",
-        "sha256": "f43941c5c3f68c922f08450d6a20f29fe4dafb512db9141cd456478b32f04340",
-        "source": "Public v0.691.0 Darwin CLI whole SSR module for the archived spaced-control.vue.txt with the same pinned vite.config.mjs enabling experimentals.patternedTemplate. The reference control inserts spaces before v-match and data-note; the candidate compiles the original adjacent-attribute Layout.vue.txt. The public original input fails with Missing whitespace between attributes; this is a transformed-input reference, not a successful pre-fix observation."
-      },
-      "adapters": {
-        "legacy": "compiler-cli-ssr-configured-project-v1",
-        "native": null,
-        "reasons": {
-          "native": "This case checks the production CLI SSR path with an explicitly configured experimental patterned-template feature; it does not establish whole-product native-only acceptance."
-        }
-      },
-      "comparison": {
-        "contract": "compiler-ssr-configured-project-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ],
-        "scriptLang": "js"
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
-            "selector": "compiler-cli-ssr-configured-project-v1 pinned vite.config.mjs enables patterned templates"
           }
         ]
       }
