@@ -1,7 +1,4 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
 import assert from "node:assert/strict";

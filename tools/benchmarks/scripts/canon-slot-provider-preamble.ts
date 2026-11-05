@@ -31,6 +31,21 @@ const TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
   ],
 ];
 
+const INTEGRATED_TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
+  [
+    "declare var __VLS_PROPS_FALLBACK: Record<string, unknown>;\n// vize checks these templates itself, so component input guards serve only\n// TS and TSX callers and keep extra keys exact.\ndeclare var __vizeTemplateChecker: true;\n\n",
+    "declare var __VLS_PROPS_FALLBACK: Record<string, unknown>;\n\n",
+  ],
+  [
+    "K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>>",
+    "K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>>",
+  ],
+  [
+    "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+    "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).\ntype $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\n",
+  ],
+];
+
 const previousOverloadPath = "tests/tooling/fixtures/emit-overload-transition/before.d.ts.txt";
 const currentOverloadPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
@@ -49,6 +64,21 @@ export function applySourceOwnedPreambleTransitions(historical: string) {
       current.split(before).length,
       2,
       `missing frozen preamble edit ${before.slice(0, 48)}`,
+    );
+    assert.equal(current.includes(after), false, `preamble already contains ${after.slice(0, 48)}`);
+    current = current.replace(before, after);
+  }
+  return current;
+}
+
+/** Apply source-owned changes that follow the immutable emit and slot certificates. */
+export function applyIntegratedSourcePreambleTransitions(certified: string) {
+  let current = certified;
+  for (const [before, after] of INTEGRATED_TRANSITIONS) {
+    assert.equal(
+      current.split(before).length,
+      2,
+      `missing integrated preamble edit ${before.slice(0, 48)}`,
     );
     assert.equal(current.includes(after), false, `preamble already contains ${after.slice(0, 48)}`);
     current = current.replace(before, after);

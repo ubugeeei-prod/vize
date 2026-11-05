@@ -1,7 +1,3 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -87,7 +83,7 @@ await test("source-built CLI locates every original and authored CSS ID selector
           error: result.error ? { name: result.error.name, message: result.error.message } : null,
           stdout: result.stdout ?? "",
           stderr: result.stderr ?? "",
-          expected: format === "json" ? expectedJson : expectedPlain,
+          expected: format === "json" ? expected.json : expected.plain,
         };
         evidence.runs.push(row);
         persist();
@@ -98,9 +94,9 @@ await test("source-built CLI locates every original and authored CSS ID selector
         if (format === "json") {
           row.actual = JSON.parse(row.stdout);
           persist();
-          assert.deepEqual(row.actual, expectedJson, entry.id);
+          assert.deepEqual(row.actual, expected.json, entry.id);
         } else {
-          assert.equal(row.stdout, expectedPlain, entry.id);
+          assert.equal(row.stdout, expected.plain, entry.id);
         }
       }
       fs.unlinkSync(path.join(directory, entry.filename));

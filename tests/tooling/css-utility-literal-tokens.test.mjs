@@ -1,7 +1,3 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -105,7 +101,7 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
                 : null,
               stdoutBase64: (result.stdout ?? Buffer.alloc(0)).toString("base64"),
               stderrBase64: (result.stderr ?? Buffer.alloc(0)).toString("base64"),
-              expected: format === "json" ? expectedJson : expectedPlain,
+              expected: format === "json" ? expected.json : expected.plain,
             };
             captures.push(row);
             evidence.runs.push(row);
@@ -118,9 +114,9 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
             if (format === "json") {
               row.actual = JSON.parse(stdout);
               persist();
-              assert.deepEqual(row.actual, expectedJson, entry.id);
+              assert.deepEqual(row.actual, expected.json, entry.id);
             } else {
-              assert.equal(stdout, expectedPlain, entry.id);
+              assert.equal(stdout, expected.plain, entry.id);
             }
             assert.deepEqual(fs.readFileSync(physical), source);
             assert.equal(

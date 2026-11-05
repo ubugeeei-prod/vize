@@ -8,6 +8,7 @@ import {
   AUTHENTICATED_PREAMBLE_BYTES,
   AUTHENTICATED_PREAMBLE_SHA256,
   applyCurrentOverloadPreamble,
+  applyIntegratedSourcePreambleTransitions,
   applyPreviousOverloadPreamble,
   applySourceOwnedPreambleTransitions,
   applyCurrentEmitPreamble,
@@ -115,8 +116,11 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     beforeGenericEventPreamble((file) => fs.readFileSync(file, "utf8"), successorPreamble),
     currentPreamble,
   );
-  const currentSourcePreamble = applyCurrentOverloadPreamble(successorPreamble);
+  const overloadPreamble = applyCurrentOverloadPreamble(successorPreamble);
+  const currentSourcePreamble = applyIntegratedSourcePreambleTransitions(overloadPreamble);
   assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
+  assert.equal(currentSourcePreamble.includes("declare var __vizeTemplateChecker: true;"), false);
+  assert.ok(currentSourcePreamble.includes("type $ComponentInstanceFor<"));
   for (const changed of [
     genericEventRecordPath,
     "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
