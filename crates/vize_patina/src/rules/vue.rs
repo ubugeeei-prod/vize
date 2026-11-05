@@ -12,6 +12,7 @@
 // Essential rules
 mod attribute_hyphenation;
 mod attribute_order;
+mod comment_directive;
 mod if_chain;
 mod no_bare_strings_in_template;
 mod no_child_content;
@@ -163,6 +164,7 @@ pub use crate::rules::opinionated::vue::{
 };
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
+pub use comment_directive::CommentDirective;
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};

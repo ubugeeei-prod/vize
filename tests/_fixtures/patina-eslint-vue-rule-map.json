@@ -82,8 +82,16 @@
       "status": "unimplemented"
     },
     "vue/comment-directive": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/comment-directive",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/component-api-style": {
       "issue": 3223,
@@ -2003,8 +2011,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 142,
-    "unimplemented": 108
+    "mapped": 143,
+    "unimplemented": 107
   },
   "upstream": {
     "package": "eslint-plugin-vue",
