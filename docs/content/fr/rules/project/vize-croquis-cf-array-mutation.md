@@ -4,7 +4,7 @@ title: "vize:croquis/cf/array-mutation"
 
 # `vize:croquis/cf/array-mutation`
 
-Un tableau est modifié par index, ce qu’un tableau réactif ne suit pas.
+Utilisez des mutations observables pour mettre à jour les indices d’un tableau dans Vue 2.7.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 Il s’agit d’un contrat de diagnostic publié sans producteur actuel. Le scénario Mauvais/Bon ci-dessous explique le risque et la correction ; aucune option ne permet actuellement de déclencher ce code.
 
 Uniquement pour l’ancien Vue 2.7 : utilisez des dépendances Vue 2.7 et de compilateur SFC correspondantes pour ce scénario. Les proxies de Vue 3 suivent les affectations aux indices des tableaux ; `items[0] = next` est donc réactif en Vue 3 et ne constitue pas un défaut de Vue 3. Ce code publié n’a actuellement aucun producteur de diagnostics.
+
+## Champ d’application et limites
+
+Ce contrat sans producteur actuel utilise un scénario historique d’affectation à un indice de tableau dans Vue 2.7. Vue 2 ne notifie pas les mises à jour par affectation directe à un indice ; Vue 3 suit ces affectations. Les fichiers Mauvais et Bon illustrent la correction pour Vue 2, et non un défaut de Vue 3.
 
 ## Fichiers communs du projet
 

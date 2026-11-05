@@ -60,7 +60,7 @@ export const frenchRules4 = {
     "Utiliser un conteneur `<section>` pouvant contenir l’élément de bloc de l’enfant ; l’enfant reste inchangé.",
   ],
   "vize:croquis/cf/array-mutation": [
-    "Un tableau est modifié par index, ce qu’un tableau réactif ne suit pas.",
+    "Utilisez des mutations observables pour mettre à jour les indices d’un tableau dans Vue 2.7.",
     "Dans ce projet historique Vue 2.7, `items[0] = next` modifie le tableau sans avertir l’observateur de tableaux de Vue 2 ; le premier élément affiché peut donc ne pas être mis à jour.",
     "`splice(0, 1, next)` utilise la méthode de modification de tableau observée par Vue 2, permettant au même remplacement de mettre à jour la vue.",
   ],

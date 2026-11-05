@@ -1,6 +1,6 @@
 export const frenchRules6 = {
   "vize:croquis/cf/watcheffect-async": [
-    "`watchEffect` lance une tâche asynchrone et ne peut pas nettoyer l’exécution précédente.",
+    "Protégez le travail asynchrone de watchEffect contre l’invalidation et les réponses périmées.",
     "Le watchEffect asynchrone présenté ici n’a ni nettoyage lors de l’invalidation ni garde contre une réponse périmée. Le `watchEffect` asynchrone mêle la collecte implicite des dépendances à une requête dont il attend le résultat, sans garde contre l’invalidation.",
     "Un `watch(() => props.query, ...)` explicite déclare la source, enregistre le nettoyage de la requête et refuse une réponse périmée après invalidation.",
   ],

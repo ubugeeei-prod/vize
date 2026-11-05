@@ -7,6 +7,10 @@ import { verifyRenderedRuleIndentation } from "./rule-indentation-render-asserti
 import { groupIncludes, ruleGroups } from "./rules/rule-groups.ts";
 import { ruleHeadings } from "./rules/rule-page.ts";
 import {
+  japaneseEditorialReferenceCases,
+  type EditorialCase,
+} from "./rules/japanese-editorial-successors.ts";
+import {
   isOperationalDiagnosticReference,
   operationalDiagnosticPages,
 } from "./rules/operational-diagnostics.ts";
@@ -29,13 +33,6 @@ export const ruleRenderRoutes = [
   "/rules/project/vize-croquis-cf-circular-reactive-dependency",
 ];
 
-interface EditorialCase {
-  case: string;
-  rule: string;
-  section: "purpose" | "bad" | "good";
-  before: string;
-  after: string;
-}
 const editorial = JSON.parse(
   readFileSync(resolve(root, "tests/_fixtures/docs-ja-rule-editorial.json"), "utf8"),
 ) as { originalSourceSha: string; cases: EditorialCase[] };
@@ -168,8 +165,8 @@ function rulePageRoute(locale: Locale, id: string) {
   return `/${prefix(locale)}rules/${section}/${slug}`;
 }
 
-async function verifyJapaneseEditorial(page: Page) {
-  const cases = editorial.cases.map((entry) => ({
+export async function verifyJapaneseEditorial(page: Page) {
+  const cases = japaneseEditorialReferenceCases(editorial.cases).map((entry) => ({
     ...entry,
     route: rulePageRoute("ja", entry.rule),
   }));
@@ -179,20 +176,39 @@ async function verifyJapaneseEditorial(page: Page) {
         cases.map(async (entry) => {
           const response = await fetch(`${entry.route}/index.html`);
           const document = new DOMParser().parseFromString(await response.text(), "text/html");
-          const anchor =
-            entry.section === "purpose"
+          const moved = entry.targetSection === "qualification";
+          const headingsAt = [...document.querySelectorAll(".content h2")];
+          const qualificationHeadings = moved
+            ? headingsAt.filter(
+                (heading) => heading.textContent?.trim() === entry.qualificationHeading,
+              )
+            : [];
+          const anchor = moved
+            ? qualificationHeadings[0]
+            : entry.targetSection === "purpose"
               ? document.querySelector(".content h1")
-              : [...document.querySelectorAll(".content h2")].find(
+              : headingsAt.find(
                   (heading) =>
                     heading.textContent?.trim() ===
-                    (entry.section === "bad" ? headings.bad : headings.good),
+                    (entry.targetSection === "bad" ? headings.bad : headings.good),
                 );
           let next = anchor?.nextElementSibling;
-          while (next && !(next instanceof HTMLParagraphElement)) next = next.nextElementSibling;
+          if (!moved)
+            while (next && !(next instanceof HTMLParagraphElement)) next = next.nextElementSibling;
+          const purpose = document.querySelector(".content h1")?.nextElementSibling;
           return {
             case: entry.case,
             status: response.status,
-            text: next?.textContent?.replace(/\s+/g, " ").trim() ?? "",
+            text: moved
+              ? next instanceof HTMLParagraphElement
+                ? (next.textContent ?? "")
+                : ""
+              : (next?.textContent?.replace(/\s+/g, " ").trim() ?? ""),
+            purpose:
+              moved && purpose instanceof HTMLParagraphElement
+                ? (purpose.textContent ?? "")
+                : undefined,
+            qualificationHeadings: qualificationHeadings.length,
           };
         }),
       ),
@@ -200,8 +216,29 @@ async function verifyJapaneseEditorial(page: Page) {
   );
   for (const [index, entry] of cases.entries()) {
     assert.equal(actual[index].status, 200, entry.route);
-    assert.equal(actual[index].text, editorialText(entry.after), `${entry.rule}: ${entry.section}`);
+    assert.equal(
+      actual[index].text,
+      editorialText(entry.after),
+      `${entry.rule}: ${entry.targetSection}`,
+    );
     assert.notEqual(actual[index].text, editorialText(entry.before), `${entry.rule}: old wording`);
+    if (entry.targetSection === "qualification") {
+      assert.equal(
+        actual[index].qualificationHeadings,
+        1,
+        `${entry.rule}: one qualification heading`,
+      );
+      assert.equal(
+        actual[index].purpose,
+        entry.expectedPurpose,
+        `${entry.rule}: exact concise purpose`,
+      );
+      assert.notEqual(
+        actual[index].purpose,
+        editorialText(entry.before),
+        `${entry.rule}: old purpose`,
+      );
+    }
   }
   return {
     originalSourceSha: editorial.originalSourceSha,
@@ -209,6 +246,14 @@ async function verifyJapaneseEditorial(page: Page) {
       case: id,
       wholeTextSha256: createHash("sha256").update(text).digest("hex"),
     })),
+    placementSuccessors: actual
+      .filter((entry) => entry.purpose !== undefined)
+      .map(({ case: id, purpose }) => ({
+        case: id,
+        from: "purpose",
+        to: "qualification",
+        purposeTextSha256: createHash("sha256").update(purpose!).digest("hex"),
+      })),
   };
 }
 

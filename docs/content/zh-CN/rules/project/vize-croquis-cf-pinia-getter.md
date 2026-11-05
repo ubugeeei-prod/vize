@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-Pinia getter 未通过 `storeToRefs` 读取，无法保持响应性。
+避免在 setup 中将 Pinia getter 的值复制为不再跟随更新的快照。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Pinia getter 未通过 `storeToRefs` 读取，无法保持响应性。
 这是目前没有实现的公开诊断约定。下方错误与正确示例解释风险及修复；目前没有任何标志能使此诊断代码触发。
 
 必须安装 Pinia，且 main.ts 须在挂载前安装其插件。在受跟踪的计算或模板内直接读取 `store.doubled` 是有效的；此处问题是取普通快照。该诊断约定目前没有实现。
+
+## 适用范围与限制
+
+这个约定展示了在 setup 中复制 Pinia getter 的当前原始类型值，得到不再跟随更新的快照。在受跟踪的计算或模板中直接读取 getter 仍可保持响应性；这里通过 storeToRefs() 提取值来修复问题。
 
 ## 共享项目文件
 

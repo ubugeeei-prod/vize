@@ -1,4 +1,15 @@
 export const portugueseShared: Record<string, string> = {
+  "Scope and limitations": "Escopo e limitações",
+  "This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.":
+    "Este contrato sem produtor atual usa um cenário histórico de atribuição a índices de arrays no Vue 2.7. O Vue 2 não notifica atualizações por atribuição direta ao índice; o Vue 3 rastreia essas atribuições. Os arquivos incorreto e correto ilustram a correção para o Vue 2, e não um defeito do Vue 3.",
+  "This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.":
+    "Este contrato ilustra a cópia do valor primitivo atual de um getter do Pinia durante setup, criando um instantâneo que deixa de acompanhar atualizações. A leitura direta do getter em um cálculo rastreado ou no template continua reativa; storeToRefs() é a forma de extração usada aqui para corrigir o problema.",
+  "This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.":
+    "Este cenário do analisador experimental coloca ref(0) no escopo do módulo de um script comum, em vez do setup por instância. O Vue permite esse estado reativo; o exemplo exige que cada instância do componente tenha sua própria contagem. A CLI não emite este código individual.",
+  "A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.":
+    "Um objeto bruto e seu proxy reativo têm identidades de objeto distintas, e toRaw() retorna o objeto original. Este contrato ilustra a comparação de IDs estáveis de registros quando se pretende comparar a identidade do registro.",
+  "The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.":
+    "O watchEffect assíncrono mostrado aqui não tem limpeza na invalidação nem proteção contra respostas desatualizadas. O Vue oferece limpeza para watchEffect; o exemplo correto usa uma origem de watch explícita e cancela o trabalho invalidado.",
   "Shared project files": "Arquivos compartilhados do projeto",
   "Example qualification": "Qualificação do exemplo",
   "Not emitted": "Não emitido",
