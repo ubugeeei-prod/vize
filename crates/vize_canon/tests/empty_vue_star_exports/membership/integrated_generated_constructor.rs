@@ -47,10 +47,11 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     let previous_entries = previous["entries"].as_array().unwrap();
     assert_eq!(entries.len(), 2);
     assert_eq!(previous_entries.len(), 2);
-    for ((entry, previous), (index, path)) in entries.iter().zip(previous_entries).zip([
-        (74, "project/A.vue.ts"),
-        (75, "project/B.vue.ts"),
-    ]) {
+    for ((entry, previous), (index, path)) in entries
+        .iter()
+        .zip(previous_entries)
+        .zip([(74, "project/A.vue.ts"), (75, "project/B.vue.ts")])
+    {
         assert_eq!(entry["entry"], index);
         assert_eq!(entry["before"][0], path);
         assert_eq!(entry["after"][0], path);

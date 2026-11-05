@@ -220,7 +220,8 @@ fn validate_documentation_successor(before: &str, current: &str, locale: Locale)
                 Some(("rules", rest)) if rest.starts_with("reference/") || rest.starts_with("project/")
             );
             assert!(
-                is_rule_page || (rule == "vue/comment-directive" && route == "guide/lint-execution.md"),
+                is_rule_page
+                    || (rule == "vue/comment-directive" && route == "guide/lint-execution.md"),
                 "finite current documentation field for {rule}: {page}"
             );
             for prefix in ["", "ja/"] {
