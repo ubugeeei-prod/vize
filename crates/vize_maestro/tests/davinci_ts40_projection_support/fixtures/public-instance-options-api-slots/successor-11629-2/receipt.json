@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11629,
+  "nativeAcceptanceCredit": false,
+  "predecessor": {
+    "path": "successor-11629/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "34974e2b86797eedd3077a7eee28c8582574f9042a5e561eda1bb15bd9450b5e"
+  },
+  "successor": {
+    "path": "successor-11629-2/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "b708aa6c43ca7349c5fb65f11f6e6995858b7fac193d7442e98903b2e5321b27"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 56,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "qualification": {
+    "beforeSource": "727db3b16a8eb5151d326c73725d275498f9d54d",
+    "afterSource": "22210e2e800d1fc0f69d3cb68c43ccb968c49286",
+    "beforeRun": 41671504138,
+    "beforeCompletePacketArtifact": 13250278063,
+    "afterRun": 41985298267,
+    "afterCompletePacketArtifact": 13395623355,
+    "afterRecordArtifact": 13395553597,
+    "mode": "default",
+    "completePayloadInverse": "Exact JSX witness inversion, embedded generated map annotations, complete import maps and probe populations, every mapping, semantic link and authored hit; every other byte unchanged."
+  },
+  "scope": "The reviewed JSX witness is 56 bytes longer. Exact complete before and after packets were retained by Actions and inverted in full. Historical records remain unchanged. This is projection reconstruction, not TypeScript consumer acceptance."
+}
