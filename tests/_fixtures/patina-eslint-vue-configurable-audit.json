@@ -21,11 +21,11 @@
     ]
   },
   "summary": {
-    "mapped": 60,
-    "unimplemented": 50,
+    "mapped": 62,
+    "unimplemented": 48,
     "intentionalDivergence": 2,
     "mappedWithTypedOptions": 17,
-    "mappedWithoutTypedOptions": 43
+    "mappedWithoutTypedOptions": 45
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
