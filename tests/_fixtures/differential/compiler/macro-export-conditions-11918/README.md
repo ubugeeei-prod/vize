@@ -13,6 +13,9 @@ fails on that version. The regression compiles the unmodified project, compares
 the complete module, and separately checks inherited conditions, declaration
 order, nested/array targets, wildcard/exact/null subpaths, condition changes,
 and inactive conditions with exact runtime-prop/error oracles.
+The route matrix was independently checked with TypeScript 6.0.3 and the Vue
+3.5.35 compiler: an explicit null stops array fallback, a missing file permits
+the next array entry, and inactive exports cannot expose top-level types.
 
 For release acceptance, materialize the five authenticated project files using
 `tests/differential/compiler-project.ts`, then run a fresh installed `vize`

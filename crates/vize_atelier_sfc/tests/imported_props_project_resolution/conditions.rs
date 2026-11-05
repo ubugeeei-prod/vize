@@ -51,7 +51,7 @@ fn configured_source_condition_resolves_root_and_nested_export_shapes() {
         r#"{"types":"./dist/index.d.ts","exports":{".":{"source":"./src/index.ts","default":"./dist/index.js"}}}"#,
         r#"{"types":"./dist/index.d.ts","exports":{"source":"./src/index.ts","default":"./dist/index.js"}}"#,
         r#"{"exports":{".":{"import":{"source":"./src/index.ts","default":"./dist/index.js"}}}}"#,
-        r#"{"exports":{".":{"source":[null,"./missing.ts","./src/index.ts"]}}}"#,
+        r#"{"exports":{".":{"source":["./missing.ts","./src/index.ts"]}}}"#,
     ] {
         let project = project(manifest);
         assert_eq!(
@@ -181,6 +181,19 @@ fn unconfigured_source_and_explicit_null_condition_do_not_expose_physical_types(
         r#"{"types":"./src/index.ts","exports":{".":{"source":null,"default":"./dist/index.js"}}}"#,
     );
     unresolved(project.path(), COMPONENT, "lib");
+}
+
+#[test]
+fn active_condition_lookup_does_not_borrow_inactive_or_unexported_types() {
+    for manifest in [
+        r#"{"types":"./src/index.ts","exports":{".":{"inactive":{"types":"./src/index.ts"}}}}"#,
+        r#"{"types":"./src/index.ts","exports":{"./private":{"source":"./src/index.ts"}}}"#,
+        r#"{"types":"./src/index.ts","exports":{".":{"source":"./missing.ts"}}}"#,
+        r#"{"types":"./src/index.ts","exports":{".":{"source":[null,"./src/index.ts"]}}}"#,
+    ] {
+        let project = project(manifest);
+        unresolved(project.path(), COMPONENT, "lib");
+    }
 }
 
 #[test]

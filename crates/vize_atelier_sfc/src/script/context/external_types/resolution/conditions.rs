@@ -99,15 +99,19 @@ pub(super) fn resolve(
                         matched = Some((prefix.len(), suffix.len(), captured, target));
                     }
                 }
-                let (_, _, captured, target) = matched?;
+                let Some((_, _, captured, target)) = matched else {
+                    return Some(Selection::Excluded);
+                };
                 wildcard = Some(captured);
                 target
             }
         }
         target if subpath.is_empty() => target,
-        _ => return None,
+        _ => return Some(Selection::Excluded),
     };
-    select(target, package, wildcard, conditions, &probe)
+    // Once an exports map owns the route, an inactive or missing target
+    // must not fall back to unrelated top-level/physical declarations.
+    select(target, package, wildcard, conditions, &probe).or(Some(Selection::Excluded))
 }
 
 fn select(
@@ -139,16 +143,10 @@ fn select(
                 condition == "default" || conditions.iter().any(|active| active == condition)
             })
             .find_map(|(_, target)| select(target, package, wildcard, conditions, probe)),
-        Target::Array(targets) => {
-            let mut excluded = false;
-            for target in targets {
-                match select(target, package, wildcard, conditions, probe) {
-                    Some(path @ Selection::Path(_)) => return Some(path),
-                    Some(Selection::Excluded) => excluded = true,
-                    None => {}
-                }
-            }
-            excluded.then_some(Selection::Excluded)
-        }
+        // TypeScript stops on an explicit null array entry; absent file
+        // targets may continue to a later array member.
+        Target::Array(targets) => targets
+            .iter()
+            .find_map(|target| select(target, package, wildcard, conditions, probe)),
     }
 }
