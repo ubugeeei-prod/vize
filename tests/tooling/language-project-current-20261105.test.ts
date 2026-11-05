@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
+import { DEMANDED_SFC_CUSTODY } from "../../tools/support/compat/github/language-project-demanded-sfc-20261105.ts";
+import { newLanguageProjectCases } from "../../tools/support/compat/github/language-project-fixtures.ts";
 import {
   CURRENT_LANGUAGE_PROJECT_ROOT,
   historicalClassificationRegistration,
@@ -124,6 +126,112 @@ test("lazy SFC replay requires its successor, archives and immutable predecessor
           `${target}:${missing}`,
         );
       }
+    }
+  }
+});
+
+const casePairs: Array<{ source: string; before: string | null; head: string }> = JSON.parse(
+  read("head", "tests/_fixtures/tooling/language-project-source-pairs-10740.json")!.toString(),
+);
+const caseRead = (side: "base" | "head", source: string) => {
+  const pair = casePairs.find((entry) => entry.source === source);
+  if (!pair) return side === "base" ? null : read(side, source);
+  const body = side === "base" ? pair.before : pair.head;
+  return body === null ? null : Buffer.from(body);
+};
+
+test("demanded SFC sources compose complete independent predecessors without replacing existing custody", () => {
+  const successor = JSON.parse(read("head", DEMANDED_SFC_CUSTODY)!.toString());
+  assert.equal(successor.qualificationCredit, false);
+  const plugin = JSON.parse(
+    read("head", CURRENT_LANGUAGE_PROJECT_ROOT + "plugin-source-successor.json")!.toString(),
+  );
+  const runtime = JSON.parse(
+    read(
+      "head",
+      "tests/_fixtures/tooling/typescript-classification-runtime-11664/custody.json",
+    )!.toString(),
+  );
+  const previous = new Map([
+    ...custody.transitions.map((entry: any) => [entry.path, entry.after]),
+    ...plugin.transitions.map((entry: any) => [entry.path, entry.after]),
+    ...runtime.transitions.map((entry: any) => [entry.after.path, entry.after]),
+  ]);
+  const rows = JSON.parse(
+    read("head", "tests/_fixtures/differential/typechecker/manifest.json")!.toString(),
+  ).languageProjectCases;
+  assert.deepEqual(newLanguageProjectCases(undefined, rows, caseRead).ids, [row.id]);
+  for (const entry of successor.transitions) {
+    const before = gunzipSync(read("head", entry.gzip.path)!);
+    const expected = previous.get(entry.path) as { bytes: number; sha256: string };
+    assert.deepEqual(entry.before, { bytes: expected.bytes, sha256: expected.sha256 });
+    assert.equal(before.length, expected.bytes);
+    assert.equal(createHash("sha256").update(before).digest("hex"), expected.sha256);
+    const staged = historicalCurrentLanguageProjectSources((side, source) =>
+      side === "head" && source === entry.path ? before : read(side, source),
+    );
+    assert.deepEqual(
+      historicalCurrentLanguageProjectSources(read)("head", entry.path),
+      staged("head", entry.path),
+    );
+    assert.deepEqual(
+      historicalCurrentLanguageProjectSources(read)("base", entry.path),
+      read("base", entry.path),
+    );
+  }
+});
+
+test("demanded SFC replay rejects every missing or modified record, archive, predecessor and moved helper", () => {
+  const successor = JSON.parse(read("head", DEMANDED_SFC_CUSTODY)!.toString());
+  const assets = [
+    DEMANDED_SFC_CUSTODY,
+    ...successor.predecessors.map((entry: any) => entry.path),
+    ...successor.currentFiles.map((entry: any) => entry.path),
+    ...successor.transitions.map((entry: any) => entry.gzip.path),
+  ];
+  for (const asset of assets) {
+    for (const missing of [false, true]) {
+      const altered = (side: "base" | "head", source: string) =>
+        side === "head" && source === asset
+          ? missing
+            ? null
+            : Buffer.concat([read(side, source)!, Buffer.from("\n")])
+          : read(side, source);
+      assert.throws(
+        () => {
+          const replay = historicalCurrentLanguageProjectSources(altered);
+          for (const entry of successor.transitions) replay("head", entry.path);
+        },
+        { message: "invalid classification successor: current source custody differs" },
+      );
+    }
+  }
+});
+
+test("demanded SFC producer mutations and arbitrary manifest repins cannot acquire historical authority", () => {
+  const successor = JSON.parse(read("head", DEMANDED_SFC_CUSTODY)!.toString());
+  const rows = JSON.parse(
+    read("head", "tests/_fixtures/differential/typechecker/manifest.json")!.toString(),
+  ).languageProjectCases;
+  for (const entry of successor.transitions) {
+    const current = read("head", entry.path)!.toString();
+    const edit = entry.edits[0];
+    for (const body of [
+      null,
+      Buffer.from(current + "\n"),
+      Buffer.from(current.replace(edit.after, "")),
+      Buffer.from(current.replace(edit.after, edit.after + edit.after)),
+    ]) {
+      if (body) assert.notDeepEqual(body, Buffer.from(current));
+      const altered = (side: "base" | "head", source: string) =>
+        side === "head" && source === entry.path ? body : caseRead(side, source);
+      assert.throws(() => newLanguageProjectCases(undefined, rows, altered));
+      if (!body) continue;
+      const repinned = structuredClone(rows);
+      const producer = repinned[0].tests.find((test: any) => test.source === entry.path);
+      assert(producer);
+      producer.sha256 = createHash("sha256").update(body).digest("hex");
+      assert.throws(() => newLanguageProjectCases(undefined, repinned, altered));
     }
   }
 });

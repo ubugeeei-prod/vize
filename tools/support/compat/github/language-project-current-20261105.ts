@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
+import { historicalDemandedSfcSource } from "./language-project-demanded-sfc-20261105.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 type Identity = { path: string; bytes: number; sha256: string };
@@ -133,7 +134,7 @@ function historicalCurrentPluginSource(read: ReadFile, path: string, current: Bu
 export function historicalCurrentLanguageProjectSources(read: ReadFile): ReadFile {
   let custody: Record | undefined;
   return (side, path) => {
-    const body = read(side, path);
+    const body = historicalDemandedSfcSource(read, side, path, read(side, path));
     const plugin = currentPluginSources.find((entry) => entry.path === path);
     if (side === "head" && body && plugin && digest(body) === plugin.sha256)
       return historicalCurrentPluginSource(read, path, body);

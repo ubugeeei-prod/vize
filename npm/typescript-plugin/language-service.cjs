@@ -180,7 +180,7 @@ function createMappedLanguageService(ts, service, support) {
     "getSuggestionDiagnostics",
   ]) {
     proxy[method] = (file) => {
-      if (isSfc(file)) support?.ensure?.(file);
+      support?.ensure?.(file);
       const document = get(file);
       if (!document)
         return service[method](file).map((value) => ({
