@@ -1,8 +1,10 @@
 //! Shared project-configured Patina constructor for diagnostics and actions.
 
-use super::linter_options;
-use tower_lsp::lsp_types::Url;
-use vize_patina::LintPreset;
+use super::{DiagnosticService, LineIndex, linter_options, sources};
+use tower_lsp::lsp_types::{
+    CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
+};
+use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
 pub(in crate::ide) fn linter_for_uri(
     state: &crate::server::ServerState,
@@ -46,4 +48,79 @@ pub(in crate::ide) fn linter_for_uri(
         linter
     };
     Some(linter)
+}
+
+impl DiagnosticService {
+    /// Collect linter diagnostics from vize_patina.
+    #[expect(
+        clippy::disallowed_methods,
+        clippy::disallowed_macros,
+        reason = "tower-lsp Diagnostic fields (message, code, source) are std String"
+    )]
+    pub(super) fn collect_lint_diagnostics(
+        state: &crate::server::ServerState,
+        uri: &Url,
+        content: &str,
+        ecosystem_enabled: bool,
+        line_index: &LineIndex<'_>,
+    ) -> Vec<Diagnostic> {
+        let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
+        let Some(linter) = linter_for_uri(state, uri, ecosystem_enabled) else {
+            return vec![];
+        };
+        let mut result = if is_standalone_html {
+            linter.lint_standalone_html(content, uri.path())
+        } else {
+            linter.lint_sfc(content, uri.path())
+        };
+        // Publish authored lint identities in the same order as CLI and actions.
+        result
+            .diagnostics
+            .sort_by_key(|diagnostic| (diagnostic.start, diagnostic.end, diagnostic.rule_name));
+
+        result
+            .diagnostics
+            .into_iter()
+            .map(|lint_diag| {
+                // Convert byte offsets directly in the SFC. vize_patina::lint_sfc
+                // already maps template diagnostics back to source coordinates.
+                let (start_line, start_col) = line_index.line_col(lint_diag.start as usize);
+                let (end_line, end_col) = line_index.line_col(lint_diag.end as usize);
+
+                // Build the diagnostic message with help text (render as plain text for LSP)
+                let message = if let Some(ref help) = lint_diag.help {
+                    format!(
+                        "{}\n\nHelp: {}",
+                        lint_diag.message,
+                        render_help(help, HelpRenderTarget::PlainText)
+                    )
+                } else {
+                    lint_diag.message.to_string()
+                };
+
+                Diagnostic {
+                    range: Range {
+                        start: Position {
+                            line: start_line,
+                            character: start_col,
+                        },
+                        end: Position {
+                            line: end_line,
+                            character: end_col,
+                        },
+                    },
+                    severity: Some(match lint_diag.severity {
+                        vize_patina::Severity::Error => DiagnosticSeverity::ERROR,
+                        vize_patina::Severity::Warning => DiagnosticSeverity::WARNING,
+                    }),
+                    code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
+                    code_description: linter_options::rule_docs_url(lint_diag.rule_name)
+                        .map(|href| CodeDescription { href }),
+                    source: Some(sources::LINTER.to_string()),
+                    message,
+                    ..Default::default()
+                }
+            })
+            .collect()
+    }
 }
