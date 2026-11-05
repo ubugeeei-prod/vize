@@ -1,11 +1,21 @@
-//! Owned inputs share the actual host exporter, preserving complete telemetry.
+//! Controlled owned inputs exercise the live host report assembler.
 
 use core::time::Duration;
 
-use vize_carton::profile_export::{
-    ProfileExportBudget, ProfileExportOptions, export_report, export_report_from_snapshots,
+use super::super::{
+    ProfileExport, ProfileExportBudget, ProfileExportOptions, assemble, export_report,
 };
 use vize_l0::profiler::{AllocationSnapshot, CounterMetrics, Metrics, Profiler, SpanAttribution};
+
+fn fixture_report(
+    spans: Vec<(&'static str, SpanAttribution, Metrics)>,
+    counters: Vec<(&'static str, CounterMetrics)>,
+    options: &ProfileExportOptions,
+) -> ProfileExport {
+    let spans = assemble::spans(spans, options);
+    let counters = assemble::counters(counters, options);
+    assemble::report(spans, counters, options)
+}
 
 fn options() -> ProfileExportOptions {
     ProfileExportOptions {
@@ -46,7 +56,7 @@ fn owned_snapshots_preserve_every_supplied_telemetry_field() {
         .with_file_id(7)
         .with_block("template")
         .with_span(5, 9);
-    let export = export_report_from_snapshots(
+    let export = fixture_report(
         vec![("profile.snapshot.span", attribution, span)],
         vec![("io.read.bytes", counter(&[7, 9]))],
         &ProfileExportOptions {
@@ -181,7 +191,7 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
     profiler.disable();
     drop(profiler);
 
-    let owned = export_report_from_snapshots(spans, counters, &options());
+    let owned = fixture_report(spans, counters, &options());
     assert_eq!(owned, native);
     assert_eq!(owned.to_json(), native.to_json());
     assert_eq!(
@@ -194,7 +204,7 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
             (
                 "profile.snapshot.a",
                 2,
-                Some(vize_carton::profile_export::ProfileExportAttribution {
+                Some(crate::profile_export::ProfileExportAttribution {
                     stage: Some("s2"),
                     pass: None,
                     file_id: None,
@@ -214,7 +224,7 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
 fn owned_inputs_preserve_full_tiebreaks_and_explicit_truncation() {
     let early = SpanAttribution::new().with_stage("s1");
     let late = SpanAttribution::new().with_stage("s2");
-    let export = export_report_from_snapshots(
+    let export = fixture_report(
         vec![
             ("profile.snapshot.a", late, metrics(&[5000])),
             (
@@ -258,7 +268,7 @@ fn owned_inputs_preserve_full_tiebreaks_and_explicit_truncation() {
 
 #[test]
 fn owned_inputs_keep_empty_unavailable_and_duration_saturation_contracts() {
-    let empty = export_report_from_snapshots(Vec::new(), Vec::new(), &options());
+    let empty = fixture_report(Vec::new(), Vec::new(), &options());
     assert_eq!(
         serde_json::to_value(empty).unwrap(),
         serde_json::json!({
@@ -271,7 +281,7 @@ fn owned_inputs_keep_empty_unavailable_and_duration_saturation_contracts() {
     );
     let mut huge = Metrics::new();
     huge.record(Duration::MAX);
-    let huge = export_report_from_snapshots(
+    let huge = fixture_report(
         vec![("profile.snapshot.huge", SpanAttribution::EMPTY, huge)],
         Vec::new(),
         &options(),
