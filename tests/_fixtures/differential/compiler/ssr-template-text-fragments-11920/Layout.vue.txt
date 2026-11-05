@@ -1,0 +1,7 @@
+<script setup>
+const show = true;
+</script>
+
+<template>
+  <div class="box"><template v-if="show">hi</template></div>
+</template>

@@ -44,9 +44,9 @@ pub(super) struct RegionShape {
 }
 
 impl RegionShape {
-    /// A singleton nested conditional retains its own conditional branch range.
+    /// Text and nested conditionals retain the client branch's Fragment range.
     pub(super) fn needs_branch_fragment(&self, first: Kind) -> bool {
-        self.legacy_children > 1 || first == Kind::If
+        self.legacy_children > 1 || matches!(first, Kind::Text | Kind::DynamicText | Kind::If)
     }
 
     /// A single element, component, or slot owns an item; other shapes need a range.
