@@ -267,6 +267,11 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
 /// Vue keeps an authored identifier a simple expression even when it reads
 /// `_unref(fn)`; any other method reference passed uncached is compound.
 fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
+    // Uncached component references keep the authored expression's layout,
+    // even when TypeScript erasure turns that expression into an identifier.
+    if cx.component_props && on::bypasses_component_cache(cx, expr) {
+        return !super::prefix::is_simple_identifier(content);
+    }
     // Codegen reads the same runtime spelling as handler emission. Preserve
     // authored padding when TypeScript did not change the expression.
     let erased = match expr {
@@ -274,9 +279,6 @@ fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
         _ => None,
     };
     let content = erased.as_deref().unwrap_or(content);
-    if cx.component_props && on::bypasses_component_cache(cx, expr) {
-        return !super::prefix::is_simple_identifier(content);
-    }
     on::is_inline_handler_source(content)
 }
 
