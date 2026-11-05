@@ -52,7 +52,7 @@ fn selected_scoped_dynamic_templates_preserve_complete_module_and_map_custody() 
 }
 
 #[test]
-fn static_component_scope_and_fallthrough_keep_the_complete_prior_modules() {
+fn static_component_scope_stays_outside_fallthrough_props_in_complete_modules() {
     let options = SsrCompilerOptions {
         scope_id: Some("data-v-control".into()),
         ..Default::default()

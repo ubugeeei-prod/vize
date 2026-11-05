@@ -1,0 +1,3 @@
+<template>
+  <section class="leaf"><slot /></section>
+</template>

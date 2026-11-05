@@ -53,24 +53,6 @@ impl SsrCodegenContext<'_> {
         out
     }
 
-    pub(super) fn with_scope_id_prop(&mut self, props: String) -> String {
-        let Some(scope_id) = self.options.scope_id.as_deref() else {
-            return props;
-        };
-        let scope_props = component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
-        if props == "null" {
-            return scope_props;
-        }
-
-        self.use_core_helper(RuntimeHelper::MergeProps);
-        let mut out = String::from("_mergeProps(");
-        out.push_str(&props);
-        out.push_str(", ");
-        out.push_str(&scope_props);
-        out.push(')');
-        out
-    }
-
     /// Build a component prop bag without crossing spread or dynamic-key boundaries.
     pub(super) fn build_component_props(
         &mut self,

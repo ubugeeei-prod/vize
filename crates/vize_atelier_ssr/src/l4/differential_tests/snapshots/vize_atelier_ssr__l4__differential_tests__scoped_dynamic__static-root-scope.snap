@@ -8,7 +8,7 @@ import { createElementVNode as _createElementVNode, resolveComponent as _resolve
 
 code:
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(_ssrRenderComponent(_resolveComponent("NuxtLink"), _mergeProps(_mergeProps({ to: "/news", class: "news__link" }, { "data-v-control": "" }), _attrs), {
+  _push(_ssrRenderComponent(_resolveComponent("NuxtLink"), _mergeProps({ to: "/news", class: "news__link" }, _attrs), {
     default: _withCtx((_, _push, _parent, _scopeId) => {
       if (_push) {
         _push(`<span data-v-control>News</span>`)

@@ -47,12 +47,16 @@ runs:
         VIZE_FRAGMENT_CSS_RUNTIME_CAPTURE: ${{ runner.temp }}/fragment-css-runtime.json
         VIZE_NESTED_BRANCH_CAPTURE: ${{ runner.temp }}/nested-branch-modules.json
         VIZE_NESTED_BRANCH_RUNTIME_CAPTURE: ${{ runner.temp }}/nested-branch-runtime.json
+        VIZE_SCOPE_ATTR_CAPTURE: ${{ runner.temp }}/scope-attr-modules.json
+        VIZE_SCOPE_ATTR_RUNTIME_CAPTURE: ${{ runner.temp }}/scope-attr-runtime.json
       run: |
         cargo test --locked --profile ci -p vize_atelier_sfc --test ssr_fragment_css_vars -- --nocapture
         cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test ssr_fragment_css_vars -- --nocapture
         vp node --test tests/tooling/ssr-fragment-css-vars.test.ts
         cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test nested_branch_fragments -- --nocapture
         vp node --test tests/tooling/ssr-nested-branch-fragments.test.mjs
+        cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test scope_attr_forwarding -- --nocapture
+        vp node --test tests/tooling/ssr-component-scope-attrs.test.ts
     - name: Upload current-source scoped CSS modules and runtime captures
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -74,5 +78,7 @@ runs:
           ${{ runner.temp }}/fragment-css-runtime.json
           ${{ runner.temp }}/nested-branch-modules.json
           ${{ runner.temp }}/nested-branch-runtime.json
+          ${{ runner.temp }}/scope-attr-modules.json
+          ${{ runner.temp }}/scope-attr-runtime.json
         if-no-files-found: error
         retention-days: 7

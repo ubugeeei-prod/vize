@@ -1,0 +1,15 @@
+<script setup>
+import Frame from "./Frame.vue";
+import Leaf from "./Leaf.vue";
+defineOptions({ inheritAttrs: false });
+</script>
+
+<template>
+  <Frame><Leaf v-bind="$attrs">x</Leaf></Frame>
+</template>
+
+<style scoped>
+.panel {
+  color: blue;
+}
+</style>
