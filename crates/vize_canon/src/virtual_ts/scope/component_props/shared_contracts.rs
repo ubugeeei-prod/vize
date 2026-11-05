@@ -87,3 +87,20 @@ pub(super) fn shared_component_contracts(
     }
     contracts
 }
+
+/// Later uses of one contract reuse the canonical usage's prop-value type.
+pub(super) fn prop_alias_share<'a>(
+    summary: &'a vize_croquis::Croquis,
+    idx: usize,
+    hoist_shared_preamble: bool,
+    shared: Option<&SharedComponentContract>,
+) -> (bool, Option<(usize, &'a ComponentUsage)>) {
+    let owner = shared
+        .filter(|shared| shared.canonical_idx != idx)
+        .and_then(|shared| {
+            vize_croquis::facts::component_usage_slice(summary)
+                .get(shared.canonical_idx)
+                .map(|usage| (shared.canonical_idx, usage))
+        });
+    (hoist_shared_preamble, owner)
+}
