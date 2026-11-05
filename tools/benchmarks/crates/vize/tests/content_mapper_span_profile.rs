@@ -79,6 +79,9 @@ fn complete_content_mapper_span_profile() {
     if mode == "runtime-off" {
         assert_eq!(allocation.allocation_calls(), 0);
         assert_eq!(profiler.span_snapshot().len(), 0);
+    } else {
+        assert!(allocation.allocation_calls() > 0);
+        assert!(allocation.requested_bytes() > 0);
     }
     // Whole serializer output is retained as a string: field omission and order remain observable.
     let packet = serde_json::to_string(&packet).unwrap();

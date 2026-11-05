@@ -82,6 +82,10 @@ export function summarize(rows, binaries) {
                 releasedBytes: 0,
                 failures: 0,
               });
+            else {
+              assert.ok(row.allocation.calls > 0, "allocation tracking must be enabled");
+              assert.ok(row.allocation.requestedBytes > 0, "allocation bytes must be recorded");
+            }
             samples.push(row);
           }
         const timed = samples.filter((row) => row.mode === "runtime-off"),
@@ -133,7 +137,10 @@ function build(directory) {
   const binaries = {};
   for (const role of roles) {
     const cwd = role === "base" ? baseline : root,
-      env = { ...process.env, CARGO_TARGET_DIR: join(dirname(directory), "span-" + role + "-target") };
+      env = {
+        ...process.env,
+        CARGO_TARGET_DIR: join(dirname(directory), "span-" + role + "-target"),
+      };
     assert.equal(
       hash(readFileSync(join(cwd, observer))),
       hash(readFileSync(join(root, observer))),

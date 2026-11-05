@@ -75,6 +75,10 @@ for (const mutation of [
   (rows) => (rows[1] = rows[0]),
   (rows) => (rows[0].source += "x"),
   (rows) => (rows[0].allocation.calls = 1),
+  (rows) => {
+    const row = rows.find((sample) => sample.mode === "allocation");
+    row.allocation = { calls: 0, requestedBytes: 0, releasedBytes: 0, failures: 0 };
+  },
 ])
   test("reject incomplete, duplicated or contaminated evidence", () => {
     const rows = samples();
