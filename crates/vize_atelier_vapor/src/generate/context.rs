@@ -265,9 +265,18 @@ impl<'a> GenerateContext<'a> {
     }
 
     pub(crate) fn push_indent(&mut self) {
-        for _ in 0..self.indent_level {
-            self.out.push_str("  ");
+        const INDENT: &str = "                                                                ";
+        let mut levels = self.indent_level as usize;
+        if levels == 0 {
+            return;
         }
+        // Indentation is unlinked text; write it in chunks rather than checking
+        // the output capacity separately for every two-space level.
+        while levels > INDENT.len() / 2 {
+            self.out.push_str(INDENT);
+            levels -= INDENT.len() / 2;
+        }
+        self.out.push_str(&INDENT[..levels * 2]);
     }
 
     pub(crate) fn indent(&mut self) {
@@ -300,5 +309,35 @@ impl std::fmt::Write for GenerateContext<'_> {
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
         self.out.push_str(s);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod indentation_tests {
+    use super::{EmitDocument, FxHashMap, FxHashSet, GenerateContext};
+
+    #[test]
+    fn chunked_indentation_preserves_complete_emission_documents() {
+        let elements = FxHashMap::default();
+        let standalone = FxHashSet::default();
+        for recording in [false, true] {
+            for level in [0, 1, 2, 31, 32, 33, 63, 64, 65, 129] {
+                let mut context = GenerateContext::new(&elements, &standalone, None, "雪🐱tail");
+                context.out = EmitDocument::new(recording);
+                context.out.push_mapped("雪🐱", 0);
+                context.indent_level = level;
+                context.push_indent();
+                context.out.push_mapped("tail", 7);
+
+                let mut expected = EmitDocument::new(recording);
+                expected.push_mapped("雪🐱", 0);
+                expected.push_str(&" ".repeat(level as usize * 2));
+                expected.push_mapped("tail", 7);
+                assert_eq!(
+                    context.out, expected,
+                    "level {level}, recording {recording}"
+                );
+            }
+        }
     }
 }
