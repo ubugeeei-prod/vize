@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
-import { assertCompilerPatchSuccessor } from "../../_helpers/compiler-patch-successors.ts";
+import { assertAuthoredPieceCompilerSuccessor } from "../../_helpers/compiler-authored-piece-successors.ts";
 import {
   assertFailedBuild,
   type BuildResult,
@@ -105,11 +105,13 @@ test("create-vue compiler is deterministic and recovers from an exact template p
           warnings: [],
         },
       );
-      assert.equal(sha256(output.code), compiledCodeSha256, output.code);
+      assertAuthoredPieceCompilerSuccessor("create-vue-clean", cleanFirst.outputText, {
+        codeSha256: compiledCodeSha256,
+      });
       assertParsesAsModule(output.code, "create-vue App.json#code");
       for (const expected of [
         "import { createElementVNode as _createElementVNode",
-        '__name: "App"',
+        "__name: 'App'",
         '_createElementVNode("h1", null, "You did it!")',
         'href: "https://vuejs.org/"',
         'rel: "noopener"',
@@ -237,7 +239,9 @@ test("create-vue formatter converges and repairs one exact attribute-spacing edi
 
       const compiled = runBuild(fixture.workspaceDir, ".vize-formatter-compile");
       assertSuccessfulBuild(compiled);
-      assert.equal(sha256(compiled.output.code), formattedCodeSha256, compiled.output.code);
+      assertAuthoredPieceCompilerSuccessor("create-vue-formatted", compiled.outputText, {
+        codeSha256: formattedCodeSha256,
+      });
       assert.equal(count(compiled.output.code, '_createTextVNode(" Visit ")'), 1);
       assert.equal(
         count(compiled.output.code, '_createTextVNode(" to read the documentation ")'),
@@ -602,7 +606,7 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assertCompilerPatchSuccessor("create-vue-broken", compiler.outputText, {
+  assertAuthoredPieceCompilerSuccessor("create-vue-broken", compiler.outputText, {
     previousPacket: {
       filename: "App.vue",
       code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
