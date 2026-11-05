@@ -2539,6 +2539,61 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-component-scope-attrs-11921",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-component-scope-attrs-11921",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "0756049c7e424336ed55515608dc1c9d046803ff7010ace118f0fef462c05db7",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-component-scope-attrs-11921/module.expected.txt",
+        "sha256": "1cd10a7d83894c4696fce4862e49d3ada03080c8858db5d4b61bc7cfe9c181f6",
+        "cssPath": "ssr-component-scope-attrs-11921/style.expected.css",
+        "cssSha256": "cf4458da4fb12889a14ac1706a2cca095178bd2ccce2967bfc9813bd691d89b8",
+        "source": "https://github.com/ubugeeei-prod/vize/issues/11921; Vue ssrRenderComponent captures scope on VNodes, outside forwarded props; scope_attr_forwarding source runtime oracle"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
       "targets": ["ssr"],
@@ -3685,61 +3740,6 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
-            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
-          }
-        ]
-      }
-    },
-    {
-      "id": "compiler/sfc/ssr-component-scope-attrs-11921",
-      "state": "active",
-      "targets": [
-        "ssr"
-      ],
-      "inputs": {
-        "root": "ssr-component-scope-attrs-11921",
-        "files": [
-          {
-            "path": "Layout.vue.txt",
-            "sha256": "0756049c7e424336ed55515608dc1c9d046803ff7010ace118f0fef462c05db7",
-            "role": "entry"
-          }
-        ]
-      },
-      "reference": {
-        "path": "ssr-component-scope-attrs-11921/module.expected.txt",
-        "sha256": "1cd10a7d83894c4696fce4862e49d3ada03080c8858db5d4b61bc7cfe9c181f6",
-        "cssPath": "ssr-component-scope-attrs-11921/style.expected.css",
-        "cssSha256": "cf4458da4fb12889a14ac1706a2cca095178bd2ccce2967bfc9813bd691d89b8",
-        "source": "https://github.com/ubugeeei-prod/vize/issues/11921; Vue ssrRenderComponent captures scope on VNodes, outside forwarded props; scope_attr_forwarding source runtime oracle"
-      },
-      "adapters": {
-        "legacy": "compiler-cli-ssr-v1",
-        "native": null,
-        "reasons": {
-          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
-        }
-      },
-      "comparison": {
-        "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
