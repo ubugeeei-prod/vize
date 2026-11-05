@@ -30,7 +30,7 @@ fn accepts_closed_optional_and_ordinary_tags() {
         "<Comp />",
         "<Comp></Comp>",
         include_str!(
-            "../../../../../../tests/_fixtures/differential/linter/closed-link-component-20261105/template.txt"
+            "../../../../../../tests/_fixtures/differential/linter/closed-link-component-20261105/template.html.txt"
         ),
         "<p><Input>content</Input></p>",
         "<table><tr><td>a</td></tr></table>",

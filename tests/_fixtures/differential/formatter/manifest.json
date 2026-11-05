@@ -2551,16 +2551,26 @@
         "root": "qualification-20261105",
         "files": [
           {
-            "path": "App.vue",
+            "path": "App.vue.txt",
             "sha256": "530b4514647be6befaecb50b4b3ca873ca9b34b1e3129fcec9fafceb880ee28a",
-            "role": "entry"
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
           }
         ],
         "config": []
       },
       "provenance": {
         "issues": [],
-        "commits": [{"sha": "8c83f43291eeec881a47e42ffcc34c85faf5e050", "role": "native admission boundary", "paths": ["crates/vize_glyph/src/native_doc/directive.rs"]}],
+        "commits": [
+          {
+            "sha": "8c83f43291eeec881a47e42ffcc34c85faf5e050",
+            "role": "native admission boundary",
+            "paths": [
+              "crates/vize_glyph/src/native_doc/directive.rs"
+            ]
+          }
+        ],
         "sources": [
           {
             "kind": "repository-authored",

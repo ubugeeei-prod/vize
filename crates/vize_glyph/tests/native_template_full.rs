@@ -140,7 +140,7 @@ fn malformed_or_recovered_heads_keep_original_parse_observations_on_refusal() {
         "<p v-custom:[='value'/>",
         "<p v-bind:[]='value'/>",
         include_str!(
-            "../../../tests/_fixtures/differential/formatter/qualification-20261105/App.vue"
+            "../../../tests/_fixtures/differential/formatter/qualification-20261105/App.vue.txt"
         )
         .strip_prefix("<template>")
         .unwrap()
