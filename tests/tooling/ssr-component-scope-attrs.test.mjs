@@ -50,7 +50,9 @@ await test(
         node.nodeType === 1
           ? {
               tag: node.localName,
-              attrs: [...node.attributes].map(({ name, value }) => [name, value]).sort(),
+              attrs: [...node.attributes]
+                .map(({ name, value }) => [name, value])
+                .sort(([left], [right]) => left.localeCompare(right)),
               children: [...node.childNodes].map(visit),
             }
           : { type: node.nodeType, text: node.textContent };
@@ -155,7 +157,9 @@ await test(
                 node.nodeType === 1
                   ? {
                       tag: node.localName,
-                      attrs: [...node.attributes].map(({ name, value }) => [name, value]).sort(),
+                      attrs: [...node.attributes]
+                        .map(({ name, value }) => [name, value])
+                        .sort(([left], [right]) => left.localeCompare(right)),
                       children: [...node.childNodes].map(visit),
                     }
                   : { type: node.nodeType, text: node.textContent };
@@ -209,7 +213,7 @@ await test(
                         : after.map((node, index) => node === original[index]),
                     sectionAttrs: [...section.attributes]
                       .map(({ name, value }) => [name, value])
-                      .sort(),
+                      .sort(([left], [right]) => left.localeCompare(right)),
                     appRuleMatches: section.matches(".leaf[data-v-app]"),
                     fontStyle: getComputedStyle(section).fontStyle,
                   };
@@ -276,7 +280,7 @@ await test(
           assert.deepEqual(
             [...host.querySelector("section").attributes]
               .map(({ name, value }) => [name, value])
-              .sort(),
+              .sort(([left], [right]) => left.localeCompare(right)),
             [
               ["class", "leaf from-app"],
               ["data-v-app", ""],
