@@ -1,0 +1,5 @@
+# The public config entry bundles these repository-owned loaders.
+module-runtime.mjs
+module-runtime.d.mts
+vite-runtime.mjs
+vite-runtime.d.mts
