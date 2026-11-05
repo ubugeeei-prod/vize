@@ -92,11 +92,10 @@ void test("unrequested SFC snapshots stay stubs until a query names them", (t) =
   assert.deepEqual(generated.slice().sort(), [abs("src/Child.vue"), abs("src/Parent.vue")].sort());
   assert.equal(text("src/App.vue"), "export {};\n");
   assert.equal(support.get(abs("src/App.vue")).projection.text, "export default 1;\n");
-  assert.deepEqual(generated.slice().sort(), [
-    abs("src/App.vue"),
-    abs("src/Child.vue"),
-    abs("src/Parent.vue"),
-  ].sort());
+  assert.deepEqual(
+    generated.slice().sort(),
+    [abs("src/App.vue"), abs("src/Child.vue"), abs("src/Parent.vue")].sort(),
+  );
 });
 
 void test("external file discovery skips dependency and build directories", () => {
@@ -117,10 +116,10 @@ void test("external file discovery skips dependency and build directories", () =
       { getCompilerOptions: () => ({ configFilePath: path.join(project, "tsconfig.json") }) },
       2,
     );
-    assert.deepEqual(found.slice().sort(), [
-      path.join(project, "src/App.vue"),
-      path.join(project, "src/kept/Ok.vue"),
-    ].sort());
+    assert.deepEqual(
+      found.slice().sort(),
+      [path.join(project, "src/App.vue"), path.join(project, "src/kept/Ok.vue")].sort(),
+    );
   } finally {
     fs.rmSync(project, { recursive: true, force: true });
   }
