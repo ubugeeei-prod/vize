@@ -157,6 +157,30 @@ fn absent_declared_runtime_without_a_fallback_is_not_found() {
 }
 
 #[test]
+fn typescript_six_alias_can_fall_back_to_the_bundled_compiler() {
+    if platform_suffix().is_empty() {
+        return;
+    }
+    let temp = TempDir::new().unwrap();
+    let root = temp.path();
+    declare_runtime(root, "typescript", "npm:@typescript/typescript6@6.0.2");
+    let package = root.join("node_modules/typescript");
+    fs::create_dir_all(&package).unwrap();
+    fs::write(
+        package.join("package.json"),
+        r#"{"name":"@typescript/typescript6","version":"6.0.2"}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        resolve(None, Some(root), &[]),
+        Err(CorsaResolveError::NotFound)
+    );
+
+    let expected = hoisted_vize_compiler(root);
+    assert_eq!(resolve(None, Some(root), &[]), Ok(expected));
+}
+
+#[test]
 fn present_incomplete_runtime_still_refuses_the_hoisted_vize_fallback() {
     if platform_suffix().is_empty() {
         return;
