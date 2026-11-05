@@ -14283,6 +14283,45 @@
       }
     },
     {
+      "id": "typechecker/regression/undeclared-listener-11913",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "undeclared-listener-11913/comps.ts.txt",
+          "sha256": "c69fd09826930e353bf5fb9300687c5d50c01537ce874ecf9efedfc6731a3d9a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "undeclared-listener-11913/invalid.vue.txt",
+          "sha256": "216543829007155d6e3c73d98f645aedb07347ee52939952f446d0d2d8ad6f2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "undeclared-listener-11913/valid.vue.txt",
+          "sha256": "b727505337707fc5c478935732aab28a0096dc24ed819c236a947af20516036a",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "undeclared_listener integration tests consume these inputs; undeclared listeners with and without props accept Event handlers while typed payload and zero-arity negatives remain checked. Input registration is not native qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/unmapped-ignores-entry-points-11472",
       "state": "active",
       "targets": [

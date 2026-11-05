@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { TypedEmits } from './comps';
+function onKey(event: KeyboardEvent): void { void event; }
+function onEnd(event: Event): void { void event; }
+</script>
+<template>
+  <TypedEmits tag="ul" @end="onKey" />
+  <TypedEmits tag="ul" @close="onEnd" />
+</template>

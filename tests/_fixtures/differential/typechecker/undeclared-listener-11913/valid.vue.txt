@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { AnyArrayEmits, NamedArrayEmits, NoEmits, TypedEmits } from './comps';
+function onEnd(event: Event): void { void event; }
+</script>
+<template>
+  <AnyArrayEmits @end="onEnd" />
+  <AnyArrayEmits tag="ul" @end="onEnd" />
+  <NamedArrayEmits tag="ul" @end="onEnd" />
+  <NoEmits @end="onEnd" />
+  <NoEmits tag="ul" @end="onEnd" />
+  <TypedEmits tag="ul" @end="onEnd" />
+</template>
