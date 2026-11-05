@@ -88,6 +88,9 @@ mod mapping;
 pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 mod materialize;
 mod materialize_delta;
+mod materialize_fingerprint;
+#[cfg(test)]
+pub(crate) use materialize_delta::take_materialized_hash_count;
 mod materialize_links;
 mod workspace_aliases;
 pub(crate) use materialize_delta::{
