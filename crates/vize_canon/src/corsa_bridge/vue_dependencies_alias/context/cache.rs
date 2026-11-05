@@ -53,11 +53,13 @@ pub(super) struct ProjectMember {
     /// Authored identities survive generated-context invalidation so their
     /// current open buffers can be rebuilt before the old revision is pruned.
     pub(super) source_paths: Vec<PathBuf>,
+    /// Open roots this member took over when another graph was retired.
+    /// Their unchanged text still needs registration when this owner rebuilds.
+    pub(super) refreshed_sources: Vec<PathBuf>,
     pub(super) expected_files: vize_carton::FxHashSet<PathBuf>,
     pub(super) package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
     pub(super) query_paths: Vec<PathBuf>,
-    pub(super) stamps: Vec<crate::package_route::stamp::InputStamp>,
-    pub(super) overlay_identity: u64,
+    pub(super) fingerprint: ContextFingerprint,
     pub(super) requires_arbitrary_extensions: bool,
 }
 
@@ -67,6 +69,7 @@ pub(super) struct ProjectUnion {
     pub(super) package_links: FxHashMap<PathBuf, PathBuf>,
     pub(super) query_paths: Vec<PathBuf>,
     pub(super) requires_arbitrary_extensions: bool,
+    pub(super) retired_members: bool,
 }
 
 struct CachedContext {
@@ -134,22 +137,27 @@ impl SessionCache {
         let key = RevisionKey::new(source_path.to_path_buf(), fingerprint);
         let cached = self.slots.get(&key)?;
         // Another revision of this host stays for the caller to carry forward.
-        if cached.fingerprint != *fingerprint {
+        if !fingerprint.matches_revision(&cached.fingerprint) {
             return None;
         }
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
-        let valid = self.trust_watched_disk_inputs
-            || (cached.fingerprint.stamps_still_valid(&mut observed)
-                && cached.context.mirror.as_ref().is_none_or(|mirror| {
-                    !self.project_members.contains_key(mirror.virtual_root())
-                        || self.project_revision_is_current_with_cache(
-                            mirror.virtual_root(),
-                            fingerprint.overlay_identity(),
-                            &mut observed,
-                        )
-                }));
-        if !valid {
+        let inputs_current =
+            self.trust_watched_disk_inputs || cached.fingerprint.stamps_still_valid(&mut observed);
+        if !inputs_current {
             self.slots.remove(&key);
+            return None;
+        }
+        let valid = cached.context.mirror.as_ref().is_none_or(|mirror| {
+            !self.project_members.contains_key(mirror.virtual_root())
+                || self.project_revision_is_current_with_cache(
+                    mirror.virtual_root(),
+                    fingerprint.overlay_identity(),
+                    &mut observed,
+                )
+        });
+        if !valid {
+            // Preserve this graph while another member awaits its own refresh
+            // inside the native transaction.
             return None;
         }
         self.clock = self.clock.wrapping_add(1);
@@ -178,9 +186,10 @@ impl SessionCache {
     pub(super) fn insert(
         &mut self,
         source_path: PathBuf,
-        fingerprint: ContextFingerprint,
+        mut fingerprint: ContextFingerprint,
         context: Arc<AliasContext>,
     ) {
+        fingerprint.compact_overlay_inputs();
         let key = RevisionKey::new(source_path, &fingerprint);
         if self.slots.len() >= CONTEXT_CACHE_CAPACITY && !self.slots.contains_key(&key) {
             let lru = self
@@ -224,18 +233,26 @@ impl SessionCache {
         &mut self,
         virtual_root: &Path,
         current: &RevisionKey,
-        overlay_identity: u64,
+        fingerprint: &ContextFingerprint,
     ) -> ProjectUnion {
+        let mut retired_members = false;
+        let validate_disk = !self.trust_watched_disk_inputs
+            || !self.project_overlay_identities.contains_key(virtual_root);
         if let Some(members) = self.project_members.get_mut(virtual_root) {
             members.retain(|_, member| {
-                member.overlay_identity == overlay_identity
-                    && member
-                        .stamps
-                        .iter()
-                        .all(crate::package_route::stamp::InputStamp::is_current)
+                let retained = fingerprint.preserves_member(&member.fingerprint)
+                    && (!validate_disk
+                        || member
+                            .fingerprint
+                            .stamps_still_valid(&mut Default::default()));
+                retired_members |= !retained;
+                retained
             });
         }
-        let mut union = ProjectUnion::default();
+        let mut union = ProjectUnion {
+            retired_members,
+            ..Default::default()
+        };
         if let Some(members) = self.project_members.get(virtual_root) {
             for (key, member) in members {
                 if key == current {
@@ -272,7 +289,7 @@ impl SessionCache {
             members.remove(&key);
         }
         self.project_overlay_identities
-            .insert(virtual_root.clone(), member.overlay_identity);
+            .insert(virtual_root.clone(), member.fingerprint.overlay_identity());
         self.project_members
             .entry(virtual_root)
             .or_default()
@@ -355,3 +372,9 @@ mod edit_tests;
 
 #[cfg(test)]
 mod catalog_tests;
+
+#[cfg(test)]
+mod overlay_tests;
+
+#[cfg(test)]
+mod overlay_profile;

@@ -141,6 +141,8 @@ impl CorsaProjectClient {
 
     fn clear_workspace_project_overlays(&mut self) {
         self.document_texts.clear();
+        self.canon_file_cache.clear();
+        self.canon_batches.clear();
         self.overlay_versions.clear();
         self.editor_lsp_documents_dirty = true;
     }

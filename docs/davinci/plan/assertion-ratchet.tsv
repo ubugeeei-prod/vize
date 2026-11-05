@@ -200,7 +200,6 @@ crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build/package_
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build/stamp_import_facts_tests.rs	2
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog_tests.rs	3
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/scaling_tests.rs	2
-crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/tests.rs	1
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes/budget_tests.rs	2
 crates/vize_canon/src/corsa_bridge/vue_document_alias_tests.rs	4
 crates/vize_canon/src/corsa_bridge/vue_document_package_compat_tests.rs	4

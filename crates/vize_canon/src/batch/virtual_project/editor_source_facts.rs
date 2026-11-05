@@ -15,13 +15,13 @@ use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 type Occurrences = Vec<(String, PackageResolutionMode)>;
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, Hash)]
 pub(crate) struct EditorSourceFacts {
     passthrough_paths: Vec<PathBuf>,
     artifacts: Vec<ArtifactFacts>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct ArtifactFacts {
     virtual_path: PathBuf,
     registered: Occurrences,

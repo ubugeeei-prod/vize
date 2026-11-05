@@ -44,6 +44,11 @@ pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
     matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))
 }
 
+pub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {
+    path.canonicalize()
+        .is_ok_and(|physical| is_within_project_namespace(&physical, root))
+}
+
 pub(super) fn build_materialized_session_document_uri(
     uri: &str,
     project_root: &Path,

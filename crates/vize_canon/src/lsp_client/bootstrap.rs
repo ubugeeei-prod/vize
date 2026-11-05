@@ -116,6 +116,8 @@ impl CorsaProjectClient {
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
+            canon_file_cache: Default::default(),
+            canon_batches: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             overlay_storage,

@@ -10,10 +10,14 @@ use crate::batch::ModuleSpecifierFactsCache;
 #[derive(Clone)]
 pub(crate) struct ContextFingerprint {
     host_content: u64,
-    /// Every input but the host's own text: the other buffers and requested
-    /// sources. The host's text reaches the graph only through its imports.
+    host_path: PathBuf,
+    host_graph: Option<u64>,
+    /// Requested roots, independently of the open-buffer set.
     dependencies: u64,
     overlays: u64,
+    /// Requests capture every overlay; stored revisions retain only their
+    /// registered sources and resolution probes, including failed probes.
+    overlay_inputs: FxHashMap<PathBuf, u64>,
     generation_options: u64,
     /// Requested workspace sources are part of this revision.
     workspace: bool,
@@ -48,20 +52,21 @@ impl ContextFingerprint {
         let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
         let mut dependencies = vize_l0::micro_default_hasher!("canon.context.dependencies");
         source_path.hash(&mut dependencies);
+        let mut overlay_inputs = FxHashMap::default();
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
-            if *path != host_path {
-                path.hash(&mut dependencies);
-                text.hash(&mut dependencies);
-            }
+            overlay_inputs.insert(path.clone(), overlay_content_identity(text));
         }
         let generation_options =
             editor_namespace_identity(options, virtual_ts_options, project_root, tsconfig_path);
         Self {
             host_content: host.finish(),
+            host_path,
+            host_graph: None,
             dependencies: dependencies.finish(),
             overlays: overlay_hash.finish(),
+            overlay_inputs,
             generation_options,
             workspace: false,
             stamps: Vec::new(),
@@ -88,7 +93,11 @@ impl ContextFingerprint {
         context: &AliasContext,
         facts: Option<&mut ModuleSpecifierFactsCache>,
     ) {
-        let mut paths = Vec::new();
+        use std::hash::{Hash, Hasher};
+        let mut graph = vize_l0::micro_default_hasher!("canon.context.host_graph");
+        context.host_facts.hash(&mut graph);
+        self.host_graph = Some(graph.finish());
+        let mut paths = vec![self.host_path.clone()];
         if let Some(mirror) = context.mirror.as_ref() {
             // The immutable compiler epoch belongs to this editor session.
             // Its physical dependencies remain watched by the owner, while
@@ -161,11 +170,91 @@ impl ContextFingerprint {
         self.dependencies == previous.dependencies
             && self.generation_options == previous.generation_options
             && self.workspace == previous.workspace
+            && self.dependency_overlays_match(previous)
+    }
+
+    /// Compare the inputs that produced the previous graph. A request still
+    /// carries every current overlay, including newly opened failed probes.
+    fn dependency_overlays_match(&self, previous: &Self) -> bool {
+        if self.overlays == previous.overlays {
+            return true;
+        }
+        if previous.stamps.is_empty() {
+            return false;
+        }
+        self.overlay_inputs
+            .keys()
+            .chain(previous.overlay_inputs.keys())
+            .all(|path| {
+                self.overlay_inputs.get(path) == previous.overlay_inputs.get(path)
+                    || !previous.reads_dependency_overlay(path)
+            })
+    }
+
+    fn reads_dependency_overlay(&self, path: &Path) -> bool {
+        path != self.host_path
+            && self
+                .stamps
+                .binary_search_by(|stamp| stamp.path().cmp(path))
+                .is_ok()
+    }
+
+    /// Source text equality does not make a live root current when one of its
+    /// imported open buffers changed. Keep that dependent root in the rebuild.
+    pub(super) fn dependency_overlays_current(&self, overlays: &FxHashMap<PathBuf, &str>) -> bool {
+        overlays
+            .keys()
+            .chain(self.overlay_inputs.keys())
+            .all(|path| {
+                !self.reads_dependency_overlay(path)
+                    || overlays
+                        .get(path)
+                        .map(|text| overlay_content_identity(text))
+                        == self.overlay_inputs.get(path).copied()
+            })
+    }
+
+    pub(super) fn matches_revision(&self, previous: &Self) -> bool {
+        self.host_content == previous.host_content && self.revises(previous)
+    }
+
+    /// New host bytes replace its old projection in the shared mirror, while
+    /// the other revision still owns unchanged dependency files. A close, or a
+    /// changed dependency buffer, does retire the member.
+    pub(super) fn preserves_member(&self, previous: &Self) -> bool {
+        let host_is_preserved = if self.host_path == previous.host_path {
+            self.host_content == previous.host_content
+                || (self.host_graph.is_some() && self.host_graph == previous.host_graph)
+        } else {
+            // A refreshed sibling's old topology is not this host's graph.
+            // Retire its old revision rather than preserve obsolete suffixes,
+            // roots or package routes on the strength of our own host facts.
+            self.overlay_inputs.get(&previous.host_path)
+                == previous.overlay_inputs.get(&previous.host_path)
+        };
+        host_is_preserved
+            && self.overlay_inputs.contains_key(&previous.host_path)
+                == previous.overlay_inputs.contains_key(&previous.host_path)
+            && self.dependency_overlays_match(previous)
+    }
+
+    pub(in super::super) fn compact_overlay_inputs(&mut self) {
+        // stamp_inner sorts and de-duplicates paths. Search only actual open
+        // overlays instead of allocating a second index of the whole graph.
+        let stamps = &self.stamps;
+        self.overlay_inputs.retain(|path, _| {
+            path == &self.host_path
+                || stamps
+                    .binary_search_by(|stamp| stamp.path().cmp(path))
+                    .is_ok()
+        });
+        self.overlay_inputs.shrink_to_fit();
     }
 
     /// Disk inputs do not move with the host's buffer; a revision keeps them.
     pub(in super::super) fn adopt_stamps(&mut self, previous: &Self) {
         self.stamps.clone_from(&previous.stamps);
+        self.host_graph = previous.host_graph;
     }
 
     pub(super) fn workspace(&self) -> bool {
@@ -181,6 +270,7 @@ impl ContextFingerprint {
             .all(|stamp| observed.is_current(stamp, None))
     }
 
+    #[cfg(test)]
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
         self.stamps.clone()
     }
@@ -203,6 +293,13 @@ impl ContextFingerprint {
             .hash(&mut hash);
         hash.finish()
     }
+}
+
+fn overlay_content_identity(text: &str) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut input = vize_l0::micro_default_hasher!("canon.context.overlay_input");
+    text.hash(&mut input);
+    input.finish()
 }
 
 #[cfg(test)]
