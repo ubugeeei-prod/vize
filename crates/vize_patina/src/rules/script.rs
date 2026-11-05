@@ -70,6 +70,7 @@ mod prefer_use_slots;
 mod prefer_use_template_ref;
 mod props_emits;
 mod require_explicit_slots;
+mod require_expose;
 mod require_function_return_type;
 mod require_prop_type_constructor;
 mod require_render_return;

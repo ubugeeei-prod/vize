@@ -64,6 +64,7 @@ pub use super::prefer_use_slots::PreferUseSlots;
 pub use super::prefer_use_template_ref::PreferUseTemplateRef;
 pub use super::props_emits::*;
 pub use super::require_explicit_slots::RequireExplicitSlots;
+pub use super::require_expose::RequireExpose;
 pub use super::require_function_return_type::RequireFunctionReturnType;
 pub use super::require_prop_type_constructor::RequirePropTypeConstructor;
 pub use super::require_render_return::RequireRenderReturn;

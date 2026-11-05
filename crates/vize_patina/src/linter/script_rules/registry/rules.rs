@@ -30,12 +30,13 @@ use super::names::{
     RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS,
     RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
     RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,
-    RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,
-    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,
-    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_REQUIRE_EXPOSE, RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
+    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,
+    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
+    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, ESSENTIAL_SCRIPT_PRESETS,
@@ -61,10 +62,10 @@ use crate::rules::script::{
     PiniaPreferStoreToRefs, PreferComputed, PreferDefineEmitsBinding, PreferDefineOptions,
     PreferImportFromVue, PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
     PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits,
-    RequireExplicitSlots, RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes,
-    RequireRenderReturn, RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp,
-    RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator,
-    ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,
+    RequireExplicitSlots, RequireExpose, RequireFunctionReturnType, RequirePropTypeConstructor,
+    RequirePropTypes, RequireRenderReturn, RequireSlotsAsFunctions, RequireSymbolProvide,
+    RequireTypedObjectProp, RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty,
+    ReturnInEmitsValidator, ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,
     VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
@@ -171,4 +172,5 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_ref_object_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_setup_props_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },
+    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPOSE, profile_name: "patina.script_rule.require_expose", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireExpose },
 ];
