@@ -16901,6 +16901,40 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/regression/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "qualification-20261105/Child.vue.txt",
+          "sha256": "6e17ae91abb655765e75ec91a7b9e9327ff0ad9c3925658329ae4ad7457464e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "qualification-20261105/Repeated.vue.txt",
+          "sha256": "c014b7aba0a868e17e49cab607764c7d3381af605cb720b7f9ea2c7ed354d297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; vue_document::build::tests::native_union checks exact closed dependency membership after edits; input registration is not native acceptance."
+          }
+        ]
+      }
     }
   ],
   "protocolCases": [

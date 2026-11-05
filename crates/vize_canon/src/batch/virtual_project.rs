@@ -319,6 +319,9 @@ pub struct VirtualProject {
     /// entries and never walk the virtual tree.
     incremental_materialized_candidates: FxHashSet<PathBuf>,
     incremental_source_nodes_rebuilt: usize,
+    /// Cumulative actual registrations, independent of per-materialization counters.
+    #[cfg(test)]
+    source_registration_count: usize,
     incremental_dependency_nodes_reconciled: usize,
     incremental_shadow_bindings_rebuilt: usize,
     /// Exact package dependency links materialized by the persistent checker.

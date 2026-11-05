@@ -4,6 +4,11 @@
 //! host's new bytes. Replacing those bytes in the existing surface leaves every
 //! unchanged document allocation in place.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "retain the existing immutable query surface ownership while replacing host bytes"
+)]
+
 use std::path::Path;
 use std::sync::Arc;
 

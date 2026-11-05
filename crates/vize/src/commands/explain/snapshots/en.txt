@@ -3930,6 +3930,16 @@ valid:
 
 help:
   A '<button>' defaults to type="submit", which submits the enclosing form. Set an explicit type="button", "submit", or "reset".
+=== vue/html-end-tags
+vue/html-end-tags · lint rule
+Require end tags on HTML elements that may omit them
+
+tier: complete
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/reference/vue-html-end-tags.md
 === vue/html-quotes
 vue/html-quotes · lint rule
 Enforce quotes style of HTML attributes
@@ -3975,6 +3985,16 @@ valid:
 
 help:
   Use self-closing syntax
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint rule
+Treat variables used in JSX element names as used
+
+tier: complete
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/vue-jsx-uses-vars.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint rule
 Limit a component's own template complexity (cyclomatic and cognitive)
@@ -5151,6 +5171,16 @@ valid:
 
 help:
   Replace the binding with a static attribute (foo=bar instead of :foo='bar').
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint rule
+Disallow `key` on `<template v-for>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/reference/vue-no-v-for-template-key.md
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint rule
 Disallow `key` on the child of a `<template v-for>`

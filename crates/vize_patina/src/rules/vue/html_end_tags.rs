@@ -25,7 +25,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::cstr;
-use vize_relief::{ElementNode, RootNode, SourceLocation, TemplateChildNode};
+use vize_relief::{ElementNode, ElementType, RootNode, SourceLocation, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/html-end-tags",
@@ -158,7 +158,7 @@ fn element_extent(
     }
     if element.is_self_closing
         || authored_self_closing(ctx.source, element)
-        || is_void_element(element.tag)
+        || (element.tag_type == ElementType::Element && is_void_element(element.tag))
     {
         return Extent {
             end: open_end,

@@ -107,16 +107,9 @@ pub(super) fn append_prop_checker_alias(
                 "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
             );
         }
-        if usage_needs_per_prop_aliases(usage) {
-            append!(
-                *ts,
-                "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_ValueProps_{shared_idx};\n",
-            );
-            append!(
-                *ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __{component_type_name}_FallthroughValue_{shared_idx}<K>;\n",
-            );
-        }
+        // Per-prop aliases either reuse the canonical prop alias or read its
+        // value-props contract directly. Intermediate aliases would be unused
+        // whenever every prop was already shared (TS6196 under noUnusedLocals).
         append!(
             *ts,
             "  type __{component_type_name}_Check_{idx} = __{component_type_name}_Check_{shared_idx};\n",
@@ -337,7 +330,7 @@ pub(super) fn append_per_prop_aliases(
             prop_alias_type(
                 prop,
                 component_type_name,
-                idx,
+                shared.map_or(idx, |(shared_idx, _)| shared_idx),
                 &camel_prop_name,
                 prop.name.as_str(),
                 hoist_shared_preamble,

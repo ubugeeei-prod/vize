@@ -58,19 +58,11 @@ const content = "Hello from custom block\n";
 const state: VizePluginState = {
   ...emptyState,
   cache: new Map([
-    [
-      vueFile,
-      moduleWith([
-        { type: "message", content, src: null, attrs: {}, index: 0 },
-      ]),
-    ],
+    [vueFile, moduleWith([{ type: "message", content, src: null, attrs: {}, index: 0 }])],
   ]),
 };
 
-for (const id of [
-  `${vueFile}?vue&type=message&index=0`,
-  `${vueFile}?vue=&type=message&index=0`,
-]) {
+for (const id of [`${vueFile}?vue&type=message&index=0`, `${vueFile}?vue=&type=message&index=0`]) {
   const code = loadedCode(loadHook(state, id, { ssr: false }));
   assert.equal(code, content, id);
   assert.doesNotMatch(

@@ -29,6 +29,8 @@ fn accepts_closed_optional_and_ordinary_tags() {
         "<div />",
         "<Comp />",
         "<Comp></Comp>",
+        "<ul><li><Link href=\"/account\">Overview</Link></li></ul>",
+        "<p><Input>content</Input></p>",
         "<table><tr><td>a</td></tr></table>",
         "<ul><li>a<ul><li>b</li></ul></li></ul>",
         "<li v-for=\"x in xs\">{{ x }}</li>",

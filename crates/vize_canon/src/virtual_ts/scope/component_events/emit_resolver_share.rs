@@ -81,9 +81,7 @@ pub(super) fn alias_target(share: &ResolverShare<'_>) -> Option<String> {
         if let Some(name) = state.hoisted.get(&key) {
             return Some(name.clone());
         }
-        if share.block.is_none() {
-            return None;
-        }
+        share.block?;
         let name = fresh_name(share.component_type_name, &state.hoisted);
         state.pending.push(declaration(
             name.as_str(),
@@ -122,13 +120,13 @@ fn inline_key(key: &str, parent_scope: Option<u32>, block: Option<u64>) -> Strin
 
 fn fresh_name(type_name: &str, hoisted: &FxHashMap<String, String>) -> String {
     let base = cstr!("__{type_name}_emit_resolver");
-    if hoisted.values().all(|name| name != &base) {
+    if hoisted.values().all(|name| name != base) {
         return base;
     }
     let mut nth = 2u32;
     loop {
         let name = cstr!("{base}_{nth}");
-        if hoisted.values().all(|existing| existing != &name) {
+        if hoisted.values().all(|existing| existing != name) {
             return name;
         }
         nth += 1;

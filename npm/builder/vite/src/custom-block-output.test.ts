@@ -41,7 +41,10 @@ assert.match(
 );
 const callAt = output.code.indexOf("block0(_sfc_main)");
 const exportAt = output.code.lastIndexOf("export default _sfc_main");
-assert.ok(callAt >= 0 && exportAt >= 0 && callAt < exportAt, "the call runs after _sfc_main exists");
+assert.ok(
+  callAt >= 0 && exportAt >= 0 && callAt < exportAt,
+  "the call runs after _sfc_main exists",
+);
 
 const templateOnly = generateOutputWithMap(
   {
@@ -88,10 +91,17 @@ const absent = generateOutputWithMap(compiled(undefined), {
   isDev: false,
   filePath,
 });
-assert.equal(absent.code.includes("block0"), false, "missing customBlocks emits no custom-block import");
-assert.equal(absent.code, generateOutputWithMap(
-  { code: component, scopeId: "msg12345", hasScoped: false },
-  { isProduction: true, isDev: false, filePath },
-).code);
+assert.equal(
+  absent.code.includes("block0"),
+  false,
+  "missing customBlocks emits no custom-block import",
+);
+assert.equal(
+  absent.code,
+  generateOutputWithMap(
+    { code: component, scopeId: "msg12345", hasScoped: false },
+    { isProduction: true, isDev: false, filePath },
+  ).code,
+);
 
 console.log("✅ vite-plugin-vize custom block output tests passed!");

@@ -4041,6 +4041,16 @@ vue/html-button-has-type · lint 规则
 
 帮助:
   '<button>' 的 type 默认为 "submit"，会提交其所在的表单。请显式设置 type="button"、"submit" 或 "reset"。
+=== vue/html-end-tags
+vue/html-end-tags · lint 规则
+Require end tags on HTML elements that may omit them
+
+精度层级: complete
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/reference/vue-html-end-tags.md
 === vue/html-quotes
 vue/html-quotes · lint 规则
 强制HTML属性引号风格
@@ -4086,6 +4096,16 @@ vue/html-self-closing · lint 规则
 
 帮助:
   使用自闭合语法
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint 规则
+Treat variables used in JSX element names as used
+
+精度层级: complete
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-jsx-uses-vars.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）
@@ -5329,6 +5349,16 @@ vue/no-useless-v-bind · lint 规则
 
 帮助:
   请将该绑定替换为静态属性（用 foo=bar 代替 :foo='bar'）。
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint 规则
+Disallow `key` on `<template v-for>`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-v-for-template-key.md
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint 规则
 禁止在`<template v-for>`的子元素上使用`key`

@@ -173,7 +173,16 @@ function installVueVirtualModules(ts, info) {
   const previousNames = bind("resolveModuleNames");
   const previousKind = bind("getScriptKind");
   const lazy = createLazySfcScripts({
-    ts, get, options, settings: () => settingsState, sourceDocuments, snapshots, isSfc, readFile, readSource, project: info.project,
+    ts,
+    get,
+    options,
+    settings: () => settingsState,
+    sourceDocuments,
+    snapshots,
+    isSfc,
+    readFile,
+    readSource,
+    project: info.project,
   });
   const replacements = {
     getCompilationSettings: options,
