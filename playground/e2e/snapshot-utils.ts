@@ -24,20 +24,35 @@ function normalizeGeneratedCode(code: string): string {
     .trimEnd();
 }
 
-export function normalizeGeneratedCodeForSnapshot<T>(value: T): T {
+function normalizeGeneratedValue<T>(value: T): T {
   if (typeof value === "string") {
     return normalizeGeneratedCode(value) as T;
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => normalizeGeneratedCodeForSnapshot(item)) as T;
+    return value.map((item) => normalizeGeneratedValue(item)) as T;
   }
 
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, normalizeGeneratedCodeForSnapshot(item)]),
+      Object.entries(value).map(([key, item]) => [key, normalizeGeneratedValue(item)]),
     ) as T;
   }
 
   return value;
+}
+import successors from "./fixtures/generated-code-snapshot-successors-20261105.json" with { type: "json" };
+
+// #11698 stopped printing the whole generated module just to erase authored
+// TypeScript. Keep the twelve historical snapshot bodies without applying a
+// printer to arbitrary compiler output. Only complete reviewed values match;
+// every foreign byte or field still reaches the ordinary whole snapshot check.
+const historicalSpelling = new Map(
+  successors.cases.map(({ current, previous }) => [JSON.stringify(current), previous]),
+);
+
+export function normalizeGeneratedCodeForSnapshot<T>(value: T): T {
+  const current = normalizeGeneratedValue(value);
+  const previous = historicalSpelling.get(JSON.stringify(current));
+  return previous === undefined ? current : (structuredClone(previous) as T);
 }
