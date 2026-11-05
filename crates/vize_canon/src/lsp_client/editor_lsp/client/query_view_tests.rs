@@ -7,6 +7,78 @@ use std::{fs, os::unix::fs::PermissionsExt};
 use vize_l0::String;
 
 #[test]
+fn direct_query_mirrors_restore_the_full_retained_view_before_an_unrelated_edit() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let peer = root.join("query-peer.ts");
+    let transcript = root.join("whole-packets.jsonl");
+    fs::write(
+        &peer,
+        include_str!("../native_shutdown/peer.ts.txt")
+            .replace("LOG_PATH", &serde_json::to_string(&transcript).unwrap())
+            .replace("REPLY_MODE", "\"ok\""),
+    )
+    .unwrap();
+    fs::set_permissions(&peer, fs::Permissions::from_mode(0o755)).unwrap();
+    let mut client = CorsaProjectClient::batch_editor_peer_for_test(&peer, &root).unwrap();
+    let main = path_to_file_uri(&root.join("main.ts"));
+    let support = path_to_file_uri(&root.join("support.ts"));
+    let transient = path_to_file_uri(&root.join("transient.ts"));
+    client.document_texts.insert(main.clone(), "main".into());
+    client
+        .document_texts
+        .insert(support.clone(), "support".into());
+    {
+        let session = client.editor_lsp_session().unwrap();
+        assert!(session.tracked_documents.is_some());
+        session.mirror(&main, "query override").unwrap();
+        session.mirror(&transient, "query only").unwrap();
+        assert!(session.tracked_documents.is_none());
+    }
+    let _ = client.retain_document_text(&support, "changed support");
+    client.editor_lsp_documents_dirty = true;
+    let session = client.editor_lsp_session().unwrap();
+    assert!(session.tracked_documents.is_some());
+    assert_eq!(session.documents.get(main.as_str()).unwrap(), "main");
+    assert_eq!(
+        session.documents.get(support.as_str()).unwrap(),
+        "changed support"
+    );
+    assert!(!session.documents.contains_key(transient.as_str()));
+    client.shutdown().unwrap();
+    let packets = fs::read_to_string(&transcript)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str::<Value>(line).unwrap())
+        .collect::<Vec<_>>();
+    let events = packets
+        .iter()
+        .filter(|packet| packet["direction"] == "request")
+        .map(|packet| &packet["wholePacket"])
+        .filter(|packet| {
+            matches!(
+                packet["method"].as_str(),
+                Some("textDocument/didOpen" | "textDocument/didChange" | "textDocument/didClose")
+            )
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(
+        events,
+        vec![
+            json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":main,"languageId":"typescript","version":1,"text":"main"}}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":support,"languageId":"typescript","version":1,"text":"support"}}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":main,"version":2},"contentChanges":[{"text":"query override"}]}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":transient,"languageId":"typescript","version":1,"text":"query only"}}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":main,"version":3},"contentChanges":[{"text":"main"}]}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":support,"version":2},"contentChanges":[{"text":"changed support"}]}}),
+            json!({"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":transient}}}),
+        ],
+        "{packets:#?}"
+    );
+}
+
+#[test]
 fn logical_query_subsets_preserve_retained_buffers_but_explicit_close_removes_them() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().canonicalize().unwrap();
@@ -34,7 +106,7 @@ fn logical_query_subsets_preserve_retained_buffers_but_explicit_close_removes_th
             String::from("export const virtualValue = 3;"),
         ),
     ]);
-    client.document_texts = retained.clone();
+    client.document_texts = retained.clone().into();
     let report = json!({"kind":"full","items":[]});
     assert_eq!(
         serde_json::to_value(client.diagnostics_via_editor_lsp(&main, &retained).unwrap()).unwrap(),

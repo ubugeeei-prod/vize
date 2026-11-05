@@ -280,15 +280,22 @@ impl CorsaProjectClient {
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
         self.validate_logical_workspace_documents(&self.document_texts)?;
         self.ensure_editor_transport()?;
-        let documents = self
-            .editor_lsp_documents_dirty
-            .then(|| self.editor_documents());
+        let dirty = self.editor_lsp_documents_dirty || self.document_texts.is_dirty();
+        let documents =
+            (dirty && self.materialized_project_session).then(|| self.editor_documents());
         let session = self
             .editor_lsp
             .as_mut()
             .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
-        if let Some(documents) = documents {
-            session.synchronize(&documents)?;
+        if dirty {
+            if let Some(documents) = documents {
+                // Materialized identities are projected by editor_documents;
+                // their topology is not certified by the logical source delta.
+                session.synchronize(&documents)?;
+                self.document_texts.acknowledge();
+            } else {
+                session.synchronize_tracked(&mut self.document_texts)?;
+            }
             self.editor_lsp_documents_dirty = false;
         }
         Ok(session)
