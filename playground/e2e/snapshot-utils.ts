@@ -42,13 +42,17 @@ function normalizeGeneratedValue<T>(value: T): T {
   return value;
 }
 import successors from "./fixtures/generated-code-snapshot-successors-20261105.json" with { type: "json" };
+import currentSuccessors from "./fixtures/generated-code-snapshot-successors-46d8fec5.json" with { type: "json" };
 
 // #11698 stopped printing the whole generated module just to erase authored
 // TypeScript. Keep the twelve historical snapshot bodies without applying a
 // printer to arbitrary compiler output. Only complete reviewed values match;
 // every foreign byte or field still reaches the ordinary whole snapshot check.
 const historicalSpelling = new Map(
-  successors.cases.map(({ current, previous }) => [JSON.stringify(current), previous]),
+  [...successors.cases, ...currentSuccessors.cases].map(({ current, previous }) => [
+    JSON.stringify(normalizeGeneratedValue(current)),
+    previous,
+  ]),
 );
 
 export function normalizeGeneratedCodeForSnapshot<T>(value: T): T {

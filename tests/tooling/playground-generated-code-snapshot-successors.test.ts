@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import type * as TS from "typescript";
 import successors from "../../playground/e2e/fixtures/generated-code-snapshot-successors-20261105.json" with { type: "json" };
+import currentSuccessors from "../../playground/e2e/fixtures/generated-code-snapshot-successors-46d8fec5.json" with { type: "json" };
 import { normalizeGeneratedCodeForSnapshot } from "../../playground/e2e/snapshot-utils.ts";
 
 const ts: typeof TS = createRequire(new URL("../../npm/cli/package.json", import.meta.url))(
@@ -84,6 +85,33 @@ function serialized(value: Value): string {
         .map(([key, code]) => `  "${key}": "${code}",`)
         .join("\n")}\n}`;
 }
+
+test("current Actions browser values preserve every original module and reject foreign output", () => {
+  assert.equal(currentSuccessors.cases.length, successors.cases.length);
+  for (const [index, row] of currentSuccessors.cases.entries()) {
+    assert.deepEqual(row.previous, successors.cases[index]!.previous);
+    assert.deepEqual(row.input, successors.cases[index]!.input);
+    assert.deepEqual(normalizeGeneratedCodeForSnapshot(row.current), row.previous);
+    const pairs =
+      typeof row.current === "string"
+        ? [[row.previous as string, row.current]]
+        : Object.keys(row.current).map((key) => [
+            (row.previous as Record<string, string>)[key]!,
+            (row.current as Record<string, string>)[key]!,
+          ]);
+    for (const [previous, current] of pairs) {
+      assert.deepEqual(moduleShape(current!), moduleShape(previous!), row.snapshotName);
+    }
+    assert.notDeepEqual(
+      normalizeGeneratedCodeForSnapshot(
+        typeof row.current === "string"
+          ? row.current + "\nthrow 0;"
+          : { ...row.current, foreign: "throw 0;" },
+      ),
+      row.previous,
+    );
+  }
+});
 
 test("all twelve exact browser successors retain the immutable whole snapshots and original inputs", () => {
   assert.equal(
