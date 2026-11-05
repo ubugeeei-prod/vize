@@ -4247,6 +4247,8 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "insta",
+ "oxc_allocator",
+ "oxc_span",
  "phf 0.13.1",
  "serde",
  "serde_json",
@@ -4257,6 +4259,7 @@ dependencies = [
  "vize_curator",
  "vize_l0",
  "vize_l1_to_l2",
+ "vize_oxc_parser",
 ]
 
 [[package]]
@@ -4547,15 +4550,11 @@ dependencies = [
  "serde_json",
  "vize_atelier_core",
  "vize_atelier_sfc",
- "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
- "vize_l2",
- "vize_l2_to_l3",
- "vize_l3",
  "vize_oxc_parser",
 ]
 

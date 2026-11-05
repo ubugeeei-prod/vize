@@ -5,6 +5,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l2::op::{BindingOp, Op};
+use vize_l2::provenance::ProvenanceSink;
 
 use crate::lower::Lowered;
 use crate::pass::walk::{PageWalk, visit_ops};
@@ -57,7 +58,7 @@ fn collect_bindings(walk: &mut PageWalk, bindings: &[BindingOp<'_>], ids: &mut S
 }
 
 /// Rekey lowering side tables and provenance after `.sync` insertion.
-pub(super) fn rekey(lowered: &mut Lowered<'_>, sync_ids: &[NodeId]) {
+pub(super) fn rekey(lowered: &mut Lowered<'_, impl ProvenanceSink>, sync_ids: &[NodeId]) {
     if sync_ids.is_empty() {
         return;
     }
@@ -67,9 +68,11 @@ pub(super) fn rekey(lowered: &mut Lowered<'_>, sync_ids: &[NodeId]) {
     rekey_table(&mut lowered.for_facts, sync_ids);
     rekey_table(&mut lowered.wrappers, sync_ids);
     rekey_table(&mut lowered.for_wrappers, sync_ids);
-    for record in &mut lowered.provenance {
-        if let Some(id) = record.node {
-            record.node = Some(shift(id, sync_ids));
+    if let Some(records) = lowered.provenance.kept() {
+        for record in records {
+            if let Some(id) = record.node {
+                record.node = Some(shift(id, sync_ids));
+            }
         }
     }
 }
@@ -96,7 +99,7 @@ fn shift(old: NodeId, sync_ids: &[NodeId]) -> NodeId {
 }
 
 /// Re-derive `op_count` from the rewritten tree (bindings inserted).
-pub(super) fn recount(lowered: &mut Lowered<'_>) {
+pub(super) fn recount<P>(lowered: &mut Lowered<'_, P>) {
     let mut walk = PageWalk::new();
     visit_ops(&mut walk, &mut lowered.root.ops, &mut |_, _| {});
     lowered.op_count = walk.minted();

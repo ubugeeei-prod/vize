@@ -30,21 +30,21 @@ pub(super) struct DomEmitObservation {
 /// Emit a DOM render function from an already-lowered (and typically
 /// transformed) L2 artifact under the shipped default options. `facts`
 /// is the transform product compounds compile from.
-pub fn emit_dom(lowered: &Lowered<'_>, facts: &L2Facts) -> Result<DomEmit, EmitError> {
+pub fn emit_dom<P>(lowered: &Lowered<'_, P>, facts: &L2Facts) -> Result<DomEmit, EmitError> {
     emit_dom_with_options(lowered, facts, &DomEmitOptions::DEFAULT)
 }
 
 /// [`emit_dom`] under explicit [`DomEmitOptions`].
-pub fn emit_dom_with_options<'f>(
-    lowered: &'f Lowered<'_>,
+pub fn emit_dom_with_options<'f, P>(
+    lowered: &'f Lowered<'_, P>,
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<DomEmit, EmitError> {
     emit_dom_with_emit_budget(lowered, facts, options).map(|(emit, _)| emit)
 }
 
-pub(super) fn emit_dom_with_emit_budget<'f>(
-    lowered: &'f Lowered<'_>,
+pub(super) fn emit_dom_with_emit_budget<'f, P>(
+    lowered: &'f Lowered<'_, P>,
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
@@ -52,8 +52,8 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         .map(|observed| (observed.emit, observed.emit_visits))
 }
 
-pub(super) fn emit_dom_observed<'f>(
-    lowered: &'f Lowered<'_>,
+pub(super) fn emit_dom_observed<'f, P>(
+    lowered: &'f Lowered<'_, P>,
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
     strict_slot_params: bool,
@@ -118,6 +118,7 @@ pub(super) fn emit_dom_observed<'f>(
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
         untracked_children: lowered.features.has_jsx_child_values(),
+        jsx_class: lowered.features.has_jsx_class_bindings(),
         hoist_static: options.hoist_static,
         is_ts: options.is_ts,
         strict_slot_params,

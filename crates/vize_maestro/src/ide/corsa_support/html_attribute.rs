@@ -30,13 +30,16 @@ pub(crate) fn html_attribute_virtual_document(
     let tag_info = native_dom_tag_info(tag_name)?;
     let element_type = tag_info.type_expression.as_str();
     let property_name = info.property_name.as_str();
+    // A module: every SFC's probe stays open in one program, so its
+    // declarations must not be global.
     let content = cstr!(
         "/// <reference lib=\"es2022\" />\n\
          /// <reference lib=\"dom\" />\n\
          /// <reference lib=\"dom.iterable\" />\n\
          type $DomElement = {element_type};\n\
          declare const __vizeDomElement: $DomElement;\n\
-         __vizeDomElement.{property_name};\n"
+         __vizeDomElement.{property_name};\n\
+         export {{}};\n"
     );
     let property_offset = content.rfind(property_name)? + (property_name.len() / 2);
 

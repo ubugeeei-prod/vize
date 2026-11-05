@@ -1,20 +1,44 @@
 ---
 title: "script/prefer-computed"
+description: "Prefer computed() for derived reactive state."
 ---
 
 # `script/prefer-computed`
 
-Prefer computed() for derived reactive state
+Prefer computed() for derived reactive state.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
 The watcher must only derive the destination. Editable copies and callbacks with other side effects are allowed.
+
+## Bad
+
+The watcher only copies a derivation of `count` into a second ref, `doubled`, so the derived state is maintained through manual synchronization.
+
+```vue annotate="remove:2,4,5"
+<script setup lang="ts">
+import { ref, watch } from "vue";
+const count = ref(0);
+const doubled = ref(0);
+watch(count, (value) => { doubled.value = value * 2; });
+</script>
+```
+
+## Good
+
+`computed(() => count.value * 2)` expresses the derivation directly and removes both the extra writable ref and its synchronization watcher.
+
+```vue annotate="add:2,4"
+<script setup lang="ts">
+import { ref, computed } from "vue";
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -33,35 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The watcher only copies a derivation of `count` into a second ref, `doubled`, so the derived state is maintained through manual synchronization.
-
-```vue
-<script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-const doubled = ref(0);
-watch(count, (value) => { doubled.value = value * 2; });
-</script>
-```
-
-## Good
-
-`computed(() => count.value * 2)` expresses the derivation directly and removes both the extra writable ref and its synchronization watcher.
-
-```vue
-<script setup lang="ts">
-import { ref, computed } from "vue";
-const count = ref(0);
-const doubled = computed(() => count.value * 2);
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41)

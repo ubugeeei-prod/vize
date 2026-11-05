@@ -12,6 +12,7 @@ import {
   copyFileSync,
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
+import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
 const hash = (b) => createHash("sha256").update(b).digest("hex"),
@@ -433,7 +434,7 @@ if (mode === "prepare") {
   const edits = transition.edits;
   assert.equal(a.extension, b.extension);
   assert.deepEqual(a.diagnostics, b.diagnostics);
-  assert.deepEqual(a.diagnosticDirectives, b.diagnosticDirectives);
+  assert.deepEqual(authoredDirectives(a), authoredDirectives(b, true));
   const mappings = a.mappings.map(([start, length, ...rest]) => {
     return [...projectedRange(start, length, edits), ...rest];
   });

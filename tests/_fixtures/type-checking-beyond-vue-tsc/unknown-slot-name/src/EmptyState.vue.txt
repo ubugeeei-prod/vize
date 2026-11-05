@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineSlots<{ icon(): unknown; default(): unknown; actions(): unknown }>();
+</script>
+
+<template>
+  <article>
+    <slot name="icon" />
+    <p><slot /></p>
+    <slot name="actions" />
+  </article>
+</template>

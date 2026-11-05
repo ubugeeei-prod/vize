@@ -8,8 +8,8 @@
 //! (`cond ? Foo : Bar`) then types each prop from the members that declare it,
 //! which is how `vue-tsc` checks the same element.
 
-use vize_carton::{String, append};
-use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
+use vize_carton::{FxHashMap, FxHashSet, String, append};
+use vize_croquis::{Croquis, ScopeKind, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 mod generic_index;
@@ -63,50 +63,125 @@ pub(crate) fn is_owned_dynamic_component_alias(
         })
 }
 
-pub(super) fn emit_dynamic_component_aliases(
-    ts: &mut String,
-    summary: &Croquis,
-    template_ast: Option<&RootNode<'_>>,
-    generic: bool,
-) {
-    let Some(root) = template_ast else {
-        return;
-    };
-    for usage in vize_croquis::facts::component_usage_slice(summary) {
-        if !is_dynamic_component_alias(usage.name.as_str()) {
-            continue;
-        }
-        let Some(expression) = is_expression(root, usage.start) else {
-            continue;
+/// Every alias, declared in the scope its `:is` is evaluated in. That scope
+/// binds every name the alias reads, so a slot, loop or pattern arm declares
+/// its aliases at the top of its body, in the template pass and again in the
+/// component-props pass; the template root declares the rest.
+#[derive(Default)]
+pub(crate) struct DynamicComponentAliases {
+    root: Vec<AliasDeclaration>,
+    scoped: FxHashMap<u32, Vec<AliasDeclaration>>,
+    scoped_starts: FxHashSet<u32>,
+}
+
+struct AliasDeclaration {
+    start: u32,
+    comment: &'static str,
+    statement: String,
+}
+
+impl DynamicComponentAliases {
+    pub(super) fn collect(
+        summary: &Croquis,
+        template_ast: Option<&RootNode<'_>>,
+        generic: bool,
+    ) -> Self {
+        let mut aliases = Self::default();
+        let Some(root) = template_ast else {
+            return aliases;
         };
-        // The authored `v-bind` statement owns the expression's own
-        // diagnostics; the alias only has to carry its type.
-        // The original Program proves equal declared entry types. Select an
-        // actual constant-key property to retain ordinary literal widening.
-        let annotation = homogeneous_index::value(summary, root, usage)
-            .map(|value| vize_carton::cstr!(": {value}"))
-            .unwrap_or_default();
-        // Only a generic setup can defer an indexed entry type.
-        let boxed = generic.then(|| generic_index::value(root, usage)).flatten();
-        let expression = boxed.as_deref().unwrap_or(expression);
-        if let Some(guard) = &usage.vif_guard {
-            append!(
-                *ts,
-                "  // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\n  const {}{} = ({}) ? ({}) : (undefined as never);\n",
-                usage.name,
-                annotation,
-                guard,
-                expression.trim()
-            );
-        } else {
-            append!(
-                *ts,
-                "  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\n  const {}{} = ({});\n",
-                usage.name,
-                annotation,
-                expression.trim()
-            );
+        for usage in vize_croquis::facts::component_usage_slice(summary) {
+            if !is_dynamic_component_alias(usage.name.as_str()) {
+                continue;
+            }
+            let Some(expression) = is_expression(root, usage.start) else {
+                continue;
+            };
+            // The authored `v-bind` statement owns the expression's own
+            // diagnostics; the alias only has to carry its type.
+            // The original Program proves equal declared entry types. Select an
+            // actual constant-key property to retain ordinary literal widening.
+            let annotation = homogeneous_index::value(summary, root, usage)
+                .map(|value| vize_carton::cstr!(": {value}"))
+                .unwrap_or_default();
+            // Only a generic setup can defer an indexed entry type.
+            let boxed = generic.then(|| generic_index::value(root, usage)).flatten();
+            let expression = boxed.as_deref().unwrap_or(expression).trim();
+            let declaration = match &usage.vif_guard {
+                Some(guard) => AliasDeclaration {
+                    start: usage.start,
+                    comment: "// @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.",
+                    statement: vize_carton::cstr!(
+                        "const {}{annotation} = ({guard}) ? ({expression}) : (undefined as never);",
+                        usage.name
+                    ),
+                },
+                None => AliasDeclaration {
+                    start: usage.start,
+                    comment: "// @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.",
+                    statement: vize_carton::cstr!(
+                        "const {}{annotation} = ({expression});",
+                        usage.name
+                    ),
+                },
+            };
+            let scope = summary
+                .scopes
+                .get_scope(usage.scope_id)
+                .filter(|scope| {
+                    matches!(
+                        scope.kind,
+                        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+                    )
+                })
+                .map(|scope| scope.id.as_u32());
+            match scope {
+                Some(scope) => {
+                    aliases.scoped_starts.insert(usage.start);
+                    aliases.scoped.entry(scope).or_default().push(declaration);
+                }
+                None => aliases.root.push(declaration),
+            }
         }
+        aliases
+    }
+
+    /// Whether the usage at `start` resolves through an alias that only its
+    /// own scope can see.
+    pub(super) fn is_scoped(&self, start: u32) -> bool {
+        self.scoped_starts.contains(&start)
+    }
+
+    pub(super) fn emit_root(&self, ts: &mut String) {
+        for declaration in &self.root {
+            declaration.push(ts, "  ");
+        }
+    }
+
+    /// Declare the aliases of `scope`, each followed by `then` with its
+    /// usage start.
+    pub(super) fn emit_scope(
+        &self,
+        ts: &mut String,
+        scope: u32,
+        indent: &str,
+        mut then: impl FnMut(&mut String, u32),
+    ) {
+        for declaration in self.scoped.get(&scope).into_iter().flatten() {
+            declaration.push(ts, indent);
+            then(ts, declaration.start);
+        }
+    }
+}
+
+impl AliasDeclaration {
+    fn push(&self, ts: &mut String, indent: &str) {
+        append!(
+            *ts,
+            "{indent}{}\n{indent}{}\n",
+            self.comment,
+            self.statement
+        );
     }
 }
 

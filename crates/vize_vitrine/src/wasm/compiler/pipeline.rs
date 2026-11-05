@@ -92,6 +92,7 @@ fn compile_internal_scoped(
             experimental_in_tag_comments,
             experimental_patterned_template,
             binding_metadata,
+            is_ts: opts.is_ts.unwrap_or(false),
             ..Default::default()
         };
         let vapor_experimental_opts = VaporCompilerExperimentalOptions {

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "pullRequest": 11591,
+  "predecessor": {
+    "path": "successor-11445/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "253eb7e3dee3ececde82539971abb8fc3806f6447009fb753a96fe17a9f76b31"
+  },
+  "successor": {
+    "path": "successor-11591/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "8af2a7df287fda7ec93192c08b6c8668e0478da3c0efda2dc3615d58d41c735c"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 119,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "Issue #11591 makes $ExtraInputKeys read the consumer's vue-tsc props fallback unless vize checks the program, so each projection embeds 119 more helper bytes. Only generated coordinates and their derived hashes moved; mapping, diagnostic and authored-hit counts are unchanged."
+}

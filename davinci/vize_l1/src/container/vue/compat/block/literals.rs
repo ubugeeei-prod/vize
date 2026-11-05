@@ -3,7 +3,8 @@
 
 use super::compat::can_start_string_literal;
 use super::{BlockAttrs, advance_line, find_closing_tag_end, skip_regex_literal};
-use memchr::{memchr2, memmem};
+use memchr::memmem;
+use vize_l0::expression_guard::scan::line_comment_terminator;
 
 pub(in crate::container::vue::compat) fn can_start_regex_literal(
     prev_significant_char: u8,
@@ -142,14 +143,15 @@ fn skip_template_expression(
         }
 
         if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
-            pos += 2;
-            if let Some(newline_offset) =
-                memchr2(b'\n', b'\r', bytes.get(pos..).unwrap_or_default())
-            {
-                pos += newline_offset;
-            } else {
-                pos = len;
-            }
+            let terminator = line_comment_terminator(bytes, pos + 2);
+            advance_line(
+                bytes.get(terminator.clone()).unwrap_or_default(),
+                terminator.start,
+                line,
+                last_newline,
+            );
+            pos = terminator.end;
+            prev_significant_char = b'\n';
             continue;
         }
 

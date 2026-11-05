@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ rows: string[][] }>();
+</script>
+<template>
+  <table>
+    <tr v-for="(line, r) in rows" :key="r">
+      <component :is="r === 0 ? 'th' : 'td'" v-for="(cell, c) in line" :key="c">{{ cell }}</component>
+    </tr>
+  </table>
+</template>

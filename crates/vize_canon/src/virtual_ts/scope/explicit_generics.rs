@@ -8,6 +8,7 @@
 //! the type parameters from the usage. The arguments map to the comment, so a
 //! constraint violation reports where it was written.
 
+use super::dynamic_component::DynamicComponentAliases;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{FxHashMap, String, append, cstr};
 use vize_croquis::Croquis;
@@ -71,15 +72,17 @@ impl ExplicitGenerics {
             .and_then(|usage| self.alias(usage.start))
     }
 
-    /// Declare every alias. `component_ref` resolves a usage's tag to the
-    /// value expression the rest of the template checks it through.
+    /// Declare every alias the template root can see. `component_ref`
+    /// resolves a usage's tag to the value expression the rest of the
+    /// template checks it through. A usage whose dynamic alias is scoped
+    /// declares its own with [`Self::emit_usage`] in that scope.
     pub(crate) fn emit(
         &self,
         ts: &mut String,
         mappings: &mut Vec<VizeMapping>,
         summary: &Croquis,
         template_source: Option<&str>,
-        template_offset: u32,
+        (template_offset, scoped): (u32, &DynamicComponentAliases),
         component_ref: impl Fn(&str) -> String,
     ) {
         let Some(source) = template_source.filter(|_| !self.by_usage_start.is_empty()) else {
@@ -89,29 +92,55 @@ impl ExplicitGenerics {
             "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C,>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
         );
         for usage in vize_croquis::facts::component_usage_slice(summary) {
-            let Some((generic, arguments)) = self
-                .by_usage_start
-                .get(&usage.start)
-                .and_then(|generic| Some((generic, source.get(generic.arguments.clone())?)))
-            else {
+            if !self.by_usage_start.contains_key(&usage.start) || scoped.is_scoped(usage.start) {
                 continue;
-            };
-            append!(
-                *ts,
-                "  const {} = __vizeExplicitGeneric({}<",
-                generic.alias,
-                component_ref(usage.name.as_str())
+            }
+            self.emit_usage(
+                ts,
+                Some(mappings),
+                (source, template_offset),
+                usage.start,
+                component_ref(usage.name.as_str()).as_str(),
+                "  ",
             );
-            let generated_start = ts.len();
-            ts.push_str(arguments);
+        }
+    }
+
+    /// Declare the alias of the usage at `usage_start`, if it has one. Only
+    /// the template pass maps the arguments; a mapped replay would report
+    /// each of their diagnostics twice.
+    pub(crate) fn emit_usage(
+        &self,
+        ts: &mut String,
+        mappings: Option<&mut Vec<VizeMapping>>,
+        (source, template_offset): (&str, u32),
+        usage_start: u32,
+        component_ref: &str,
+        indent: &str,
+    ) {
+        let Some((generic, arguments)) = self
+            .by_usage_start
+            .get(&usage_start)
+            .and_then(|generic| Some((generic, source.get(generic.arguments.clone())?)))
+        else {
+            return;
+        };
+        append!(
+            *ts,
+            "{indent}const {} = __vizeExplicitGeneric({component_ref}<",
+            generic.alias
+        );
+        let generated_start = ts.len();
+        ts.push_str(arguments);
+        if let Some(mappings) = mappings {
             mappings.push(VizeMapping {
                 gen_range: generated_start..ts.len(),
                 src_range: template_offset as usize + generic.arguments.start
                     ..template_offset as usize + generic.arguments.end,
                 sub_spans: Vec::new(),
             });
-            ts.push_str(">);\n");
         }
+        ts.push_str(">);\n");
     }
 }
 

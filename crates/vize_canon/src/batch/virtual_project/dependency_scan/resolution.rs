@@ -177,19 +177,30 @@ fn probe_candidates_inner<const RECORD_INPUTS: bool>(
     }
     let extension = base.extension().and_then(|extension| extension.to_str());
     // TypeScript substitutes type-bearing extensions before consulting the
-    // JavaScript runtime file, even when that runtime file exists.
-    let extensions: &[&str] = match extension {
-        Some("js" | "jsx") => &["ts", "tsx", "d.ts", "js", "jsx"],
-        Some("mjs") => &["mts", "d.mts", "mjs"],
-        Some("cjs") => &["cts", "d.cts", "cjs"],
+    // JavaScript runtime file, even when that runtime file exists. A missing
+    // TypeScript file falls back to its declaration, and a `.vue` without an
+    // SFC to the extensions TypeScript appends to an unknown one.
+    let (replace, extensions): (bool, &[&str]) = match extension {
+        Some("js" | "jsx") => (true, &["ts", "tsx", "d.ts", "js", "jsx"]),
+        Some("mjs") => (true, &["mts", "d.mts", "mjs"]),
+        Some("cjs") => (true, &["cts", "d.cts", "cjs"]),
         _ if base.is_file() => return (Some(base.to_path_buf()), inputs),
-        Some("vue" | "ts" | "tsx" | "mts" | "cts" | "json") => return (None, inputs),
-        _ => &[
-            "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs", "cjs",
-        ],
+        Some("ts") => (true, &["tsx", "d.ts"]),
+        Some("tsx") => (true, &["ts", "d.ts"]),
+        Some("mts") => (true, &["d.mts"]),
+        Some("cts") => (true, &["d.cts"]),
+        Some("vue") => (false, &["ts", "tsx", "d.ts"]),
+        Some("json") => return (None, inputs),
+        _ => (
+            false,
+            &[
+                "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs",
+                "cjs",
+            ],
+        ),
     };
-    let runtime_extension = matches!(extension, Some("js" | "jsx" | "mjs" | "cjs"));
-    let probe_base = if runtime_extension {
+    let directory = !replace && extension != Some("vue");
+    let probe_base = if replace {
         base.with_extension("")
     } else {
         base.to_path_buf()
@@ -203,7 +214,7 @@ fn probe_candidates_inner<const RECORD_INPUTS: bool>(
             return (Some(candidate), inputs);
         }
     }
-    if runtime_extension {
+    if !directory {
         return (None, inputs);
     }
     for index in [

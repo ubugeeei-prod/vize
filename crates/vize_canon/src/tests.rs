@@ -371,8 +371,8 @@ const activeItem = ref<T | null>(null)
         // e.g. voicevox) must not get the inferred slot type appended after
         // the user's own annotation — `pattern: A: B` is a syntax error that
         // aborts Corsa's semantic pass for the whole project. The user
-        // annotation types the bindings, and a separate assignment asserts the
-        // child's actual slot props are assignable to it.
+        // annotation types the bindings, and a separate call checks the
+        // annotated callback against the child's declared slot, as vue-tsc.
         let source = r#"<script setup lang="ts">
 import Draggable from './Draggable.vue'
 type Tag = { id: string }
@@ -391,9 +391,12 @@ type Tag = { id: string }
             virtual_ts.contains("({ element }: { element: Tag })"),
             "slot bindings must use the user's own annotation:\n{virtual_ts}"
         );
-        assert!(
-            virtual_ts.contains("const __slot_annotation_check: { element: Tag } ="),
-            "the child's actual slot props must be checked against the annotation:\n{virtual_ts}"
+        assert_eq!(
+            virtual_ts
+                .matches("(_: { element: Tag }) => [] as any")
+                .count(),
+            1,
+            "the declared slot must be checked against the annotation once:\n{virtual_ts}"
         );
         assert!(
             !virtual_ts.contains("{ element: Tag }: typeof"),

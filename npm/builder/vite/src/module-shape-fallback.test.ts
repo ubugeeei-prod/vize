@@ -1,9 +1,8 @@
 /**
  * `generateOutput` prefers the module shape the native compiler reports over
  * re-parsing the emitted module with oxc (#3425). Both arms are pinned here,
- * because the fallback is permanent rather than transitional: a `.vpc` cache
- * entry written before the field existed reads back without it, and the rspack
- * and unplugin builders never set it at all.
+ * because the fallback is permanent: the native compiler reports no shape for
+ * output it could not parse.
  *
  * The two arms must produce byte-identical output. If they ever diverge, the
  * plugin's behaviour would depend on whether a cache happened to be warm, which

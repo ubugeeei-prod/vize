@@ -6,7 +6,9 @@
 //! outside the checker entirely (#4015).
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
-use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
+use vize_canon::virtual_ts::{
+    GenericParameters, VirtualTsOptions, generate_virtual_ts_with_generic,
+};
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_l0::cstr;
 
@@ -49,6 +51,8 @@ pub(in crate::ide::diagnostics) fn art_variant_virtual_name(
 struct ArtScriptContext {
     script: String,
     script_offset: u32,
+    /// The `<script setup generic>` plan, anchored at the attribute.
+    generic: Option<GenericParameters>,
 }
 
 impl DiagnosticService {
@@ -79,7 +83,7 @@ impl DiagnosticService {
                     .component
                     .and_then(crate::virtual_code::art_target_component_from_source)
             });
-        let script = art_script_context(descriptor);
+        let script = art_script_context(content, descriptor);
 
         let mut variants = Vec::new();
         for (variant_index, variant) in art_desc.variants.iter().enumerate() {
@@ -122,7 +126,10 @@ impl DiagnosticService {
         let (template_ast, _) = vize_armature::parse(&template_allocator, template_content);
 
         let mut analyzer = Drawer::with_options(DrawerOptions::full());
-        analyzer.analyze_script(script_content);
+        analyzer.analyze_script_setup_with_generic(
+            script_content,
+            script.generic.as_ref().map(GenericParameters::raw),
+        );
         analyzer.analyze_template(&template_ast);
 
         let summary = analyzer.finish();
@@ -131,13 +138,15 @@ impl DiagnosticService {
             add_art_target_component_bindings(&mut virtual_ts_options, &summary, target);
         }
 
-        let output = generate_virtual_ts_with_offsets(
+        let output = generate_virtual_ts_with_generic(
             &summary,
             Some(script_content),
             Some(&template_ast),
             script.script_offset,
             template_offset,
             &virtual_ts_options,
+            None,
+            script.generic.as_ref(),
         );
         let code = output.code;
 
@@ -197,7 +206,10 @@ struct ArtVariantGeneration {
 
 /// Project the authored `<script setup>` (or classic `<script>`) into the
 /// module-level context every variant document is generated against.
-fn art_script_context(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> ArtScriptContext {
+fn art_script_context(
+    content: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> ArtScriptContext {
     let (script, script_offset) = if let Some(script_setup) = descriptor.script_setup.as_ref() {
         let isolate = !script_setup
             .attrs
@@ -236,6 +248,7 @@ fn art_script_context(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> ArtSc
     ArtScriptContext {
         script,
         script_offset,
+        generic: GenericParameters::from_setup(content, descriptor),
     }
 }
 

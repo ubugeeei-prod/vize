@@ -4,11 +4,11 @@
 
 use vize_l0::String;
 
-use crate::lower::cx::Cx;
+use super::lane::Lane;
 
-pub(super) fn normalize_special_text(cx: &Cx<'_>, text: &str, start: u32) -> Option<String> {
-    let leading = cx.ignore_newline_at == Some(start);
-    let normalize = cx.normalize_pre_newlines();
+pub(super) fn normalize_special_text(lane: &Lane<'_>, text: &str, start: u32) -> Option<String> {
+    let leading = lane.ignore_newline_at() == Some(start);
+    let normalize = lane.normalize_pre_newlines();
     if !leading && !normalize {
         return None;
     }

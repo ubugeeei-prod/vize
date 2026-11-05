@@ -1,18 +1,37 @@
 ---
 title: "a11y/no-access-key"
+description: "Disallow the use of the accesskey attribute."
 ---
 
 # `a11y/no-access-key`
 
-Disallow the use of the accesskey attribute
+Disallow the use of the accesskey attribute.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The `accesskey="s"` shortcut may conflict with browser or assistive-technology shortcuts.
+
+```vue annotate="remove:2"
+<template>
+  <button accesskey="s">Save</button>
+</template>
+```
+
+## Good
+
+Removing `accesskey` keeps the ordinary Save button available.
+
+```vue annotate="add:2"
+<template>
+  <button>Save</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `accesskey="s"` shortcut may conflict with browser or assistive-technology shortcuts.
-
-```vue
-<template>
-  <button accesskey="s">Save</button>
-</template>
-```
-
-## Good
-
-Removing `accesskey` keeps the ordinary Save button available.
-
-```vue
-<template>
-  <button>Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19)

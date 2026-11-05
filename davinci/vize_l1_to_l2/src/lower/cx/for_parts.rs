@@ -2,10 +2,11 @@
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, cstr};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::Cx;
 
-impl Cx<'_> {
+impl<P: ProvenanceSink> Cx<'_, P> {
     /// Attach a `ui.for` binding view to its op, when the op has an id.
     pub(crate) fn attach_for_parts(
         &mut self,
@@ -23,17 +24,18 @@ impl Cx<'_> {
                 "hygiene law broken: ui.for {id} reuses scope tag {} - introduction sites mint fresh tags",
                 parts.tag,
             );
-            let before = cstr!("scope {} bindings={binding_count}", parts.tag);
-            self.record(
+            self.record_text(
                 "lower.for-fact",
                 node,
-                before.as_str(),
-                cstr!(
-                    "fact value={} key={} index={}",
-                    parts.value.spell(),
-                    parts.key.spell(),
-                    parts.index.spell()
-                ),
+                || cstr!("scope {} bindings={binding_count}", parts.tag),
+                || {
+                    cstr!(
+                        "fact value={} key={} index={}",
+                        parts.value.spell(),
+                        parts.key.spell(),
+                        parts.index.spell()
+                    )
+                },
                 span,
             );
             self.for_facts.insert(id, parts);

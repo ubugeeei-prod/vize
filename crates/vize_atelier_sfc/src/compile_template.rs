@@ -15,9 +15,7 @@ mod section_offsets_tests;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
-};
+pub(crate) use extraction::{extract_template_parts, slice_template_parts, template_parts_full};
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -47,15 +45,17 @@ pub(crate) struct TemplateBlockCompileResult {
 }
 
 /// Byte ranges into [`TemplateBlockCompileResult::code`] marking the sections
-/// the inline SFC assembly consumes. Mirrors what
-/// [`extraction::extract_template_parts`] reconstructs by line scanning, but
-/// recorded at emission so the hot path can slice instead of re-scan.
+/// the SFC assembly consumes. Mirrors what [`extraction::extract_template_parts`]
+/// and [`extraction::extract_template_parts_full`] reconstruct by line
+/// scanning, but recorded at emission so the hot path can slice instead.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct TemplateCodeSections {
     /// `import { ... } from "vue"` line(s), trailing newline included.
     pub(crate) imports: (usize, usize),
     /// Hoisted module-level declarations, one per line.
     pub(crate) hoisted: (usize, usize),
+    /// The whole render function.
+    pub(crate) function: (usize, usize),
     /// Component/directive resolution statements inside the render function
     /// (raw slice; lines carry codegen indentation).
     pub(crate) assets: (usize, usize),
@@ -379,6 +379,7 @@ pub(crate) fn compile_template_block_with_capture(
         OutputModule::from_render_chunks(result.result.preamble, result.result.code);
     let preamble_len = output_module.imports.len();
     let fn_base = output_module.function_base_offset();
+    let fn_end = fn_base + output_module.functions.len();
     let map = template_map.map(|map| {
         let mut placed = Runs::default();
         placed.append(fn_base, &map);
@@ -391,6 +392,7 @@ pub(crate) fn compile_template_block_with_capture(
         } else {
             (preamble_len, preamble_len)
         },
+        function: (fn_base, fn_end),
         assets: (fn_base + s.assets_start, fn_base + s.assets_end),
         return_expr: (fn_base + s.return_expr_start, fn_base + s.return_expr_end),
     });

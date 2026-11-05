@@ -4,29 +4,23 @@ title: Static Analysis
 
 # Static Analysis
 
-Vize's analysis stack is shared by the compiler, linter, type checker, editor server, and Musea
-tooling. The goal is to parse a Vue SFC once, keep rich semantic information around, and reuse it
-for diagnostics and code generation instead of treating each command as a separate tool.
+Use linting to catch Vue mistakes and enforce your team's rules, then add type checking to validate component props, events and template expressions. Both report findings against the original source, so the same code can be checked in CI and in the editor.
 
-The examples below assume the `vize` npm package is installed and called from project scripts, which
-is the recommended workflow for applications.
+The examples below assume the `vize` npm package is installed in the project. Add the commands to `package.json` and run them through your package manager.
 
-## Pipeline
+<span id="pipeline"></span>
 
-| Codename | What it does                                                              | Used by                                        |
-| -------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Armature | Parser: tokenizes and parses Vue templates and SFC structure                      | compiler, linter, formatter                    |
-| Croquis  | Analyzer: builds scopes, binding metadata, macro information, and cross-file graphs | compiler, lint, type-aware checks              |
-| Patina   | Linter: runs Vue, script, CSS, a11y, SSR, Vapor, Musea, and type-aware lint rules | `vize lint`, editor diagnostics, Oxlint bridge |
-| Canon    | Type checker: generates virtual TypeScript and maps diagnostics back to Vue files       | Content mapper, `vize check`                   |
-| Maestro  | Language server: exposes diagnostics and editor features through LSP                       | `vize lsp`, VS Code, Zed                       |
+## Choose a check
 
-This means static analysis is not only linting. Template bindings, compiler macros, component
-metadata, provide/inject relationships, reactivity flow, generated virtual TypeScript, and
-component gallery metadata all depend on the same lower-level analysis work.
+| What you want to check | Command or integration | Start here |
+| --- | --- | --- |
+| Vue rules, accessibility, script and CSS conventions | `vize lint src` | [Lint execution settings](./lint-execution.md) |
+| Component props, events and template types | The content mapper or `vize check` | [Type checking](./type-checking.md) |
+| Relationships between components | `vize lint --cross-file src` | [Component trees and complexity](./cross-file-complexity.md) |
+| Findings while editing | Vize's language server | [Editor setup](./language-server.md) |
+| Vue lint rules in an existing Oxlint run | `oxlint-plugin-vize` | [Oxlint integration](./oxlint.md) |
 
-For the concrete rule names, defaults, and cross-file diagnostic codes that can be emitted, see
-[Rules](../rules/index.md).
+The [rule reference](../rules/index.md) lists each rule's default severity, presets, options and examples.
 
 ## Linting
 
@@ -94,12 +88,11 @@ For each SFC, the analyzer records where reactive values come from, where `.valu
 reactivity is lost, and which effects depend on which values, all mapped to the source. The same
 data feeds diagnostics, reports, the editor, and the Playground's **Reactivity** tab.
 
-## Patina Rule Model
+<span id="patina-rule-model"></span>
 
-Patina is Vize's linter (`vize patina` is an alias of `vize lint`). Rules are small visitors over the SFC source, template root,
-template elements, directives, `v-for`, `v-if`, and interpolations. Each rule carries metadata for
-its rule name, category, default severity, help text, and whether it is fixable. Presets are just
-registries that decide which rules are enabled together.
+## Lint rules and presets
+
+Each lint rule checks a particular problem and has its own severity, options and examples. A preset selects a group of rules; an explicit rule setting can change that selection. Rules with automatic fixes can be applied with `vize lint --fix src`; review the resulting diff before committing it.
 
 | Area                | Example rules                                                                                | What they cover                                    |
 | ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
@@ -128,7 +121,7 @@ The built-in presets are meant to support adoption in stages:
 
 ## Migration Pragmas and Custom Rules
 
-Patina accepts existing ESLint disable pragmas for matching rule names, including
+Vize accepts existing ESLint disable comments for matching rule names, including
 `eslint-disable`, `eslint-enable`, `eslint-disable-next-line`, and `eslint-disable-line`. This lets
 projects migrate rules such as `vue/require-v-for-key` without rewriting every suppression comment
 up front.
@@ -175,9 +168,7 @@ deny list and `script/no-restricted-members` flagging configured `<object>.<prop
 
 ## Cross-File Rules
 
-Cross-file analysis lives in Croquis and is exposed to linting through Patina diagnostics. It is
-opt-in because it builds a module registry, import graph, component-usage graph, and additional
-indexes across all analyzed Vue files.
+Cross-file linting checks relationships that a single component cannot establish on its own. It is off by default. Enable it when the run includes the related Vue files you want to check.
 
 Today, `vize lint --cross-file` enables provide/inject matching, unique element ID checks,
 reactivity tracking, and async race-condition analysis. `--cross-file-tree` prints the
@@ -188,26 +179,7 @@ vp run vize:lint:cross-file
 vp run vize:lint:cross-file-tree
 ```
 
-The lower-level cross-file engine is broader than the current CLI surface:
-
-| Cross-file option         | Intended diagnostics or facts                                               |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `provide_inject`          | Unmatched injects, unused provides, string-key warnings, non-reactive flows |
-| `unique_ids`              | Duplicate IDs and non-unique IDs introduced inside loops                    |
-| `reactivity_tracking`     | Prop destructuring, aliasing, and cross-component reactivity loss           |
-| `race_conditions`         | Async state updates that can race through provided or shared state          |
-| `fallthrough_attrs`       | `$attrs`, `inheritAttrs`, and multi-root fallthrough hazards                |
-| `component_emits`         | Undeclared emits, unused emits, and listeners without a producer            |
-| `event_bubbling`          | Events that bubble through component boundaries without being handled       |
-| `server_client_boundary`  | Browser API usage and hydration risks around SSR/client boundaries          |
-| `error_suspense_boundary` | Async components without useful Suspense or error boundaries                |
-| `circular_dependencies`   | Import cycles and deep import chains                                        |
-| `component_resolution`    | Unregistered or unresolved component usage                                  |
-| `props_validation`        | Missing required props and child prop type mismatches                       |
-
-The direction is to keep single-file linting fast by default, expose cross-file groups explicitly as
-they mature, and route high-confidence project facts into the same diagnostic stream used by the
-CLI, Oxlint bridge, and editor server.
+See [component trees and complexity](./cross-file-complexity.md) for the reports and [cross-file rule examples](../rules/cross-file.md) for the checks currently exposed to users.
 
 ## Type Checking
 
@@ -223,9 +195,7 @@ CLI, Oxlint bridge, and editor server.
 }
 ```
 
-The packaged checker, `vize check`, generates virtual TypeScript for Vue SFCs and asks Corsa project sessions for
-diagnostics. It checks `.vue`, `.ts`, `.tsx`, and `.d.ts` inputs and maps diagnostics back to the
-original source files.
+`vize check` checks the project's `.vue`, `.ts`, `.tsx` and `.d.ts` inputs and reports diagnostics at their original source locations.
 
 ```json
 {

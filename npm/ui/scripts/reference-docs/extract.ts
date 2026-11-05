@@ -1,9 +1,9 @@
 /**
  * Static API extraction for the generated reference docs.
  *
- * Reads `<script setup>` blocks and TypeScript modules with the TypeScript
- * parser (no type checker, no emit) and collects props, emits, slots, and
- * exposed members together with their TSDoc summaries and `@default` tags.
+ * Reads `<script setup>` blocks and TypeScript modules to collect props,
+ * emits, slots, and exposed members with TSDoc summaries and `@default` tags.
+ * Exported classes use declaration emit to retain their inferred public types.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -18,6 +18,7 @@ import type {
   ModuleTypeAlias,
 } from "./api-types.ts";
 import { emitMembers, namedTypeMembers, slotMembers, typeMembers } from "./members.ts";
+import { classDeclarations } from "./class-declarations.ts";
 import { TypeScope, commentText, memberName, oneLine, parse, readDoc } from "./ts-scope.ts";
 
 export type {
@@ -225,7 +226,7 @@ export function moduleTypeAliases(file: string): readonly ModuleTypeAlias[] {
   });
 }
 
-/** Exported functions and constants of a module, with TSDoc summaries. */
+/** Exported runtime declarations of a module, with TSDoc summaries. */
 export function moduleExports(file: string): readonly ModuleExport[] {
   const source = parse(file);
   const exports: ModuleExport[] = [];
@@ -256,10 +257,16 @@ export function moduleExports(file: string): readonly ModuleExport[] {
           examples: examples(statement),
         });
       }
-    } else if (ts.isClassDeclaration(statement) && statement.name != null && exported(statement)) {
+    } else if (ts.isClassDeclaration(statement) && exported(statement)) {
+      const localName = statement.name?.text ?? "default";
+      const signature = classDeclarations(source).get(localName);
+      if (signature == null) throw new Error(`Missing public class declaration: ${localName}`);
+      const isDefault = ts
+        .getModifiers(statement)
+        ?.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword);
       exports.push({
-        name: statement.name.text,
-        signature: `class ${statement.name.text}`,
+        name: isDefault ? "default" : localName,
+        signature,
         description: readDoc(statement).description,
         examples: examples(statement),
       });

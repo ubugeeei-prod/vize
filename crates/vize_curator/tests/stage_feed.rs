@@ -1,52 +1,14 @@
-//! The historical stage feed v1 (P2-18), pinned through typed collectors.
-//! The document validates against the committed schema
-//! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
-//! validator (TS-15), and its content equals the dump's pages
-//! exactly, escaping law included.
+//! The stage feed v1 (P2-18). The document validates against the committed
+//! schema (`docs/davinci/plan/stage-ladder-feed.schema.json`) through the
+//! shared strict validator (TS-15), and its serialization is pinned exactly,
+//! escaping law included.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_curator::inspector::feed::{StageFeed, StageFeedSchemaMismatch};
-use vize_l0::dump::collector::Collector;
-use vize_l0::pass::{
-    BudgetObserver, Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
-};
-
-/// A canonical `[budget-observer]` page - the smallest committed-format
-/// artifact a pipeline can run over.
-const BUDGET: &str =
-    "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n";
-
-fn collected_feed(after_change_only: bool) -> serde_json::Value {
-    const ALPHA: PassDesc = PassDesc::new(
-        "alpha",
-        PassKind::Optional,
-        Fusability::Fusable,
-        Preserved::ALL,
-    );
-    const BETA: PassDesc = PassDesc::new(
-        "beta",
-        PassKind::Optional,
-        Fusability::Fusable,
-        Preserved::ALL,
-    );
-    const PASSES: &[PassDesc] = &[ALPHA, BETA];
-    const PIPELINE: Pipeline = Pipeline::new("l2", PASSES);
-    let mut collector = Collector::new(after_change_only);
-    collector.seed(BUDGET);
-    let mut budget = BudgetObserver::new();
-    run_pipeline(&PIPELINE, &mut budget, |event| {
-        collector.after_pass(event, BUDGET);
-        Ok(())
-    })
-    .expect("no-op body cannot fail");
-    assert_eq!((budget.walks, budget.passes), (1, 2));
-    let feed = StageFeed::of_dump("typed-pass-test", &collector);
-    serde_json::from_str(feed.to_json().as_str()).expect("feed is valid JSON")
-}
+use vize_curator::inspector::feed::{StageFeed, StageFeedSchemaMismatch, StagePage};
 
 fn negotiate_feed_schema(feed: &serde_json::Value) -> Result<(), SchemaGateError> {
     let version = feed
@@ -74,70 +36,25 @@ fn load_schema() -> serde_json::Value {
         .join("..")
         .join("docs/davinci")
         .join("plan")
-        .join("spolvero-feed.schema.json");
+        .join("stage-ladder-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
 
 #[test]
-fn typed_feed_validates_and_carries_collected_pages_exactly() {
-    let feed = collected_feed(false);
-    assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
-    assert_eq!(
-        feed,
-        serde_json::json!({
-            "schema_version": 1,
-            "command": "typed-pass-test",
-            "pages": [
-                { "path": null, "stage": "l2", "pass": "alpha", "text": BUDGET },
-                { "path": null, "stage": "l2", "pass": "beta", "text": BUDGET },
-            ],
-            "remarks": [],
-        })
-    );
-}
-
-#[test]
-fn a_fully_gated_collector_feeds_zero_pages_loudly() {
-    // The gate emitted nothing, and the feed says so instead of being
-    // absent: an empty dump is observable, not indistinguishable from an
-    // ignored flag.
-    let feed = collected_feed(true);
-    assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
-    assert_eq!(
-        feed,
-        serde_json::json!({
-            "schema_version": 1,
-            "command": "typed-pass-test",
-            "pages": [],
-            "remarks": [],
-        })
-    );
-}
-
-#[test]
 fn the_feed_escapes_page_text_into_valid_json_exactly() {
-    const ALPHA: PassDesc = PassDesc::new(
-        "alpha",
-        PassKind::Optional,
-        Fusability::Fusable,
-        Preserved::ALL,
-    );
-    const PASSES: &[PassDesc] = &[ALPHA];
-    const PIPELINE: Pipeline = Pipeline::new("s2", PASSES);
-    let event = PassEvent {
-        pipeline: &PIPELINE,
-        group_index: 0,
-        group: PIPELINE.group(0).expect("one group"),
-        pass_index: 0,
-    };
+    use vize_l0::String;
 
     // Every escape class: quote, backslash, the three named controls, an
     // unnamed control, and multi-byte UTF-8.
     let nasty = "a\"b\\c\nd\re\tf\u{1}g\u{3042}\n";
-    let mut dump = Collector::new(false);
-    dump.after_pass(&event, nasty);
-    let feed = StageFeed::of_dump("typed-pass-test", &dump);
+    let mut feed = StageFeed::new("typed-pass-test");
+    feed.pages.push(StagePage {
+        path: None,
+        stage: String::from("s2"),
+        pass: String::from("alpha"),
+        text: String::from(nasty),
+    });
 
     let json = feed.to_json();
     assert_eq!(

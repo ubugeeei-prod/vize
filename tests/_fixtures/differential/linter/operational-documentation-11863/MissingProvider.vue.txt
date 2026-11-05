@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { inject } from 'vue'
+const value = inject('operational-documentation-provider')
+</script>
+
+<template><p>{{ value }}</p></template>

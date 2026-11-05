@@ -1,18 +1,37 @@
 ---
 title: "a11y/iframe-has-title"
+description: "iframe に内容を説明する title を指定します。"
 ---
 
 # `a11y/iframe-has-title`
 
 iframe に内容を説明する title を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+決済画面の iframe に URL はありますが、内容を説明する title がありません。
+
+```vue annotate="remove:2"
+<template>
+  <iframe src="/checkout"></iframe>
+</template>
+```
+
+## 良い例
+
+`title="Checkout preview"` で iframe の内容を説明します。
+
+```vue annotate="add:2"
+<template>
+  <iframe src="/checkout" title="Checkout preview"></iframe>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-決済画面の iframe に URL はありますが、内容を説明する title がありません。
-
-```vue
-<template>
-  <iframe src="/checkout"></iframe>
-</template>
-```
-
-## 良い
-
-`title="Checkout preview"` で iframe の内容を説明します。
-
-```vue
-<template>
-  <iframe src="/checkout" title="Checkout preview"></iframe>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [全ルール](../all.md)
+- [アクセシビリティのルール](../accessibility.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15)

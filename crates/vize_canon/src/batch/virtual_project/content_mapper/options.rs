@@ -1,6 +1,6 @@
 //! Content mapper generation options and installed-helper capabilities.
 
-use vize_l0::config::VueVersion;
+use crate::virtual_ts::VirtualTsCheckOptions;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
@@ -12,16 +12,10 @@ pub struct ContentMapperTransformOptions {
     pub(super) external_component_type_helpers: bool,
     /// Hoist repeated helpers into the installed `vize/virtual-ts` module.
     pub(super) shared_virtual_module: bool,
-    pub(in crate::batch::virtual_project) check_unknown_components: bool,
-    pub(in crate::batch::virtual_project) check_unknown_props: bool,
-    pub(in crate::batch::virtual_project) check_unknown_fallthrough_props: bool,
-    pub(in crate::batch::virtual_project) fallthrough_attributes: bool,
-    pub(in crate::batch::virtual_project) fallthrough_attributes_specified: bool,
-    pub(in crate::batch::virtual_project) check_unknown_directives: bool,
-    pub(in crate::batch::virtual_project) strict_css_modules: bool,
     pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
-    /// Resolved `vueCompilerOptions.target`. `None` leaves intrinsic names checked.
-    pub(in crate::batch::virtual_project) vue_compiler_target: Option<VueVersion>,
+    /// The project's `vueCompilerOptions`, resolved exactly as `vize check`
+    /// resolves them (`vue_check_options::resolve`, #11688).
+    pub(in crate::batch::virtual_project) checks: VirtualTsCheckOptions,
 }
 
 impl Default for ContentMapperTransformOptions {
@@ -33,15 +27,8 @@ impl Default for ContentMapperTransformOptions {
             external_component_attrs_module: false,
             external_component_type_helpers: false,
             shared_virtual_module: false,
-            check_unknown_components: false,
-            check_unknown_props: true,
-            check_unknown_fallthrough_props: false,
-            fallthrough_attributes: false,
-            fallthrough_attributes_specified: false,
-            check_unknown_directives: false,
-            strict_css_modules: false,
             configured_global_template_ref: false,
-            vue_compiler_target: None,
+            checks: VirtualTsCheckOptions::default(),
         }
     }
 }

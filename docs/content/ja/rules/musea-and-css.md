@@ -1,29 +1,42 @@
 ---
 title: "Musea と CSS のルール"
+description: "Musea の `.art.vue` ストーリーと、`<style>` ブロックのプレーン CSS を検査します。"
 ---
 
 # Musea と CSS のルール
 
-このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
+Musea の `.art.vue` ストーリーと、`<style>` ブロックのプレーン CSS を検査します。
 
+各ルールのページに、診断が出る例・出ない例と、そのルールを有効にする設定があります。
 
-| ルール | 例 | 目的 |
+## より厳しいプリセット (10)
+
+`opinionated`・`nuxt`・`ecosystem` のいずれかにだけ含まれます。どれに含まれるかはプリセット列を参照してください。
+
+| ルール | 検出する内容 | プリセット | 自動修正 |
+| --- | --- | --- | --- |
+| <span id="css-no-display-none"></span>[`css/no-display-none`](./reference/css-no-display-none.md) | 表示切り替えに display: none を使う箇所で v-show を検討します。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-hardcoded-values"></span>[`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | CSS に直接記述した値を CSS 変数にまとめます。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-id-selectors"></span>[`css/no-id-selectors`](./reference/css-no-id-selectors.md) | 詳細度が高い CSS の ID セレクターを検出します。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-important"></span>[`css/no-important`](./reference/css-no-important.md) | 通常のカスケードを上書きする !important を検出します。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-utility-classes"></span>[`css/no-utility-classes`](./reference/css-no-utility-classes.md) | コンポーネント内でユーティリティクラスを定義する箇所を検出します。 | `opinionated`, `nuxt` |  |
+| <span id="css-no-v-bind-performance"></span>[`css/no-v-bind-performance`](./reference/css-no-v-bind-performance.md) | CSS v-bind() の実行時コストを検討するための警告です。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-logical-properties"></span>[`css/prefer-logical-properties`](./reference/css-prefer-logical-properties.md) | 書字方向に対応する CSS の論理プロパティを使います。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | 子孫セレクターを CSS のネスト構文でまとめます。 | `opinionated`, `nuxt` |  |
+| <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 | `opinionated`, `nuxt` |  |
+| <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | @font-face に font-display を指定します。 | `opinionated`, `nuxt` |  |
+
+## 個別に有効化 (6)
+
+どのプリセットにも含まれません。`vue.linter.rules` でルール名を指定して有効にします。
+
+| ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
-| [`css/no-display-none`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-display-none) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-display-none-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-display-none-good) | 表示切り替えに display: none を使う箇所で v-show を検討します。 |
-| [`css/no-hardcoded-values`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-hardcoded-values) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-hardcoded-values-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-hardcoded-values-good) | CSS に直接記述した値を CSS 変数にまとめます。 |
-| [`css/no-id-selectors`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-id-selectors) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-id-selectors-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-id-selectors-good) | 詳細度が高い CSS の ID セレクターを検出します。 |
-| [`css/no-important`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-important) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-important-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-important-good) | 通常のカスケードを上書きする !important を検出します。 |
-| [`css/no-utility-classes`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-utility-classes) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-utility-classes-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-utility-classes-good) | コンポーネント内でユーティリティクラスを定義する箇所を検出します。 |
-| [`css/no-v-bind-performance`](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-v-bind-performance) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-v-bind-performance-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-no-v-bind-performance-good) | CSS v-bind() の実行時コストを検討するための警告です。 |
-| [`css/prefer-logical-properties`](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-logical-properties) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-logical-properties-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-logical-properties-good) | 書字方向に対応する CSS の論理プロパティを使います。 |
-| [`css/prefer-nested-selectors`](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-nested-selectors) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-nested-selectors-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-nested-selectors-good) | 子孫セレクターを CSS のネスト構文でまとめます。 |
-| [`css/prefer-slotted`](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted-good) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 |
-| [`css/require-font-display`](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display-good) | @font-face に font-display を指定します。 |
-| [`musea/no-empty-variant`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant-good) | 内容のない variant ブロックを検出します。 |
-| [`musea/prefer-design-tokens`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-good) | CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。 |
-| [`musea/require-component`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component-good) | art ブロックに対象の component を指定します。 |
-| [`musea/require-title`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title-good) | art ブロックに title を指定します。 |
-| [`musea/unique-variant-names`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names-good) | 同じ Art ファイル内の variant 名を一意にします。 |
-| [`musea/valid-variant`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-valid-variant) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-valid-variant-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-valid-variant-good) | variant ブロックに name を指定します。 |
+| <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | 内容のない variant ブロックを検出します。 |  |
+| <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。 |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | art ブロックに対象の component を指定します。 |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | art ブロックに title を指定します。 |  |
+| <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | 同じ Art ファイル内の variant 名を一意にします。 |  |
+| <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | variant ブロックに name を指定します。 |  |
 
-[全ルール](./all.md) · [ルールのオプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
+[ルールの概要](../rules/index.md) · [ルールのオプション](./options.md) · [ESLint からの移行](./migration.md)

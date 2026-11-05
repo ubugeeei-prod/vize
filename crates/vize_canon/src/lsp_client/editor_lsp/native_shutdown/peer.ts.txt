@@ -61,6 +61,8 @@ for await (const bytes of process.stdin) {
       await respond(request, { capabilities: {} });
     } else if (request.method === "textDocument/documentSymbol") {
       await respond(request, []);
+    } else if (request.method === "textDocument/hover") {
+      await respond(request, null);
     } else if (request.method === "textDocument/diagnostic") {
       if (diagnostics === "error") {
         await respond(request, null, { code: -32603, message: "controlled diagnostic refusal", data: { phase: "diagnostics" } });

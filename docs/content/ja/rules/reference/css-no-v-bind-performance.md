@@ -1,18 +1,39 @@
 ---
 title: "css/no-v-bind-performance"
+description: "CSS v-bind() の実行時コストを検討するための警告です。"
 ---
 
 # `css/no-v-bind-performance`
 
 CSS v-bind() の実行時コストを検討するための警告です。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`, `nuxt`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+
+## 悪い例
+
+変化する offset を SFC の CSS の v-bind() で参照しています。
+
+```vue annotate="remove:1,2,3,4,5"
+<style scoped>
+.card {
+  transform: translateX(v-bind(offset));
+}
+</style>
+```
+
+## 良い例
+
+変化する transform を要素の style バインディングに直接指定します。
+
+```vue annotate="add:1,2,3"
+<template>
+  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-変化する offset を SFC の CSS の v-bind() で参照しています。
-
-```vue
-<style scoped>
-.card {
-  transform: translateX(v-bind(offset));
-}
-</style>
-```
-
-## 良い
-
-変化する transform を要素の style バインディングに直接指定します。
-
-```vue
-<template>
-  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [全ルール](../all.md)
+- [Musea と CSS のルール](../musea-and-css.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20)

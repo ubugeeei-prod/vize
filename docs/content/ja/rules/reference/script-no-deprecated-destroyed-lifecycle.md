@@ -1,18 +1,37 @@
 ---
 title: "script/no-deprecated-destroyed-lifecycle"
+description: "Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。"
 ---
 
 # `script/no-deprecated-destroyed-lifecycle`
 
 Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | あり | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: 対応している診断で利用できます  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+タイマーの後片付けに、Vue 3 で削除された Vue 2 のライフサイクルオプション `beforeDestroy` を使っています。
+
+```vue annotate="remove:2"
+<script lang="ts">
+export default { beforeDestroy() { clearTimeout(this.timer); } };
+</script>
+```
+
+## 良い例
+
+タイマーの後片付けの処理をそのまま残し、フック名を Vue 3 の `beforeUnmount` に変更します。
+
+```vue annotate="add:2"
+<script lang="ts">
+export default { beforeUnmount() { clearTimeout(this.timer); } };
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-タイマーの後片付けに、Vue 3 で削除された Vue 2 のライフサイクルオプション `beforeDestroy` を使っています。
-
-```vue
-<script lang="ts">
-export default { beforeDestroy() { clearTimeout(this.timer); } };
-</script>
-```
-
-## 良い
-
-タイマーの後片付けの処理をそのまま残し、フック名を Vue 3 の `beforeUnmount` に変更します。
-
-```vue
-<script lang="ts">
-export default { beforeUnmount() { clearTimeout(this.timer); } };
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17)

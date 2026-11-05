@@ -11,6 +11,7 @@ mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
 mod props_rest;
+mod script_context;
 mod setup_exports;
 mod stage_capture;
 #[cfg(test)]
@@ -26,9 +27,8 @@ use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for
 use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,
-    extract_template_parts_full, slice_template_parts,
+    slice_template_parts, template_parts_full,
 };
-use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,
     SfcError,
@@ -68,6 +68,7 @@ fn compile_sfc_inner(
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
     nuxt_page_meta: bool,
+    type_project: Option<&crate::script::SfcTypeProject>,
     pug_source_map: Option<&PugSourceMap>,
     mut capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
@@ -414,39 +415,23 @@ fn compile_sfc_inner(
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
-    let mut ctx = profile!(
-        "atelier.sfc.script_context.new",
-        ScriptCompileContext::new(&script_setup_content)
-    );
-
-    // Merge type definitions from normal <script> block so that
-    // defineProps<TypeRef>() can resolve types defined there.
-    if let Some(script) = descriptor.script.as_ref() {
-        profile!(
-            "atelier.sfc.script_context.collect_normal_types",
-            ctx.collect_types_from(&script.content)
-        );
-    }
     let source_is_ts = is_ts_lang(script_setup.lang.as_deref());
-    profile!(
-        "atelier.sfc.script_context.collect_setup_import_types",
-        ctx.collect_imported_types_from_path(&script_setup_content, source_filename, source_is_ts)
-    );
-    if let Some(script) = descriptor.script.as_ref() {
-        profile!(
-            "atelier.sfc.script_context.collect_normal_import_types",
-            ctx.collect_imported_types_from_path(
-                &script.content,
-                source_filename,
-                is_ts_lang(script.lang.as_deref()),
-            )
-        );
-    }
+    let script_context::CollectedContext {
+        context: mut ctx,
+        imports: imported_types,
+        dependencies: type_dependencies,
+    } = script_context::collect(
+        descriptor,
+        &script_setup_content,
+        source_filename,
+        type_project,
+    )?;
     profile!(
         "atelier.sfc.script_context.analyze",
         ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)
     );
     validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
+    script_context::validate(&ctx, &imported_types, descriptor)?;
 
     props_rest::merge_props_bindings(&mut script_bindings, &ctx);
 
@@ -604,7 +589,7 @@ fn compile_sfc_inner(
             if is_vapor || options.template.ssr || script_output.separates_template() {
                 let (imports, hoisted, render_fn, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts_full",
-                    extract_template_parts_full(template_code)
+                    template_parts_full(template_output)
                 );
                 (
                     imports,
@@ -737,6 +722,6 @@ fn compile_sfc_inner(
         warnings,
         bindings: script_result.bindings,
         macro_artifacts,
-        dependencies: Vec::new(),
+        dependencies: type_dependencies,
     })
 }

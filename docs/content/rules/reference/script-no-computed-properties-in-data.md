@@ -1,18 +1,51 @@
 ---
 title: "script/no-computed-properties-in-data"
+description: "Disallow using computed properties inside the component data function."
 ---
 
 # `script/no-computed-properties-in-data`
 
-Disallow using computed properties inside the component data function
+Disallow using computed properties inside the component data function.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+
+## Bad
+
+`data()` returns `this.doubled` while `doubled` is still a computed property, so the read happens before that computed value exists.
+
+```vue annotate="remove:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: this.doubled }
+  },
+  computed: {
+    doubled() { return 1 }
+  }
+}
+</script>
+```
+
+## Good
+
+`data()` returns a plain `value`, and `doubled` reads `this.value` only after initialization.
+
+```vue annotate="add:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: 1 }
+  },
+  computed: {
+    doubled() { return this.value * 2 }
+  }
+}
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -31,44 +64,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`data()` returns `this.doubled` while `doubled` is still a computed property, so the read happens before that computed value exists.
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { value: this.doubled }
-  },
-  computed: {
-    doubled() { return 1 }
-  }
-}
-</script>
-```
-
-## Good
-
-`data()` returns a plain `value`, and `doubled` reads `this.value` only after initialization.
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { value: 1 }
-  },
-  computed: {
-    doubled() { return this.value * 2 }
-  }
-}
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44)

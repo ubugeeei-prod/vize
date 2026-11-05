@@ -91,7 +91,9 @@ fn native_ts_diagnostics_survive_generics_guards_utf16_unsaved_errors_and_repair
 #[test]
 fn javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id() {
     let mut mismatches = Vec::new();
-    let source = "export const map = new Map();\nconst text = '<string>';\n";
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/typechecker/native-diagnostic-phase-11626/plain.js.txt"
+    );
     for extension in ["js", "mjs", "cjs"] {
         let mut fixture = Fixture::new(extension, source, true);
         let hint = unused_hint(

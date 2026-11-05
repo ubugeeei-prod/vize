@@ -147,7 +147,6 @@ paths = [
   "crates/vize_atelier_sfc/src/compile_script/tests.rs",
   "crates/vize_atelier_sfc/src/script/context/props.rs",
   "crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs",
-  "crates/vize_atelier_sfc/src/script/type_resolution.rs",
   "crates/vize_atelier_sfc/src/vite_plugin/css.rs",
   "crates/vize_atelier_sfc/tests/emitter_javascript_output.rs",
   "crates/vize_atelier_sfc/tests/imported_type_cache.rs",

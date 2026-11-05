@@ -1,3 +1,4 @@
+use crate::compile_script::erasure::{Erasure, emit_runtime_helper};
 use crate::script::ScriptCompileContext;
 use crate::types::{CssModuleMapping, css_modules_object_literal};
 
@@ -9,7 +10,7 @@ pub(super) struct ComponentState {
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_component_definition(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     component_name: &str,
     is_ts: bool,
@@ -23,6 +24,7 @@ pub(super) fn emit_component_definition(
     template: &TemplateParts<'_>,
     vapor_render_alias: Option<&str>,
     css_modules: &[CssModuleMapping],
+    erasure: Option<&mut Erasure>,
 ) -> ComponentState {
     // Start export default
     output.push(b'\n');
@@ -50,15 +52,17 @@ pub(super) fn emit_component_definition(
         let options_args = define_options.args.trim();
         if is_vapor {
             // Vapor wraps the merged options with Object.assign inside the helper.
-            output.extend_from_slice(
-                b"export default /*@__PURE__*/_defineVaporComponent(Object.assign(",
-            );
+            output.extend_from_slice(b"export default /*@__PURE__*/");
+            emit_runtime_helper(output, erasure, "_defineVaporComponent");
+            output.extend_from_slice(b"(Object.assign(");
             output.extend_from_slice(options_args.as_bytes());
             output.extend_from_slice(b", {\n");
         } else if is_ts {
             // TypeScript: spread the options into the _defineComponent call,
             // matching @vue/compiler-sfc (`_defineComponent({ ...{ … }, __name, … })`).
-            output.extend_from_slice(b"export default /*@__PURE__*/_defineComponent({\n  ...");
+            output.extend_from_slice(b"export default /*@__PURE__*/");
+            emit_runtime_helper(output, erasure, "_defineComponent");
+            output.extend_from_slice(b"({\n  ...");
             output.extend_from_slice(options_args.as_bytes());
             output.extend_from_slice(b",\n");
         } else {
@@ -71,17 +75,21 @@ pub(super) fn emit_component_definition(
         // Normal script has export default that was rewritten to __default__
         // Use Object.assign to merge with setup component
         if is_vapor {
-            output.extend_from_slice(
-                b"export default /*@__PURE__*/_defineVaporComponent(Object.assign(__default__, {\n",
-            );
+            output.extend_from_slice(b"export default /*@__PURE__*/");
+            emit_runtime_helper(output, erasure, "_defineVaporComponent");
+            output.extend_from_slice(b"(Object.assign(__default__, {\n");
         } else {
             output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(__default__, {\n");
         }
     } else if is_vapor {
-        output.extend_from_slice(b"export default /*@__PURE__*/_defineVaporComponent({\n");
+        output.extend_from_slice(b"export default /*@__PURE__*/");
+        emit_runtime_helper(output, erasure, "_defineVaporComponent");
+        output.extend_from_slice(b"({\n");
     } else if is_ts {
         // TypeScript: use _defineComponent with __PURE__ annotation
-        output.extend_from_slice(b"export default /*@__PURE__*/_defineComponent({\n");
+        output.extend_from_slice(b"export default /*@__PURE__*/");
+        emit_runtime_helper(output, erasure, "_defineComponent");
+        output.extend_from_slice(b"({\n");
     } else {
         output.extend_from_slice(b"export default {\n");
     }

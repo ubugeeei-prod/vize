@@ -64,15 +64,17 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
     let script = analysis.script_content.as_deref();
     let retained =
         super::super::diagnostics::collect_script_parse_fallbacks(path, source, &descriptor, true);
-    let generic_parameters = descriptor
-        .script_setup
-        .as_ref()
-        .and_then(|setup| setup.attrs.get("generic"))
-        .map(|value| {
-            crate::virtual_ts::generic_parameters::GenericParameters::parse(value.as_ref())
-        });
+    let generic_parameters =
+        crate::virtual_ts::generic_parameters::GenericParameters::from_setup(source, &descriptor);
+    let analyzed_setup = analysis
+        .croquis
+        .scopes
+        .iter()
+        .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup));
     // The same descriptor analysis and exact original generation flags are
     // the before path. No recovered AST or hand-built summary stands in for it.
+    // An analyzed setup already owns its generic; the descriptor plan only
+    // anchors the signature rows, as the batch caller does.
     let prior = crate::virtual_ts::generate_virtual_ts_with_offsets_and_checks(
         &analysis.croquis,
         script,
@@ -83,26 +85,15 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         VirtualTsGenerationOptions {
             split_script_setup_offsets: analysis.split_script_setup_offsets(&descriptor),
             script_syntax_boundaries: &retained.boundaries,
+            generic_parameters: generic_parameters.as_ref().filter(|_| analyzed_setup),
             ..Default::default()
         },
     );
-    let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
+    let (mappings, mapping_meta, semantic_links, prop_default_key_links) =
         prior.mapping.into_binding_parts_with_metadata();
     let generic_copies = generic_parameters.as_ref().and_then(|parameters| {
-        let setup = descriptor.script_setup.as_ref()?;
-        let attribute = super::generic_attribute::attribute_value(
-            source,
-            setup.loc.tag_start..setup.loc.start,
-            "generic",
-        )?;
-        super::generic_attribute::GenericCopies::find(&prior.code, &mappings, parameters, attribute)
+        super::generic_attribute::GenericCopies::find(&prior.code, &mappings, parameters)
     });
-    super::generic_attribute::map_generic_attribute(
-        &prior.code,
-        &mut mappings,
-        &mut mapping_meta,
-        generic_copies.as_ref(),
-    );
     let before = GeneratedVueFile {
         diagnostic_route: Default::default(),
         code: prior.code,
@@ -131,7 +122,7 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         "wholeAnalyzedScript":script,
         "scriptOffset":analysis.script_offset,
         "splitOffsets":analysis.split_script_setup_offsets(&descriptor),
-        "analyzedSetup":analysis.croquis.scopes.iter().any(|scope| matches!(scope.kind,ScopeKind::ScriptSetup)),
+        "analyzedSetup":analyzed_setup,
         "before":packet(&before), "after":packet(&after),
     });
     (before, after, packet)

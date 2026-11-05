@@ -11,7 +11,9 @@
 //! plugin-style dollar names. The method signatures remain intact, so an
 //! invalid argument does not acquire an `any` receiver. Unknown, `any`, and
 //! open-index method dictionaries contribute no keys: intersecting those into
-//! `$This` would silently drop genuine missing-member findings.
+//! `$This` would silently drop genuine missing-member findings. Finite methods
+//! are rebuilt from their keys so a non-strict JavaScript object cannot carry
+//! its open property access into the whole receiver (#11780).
 //!
 //! The neutral element is a named empty interface on purpose. TypeScript drops
 //! `{}` / `unknown` while building the intersection and then prints the
@@ -29,7 +31,7 @@ use vize_carton::{String, append};
 
 /// Type-level helpers backing the inherited-member aliases.
 pub(super) const INHERITED_MEMBER_HELPERS: &str = concat!(
-    "  type $InheritedInstance<T> = 0 extends (1 & T) ? any : [T] extends [never] ? $NoInheritedMembers : T extends abstract new (...args: any[]) => infer __I ? __I : T extends { methods: infer __M } ? 0 extends (1 & __M) ? $NoInheritedMembers : [__M] extends [never] ? $NoInheritedMembers : __M extends object ? [keyof __M] extends [never] ? $NoInheritedMembers : string extends keyof __M ? $NoInheritedMembers : number extends keyof __M ? $NoInheritedMembers : symbol extends keyof __M ? $NoInheritedMembers : __M : $NoInheritedMembers : $NoInheritedMembers;\n",
+    "  type $InheritedInstance<T> = 0 extends (1 & T) ? any : [T] extends [never] ? $NoInheritedMembers : T extends abstract new (...args: any[]) => infer __I ? __I : T extends { methods: infer __M } ? 0 extends (1 & __M) ? $NoInheritedMembers : [__M] extends [never] ? $NoInheritedMembers : __M extends object ? [keyof __M] extends [never] ? $NoInheritedMembers : string extends keyof __M ? $NoInheritedMembers : number extends keyof __M ? $NoInheritedMembers : symbol extends keyof __M ? $NoInheritedMembers : { [__K in keyof __M]: __M[__K] } : $NoInheritedMembers : $NoInheritedMembers;\n",
     "  interface $NoInheritedMembers {}\n",
     "  type $InheritedMembers<T, __I = $InheritedInstance<T>> = [$IsAny<__I>] extends [true] ? $NoInheritedMembers : __I;\n",
 );

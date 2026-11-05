@@ -33,6 +33,7 @@ pub(super) fn generate_with_sections_and_options(
     no_slotted: bool,
     development: bool,
     untracked_children: bool,
+    jsx_class: bool,
 ) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
@@ -43,6 +44,7 @@ pub(super) fn generate_with_sections_and_options(
     );
     ctx.development = development;
     ctx.untracked_children = untracked_children;
+    ctx.jsx_class = jsx_class;
     ctx.source = match source_text {
         Some(text) => vize_l0::String::new(text),
         None => root.source.into(),

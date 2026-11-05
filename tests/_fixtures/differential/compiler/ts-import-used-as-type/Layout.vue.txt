@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { Label } from './label'
+
+const label: Label = 'one'
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

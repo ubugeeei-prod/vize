@@ -7,10 +7,21 @@ export type ResolvedSfcId =
   | string
   | { id: string; external?: boolean; moduleSideEffects?: boolean };
 
-/** Template-only client output has no authored top-level script effects. */
+/**
+ * Whether the module emits nothing but its render export: template-only client
+ * output with no `<style>` block and no CSS. Style imports, injected CSS and
+ * attached `styles` are side effects, so an SFC imported for its styles stays,
+ * as with `@vitejs/plugin-vue` (#11544).
+ */
 export function isPureTemplateOnlyModule(compiled: CompiledModule | undefined): boolean {
   const shape = compiled?.moduleShape;
-  return !!(shape?.hasNamedRenderExport && !shape.hasDefaultExport && !shape.hasSfcMainDefined);
+  return !!(
+    shape?.hasNamedRenderExport &&
+    !shape.hasDefaultExport &&
+    !shape.hasSfcMainDefined &&
+    !compiled.styles?.length &&
+    !compiled.css
+  );
 }
 
 export function resolveTemplateOnlySfcId(

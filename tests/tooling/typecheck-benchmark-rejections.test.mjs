@@ -200,11 +200,13 @@ void test("rejected optional comparators are accounted for but cannot affect a r
     vizeSingleId: "vize-check-1t",
     vizeMaxId: "vize-check-max",
     engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
-    variants: ["vue-tsc", "verter-tsc", "vize-check-1t", "vize-check-max"].map((id) => ({
-      id,
-      label: id,
-      medianMs: id === "vue-tsc" ? 40 : id === "verter-tsc" ? 20 : 10,
-    })),
+    variants: Object.keys(ENGINE_CLASSES_BY_SURFACE.check)
+      .filter((id) => !id.startsWith("golar"))
+      .map((id) => ({
+        id,
+        label: id,
+        medianMs: id === "vue-tsc" ? 40 : id === "verter-tsc" ? 20 : 10,
+      })),
     rejectedVariants,
   };
   const surface = createSurface(input);
@@ -228,7 +230,13 @@ void test("rejected optional comparators are accounted for but cannot affect a r
       /invalid rejected/u,
     );
   }
-  for (const id of ["verter-tsc", "vize-check-max", "vue-tsc"]) {
+  for (const id of [
+    "verter-tsc",
+    "vize-check-max",
+    "vue-tsc",
+    "tsc-vue-mapper",
+    "tsrs-vize-mapper",
+  ]) {
     assert.throws(
       () =>
         createSurface({

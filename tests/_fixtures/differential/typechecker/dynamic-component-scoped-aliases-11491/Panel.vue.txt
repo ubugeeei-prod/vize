@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Picker from "./Picker.vue";
+defineSlots<{
+  qux: (props: { kind: "a" | "b"; open: boolean; comp: typeof Picker }) => unknown;
+}>();
+</script>
+
+<template>
+  <slot name="qux" kind="a" :open="true" :comp="Picker" />
+</template>

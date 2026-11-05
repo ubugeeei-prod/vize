@@ -17,4 +17,3 @@ export const frenchPackets = {
 } satisfies Record<string, readonly [string, string, string]>;
 
 export { frenchShared } from "./fr-shared.ts";
-export { frenchCategoryTitles, frenchCategoryIntro, frenchCrossFileIntro } from "./fr-labels.ts";

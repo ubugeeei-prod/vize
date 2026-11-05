@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import { test } from "node:test";
 import { compileJsx } from "@vizejs/native";
+import { build as esbuild } from "esbuild";
+import { rollup } from "rollup";
 import ts from "typescript";
+import vizeEsbuild from "./esbuild.ts";
+import vizeRollup from "./rollup.ts";
+import { cssPipeline } from "./test/css-pipeline.ts";
 import { vizeUnplugin } from "./unplugin.ts";
 import { packageRoot, resolveFixturePath } from "./test/helpers.ts";
 
@@ -309,24 +314,71 @@ void test("a .tsx transform carries the runtime-helper preamble and a source map
 });
 
 void test("a .tsx <style scoped> block emits scope-rewritten CSS through the plugin", async (t) => {
-  // Mirrors the SFC plain-CSS path: a JSX/TSX `<style scoped>` block becomes
-  // emitted CSS the bundler picks up, with the `data-v-<hash>` scope id already
-  // applied to the selectors (#1495, #1533).
+  // Mirrors the SFC path: a JSX/TSX `<style scoped>` block is a style module
+  // whose CSS already carries the `data-v-<hash>` scope id (#1495, #1533, #11520).
   const id = resolveFixturePath("jsx", "ScopedApp.tsx");
-  const { result, warnings } = await runTransform(false, SCOPED_APP_TSX, id);
-
-  t.assert.ok(result && typeof result === "object", "transform returns a result object");
+  const plugin = createPlugin(false);
+  const warnings: string[] = [];
+  const result = (await (plugin.transform as (...args: unknown[]) => Promise<TransformResult>).call(
+    { warn: (message: string) => warnings.push(message) },
+    SCOPED_APP_TSX,
+    id,
+  )) as TransformResult;
   t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
 
-  // The plugin emits the CSS through the shared inline-injection path, so the
-  // compiled module carries the rewritten CSS as a string constant.
-  t.assert.match(result.code, /__vize_css__/, "emits CSS through the inline-style injection path");
-  const scopeMatch = result.code.match(/data-v-[0-9a-f]+/);
-  t.assert.ok(scopeMatch, "the emitted CSS carries a data-v- scope id");
-  t.assert.ok(
-    result.code.includes(`.box[${scopeMatch[0]}]`),
-    "the emitted CSS applies the scope id to the .box selector",
+  const styleId = /^import "([^"]+)";/.exec(result.code)?.[1] ?? "";
+  t.assert.equal(styleId, `${id}?vue&type=style&index=0&lang.css`);
+  t.assert.doesNotMatch(result.code, /__vize_css__/);
+  const loaded = (await (plugin.load as (id: string) => Promise<{ code: string }>).call(
+    {},
+    styleId,
+  )) as { code: string };
+  const scope = /data-v-[0-9a-f]+/.exec(loaded.code)?.[0];
+  t.assert.ok(scope, loaded.code);
+  t.assert.ok(loaded.code.includes(`.box[${scope}]`), "the scope id is on the .box selector");
+  // The same scope id is applied to the rendered element.
+  t.assert.ok(result.code.includes(scope), "the render output and CSS share one scope id");
+});
+
+// #11520: a JSX `<style scoped>` block is a style module for the host's CSS
+// pipeline, like an SFC block, and is injected only where nothing bundles CSS.
+void test("a .tsx <style scoped> block reaches the host CSS pipeline", async (t) => {
+  const css = cssPipeline();
+  const bundle = await rollup({
+    input: resolveFixturePath("jsx", "ScopedApp.tsx"),
+    external: ["vue"],
+    plugins: [vizeRollup({ isProduction: true, root: packageRoot }), css],
+  });
+  const { output } = await bundle.generate({ format: "esm" });
+  const js = output.find((item) => item.type === "chunk")?.code ?? "";
+  t.assert.doesNotMatch(js, /__vize_css__|document\.createElement\("style"\)/);
+  const scope = /data-v-[0-9a-f]+/.exec(js)?.[0];
+  t.assert.ok(scope, js);
+  const asset = output.find((item) => item.fileName === "style.css");
+  t.assert.ok(asset && asset.type === "asset");
+  t.assert.match(
+    String(asset.source),
+    new RegExp(`^\\.box\\[${scope}\\]\\s*\\{\\s*color: red;?\\s*\\}`),
   );
-  // The same scope id is applied to the rendered element (createElement path).
-  t.assert.ok(result.code.includes(scopeMatch[0]), "the render output and CSS share one scope id");
+
+  // Negative controls: esbuild without `bundle` still injects the CSS, and
+  // Rollup without a CSS plugin fails on the style module.
+  const unbundled = await esbuild({
+    entryPoints: [resolveFixturePath("jsx", "ScopedApp.tsx")],
+    bundle: false,
+    write: false,
+    format: "esm",
+    outdir: "out",
+    plugins: [vizeEsbuild({ isProduction: true, root: packageRoot })],
+  });
+  t.assert.match(unbundled.outputFiles[0].text, /__vize_css__ = "\.box\[data-v-[0-9a-f]+\]/);
+  await t.assert.rejects(
+    rollup({
+      input: resolveFixturePath("jsx", "ScopedApp.tsx"),
+      external: ["vue"],
+      plugins: [vizeRollup({ isProduction: true, root: packageRoot })],
+      onwarn() {},
+    }),
+    /ScopedApp\.tsx\?vue&type=style&index=0&lang\.css \(\d+:\d+\): Expression expected/,
+  );
 });

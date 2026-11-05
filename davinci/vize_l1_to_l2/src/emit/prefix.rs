@@ -38,13 +38,18 @@ pub(super) use rewrite::slot_params_syntax_valid;
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::prefix_slot_defaults;
 #[cfg(feature = "typescript")]
-pub(in crate::emit) use typescript::strip_typescript_from_expression;
+pub(in crate::emit) use typescript::{erase_typescript, erase_typescript_params};
 
 /// Without the `typescript` feature the emit refuses an `is_ts` request up
-/// front (`emit_dom_with_options`), so nothing reaches a stripper.
+/// front (`emit_dom_with_options`), so nothing reaches an eraser.
 #[cfg(not(feature = "typescript"))]
-pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String {
+pub(in crate::emit) fn erase_typescript(content: &str, _proven_js: bool) -> String {
     String::from(content)
+}
+
+#[cfg(not(feature = "typescript"))]
+pub(in crate::emit) fn erase_typescript_params(_params: &str) -> Option<String> {
+    None
 }
 
 /// Whether the whole handler is a reference, rather than a statement body.
@@ -58,6 +63,8 @@ pub(super) fn handler_source_is_expression(source: &str) -> bool {
     rewrite::with_prefix_parse(source, |_| true).unwrap_or(false)
 }
 
+#[cfg(feature = "typescript")]
+use vize_l0::FxHashMap;
 use vize_l0::{Span, String};
 use vize_l2::expr::{ExprRef, JsExpr};
 
@@ -103,6 +110,121 @@ impl Content<'_> {
             offset,
         })
     }
+}
+
+/// An authored expression past the lane's one TypeScript boundary: every
+/// reader below takes its JavaScript from here, never from the node.
+struct Erased<'c, 'r, 'a> {
+    /// The node's own text.
+    authored: &'c str,
+    /// Its JavaScript spelling, when erasure changed the bytes.
+    erased: Option<String>,
+    /// The retained AST of `authored`, where it sits in that text.
+    retained: Option<Retained<'r, 'a>>,
+    /// Whether `retained` passed the JS-module dialect gate, when known.
+    proven_js: Option<bool>,
+}
+
+impl Erased<'_, '_, '_> {
+    fn js(&self) -> &str {
+        self.erased.as_deref().unwrap_or(self.authored)
+    }
+
+    fn changed(&self) -> bool {
+        self.erased.is_some()
+    }
+
+    fn proven_js(&self) -> bool {
+        self.proven_js.unwrap_or_else(|| {
+            self.retained
+                .is_some_and(|js| compat::js_module_compatible(js.ast, js.source))
+        })
+    }
+}
+
+/// One remembered strip per `(content, proven_js)` on this worker. The
+/// constness reader and [`erase`] used to each pay for the oxc transform.
+#[cfg(feature = "typescript")]
+const ERASURE_MEMO_CAP: usize = 2048;
+
+#[cfg(all(test, feature = "typescript"))]
+std::thread_local! {
+    static ERASURE_CALLS: core::cell::Cell<u32> = const { core::cell::Cell::new(0) };
+}
+
+#[cfg(feature = "typescript")]
+std::thread_local! {
+    static ERASURES: core::cell::RefCell<FxHashMap<(String, bool), String>> =
+        core::cell::RefCell::new(FxHashMap::<(String, bool), String>::default());
+}
+
+#[cfg(feature = "typescript")]
+fn recall_erasure(key: &(String, bool)) -> Option<String> {
+    ERASURES
+        .try_with(|memo| memo.borrow().get(key).cloned())
+        .ok()
+        .flatten()
+}
+
+#[cfg(feature = "typescript")]
+fn remember_erasure(key: (String, bool), erased: &str) {
+    let _ = ERASURES.try_with(|memo| {
+        let mut memo = memo.borrow_mut();
+        if memo.len() >= ERASURE_MEMO_CAP {
+            memo.clear();
+        }
+        memo.insert(key, String::from(erased));
+    });
+}
+
+/// The lane's one type erasure of `content`. Later readers, including the
+/// bind constness view, take this text instead of stripping again.
+#[cfg(feature = "typescript")]
+pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+    let key = (String::from(content), proven_js);
+    if let Some(hit) = recall_erasure(&key) {
+        return hit;
+    }
+    #[cfg(test)]
+    {
+        let _ = ERASURE_CALLS.try_with(|calls| calls.set(calls.get().saturating_add(1)));
+    }
+    let text = erase_typescript(content, proven_js);
+    remember_erasure(key, text.as_str());
+    text
+}
+
+#[cfg(not(feature = "typescript"))]
+pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+    erase_typescript(content, proven_js)
+}
+
+#[cfg(all(test, feature = "typescript"))]
+pub(in crate::emit) fn typescript_erasure_calls() -> u32 {
+    ERASURE_CALLS.try_with(core::cell::Cell::get).unwrap_or(0)
+}
+
+/// Type-erase `content` once, under `is_ts`. The result is the same text
+/// [`shared_erasure`] hands to the constness reader.
+fn erase<'c, 'r, 'a>(
+    scope: &PrefixScope<'_>,
+    content: &'c Content<'_>,
+    js: Option<&'r JsExpr<'a>>,
+) -> Erased<'c, 'r, 'a> {
+    let authored = content.text.as_str();
+    let mut erased = Erased {
+        authored,
+        erased: None,
+        retained: content.retained(js),
+        proven_js: None,
+    };
+    if scope.is_ts() {
+        let proven_js = erased.proven_js();
+        let text = shared_erasure(authored, proven_js);
+        erased.erased = (text.as_str() != authored).then_some(text);
+        erased.proven_js = Some(proven_js);
+    }
+    erased
 }
 
 /// Recover the shipped content for an expression authored at `span`
@@ -197,17 +319,16 @@ pub(super) fn prefix_expression(
     // `process_expression`: with `prefix_identifiers` off the TS lane only
     // type-erases, and the node is still marked rewritten — so the codegen
     // consumption runs either way.
+    let js = erase(scope, content, js);
     if !scope.prefixes_identifiers() {
-        let stripped = strip_typescript_from_expression(content.text.as_str());
         return Ok(Prefixed {
-            text: consume(scope, stripped, site),
+            text: consume(scope, String::from(js.js()), site),
             used_unref: false,
             used_is_ref: false,
             has_identifier_references: false,
         });
     }
-    let retained = content.retained(js);
-    let rewritten = rewrite::rewrite_expression(content.text.as_str(), retained, scope, false);
+    let rewritten = rewrite::rewrite_expression(&js, scope, false);
     if rewritten.parse_error {
         return Err(Refused);
     }
@@ -246,9 +367,8 @@ pub(super) fn prefix_handler(
     js: Option<&JsExpr<'_>>,
     for_caching: bool,
 ) -> Result<Prefixed, Refused> {
-    let retained = content.retained(js);
-    let (processed, is_reference) =
-        handler::process_classified_handler(content.text.as_str(), retained, scope);
+    let js = erase(scope, content, js);
+    let (processed, is_reference) = handler::process_classified_handler(&js, scope);
     if processed.parse_error {
         return Err(Refused);
     }
@@ -267,8 +387,8 @@ pub(super) fn prefix_inline_handler(
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
 ) -> Result<Prefixed, Refused> {
-    let retained = content.retained(js);
-    let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
+    let js = erase(scope, content, js);
+    let processed = handler::process_inline_handler(&js, scope);
     if processed.parse_error {
         return Err(Refused);
     }
@@ -280,16 +400,34 @@ pub(super) fn prefix_inline_handler(
     })
 }
 
-/// Whether the authored handler is a method reference (Vue's
-/// `isMemberExpression`), read off the node's content.
-pub(super) fn handler_is_reference(file: &str, expr: &ExprRef<'_>) -> bool {
+/// A component receives its method reference unchanged, except an Options API
+/// method keeps its live-lookup wrapper. Read the same erased text as emission.
+pub(super) fn handler_bypasses_component_cache(
+    scope: &PrefixScope<'_>,
+    file: &str,
+    expr: &ExprRef<'_>,
+) -> bool {
     let (source, js) = match expr {
         ExprRef::Js(js) => (js.source, Some(*js)),
         ExprRef::Opaque(opaque) => (opaque.source, None),
         ExprRef::Foreign(_) | ExprRef::Filter(_) => return false,
     };
     let content = node_content(file, source, expr.span());
-    handler::is_reference(content.text.as_str(), content.retained(js))
+    let erased = erase(scope, &content, js);
+    let content = erased.js().trim();
+    let name = content.strip_prefix("$options.").unwrap_or(content);
+    let options_reference = is_simple_identifier(name)
+        && scope.bindings().and_then(|table| table.kind(name))
+            == Some(super::options::BindingKind::Options);
+    !options_reference
+        && handler::is_reference(
+            erased.js(),
+            if erased.changed() {
+                None
+            } else {
+                erased.retained
+            },
+        )
 }
 
 /// Whether processed handler text is already a function or a callable

@@ -82,12 +82,12 @@ fn recognized_unsupported_binding_shapes_refuse_without_preparing_the_original_v
         if raw == ":[key]tail" {
             assert_eq!(
                 head.directive().unwrap().arg,
-                Some(ArgSyntax::Static(Span::new(19, 23)))
+                Some(ArgSyntax::Dynamic(Span::new(15, 22)))
             );
         } else if raw == "v-bind:[key]tail" {
             assert_eq!(
                 head.directive().unwrap().arg,
-                Some(ArgSyntax::Static(Span::new(25, 29)))
+                Some(ArgSyntax::Dynamic(Span::new(21, 28)))
             );
         }
         let conditional = head.observe_expression().err().unwrap();
@@ -216,8 +216,7 @@ fn original_recovery_and_verbatim_precede_static_shape_value_and_foreign_header_
     );
     assert_eq!(foreign.component().block().root_source(), foreign_source);
 
-    // The original hook's initial dynamic run plus 32 alternating pairs
-    // exceeds its 64 distinct-run capacity before any binding selection.
+    // Vue's lexical argument states have no expression-nesting capacity.
     let name = alloc::format!(":[{}key{}]", "([".repeat(32), "])".repeat(32));
     let source = alloc::format!("<template><p {name}='ready'/></template>");
     let limited = selected(&arena, &source);
@@ -225,22 +224,15 @@ fn original_recovery_and_verbatim_precede_static_shape_value_and_foreign_header_
     let attribute = element.attributes().next().unwrap();
     assert_eq!(attribute.surface().name.text, name.as_str());
     let unsupported = &limited.component().carrier().unsupported;
-    assert_eq!(unsupported.len(), 1);
-    assert_eq!(
-        unsupported[0].error,
-        crate::markup::DirectiveNameError::NestingLimit
-    );
-    assert_eq!(unsupported[0].span, Span::new(3, 3 + name.len() as u32));
-    assert_eq!(
-        unsupported[0]
-            .span
-            .slice(limited.component().block().source()),
-        name.as_str()
-    );
+    assert_eq!(unsupported.len(), 0);
     let before = arena.allocated_bytes();
     assert_eq!(
-        limited.observe_attribute_head(attribute).err(),
-        Some(NativeAttributeOperandError::RecoveredComponent)
+        limited
+            .observe_attribute_head(attribute)
+            .unwrap()
+            .static_binding()
+            .err(),
+        Some(NativeAttributeOperandError::UnsupportedDirective)
     );
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(limited.component().block().root_source(), source.as_str());

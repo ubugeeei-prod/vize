@@ -13,8 +13,6 @@ use super::MaestroServer;
 mod complete;
 #[cfg(all(test, feature = "native", unix))]
 mod configuration_failure_tests;
-#[cfg(feature = "native")]
-mod pending_hint;
 #[cfg(all(test, feature = "native", unix))]
 mod retry_tests;
 #[cfg(feature = "native")]
@@ -27,6 +25,9 @@ pub(super) struct CollectedDiagnostics {
     pub(super) diagnostics: Vec<Diagnostic>,
     #[cfg(feature = "native")]
     pub(super) stamp: Option<super::state::CorsaRequestStamp>,
+    /// The native part of `diagnostics`, carried into later versions.
+    #[cfg(feature = "native")]
+    pub(super) native: Option<crate::ide::diagnostics::NativeFamily>,
 }
 
 impl MaestroServer {
@@ -128,6 +129,8 @@ impl MaestroServer {
                 diagnostics: Vec::new(),
                 #[cfg(feature = "native")]
                 stamp: None,
+                #[cfg(feature = "native")]
+                native: None,
             });
         }
 
@@ -138,7 +141,7 @@ impl MaestroServer {
 
         // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
-        let diagnostics = {
+        let combined = {
             let sync = prepared
                 .filter(|sync| sync.version == version && sync.stamp.is_current(&self.state))
                 .map_or_else(
@@ -153,6 +156,8 @@ impl MaestroServer {
             )
             .await
         };
+        #[cfg(feature = "native")]
+        let (native, diagnostics) = combined.into_parts();
 
         #[cfg(not(feature = "native"))]
         let diagnostics = DiagnosticService::collect(&self.state, uri);
@@ -185,7 +190,22 @@ impl MaestroServer {
             diagnostics,
             #[cfg(feature = "native")]
             stamp: scope.as_ref().map(|scope| scope.stamp()),
+            #[cfg(feature = "native")]
+            native,
         })
+    }
+
+    /// LSP push replaces a URI's whole set. A publication before this
+    /// version's native pass keeps the latest native family, moved to its text.
+    #[cfg(feature = "native")]
+    pub(in crate::server) fn with_carried_native(
+        &self,
+        uri: &Url,
+        version: i32,
+        sync: Vec<Diagnostic>,
+    ) -> Vec<Diagnostic> {
+        let native = self.state.documents.carried_native(uri, version);
+        DiagnosticService::combine_native(&self.state, uri, sync, native)
     }
 
     /// Pending feedback is partial and must not claim a terminal publication or
@@ -205,7 +225,8 @@ impl MaestroServer {
         {
             return;
         }
-        let diagnostics = pending_hint::with_typecheck_pending_hint(sync);
+        let mut diagnostics = self.with_carried_native(uri, version, sync.to_vec());
+        diagnostics.push(crate::ide::diagnostics::typecheck_pending_hint());
         let notification = self
             .client
             .publish_diagnostics(uri.clone(), diagnostics, None);

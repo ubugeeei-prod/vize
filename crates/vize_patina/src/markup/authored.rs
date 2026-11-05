@@ -100,7 +100,7 @@ pub(super) fn kind(element: &Element<'_>, frozen: bool, opens_v_pre: bool) -> Ma
         })
     {
         MarkupElementKind::Template
-    } else if is_lint_component(tag) {
+    } else if is_lint_component(tag, !frozen) {
         MarkupElementKind::Component
     } else {
         MarkupElementKind::Element

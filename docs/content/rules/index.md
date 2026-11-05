@@ -1,69 +1,82 @@
 ---
 title: Rules
+description: Turn on Vize's lint rules with a preset, then adjust single rules.
 ---
 
 # Rules
 
-[All lint rules](./all.md) lists every rule with its purpose, scope, configuration, and Bad/Good
-examples on the same page. Each pair explains why the Bad example triggers a finding and how the
-Good example changes it. Use the index to jump to a rule without opening another page.
+Vize's linter checks Vue single-file components: templates, scripts, styles, and the links
+between files. Pick a preset, then turn single rules up, down, or off.
 
-With Vite+, use `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter`,
-and run `vp run lint` for Vize and Oxlint. Existing script-name collisions use `vp run vize:lint`.
-Built-in `vp lint` uses its own upstream checker.
+## Turn on linting
 
-## Pages
+With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter`,
+and run `vp run lint`. That command runs Vize's rules and Oxlint together.
 
-- [All lint rules](./all.md): searchable catalogue with every purpose, scope, configuration,
-  and full Bad/Good example pair inline.
-- [Rule Options](./options.md): typed `vue.linter.ruleOptions` shapes, defaults, replacement
-  behavior, and examples for every configurable rule.
-- [ESLint migration map](./migration.md): mapped names, differences, unsupported rules, and
-  literal Vite+ configuration changes.
-- [Vue rules](./vue.md): SFC template structure, Vue directives, component conventions, and
-  single-file Vue correctness checks.
-- [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor
-  script restrictions.
-- [HTML rules](./html.md): HTML validity and semantic markup checks.
-- [Accessibility rules](./accessibility.md): ARIA, keyboard interaction, labels, landmarks, and
-  accessible media checks.
-- [SSR rules](./ssr.md): server rendering and hydration hazards.
-- [Vapor rules](./vapor.md): Vapor-only template constraints.
-- [Ecosystem rules](./ecosystem.md): preset-backed checks for Nuxt, Vue Router, Pinia, vue-i18n,
-  Vue Test Utils, and Void Vue.
-- [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
-- [Cross-file rules](./cross-file.md): project-graph diagnostics emitted by
-  `vp run lint` with `crossFile: true`, including complete typed Router projects.
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      preset: "happy-path",
+      rules: {
+        "vue/no-v-html": "off",
+        "a11y/alt-text": "error",
+      },
+    },
+  },
+});
+```
+
+Each rule takes `off`, `warn`, or `error`. Rules with settings read them from
+`vue.linter.ruleOptions`; see [Rule Options](./options.md).
+
+If your project already has a script named `lint`, run `vp run vize:lint` instead. The built-in
+`vp lint` command is Vite+'s own checker and does not run Vize's rules.
 
 ## Presets
 
-`essential` contains correctness rules that should almost always be enabled. `happy-path` adds
-practical hygiene checks for day-to-day Vue development. `ecosystem` starts from the broad default
-bundle and adds Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt, and Void Vue checks. `nuxt`
-includes Nuxt-oriented SSR expectations and Vapor expectations. `opinionated` is the broadest
-built-in preset.
+A preset is a starting set of rules. `happy-path` is the default.
 
-`incremental` starts empty. Use it when a host wants to opt into specific rules without inheriting a
-larger preset.
-
-### On by default
-
-| Preset | Rules | What is on |
+| Preset | Rules | What it turns on |
 | --- | ---: | --- |
 | `essential` | 85 | Template and directive validity, Vue 3 removals (`vue/no-deprecated-*`, `script/no-deprecated-*`), script macro, `nextTick` and Options API correctness, lifecycle hooks, watchers and `expose` registered after `await`, imports from `vue` instead of `@vue/*`, unused components, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
 | `happy-path` (default) | 147 | `essential`, plus template formatting conventions (including `v-bind` shorthand and hyphenated component events), accessibility, HTML conformance, SSR hazards, unused properties, declared emits, and typed props and emits |
 | `ecosystem` | 155 | `happy-path`, plus the ecosystem library checks |
 | `nuxt` | 213 | `opinionated`, adjusted for Nuxt auto-imports |
 | `opinionated` | 213 | `happy-path`, plus stricter conventions, typed props, type-based `defineProps`/`defineEmits`, `<script setup>` macro order, camelCase event names, `useTemplateRef`, `defineSlots`, prop default and emit hygiene, `defineOptions`, and the `css/*` style rules |
-| `incremental` | 0 | Nothing |
+| `incremental` | 0 | Nothing. Start here to turn on only the rules you name. |
 
-Counts exclude cross-file rules. The Presets column of [All lint rules](./all.md) shows each rule's
-presets. The Vue 3 removal checks are off when `compiler.compatibility.vueVersion` is `2` or `2.7`.
+Counts exclude cross-file rules. When `compiler.compatibility.vueVersion` is `2` or `2.7`, the
+Vue 3 removal checks are off.
 
-`vue/no-use-v-else-with-v-for` warns about accepted Vue syntax whose conditional and loop share an element; put the conditional on a wrapper for clarity. `script/no-deep-destructure-in-props` is a depth convention enabled by `opinionated` and `nuxt`. It does not read the compiler’s `propsDestructure` setting: nested bindings can compile when reactive destructuring is disabled or `withDefaults` is used. Both rules remain warnings and can be disabled by name. `essential` and the empty `incremental` bundle are unchanged.
+## Find a rule
 
-## Type-Aware Configuration
+| Page | What it covers |
+| --- | --- |
+| [All rules](./all.md) | Every rule in one index, grouped by category, with the smallest preset that turns it on |
+| [Vue](./vue.md) | SFC templates, directives, components, blocks, and Vue 3 migration |
+| [Type and script](./type-and-script.md) | `<script setup>`, compiler macros, reactivity, and type-aware checks |
+| [HTML](./html.md) | HTML validity and semantic markup |
+| [Accessibility](./accessibility.md) | ARIA, keyboard interaction, labels, landmarks, and media alternatives |
+| [SSR](./ssr.md) | Server rendering and hydration hazards |
+| [Vapor](./vapor.md) | Constraints for components compiled in Vapor mode |
+| [Ecosystem and Nuxt](./ecosystem.md) | Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils, and Void Vue |
+| [Musea and CSS](./musea-and-css.md) | Musea `.art.vue` stories and plain CSS |
+| [petite-vue](./petite-vue.md) | HTML pages that use petite-vue |
+| [Cross-file](./cross-file.md) | Checks across components, providers, and routers, turned on with `crossFile: true` |
+| [Rule Options](./options.md) | Typed `ruleOptions` and their defaults |
+| [Migrating from ESLint](./migration.md) | `eslint-plugin-vue` rule names mapped to Vize, with differences |
 
-Rules that need semantic information read the TypeScript project through `tsconfig.json`. Prefer
-putting shared environment names in `compilerOptions.types` or project references instead of keeping
-a separate `globals` list in Vize config.
+Every rule page starts with what the rule checks, its default severity and presets. Then it shows a
+Bad example that the rule reports and a Good example that it accepts, each with a one-line reason,
+and the configuration that turns the rule on. The examples are the same files the linter's test
+suite runs.
+
+## Type-aware rules
+
+Rules under `type/` read type information from the TypeScript project in `tsconfig.json`. They
+need `typeAware: true` in `vue.linter` as well as a preset or a `rules` entry that turns them on. Declare shared environment names in
+`compilerOptions.types` or with project references, not in a separate `globals` list in the Vize
+configuration.

@@ -1,18 +1,37 @@
 ---
 title: "a11y/img-alt"
+description: "Require alt attribute on images for accessibility."
 ---
 
 # `a11y/img-alt`
 
-Require alt attribute on images for accessibility
+Require alt attribute on images for accessibility.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The avatar image is missing its `alt` attribute.
+
+```vue annotate="remove:2"
+<template>
+  <img src="/avatar.png" />
+</template>
+```
+
+## Good
+
+`alt="User avatar"` supplies a text alternative for the avatar.
+
+```vue annotate="add:2"
+<template>
+  <img src="/avatar.png" alt="User avatar" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The avatar image is missing its `alt` attribute.
-
-```vue
-<template>
-  <img src="/avatar.png" />
-</template>
-```
-
-## Good
-
-`alt="User avatar"` supplies a text alternative for the avatar.
-
-```vue
-<template>
-  <img src="/avatar.png" alt="User avatar" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L17) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L17)

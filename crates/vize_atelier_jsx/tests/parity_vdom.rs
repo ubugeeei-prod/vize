@@ -127,7 +127,7 @@ fn vdom_parity_matrix_snapshot() {
     ];
 
     insta::assert_snapshot!(
-        "vdom_parity_matrix_snapshot_vdom_child_values_6890",
+        "vdom_parity_matrix_snapshot_jsx_class_11516",
         snapshot_cases(&cases, |source| { vdom_code(source, JsxLang::Jsx) })
     );
 }

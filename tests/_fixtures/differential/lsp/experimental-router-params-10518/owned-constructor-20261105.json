@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "kind": "exact-generated-constructor-successor",
+  "qualificationCredit": false,
+  "capture": {
+    "run": 41978661951,
+    "job": 127083863281,
+    "artifact": 13393540906,
+    "verifiedWholeDocuments": 9
+  },
+  "edit": {
+    "before": "$ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;",
+    "after": "$ReplaceComponentProps<{\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;"
+  },
+  "entries": [
+    {
+      "file": "crlf.invalid.virtual.ts.txt",
+      "beforeSha256": "a3ad4ac4ba604f262b0639f2c4790772bcd0bcb7ea220f621f79c54c276f7677",
+      "afterSha256": "d57f3391d2559e43d1c289b3ed363268b07c1d064597bbfbde41d44adaee6e57"
+    },
+    {
+      "file": "crlf.valid.virtual.ts.txt",
+      "beforeSha256": "0f139df25e3f8ecd21115c5f236a3da8a599b667a89231697524c3438d83e5ac",
+      "afterSha256": "3229fbd49e5c03218274304bca2e92642df944b818fa1f03ac87e0b607b18ce3"
+    },
+    {
+      "file": "explicit.invalid.virtual.ts.txt",
+      "beforeSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
+      "afterSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a"
+    },
+    {
+      "file": "explicit.valid.virtual.ts.txt",
+      "beforeSha256": "c0fe5734e20dfeca18c49cc973484bb6a59730b26886ecd917a7af499180e9e3",
+      "afterSha256": "8cfb21f2b0520bf86e58ffa3dda9c9c349d16898ca6a7a657f7ae04e045cb97a"
+    },
+    {
+      "file": "lf.invalid.virtual.ts.txt",
+      "beforeSha256": "4b68bc2889ef2007664b7f9d5ffd201bdac417997128c970948a1e451ba94a42",
+      "afterSha256": "7976df4c8b8c1607ae2a531de510541f99ba1b5f175dc184dfee12886d253224"
+    },
+    {
+      "file": "lf.valid.virtual.ts.txt",
+      "beforeSha256": "cb7a16664ad5a88fb4f78583c15e454f06fad8b7881e25f00740ab8e79e74055",
+      "afterSha256": "32ecb04b38ae278c620ca5303e083f6edcd8cb52be54148c3cff27b3c808394e"
+    }
+  ]
+}

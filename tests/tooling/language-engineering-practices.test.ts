@@ -137,8 +137,8 @@ test("docs navigation exposes the language engineering practices page", () => {
   // contributing; command-line tools have their own group.
   assert.deepEqual(sitemap.navGroups.find((group) => group.key === "architecture")?.paths, [
     "/stability",
-    "/credits",
     "/contributing",
+    "/credits",
     "/architecture/overview",
     "/architecture/crates",
     "/architecture/source-guide",
@@ -148,7 +148,7 @@ test("docs navigation exposes the language engineering practices page", () => {
   ]);
   assert.equal(
     locales.en.labels["/architecture/language-engineering-practices"],
-    "Language Engineering",
+    "Language engineering",
   );
 
   assert.match(architectureOverview, /language-engineering-practices\.md/);

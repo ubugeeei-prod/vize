@@ -13,6 +13,7 @@ use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 use super::LegacyCaps;
 use crate::lower::Lowered;
+use vize_l2::provenance::ProvenanceSink;
 
 mod filter;
 mod ids;
@@ -75,7 +76,7 @@ pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
 }
 
 /// Legalize Vue 2 sugar in place, then recount and rekey.
-pub fn run(lowered: &mut Lowered<'_>) -> LegacyFacts {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
     let mut facts = LegacyFacts::default();
     let allocator = lowered.allocator;
     let sync_ids = ids::collect_sync_ids(&lowered.root.ops);

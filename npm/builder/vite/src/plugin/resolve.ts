@@ -54,22 +54,24 @@ interface ResolveContext {
 type ViteResolveOptions = { skipSelf: boolean };
 type ViteResolveResult = { id: string; external?: boolean } | null;
 
-function getViteResolveCache(state: VizePluginState): Map<string, Promise<ViteResolveResult>> {
-  return (state.viteResolveCache ??= new Map());
-}
-
-function createViteResolveCacheKey(
-  id: string,
-  importer: string | undefined,
-  options: ViteResolveOptions | undefined,
-  environmentName: string | undefined,
-): string {
-  return JSON.stringify([
-    environmentName ?? null,
-    id,
-    importer ?? null,
-    options?.skipSelf ?? false,
-  ]);
+/** One answer per build and environment for `key`; the dev server can change it. */
+function oncePerBuild(
+  ctx: ResolveContext,
+  state: VizePluginState,
+  key: unknown[],
+  resolve: () => Promise<ViteResolveResult>,
+): Promise<ViteResolveResult> {
+  if (state.server !== null) return resolve();
+  const cache = (state.viteResolveCache ??= new Map());
+  const cacheKey = JSON.stringify([ctx.environment?.name ?? null, ...key]);
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  const pending = resolve().catch((error: unknown) => {
+    cache.delete(cacheKey);
+    throw error;
+  });
+  cache.set(cacheKey, pending);
+  return pending;
 }
 
 function resolveWithVite(
@@ -79,23 +81,8 @@ function resolveWithVite(
   importer?: string,
   options?: ViteResolveOptions,
 ): Promise<ViteResolveResult> {
-  if (state.server !== null) {
-    return ctx.resolve(id, importer, options);
-  }
-
-  const cache = getViteResolveCache(state);
-  const key = createViteResolveCacheKey(id, importer, options, ctx.environment?.name);
-  const cached = cache.get(key);
-  if (cached) {
-    return cached;
-  }
-
-  const pending = ctx.resolve(id, importer, options).catch((error: unknown) => {
-    cache.delete(key);
-    throw error;
-  });
-  cache.set(key, pending);
-  return pending;
+  const key = ["resolve", id, importer ?? null, options?.skipSelf ?? false];
+  return oncePerBuild(ctx, state, key, () => ctx.resolve(id, importer, options));
 }
 
 function resolveAliasRequest(
@@ -581,10 +568,23 @@ async function resolveProjectVueRuntime(
   importer: string | undefined,
   isSsrRequest: boolean,
 ): Promise<string | null> {
-  if (isSsrRequest || !isProjectVueRuntimeRequest(id)) {
-    return null;
-  }
+  if (isSsrRequest || !isProjectVueRuntimeRequest(id)) return null;
+  // Only the importer's directory reaches the answer (#11527).
+  const base = normalizeViteRequireBase(importer) ?? importer;
+  const key = ["project-vue-runtime", id, base ? path.dirname(base) : null];
+  const resolved = await oncePerBuild(ctx, state, key, async () => {
+    const entry = await resolveProjectVueRuntimeFrom(ctx, state, id, importer);
+    return entry ? { id: entry } : null;
+  });
+  return resolved?.id ?? null;
+}
 
+async function resolveProjectVueRuntimeFrom(
+  ctx: ResolveContext,
+  state: VizePluginState,
+  id: string,
+  importer: string | undefined,
+): Promise<string | null> {
   if (isVuePeerRuntimeRequest(id)) {
     const nuxtPeerEntry = resolveProjectNuxtVuePeerRuntimeEntryWithNode(state, id);
     if (nuxtPeerEntry) {
@@ -595,10 +595,9 @@ async function resolveProjectVueRuntime(
 
   if (!isProjectLocalImporter(state, importer)) return null;
 
-  const isBuild = state.server === null;
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   if (isVuePeerRuntimeRequest(id)) {
-    if (!isBuild && isProjectSourceImporter(state.root, importer)) {
+    if (state.server !== null && isProjectSourceImporter(state.root, importer)) {
       state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
       return null;
     }
@@ -660,7 +659,7 @@ function isPotentialVizeResolveId(id: string): boolean {
     isProjectVueRuntimeRequest(id) ||
     id === VIRTUAL_CSS_MODULE ||
     id.endsWith(".vue") ||
-    /\.vue(?:\?|\.__vize_style_)/.test(id) ||
+    /\.vue(?:\?|\.__vize_style_)|vize-file=/.test(id) ||
     /\.vue\.tsx?\?/.test(id) ||
     id.includes("?macro=true") ||
     id.includes("?definePage")

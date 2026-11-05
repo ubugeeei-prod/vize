@@ -3,22 +3,14 @@
 
 use std::{path::PathBuf, sync::Arc};
 
-use corsa::{
-    CorsaError,
-    api::{ApiClient, CapabilitiesResponse, ManagedSnapshot, ProjectResponse},
-    runtime::block_on,
-};
-use lsp_types::Diagnostic;
+use corsa::api::{ApiClient, CapabilitiesResponse, ManagedSnapshot, ProjectResponse};
 use vize_l0::{FxHashMap, String, cstr};
 
-use super::{
-    CorsaProjectClient,
-    diagnostics_api::{document_identifier_uri, flatten_file_diagnostics},
-    session::uri_document_identifier,
-    utils::remap_serialized_uris,
-};
+use super::{CorsaProjectClient, PhasedDiagnostic};
 
 mod diagnostic_response;
+mod read_view;
+pub(in crate::lsp_client) use read_view::DiagnosticReadView;
 pub(super) mod native_diagnostics;
 
 /// The Arc owns the actual remote snapshot, not merely its opaque handle.
@@ -46,6 +38,27 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<Option<InitialDiagnosticsRead>, String> {
+        let Some(document_uri) = self.prepare_diagnostics_read_document(uri)? else {
+            return Ok(None);
+        };
+        let read = self
+            .borrow_diagnostics_read_view(uri, &document_uri)?
+            .into_owned();
+        if crate::corsa_bridge::preparation_trace::enabled() {
+            tracing::info!(target: "vize_editor_preparation", phase="initial_api_owner",
+                snapshot=read.snapshot.handle.as_str(), uri=%read.uri,
+                shared_editor=self.project_session_attached_to_editor,
+                editor_documents_dirty=self.editor_lsp_documents_dirty,
+                materialized=self.materialized_project_session);
+        }
+        DiagnosticReadView::from_owned(&read).trace_route("capture", "prepared", None);
+        Ok(Some(read))
+    }
+
+    pub(in crate::lsp_client) fn prepare_diagnostics_read_document(
+        &mut self,
+        uri: &str,
+    ) -> Result<Option<String>, String> {
         super::diagnostics::virtual_overlay_diagnostics::ensure_materialized_project(
             self,
             std::iter::once(uri),
@@ -57,38 +70,64 @@ impl CorsaProjectClient {
         }
         let document_uri = self.session_document_uri(uri);
         self.refresh_acknowledged_editor_snapshot(&document_uri)?;
-        let session = self.project_session()?;
-        let read = InitialDiagnosticsRead {
-            client: session.client().clone(),
+        self.project_session()?;
+        Ok(Some(document_uri))
+    }
+
+    pub(in crate::lsp_client) fn borrow_diagnostics_read_view<'a>(
+        &'a self,
+        uri: &'a str,
+        document_uri: &'a str,
+    ) -> Result<DiagnosticReadView<'a>, String> {
+        let session = self
+            .session
+            .as_ref()
+            .ok_or_else(|| cstr!("Corsa diagnostics have no project session"))?;
+        Ok(DiagnosticReadView {
+            client: session.client(),
             snapshot: session.snapshot_lease(),
-            project: session.project().clone(),
-            capabilities: Arc::clone(&self.capabilities),
-            project_root: self.project_root.clone(),
-            explicit_config: self.explicit_project_config.clone(),
-            uri: uri.into(),
+            project: session.project(),
+            capabilities: &self.capabilities,
+            project_root: &self.project_root,
+            explicit_config: &self.explicit_project_config,
+            uri,
             document_uri,
-            documents: self.document_texts.clone(),
-            external_document_uris: self.external_document_uris.clone(),
+            documents: &self.document_texts,
+            external_document_uris: &self.external_document_uris,
             file_supported: self.supports_file_diagnostics_api(),
             project_supported: self.supports_project_diagnostics_api(),
-            _storage: Arc::clone(&self.overlay_storage),
-        };
-        if crate::corsa_bridge::preparation_trace::enabled() {
-            tracing::info!(target: "vize_editor_preparation", phase="initial_api_owner",
-                snapshot=read.snapshot.handle.as_str(), uri=%read.uri,
-                shared_editor=self.project_session_attached_to_editor,
-                editor_documents_dirty=self.editor_lsp_documents_dirty,
-                materialized=self.materialized_project_session);
-        }
-        read.trace_route("capture", "prepared", None);
-        Ok(Some(read))
+            storage: &self.overlay_storage,
+        })
+    }
+
+    /// Shared borrowing fixes this world during execution; retain the runtime owner checks.
+    pub(in crate::lsp_client) fn borrowed_diagnostics_read_is_current(
+        &self,
+        read: &DiagnosticReadView<'_>,
+    ) -> bool {
+        !self.closed
+            && self.can_use_api_for_uri(read.uri)
+            && self.session.as_ref().is_some_and(|session| {
+                Arc::ptr_eq(&read.snapshot, &session.snapshot_lease())
+                    && std::ptr::eq(read.project, session.project())
+            })
+            && Arc::ptr_eq(&self.capabilities, read.capabilities)
+            && std::ptr::eq(read.project_root, &self.project_root)
+            && std::ptr::eq(read.explicit_config, &self.explicit_project_config)
+            && std::ptr::eq(read.documents, &*self.document_texts)
+            && std::ptr::eq(read.external_document_uris, &self.external_document_uris)
+            && self
+                .session_document_uris
+                .get(read.uri)
+                .map(|uri| uri.as_str())
+                == Some(read.document_uri)
     }
 
     pub(crate) fn replace_initial_diagnostics_cache(
         &mut self,
         uri: &str,
-        replacement: Option<Vec<Diagnostic>>,
-    ) -> Option<Vec<Diagnostic>> {
+        replacement: Option<Vec<PhasedDiagnostic>>,
+    ) -> Option<Vec<PhasedDiagnostic>> {
         match replacement {
             Some(diagnostics) => self.diagnostics.insert(uri.into(), diagnostics),
             None => self.diagnostics.remove(uri),
@@ -130,114 +169,9 @@ fn trace_source(params: &serde_json::Value, name: &str, text: &str) {
 
 impl InitialDiagnosticsRead {
     pub(crate) fn uri(&self) -> &str {
-        &self.uri
+        self.uri.as_str()
     }
-
-    /// The worker owns `self` until every entered RPC returns, including when
-    /// its awaiting caller cancels. Results never touch the mutable client.
-    pub(crate) fn run(&self) -> Result<Option<Vec<Diagnostic>>, String> {
-        if self.file_supported {
-            self.trace_route("file", "entered", None);
-            match block_on(self.client.get_diagnostics_for_file(
-                self.snapshot.handle.clone(),
-                self.project.id.clone(),
-                uri_document_identifier(self.document_uri.as_str()),
-            )) {
-                Ok(response) => {
-                    self.trace_route("file", "complete", None);
-                    return Ok(Some(self.remap(flatten_file_diagnostics(&response))));
-                }
-                Err(error @ CorsaError::Unsupported(_)) => {
-                    self.trace_route("file", "unsupported", Some(&error));
-                }
-                Err(error) => {
-                    self.trace_route("file", "failed", None);
-                    return Err(cstr!("Failed to request Corsa file diagnostics: {error}"));
-                }
-            }
-        }
-        // A cancelled file RPC has drained. Do not start a second request on
-        // behalf of the retired caller, or switch it to an editor transport.
-        crate::corsa_bridge::native_operation::checkpoint()?;
-        if self.project_supported {
-            self.trace_route("project", "entered", None);
-            match block_on(
-                self.client.get_diagnostics_for_project(
-                    self.snapshot.handle.clone(),
-                    self.project.id.clone(),
-                ),
-            ) {
-                Ok(response) => {
-                    self.trace_route("project", "complete", None);
-                    let diagnostics = response
-                        .files
-                        .iter()
-                        .find(|file| document_identifier_uri(&file.file) == self.document_uri)
-                        .map(flatten_file_diagnostics)
-                        .unwrap_or_default();
-                    return Ok(Some(self.remap(diagnostics)));
-                }
-                Err(error @ CorsaError::Unsupported(_)) => {
-                    self.trace_route("project", "unsupported", Some(&error));
-                }
-                Err(error) => {
-                    self.trace_route("project", "failed", None);
-                    return Err(cstr!(
-                        "Failed to request Corsa project diagnostics: {error}"
-                    ));
-                }
-            }
-        }
-        if !self.file_supported {
-            self.trace_route("read", "unsupported", None);
-            return Ok(None);
-        }
-        crate::corsa_bridge::native_operation::checkpoint()?;
-        // Standard native 7.0.2 has compiler-kind endpoints, not the optional
-        // aggregate SDK methods. This read retains this same snapshot lease;
-        // no project selection, overlay update or live disk read occurs here.
-        self.trace_route("compiler_kinds", "entered", None);
-        let result = native_diagnostics::read(
-            &self.client,
-            &self.snapshot,
-            &self.project,
-            &self.document_uri,
-        )?;
-        self.trace_route(
-            "compiler_kinds",
-            if result.is_some() {
-                "complete"
-            } else {
-                "unsupported"
-            },
-            None,
-        );
-        Ok(result.map(|diagnostics| self.remap(diagnostics)))
-    }
-
-    fn trace_route(&self, route: &str, event: &str, error: Option<&CorsaError>) {
-        if crate::corsa_bridge::preparation_trace::enabled() {
-            if route == "capture" {
-                tracing::info!(target: "vize_editor_preparation", phase="initial_api_input",
-                    snapshot=self.snapshot.handle.as_str(), project=?self.project,
-                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.documents.get(self.uri.as_str()));
-            }
-            tracing::info!(target: "vize_editor_preparation", phase = "initial_api_read",
-                route, event, logical_uri = %self.uri, request_uri = %self.document_uri,
-                project = self.project.id.as_str(), config = self.project.config_file_name.as_str(),
-                snapshot = self.snapshot.handle.as_str(),
-                capability_endpoint = self.capabilities.runtime.capability_endpoint,
-                raw_file = self.capabilities.diagnostics.file,
-                raw_project = self.capabilities.diagnostics.project,
-                raw_snapshot = self.capabilities.diagnostics.snapshot,
-                raw_overlay = self.capabilities.overlay.update_snapshot_overlay_changes,
-                effective_file = self.file_supported, effective_project = self.project_supported,
-                sdk_error = ?error);
-        }
-    }
-
-    fn remap(&self, diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
-        remap_serialized_uris(diagnostics.clone(), &self.external_document_uris)
-            .unwrap_or(diagnostics)
+    pub(crate) fn run_with_provenance(&self) -> Result<Option<Vec<PhasedDiagnostic>>, String> {
+        DiagnosticReadView::from_owned(self).run_with_provenance()
     }
 }

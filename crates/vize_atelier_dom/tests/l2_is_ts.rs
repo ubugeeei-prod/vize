@@ -313,3 +313,166 @@ fn erased_spellings_are_pinned() {
         "return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(Intl.NumberFormat().format(_ctx.count)), 1 /* TEXT */))"
     );
 }
+
+/// TypeScript the detection scan does not recognize. The template lane
+/// decides it by the parse, so each one still leaves as JavaScript.
+const UNSCANNED: &[(&str, &str)] = &[
+    (
+        "return_type",
+        r#"<div @click="(e): void => pick(e)"></div>"#,
+    ),
+    (
+        "typed_function_expression",
+        r#"<div @click="function (e: Event) { pick(e) }"></div>"#,
+    ),
+    (
+        "this_param_and_return_type",
+        r#"<div :fn="function (this: Window, x: number): number { return x + count }"></div>"#,
+    ),
+    ("instantiation", "<div>{{ pick<Item> }}</div>"),
+    (
+        "callback_return_type",
+        "<div>{{ list.map((x): number => x * 2) }}</div>",
+    ),
+    (
+        "typed_declaration_in_body",
+        "<div>{{ (() => { const y: number = count; return y })() }}</div>",
+    ),
+    ("angle_assertion", "<div>{{ <any>count }}</div>"),
+    (
+        "optional_param",
+        "<div>{{ ((x?: number) => x)(count) }}</div>",
+    ),
+    (
+        "typed_statements",
+        r#"<div @click="const n: number = count; pick(n)"></div>"#,
+    ),
+    (
+        "typed_for_aliases",
+        r#"<li v-for="(item: Item, i: number) in list" :key="i">{{ item }}</li>"#,
+    ),
+    (
+        "typed_slot_props",
+        r#"<Card #default="{ row }: { row: Row }">{{ row }}</Card>"#,
+    ),
+    (
+        "typed_slot_param",
+        r#"<Card v-slot="props: Props">{{ props }}</Card>"#,
+    ),
+];
+
+/// The render module the SFC compiler receives, with its diagnostics.
+fn sfc_render(src: &str, inline: bool) -> (Vec<vize_l0::String>, vize_l0::String) {
+    let allocator = vize_l0::Allocator::new();
+    let options = DomCompilerOptions {
+        mode: CodegenMode::Module,
+        prefix_identifiers: true,
+        is_ts: true,
+        inline,
+        binding_metadata: Some(metadata()),
+        ..Default::default()
+    };
+    let (_, errors, result) =
+        vize_atelier_dom::compile_template_with_options(&allocator, src, options);
+    let errors = errors
+        .iter()
+        .map(|error| vize_l0::cstr!("{error:?}"))
+        .collect();
+    let code = vize_l0::cstr!("{}\n{}", result.preamble, result.code);
+    (errors, code)
+}
+
+fn javascript_diagnostics(code: &str) -> Vec<vize_l0::String> {
+    let allocator = oxc_allocator::Allocator::default();
+    oxc_parser::Parser::new(&allocator, code, oxc_span::SourceType::mjs())
+        .parse()
+        .diagnostics
+        .iter()
+        .map(|diagnostic| vize_l0::cstr!("{diagnostic}"))
+        .collect()
+}
+
+fn render_return(code: &str) -> vize_l0::String {
+    let mut out = vize_l0::String::default();
+    let lines = code
+        .lines()
+        .skip_while(|line| !line.trim_start().starts_with("return "))
+        .take_while(|line| *line != "}");
+    for (index, line) in lines.enumerate() {
+        if index > 0 {
+            out.push('\n');
+        }
+        out.push_str(line.trim());
+    }
+    out
+}
+
+#[test]
+fn typescript_the_scan_misses_leaves_the_template_lane_as_javascript() {
+    for inline in [false, true] {
+        for (name, src) in UNSCANNED {
+            let (errors, code) = sfc_render(src, inline);
+            assert_eq!(
+                errors,
+                Vec::<vize_l0::String>::new(),
+                "{name} (inline: {inline})"
+            );
+            assert_eq!(
+                javascript_diagnostics(&code),
+                Vec::<vize_l0::String>::new(),
+                "{name} (inline: {inline}):\n{code}"
+            );
+        }
+    }
+}
+
+/// The erased text is prefixed like any other JavaScript: before erasure
+/// decided by the parse, these names reached the render code bare.
+#[test]
+fn unscanned_typescript_is_prefixed_after_erasure() {
+    let body = |src: &str, inline: bool| render_return(&sfc_render(src, inline).1);
+    assert_eq!(
+        body("<div>{{ list.map((x): number => x * 2) }}</div>", false),
+        "return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($setup.list.map((x) => x * 2)), 1 /* TEXT */))"
+    );
+    assert_eq!(
+        body(
+            "<div>{{ (() => { const y: number = count; return y })() }}</div>",
+            true
+        ),
+        "return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString((() => {\nconst y = count.value;\nreturn y;\n})()), 1 /* TEXT */))"
+    );
+    assert_eq!(
+        body(r#"<div @click="(e): void => pick(e)"></div>"#, false),
+        "return (_openBlock(), _createElementBlock(\"div\", {\nonClick: (e) => $setup.pick(e)\n}, null, 8 /* PROPS */, [\"onClick\"]))"
+    );
+    assert_eq!(
+        body(
+            r#"<div @click="const n: number = count; pick(n)"></div>"#,
+            false
+        ),
+        "return (_openBlock(), _createElementBlock(\"div\", {\nonClick: $event => {const n = $setup.count;\n$setup.pick(n);}\n}, null, 8 /* PROPS */, [\"onClick\"]))"
+    );
+    assert_eq!(
+        body(
+            r#"<Card #default="{ row }: { row: Row }">{{ row }}</Card>"#,
+            false
+        ),
+        "return (_openBlock(), _createBlock($setup[\"Card\"], null, {\ndefault: _withCtx(({ row }) => [\n_createTextVNode(_toDisplayString(row), 1 /* TEXT */)\n]),\n_: 1 /* STABLE */\n}))"
+    );
+    assert_eq!(
+        body(
+            r#"<li v-for="(item: Item, i: number) in list" :key="i">{{ item }}</li>"#,
+            false
+        ),
+        "return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.list, (item, i) => {\nreturn (_openBlock(), _createElementBlock(\"li\", { key: i }, _toDisplayString(item), 1 /* TEXT */))\n}), 128 /* KEYED_FRAGMENT */))"
+    );
+}
+
+/// Negative control: text that is neither JavaScript nor TypeScript is
+/// still reported, never erased into something that compiles.
+#[test]
+fn text_that_is_not_typescript_still_reports() {
+    let (errors, _) = sfc_render("<div>{{ count as }}</div>", false);
+    assert_eq!(errors.len(), 1, "{errors:?}");
+}

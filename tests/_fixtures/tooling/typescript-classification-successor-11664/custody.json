@@ -1,0 +1,56 @@
+{
+  "schema": "vize.languageProjectClassificationSuccessor.v1",
+  "id": "typechecker/language-project/classifications-11664",
+  "predecessor": {
+    "id": "typechecker/language-project/inherited-configuration-10740",
+    "selector": "createMappedLanguageService",
+    "registrationSha256": "16ca0a01852dc6036b707425e9e242553d5669062a2980f056328d18888a3793"
+  },
+  "before": {
+    "path": "npm/typescript-plugin/language-service.cjs",
+    "sha256": "108028b9cb18a19510ac5b379885adab9e469e9c2b939842762c88a4548c8d57",
+    "bytes": 15106,
+    "gzip": {
+      "path": "tests/_fixtures/tooling/typescript-classification-successor-11664/language-service.before.cjs.gz",
+      "sha256": "d80c911405b94fef686f0bf056bac01b0882c196c45e3b8a634974977e134702",
+      "bytes": 4093
+    }
+  },
+  "after": {
+    "path": "npm/typescript-plugin/language-service.cjs",
+    "sha256": "b2ae3cd04fb0d71ab6f1f1ec05490f058f3e620c9f5e647f95654bfa407966af",
+    "bytes": 16960
+  },
+  "input": {
+    "path": "tests/_fixtures/tooling/typescript-classification-successor-11664/input.json",
+    "sha256": "739dc1657a6d7e38aa00b2cb405026761124a3fc32ae75b316ec7208b93af658",
+    "bytes": 11888
+  },
+  "consumers": [
+    {
+      "path": "tests/typescript-plugin/classifications.test.cjs",
+      "sha256": "3767491fc2e414aca6635646b40b1e780509b93492ccf3aa13729b9d176a9efa",
+      "bytes": 8823
+    },
+    {
+      "path": "tests/typescript-plugin/mapped-language-service.test.cjs",
+      "sha256": "ba59b215d47449809a0d75d7d0700521cf5327bd2ca7dbcf4fcd2b6927dcbf3b",
+      "bytes": 16169
+    },
+    {
+      "path": "tests/tooling/language-project-classification-successor.test.ts",
+      "sha256": "dc8e270a4c415402b586d93d4b8e80873e4496c12e9c84abbbbca66eddf01d56",
+      "bytes": 7977
+    },
+    {
+      "path": "npm/native/language-projection.js",
+      "sha256": "9f2a8aa56033b86bbb51e25ec2f80f3d681e300ef547ef54d4731b0af90cbffe",
+      "bytes": 7551
+    },
+    {
+      "path": ".github/workflows/language-project-fixtures.yml",
+      "sha256": "f36d936ba5b9b4bfaa48f148150710fb0c35e692ebfc6efb05f5fc1abb46efc6",
+      "bytes": 1712
+    }
+  ]
+}

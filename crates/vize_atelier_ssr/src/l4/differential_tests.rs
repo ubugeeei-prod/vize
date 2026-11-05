@@ -291,3 +291,57 @@ fn conditional_vnode_metadata_matches_both_lanes_in_each_host_build() {
         }
     }
 }
+
+#[test]
+fn typed_v_for_aliases_are_scoped_on_both_lanes() {
+    let typed =
+        r#"<ul><li v-for="(row: Row, index: number) in rows">{{ row }} {{ index }}</li></ul>"#;
+    let plain = r#"<ul><li v-for="(row, index) in rows">{{ row }} {{ index }}</li></ul>"#;
+    let options = SsrCompilerOptions {
+        is_ts: true,
+        ..SsrCompilerOptions::default()
+    };
+    let experimental = SsrCompilerExperimentalOptions::default();
+    assert_parity(typed, &options, &experimental, "typed v-for aliases");
+    let compile = |source, lane| {
+        let allocator = Allocator::new();
+        let (_, errors, result) = compile_ssr_on_lane(
+            &allocator,
+            source,
+            options.clone(),
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            experimental.clone(),
+            true,
+            lane,
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        result
+    };
+    // Independent public 0.680.0 untyped control: type annotations change
+    // neither callback scope nor the complete renderer and helper imports.
+    let expected_code = concat!(
+        "function ssrRender(_ctx, _push, _parent, _attrs) {\n",
+        "  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)\n",
+        "  _push(`<!--[-->`)\n",
+        "  _ssrRenderList(_ctx.rows, (row, index) => {\n",
+        "    _push(`<li>${_ssrInterpolate(row)} ${_ssrInterpolate(index)}</li>`)\n",
+        "  })\n",
+        "  _push(`<!--]-->`)\n",
+        "  _push(`</ul>`)\n",
+        "}\n",
+    );
+    let expected_preamble = "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n";
+    for lane in [SsrLane::Selected, SsrLane::LegacyOnly] {
+        let typed_result = compile(typed, lane);
+        let plain_result = compile(plain, lane);
+        assert_eq!(typed_result.code, plain_result.code, "{lane:?}");
+        assert_eq!(typed_result.preamble, plain_result.preamble, "{lane:?}");
+        assert_eq!(typed_result.code.as_str(), expected_code, "{lane:?}");
+        assert_eq!(
+            typed_result.preamble.as_str(),
+            expected_preamble,
+            "{lane:?}"
+        );
+    }
+}

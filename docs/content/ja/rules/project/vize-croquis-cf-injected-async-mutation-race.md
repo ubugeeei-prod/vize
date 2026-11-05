@@ -6,26 +6,11 @@ title: "vize:croquis/cf/injected-async-mutation-race"
 
 inject した値が、競合し得る async タスクから変更されています。
 
-既定の重大度: error  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| error | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/injected-async-mutation-race": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 ## 共通のプロジェクト ファイル
 
@@ -66,7 +51,7 @@ const store = inject(StoreKey)!;
 <template><p>{{ store.count }}</p></template>
 ```
 
-## 悪い
+## 悪い例
 
 `CountLoader.vue` が非同期処理の結果を、`CountSummary.vue` と共有する inject 済みのストアへ直接書き込みます。そのため、古い処理の結果が両方の使用側に影響する可能性があります。
 
@@ -118,7 +103,7 @@ watch(query, async (value) => {
 </script>
 ```
 
-## 良い
+## 良い例
 
 `CountLoader.vue` は無効化された処理を中止し、まだ有効な処理の結果だけを emit します。ストアの変更は、提供側の `applyLoadedCount` が担当します。
 
@@ -182,7 +167,25 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/injected-async-mutation-race": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

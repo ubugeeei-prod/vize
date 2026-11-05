@@ -5,12 +5,8 @@ import { createHash } from "node:crypto";
 import { rewriteSfcTemplateAssetReferences } from "@vizejs/native";
 import type { CompiledModule } from "../types/index.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
-import {
-  analyzeModuleOutput,
-  hmrImportSnapshot,
-  insertBeforeSfcMainDefaultExport,
-  rewriteDefaultExportToSfcMain,
-} from "./module-output.ts";
+import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
+import { hmrImportSnapshot } from "./module-output.ts";
 import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
 
 export interface GenerateOutputOptions {
@@ -39,38 +35,43 @@ export function generateOutputWithMap(
 ): { code: string; map: SourceMapV3 | null } {
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
   const isCustomElement = compiled.isCustomElement;
+  const shape = compiled.moduleShape;
+  if (!shape) {
+    throw new Error(
+      "[vize] generateOutput requires moduleShape; pass the CompiledModule returned by compileFile",
+    );
+  }
+
+  // Bindings are appended to the exported `_sfc_main` after the module. They
+  // run before any importer reads the export, so the native shape is the only
+  // fact needed and the emitted code is never parsed again (#11583).
+  const scope = compiled.hasScoped && compiled.scopeId ? `data-v-${compiled.scopeId}` : null;
+  let exportsSfcMain = true;
+  if (shape.hasDefaultExport && !shape.hasSfcMainDefined) {
+    // The native span describes `compiled.code`, so this is the first edit.
+    bindDefaultExport(emitted, shape, "_sfc_main");
+    if (scope) emitted.append(`\n_sfc_main.__scopeId = "${scope}";`);
+    emitted.append("\nexport default _sfc_main;");
+  } else if (shape.hasDefaultExport) {
+    exportsSfcMain = shape.defaultExportIsSfcMain;
+    if (exportsSfcMain && scope) emitted.append(`\n_sfc_main.__scopeId = "${scope}";`);
+  } else if (
+    !shape.hasSfcMainDefined &&
+    (shape.hasNamedRenderExport || shape.hasNamedSsrRenderExport)
+  ) {
+    // Template-only SFCs compile to a bare render export; wrap it as Vite does.
+    const render = shape.hasNamedRenderExport ? "render" : "ssrRender";
+    const scopeId = scope ? `, __scopeId: "${scope}"` : "";
+    emitted.append(`\nconst _sfc_main = { ${render}${scopeId} };\nexport default _sfc_main;`);
+  } else {
+    exportsSfcMain = false;
+  }
+  const attach = (code: string) => {
+    if (exportsSfcMain) emitted.append(`\n${code}`);
+  };
 
   if (compiled.templateAssetUrls.length > 0) {
     emitted.edit(rewriteSfcTemplateAssetReferences(emitted.code, compiled.templateAssetUrls));
-  }
-
-  const moduleInfo = analyzeModuleOutput(emitted.code);
-  const hasExportDefault = moduleInfo.hasDefaultExport;
-  const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
-
-  if (hasExportDefault && !hasSfcMainDefined) {
-    rewriteDefaultExportToSfcMain(emitted);
-    if (compiled.hasScoped && compiled.scopeId) {
-      emitted.append(`\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
-    }
-    emitted.append("\nexport default _sfc_main;");
-  } else if (hasExportDefault && hasSfcMainDefined && compiled.hasScoped && compiled.scopeId) {
-    insertBeforeSfcMainDefaultExport(
-      emitted,
-      `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
-    );
-  } else if (!hasExportDefault && !hasSfcMainDefined) {
-    // Template-only SFCs compile to a bare render export; wrap it as Vite does.
-    const render = moduleInfo.hasNamedRenderExport
-      ? "render"
-      : moduleInfo.hasNamedSsrRenderExport
-        ? "ssrRender"
-        : null;
-    if (render) {
-      const scope =
-        compiled.hasScoped && compiled.scopeId ? `, __scopeId: "data-v-${compiled.scopeId}"` : "";
-      emitted.append(`\nconst _sfc_main = { ${render}${scope} };\nexport default _sfc_main;`);
-    }
   }
 
   if (compiled.styles.length > 0) {
@@ -106,8 +107,11 @@ export function generateOutputWithMap(
             ? [`module=${typeof style.module === "string" ? style.module : "true"}`]
             : []),
           ...(isCustomElement ? ["inline"] : []),
+          // A `<style src>` block's module is the src file itself, as in
+          // vue-loader, so its relative references resolve from its directory.
+          ...(style.src ? ["src"] : []),
         ];
-        const request = `${options.requestPath}?${queryParts.join("&")}`;
+        const request = `${style.src ?? options.requestPath}?${queryParts.join("&")}`;
 
         if (isCustomElement) {
           return `import _style_${style.index} from ${JSON.stringify(request)};`;
@@ -127,9 +131,7 @@ export function generateOutputWithMap(
 
     if (isCustomElement) {
       const stylesArray = activeStyles.map((style) => `_style_${style.index}`).join(",");
-      insertBeforeSfcMainDefaultExport(emitted, `_sfc_main.styles = [${stylesArray}];`, {
-        normalizeSemicolon: true,
-      });
+      attach(`_sfc_main.styles = [${stylesArray}];`);
     }
 
     if (!isCustomElement && cssModuleHmrEntries.length > 0) {
@@ -164,9 +166,7 @@ export function generateOutputWithMap(
               .join("\n")
           : "";
 
-      insertBeforeSfcMainDefaultExport(emitted, `${cssModuleSetup}\n${cssModuleHmr}`, {
-        normalizeSemicolon: true,
-      });
+      attach(`${cssModuleSetup}\n${cssModuleHmr}`);
     }
   }
 
@@ -174,11 +174,7 @@ export function generateOutputWithMap(
     const relativePath = options.rootContext
       ? path.relative(options.rootContext, options.filePath).replace(/\\/g, "/")
       : path.basename(options.filePath);
-    insertBeforeSfcMainDefaultExport(
-      emitted,
-      `_sfc_main.__file = ${JSON.stringify(relativePath)};`,
-      { normalizeSemicolon: true },
-    );
+    attach(`_sfc_main.__file = ${JSON.stringify(relativePath)};`);
   }
 
   if (compiled.customBlocks.length > 0) {
@@ -207,9 +203,7 @@ export function generateOutputWithMap(
       })
       .join("\n");
 
-    insertBeforeSfcMainDefaultExport(emitted, customBlockImports, {
-      normalizeSemicolon: true,
-    });
+    attach(customBlockImports);
   }
 
   if (compiled.templateAssetUrls.length > 0) {
@@ -224,10 +218,13 @@ export function generateOutputWithMap(
     emitted.prepend(`${assetImports}\n`);
   }
 
-  if (options.hmr && compiled.scopeId) {
+  if (options.hmr && compiled.scopeId && exportsSfcMain) {
     const metadata = compiled.hmr && {
       ...compiled.hmr,
-      module: createHash("sha256").update(emitted.code).digest("hex").slice(0, 16),
+      module: createHash("sha256")
+        .update(hmrModuleSource(compiled, emitted.code))
+        .digest("hex")
+        .slice(0, 16),
       styles: JSON.stringify({
         scoped: compiled.hasScoped,
         blocks: compiled.styles.map(({ content, ...style }) => ({
@@ -236,12 +233,23 @@ export function generateOutputWithMap(
         })),
       }),
     };
-    insertBeforeSfcMainDefaultExport(
-      emitted,
-      genHotReloadCode(compiled.scopeId, metadata, hmrImportSnapshot(emitted.code) ?? "null"),
-      { normalizeSemicolon: true },
-    );
+    attach(genHotReloadCode(compiled.scopeId, metadata, hmrImportSnapshot(emitted.code) ?? "null"));
   }
 
   return { code: emitted.code, map: emitted.map };
+}
+
+/**
+ * Native CSS module class names are derived from style-block offsets, then
+ * replaced by the bundler. Hashing those names turns the first CSS edit after
+ * a template length change into a component reload.
+ */
+function hmrModuleSource(compiled: CompiledModule, code: string): string {
+  const hasCssModules = compiled.styles.some((style) => style.module);
+  const script = compiled.hmr?.script;
+  const template = compiled.hmr?.template;
+  if (hasCssModules && typeof script === "string" && typeof template === "string") {
+    return JSON.stringify([script, template]);
+  }
+  return code;
 }

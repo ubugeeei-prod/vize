@@ -3,10 +3,8 @@
 //! `analysis/static_facts.rs` under the source budget. The rules live
 //! beside the L2 fact schema; this file is their single implementation.
 
-use alloc::vec::Vec as StdVec;
-
 use crate::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
-use crate::provenance::ProvenanceRecord;
+use crate::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l0::pass::RemarkSink;
 use vize_l0::side_table::SideTable;
 use vize_l0::{cstr, ensure_sufficient_stack};
@@ -92,22 +90,22 @@ impl RegionSummary {
 /// of their own — and element children re-enter through the
 /// integration points, the lowering's own rule mirrored). Remarks go to
 /// `remarks` ([`super::remarks`]); under a detached sink none is built.
-pub(super) fn visit_region<R: RemarkSink>(
+pub(super) fn visit_region<P: ProvenanceSink, R: RemarkSink>(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     ns: Namespace,
-    provenance: &mut StdVec<ProvenanceRecord>,
+    provenance: &mut P,
     facts: &mut SideTable<StaticFacts>,
     remarks: &mut R,
 ) -> RegionSummary {
     ensure_sufficient_stack(|| visit_region_guarded(walk, ops, ns, provenance, facts, remarks))
 }
 
-fn visit_region_guarded<R: RemarkSink>(
+fn visit_region_guarded<P: ProvenanceSink, R: RemarkSink>(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     ns: Namespace,
-    provenance: &mut StdVec<ProvenanceRecord>,
+    provenance: &mut P,
     facts: &mut SideTable<StaticFacts>,
     remarks: &mut R,
 ) -> RegionSummary {
@@ -313,7 +311,7 @@ fn element_contribution(element: &ElementOp<'_>, fact: StaticFacts) -> Contribut
 
 /// Publish one owner's fact with its provenance record.
 fn publish(
-    provenance: &mut StdVec<ProvenanceRecord>,
+    provenance: &mut impl ProvenanceSink,
     facts: &mut SideTable<StaticFacts>,
     id: Option<vize_l0::id::NodeId>,
     owner: &str,
@@ -325,22 +323,24 @@ fn publish(
     let Some(id) = id else {
         return;
     };
-    let level = match fact.level {
-        StaticLevel::NotStatic => "not-static",
-        StaticLevel::HasDynamicText => "dynamic-text",
-        StaticLevel::FullyStatic => "fully-static",
-    };
-    provenance.push(ProvenanceRecord {
-        rule: vize_l0::String::from("pass.hoist-static.fact"),
-        node: Some(id),
-        before: vize_l0::String::from(owner),
-        after: cstr!(
-            "level={level} props={} nested={} native={}",
-            fact.props_hoistable,
-            fact.nested_static,
-            fact.native_descendants
-        ),
-        span,
+    provenance.record(|| {
+        let level = match fact.level {
+            StaticLevel::NotStatic => "not-static",
+            StaticLevel::HasDynamicText => "dynamic-text",
+            StaticLevel::FullyStatic => "fully-static",
+        };
+        ProvenanceRecord {
+            rule: vize_l0::String::from("pass.hoist-static.fact"),
+            node: Some(id),
+            before: vize_l0::String::from(owner),
+            after: cstr!(
+                "level={level} props={} nested={} native={}",
+                fact.props_hoistable,
+                fact.nested_static,
+                fact.native_descendants
+            ),
+            span,
+        }
     });
     facts.insert(id, fact);
 }

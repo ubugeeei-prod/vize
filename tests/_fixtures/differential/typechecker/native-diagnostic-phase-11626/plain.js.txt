@@ -1,0 +1,2 @@
+export const map = new Map();
+const text = '<string>';

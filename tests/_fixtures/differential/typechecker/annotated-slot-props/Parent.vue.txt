@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template>
+  <Child>
+    <template #default="SLOT_EXPRESSION">{{ 1 }}</template>
+  </Child>
+</template>

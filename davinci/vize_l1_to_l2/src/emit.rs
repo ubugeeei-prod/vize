@@ -228,6 +228,8 @@ struct EmitCx<'facts> {
     prefix_identifiers: bool,
     /// Genuine JSX child values cannot use a statically collected block child list.
     untracked_children: bool,
+    /// JSX `class` follows `createVNode`: only truthy non-strings normalize.
+    jsx_class: bool,
     /// `hoist_static`: static props and static VNode declarations are emitted
     /// only when the public transform option enabled them.
     hoist_static: bool,

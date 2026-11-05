@@ -26,8 +26,8 @@ pub use identifiers::{
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub(in crate::drawer) use slots::extract_retained_slot_prop_bindings;
 pub use slots::{
-    EventHandlerExpression, classify_event_handler, extract_inline_callback_params,
-    extract_slot_prop_bindings, extract_slot_props,
+    EventHandlerExpression, classify_event_handler, classify_event_handler_with_identifier,
+    extract_inline_callback_params, extract_slot_prop_bindings, extract_slot_props,
 };
 pub use v_for::{
     VForBindingParameters, VForScopeAliases, parse_v_for_expression, parse_v_for_scope_expression,

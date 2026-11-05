@@ -77,13 +77,8 @@ pub(super) fn generate_vue_virtual_ts(
     let options = &descriptor_options;
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
-    let generic_parameters = descriptor
-        .script_setup
-        .as_ref()
-        .and_then(|block| block.attrs.get("generic"))
-        .map(|value| value.as_ref())
-        .filter(|value: &&str| !value.trim().is_empty())
-        .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
+    let generic_parameters =
+        crate::virtual_ts::generic_parameters::GenericParameters::from_setup(source, descriptor);
     let diagnostic_route = if generic_parameters
         .as_ref()
         .is_some_and(|plan| !plan.diagnostics.is_empty())
@@ -334,12 +329,6 @@ pub(super) fn generate_vue_virtual_ts(
         }) else {
             return Ok(generic_syntax::refuse(path, source, descriptor));
         };
-        let Some(attribute) =
-            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)
-                .filter(|range| source.get(range.clone()) == Some(plan.raw()))
-        else {
-            return Ok(generic_syntax::refuse(path, source, descriptor));
-        };
         let Some(output) = crate::virtual_ts::generic_recovery::generate(
             &croquis,
             script_content.as_deref().unwrap_or_default(),
@@ -347,7 +336,6 @@ pub(super) fn generate_vue_virtual_ts(
                 script_offset,
                 crate::script_parse::script_source_type(setup.lang.as_deref()),
             ),
-            attribute,
             plan,
             options,
             generation_options,
@@ -407,17 +395,9 @@ pub(super) fn generate_vue_virtual_ts(
             )
         );
     }
-    let generic_copies = generic_parameters.as_ref().and_then(|plan| {
-        let attribute =
-            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)?;
-        generic_attribute::GenericCopies::find(&code, &mappings, plan, attribute)
-    });
-    generic_attribute::map_generic_attribute(
-        &code,
-        &mut mappings,
-        &mut mapping_meta,
-        generic_copies.as_ref(),
-    );
+    let generic_copies = generic_parameters
+        .as_ref()
+        .and_then(|plan| generic_attribute::GenericCopies::find(&code, &mappings, plan));
     style_modules::append_style_scoped_classes(
         &mut code,
         source,

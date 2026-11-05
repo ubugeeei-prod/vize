@@ -99,7 +99,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Some(DynamicName::Static(name)) => quoted_js_string(name),
             Some(DynamicName::Dynamic(expr)) => self.expr(expr, TransformContent::Decoded)?,
         };
-        let pattern = slot_pattern(self.ctx.source, content)?;
+        let pattern = slot_pattern(self.ctx.source, self.exprs, content)?;
         let inner = template + 1 + element.attributes.len() + element.bindings.len();
         let ranges = self
             .direct_children(inner)?

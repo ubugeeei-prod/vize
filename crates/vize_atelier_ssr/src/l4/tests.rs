@@ -212,3 +212,44 @@ fn unowned_shapes_name_their_legacy_reason() {
         );
     }
 }
+
+#[test]
+fn type_annotated_v_for_aliases_stay_in_scope() {
+    let source = r#"<li v-for="(row: Row, index: number) in rows">{{ index }} {{ row.id }}</li>"#;
+    for lane in [SsrLane::Selected, SsrLane::LegacyOnly] {
+        let allocator = Allocator::new();
+        let (_, errors, result) = compile_ssr_on_lane(
+            &allocator,
+            source,
+            SsrCompilerOptions {
+                is_ts: true,
+                ..SsrCompilerOptions::default()
+            },
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            SsrCompilerExperimentalOptions::default(),
+            false,
+            lane,
+        );
+        assert!(errors.is_empty(), "{errors:?}\n{}", result.code);
+        // Type annotations change neither the renderer nor its helper imports.
+        assert_eq!(
+            result.code.as_str(),
+            concat!(
+                "function ssrRender(_ctx, _push, _parent, _attrs) {\n",
+                "  _push(`<!--[-->`)\n",
+                "  _ssrRenderList(_ctx.rows, (row, index) => {\n",
+                "    _push(`<li>${_ssrInterpolate(index)} ${_ssrInterpolate(row.id)}</li>`)\n",
+                "  })\n",
+                "  _push(`<!--]-->`)\n",
+                "}\n",
+            ),
+            "{lane:?}",
+        );
+        assert_eq!(
+            result.preamble.as_str(),
+            "import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n",
+            "{lane:?}",
+        );
+    }
+}

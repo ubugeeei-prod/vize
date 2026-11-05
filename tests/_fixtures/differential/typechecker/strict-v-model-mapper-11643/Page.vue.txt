@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import KitField from "./KitField.vue";
+const climate = ref<"warm" | "cold">("warm");
+</script>
+<template>
+  <KitField v-model="climate" label="Plant" />
+</template>

@@ -22,12 +22,12 @@ use super::super::props::{
     normalize_destructure_default_value_with_factory as normalize_default, runtime_prop_key,
     validate_macro_scope_and_props,
 };
-use super::super::typescript::transform_typescript_to_js;
 use super::expose::emit_expose;
-use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
-use super::imports::dedupe_imports;
+use super::helpers::{is_reserved_word, runtime_identifier_references};
+use super::imports::{dedupe_imports, insert_imports};
 use super::model::emit_model_bindings;
 use super::prop_types::{prop_types_from_context, resolve_prop_type};
+use crate::compile_script::erasure::Erasure;
 
 /// Compile script setup content following Vue.js core format
 pub fn compile_script_setup(
@@ -52,10 +52,10 @@ pub fn compile_script_setup(
     let mut ctx = ScriptCompileContext::new(content);
     ctx.analyze();
     validate_macro_scope_and_props(&ctx, 0, content)?;
+    let mut erasure = Erasure::for_javascript(!is_ts, &mut ctx);
 
-    // Arena-allocated Vec on this worker's pooled arena (P1-11), not a fresh one.
-    let bump = vize_carton::pool::acquire();
-    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&*bump);
+    // Assembled in the heap buffer that becomes the returned code.
+    let mut output: Vec<u8> = Vec::with_capacity(4096);
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
@@ -117,12 +117,9 @@ pub fn compile_script_setup(
         runtime.push_import(&mut output, "useModel as _useModel");
     }
 
-    // Output imports (filtering out type-only imports + dedupe)
-    let deduped_imports = dedupe_imports(&imports, false);
-    for import in &deduped_imports {
-        output.extend_from_slice(import.as_bytes());
-    }
-    super::module_scope::emit_module_scope(&mut output, &module_scope);
+    // Imports (type-only ones filtered, deduplicated) are placed here last.
+    let imports_at = output.len();
+    super::module_scope::emit_module_scope(&mut output, &module_scope, erasure.as_mut());
 
     output.push(b'\n');
 
@@ -226,13 +223,14 @@ pub fn compile_script_setup(
 
     // defineModel bindings: const model = _useModel(__props, 'modelValue')
     // Collect model binding names for __returned__
-    let model_binding_names = emit_model_bindings(&mut output, &ctx);
+    let model_binding_names = emit_model_bindings(&mut output, &ctx, erasure.as_mut());
 
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
         transform_destructured_props(&setup_code, destructure)?
     } else {
         setup_code.into()
     };
+    let transformed_setup = Erasure::erase_statements(erasure.as_mut(), transformed_setup);
 
     // Indent the setup code
     for line in transformed_setup.lines() {
@@ -243,7 +241,7 @@ pub fn compile_script_setup(
         output.push(b'\n');
     }
 
-    let runtime_used_identifiers = collect_runtime_identifier_references(&transformed_setup);
+    let runtime_used_identifiers = runtime_identifier_references(&transformed_setup);
 
     // Generate __returned__ object
     let returned_bindings = build_returned_bindings(
@@ -287,6 +285,8 @@ pub fn compile_script_setup(
         output.extend_from_slice(b"});\n"); // Close _defineComponent(
     }
 
+    let imports = dedupe_imports(&imports, false);
+    insert_imports(&mut output, imports_at, &imports, erasure);
     // SAFETY: this byte buffer is a fast append target for valid UTF-8 script
     // fragments: original source ranges, OXC codegen output, and ASCII component
     // wrapper text. There is no API in this module that appends arbitrary binary
@@ -295,14 +295,9 @@ pub fn compile_script_setup(
     // blocks in function mode.
     #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let output_str: std::string::String =
-        unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
+        unsafe { std::string::String::from_utf8_unchecked(output) };
 
-    // Transform TypeScript to JavaScript only when output is not TS.
-    let mut final_code: String = if is_ts {
-        output_str.into()
-    } else {
-        transform_typescript_to_js(&output_str)
-    };
+    let mut final_code: String = output_str.into();
     if let Some(transform) = lazy_hydration_transform {
         let mut code = transform.preamble;
         code.push_str(&final_code);
@@ -319,7 +314,7 @@ pub fn compile_script_setup(
 ///
 /// Handles regular defineProps, destructured props with defaults, and type-based props.
 fn emit_props_definition(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     has_props_destructure: bool,
     needs_prop_type: bool,
@@ -491,11 +486,7 @@ fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
 /// Emit emits definition to the output buffer.
 ///
 /// Combines defineEmits and defineModel emit events.
-fn emit_emits_definition(
-    output: &mut vize_carton::Vec<u8>,
-    ctx: &ScriptCompileContext,
-    model_names: &[String],
-) {
+fn emit_emits_definition(output: &mut Vec<u8>, ctx: &ScriptCompileContext, model_names: &[String]) {
     let mut all_emits: Vec<String> = Vec::new();
 
     // Add emits from defineEmits

@@ -231,12 +231,12 @@ pub fn is_editor_mirror_path(path: &Path) -> bool {
 fn create_storage() -> std::io::Result<EditorStorage> {
     let base = sessions_base();
     std::fs::create_dir_all(&base)?;
-    let gc_lock = open_lock(&base.join(".gc.lock"))?;
-    gc_lock.lock()?;
-    reap_abandoned_sessions(&base);
+    // Held until the new session holds its own lifetime lock.
+    let gc = GcLock::acquire(&base)?;
+    gc.reap_abandoned_sessions();
     let directory = tempfile::Builder::new()
         .prefix("session-")
-        .tempdir_in(base)?;
+        .tempdir_in(&base)?;
     let lifetime_lock = open_lock(&directory.path().join(".session.lock"))?;
     lifetime_lock.lock()?;
     #[cfg(unix)]
@@ -266,36 +266,52 @@ fn open_existing_session_lock(path: &Path) -> std::io::Result<File> {
     OpenOptions::new().read(true).write(true).open(path)
 }
 
-fn reap_abandoned_sessions(base: &Path) {
-    const LEGACY_GRACE: Duration = Duration::from_secs(24 * 60 * 60);
-    let Ok(entries) = std::fs::read_dir(base) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if !entry.file_type().is_ok_and(|kind| kind.is_dir())
-            || !entry.file_name().to_string_lossy().starts_with("session-")
-        {
-            continue;
-        }
-        // No lock/PID inference can prove an unknown native reader stopped.
-        if path.join(RETAINED_FAILURE).exists() {
-            continue;
-        }
-        let lock_path = path.join(".session.lock");
-        let removable = if lock_path.exists() {
-            match open_existing_session_lock(&lock_path) {
-                Ok(lock) => match lock.try_lock() {
-                    Ok(()) => true,
-                    Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
-                },
-                Err(_) => false,
-            }
-        } else {
-            legacy_session_expired(&path, LEGACY_GRACE)
+/// The sessions base's GC lock. Sweeping requires it, so a sweep can never
+/// see a session between its directory and its locked lifetime lock (#11500).
+struct GcLock<'base> {
+    base: &'base Path,
+    _lock: File,
+}
+
+impl<'base> GcLock<'base> {
+    fn acquire(base: &'base Path) -> std::io::Result<Self> {
+        let lock = open_lock(&base.join(".gc.lock"))?;
+        lock.lock()?;
+        Ok(Self { base, _lock: lock })
+    }
+
+    fn reap_abandoned_sessions(&self) {
+        let base = self.base;
+        const LEGACY_GRACE: Duration = Duration::from_secs(24 * 60 * 60);
+        let Ok(entries) = std::fs::read_dir(base) else {
+            return;
         };
-        if removable {
-            let _ = std::fs::remove_dir_all(path);
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !entry.file_type().is_ok_and(|kind| kind.is_dir())
+                || !entry.file_name().to_string_lossy().starts_with("session-")
+            {
+                continue;
+            }
+            // No lock/PID inference can prove an unknown native reader stopped.
+            if path.join(RETAINED_FAILURE).exists() {
+                continue;
+            }
+            let lock_path = path.join(".session.lock");
+            let removable = if lock_path.exists() {
+                match open_existing_session_lock(&lock_path) {
+                    Ok(lock) => match lock.try_lock() {
+                        Ok(()) => true,
+                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
+                    },
+                    Err(_) => false,
+                }
+            } else {
+                legacy_session_expired(&path, LEGACY_GRACE)
+            };
+            if removable {
+                let _ = std::fs::remove_dir_all(path);
+            }
         }
     }
 }
@@ -310,7 +326,7 @@ fn legacy_session_expired(path: &Path, grace: Duration) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{EditorMirrorSession, is_editor_mirror_path, open_lock, reap_abandoned_sessions};
+    use super::{EditorMirrorSession, GcLock, is_editor_mirror_path, open_lock};
 
     #[test]
     fn mirror_paths_are_recognized_only_inside_session_storage() {
@@ -373,7 +389,9 @@ mod tests {
         let live_lock = open_lock(&live.join(".session.lock")).unwrap();
         live_lock.lock().unwrap();
 
-        reap_abandoned_sessions(base.path());
+        GcLock::acquire(base.path())
+            .unwrap()
+            .reap_abandoned_sessions();
 
         assert!(!abandoned.exists());
         assert!(live.is_dir());

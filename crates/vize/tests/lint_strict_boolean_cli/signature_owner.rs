@@ -22,9 +22,11 @@ fn diagnostic(rule: &str, message: &str, start: usize, len: usize) -> Value {
     let prefix = &SOURCE[..start];
     let line = prefix.bytes().filter(|byte| *byte == b'\n').count() + 1;
     let column = prefix.rsplit('\n').next().unwrap().chars().count() + 1;
-    json!({"ruleId":rule,"ruleDocsPath":"docs/content/rules/type-and-script.md",
+    crate::support::current_rule_documentation::message(
+        json!({"ruleId":rule,"ruleDocsPath":"docs/content/rules/type-and-script.md",
         "severity":2,"message":message,"line":line,"column":column,
-        "endLine":line,"endColumn":column+SOURCE[start..start+len].chars().count()})
+        "endLine":line,"endColumn":column+SOURCE[start..start+len].chars().count()}),
+    )
 }
 
 fn expected(unsafe_validator: bool) -> Value {

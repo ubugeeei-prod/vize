@@ -88,6 +88,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::side_table::SideTable;
+use vize_l2::provenance::ProvenanceSink;
 
 mod consume;
 mod group;
@@ -147,7 +148,7 @@ pub use vize_l2::analysis::slot_facts::{
 /// paramless one with), a reused tag, or recorded bindings that
 /// disagree with the params surface.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_>) -> SideTable<SlotFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<SlotFacts> {
     let Lowered {
         root,
         op_count,

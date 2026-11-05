@@ -217,8 +217,9 @@ impl CorsaProjectClient {
         if !matched {
             return Ok(None);
         }
+        let native_uri = self.editor_document_uri(uri);
         let result = self.request_with_editor_lsp_recovery(|session| {
-            session.component_types(uri, source, vue_module, positions)
+            session.component_types(&native_uri, source, vue_module, positions)
         });
         capture.record("clientResult", || match &result {
             Ok(value) => json!({"result":value}),

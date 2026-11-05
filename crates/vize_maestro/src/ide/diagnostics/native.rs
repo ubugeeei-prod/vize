@@ -10,12 +10,82 @@ use crate::{
 };
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 
+mod provenance;
 pub(super) mod timeout;
+pub(crate) use provenance::NativeDiagnostic;
+
+/// The native part of one result, kept to combine with a later sync set.
+pub(crate) struct NativeFamily {
+    pub(crate) diagnostics: Vec<NativeDiagnostic>,
+    /// Corsa answered, so its syntax errors replace script parser ones.
+    pub(crate) owns_script_syntax: bool,
+}
+
+/// A publication and where its native family starts.
+pub(crate) struct CombinedDiagnostics {
+    pub(crate) diagnostics: Vec<Diagnostic>,
+    pub(crate) native: Option<NativeFamily>,
+}
+
+impl CombinedDiagnostics {
+    pub(crate) fn into_parts(self) -> (Option<NativeFamily>, Vec<Diagnostic>) {
+        (self.native, self.diagnostics)
+    }
+}
+
+/// The one rule for every publication: a sync set plus the latest native
+/// family, which a blocking parser error suppresses.
+pub(super) fn combine(
+    mut sync: Vec<Diagnostic>,
+    native_script_syntax: bool,
+    native: Option<NativeFamily>,
+) -> CombinedDiagnostics {
+    let Some(native) = native.filter(|_| !has_blocking_parser_error(&sync, native_script_syntax))
+    else {
+        return CombinedDiagnostics {
+            diagnostics: sync,
+            native: None,
+        };
+    };
+    if native.owns_script_syntax && native_script_syntax {
+        sync.retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
+    }
+    let family = NativeFamily {
+        diagnostics: without_duplicate_required_props(native.diagnostics, &sync),
+        owns_script_syntax: native.owns_script_syntax,
+    };
+    sync.extend(
+        family
+            .diagnostics
+            .iter()
+            .map(|record| record.diagnostic.clone()),
+    );
+    CombinedDiagnostics {
+        diagnostics: sync,
+        native: Some(family),
+    }
+}
 
 impl DiagnosticService {
     /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        Self::collect_async_from_sync(state, uri, Self::collect(state, uri)).await
+        Self::collect_async_from_sync(state, uri, Self::collect(state, uri))
+            .await
+            .diagnostics
+    }
+
+    /// Combine a current sync set with an earlier native family.
+    pub(crate) fn combine_native(
+        state: &ServerState,
+        uri: &Url,
+        sync: Vec<Diagnostic>,
+        native: Option<NativeFamily>,
+    ) -> Vec<Diagnostic> {
+        let Some(native) = native else {
+            return sync;
+        };
+        let native_script_syntax = native_script_syntax(state, uri, &sync);
+        combine(sync, native_script_syntax, Some(native)).diagnostics
     }
 
     /// Merge native diagnostics into an already collected, current sync set.
@@ -23,18 +93,22 @@ impl DiagnosticService {
     pub(crate) async fn collect_async_from_sync(
         state: &ServerState,
         uri: &Url,
-        mut diagnostics: Vec<Diagnostic>,
-    ) -> Vec<Diagnostic> {
+        diagnostics: Vec<Diagnostic>,
+    ) -> CombinedDiagnostics {
         tracing::info!("collect_async: {}", uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
         let native_script_syntax = native_script_syntax(state, uri, &diagnostics);
+        let skipped = |diagnostics| CombinedDiagnostics {
+            diagnostics,
+            native: None,
+        };
         if has_blocking_parser_error(&diagnostics, native_script_syntax) {
             tracing::info!("collect_async: Corsa diagnostics skipped after parser error");
-            return diagnostics;
+            return skipped(diagnostics);
         }
         if is_standalone_html_path(uri.path()) {
             tracing::info!("collect_async: Corsa diagnostics skipped for standalone HTML");
-            return diagnostics;
+            return skipped(diagnostics);
         }
 
         // JSX/TSX type diagnostics. The sync `collect` above already added the
@@ -49,59 +123,72 @@ impl DiagnosticService {
                 let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
                 let jsx_type_diags = jsx_future.await;
                 tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
-                diagnostics.extend(jsx_type_diags);
-            } else {
-                tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
+                let native = NativeFamily {
+                    diagnostics: jsx_type_diags.into_iter().map(Into::into).collect(),
+                    owns_script_syntax: false,
+                };
+                return combine(diagnostics, native_script_syntax, Some(native));
             }
-            return diagnostics;
+            tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
+            return skipped(diagnostics);
         }
 
-        if state.is_lsp_typecheck_enabled() {
-            let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-            match corsa_future.await {
-                CorsaDiagnostics::Complete(corsa_diags) => {
-                    #[cfg(test)]
-                    super::assembly_parity_custody::record(state, uri, "native_complete", || {
-                        serde_json::json!(corsa_diags)
-                    });
-                    tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                    diagnostics = merge_complete_native(
-                        diagnostics,
-                        corsa_diags,
-                        native_script_syntax,
-                        super::corsa::collect::configuration_disclosures(state),
-                    );
-                }
-                CorsaDiagnostics::Unavailable(hints) => {
-                    #[cfg(test)]
-                    super::assembly_parity_custody::record(
-                        state,
-                        uri,
-                        "native_unavailable",
-                        || serde_json::json!(hints),
-                    );
-                    diagnostics.extend(hints);
-                }
-            }
-
-            // When the user opted into typecheck but Corsa never came up
-            // (init failed, timed out, or simply not yet attempted while we
-            // already produced zero corsa diagnostics for an SFC), surface a
-            // hint diagnostic so the Problems panel reflects what is
-            // happening. Without this, the editor goes silent and users
-            // assume their project is clean. See #681.
-            if !state.has_corsa_bridge()
-                && !diagnostics
-                    .iter()
-                    .any(|d| d.source.as_deref() == Some(super::sources::TYPE_CHECKER))
-            {
-                diagnostics.push(typecheck_unavailable_hint());
-            }
-        } else {
+        if !state.is_lsp_typecheck_enabled() {
             tracing::info!("collect_async: Corsa diagnostics skipped (disabled by config)");
+            return skipped(diagnostics);
         }
+        let corsa_future = Self::collect_corsa_diagnostics(state, uri);
+        let native = match corsa_future.await {
+            CorsaDiagnostics::Complete(mut corsa_diags) => {
+                #[cfg(test)]
+                super::assembly_parity_custody::record(state, uri, "native_complete", || {
+                    serde_json::json!(corsa_diags)
+                });
+                tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
+                corsa_diags.extend(
+                    super::corsa::collect::configuration_disclosures(state)
+                        .into_iter()
+                        .map(NativeDiagnostic::from),
+                );
+                NativeFamily {
+                    diagnostics: corsa_diags,
+                    owns_script_syntax: true,
+                }
+            }
+            CorsaDiagnostics::Unavailable(hints) => {
+                #[cfg(test)]
+                super::assembly_parity_custody::record(state, uri, "native_unavailable", || {
+                    serde_json::json!(hints)
+                });
+                NativeFamily {
+                    diagnostics: hints.into_iter().map(Into::into).collect(),
+                    owns_script_syntax: false,
+                }
+            }
+        };
+        let mut combined = combine(diagnostics, native_script_syntax, Some(native));
+        with_unavailable_hint(state, &mut combined);
+        combined
+    }
+}
 
-        diagnostics
+/// When the user opted into typecheck but Corsa never came up (init failed,
+/// timed out, or simply not yet attempted while we already produced zero
+/// corsa diagnostics for an SFC), surface a hint diagnostic so the Problems
+/// panel reflects what is happening. Without this, the editor goes silent and
+/// users assume their project is clean. See #681.
+pub(super) fn with_unavailable_hint(state: &ServerState, publication: &mut CombinedDiagnostics) {
+    if !state.has_corsa_bridge()
+        && !publication
+            .diagnostics
+            .iter()
+            .any(|d| d.source.as_deref() == Some(super::sources::TYPE_CHECKER))
+    {
+        let hint = typecheck_unavailable_hint();
+        if let Some(native) = &mut publication.native {
+            native.diagnostics.push(hint.clone().into());
+        }
+        publication.diagnostics.push(hint);
     }
 }
 
@@ -120,28 +207,13 @@ pub(super) fn native_script_syntax(
         })
 }
 
-pub(super) fn merge_complete_native(
-    mut diagnostics: Vec<Diagnostic>,
-    corsa: Vec<Diagnostic>,
-    native_script_syntax: bool,
-    configuration: Vec<Diagnostic>,
-) -> Vec<Diagnostic> {
-    if native_script_syntax {
-        diagnostics
-            .retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
-    }
-    diagnostics.extend(without_duplicate_required_props(corsa, &diagnostics));
-    diagnostics.extend(configuration);
-    diagnostics
-}
-
 /// The authored component check already reports the missing prop on the tag.
 /// A native TS2345 for the generated checker call repeats it and exposes
 /// internal helper types, especially after an unsaved dependency edit.
 fn without_duplicate_required_props(
-    corsa: Vec<Diagnostic>,
+    corsa: Vec<NativeDiagnostic>,
     authored: &[Diagnostic],
-) -> Vec<Diagnostic> {
+) -> Vec<NativeDiagnostic> {
     let required_tags = authored
         .iter()
         .filter(|diagnostic| {

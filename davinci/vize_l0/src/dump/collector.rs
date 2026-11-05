@@ -9,7 +9,7 @@
 //! once and feeds every consumer the same bytes.
 //!
 //! The library half is deliberately IO-free (`no_std + alloc`): pages carry
-//! their text plus stage/pass provenance (which the P2-18 Spolvero feed
+//! their text plus stage/pass provenance (which the P2-18 stage feed
 //! serializes). Writing them into a directory was the retired host's job;
 //! product `vize dump` writes its distinct same-run capture pages. Names are
 //! `{seq:03}-{stage}.{pass}.folio` in emission order, so a directory listing
@@ -24,7 +24,7 @@ use vize_l0::{String, cstr};
 use crate::pass::PassEvent;
 
 /// One page a dump run produced: the file name to write and its text,
-/// plus the stage/pass provenance the Spolvero feed (P2-18) serializes.
+/// plus the stage/pass provenance the stage feed (P2-18) serializes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Page {
     /// `{seq:03}-{stage}.{pass}.folio`, emission-ordered. Derived from

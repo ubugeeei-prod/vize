@@ -1,18 +1,41 @@
 ---
 title: "script/no-ref-as-operand"
+description: "ref を演算の値として使う際に .value を参照します。"
 ---
 
 # `script/no-ref-as-operand`
 
 ref を演算の値として使う際に .value を参照します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`count + 1` は ref が包む数値ではなく、ref オブジェクトそのものを算術演算の対象にしています。
+
+```vue annotate="remove:4"
+<script setup lang="ts">
+import { ref } from "vue";
+const count = ref(0);
+const next = count + 1;
+</script>
+```
+
+## 良い例
+
+`count.value + 1` で内側の数値を取り出してから加算します。script の演算では ref の値を明示的に参照します。
+
+```vue annotate="add:4"
+<script setup lang="ts">
+import { ref } from "vue";
+const count = ref(0);
+const next = count.value + 1;
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`count + 1` は ref が包む数値ではなく、ref オブジェクトそのものを算術演算の対象にしています。
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-const next = count + 1;
-</script>
-```
-
-## 良い
-
-`count.value + 1` で内側の数値を取り出してから加算します。script の演算では ref の値を明示的に参照します。
-
-```vue
-<script setup lang="ts">
-import { ref } from "vue";
-const count = ref(0);
-const next = count.value + 1;
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41)

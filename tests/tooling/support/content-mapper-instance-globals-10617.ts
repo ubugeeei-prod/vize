@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { withParenthesisDiagnosticMappings } from "./content-mapper-parenthesis-mappings-11675.ts";
 
 export type GlobalCase = {
   id: string;
@@ -208,7 +209,7 @@ export function assertErrorMappings(source: string, entry: GlobalCase, result: T
 export function assertWholeTransform(actual: Transform, expected: Transform) {
   assert.equal(
     JSON.stringify(actual),
-    JSON.stringify(expected),
+    JSON.stringify(withParenthesisDiagnosticMappings(expected)),
     "complete generated text, mapping order, directives and all opaque fields",
   );
 }
@@ -224,6 +225,8 @@ const hasUnusedExpects = (result: Transform) =>
     ?.unusedExpectDirectiveDiagnostics?.length ?? 0) > 0;
 
 export function fullPacketMutations(golden: Transform, foreign: Transform) {
+  const current = withParenthesisDiagnosticMappings(golden);
+  assertWholeTransform(current, golden);
   const changes: Array<(copy: Transform) => void> = [
     (copy) => {
       copy.text += "\n// unexpected code";
@@ -274,18 +277,19 @@ export function fullPacketMutations(golden: Transform, foreign: Transform) {
         });
   }
   for (const change of changes) {
-    const copy = structuredClone(golden);
+    const copy = structuredClone(current);
     change(copy);
     assert.notEqual(
       JSON.stringify(copy),
-      JSON.stringify(golden),
+      JSON.stringify(current),
       "negative control must actually change the packet",
     );
     assert.throws(() => assertWholeTransform(copy, golden));
   }
-  assert.notEqual(JSON.stringify(foreign), JSON.stringify(golden));
+  const currentForeign = withParenthesisDiagnosticMappings(foreign);
+  assert.notEqual(JSON.stringify(currentForeign), JSON.stringify(current));
   assert.throws(
-    () => assertWholeTransform(foreign, golden),
+    () => assertWholeTransform(currentForeign, golden),
     "a different authored case cannot acquire this input's packet",
   );
 }
@@ -462,6 +466,7 @@ export function makeSourceProject(
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.cts",
     "generated/content-mapper-types.d.ts",
+    "virtual-ts-checker.d.ts",
     "virtual-ts-globals.d.ts",
     "virtual-ts-patterns.d.ts",
     "virtual-ts-slots.d.ts",

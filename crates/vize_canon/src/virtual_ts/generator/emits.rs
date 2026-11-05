@@ -30,6 +30,8 @@ pub(super) struct EmitsInfo {
     generic_event_map_decl: String,
     generic_event_map_names: String,
     preserve_event_navigation: bool,
+    /// The template runs inside the SFC's generic setup signature.
+    generic_component: bool,
 }
 
 impl EmitsInfo {
@@ -77,7 +79,14 @@ impl EmitsInfo {
             legacy_vue2,
             hoist_shared_preamble,
         );
-        emit_emit_props_helper(ts, self, hoist_shared_preamble, event_inference);
+        crate::virtual_ts::scope::emit_gate_aliases(
+            ts,
+            summary,
+            self.generic_component,
+            legacy_vue2,
+            hoist_shared_preamble,
+        );
+        emit_emit_props_helper(ts, summary, self, hoist_shared_preamble, event_inference);
     }
 
     pub(super) fn generic_emit_resolver_fields(
@@ -291,11 +300,13 @@ pub(super) fn emit_emits_type(
         generic_event_map_decl,
         generic_event_map_names,
         preserve_event_navigation,
+        generic_component: generic_param.is_some_and(|generic| !generic.parameters.is_empty()),
     }
 }
 
 fn emit_emit_props_helper(
     ts: &mut String,
+    summary: &Croquis,
     info: &EmitsInfo,
     hoist_shared_preamble: bool,
     event_inference: bool,
@@ -304,7 +315,7 @@ fn emit_emit_props_helper(
         return;
     }
     if !hoist_shared_preamble {
-        ts! { &mut *ts => #EMIT_OVERLOAD_HELPERS }
+        crate::virtual_ts::helpers::hygiene::emit_helper_text(ts, summary, EMIT_OVERLOAD_HELPERS);
     }
     if !hoist_shared_preamble {
         ts! { &mut *ts => #EMIT_PROPS_HELPER #("\n") }

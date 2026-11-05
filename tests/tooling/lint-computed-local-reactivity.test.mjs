@@ -1,3 +1,4 @@
+import { currentRuleDocumentationMessages } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -127,7 +128,7 @@ await test("source CLI reruns current ref reads and retains real snapshot/deferr
       save();
       assert.equal(result.error, undefined, scenario.id);
       assert.equal(result.signal, null, scenario.id);
-      const expectedErrors = scenario.expectedCliErrors ?? [];
+      const expectedErrors = currentRuleDocumentationMessages(scenario.expectedCliErrors ?? []);
       assert.equal(result.status, expectedErrors.length === 0 ? 0 : 1, JSON.stringify(run));
       assert.deepEqual(result.stderr, Buffer.alloc(0), scenario.id);
       const packet = JSON.parse(result.stdout.toString("utf8"));

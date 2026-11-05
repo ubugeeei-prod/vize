@@ -23,17 +23,23 @@ function digestOf(values: string[]): string {
   return hash.digest("hex");
 }
 
-async function withFixture(fn: (root: string) => Promise<void>): Promise<void> {
+async function withFixture(
+  fn: (root: string) => Promise<void>,
+  companionHooks?: string,
+): Promise<void> {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-musea-stages-"));
   try {
-    writeFixtureRuntime(root);
+    writeFixtureRuntime(root, companionHooks);
     await fn(root);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
 
-function writeFixtureRuntime(root: string): void {
+function writeFixtureRuntime(
+  root: string,
+  companionHooks = "transform(code) { return { code: code + ':post' }; },",
+): void {
   const pluginDist = path.join(root, "npm", "builder", "vite-musea", "dist");
   const nuxtDist = path.join(root, "npm", "framework", "musea-nuxt", "dist");
   const nativeDir = path.join(root, "npm", "native");
@@ -62,7 +68,10 @@ export function musea() {
         "musea-static-runtime": "virtual:musea-static-runtime",
       } } } };
     },
-    configResolved(config) { root = config.root; },
+    configResolved(config) {
+      if (config.environments.client.optimizeDeps == null) throw new Error("no client environment");
+      root = config.root;
+    },
     options() { return null; },
     buildStart() { native = require("@vizejs/native"); },
     resolveId(id) { return id.endsWith(".art.vue") ? "\\0fixture:" + id : null; },
@@ -71,6 +80,9 @@ export function musea() {
       return JSON.stringify({ id, marker, root, native });
     },
     transform(code) { return { code: "transformed:" + code }; },
+  }, {
+    name: "vite-plugin-musea:style-post-transform",
+    ${companionHooks}
   }];
 }
 `,
@@ -231,6 +243,8 @@ test("all six stages return raw output and hash only in observe", async () => {
         "modules",
         "transformed",
       ]);
+      // The companion transform runs after the main plugin's, as in Vite.
+      assert.ok(outputs[3].every((code: string) => /^transformed:.*:post$/su.test(code)));
       assert.match(
         outputs[2].join("\n"),
         new RegExp(artifacts.native.measuredPath.replaceAll("\\", "\\\\")),
@@ -260,4 +274,17 @@ test("all six stages return raw output and hash only in observe", async () => {
       else process.env.NAPI_RS_NATIVE_LIBRARY_PATH = previous;
     }
   });
+});
+
+test("a companion plugin hook the lane does not drive fails the lane", async () => {
+  await withFixture(async (root) => {
+    const artifacts = resolveMuseaArtifacts(root);
+    const files = [path.join(root, "corpus", "A.art.vue")];
+    const [, , , transform] = createMuseaStages({
+      artifacts,
+      workDir: path.join(root, "corpus"),
+      files,
+    });
+    await assert.rejects(transform.prepare(), /hooks this lane does not measure: \[load\]/u);
+  }, "load() { return null; },");
 });

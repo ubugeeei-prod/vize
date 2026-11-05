@@ -31,6 +31,7 @@ enum ResolutionScope {
 
 #[derive(Debug, Default)]
 pub struct TypeSourceSnapshot {
+    project: Option<Arc<super::SfcTypeProject>>,
     overlays: FxHashMap<PathBuf, Arc<str>>,
     disk: Mutex<FxHashMap<PathBuf, Option<Arc<str>>>>,
     resolutions: Mutex<FxHashMap<(ResolutionScope, String), ResolutionCell>>,
@@ -46,6 +47,18 @@ pub struct TypeSourceSnapshot {
 }
 
 impl TypeSourceSnapshot {
+    /// Bind a fresh source view to one immutable host-selected project. Cache
+    /// cells belong to this snapshot and cannot leak between project revisions.
+    pub fn with_project(
+        overlays: impl IntoIterator<Item = (PathBuf, Arc<str>)>,
+        project: Arc<super::SfcTypeProject>,
+    ) -> Self {
+        Self {
+            project: Some(project),
+            ..Self::new(overlays)
+        }
+    }
+
     /// Capture editor sources once per editor revision. Cloning an Arc shares
     /// the immutable text; subsequent analyses borrow this same snapshot.
     pub fn new(overlays: impl IntoIterator<Item = (PathBuf, Arc<str>)>) -> Self {

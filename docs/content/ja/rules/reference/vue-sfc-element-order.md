@@ -1,18 +1,52 @@
 ---
 title: "vue/sfc-element-order"
+description: "SFC のトップレベルブロックを設定した順に並べます。"
 ---
 
 # `vue/sfc-element-order`
 
 SFC のトップレベルブロックを設定した順に並べます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+style が script より前にあり、設定した SFC ブロック順に合いません。
+
+```vue annotate="remove:2,6,7,8"
+<style scoped>
+.panel {
+  color: red;
+}
+</style>
+<script setup lang="ts">
+const label = "Save";
+</script>
+```
+
+## 良い例
+
+script → template → style の順に並べます。型付きオプションで別の順序を選べます。
+
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
+<script setup lang="ts">
+const label = "Save";
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>
+
+<style scoped>
+p {
+  color: red;
+}
+</style>
+```
 
 ## 設定（Vite+）
 
@@ -31,45 +65,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-style が script より前にあり、設定した SFC ブロック順に合いません。
-
-```vue
-<style scoped>
-.panel {
-  color: red;
-}
-</style>
-<script setup lang="ts">
-const label = "Save";
-</script>
-```
-
-## 良い
-
-script → template → style の順に並べます。型付きオプションで別の順序を選べます。
-
-```vue
-<script setup lang="ts">
-const label = "Save";
-</script>
-
-<template>
-  <p>{{ label }}</p>
-</template>
-
-<style scoped>
-p {
-  color: red;
-}
-</style>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50)

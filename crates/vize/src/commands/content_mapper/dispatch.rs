@@ -208,11 +208,10 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
             }
             receipt.effective_workers += 1;
         }
-        let read = if receipt.effective_workers == 0 {
-            Err(io::Error::other("content-mapper has no transform workers"))
-        } else {
-            capture_worker_pool(&receipt)
-                .and_then(|()| read_loop(reader, &job_tx, &done_tx, &progress))
+        let read = match std::num::NonZeroUsize::new(receipt.effective_workers) {
+            None => Err(io::Error::other("content-mapper has no transform workers")),
+            Some(inflight_limit) => capture_worker_pool(&receipt)
+                .and_then(|()| read_loop(reader, &job_tx, &done_tx, &progress, inflight_limit)),
         };
         drop(job_tx);
         drop(done_tx);
@@ -280,11 +279,17 @@ fn read_loop<R: BufRead>(
     jobs: &Sender<TransformJob>,
     done: &Sender<(u64, Vec<u8>)>,
     progress: &WriteProgress,
+    inflight_limit: std::num::NonZeroUsize,
 ) -> io::Result<()> {
     let mut initialized = false;
     let mut projects = ProjectRegistry::default();
     let mut seq = 0_u64;
-    while let Some(body) = read_frame(reader)? {
+    loop {
+        // Return admission credit only after the ordered reply is flushed.
+        progress.wait_until(seq.saturating_sub(inflight_limit.get() as u64 - 1))?;
+        let Some(body) = read_frame(reader)? else {
+            break;
+        };
         let request = match serde_json::from_slice::<Request>(&body) {
             Ok(request) => request,
             Err(error) => {
@@ -426,7 +431,7 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_transform(&job.id, &result.with_unmapped_ignores()),
+        Ok(result) => encode_transform(&job.id, &result),
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)

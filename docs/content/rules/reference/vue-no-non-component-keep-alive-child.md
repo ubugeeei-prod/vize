@@ -1,18 +1,48 @@
 ---
 title: "vue/no-non-component-keep-alive-child"
+description: "Disallow plain element wrappers directly below `<KeepAlive>`."
 ---
 
 # `vue/no-non-component-keep-alive-child`
 
-Disallow plain element wrappers directly below `<KeepAlive>`
+Disallow plain element wrappers directly below `<KeepAlive>`.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+KeepAlive conditionally wraps a native div rather than directly caching UserCard.
+
+```vue annotate="remove:3"
+<template>
+  <KeepAlive>
+    <div v-if="ready">
+      <UserCard />
+    </div>
+  </KeepAlive>
+</template>
+```
+
+## Good
+
+The first example makes UserCard the conditional child. The v-show wrapper illustrates a shape outside this conditional-child check, not a promise that the native wrapper is cached.
+
+```vue annotate="add:3,4,5,6"
+<template>
+  <KeepAlive>
+    <UserCard v-if="ready" />
+  </KeepAlive>
+  <KeepAlive>
+    <div v-show="opened">
+      <UserCard />
+    </div>
+  </KeepAlive>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,41 +61,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-KeepAlive conditionally wraps a native div rather than directly caching UserCard.
-
-```vue
-<template>
-  <KeepAlive>
-    <div v-if="ready">
-      <UserCard />
-    </div>
-  </KeepAlive>
-</template>
-```
-
-## Good
-
-The first example makes UserCard the conditional child. The v-show wrapper illustrates a shape outside this conditional-child check, not a promise that the native wrapper is cached.
-
-```vue
-<template>
-  <KeepAlive>
-    <UserCard v-if="ready" />
-  </KeepAlive>
-  <KeepAlive>
-    <div v-show="opened">
-      <UserCard />
-    </div>
-  </KeepAlive>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L26) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L26)

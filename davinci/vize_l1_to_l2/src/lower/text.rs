@@ -86,14 +86,16 @@ use vize_l2::op::Op;
 
 mod branch_gap;
 mod condense;
+mod lane;
 mod leading_newline;
 mod run;
 
 pub use branch_gap::{branch_gap_text, branch_gap_text_at};
-pub(crate) use condense::{TextAction, plan_whitespace, suppresses_condense};
-use condense::{collapse_fused, extends_run};
-use leading_newline::normalize_special_text;
-pub(crate) use run::{lower_text_run, lower_v_pre_text_run};
+pub use condense::TextAction;
+pub(crate) use condense::suppresses_condense;
+pub(crate) use lane::{Lane, TextWhitespace, block_offset, block_span};
+pub use lane::{RunShape, TextLane, TextRun, TextSource};
+pub(crate) use run::lower_text_run;
 pub use vize_l2::analysis::text_facts::{TextPart, TextParts, rebuild_source};
 
 #[cfg(debug_assertions)]

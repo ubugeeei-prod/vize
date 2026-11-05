@@ -1,18 +1,45 @@
 ---
 title: "vapor/no-vue-lifecycle-events"
+description: "Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。"
 ---
 
 # `vapor/no-vue-lifecycle-events`
 
 Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+input にテンプレートの @vue:mounted を指定しています。
+
+```vue annotate="remove:2"
+<template>
+  <input @vue:mounted="focusInput" />
+</template>
+```
+
+## 良い例
+
+script の onMounted からテンプレートの ref を参照し、input にフォーカスします。
+
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
+<script setup lang="ts" vapor>
+const input = useTemplateRef<HTMLInputElement>("input");
+
+onMounted(() => {
+  input.value?.focus();
+});
+</script>
+
+<template>
+  <input ref="input" />
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-input にテンプレートの @vue:mounted を指定しています。
-
-```vue
-<template>
-  <input @vue:mounted="focusInput" />
-</template>
-```
-
-## 良い
-
-script の onMounted からテンプレートの ref を参照し、input にフォーカスします。
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-
-<template>
-  <input ref="input" />
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [全ルール](../all.md)
+- [Vapor ルール](../vapor.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34)

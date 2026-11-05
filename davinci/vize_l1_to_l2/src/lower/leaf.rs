@@ -12,12 +12,17 @@ use vize_l0::{Box, Span, String, Vec, cstr};
 use vize_l1::markup::{Interpolation, SurfaceChild, Token};
 
 use vize_l2::op::{CommentOp, InterpolationOp, Op, TextOp};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::Cx;
 use super::expr::{desc, filter_expr_at};
 
 /// Lower one non-element child.
-pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mut Vec<'a, Op<'a>>) {
+pub(crate) fn lower_leaf<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    child: &SurfaceChild<'a>,
+    out: &mut Vec<'a, Op<'a>>,
+) {
     match child {
         // Elements take the structural path; a slip here is a lowering
         // bug, and totality still holds (the child is skipped, never a
@@ -32,7 +37,7 @@ pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mu
                 lower_comment(cx, token, out);
             } else {
                 let span = cx.token_span(token);
-                cx.record("drop.comment", None, token.text, String::default(), span);
+                cx.record("drop.comment", None, token.text, String::default, span);
             }
         }
         SurfaceChild::Cdata(token) => lower_cdata(cx, token, out),
@@ -42,13 +47,13 @@ pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mu
                 "drop.processing-instruction",
                 None,
                 token.text,
-                String::default(),
+                String::default,
                 span,
             );
         }
         SurfaceChild::Unexpected(token) => {
             let span = cx.token_span(token);
-            cx.record("drop.unexpected", None, token.text, String::default(), span);
+            cx.record("drop.unexpected", None, token.text, String::default, span);
         }
     }
 }
@@ -58,7 +63,7 @@ pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mu
 /// entity decoding stays out of scope (the L1 v1 no-decoding deviation,
 /// re-recorded in the installment-4 record).
 pub(crate) fn lower_text<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     token: &Token<'a>,
     content: &'a str,
     out: &mut Vec<'a, Op<'a>>,
@@ -69,7 +74,7 @@ pub(crate) fn lower_text<'a>(
         "lower.text",
         node,
         token.text,
-        String::from("ui.text"),
+        || String::from("ui.text"),
         span,
     );
     out.push(Op::Text(Box::new_in(
@@ -80,7 +85,11 @@ pub(crate) fn lower_text<'a>(
 
 /// `ui.interpolation`: the delimited content, trimmed, through the total
 /// admission rule.
-fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut Vec<'a, Op<'a>>) {
+fn lower_interpolation<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    node: &Interpolation<'a>,
+    out: &mut Vec<'a, Op<'a>>,
+) {
     let id = cx.mint_op();
     let span = Span::new(cx.offset(node.open.text), cx.token_span(&node.close).end);
     let expression = filter_expr_at(cx, node.content.text);
@@ -88,7 +97,7 @@ fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut 
         "lower.interpolation",
         id,
         node.content.text,
-        cstr!("ui.interpolation {}", desc(&expression)),
+        || cstr!("ui.interpolation {}", desc(&expression)),
         span,
     );
     out.push(Op::Interpolation(Box::new_in(
@@ -97,14 +106,18 @@ fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut 
     )));
 }
 
-fn lower_comment<'a>(cx: &mut Cx<'a>, token: &Token<'a>, out: &mut Vec<'a, Op<'a>>) {
+fn lower_comment<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    token: &Token<'a>,
+    out: &mut Vec<'a, Op<'a>>,
+) {
     let node = cx.mint_op();
     let span = cx.token_span(token);
     cx.record(
         "lower.comment",
         node,
         token.text,
-        String::from("ui.comment"),
+        || String::from("ui.comment"),
         span,
     );
     out.push(Op::Comment(Box::new_in(
@@ -131,7 +144,11 @@ fn comment_content(text: &str) -> &str {
 
 /// A CDATA section's content is text (the foreign-namespace reading);
 /// the framing is dropped with the record naming the rule.
-fn lower_cdata<'a>(cx: &mut Cx<'a>, token: &Token<'a>, out: &mut Vec<'a, Op<'a>>) {
+fn lower_cdata<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    token: &Token<'a>,
+    out: &mut Vec<'a, Op<'a>>,
+) {
     let inner = token.text.strip_prefix("<![CDATA[").unwrap_or(token.text);
     let inner = inner.strip_suffix("]]>").unwrap_or(inner);
     let node = cx.mint_op();
@@ -140,7 +157,7 @@ fn lower_cdata<'a>(cx: &mut Cx<'a>, token: &Token<'a>, out: &mut Vec<'a, Op<'a>>
         "lower.cdata-text",
         node,
         token.text,
-        String::from("ui.text"),
+        || String::from("ui.text"),
         span,
     );
     out.push(Op::Text(Box::new_in(

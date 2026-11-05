@@ -36,6 +36,7 @@ function fixture() {
     path.join(packageRoot, "package.json"),
     JSON.stringify({
       name: "vize",
+      version: "0.0.0",
       type: "module",
       optionalDependencies: { [platformPackage]: "7.0.2" },
     }),
@@ -44,7 +45,7 @@ function fixture() {
   fs.mkdirSync(stub, { recursive: true });
   fs.writeFileSync(
     path.join(stub, "package.json"),
-    JSON.stringify({ name: "@vizejs/native", main: "index.cjs" }),
+    JSON.stringify({ name: "@vizejs/native", version: "0.0.0", main: "index.cjs" }),
   );
   fs.writeFileSync(
     path.join(stub, "index.cjs"),

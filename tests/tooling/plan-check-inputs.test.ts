@@ -325,6 +325,18 @@ await test("the actual PR and merge-group planner selects a newly added npm Vue 
   }
 });
 
+await test("helper declaration drift selects the ABI check", () => {
+  for (const path of [
+    "npm/cli/virtual-ts-globals.d.ts",
+    "npm/cli/virtual-ts-checker.d.ts",
+    "npm/cli/scripts/content-mapper-helper-abi.ts",
+    "crates/vize/src/commands/content_mapper/helper-abi.json",
+    "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs",
+  ]) {
+    assert.equal(planCheckInputs([path]).engines, true, path);
+  }
+});
+
 await test("scheduled and manual qualification never select away checks", () => {
   assert.equal(Object.values(planCheckInputs([], true)).every(Boolean), true);
 });

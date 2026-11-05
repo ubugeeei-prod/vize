@@ -20,6 +20,17 @@ function inspectPreparedFixture(
     mkdirSync(join(native, "scripts"), { recursive: true });
     mkdirSync(join(fixture, "node_modules/@vizejs"), { recursive: true });
     copyFileSync(join(root, helper), join(fixture, helper));
+    // CI capture remains active inside this isolated repository too.
+    for (const source of [
+      "tools/support/compat/github/js-test-cases.ts",
+      "tools/support/compat/github/test-cases.ts",
+      "tools/support/compat/github/test-case-reporter.ts",
+      "tools/support/json-value.ts",
+    ]) {
+      const target = join(fixture, source);
+      mkdirSync(dirname(target), { recursive: true });
+      copyFileSync(join(root, source), target);
+    }
     writeFileSync(join(fixture, "package.json"), '{"type":"module"}\n');
     writeFileSync(
       join(fixture, ".gitignore"),

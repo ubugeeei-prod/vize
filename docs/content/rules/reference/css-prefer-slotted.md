@@ -1,18 +1,37 @@
 ---
 title: "css/prefer-slotted"
+description: "Recommend ::v-slotted() for styling slot content."
 ---
 
 # `css/prefer-slotted`
 
-Recommend ::v-slotted() for styling slot content
+Recommend ::v-slotted() for styling slot content.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The scoped stylesheet targets the `slot` outlet rather than the elements supplied through the slot.
+
+```vue annotate="remove:2"
+<style scoped>
+slot { color: red; }
+</style>
+```
+
+## Good
+
+`:slotted(.label)` targets the supplied label element through the scoped slot selector.
+
+```vue annotate="add:2"
+<style scoped>
+:slotted(.label) { color: red; }
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The scoped stylesheet targets the `slot` outlet rather than the elements supplied through the slot.
-
-```vue
-<style scoped>
-slot { color: red; }
-</style>
-```
-
-## Good
-
-`:slotted(.label)` targets the supplied label element through the scoped slot selector.
-
-```vue
-<style scoped>
-:slotted(.label) { color: red; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34)

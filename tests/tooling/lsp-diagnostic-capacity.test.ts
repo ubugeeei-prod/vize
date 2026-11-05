@@ -230,21 +230,19 @@ test(
       });
       gate.resume();
       note("native-resumed", { signals: gate.signals });
-      const allInvalid = await waitUntil(
-        () => native.rows(1, false).every((row) => row.complete),
-        60_000,
-      );
+      const allInvalid = await native.waitForComplete(1, false, 60_000, undefined, t.signal);
       note("initial-native-coverage", { complete: allInvalid, rows: native.rows(1, false) });
+      native.assertComplete(1, false);
+      assert.ok(allInvalid, "the complete invalid cohort must drain before repair");
       // Repair every buffer. A silent old queue cannot be mistaken for a clean result.
       for (const probe of probes) {
         fs.writeFileSync(path.join(directory, probe.file), probe.valid);
         change(probe, 2, probe.valid);
       }
-      const repaired = await waitUntil(
-        () => native.rows(2, true).every((row) => row.complete),
-        60_000,
-      );
+      const repaired = await native.waitForComplete(2, true, 60_000, undefined, t.signal);
       note("bulk-repair-coverage", { complete: repaired, rows: native.rows(2, true) });
+      native.assertComplete(2, true);
+      assert.ok(repaired, "the complete repaired cohort must drain before recovery");
       // Sequential recovery is an independent health control, never bulk success.
       for (const probe of probes) {
         change(probe, 3, probe.valid);

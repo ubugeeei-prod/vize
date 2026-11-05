@@ -13,8 +13,11 @@ const adapters = [
   { name: "rspack", compile: compileRspack },
   {
     name: "unplugin",
+    // The run-time injection path: a host that bundles no CSS (Babel, esbuild without `bundle`).
     compile: (filename: string, source: string, options: { sourceMap: boolean }) =>
-      compileUnplugin(filename, source, normalizeOptions({ ...options, jsxMode: "vdom" })),
+      compileUnplugin(filename, source, normalizeOptions({ ...options, jsxMode: "vdom" }), {
+        hostCss: "none",
+      }),
   },
 ];
 

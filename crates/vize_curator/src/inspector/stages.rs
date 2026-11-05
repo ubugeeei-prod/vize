@@ -1,8 +1,8 @@
-//! Spolvero feed construction for the inspector (Davinci P2-18).
+//! Stage feed construction for the inspector (Davinci P2-18).
 //!
 //! The inspector's stage pages, in the feed shape this inspector owns
 //! (`folio::feed::StageFeed`, committed schema
-//! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
+//! `docs/davinci/plan/stage-ladder-feed.schema.json`). There is exactly one
 //! serializer of that shape - `StageFeed::to_json` - so this module
 //! builds pages and parses the feed's own output into the
 //! `serde_json::Value` the payload embeds; it never re-encodes the shape.
@@ -16,42 +16,27 @@
 //!   equals the authored template bytes, malformed input included - which
 //!   is exactly what the ladder's L1 rung shows, proven through the tree
 //!   rather than copied from the source.
-//! - **The full ladder** ([`ladder_pages`]): L1, the L2 (Disegno) lowering
-//!   page, the transform plan's walks (`[fusion-plan-folio]`), one L2 page
-//!   per executed transform pass, and the L3 (Impeto)
-//!   graph, partition-fact and value pages - all from one L1 parse through
-//!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
-//!   playground's Davinci view) carries it. The inspector payload keeps its
-//!   L1-only pages: it rides inside share URLs (the P2-18 growth note), and
-//!   the playground recomputes the ladder from the same sources.
+//!   The payload stays L1-only: it rides inside share URLs (the P2-18 growth
+//!   note). Deeper stage pages come from `compileSfc` `captureStages` and
+//!   `vize dump --all-levels`, the product compile that ran.
 //! - **Remarks** (P3-13): every inline HTML template's optimization remarks
 //!   from the L2 transform pipeline ([`template_remarks`]), spans in the
-//!   template's byte frame (the pages' frame) - the decision explanations
-//!   Spolvero renders (C-5).
-//! - **Step and walk timings** ([`ladder_run`], [`ladder_profile`]): the
-//!   same run timed by a host-supplied clock and exported as a P0-11 profile
-//!   document (C-3), since the feed schema carries no timing.
+//!   template's byte frame (the pages' frame).
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
-mod ladder;
-mod profile;
-
-pub use super::feed::{StageFeed, StagePage, StageRemark};
-pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
-pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
 use vize_l0::pass::RemarkCollector;
 use vize_l0::{Allocator, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
+use super::feed::{StageFeed, StagePage, StageRemark};
 use super::payload::InspectorSourceFile;
 
 /// The L1 page for one template: L1 parse + byte-faithful render.
-#[must_use]
-pub fn l1_page(path: &str, template: &str) -> StagePage {
+fn l1_page(path: &str, template: &str) -> StagePage {
     let allocator = Allocator::default();
     let (tree, _errors) = vize_l1::markup::parse(&allocator, template);
     let mut text = String::default();
@@ -69,8 +54,7 @@ pub fn l1_page(path: &str, template: &str) -> StagePage {
 /// pipeline under a remark collector, in canonical order. Spans are byte
 /// offsets into `template` - the frame of the feed's L1/L2 pages, so a
 /// remark and the page lines it explains highlight the same source bytes.
-#[must_use]
-pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
+fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&allocator, template);
     let mut lowered =
@@ -88,23 +72,7 @@ pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
 }
 
 /// A feed's embeddable JSON value, through the one serializer.
-///
-/// # Panics
-///
-/// Never in practice: `StageFeed::to_json` emits valid JSON by the
-/// feed's escaping law (pinned by the TS-52 tests).
-#[must_use]
-pub fn spolvero_value(command: &str, pages: Vec<StagePage>) -> serde_json::Value {
-    spolvero_value_with_remarks(command, pages, Vec::new())
-}
-
-/// [`spolvero_value`] carrying optimization remarks beside the pages.
-///
-/// # Panics
-///
-/// As [`spolvero_value`].
-#[must_use]
-pub fn spolvero_value_with_remarks(
+fn stage_feed_value_with_remarks(
     command: &str,
     pages: Vec<StagePage>,
     remarks: Vec<StageRemark>,
@@ -123,7 +91,7 @@ pub fn spolvero_value_with_remarks(
 /// with a template, in payload file order (see the module docs for why the
 /// payload stays L1-only), plus each inline HTML template's optimization
 /// remarks (P3-13).
-pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
+pub(super) fn payload_stage_feed(files: &[InspectorSourceFile]) -> serde_json::Value {
     let mut pages = Vec::new();
     let mut remarks = Vec::new();
     for file in files {
@@ -144,5 +112,5 @@ pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Val
             }
         }
     }
-    spolvero_value_with_remarks("inspector", pages, remarks)
+    stage_feed_value_with_remarks("inspector", pages, remarks)
 }

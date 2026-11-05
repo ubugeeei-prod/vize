@@ -11,6 +11,8 @@ mod art_script;
 pub(crate) use art_script::open_art_script_query;
 #[cfg(test)]
 mod art_variant_fallback_tests;
+mod authored_uri;
+pub(crate) use authored_uri::{AuthoredUriResolver, authored_file_uri};
 mod canonical;
 pub(crate) use canonical::{model_declaration_ranges, model_linked_semantic_positions};
 #[cfg(test)]

@@ -7,6 +7,17 @@ import { verifyVisualTheme } from "./visual-theme-render-assertions.ts";
 const annotationSource =
   'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
 
+/** Resolve once every animation reaches its end. Runs in the page, so it stays self-contained. */
+export async function waitForAnimations(animations: Animation[]) {
+  // Chromium never settles `finished` for animations in skipped content, such as a
+  // closed <details>, though their timing still ends. Poll the timing instead.
+  while (!animations.every((animation) => animation.playState === "finished")) {
+    if (animations.some((animation) => animation.playState === "idle"))
+      throw new Error("An animation was cancelled before it finished");
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
 export async function verifySidebarMotion(page: Page, device: string) {
   const sidebar = page.locator(".sidebar");
   if (!(await sidebar.count()) || (await page.locator("body.entry-page").count())) return;
@@ -80,16 +91,21 @@ export async function verifySidebarMotion(page: Page, device: string) {
     const summary = page.locator("[data-render-motion-control]");
     await summary.focus();
     // Measure intermediate rendered geometry, rather than merely checking CSS text.
-    const frames = await summary.evaluate(async (element) => {
+    const opening = await summary.evaluateHandle(async (element) => {
       const section = element.parentElement as HTMLDetailsElement;
-      const list = section.querySelector("ul")!;
       element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       );
-      const intermediate = section.getBoundingClientRect().height;
-      const animations = section.getAnimations({ subtree: true });
-      await Promise.all(animations.map((animation) => animation.finished));
+      return {
+        intermediate: section.getBoundingClientRect().height,
+        animations: section.getAnimations({ subtree: true }),
+      };
+    });
+    await (await opening.getProperty("animations")).evaluate(waitForAnimations);
+    const frames = await summary.evaluate((element, { intermediate, animations }) => {
+      const section = element.parentElement as HTMLDetailsElement;
+      const list = section.querySelector("ul")!;
       return {
         intermediate,
         expanded: section.getBoundingClientRect().height,
@@ -99,7 +115,8 @@ export async function verifySidebarMotion(page: Page, device: string) {
         supported: CSS.supports("interpolate-size", "allow-keywords"),
         open: section.open,
       };
-    });
+    }, opening);
+    await opening.dispose();
     assert.equal(frames.open, true);
     if (frames.supported) {
       assert(frames.animations > 0, "Native disclosure must animate");
@@ -206,14 +223,13 @@ export async function verifyThemeReadability(page: Page) {
     { html: annotation.html, source: annotationSource, paletteHtml: palette.html },
   );
   await verifyVisualTheme(page);
-  await page.evaluate(async () => {
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
-        .map((animation) => animation.finished),
-    );
-  });
+  const animations = await page.evaluateHandle(() =>
+    document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity),
+  );
+  await animations.evaluate(waitForAnimations);
+  await animations.dispose();
   const contrast = await page.evaluate(() => {
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
@@ -291,18 +307,37 @@ export async function verifyIntroductoryNavigation(page: Page, route: string) {
   const prefix = locale === "en" ? "" : `/${locale}`;
   const groups = await page.locator(".sidebar details").evaluateAll((elements) =>
     elements.map((element) => ({
+      title: element.querySelector("summary")?.textContent ?? "",
       paths: [...element.querySelectorAll("a")].map((link) =>
         new URL(link.href).pathname.replace(/\/index\.html$|\/$/g, ""),
       ),
     })),
   );
   if (!groups.length) return;
+  // The headings the shipped locale script names, read from the page itself.
+  const headings = await page.evaluate(
+    (code) =>
+      (
+        globalThis as {
+          __vizeDocsLocales?: Record<string, { ui: { groups: Record<string, string> } }>;
+        }
+      ).__vizeDocsLocales?.[code]?.ui.groups,
+    locale,
+  );
+  assert(headings, `${locale}: the page ships its sidebar headings`);
   const philosophy = `${prefix}/philosophy`;
   const mapper = `${prefix}/guide/content-mapper`;
-  assert(groups[0].paths.includes(philosophy), `${locale}: Philosophy belongs in Start`);
-  assert(groups[0].paths.includes(mapper), `${locale}: Content Mapper belongs in Start`);
-  assert.equal(groups.filter((group) => group.paths.includes(philosophy)).length, 1);
-  assert.equal(groups.filter((group) => group.paths.includes(mapper)).length, 1);
+  assert.equal(groups[0].title, headings.start, `${locale}: Getting started comes first`);
+  assert.deepEqual(
+    groups.filter((group) => group.paths.includes(philosophy)).map(({ title }) => title),
+    [headings.start],
+    `${locale}: Philosophy belongs in Getting started`,
+  );
+  assert.deepEqual(
+    groups.filter((group) => group.paths.includes(mapper)).map(({ title }) => title),
+    [headings.typeChecker],
+    `${locale}: Content Mapper belongs in Type checker`,
+  );
 }
 
 export async function switchDocsTheme(page: Page, theme: string, device: string) {

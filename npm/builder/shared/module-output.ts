@@ -1,9 +1,7 @@
 import { parseSync } from "oxc-parser";
 import { transformSync } from "oxc-transform";
-import type { MappedModule } from "./mapped-module.ts";
 
 const OUTPUT_PARSE_ID = "vize-rspack-output.tsx";
-const SFC_MAIN_NAME = "_sfc_main";
 
 type AstNode = {
   type?: string;
@@ -12,19 +10,8 @@ type AstNode = {
   [key: string]: unknown;
 };
 
-export type ModuleOutputInfo = {
-  hasDefaultExport: boolean;
-  hasSfcMainDefined: boolean;
-  hasNamedRenderExport: boolean;
-  hasNamedSsrRenderExport: boolean;
-};
-
 function isNode(value: unknown): value is AstNode {
   return value != null && typeof value === "object" && typeof (value as AstNode).type === "string";
-}
-
-function getNodeStart(node: AstNode | null | undefined): number | null {
-  return typeof node?.start === "number" ? node.start : null;
 }
 
 function getNodeName(node: AstNode | null | undefined): string | null {
@@ -92,76 +79,6 @@ function getProgramBody(program: AstNode | null): AstNode[] {
   return program.body.filter(isNode);
 }
 
-function isIdentifierNamed(node: AstNode | null | undefined, name: string): boolean {
-  return getNodeName(node) === name;
-}
-
-function getVariableDeclarationNames(statement: AstNode): string[] {
-  const declarations = Array.isArray(statement.declarations) ? statement.declarations : [];
-  return declarations
-    .filter(isNode)
-    .map((declaration) => (isNode(declaration.id) ? getNodeName(declaration.id) : null))
-    .filter((name): name is string => name != null);
-}
-
-function findDefaultExport(program: AstNode | null): AstNode | null {
-  return (
-    getProgramBody(program).find((statement) => statement.type === "ExportDefaultDeclaration") ??
-    null
-  );
-}
-
-function getExportDefaultKeywordEnd(code: string, defaultExport: AstNode): number | null {
-  const exportStart = getNodeStart(defaultExport);
-  if (exportStart == null) {
-    return null;
-  }
-
-  const match = /^export\s+default\b/.exec(code.slice(exportStart));
-  return match ? exportStart + match[0].length : null;
-}
-
-function getExportedNames(statement: AstNode): string[] {
-  const declaration = isNode(statement.declaration) ? statement.declaration : null;
-  const names: string[] = [];
-  if (declaration?.type === "FunctionDeclaration" || declaration?.type === "ClassDeclaration") {
-    const name = isNode(declaration.id) ? getNodeName(declaration.id) : null;
-    if (name) names.push(name);
-  }
-  if (declaration?.type === "VariableDeclaration") {
-    names.push(...getVariableDeclarationNames(declaration));
-  }
-  const specifiers = Array.isArray(statement.specifiers) ? statement.specifiers : [];
-  for (const specifier of specifiers.filter(isNode)) {
-    const name =
-      getNodeName(isNode(specifier.exported) ? specifier.exported : null) ??
-      getNodeName(isNode(specifier.local) ? specifier.local : null);
-    if (name) names.push(name);
-  }
-  return names;
-}
-
-export function analyzeModuleOutput(code: string): ModuleOutputInfo {
-  const program = parseProgram(code);
-  const body = getProgramBody(program);
-  const defaultExport = findDefaultExport(program);
-  const exportedNames = body
-    .filter((statement) => statement.type === "ExportNamedDeclaration")
-    .flatMap(getExportedNames);
-
-  return {
-    hasDefaultExport: defaultExport != null,
-    hasSfcMainDefined: body.some((statement) => {
-      return (
-        statement.type === "VariableDeclaration" &&
-        getVariableDeclarationNames(statement).includes(SFC_MAIN_NAME)
-      );
-    }),
-    hasNamedRenderExport: exportedNames.includes("render"),
-    hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
-  };
-}
-
 /** Snapshot imported values, not live namespace objects, before a hot replacement. */
 export function hmrImportSnapshot(code: string): string | null {
   // Analyze a type-erased copy only. Injecting references to a type-only import
@@ -195,42 +112,4 @@ export function hmrImportSnapshot(code: string): string | null {
     }
   }
   return `[${entries.join(", ")}]`;
-}
-
-export function rewriteDefaultExportToSfcMain(module: MappedModule): void {
-  const code = module.code;
-  const defaultExport = findDefaultExport(parseProgram(code));
-  const exportStart = getNodeStart(defaultExport);
-  const keywordEnd = defaultExport ? getExportDefaultKeywordEnd(code, defaultExport) : null;
-  if (exportStart == null || keywordEnd == null) {
-    return;
-  }
-
-  module.replace(exportStart, keywordEnd, `const ${SFC_MAIN_NAME} =`);
-}
-
-export function insertBeforeSfcMainDefaultExport(
-  module: MappedModule,
-  insertion: string,
-  options: { normalizeSemicolon?: boolean } = {},
-): void {
-  const code = module.code;
-  const defaultExport = findDefaultExport(parseProgram(code));
-  const declaration = isNode(defaultExport?.declaration) ? defaultExport.declaration : null;
-  const exportStart = getNodeStart(defaultExport);
-  const exportEnd = typeof defaultExport?.end === "number" ? defaultExport.end : null;
-  if (!isIdentifierNamed(declaration, SFC_MAIN_NAME) || exportStart == null) {
-    return;
-  }
-
-  if (
-    options.normalizeSemicolon &&
-    exportEnd != null &&
-    code[exportEnd - 1] !== ";" &&
-    code[exportEnd] !== ";"
-  ) {
-    module.replace(exportEnd, exportEnd, ";");
-  }
-
-  module.replace(exportStart, exportStart, `${insertion}\n`);
 }

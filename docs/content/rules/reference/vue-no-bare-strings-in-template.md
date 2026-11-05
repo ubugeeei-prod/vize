@@ -1,18 +1,44 @@
 ---
 title: "vue/no-bare-strings-in-template"
+description: "Disallow raw human-readable text in the template that should be internationalized."
 ---
 
 # `vue/no-bare-strings-in-template`
 
-Disallow raw human-readable text in the template that should be internationalized
+Disallow raw human-readable text in the template that should be internationalized.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+Visible text and naming attributes embed untranslated strings directly in the template.
+
+```vue annotate="remove:2,3,4,5"
+<template>
+<div>hello</div>
+<img alt="a cat" />
+<input placeholder="Search" />
+<button title="Close">x</button>
+</template>
+```
+
+## Good
+
+Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
+
+```vue annotate="add:2,3,4,5,6"
+<template>
+<div>{{ $t('hello') }}</div>
+<img :alt="$t('cat')" />
+<div>-</div>
+<div>123</div>
+<button :title="$t('close')">{{ $t('x') }}</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,37 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Visible text and naming attributes embed untranslated strings directly in the template.
-
-```vue
-<template>
-<div>hello</div>
-<img alt="a cat" />
-<input placeholder="Search" />
-<button title="Close">x</button>
-</template>
-```
-
-## Good
-
-Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
-
-```vue
-<template>
-<div>{{ $t('hello') }}</div>
-<img :alt="$t('cat')" />
-<div>-</div>
-<div>123</div>
-<button :title="$t('close')">{{ $t('x') }}</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47)

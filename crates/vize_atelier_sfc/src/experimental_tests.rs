@@ -71,7 +71,7 @@ html.value = render(props.text);
     .unwrap();
 
     assert!(
-        result.code.contains("import { render } from \"./lib\""),
+        result.code.contains("import { render } from './lib'"),
         "user import must remain in the compiled module:\n{}",
         result.code
     );

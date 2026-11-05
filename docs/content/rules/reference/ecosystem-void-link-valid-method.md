@@ -1,18 +1,45 @@
 ---
 title: "ecosystem/void-link-valid-method"
+description: "Validate static Void Vue Link method props."
 ---
 
 # `ecosystem/void-link-valid-method`
 
-Validate static Void Vue Link method props
+Validate static Void Vue Link method props.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `ecosystem` | No | None |
 
-Default severity: `warning`  
-Presets: `ecosystem`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The DELETE action requests prefetching, although prefetch is intended for navigation requests.
+
+```vue annotate="remove:6"
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/posts/1" method="DELETE" prefetch>Delete</Link>
+</template>
+```
+
+## Good
+
+Removing prefetch keeps the DELETE action without prefetching that non-GET request.
+
+```vue annotate="add:6"
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/posts/1" method="DELETE">Delete</Link>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The DELETE action requests prefetching, although prefetch is intended for navigation requests.
-
-```vue
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/posts/1" method="DELETE" prefetch>Delete</Link>
-</template>
-```
-
-## Good
-
-Removing prefetch keeps the DELETE action without prefetching that non-GET request.
-
-```vue
-<script setup>
-import { Link } from "@void/vue";
-</script>
-
-<template>
-  <Link href="/posts/1" method="DELETE">Delete</Link>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [All rules](../all.md)
+- [Ecosystem and Nuxt rules](../ecosystem.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14)

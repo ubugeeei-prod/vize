@@ -1,0 +1,32 @@
+import { ssrRenderVNode as _ssrRenderVNode, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer";
+import { createVNode as _createVNode, createTextVNode as _createTextVNode, resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<table${_ssrRenderAttrs(_attrs)}><tbody>`);
+  _push(`<!--[-->`);
+  _ssrRenderList($props.rows, (line, r) => {
+    _push(`<tr>`);
+    _push(`<!--[-->`);
+    _ssrRenderList(line, (cell, c) => {
+      _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(r === 0 ? "th" : "td"), { key: c }, {
+        default: _withCtx(() => [_createTextVNode(_toDisplayString(cell))]),
+        _: 1
+      }), _parent);
+    });
+    _push(`<!--]-->`);
+    _push(`</tr>`);
+  });
+  _push(`<!--]-->`);
+  _push(`</tbody></table>`);
+}
+export default {
+  __name: "Layout",
+  props: { rows: {
+    type: Array,
+    required: true
+  } },
+  ssrRender,
+  setup(__props, { expose: __expose }) {
+    __expose();
+    return {};
+  }
+};

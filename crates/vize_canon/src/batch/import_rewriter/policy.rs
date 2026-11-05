@@ -43,12 +43,16 @@ impl ImportRewriter {
         ) {
             return Some(rewritten);
         }
-        if is_rewritable_vue_specifier(path)
-            && alias_rewrite_policy.is_none_or(|policy| policy.should_rewrite_vue_specifier(path))
-        {
-            Some(cstr!("{path}.ts"))
-        } else {
-            None
-        }
+        rewrite_vue_mirror_specifier(path, alias_rewrite_policy)
     }
+}
+
+/// Spell a `.vue` import as its SFC mirror module.
+pub(super) fn rewrite_vue_mirror_specifier(
+    path: &str,
+    alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+) -> Option<String> {
+    (is_rewritable_vue_specifier(path)
+        && alias_rewrite_policy.is_none_or(|policy| policy.should_rewrite_vue_specifier(path)))
+    .then(|| cstr!("{path}.ts"))
 }

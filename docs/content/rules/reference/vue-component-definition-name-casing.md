@@ -1,41 +1,19 @@
 ---
 title: "vue/component-definition-name-casing"
+description: "Enforce PascalCase or kebab-case for component definition names."
 ---
 
 # `vue/component-definition-name-casing`
 
-Enforce PascalCase or kebab-case for component definition names
+Enforce PascalCase or kebab-case for component definition names.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
 The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.
-
-## Configuration (Vite+)
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/component-definition-name-casing": "warn"
-      }
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Bad
 
@@ -57,6 +35,27 @@ Renaming the file to MyComponent.vue uses PascalCase; its template content is un
 <template><p>Content</p></template>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+## Configuration (Vite+)
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) · [All rules](../all.md)
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "vue/component-definition-name-casing": "warn"
+      }
+    },
+  },
+});
+```
+
+Then run `vp run lint`.
+
+## Related
+
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36)

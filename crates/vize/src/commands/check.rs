@@ -10,7 +10,7 @@ mod dts_ast_tests;
 mod dts_import_aliases;
 mod dts_rewrite;
 mod imports;
-mod imports_aliases;
+pub(super) mod imports_aliases;
 mod imports_package_routes;
 mod nuxt;
 mod path_cache;
@@ -93,7 +93,7 @@ pub struct CheckArgs {
     #[arg(long)]
     pub servers: Option<usize>,
 
-    /// Checker workers per Corsa CLI process (default: 1, or VIZE_CHECKERS)
+    /// Corsa checker workers (default: 1 per shard, 8 unsharded; or VIZE_CHECKERS)
     #[arg(long)]
     pub checkers: Option<std::num::NonZeroUsize>,
 

@@ -148,7 +148,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
 ///
 /// Observer hooks carry no artifact (`DumpObserver`'s contract: whoever
 /// holds the artifact prints it), so a consumer that pages the L2 tree
-/// per pass - a `Collector`, the Spolvero stage ladder - receives each
+/// per pass - a `Collector`, the stage ladder - receives each
 /// [`PassEvent`] here together with the post-pass lowering, after the pass
 /// body and (debug builds) the between-pass verifier ran. The hook only
 /// observes: the plan, the pass bodies and the returned facts are those of

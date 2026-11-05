@@ -38,6 +38,10 @@ impl VirtualProject {
         }
         let shared_helpers_before = self.uses_shared_helpers();
         self.incremental_source_nodes_rebuilt += 1;
+        #[cfg(test)]
+        {
+            self.source_registration_count += 1;
+        }
         let original_path = registered.file.original_path.clone();
         let canonical = canonical
             .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(&original_path));

@@ -1,0 +1,22 @@
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'anonymous',
+  setup(__props) {
+
+const Child = ref(0);
+const value = {};
+
+return (_ctx, _cache) => {
+  const _component_Control = _resolveComponent("Control")
+
+  return (_openBlock(), _createBlock(_component_Control, {
+    onClick: _cache[0] || (_cache[0] = $event => (({ Child: Child.value } = value)))
+  }))
+}
+}
+
+}

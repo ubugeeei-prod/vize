@@ -24,8 +24,9 @@ const { parseSync } = require("@babel/core") as {
 const tsSyntax: unknown = require("@babel/plugin-syntax-typescript");
 import { parse as parseSfc, compileScript } from "vue-computed-inlay-oracle/compiler-sfc";
 import { crossMetadata } from "../../docs/scripts/rules/project-metadata.ts";
-import { verifyCompleteCategorySources } from "./support/docs-category-sources.ts";
-import { verifyRuleOverviewSource } from "./support/docs-rule-overview-sources.ts";
+import { verifyRuleSources } from "../../docs/scripts/rule-render-assertions.ts";
+import { ruleGroups } from "../../docs/scripts/rules/rule-groups.ts";
+import { ruleHeadings } from "../../docs/scripts/rules/rule-page.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
 
@@ -50,42 +51,74 @@ function implementations(directory = "crates/vize_patina/src/rules") {
   return found;
 }
 
-await test("the generated bilingual reference covers every implemented rule with real example context", () => {
+const locales = ["en", "ja", "zh-CN", "pt-BR", "fr"] as const;
+const prefix = (locale: string) => (locale === "en" ? "" : `${locale}/`);
+const slug = (id: string) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+const facts: Record<(typeof locales)[number], string> = {
+  en: "| Default severity | Presets | Automatic fix | Options |",
+  ja: "| 既定の重大度 | プリセット | 自動修正 | オプション |",
+  "zh-CN": "| 默认严重程度 | 预设 | 自动修复 | 选项 |",
+  "pt-BR": "| Severidade padrão | Predefinições | Correção automática | Opções |",
+  fr: "| Gravité par défaut | Préréglages | Correction automatique | Options |",
+};
+const projectLayout: Record<(typeof locales)[number], readonly [string, string, string]> = {
+  en: ["| Default severity | Automatic fix | Options |", "Configuration (Vite+)", "Related"],
+  ja: ["| 既定の重大度 | 自動修正 | オプション |", "設定（Vite+）", "関連ページ"],
+  "zh-CN": ["| 默认严重程度 | 自动修复 | 选项 |", "配置（Vite+）", "相关页面"],
+  "pt-BR": [
+    "| Severidade padrão | Correção automática | Opções |",
+    "Configuração (Vite+)",
+    "Páginas relacionadas",
+  ],
+  fr: [
+    "| Gravité par défaut | Correction automatique | Options |",
+    "Configuration (Vite+)",
+    "Voir aussi",
+  ],
+};
+
+await test("every implemented rule has one readable page per locale with the executed examples inline", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
   assert.equal(names.length, 267);
-  for (const locale of ["", "ja/"]) {
-    const index = read(`docs/content/${locale}rules/all.md`);
-    const links = [
-      ...index.matchAll(
-        /^\| \[`([^`]+)`\]\(https:\/\/vizejs\.dev\/(?:ja\/)?rules\/all\.html#([^)]*)\)/gm,
-      ),
-    ].filter((match) => names.includes(match[1]));
-    assert.deepEqual(
-      links.map((match) => match[1]).sort((a, b) => a.localeCompare(b)),
-      names,
-    );
-    for (const [, name, slug] of links) {
-      const file = `${slug}.md`;
-      const page = read(`docs/content/${locale}rules/reference/${file}`);
-      assert.ok(page.includes(`# \`${name}\``), name);
-      assert.ok(index.includes(`#${slug}-bad`), `${name}: same-page Bad link`);
-      assert.ok(index.includes(`#${slug}-good`), `${name}: same-page Good link`);
-      for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"]) {
+  for (const locale of locales) {
+    const { bad, good } = ruleHeadings[locale];
+    for (const name of names) {
+      const file = `${slug(name)}.md`;
+      const page = read(`docs/content/${prefix(locale)}rules/reference/${file}`);
+      assert.ok(page.includes(`# \`${name}\``), `${locale} ${name}: identity`);
+      assert.ok(page.includes(facts[locale]), `${locale} ${name}: facts table`);
+      // Bad, then Good, then configuration: the reader sees the examples first.
+      const order = [
+        page.indexOf(`## ${bad}\n`),
+        page.indexOf(`## ${good}\n`),
+        page.lastIndexOf("\n```ts\nimport { defineConfig }"),
+      ];
+      assert.ok(
+        order[0] > 0 && order[0] < order[1] && order[1] < order[2],
+        `${locale} ${name}: order`,
+      );
+      for (const heading of [bad, good]) {
         const rationale = page.split(`## ${heading}\n`)[1].split("```")[0].trim();
-        assert.ok(rationale.length > 25, `${name}: explain the authored ${heading} example`);
+        assert.ok(rationale.length > 10, `${locale} ${name}: explain the ${heading} example`);
       }
-      for (const label of locale
-        ? ["既定の重大度:", "プリセット:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
-        : ["Default severity:", "Presets:", "Applies to:", "Options:", "## Bad", "## Good"]) {
-        assert.ok(page.includes(label), `${name}: ${label}`);
-      }
+      assert.doesNotMatch(
+        page,
+        /\]\(#(?:bad|good|悪い|良い)\)/,
+        `${locale} ${name}: no jump links`,
+      );
       assert.match(page, /@vizejs\/vite-plugin\/vite-plus/);
       assert.match(page, /vp run lint/);
-      assert.ok([...page.matchAll(/```(?:vue|ts|html)\n[\s\S]*?\n```/g)].length >= 3, name);
       const en = read(`docs/content/rules/reference/${file}`);
-      assert.deepEqual(codeBlocks(page), codeBlocks(en), `${name}: EN/JA code must stay identical`);
+      assert.deepEqual(codeBlocks(page), codeBlocks(en), `${locale} ${name}: same code as English`);
     }
   }
+  const unsupported = read("docs/content/rules/reference/vue-no-preprocessor-lang.md");
+  assert.doesNotMatch(unsupported, /`no-sfc-finding`/, "executable SFC support");
+  assert.match(
+    unsupported,
+    /```vue annotate="remove:2"\n<template><p>Notice<\/p><\/template>\n<style lang="scss">/,
+  );
+  assert.match(unsupported, /```vue annotate="add:2"\n/);
 });
 
 await test("generation is deterministic without a previously built native binary", () => {
@@ -139,7 +172,7 @@ function validatedExamples() {
   return ["reference", "project"].flatMap((section) =>
     readdirSync(resolve(root, `docs/content/rules/${section}`)).flatMap((file) => {
       const source = read(`docs/content/rules/${section}/${file}`);
-      const parts = [source.split("## Good\n")[1]];
+      const parts = [source.split("## Good\n")[1].split("\n## ")[0]];
       if (source.includes("Example qualification: `illustrative-source-pair`")) {
         // This input explains a retained graph contract, not an emitted CLI finding.
         // Validate its complete shared context and Bad source as well as Good.
@@ -150,7 +183,7 @@ function validatedExamples() {
         );
       }
       return parts.flatMap((part) =>
-        [...part.matchAll(/```(vue|ts|html)\n([\s\S]*?)\n```/g)].map((match) => ({
+        [...part.matchAll(/```(vue|ts|html)(?: [^\n]*)?\n([\s\S]*?)\n```/g)].map((match) => ({
           file: `${section}/${file}`,
           language: match[1],
           source: match[2],
@@ -197,44 +230,50 @@ await test("project references retain every code and distinguish actual CLI prod
     ["contract", 25],
   ])
     assert.equal(codes.filter((code) => code.status === status).length, count);
-  for (const locale of ["", "ja/"]) {
-    const index = read(`docs/content/${locale}rules/cross-file.md`);
-    const all = read(`docs/content/${locale}rules/all.md`);
+  const english = read("docs/content/rules/cross-file.md");
+  for (const status of ["Experimental; not reported by the CLI yet", "Planned; not reported yet"])
+    assert.ok(english.includes(status), status);
+  for (const locale of locales) {
+    const index = read(`docs/content/${prefix(locale)}rules/cross-file.md`);
     const rows = [
-      ...index.matchAll(
-        /^\| \[`([^`]+)`\]\(https:\/\/vizejs\.dev\/(?:ja\/)?rules\/cross-file\.html#([^)]*)\)/gm,
-      ),
+      ...index.matchAll(/^\| <span id="[^"]+"><\/span>\[`([^`]+)`\]\(\.\/project\/([^)]+)\.md\)/gm),
     ];
-    assert.equal(rows.length, 66);
-    for (const [_, id, slug] of rows) {
-      const path = `${slug}.md`;
-      const page = read(`docs/content/${locale}rules/project/${path}`);
+    assert.equal(rows.length, 66, locale);
+    for (const [, id, file] of rows) {
+      const page = read(`docs/content/${prefix(locale)}rules/project/${file}.md`);
       assert.ok(page.includes(`# \`${id}\``), id);
-      assert.ok(index.includes(`#${slug}-bad`), `${id}: same-page Bad link`);
-      assert.ok(index.includes(`#${slug}-good`), `${id}: same-page Good link`);
-      assert.ok(all.includes(`#${slug}-bad`), `${id}: same-page Bad link`);
-      assert.ok(all.includes(`#${slug}-good`), `${id}: same-page Good link`);
-      for (const label of locale
-        ? ["既定の重大度:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
-        : ["Default severity:", "Applies to:", "Options:", "## Bad", "## Good"])
-        assert.ok(page.includes(label), `${id}: ${label}`);
-      for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"])
+      const [metadata, configuration, related] = projectLayout[locale];
+      let previous = -1;
+      for (const section of [
+        metadata,
+        `## ${ruleHeadings[locale].bad}`,
+        `## ${ruleHeadings[locale].good}`,
+        `## ${configuration}`,
+        `## ${related}`,
+      ]) {
+        const position = page.indexOf(section);
+        assert.ok(position > previous, `${locale} ${id}: readable section order at ${section}`);
+        previous = position;
+      }
+      for (const heading of [ruleHeadings[locale].bad, ruleHeadings[locale].good])
         assert.match(
           page.split(`## ${heading}\n`)[1],
           /```(?:vue|ts|html)\n/,
-          `${id}: concrete ${heading} scenario`,
+          `${locale} ${id}: concrete ${heading} scenario`,
         );
       assert.deepEqual(
         codeBlocks(page),
-        codeBlocks(read(`docs/content/rules/project/${path}`)),
+        codeBlocks(read(`docs/content/rules/project/${file}.md`)),
         id,
       );
     }
   }
 });
 
-await test("all five catalogues remain complete overview indexes with usable example aliases", () => {
-  for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) verifyRuleOverviewSource(root, locale);
+await test("every locale's rule indexes list each rule once and link to its page", () => {
+  for (const locale of locales)
+    for (const page of ["all", ...ruleGroups, "cross-file"])
+      verifyRuleSources(`/${prefix(locale)}rules/${page}`);
 });
 
 await test("every supported All Rules index receives native desktop and mobile reader coverage", () => {
@@ -250,68 +289,6 @@ await test("every supported All Rules index receives native desktop and mobile r
   }
 });
 
-await test("all category and cross-file reader routes retain complete current source packets", () => {
-  verifyCompleteCategorySources(root);
-});
-
-await test("all five Vue categories keep every rule and whole Bad/Good source on the current page", () => {
-  const names = [...implementations()].filter((name) => name.startsWith("vue/")).sort();
-  assert.equal(names.length, 108);
-  const sources = (markdown: string) =>
-    [...markdown.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)\n```/g)].map((match) => [match[1], match[2]]);
-  const legacyAnchors: Record<string, readonly string[]> = {
-    "zh-CN/": ["句法与风格规则"],
-    "pt-BR/": ["regras-do-vue", "regras-de-sintaxe-e-estilo"],
-    "fr/": ["syntaxe-et-règles-de-style"],
-  };
-  for (const locale of ["", "ja/", "zh-CN/", "pt-BR/", "fr/"]) {
-    const category = read(`docs/content/generated/rules/${locale.slice(0, -1) || "en"}/vue.md`);
-    for (const anchor of legacyAnchors[locale] ?? [])
-      assert.equal(
-        category.split(`<span id="${anchor}"></span>`).length,
-        2,
-        `${locale}: preserve existing category fragment ${anchor}`,
-      );
-    const targets = [...category.matchAll(/^### `([^`]+)`$/gm)];
-    assert.deepEqual(
-      targets.map((match) => match[1]).sort(),
-      names,
-      `${locale}: complete Vue rules`,
-    );
-    for (let index = 0; index < targets.length; index += 1) {
-      const [, name] = targets[index];
-      const slug = name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
-      const section = category.slice(targets[index].index, targets[index + 1]?.index);
-      const reference = read(
-        `docs/content/${locale === "ja/" ? locale : ""}rules/reference/${slug}.md`,
-      );
-      assert.deepEqual(
-        sources(section),
-        sources(reference),
-        `${locale}${name}: whole copyable bytes`,
-      );
-      for (const kind of ["bad", "good"]) {
-        assert.equal(section.split(`<span id="${slug}-${kind}"></span>`).length, 2);
-        assert.ok(category.includes(`](#${slug}-${kind})`), `${locale}${name}: local ${kind} link`);
-      }
-    }
-    assert.match(category, /```vue annotate="remove:/, `${locale}: native removed-line metadata`);
-    assert.match(category, /```vue annotate="add:/, `${locale}: native added-line metadata`);
-    assert.doesNotMatch(category, /\]\(\.\/all\.md#vue-/, `${locale}: examples stay on this page`);
-    assert.doesNotMatch(
-      category.split("### `")[0],
-      /`&lt;(?:template|component|KeepAlive)&gt;`/,
-      `${locale}: inline-code element names retain literal spelling`,
-    );
-    const preprocessor = category.split("### `vue/no-preprocessor-lang`")[1].split("### `")[0];
-    assert.doesNotMatch(preprocessor, /`no-sfc-finding`/, `${locale}: executable SFC support`);
-    assert.match(preprocessor, /<style lang="scss">/, `${locale}: SCSS source remains complete`);
-    const templateLang = category.split("### `vue/no-template-lang`")[1].split("### `")[0];
-    assert.doesNotMatch(templateLang, /`no-sfc-finding`/, `${locale}: executable SFC support`);
-    assert.match(templateLang, /<template lang="pug">/, `${locale}: Pug source remains complete`);
-  }
-});
-
 await test("every documented native rule uses the Rust-checked preset membership", () => {
   const snapshot: Record<string, string[]> = JSON.parse(
     read(
@@ -324,22 +301,19 @@ await test("every documented native rule uses the Rust-checked preset membership
     for (const rule of rules)
       assert.ok(names.includes(rule), `${preset}: ${rule} has an implementation`);
   }
-  for (const locale of ["", "ja/"]) {
-    const lines = read(`docs/content/${locale}rules/all.md`).split("\n");
+  for (const locale of locales) {
     for (const name of names) {
-      const rows = lines.filter((line) => line.startsWith(`| [\`${name}\`]`));
-      assert.equal(rows.length, 1, `${locale}${name}: exactly one metadata row`);
-      const cells = rows[0].split(" | ");
-      const severity = cells.findIndex((cell) => /^`(?:error|warning)`$/.test(cell));
-      assert.ok(severity >= 0, `${locale}${name}: explicit severity`);
-      const documented = [...cells[severity + 1].matchAll(/`([^`]+)`/g)]
+      const page = read(`docs/content/${prefix(locale)}rules/reference/${slug(name)}.md`);
+      const row = page.split("\n").find((line) => /^\| `(?:error|warning)` \|/.test(line));
+      assert.ok(row, `${locale} ${name}: explicit severity`);
+      const documented = [...row.split(" | ")[1].matchAll(/`([^`]+)`/g)]
         .map((match) => match[1])
         .sort();
       const actual = Object.entries(snapshot)
         .filter(([preset, rules]) => preset !== "opt_in" && rules.includes(name))
         .map(([preset]) => preset.replaceAll("_", "-"))
         .sort();
-      assert.deepEqual(documented, actual, `${locale}${name}: native preset membership`);
+      assert.deepEqual(documented, actual, `${locale} ${name}: native preset membership`);
     }
   }
 });

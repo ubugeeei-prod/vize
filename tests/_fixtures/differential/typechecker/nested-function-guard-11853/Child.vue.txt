@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ moreMenuActions: Map<string, boolean> }>();
+defineEmits<{ (e: 'moreMenuAction', action: string): void }>();
+</script>
+
+<template><div /></template>

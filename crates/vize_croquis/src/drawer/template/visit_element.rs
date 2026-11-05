@@ -76,8 +76,18 @@ impl Drawer {
         let vif_guard_pushed = self.push_element_vif_guard(vif_condition.as_ref());
         self.process_element_conditional_directive(el, scope_vars);
 
-        // Decide a dynamic target once, with its own guard and before its own
-        // v-for scope, so the usage and its listeners share one owner.
+        let for_vars_count = self.enter_element_for_scope(
+            directive_state.for_scope,
+            directive_state.key_expression,
+            scope_vars,
+        );
+        // A dynamic v-slot name can reference a same-element v-for alias, but
+        // not the slot props that the v-slot value declares for its children.
+        self.process_dynamic_slot_argument(el, scope_vars);
+        let v_scope_vars_count = self.enter_element_v_scope(directive_state.v_scope, scope_vars);
+
+        // Decide a dynamic target once, in the scope its `:is` is evaluated
+        // in, so the usage and its listeners share one owner.
         let is_builtin = crate::builtins::is_runtime_builtin_component(tag);
         let dynamic_target = if is_component || is_builtin {
             None
@@ -101,19 +111,6 @@ impl Drawer {
         let mut component_usage = self.start_component_usage(el, component_usage_name.as_ref());
         if let Some(ref mut usage) = component_usage {
             usage.vif_guard = self.current_vif_guard();
-        }
-
-        let for_vars_count = self.enter_element_for_scope(
-            directive_state.for_scope,
-            directive_state.key_expression,
-            scope_vars,
-        );
-        // A dynamic v-slot name can reference a same-element v-for alias, but
-        // not the slot props that the v-slot value declares for its children.
-        self.process_dynamic_slot_argument(el, scope_vars);
-        let v_scope_vars_count = self.enter_element_v_scope(directive_state.v_scope, scope_vars);
-
-        if let Some(ref mut usage) = component_usage {
             usage.scope_id = self.croquis.scopes.current_id();
         }
 

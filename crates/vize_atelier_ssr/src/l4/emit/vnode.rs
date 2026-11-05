@@ -20,44 +20,75 @@ pub(super) fn array(expressions: &[String]) -> String {
     cstr!("[{}]", expressions.join(", "))
 }
 
+/// VNode children and the text run still open at their end. Adjacent text
+/// and interpolations become one text VNode, as Vue's `transformText` joins
+/// them (#11593).
+#[derive(Default)]
+struct Children {
+    expressions: std::vec::Vec<String>,
+    run: std::vec::Vec<String>,
+}
+
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `vnode_children_expression` over plan ranges.
     pub(super) fn vnode_list(&mut self, ranges: &Ranges) -> Result<String> {
-        let mut expressions = std::vec::Vec::new();
+        let mut children = Children::default();
         for &(start, end) in ranges {
             self.pos = start;
-            self.vnode_child(&mut expressions)?;
+            self.vnode_child(&mut children)?;
             if self.pos != end {
                 return Err(AdmissionFailure::Invalid(
                     "vnode emission left its plan range",
                 ));
             }
         }
-        Ok(array(&expressions))
+        Ok(array(&self.finish_children(children)))
     }
 
     /// The VNode expressions of the region at the cursor, up to its close.
     pub(super) fn vnode_region(&mut self) -> Result<std::vec::Vec<String>> {
-        let mut expressions = std::vec::Vec::new();
+        let mut children = Children::default();
         while let Some(segment) = self.segments.get(self.pos) {
             if super::region::is_close(segment.kind) {
                 break;
             }
-            self.vnode_child(&mut expressions)?;
+            self.vnode_child(&mut children)?;
         }
-        Ok(expressions)
+        Ok(self.finish_children(children))
     }
 
-    /// `vnode_child_expression` for the child at the cursor; a merged L2 text
-    /// run yields one expression per legacy child.
-    fn vnode_child(&mut self, out: &mut std::vec::Vec<String>) -> Result<()> {
+    /// Close the open text run into one `_createTextVNode(...)`.
+    fn flush_text_run(&mut self, children: &mut Children) {
+        if children.run.is_empty() {
+            return;
+        }
+        self.ctx.use_core_helper(RuntimeHelper::CreateText);
+        let run = children.run.join(" + ");
+        children.run.clear();
+        children.expressions.push(cstr!("_createTextVNode({run})"));
+    }
+
+    fn finish_children(&mut self, mut children: Children) -> std::vec::Vec<String> {
+        self.flush_text_run(&mut children);
+        children.expressions
+    }
+
+    /// One finished child expression, after the text run before it.
+    fn push_child(&mut self, children: &mut Children, expression: String) {
+        self.flush_text_run(children);
+        children.expressions.push(expression);
+    }
+
+    /// `vnode_child_expression` for the child at the cursor. Text and
+    /// interpolations, a merged L2 text run included, extend the open run.
+    fn vnode_child(&mut self, children: &mut Children) -> Result<()> {
         let segment = self.segment(self.pos)?;
         match (segment.kind, segment.source) {
             (Kind::Text, Source::Text(_)) => {
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                if let Some(expression) = self.vnode_text(content)? {
-                    out.push(expression);
+                if let Some(part) = self.vnode_text(content)? {
+                    children.run.push(part);
                 }
             }
             (Kind::DynamicText, Source::Interpolation(interpolation)) => {
@@ -69,9 +100,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                                 let exp = text::decode_interpolation_js(
                                     self.text_expr(part.text.as_str())?,
                                 );
-                                out.push(self.vnode_display(&exp));
-                            } else if let Some(expression) = self.vnode_text(&part.text)? {
-                                out.push(expression);
+                                children.run.push(self.vnode_display(&exp));
+                            } else if let Some(part) = self.vnode_text(&part.text)? {
+                                children.run.push(part);
                             }
                         }
                     }
@@ -79,7 +110,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         let exp = text::decode_interpolation_js(
                             self.expr(&interpolation.expression, TransformContent::Padded)?,
                         );
-                        out.push(self.vnode_display(&exp));
+                        children.run.push(self.vnode_display(&exp));
                     }
                 }
             }
@@ -94,7 +125,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.pos += 1;
                 let _attached =
                     self.take_attached(element.attributes.len() + element.bindings.len())?;
-                out.extend(self.vnode_region()?);
+                self.flush_text_run(children);
+                children.expressions.extend(self.vnode_region()?);
                 self.close(Kind::CloseElement, |source| {
                     matches!(source, Source::Element(closed) if core::ptr::eq(*closed, element))
                 })?;
@@ -102,53 +134,48 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             (Kind::OpenElement, Source::Element(element)) => {
                 let expression =
                     vize_l0::ensure_sufficient_stack(|| self.vnode_element(element, None))?;
-                out.push(expression);
+                self.push_child(children, expression);
             }
             (Kind::Component, Source::Component(component)) => {
                 let expression =
                     vize_l0::ensure_sufficient_stack(|| self.vnode_component(component, None))?;
-                out.push(expression);
+                self.push_child(children, expression);
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
                 let expression =
                     vize_l0::ensure_sufficient_stack(|| self.vnode_outlet(slot, None))?;
-                out.push(expression);
+                self.push_child(children, expression);
             }
             (Kind::If, Source::If(if_op)) => {
                 let expression = vize_l0::ensure_sufficient_stack(|| self.vnode_if(if_op))?;
-                out.push(expression);
+                self.push_child(children, expression);
             }
             (Kind::For, Source::For(for_op)) => {
                 let expression = vize_l0::ensure_sufficient_stack(|| self.vnode_for(for_op))?;
-                out.push(expression);
+                self.push_child(children, expression);
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;
                 self.ctx.use_core_helper(RuntimeHelper::CreateComment);
                 let quoted = quoted_js_string(comment.content);
-                out.push(cstr!("_createCommentVNode({quoted})"));
+                self.push_child(children, cstr!("_createCommentVNode({quoted})"));
             }
             _ => return Err(LegacyReason::Operation.into()),
         }
         Ok(())
     }
 
-    /// `_createTextVNode("...")`; empty text renders nothing.
+    /// A text run part: `"..."`; empty text renders nothing.
     fn vnode_text(&mut self, content: &str) -> Result<Option<String>> {
         let decoded = decode_ssr_static_text(content);
         text::admit_decoded(content, &decoded)?;
-        if decoded.is_empty() {
-            return Ok(None);
-        }
-        self.ctx.use_core_helper(RuntimeHelper::CreateText);
-        let quoted = quoted_js_string(&decoded);
-        Ok(Some(cstr!("_createTextVNode({quoted})")))
+        Ok((!decoded.is_empty()).then(|| quoted_js_string(&decoded)))
     }
 
+    /// A text run part: `_toDisplayString(exp)`.
     fn vnode_display(&mut self, exp: &str) -> String {
-        self.ctx.use_core_helper(RuntimeHelper::CreateText);
         self.ctx.use_core_helper(RuntimeHelper::ToDisplayString);
-        cstr!("_createTextVNode(_toDisplayString({exp}))")
+        cstr!("_toDisplayString({exp})")
     }
 
     /// `_createElementVNode("tag", props, children)`.

@@ -59,29 +59,37 @@ export const codenames = [
   "stesura",
   "folio",
   "spolvero",
-  "davinci-opt",
+  "davinci",
 ] as const;
 
 const codenamePattern = new RegExp(codenames.join("|"), "gi");
-// Serialized ids such as `davinci.expr.parses`; the program name may name paths only.
-const serializedDavinci = /["'`]davinci\.[a-z0-9_]+[. ]/g;
 // Captured output of a past run is evidence, not a name the code produces.
 const capturePattern =
   /\.(log|jsonl|stderr|stdout)$|(^|\/)observed-[^/]*\.json$|\.observation\.json$/;
 
 // The gate's definition must spell the names it bans.
-const gateFiles = new Set(["tools/commands/davinci/completion-gates.ts"]);
+const toolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const gateFiles = new Set([
+  path
+    .relative(toolRoot, fileURLToPath(import.meta.url))
+    .split(path.sep)
+    .join("/"),
+  "tools/support/levels/rename-program-codename.ts",
+]);
 
 const exemptPath = (file: string) =>
-  file.startsWith("docs/") ||
+  file.startsWith("docs/davinci/") ||
   file === "CHANGELOG.md" ||
   gateFiles.has(file) ||
   capturePattern.test(file);
 
+// Other docs may keep the level codenames as aliases, but not the program name.
+const counts = (file: string, name: string) =>
+  !file.startsWith("docs/") || name.toLowerCase() === "davinci";
+
 export interface CodenameReport {
   readonly paths: number;
   readonly lines: number;
-  readonly serialized: number;
   readonly byName: Readonly<Record<string, number>>;
 }
 
@@ -92,29 +100,32 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
     byName[key] = (byName[key] ?? 0) + 1;
   };
   let paths = 0,
-    lines = 0,
-    serialized = 0;
+    lines = 0;
+  const matches = (file: string, text: string) =>
+    (text.match(codenamePattern) ?? []).filter((name) => counts(file, name));
   for (const file of repo.paths) {
     if (exemptPath(file)) continue;
-    const named = file.match(codenamePattern);
-    if (named) {
+    const named = matches(file, file);
+    if (named.length) {
       paths++;
       named.forEach(hit);
     }
     const text = repo.read(file);
     if (text === null) continue;
     for (const line of text.split("\n")) {
-      // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form.
-      if (/codename/i.test(line)) continue;
-      const found = line.match(codenamePattern);
-      if (found) {
+      // `//! L3 - reactivity IR (codename: Impeto)` is the allowed alias form for level
+      // codenames; the program name has none.
+      const alias = /codename/i.test(line);
+      const found = matches(file, line).filter(
+        (name) => !alias || name.toLowerCase() === "davinci",
+      );
+      if (found.length) {
         lines++;
         found.forEach(hit);
       }
-      serialized += line.match(serializedDavinci)?.length ?? 0;
     }
   }
-  return { paths, lines, serialized, byName };
+  return { paths, lines, byName };
 };
 
 export const workspaceMembers = (cargoToml: string): string[] => {
@@ -139,8 +150,11 @@ const allowlistEntries = (repo: Repo, file: string): number => {
 };
 
 const measureLevelCrates = (repo: Repo): Measured => {
-  const found = members(repo)
-    .filter((member) => member.startsWith("davinci/"))
+  const all = members(repo);
+  const home = all.find((member) => path.basename(member) === "vize_l0");
+  if (!home) throw new Error("no vize_l0 workspace member");
+  const found = all
+    .filter((member) => path.dirname(member) === path.dirname(home))
     .map((member) => path.basename(member))
     .sort();
   const expected = [...levelCrates].sort();
@@ -173,8 +187,8 @@ const measureCodenames = (repo: Repo): Measured => {
     .map(([name, count]) => `${name} ${count}`)
     .join(", ");
   return {
-    pass: report.paths + report.lines + report.serialized === 0,
-    detail: `${report.paths} paths, ${report.lines} lines (${names}); ${report.serialized} serialized davinci.* ids`,
+    pass: report.paths + report.lines === 0,
+    detail: `${report.paths} paths, ${report.lines} lines (${names})`,
   };
 };
 
@@ -205,10 +219,14 @@ const measureProductDependencies = (repo: Repo): Measured => {
 const measureStabilityPolicy = (repo: Repo): Measured => {
   const policy = JSON.parse(
     requireText(repo, "docs/davinci/plan/deletion-readiness-policy.json"),
-  ) as { minimumStableDays?: unknown };
-  const days = policy.minimumStableDays;
-  const defined = typeof days === "number" && Number.isInteger(days) && days > 0;
-  return { pass: defined, detail: `minimumStableDays ${String(days)}` };
+  ) as { minimumStableDays?: unknown; maximumGapDays?: unknown };
+  const positive = (value: unknown) =>
+    typeof value === "number" && Number.isInteger(value) && value > 0;
+  const { minimumStableDays: days, maximumGapDays: gap } = policy;
+  return {
+    pass: positive(days) && positive(gap),
+    detail: `minimumStableDays ${String(days)}, maximumGapDays ${String(gap)}`,
+  };
 };
 
 const measureLegacyDeleted = (repo: Repo): Measured => {
@@ -244,12 +262,26 @@ export const gates: readonly Gate[] = [
   { id: "products.project", tier: 4, issues: [6874] },
   { id: "products.fixes", tier: 4, issues: [6876] },
   { id: "products.dependencies", tier: 4, issues: [6851], measure: measureProductDependencies },
+  { id: "inputs.pug", tier: 4, issues: [8908] },
+  { id: "inputs.sass", tier: 4, issues: [11550] },
+  { id: "inputs.scss", tier: 4, issues: [11551] },
+  { id: "inputs.less", tier: 4, issues: [11552] },
+  { id: "inputs.stylus", tier: 4, issues: [11553] },
+  { id: "inputs.jsx", tier: 4, issues: [11554] },
+  { id: "inputs.tsx", tier: 4, issues: [11555] },
+  { id: "inputs.vapor", tier: 4, issues: [11556] },
   { id: "legacy.zero-fallback", tier: 5, issues: [6854] },
   { id: "legacy.acceptance", tier: 5, issues: [6853] },
   { id: "legacy.stability", tier: 5, issues: [6828], measure: measureStabilityPolicy },
   { id: "legacy.deleted", tier: 5, issues: [6828], measure: measureLegacyDeleted },
-  { id: "frameworks.tsrx", tier: 6, issues: [6858] },
-  { id: "frameworks.solid", tier: 6, issues: [6859] },
+  { id: "inputs.tsrx", tier: 6, issues: [6858] },
+  { id: "poc.svelte", tier: 6, issues: [11540] },
+  { id: "poc.astro", tier: 6, issues: [11557] },
+  { id: "poc.angular", tier: 6, issues: [11558] },
+  { id: "poc.solid", tier: 6, issues: [6859] },
+  { id: "poc.moonbit", tier: 6, issues: [11559] },
+  { id: "poc.coffeescript", tier: 6, issues: [11560] },
+  { id: "poc.python", tier: 6, issues: [11561] },
 ];
 
 const issueList = (issues: readonly number[]) => issues.map((issue) => "#" + issue).join(" ");

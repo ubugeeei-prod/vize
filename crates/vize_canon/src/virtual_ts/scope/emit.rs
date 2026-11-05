@@ -54,10 +54,8 @@ pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str
 }
 
 /// Emit the opening of a v-slot scope function. The parameter is annotated
-/// with the slot type inferred from the child's `$slots`; when the user wrote
-/// their own annotation, that annotation is kept for the bindings and a
-/// separate assignment asserts the child's actual slot props are assignable
-/// to it, mirroring how vue-tsc validates annotated slot props.
+/// with the slot type inferred from the child's `$slots`; an authored
+/// annotation types the bindings instead (see [`emit_slot_annotation_check`]).
 pub(super) fn emit_slot_function_open(
     ts: &mut String,
     indent: &str,
@@ -72,8 +70,7 @@ pub(super) fn emit_slot_function_open(
     } else {
         cstr!("void function {function_name}")
     };
-    let annotated = split_slot_pattern_annotation(props_pattern);
-    let params = if let Some((pattern, annotation)) = annotated {
+    let params = if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
         cstr!("{pattern}: {annotation}")
     } else {
         cstr!("{props_pattern}: {props_type}")
@@ -83,19 +80,37 @@ pub(super) fn emit_slot_function_open(
     ts! { &mut *ts =>
         #(" ") {
             #("\n")
-            #{
-                if let Some((_, annotation)) = annotated {
-                    append!(
-                        *__ts,
-                        "{indent}  const __slot_annotation_check: {annotation} = undefined as unknown as ({props_type});\n{indent}  void __slot_annotation_check;\n"
-                    );
-                }
-                body(__ts);
-            }
+            #{ body(__ts); }
             #indent
         }
         #(";\n")
     }
+}
+
+/// vue-tsc's `__VLS_vSlot(slot, (_: Annotation) => [] as any)`: the annotated
+/// callback must be assignable to the declared slot member, so a method slot
+/// compares its parameter bivariantly and an object-declared slot rejects any
+/// annotation. TypeScript reports the callback at its `(`, which maps to the
+/// slot expression's first byte, where vue-tsc reports it. The other bytes
+/// stay unmapped so the authored pattern keeps its own spans.
+pub(super) fn emit_slot_annotation_check(
+    ts: &mut String,
+    diagnostics: &mut Vec<VizeMapping>,
+    indent: &str,
+    slot_member_type: &str,
+    annotation: &str,
+    expression_start: usize,
+) {
+    append!(
+        *ts,
+        "{indent}(undefined as unknown as <__S, __D extends __S>(slot: __S, decl: __D) => void)(undefined as unknown as ({slot_member_type}), "
+    );
+    diagnostics.push(VizeMapping {
+        gen_range: ts.len()..ts.len() + 1,
+        src_range: expression_start..expression_start + 1,
+        sub_spans: Vec::new(),
+    });
+    append!(*ts, "(_: {annotation}) => [] as any);\n");
 }
 
 pub(super) fn append_v_for_comment(

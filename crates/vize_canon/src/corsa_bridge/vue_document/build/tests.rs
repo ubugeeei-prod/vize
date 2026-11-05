@@ -274,6 +274,85 @@ fn config_source_options_and_requested_membership_keep_distinct_revisions() {
 }
 
 #[test]
+fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("Host.vue");
+    let child = root.path().join("Child.vue");
+    std::fs::write(&host, HOST).unwrap();
+    std::fs::write(&child, CHILD).unwrap();
+    let session = EditorMirrorSession::new();
+    drop(prepare(&session, &host, HOST, &[], &[]));
+    let initial = context(&session, &host, HOST, &[]);
+    let surface = initial.query_surface.get().expect("surface");
+    let original_code = surface.host.code.clone();
+    let host_uri = surface.host.request_uri.clone();
+    let dependency_slots = surface
+        .documents
+        .iter()
+        .enumerate()
+        .filter(|(_, (uri, _))| uri != &host_uri)
+        .map(|(index, document)| (index, document as *const _))
+        .collect::<Vec<_>>();
+    assert!(
+        !dependency_slots.is_empty(),
+        "the child document is part of the prepared graph"
+    );
+    let dependency_code = surface.host.dependencies[0].code.as_str().as_ptr();
+    let child_materialized = surface
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path == child.canonicalize().unwrap())
+        .expect("child mirror document")
+        .code
+        .as_str()
+        .as_ptr();
+    drop(initial);
+
+    let edited = HOST.replace("日本語 🦀", "changed 🦀");
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let revised = context(&session, &host, &edited, &[]);
+    let surface = revised.query_surface.get().expect("revised surface");
+    assert_ne!(surface.host.code, original_code);
+    assert_eq!(
+        surface
+            .host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path == host.canonicalize().unwrap())
+            .expect("edited host mirror document")
+            .source,
+        edited
+    );
+    for (index, previous) in dependency_slots {
+        assert!(
+            std::ptr::eq(previous, &surface.documents[index]),
+            "unchanged dependency documents stay in the prepared graph"
+        );
+    }
+    assert_eq!(
+        surface.host.dependencies[0].code.as_str().as_ptr(),
+        dependency_code
+    );
+    assert_eq!(
+        surface
+            .host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path == child.canonicalize().unwrap())
+            .expect("child mirror document")
+            .code
+            .as_str()
+            .as_ptr(),
+        child_materialized
+    );
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let cold = context(&session, &host, &edited, &[]);
+    complete_surface(surface, cold.query_surface.get().expect("cold surface"));
+}
+
+#[test]
 fn identical_source_in_separate_roots_keeps_authored_membership() {
     let roots = [tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap()];
     let session = EditorMirrorSession::new();
@@ -291,15 +370,119 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
             project.host.dependencies[0].source_path,
             root.path().join("Child.vue").canonicalize().unwrap()
         );
-        let physical_root = root.path().canonicalize().unwrap();
-        assert!(
-            project
-                .host
-                .materialized_sources
-                .iter()
-                .all(|source| { source.source_path.starts_with(&physical_root) })
-        );
+        let mut members = project
+            .host
+            .materialized_sources
+            .iter()
+            .map(|source| source.source_path.clone())
+            .collect::<Vec<_>>();
+        members.sort();
+        let mut expected = vec![
+            root.path().join("Child.vue").canonicalize().unwrap(),
+            root.path().join("Host.vue").canonicalize().unwrap(),
+        ];
+        expected.sort();
+        assert_eq!(members, expected);
     }
+}
+
+#[test]
+fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("Host.vue");
+    let child = root.path().join("Child.vue");
+    std::fs::write(&host, HOST).unwrap();
+    std::fs::write(&child, CHILD).unwrap();
+    let session = EditorMirrorSession::new();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    let cold = prepare(&session, &host, HOST, &[], &[]);
+    let cold_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert!(
+        cold_hashes > 3,
+        "a cold build hashes every mirror file ({cold_hashes})"
+    );
+    let child_path = cold
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path == child.canonicalize().unwrap())
+        .expect("child mirror")
+        .materialized_path
+        .clone();
+    let host_path = cold
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path == host.canonicalize().unwrap())
+        .expect("host mirror")
+        .materialized_path
+        .clone();
+    let child_bytes = std::fs::read(&child_path).unwrap();
+    drop(cold);
+
+    let edited = HOST.replace("日本語 🦀", "changed 🦀");
+    let hit = prepare(&session, &host, &edited, &[], &[]);
+    let hit_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert!(hit_hashes > 0, "the edited host file is hashed");
+    assert!(
+        hit_hashes < cold_hashes,
+        "a fingerprint hit hashed {hit_hashes} files; the cold mirror hashed {cold_hashes}"
+    );
+    assert_eq!(std::fs::read(&child_path).unwrap(), child_bytes);
+    let host_on_disk = std::fs::read_to_string(&host_path).unwrap();
+    assert_eq!(host_on_disk, hit.host.code);
+    assert_eq!(
+        hit.host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path == host.canonicalize().unwrap())
+            .expect("edited host mirror document")
+            .source,
+        edited
+    );
+    assert_eq!(
+        hit.materialized_changes,
+        crate::batch::virtual_project::MaterializedFileDelta {
+            changed: vec![host_path],
+            ..Default::default()
+        },
+        "only the edited host changes; the child and graph topology remain intact"
+    );
+    let revised = context(&session, &host, &edited, &[]);
+    drop(hit);
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let rebuilt = context(&session, &host, &edited, &[]);
+    complete_surface(
+        revised.query_surface.get().expect("hit surface"),
+        rebuilt.query_surface.get().expect("cold surface"),
+    );
+
+    let session = EditorMirrorSession::new();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let warm_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    std::fs::write(&child, CHILD.replace("title", "missTitle")).unwrap();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    let miss = prepare(&session, &host, &edited, &[], &[]);
+    let miss_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert_eq!(
+        miss_hashes, warm_hashes,
+        "a fingerprint miss still hashes the whole mirror"
+    );
+    assert_eq!(
+        miss.host.dependencies[0].source,
+        CHILD.replace("title", "missTitle")
+    );
+    let missed = context(&session, &host, &edited, &[]);
+    drop(miss);
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let cold_miss = context(&session, &host, &edited, &[]);
+    complete_surface(
+        missed.query_surface.get().expect("miss surface"),
+        cold_miss.query_surface.get().expect("cold miss surface"),
+    );
 }
 
 #[cfg(test)]

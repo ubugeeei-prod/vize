@@ -27,6 +27,9 @@ import { createRequire } from "node:module";
 /**
  * Bump when the persisted entry shape changes; abandons every old manifest.
  *
+ * 5: entries carry the native module shape (#11544). A format-4 entry has none,
+ *    so a warm build would miss the template-only side-effect marker a cold
+ *    build applies.
  * 4: warned sources are excluded so their diagnostics replay on every build.
  *    Older manifests included them without warnings and must be abandoned.
  * 3: entries carry the compiled module's source map (#3399). The container
@@ -35,7 +38,7 @@ import { createRequire } from "node:module";
  * those to a build that asked for maps is exactly the silent regression this
  * gate exists to prevent.
  */
-export const PRECOMPILE_CACHE_FORMAT = 4;
+export const PRECOMPILE_CACHE_FORMAT = 5;
 
 /**
  * SHA-256 of the exact source text handed to the compiler.

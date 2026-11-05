@@ -58,7 +58,7 @@ pub(super) fn prefix_identifiers_in_scope(
     // A TypeScript annotation (`event: MouseEvent`) is not a JS expression.
     // The JS parse used to return the original text, so `document` stayed a
     // real global. Strip the types, then prefix that JavaScript.
-    let stripped = crate::steps::strip_typescript_from_expression(content);
+    let stripped = crate::steps::erase_typescript(content, false);
     if stripped.as_str() != content
         && let Some(prefixed) = prefix_parsed_js(&stripped, ctx, implicit_event)
     {

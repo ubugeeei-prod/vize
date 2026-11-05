@@ -50,6 +50,7 @@ impl CodegenContext {
             component_name,
             experimental_self_component: experimental_options.self_component,
             untracked_children: false,
+            jsx_class: false,
             no_slotted,
             development: true,
             pure: false,

@@ -60,8 +60,8 @@ the commands that re-derive it, and the local measurements taken so far.
 - Static `style` beside `:style` now projects to one `_setStyle` call in
   authored source order. Both orders match independently specified mounted DOM
   states and node identities through updates and unmount, and the pinned
-  official `@vue/compiler-vapor` output under the same runtime. Empty static
-  style attributes still select legacy.
+  official `@vue/compiler-vapor` output under the same runtime. A valueless
+  class or style beside its binding merges as `""` ([record](./p3-6-valueless-class-style.md)).
 - TS-33 compiles a conditional element, `v-cloak`, empty textarea model,
   semantic phrasing elements, and both static/dynamic style orders through
   Vize S3 and pinned official `@vue/compiler-vapor`. Both outputs mount on the

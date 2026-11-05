@@ -1,18 +1,39 @@
 ---
 title: "css/no-v-bind-performance"
+description: "Warn about performance cost of CSS v-bind()."
 ---
 
 # `css/no-v-bind-performance`
 
-Warn about performance cost of CSS v-bind()
+Warn about performance cost of CSS v-bind().
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechanism.
+
+```vue annotate="remove:1,2,3,4,5"
+<style scoped>
+.card {
+  transform: translateX(v-bind(offset));
+}
+</style>
+```
+
+## Good
+
+The element receives the changing transform directly through its style binding.
+
+```vue annotate="add:1,2,3"
+<template>
+  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechanism.
-
-```vue
-<style scoped>
-.card {
-  transform: translateX(v-bind(offset));
-}
-</style>
-```
-
-## Good
-
-The element receives the changing transform directly through its style binding.
-
-```vue
-<template>
-  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20)

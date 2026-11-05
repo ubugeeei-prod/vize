@@ -117,7 +117,7 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
             "messages": [
                 {
                     "ruleId": "musea/require-title",
-                    "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+                    "ruleDocsPath": "docs/content/rules/reference/musea-require-title.md",
                     "severity": 2,
                     "message": "[vize:musea/require-title] Missing required 'title' attribute in <art> block",
                     "line": 1,
@@ -128,7 +128,7 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
                 },
                 {
                     "ruleId": "musea/no-empty-variant",
-                    "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+                    "ruleDocsPath": "docs/content/rules/reference/musea-no-empty-variant.md",
                     "severity": 1,
                     "message": "[vize:musea/no-empty-variant] Empty <variant> block with no content",
                     "line": 2,
@@ -213,7 +213,7 @@ fn lint_runs_configured_musea_design_token_rule_for_art_styles() {
             "messages": [
                 {
                     "ruleId": "musea/prefer-design-tokens",
-                    "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+                    "ruleDocsPath": "docs/content/rules/reference/musea-prefer-design-tokens.md",
                     "severity": 1,
                     "message": "[vize:musea/prefer-design-tokens] Hardcoded value '#3b82f6' matches primitive token 'color.primary' — use var(--color-primary)",
                     "line": 7,

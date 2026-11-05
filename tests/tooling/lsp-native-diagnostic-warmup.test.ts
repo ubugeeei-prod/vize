@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { readPinnedArtifact, sha256 } from "../differential/harness.mjs";
+import { readPinnedArtifact } from "../differential/harness.mjs";
+import { assertWarmupWitness } from "./support/lsp/native-warmup-witness.ts";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
@@ -35,11 +36,7 @@ const originalIssue = JSON.parse(
   readPinnedArtifact(fixtureRoot, fixture.provenance.originalIssue).toString("utf8"),
 );
 assert.equal(originalIssue.number, 10604);
-assert.equal(
-  sha256(fs.readFileSync(path.join(root, fixture.provenance.warmupWitness.path))),
-  fixture.provenance.warmupWitness.sha256,
-  "the full actual stdio transition witness must retain its pinned source custody",
-);
+const warmupWitnessCustody = assertWarmupWitness(root, fixture.provenance.warmupWitness);
 const repaired = erroneous.replaceAll("needsRef(items)", "() => items.length");
 const changedSource = (value: number) =>
   erroneous.replace("persistent: string = 1", `persistent: string = ${value}`);
@@ -225,14 +222,22 @@ await test(
       );
       assert.equal(nativeErrors(secondLint).length, 0);
       gate.assertStopped();
+      const resumedAt = notifications.length;
       gate.resume();
       assert.equal(
         nativeErrors(
-          await wait(first, (packet) => packet.version === 2 && nativeErrors(packet).length === 8),
+          await wait(
+            first,
+            (packet) => packet.version === 2 && nativeErrors(packet).length === 8,
+            resumedAt,
+          ),
         ).length,
         8,
       );
-      assert.equal(nativeErrors(await wait(second, (packet) => packet.version === 1)).length, 8);
+      assert.equal(
+        nativeErrors(await wait(second, (packet) => packet.version === 1, resumedAt)).length,
+        8,
+      );
       const afterWarm = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
       await t.test(
         "UNRESOLVED #10622: unrelated generated tsconfig root expansion restarts the native process",
@@ -256,16 +261,17 @@ await test(
       change(second, 2, changedSource(8));
       await wait(second, (packet) => packet.version === 2, admittedPass);
       admittedGate.assertStopped();
+      const admittedResumedAt = notifications.length;
       admittedGate.resume();
       await wait(
         first,
         (packet) => packet.version === 3 && nativeErrors(packet).length === 8,
-        admittedPass,
+        admittedResumedAt,
       );
       await wait(
         second,
         (packet) => packet.version === 2 && nativeErrors(packet).length === 8,
-        admittedPass,
+        admittedResumedAt,
       );
       const admittedAfter = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
       assert.deepEqual(
@@ -385,6 +391,7 @@ await test(
             binary,
             originalIssue: fixture.provenance.originalIssue,
             warmupWitness: fixture.provenance.warmupWitness,
+            warmupWitnessSuccessor: warmupWitnessCustody,
             fixtureFiles: fixture.files,
             qualification:
               "Full genuine native diagnostic transitions are checked here; manifest documentColor is a separate structural control only.",

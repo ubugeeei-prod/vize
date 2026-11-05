@@ -64,7 +64,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts ../shared/*.test.ts",
     "test:hmr": "pnpm build && node --test test/hmr.test.mjs",
     "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },

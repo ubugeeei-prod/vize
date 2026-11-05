@@ -1,18 +1,51 @@
 ---
 title: "script/no-reserved-props"
+description: "prop 宣言に Vue の予約名を使う箇所を検出します。"
 ---
 
 # `script/no-reserved-props`
 
 prop 宣言に Vue の予約名を使う箇所を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+オブジェクト形式の `ref` と `$foo`、配列形式の `key` は予約された prop 名です。`ref` と `key` はフレームワーク用であり、`$` で始まる名前も拒否されます。
+
+```vue annotate="remove:4,5,8,9,10,11"
+<script lang="ts">
+export default {
+  props: {
+    ref: String,   // reserved
+    $foo: Number    // `$`-prefixed names are reserved
+  }
+}
+
+export default {
+  props: ['key']    // reserved (array form)
+}
+</script>
+```
+
+## 良い例
+
+通常の prop 名 `name` と `refValue` に変え、予約された名前と接頭辞を避けます。
+
+```vue annotate="add:4,5"
+<script lang="ts">
+export default {
+  props: {
+    name: String,
+    refValue: Number
+  }
+}
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,44 +64,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-オブジェクト形式の `ref` と `$foo`、配列形式の `key` は予約された prop 名です。`ref` と `key` はフレームワーク用であり、`$` で始まる名前も拒否されます。
-
-```vue
-<script lang="ts">
-export default {
-  props: {
-    ref: String,   // reserved
-    $foo: Number    // `$`-prefixed names are reserved
-  }
-}
-
-export default {
-  props: ['key']    // reserved (array form)
-}
-</script>
-```
-
-## 良い
-
-通常の prop 名 `name` と `refValue` に変え、予約された名前と接頭辞を避けます。
-
-```vue
-<script lang="ts">
-export default {
-  props: {
-    name: String,
-    refValue: Number
-  }
-}
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53)

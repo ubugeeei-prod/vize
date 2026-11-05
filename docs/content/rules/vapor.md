@@ -1,20 +1,40 @@
 ---
 title: "Vapor rules"
+description: "Template and script constraints for components compiled in Vapor mode."
 ---
 
 # Vapor rules
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
+Template and script constraints for components compiled in Vapor mode.
 
+Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-| Rule | Examples | Purpose |
+## Default (1)
+
+Added by `happy-path`, the default preset.
+
+| Rule | What it checks | Auto-fix |
 | --- | --- | --- |
-| [`script/no-get-current-instance`](https://vizejs.dev/rules/vapor.html#script-no-get-current-instance) | [Bad](https://vizejs.dev/rules/vapor.html#script-no-get-current-instance-bad) · [Good](https://vizejs.dev/rules/vapor.html#script-no-get-current-instance-good) | Disallow getCurrentInstance() in Vapor mode (returns null) |
-| [`script/no-next-tick`](https://vizejs.dev/rules/vapor.html#script-no-next-tick) | [Bad](https://vizejs.dev/rules/vapor.html#script-no-next-tick-bad) · [Good](https://vizejs.dev/rules/vapor.html#script-no-next-tick-good) | Disallow nextTick() usage in Vapor-oriented components |
-| [`script/no-options-api`](https://vizejs.dev/rules/vapor.html#script-no-options-api) | [Bad](https://vizejs.dev/rules/vapor.html#script-no-options-api-bad) · [Good](https://vizejs.dev/rules/vapor.html#script-no-options-api-good) | Disallow Options API patterns in Vapor mode |
-| [`vapor/no-inline-template`](https://vizejs.dev/rules/vapor.html#vapor-no-inline-template) | [Bad](https://vizejs.dev/rules/vapor.html#vapor-no-inline-template-bad) · [Good](https://vizejs.dev/rules/vapor.html#vapor-no-inline-template-good) | Disallow deprecated inline-template attribute |
-| [`vapor/no-vue-lifecycle-events`](https://vizejs.dev/rules/vapor.html#vapor-no-vue-lifecycle-events) | [Bad](https://vizejs.dev/rules/vapor.html#vapor-no-vue-lifecycle-events-bad) · [Good](https://vizejs.dev/rules/vapor.html#vapor-no-vue-lifecycle-events-good) | Disallow @vue:xxx per-element lifecycle events (not supported in Vapor) |
-| [`vapor/prefer-static-class`](https://vizejs.dev/rules/vapor.html#vapor-prefer-static-class) | [Bad](https://vizejs.dev/rules/vapor.html#vapor-prefer-static-class-bad) · [Good](https://vizejs.dev/rules/vapor.html#vapor-prefer-static-class-good) | Prefer static class over dynamic class binding for string literals |
-| [`vapor/require-vapor-attribute`](https://vizejs.dev/rules/vapor.html#vapor-require-vapor-attribute) | [Bad](https://vizejs.dev/rules/vapor.html#vapor-require-vapor-attribute-bad) · [Good](https://vizejs.dev/rules/vapor.html#vapor-require-vapor-attribute-good) | Suggest adding vapor attribute to script setup |
+| <span id="vapor-no-vue-lifecycle-events"></span>[`vapor/no-vue-lifecycle-events`](./reference/vapor-no-vue-lifecycle-events.md) | Disallow @vue:xxx per-element lifecycle events (not supported in Vapor). |  |
 
-[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md) · [Attributes across components](./project/vue-cross-file-attrs-fallthrough.md)
+## Stricter presets (5)
+
+Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
+
+| Rule | What it checks | Presets | Auto-fix |
+| --- | --- | --- | --- |
+| <span id="script-no-get-current-instance"></span>[`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | Disallow getCurrentInstance() in Vapor mode (returns null). | `opinionated` |  |
+| <span id="script-no-options-api"></span>[`script/no-options-api`](./reference/script-no-options-api.md) | Disallow Options API patterns in Vapor mode. | `opinionated` |  |
+| <span id="vapor-no-inline-template"></span>[`vapor/no-inline-template`](./reference/vapor-no-inline-template.md) | Disallow deprecated inline-template attribute. | `nuxt`, `opinionated` |  |
+| <span id="vapor-prefer-static-class"></span>[`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | Prefer static class over dynamic class binding for string literals. | `nuxt`, `opinionated` | ✓ |
+| <span id="vapor-require-vapor-attribute"></span>[`vapor/require-vapor-attribute`](./reference/vapor-require-vapor-attribute.md) | Suggest adding vapor attribute to script setup. | `nuxt`, `opinionated` |  |
+
+## Opt-in (1)
+
+Not in any preset. Turn them on by name in `vue.linter.rules`.
+
+| Rule | What it checks | Auto-fix |
+| --- | --- | --- |
+| <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Disallow nextTick() usage in Vapor-oriented components. |  |
+
+[Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

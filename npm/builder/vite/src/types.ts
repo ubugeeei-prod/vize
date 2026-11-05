@@ -47,7 +47,9 @@ export type {
 export type {
   CompileSfcFn,
   CompiledModule,
+  CustomBlockInfo,
   MacroArtifact,
+  NativeCustomBlockInfo,
   NativeStyleBlockInfo,
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
@@ -167,6 +169,8 @@ export interface VizeOptions extends ExperimentalPluginOptions {
 
   /** Extract Nuxt page metadata; the Nuxt integration enables this explicitly. */
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
 
   /**
    * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`

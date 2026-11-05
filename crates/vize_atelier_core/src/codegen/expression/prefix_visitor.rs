@@ -6,7 +6,8 @@ use crate::options::BindingType;
 use crate::steps::expression::is_template_global;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
-    walk_assignment_expression, walk_object_property, walk_update_expression,
+    walk_assignment_expression, walk_assignment_target, walk_object_property,
+    walk_update_expression,
 };
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::FxHashSet;
@@ -108,14 +109,35 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         }
     }
 
+    fn visit_assignment_target(&mut self, target: &oxc_ast::ast::AssignmentTarget<'_>) {
+        self.collect_assignment_targets(target);
+        walk_assignment_target(self, target);
+    }
+
     fn visit_assignment_expression(&mut self, expr: &oxc_ast::ast::AssignmentExpression<'_>) {
-        self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
     }
 
     fn visit_update_expression(&mut self, expr: &oxc_ast::ast::UpdateExpression<'_>) {
         self.collect_simple_assignment_targets(&expr.argument);
         walk_update_expression(self, expr);
+    }
+
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        property: &oxc_ast::ast::AssignmentTargetPropertyIdentifier<'_>,
+    ) {
+        let before = self.rewrites.len();
+        self.visit_identifier_reference(&property.binding);
+        if let Some((_, _, replacement)) = self.rewrites.get_mut(before) {
+            let name = property.binding.name.as_str();
+            replacement.reserve(name.len() + 2);
+            replacement.insert_str(0, ": ");
+            replacement.insert_str(0, name);
+        }
+        if let Some(init) = &property.init {
+            self.visit_expression(init);
+        }
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast::ast::ObjectProperty<'_>) {

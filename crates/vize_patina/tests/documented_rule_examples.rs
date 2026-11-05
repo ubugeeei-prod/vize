@@ -310,7 +310,9 @@ fn configure(rule: &str, config: &Value) -> Linter {
 fn example(page: &str, heading: &str, rule: &str) -> (String, String, String) {
     let section = page.split_once(heading).expect("Bad/Good heading").1;
     let (before, fence) = section.split_once("```").expect("example code fence");
-    let (language, code) = fence.split_once('\n').expect("code language");
+    let (info, code) = fence.split_once('\n').expect("code language");
+    // The info string can carry display metadata after the language: `vue annotate="add:2"`.
+    let language = info.split_whitespace().next().expect("code language");
     let source = code.split_once("\n```").expect("end code fence").0;
     let filename = before
         .lines()

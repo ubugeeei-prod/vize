@@ -54,7 +54,7 @@ pub(super) fn format_html(results: &[LintResult], sources: &[(String, String)]) 
         output.push_str("</span></header>\n<p>");
         output.push_str(&escape_html(view.message));
         output.push_str("</p>\n<p class=\"docs\">Reference: <code>");
-        output.push_str(&escape_html(view.rule_docs_path));
+        output.push_str(&escape_html(&view.rule_docs_path));
         output.push_str("</code></p>\n");
 
         if let Some(help) = view.help_text.as_deref() {

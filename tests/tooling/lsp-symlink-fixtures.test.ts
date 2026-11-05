@@ -122,11 +122,12 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
   ]);
   assert.deepEqual(initializeCapabilities(fixture), INITIALIZE_CAPABILITIES);
   assert.deepEqual(fixture.data, before);
-  let originals = 0;
+  const plannedIds = loaded.manifest.cases.map((row) => row.id);
+  const excludedIds = new Set([MODEL_BINDING_UNIT_ID, fixture.id, VERSIONED_AUTO_IMPORT_ID]);
+  const originals: string[] = [];
   for (const row of loaded.cases) {
-    if (row.id === MODEL_BINDING_UNIT_ID) continue; // This unit has no stdio workspace.
-    if (row.id === fixture.id || row.id === VERSIONED_AUTO_IMPORT_ID) continue;
-    originals += 1;
+    if (excludedIds.has(row.id)) continue;
+    originals.push(row.id);
     assert.equal(row.data.workspaceSymlinks, undefined);
     assert.deepEqual(Object.keys(lspWorkspace(row).mapping), [
       "kind",
@@ -135,8 +136,14 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
       "configurations",
     ]);
   }
-  assert.equal(originals, 80);
-  assert.equal(loaded.cases.length, 83);
+  assert.deepEqual(
+    originals,
+    plannedIds.filter((id) => !excludedIds.has(id)),
+  );
+  assert.deepEqual(
+    loaded.cases.map((row) => row.id),
+    plannedIds,
+  );
 });
 
 void test("link layout rejects unknown, unpinned, cyclic, colliding and escaping source metadata", () => {

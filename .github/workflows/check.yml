@@ -38,7 +38,15 @@ jobs:
       engines: ${{ steps.plan.outputs.engines }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 2 }
+        with:
+          fetch-depth: 2
+          # Plan diffs read Git trees; only the selector runtime needs blobs.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/plan-check-inputs.ts
+            /tools/support/compat/github/comparison-base.ts
+            /tools/support/github/opinionated-source-inputs.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Validate explicit release qualification
@@ -235,6 +243,9 @@ jobs:
       - name: Check package engine matrix
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.ts tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+      - name: Check content mapper helper ABI
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        run: node npm/cli/scripts/content-mapper-helper-abi.ts --check
       - name: Report unchanged inputs
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
@@ -437,12 +448,45 @@ jobs:
       - level-dependency-direction
     permissions:
       contents: read
-      pull-requests: read
+      # Writes the PR's test report comment. Fork PR tokens stay read-only.
+      pull-requests: write
       actions: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+          # The gate and downloaded-packet reporter need no product source checkout.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/require-needs-success.ts
+            /tools/support/compat/github/comment-test-report.ts
+            /tools/support/compat/github/test-cases.ts
+            /tools/support/compat/github/test-report-markdown.ts
+            /tools/support/compat/github/test-areas.ts
+            /tools/support/json-value.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every needed job to succeed
+        id: gate
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --check-report
+      # Only the gate decides this check; the steps after it never change it.
+      - name: Download test case reports
+        id: cases
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" }
+      - name: Report test results
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TEST_REPORT_GATE: ${{ steps.gate.outcome }}
+          TEST_REPORT_CASES: ${{ steps.cases.outcome }}
+          TEST_REPORT_CASES_DIR: ${{ runner.temp }}/test-cases
+          TEST_REPORT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          # Empty without a write token: fork PRs and merge groups get only the step summary.
+          TEST_REPORT_PR_NUMBER: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}
+        run: node tools/support/compat/github/comment-test-report.ts

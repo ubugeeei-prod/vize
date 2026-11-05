@@ -11,7 +11,7 @@ use vize_carton::FxHashSet;
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
 mod materialized_sources;
-pub(crate) use materialized_sources::MaterializedSourceMappingKind;
+pub(crate) use materialized_sources::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 
 impl VirtualProject {
     pub(crate) fn preferred_materialized_path_for_original(
@@ -130,6 +130,12 @@ impl VirtualProject {
         let mut files: Vec<_> = self.virtual_files.values().collect();
         files.sort_by(|left, right| left.original_path.cmp(&right.original_path));
         files
+    }
+
+    /// Sources registered since this project was created.
+    #[cfg(test)]
+    pub(crate) fn source_registrations(&self) -> usize {
+        self.source_registration_count
     }
 
     /// Original paths registered in this project, in deterministic order.

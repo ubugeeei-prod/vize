@@ -80,6 +80,8 @@ pub use builder::DiagnosticBuilder;
 pub(crate) use corsa::initial::PreparedInitialApiDiagnostics;
 #[cfg(feature = "native")]
 pub(crate) use native::timeout::{typecheck_pending_hint, with_native_diagnostic_progress};
+#[cfg(feature = "native")]
+pub(crate) use native::{CombinedDiagnostics, NativeDiagnostic, NativeFamily};
 
 pub use service::DiagnosticService;
 pub use severity::Severity;

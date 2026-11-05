@@ -5,6 +5,15 @@ use lsp_types::{
 };
 use vize_l0::{String, cstr};
 
+pub(super) fn extract_diagnostics_with_provenance(
+    report: DocumentDiagnosticReportResult,
+) -> Vec<super::PhasedDiagnostic> {
+    extract_diagnostics(report)
+        .into_iter()
+        .map(super::PhasedDiagnostic::unknown)
+        .collect()
+}
+
 pub(super) fn extract_diagnostics(report: DocumentDiagnosticReportResult) -> Vec<Diagnostic> {
     match report {
         DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) => {
@@ -63,5 +72,25 @@ fn json_code_to_lsp_code(code: serde_json::Value) -> NumberOrString {
         }
         serde_json::Value::String(string) => NumberOrString::String(string),
         other => NumberOrString::String(cstr!("{other}").into()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_lsp_report_retains_unknown_phase_even_for_a_semantic_1xxx_code() {
+        let report = serde_json::from_value(serde_json::json!({
+            "kind": "full",
+            "items": [{
+                "range": {"start": {"line": 0, "character": 7}, "end": {"line": 0, "character": 10}},
+                "code": 1192, "severity": 1, "source": "ts", "message": "no default export"
+            }]
+        })).unwrap();
+        let rows = extract_diagnostics_with_provenance(report);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].phase, crate::corsa_bridge::DiagnosticPhase::Unknown);
+        assert_eq!(rows[0].diagnostic.code, Some(NumberOrString::Number(1192)));
     }
 }

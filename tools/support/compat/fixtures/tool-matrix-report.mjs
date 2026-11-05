@@ -60,6 +60,7 @@ async function main() {
       plannedRuns: 0,
       okRuns: 0,
       findingsRuns: 0,
+      configurationRuns: 0,
       failedRuns: 0,
       missingFixtureRuns: 0,
     },
@@ -209,6 +210,7 @@ function summaryKey(status) {
     planned: "plannedRuns",
     ok: "okRuns",
     findings: "findingsRuns",
+    configuration: "configurationRuns",
     failed: "failedRuns",
     "missing-fixture": "missingFixtureRuns",
   }[status];

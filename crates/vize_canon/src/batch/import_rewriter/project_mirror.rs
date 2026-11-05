@@ -6,6 +6,7 @@ use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use super::dts_rewrite::rewrite_relative_dts_specifier;
+use super::policy::rewrite_vue_mirror_specifier;
 use super::virtual_rewrite::{
     absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
     is_rewritable_vue_specifier, resolve_source_path,
@@ -71,12 +72,10 @@ impl ImportRewriter {
                 if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
                     return Some(rewritten.into());
                 }
-                self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
-                    path,
-                    source_dir,
-                    true,
-                    true,
-                    alias_rewrite_policy,
+                // A declaration keeps its authored identity before a `.vue`
+                // spelling is sent to an SFC mirror.
+                authored_vue_ts::rewrite_authored_or_missing_vue_import(
+                    path, source_dir, true, true,
                 )
                 .or_else(|| {
                     (!preserve_relative_declarations)
@@ -87,6 +86,7 @@ impl ImportRewriter {
                         })
                         .flatten()
                 })
+                .or_else(|| rewrite_vue_mirror_specifier(path, alias_rewrite_policy))
                 .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
                 .or_else(|| {
                     alias_rewrite_policy.and_then(|policy| {

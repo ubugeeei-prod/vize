@@ -172,6 +172,154 @@
       ]
     },
     {
+      "id": "props/dynamic-class-value",
+      "babelCorpusId": "props/class_dynamic",
+      "valueMatrix": true,
+      "source": "const App = () => <main id=\"probe\" class={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
+      "id": "props/dynamic-style-value",
+      "babelCorpusId": "props/style_dynamic",
+      "valueMatrix": true,
+      "source": "const App = () => <main style={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
+      "id": "components/class-value",
+      "babelCorpusId": "optimize/component_props",
+      "valueMatrix": true,
+      "source": "const App = () => <FixtureCard class={state.value} title=\"Class\"/>;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": [
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|",
+        "Title:Class|"
+      ],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ]
+    },
+    {
+      "id": "directives/v-html-value",
+      "babelCorpusId": "directives/v_html",
+      "valueMatrix": true,
+      "source": "const App = () => <main v-html={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": [
+        "0",
+        "",
+        "NaN",
+        "",
+        "",
+        "false",
+        "true",
+        "0,,NaN,,,false",
+        "[object Object]",
+        "0"
+      ],
+      "expectedVdomText": [
+        "0",
+        "",
+        "NaN",
+        "NaN",
+        "NaN",
+        "false",
+        "true",
+        "0,,NaN,,,false",
+        "[object Object]",
+        "0"
+      ],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
+      "id": "children/dynamic-value",
+      "babelCorpusId": "optimize/text_only",
+      "valueMatrix": true,
+      "source": "const App = () => <main>{state.value}</main>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["0", "", "NaN", "", "", "", "", "0NaN", "[object Object]", "0"],
+      "expectedVdomText": ["0", "", "NaN", "", "", "", "", "0NaN", "innerleaf", "0"],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
+      "expectedVdomElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0, 1, 2, 3], [0]]
+    },
+    {
       "id": "props/dynamic-attributes",
       "source": "const App = () => <section id={state.id} class={state.className}>{state.label}</section>;",
       "initial": { "id": "one", "className": "cold", "label": "alpha" },

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Cell from './Cell.vue';
+defineProps<{ rows: string[][] }>();
+</script>
+<template>
+  <table>
+    <tr v-for="(line, r) in rows" :key="r">
+      <component :is="r === 0 ? Cell : Cell" v-for="(cell, c) in line" :key="c" :value="123">{{ cell }}</component>
+    </tr>
+  </table>
+</template>

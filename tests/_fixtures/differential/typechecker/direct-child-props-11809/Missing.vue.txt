@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const known = { present: 1 };
+</script>
+<template>{{ known.missing }}</template>

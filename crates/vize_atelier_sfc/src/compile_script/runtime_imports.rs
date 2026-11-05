@@ -20,7 +20,7 @@ impl<'a> RuntimeModule<'a> {
         Self { name, literal }
     }
 
-    pub(crate) fn push_import(&self, output: &mut vize_carton::Vec<u8>, specifiers: &str) {
+    pub(crate) fn push_import(&self, output: &mut Vec<u8>, specifiers: &str) {
         output.extend_from_slice(b"import { ");
         output.extend_from_slice(specifiers.as_bytes());
         output.extend_from_slice(b" } from ");

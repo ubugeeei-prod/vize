@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { dumpLines, dumpTokens, lineSpan, linesCovering, surfaceTokens } from "./dumpLines";
 
 // Page texts as the compiler prints them (pinned byte-for-byte by the Rust
-// TS-52 `spolvero_ladder` suite for this template).
+// TS-52 `stage_ladder` suite for this template).
 const TEMPLATE = '\n  <div :class="cls">{{ msg }}</div>\n';
 const L2 = `[l2-dump-v2]
 ops=3

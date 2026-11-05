@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ static: string; from: string }>()
+const needsNumber = (value: number) => value
+</script>
+<template>{{ `雪 ${static} ${needsNumber(from.length)}` }}</template>

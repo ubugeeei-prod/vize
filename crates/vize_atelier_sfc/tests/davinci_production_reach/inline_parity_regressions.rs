@@ -79,6 +79,57 @@ fn typed_slot_handlers_keep_the_current_scope_and_outside_cache() {
 }
 
 #[test]
+fn typed_component_method_references_preserve_callable_identity() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "events-expression.vue",
+        include_str!(
+            "../../../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue"
+        ),
+    );
+}
+
+#[test]
+fn typed_options_method_handlers_keep_their_live_cache() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "typed-options-component-handlers.vue",
+        r#"<script lang="ts">
+export default { methods: { method(value: unknown) { return value } } }
+</script>
+<script setup lang="ts">
+import Child from './Child.vue'
+type Fn = (value: unknown) => unknown
+</script>
+<template><Child @pick="method" /><Child @pick="method!" /><Child @pick="method as Fn" /><Child @pick="method($event)" /></template>"#,
+    );
+    assert_inline_parity(
+        "js-options-component-handlers.vue",
+        r#"<script>
+export default { methods: { method(value) { return value } } }
+</script>
+<script setup>
+import Child from './Child.vue'
+</script>
+<template><Child @pick="method" /><Child @pick="method($event)" /></template>"#,
+    );
+}
+
+#[test]
+fn typed_maybe_ref_handlers_keep_reference_and_call_roles() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "typed-maybe-ref-handler.vue",
+        r#"<script setup lang="ts">
+import useLocale from './locale'
+type Fn = (event: unknown) => unknown
+const { changeLocale } = useLocale()
+</script>
+<template><Dropdown @select="changeLocale as any" /><Dropdown @select="changeLocale!" /><Dropdown @select="changeLocale satisfies Fn" /><Dropdown @select="(<Fn>changeLocale)" /><Dropdown @select="changeLocale($event)" /><Dropdown @select="() => changeLocale" /></template>"#,
+    );
+}
+
+#[test]
 fn maybe_ref_model_writes_match_shipped_compiler() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(

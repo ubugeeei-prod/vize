@@ -116,23 +116,47 @@ impl VirtualProject {
     /// registered. Out-of-root modules have private mirror identities, so an
     /// authored `../shared` cannot be left relative to the generated host.
     pub(crate) fn finalize_editor_imports(&mut self) {
-        self.finalize_editor_imports_inner(None);
+        self.finalize_editor_imports_inner(None, None);
     }
 
     pub(crate) fn finalize_editor_imports_with_import_facts(
         &mut self,
         facts: &mut ModuleSpecifierFactsCache,
     ) {
-        self.finalize_editor_imports_inner(Some(facts));
+        self.finalize_editor_imports_inner(None, Some(facts));
     }
 
-    fn finalize_editor_imports_inner(&mut self, mut facts: Option<&mut ModuleSpecifierFactsCache>) {
+    /// Finalize one source registered again into an otherwise final graph.
+    pub(crate) fn finalize_editor_imports_of(
+        &mut self,
+        source: &Path,
+        facts: &mut ModuleSpecifierFactsCache,
+    ) {
+        let owned = self
+            .source_artifacts
+            .get(source)
+            .map(|owner| owner.virtual_paths.clone())
+            .unwrap_or_default();
+        self.finalize_editor_imports_inner(Some(&owned), Some(facts));
+    }
+
+    fn finalize_editor_imports_inner(
+        &mut self,
+        only: Option<&[PathBuf]>,
+        mut facts: Option<&mut ModuleSpecifierFactsCache>,
+    ) {
         if self.editor_document_options.is_none() {
             return;
         }
         let aliases = self.dependency_alias_map();
-        let rewrites = self
-            .virtual_files_sorted()
+        let files = match only {
+            Some(paths) => paths
+                .iter()
+                .filter_map(|path| self.virtual_files.get(path))
+                .collect(),
+            None => self.virtual_files_sorted(),
+        };
+        let rewrites = files
             .into_iter()
             .filter_map(|file| {
                 let source = self.module_source(file)?;

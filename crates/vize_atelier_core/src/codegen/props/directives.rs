@@ -218,7 +218,9 @@ fn generate_vbind_prop(
     }
     if let Some(exp) = &dir.exp {
         if is_class {
-            if !ctx.skip_normalize {
+            // A lone JSX class reaches `createVNode` normalization as authored.
+            let normalize = !ctx.skip_normalize && !(ctx.jsx_class && static_class.is_none());
+            if normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeClass);
                 ctx.push("_normalizeClass(");
             }
@@ -242,7 +244,7 @@ fn generate_vbind_prop(
             } else {
                 generate_expression(ctx, exp);
             }
-            if !ctx.skip_normalize {
+            if normalize {
                 ctx.push(")");
             }
         } else if is_style {

@@ -20,7 +20,7 @@
  * (`speedupStatus: "unavailable"`).
  */
 
-import { ENGINE_CLASSES } from "./check-gate-report.ts";
+import { ENGINE_CLASS_LABELS, SETTING_LANE_ENGINE_CLASSES } from "./typecheck-mapper-hosts.ts";
 import { OPTIONAL_TYPECHECK_VARIANTS } from "./typecheck-readiness.mjs";
 
 /**
@@ -38,6 +38,7 @@ export const ENGINE_CLASSES_BY_SURFACE = {
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
+    ...SETTING_LANE_ENGINE_CLASSES,
   },
   "large-check": {
     "golar-default": "tsgo-native",
@@ -46,6 +47,7 @@ export const ENGINE_CLASSES_BY_SURFACE = {
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
+    ...SETTING_LANE_ENGINE_CLASSES,
   },
 };
 
@@ -145,7 +147,7 @@ export function rankWithinEngineClasses(surface) {
     const fastest = ordered[0];
     return {
       engineClass,
-      label: ENGINE_CLASSES[engineClass] ?? engineClass,
+      label: ENGINE_CLASS_LABELS[engineClass] ?? engineClass,
       rows: ordered.map((variant) => ({
         id: variant.id,
         label: variant.label,

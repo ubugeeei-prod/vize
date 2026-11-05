@@ -107,16 +107,9 @@ pub(super) fn append_prop_checker_alias(
                 "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
             );
         }
-        if usage_needs_per_prop_aliases(usage) {
-            append!(
-                *ts,
-                "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_ValueProps_{shared_idx};\n",
-            );
-            append!(
-                *ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __{component_type_name}_FallthroughValue_{shared_idx}<K>;\n",
-            );
-        }
+        // Per-prop aliases either reuse the canonical prop alias or read its
+        // value-props contract directly. Intermediate aliases would be unused
+        // whenever every prop was already shared (TS6196 under noUnusedLocals).
         append!(
             *ts,
             "  type __{component_type_name}_Check_{idx} = __{component_type_name}_Check_{shared_idx};\n",
@@ -300,41 +293,96 @@ pub(super) fn prop_alias_type(
 ///
 /// A repeated attribute — a static `class` next to a bound `:class` — reuses the
 /// same child prop type, and emitting the alias twice would be a `TS2300` in the
-/// generated module, so the name set is deduplicated.
+/// generated module, so the name set is deduplicated. A later use of the same
+/// contract points at the canonical usage's alias when the prop shape matches,
+/// so the `$PropValue` type is emitted once.
 pub(super) fn append_per_prop_aliases(
     ts: &mut String,
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
-    hoist_shared_preamble: bool,
+    (hoist_shared_preamble, shared): (bool, Option<(usize, &ComponentUsage)>),
 ) {
     let mut declared_aliases = FxHashSet::default();
     for prop in &usage.props {
-        if prop.name_is_dynamic
-            || prop.name.as_str() == "key"
-            || (prop.name.as_str() == "ref" && !is_inline_ref_callback_prop(prop))
-        {
+        if !emits_prop_alias(prop) {
             continue;
         }
-        if prop.value.is_none() {
-            continue;
-        }
-        let camel_prop_name = to_camel_case(prop.name.as_str());
         let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
         if !declared_aliases.insert(safe_prop_name.clone()) {
             continue;
         }
+        if let Some((shared_idx, canonical)) = shared
+            && let Some(canonical_prop) =
+                first_emitted_prop_alias(canonical, safe_prop_name.as_str())
+        {
+            if same_prop_alias_shape(canonical_prop, prop) {
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
+                );
+                continue;
+            }
+            if canonical_prop.name == prop.name
+                && !is_inline_callback_prop(canonical_prop)
+                && is_inline_callback_prop(prop)
+                && !is_inline_ref_callback_prop(prop)
+            {
+                let callable = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {callable}<__{component_type_name}_{shared_idx}_prop_{safe_prop_name}>;\n",
+                );
+                continue;
+            }
+        }
+        let camel_prop_name = to_camel_case(prop.name.as_str());
         append!(
             *ts,
             "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
             prop_alias_type(
                 prop,
                 component_type_name,
-                idx,
+                shared.map_or(idx, |(shared_idx, _)| shared_idx),
                 &camel_prop_name,
                 prop.name.as_str(),
                 hoist_shared_preamble,
             ),
         );
     }
+}
+
+fn emits_prop_alias(prop: &PassedProp) -> bool {
+    !prop.name_is_dynamic
+        && prop.name.as_str() != "key"
+        && prop.value.is_some()
+        && (prop.name.as_str() != "ref" || is_inline_ref_callback_prop(prop))
+}
+
+fn first_emitted_prop_alias<'a>(
+    usage: &'a ComponentUsage,
+    safe_name: &str,
+) -> Option<&'a PassedProp> {
+    let mut declared = FxHashSet::default();
+    for prop in &usage.props {
+        if !emits_prop_alias(prop) {
+            continue;
+        }
+        let safe = to_safe_identifier_fragment(prop.name.as_str());
+        if !declared.insert(safe.clone()) {
+            continue;
+        }
+        if safe.as_str() == safe_name {
+            return Some(prop);
+        }
+    }
+    None
+}
+
+/// Same authored key and the same callback wrapper. A static value and an
+/// inline callback stay distinct so each check keeps its diagnostic code.
+fn same_prop_alias_shape(canonical: &PassedProp, prop: &PassedProp) -> bool {
+    canonical.name.as_str() == prop.name.as_str()
+        && is_inline_callback_prop(canonical) == is_inline_callback_prop(prop)
+        && is_inline_ref_callback_prop(canonical) == is_inline_ref_callback_prop(prop)
 }

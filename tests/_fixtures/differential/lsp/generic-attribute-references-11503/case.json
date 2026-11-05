@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/generic-attribute-references-11503",
+  "provenance": {
+    "fixCommit": "88db73dea16830eaabb8d2ed42e24f1edebfbfb9",
+    "issue": 11503,
+    "witnessPath": "tests/tooling/lsp-generic-attribute-navigation.test.ts",
+    "inputOrigin": "#11503 generic attribute with an imported constraint and a dependent parameter, used in script and template",
+    "contractOrigin": "Complete authored reference locations from the attribute declaration, a script usage and a template usage"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85"
+    },
+    {
+      "source": "types.ts.txt",
+      "runtimePath": "types.ts",
+      "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "5651f7d47cf04ef08a54d63f33dc7b16c95bed34d8374eae35d1134c8c69bbdf"
+  },
+  "method": "textDocument/references",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete type-service-backed generic attribute navigation; source-inspected input custody does not establish native whole-product parity"
+}

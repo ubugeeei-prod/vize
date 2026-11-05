@@ -1,0 +1,49 @@
+{
+  "sourceHead": "d204ad2f3a2879ba63df9e70973fb5b8c0ea0a82",
+  "actualSource": "5674cf3dcf8c3c7056a8dff83e74c300f4b50945",
+  "tree": "b21493ad22f9968ce9ad840dbb96aeb5170adecf",
+  "run": 41919558701,
+  "job": 126889612168,
+  "producerJob": 126888588548,
+  "transport": "Complete JSON string from the Node AssertionError actual field in the completed source job log, line 3798; not a separate uploaded artifact.",
+  "upstream": {
+    "repository": "vuejs/router",
+    "revision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+    "includedPaths": [
+      "packages/playground/src/AppLink.vue",
+      "packages/router/src"
+    ],
+    "routerLinkSha256": "cea86ffd7d4d8cabbe05de0bb9603b17575c0e9bf2c4900a45b208f8f4dcb6a8"
+  },
+  "configuration": {
+    "compilerOptions": {
+      "paths": {
+        "vue-router": [
+          "./packages/router/src/index.ts"
+        ]
+      }
+    }
+  },
+  "output": {
+    "path": "broken.current.json",
+    "bytes": 2217,
+    "sha256": "9938ebe8a1628dee67ae443d4ebba6c921d459284f88458b3bb66900f792f279"
+  },
+  "allowedChanges": [
+    "Exactly the authored eight-field runtime props declaration",
+    "Exactly one fourteen-key return permutation in the broken-template fallback"
+  ],
+  "oldFixturesChanged": false,
+  "repeatAfterHeadQualified": false,
+  "entryInput": {
+    "path": "../compiler-patch-successors-10923/vue-router.broken.vue.txt",
+    "sha256": "6ddb0231e81f4e6fae7d241c911e1b5141ca63e8c72546717cc05d796d95547a"
+  },
+  "configurationBytes": "{\"compilerOptions\":{\"paths\":{\"vue-router\":[\"./packages/router/src/index.ts\"]}}}",
+  "configurationSha256": "2c9a2f906367c60e9dc4463ecc5788073968dbd795e815c901536f5e71b6ad7d",
+  "sourceCause": {
+    "bindings": "crates/vize_atelier_sfc/src/script/context/props.rs:extract_single_prop_from_type inserts real props into the shared binding map",
+    "fallback": "crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs:collect_setup_bindings iterates the map before filtering props",
+    "map": "davinci/vize_l0/src/lib.rs reexports rustc_hash::FxHashMap"
+  }
+}

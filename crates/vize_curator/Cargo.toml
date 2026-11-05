@@ -9,7 +9,6 @@ description = "Curator - local inspection and reporting utilities for Vize"
 publish = false
 
 [dependencies]
-vize_carton.workspace = true
 oxc_allocator = { workspace = true }
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }
@@ -24,13 +23,8 @@ vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 # The L1 surface tree observed by the inspector.
 vize_l1 = { workspace = true }
-# The full stage ladder (L1 -> L2 -> L3) the Spolvero feed pages, produced by
-# the real lowerings and the L2 transform pass manager rather than re-derived,
-# and the transform pipeline whose optimization remarks (P3-13) it carries.
+# The L2 transform pipeline whose optimization remarks (P3-13) the stage feed carries.
 vize_l1_to_l2 = { workspace = true }
-vize_l2 = { workspace = true }
-vize_l2_to_l3 = { workspace = true }
-vize_l3 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true
@@ -38,7 +32,3 @@ insta.workspace = true
 
 [lints]
 workspace = true
-
-[[test]]
-name = "profile_allocation_isolation"
-harness = false

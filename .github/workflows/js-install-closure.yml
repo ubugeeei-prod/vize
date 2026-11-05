@@ -6,6 +6,7 @@ on:
       - "tools/support/compat/github/install-js-checks.ts"
       - "tools/support/compat/github/js-install-closure.mjs"
       - "tests/tooling/js-install-dependency-closure.test.mjs"
+      - "tests/fixtures/ci/js-install-closure/install-js-checks.fc745.ts.txt"
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -23,7 +24,7 @@ jobs:
         with: { ref: "${{ github.sha }}", persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ matrix.role == 'before' && 'fc745ea5a2c9efcf6b1549d6312c61d4f2770697' || github.sha }}
+          ref: ${{ github.sha }}
           path: source
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

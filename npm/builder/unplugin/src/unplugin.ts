@@ -1,20 +1,19 @@
-import fs from "node:fs";
 import { createRequire } from "node:module";
-import path from "node:path";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
 import { compileJsxModule, compileVueModule } from "./compiler.ts";
-import { listSfcSrcBlocks } from "./src-blocks.ts";
-import { isRelativeSfcSrc, resolveSfcSrcRequests } from "../../shared/sfc-src.ts";
-import { isJsxFile, isVueFile, isVueStyleRequest, parseVueRequest } from "./request.ts";
-import { generateOutput } from "./style.ts";
 import {
-  isPreprocessorLang,
-  preprocessStyle,
-  scopeCss,
-  transformStyleVars,
-} from "./style-scope.ts";
+  CSS_PIPELINE_HINT,
+  hostCss,
+  isStylePipelineError,
+  resolveSrcRequests,
+  type HostBuildError,
+} from "./host.ts";
+import { isJsxFile, isVueFile, isVueStyleRequest, parseVueRequest } from "./request.ts";
+import { loadStyleBlock } from "./style-module.ts";
+import { generateOutput } from "./style.ts";
+import { transformStyleVars } from "./style-scope.ts";
 import {
   findVirtualModules,
   registerWebpackStyleRule,
@@ -24,8 +23,8 @@ import {
 import { stripTypeScript } from "./strip-types.ts";
 import type {
   CachedCompiledModule,
-  CompiledModule,
   NormalizedVizeUnpluginOptions,
+  StyleBlockInfo,
   VizeTemplateSyntax,
   VizeVueVersion,
   VizeUnpluginOptions,
@@ -165,113 +164,40 @@ export function injectWebpackVueDefines(
   }
 }
 
-async function loadStyleBlock(
-  context: unknown,
-  id: string,
-  options: NormalizedVizeUnpluginOptions,
-  cache: Map<string, CachedCompiledModule>,
-): Promise<string> {
-  const request = parseVueRequest(id);
-  const index = request.query.index ?? -1;
-  if (index < 0) {
-    return "";
-  }
-
-  let compiled: CompiledModule | undefined = cache.get(request.filename)?.compiled;
-
-  if (!compiled && fs.existsSync(request.filename)) {
-    const source = fs.readFileSync(request.filename, "utf8");
-    const resolutions = await resolveSrcRequests(context, request.filename, source);
-    compiled = compileVueModule(request.filename, source, options, cache, resolutions).compiled;
-  }
-
-  const block = compiled?.styles[index];
-  if (!compiled || !block) {
-    return "";
-  }
-  const source = transformStyleVars(
-    block.content,
-    compiled.scopeId,
-    options.isProduction ? request.filename : undefined,
-  );
-
-  // Vue order: preprocess, then scope. Webpack never loads these ids; its
-  // style files go through the host's loaders instead (webpack-styles.ts).
-  const scoped = request.query.scoped;
-  if (!scoped) {
-    return source;
-  }
-  const css =
-    block.lang && isPreprocessorLang(block.lang)
-      ? await preprocessStyle(source, block.lang, request.filename, options.root)
-      : source;
-  return scopeCss(css, scoped);
-}
-
-type HostResolve = (request: string, importer: string) => Promise<string | null | undefined>;
-type RollupLikeResolve = (
-  source: string,
-  importer: string,
-  options: { skipSelf: boolean },
-) => Promise<{ id: string; external?: boolean | string } | null | undefined>;
-type LoaderResolve = (context: string, request: string) => Promise<string>;
-type EsbuildResolve = (
-  path: string,
-  options: { kind: "import-statement"; resolveDir: string; importer: string },
-) => Promise<{ path: string; external: boolean; errors: unknown[] }>;
-
-/** The bundler's own module resolver, or null for a host that offers none. */
-function hostResolver(context: unknown): HostResolve | null {
-  const ctx = context as { resolve?: RollupLikeResolve; getNativeBuildContext?: () => unknown };
-  if (typeof ctx.resolve === "function") {
-    const resolve = ctx.resolve;
-    return async (request, importer) => {
-      const result = await resolve.call(context, request, importer, { skipSelf: true });
-      // An external module is not bundled, so there is no file to inline.
-      return result && !result.external ? result.id : null;
-    };
-  }
-  const native = ctx.getNativeBuildContext?.() as
-    | { framework: string; loaderContext?: { getResolve: () => LoaderResolve } }
-    | { framework: "esbuild"; build: { resolve: EsbuildResolve } }
-    | undefined;
-  if (native && "loaderContext" in native && native.loaderContext) {
-    const resolve = native.loaderContext.getResolve();
-    return (request, importer) => resolve(path.dirname(importer), request).catch(() => null);
-  }
-  if (native && "build" in native) {
-    const { build } = native;
-    return async (request, importer) => {
-      const result = await build.resolve(request, {
-        kind: "import-statement",
-        resolveDir: path.dirname(importer),
-        importer,
-      });
-      return result.errors.length > 0 || result.external ? null : result.path;
-    };
-  }
-  return null;
-}
-
-/** Resolve the SFC's `src` module requests (packages, aliases) with the bundler. */
-async function resolveSrcRequests(
-  context: unknown,
-  importer: string,
-  source: string,
-): Promise<Map<string, string> | undefined> {
-  const requests = listSfcSrcBlocks(importer, source).filter((src) => !isRelativeSfcSrc(src));
-  const resolve = requests.length > 0 ? hostResolver(context) : null;
-  return resolve ? resolveSfcSrcRequests(importer, requests, resolve) : undefined;
-}
-
 type VizeUnpluginInput = VizeUnpluginOptions | undefined;
 
 export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, meta) => {
   const options = normalizeOptions(rawOptions);
   const filter = createFilter(options.include, options.exclude);
   const cache = new Map<string, CachedCompiledModule>();
+  const jsxStyles = new Map<string, StyleBlockInfo[]>();
   const webpackStyleFiles = meta.framework === "webpack";
   let virtualModules: ReturnType<typeof findVirtualModules>;
+  /** A webpack style block is a virtual file the host's rules match (webpack-styles.ts). */
+  const writeWebpackStyle = (
+    id: string,
+    block: StyleBlockInfo,
+    scoped: string | null,
+    content: string,
+  ): string => {
+    const stylePath = webpackStylePath(id, block, scoped);
+    if (!virtualModules) {
+      throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
+    }
+    virtualModules.writeModule(stylePath, content);
+    return webpackStyleRequest(stylePath, block);
+  };
+  let loadedStyles = false;
+  const rollupHooks = {
+    buildStart() {
+      loadedStyles = false;
+    },
+    buildEnd(this: { warn(message: string): void }, error?: HostBuildError) {
+      if (error && loadedStyles && isStylePipelineError(error)) {
+        this.warn(CSS_PIPELINE_HINT);
+      }
+    },
+  };
 
   return {
     name: "unplugin-vize",
@@ -299,8 +225,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         return null;
       }
 
+      loadedStyles = true;
       return {
-        code: await loadStyleBlock(this, id, options, cache),
+        code: await loadStyleBlock(this, id, options, cache, jsxStyles),
         map: null,
       };
     },
@@ -333,15 +260,25 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         if (!filter(id)) {
           return null;
         }
-        const { code: jsxCode, map: jsxMap, warnings } = compileJsxModule(id, code, options);
+        const {
+          code: jsxCode,
+          map: jsxMap,
+          warnings,
+          styles,
+        } = compileJsxModule(id, code, options, {
+          hostCss: hostCss(this, meta.framework),
+          styleRequest: webpackStyleFiles
+            ? (block, scoped) => writeWebpackStyle(id, block, scoped, block.content)
+            : undefined,
+        });
+        jsxStyles.set(id, styles);
         for (const warning of warnings) {
           this.warn(`[vize] ${warning}`);
         }
         // HMR (deferred, #1533): the JSX compiler emits a render-function-only
         // module with no component object to attach a Vue HMR record to (unlike
         // the `.vue` path's `_sfc_main`), so a state-preserving boundary awaits
-        // the JSX component-wrapper output. Source map + preamble plumbing land
-        // now (`map` above, preamble inside `compileJsxModule`).
+        // the JSX component-wrapper output.
         return {
           code: jsxCode,
           map: jsxMap,
@@ -370,23 +307,20 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       const generated = generateOutput(compiled, {
         isProduction: options.isProduction,
         isDev: false,
+        hostCss: hostCss(this, meta.framework),
         filePath: id,
         styleRequest: webpackStyleFiles
-          ? (block, scoped) => {
-              const stylePath = webpackStylePath(id, block, scoped);
-              if (!virtualModules) {
-                throw new Error("[vize] webpack style blocks need the plugin's virtual modules.");
-              }
-              virtualModules.writeModule(
-                stylePath,
+          ? (block, scoped) =>
+              writeWebpackStyle(
+                id,
+                block,
+                scoped,
                 transformStyleVars(
                   block.content,
                   compiled.scopeId,
                   options.isProduction ? id : undefined,
                 ),
-              );
-              return webpackStyleRequest(stylePath, block);
-            }
+              )
           : undefined,
       });
 
@@ -401,7 +335,11 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       if (isVueFile(id)) {
         cache.delete(id);
       }
+      jsxStyles.delete(id);
     },
+
+    rollup: rollupHooks,
+    rolldown: rollupHooks,
 
     webpack(compiler) {
       if (!options.hostCompiler) {
@@ -416,8 +354,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
     },
 
     esbuild: {
-      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
-      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
+      // A `<style src>` module's path sits beside its src file (styleRequestId).
+      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
+      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

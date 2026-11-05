@@ -1,15 +1,21 @@
 ---
 title: "SSR rules"
+description: "Code that breaks or behaves differently during server rendering and hydration."
 ---
 
 # SSR rules
 
-Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show what changes; copying an example gives you the complete source. Each rule also states its current support limits.
+Code that breaks or behaves differently during server rendering and hydration.
 
+Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-| Rule | Examples | Purpose |
+## Default (2)
+
+Added by `happy-path`, the default preset.
+
+| Rule | What it checks | Auto-fix |
 | --- | --- | --- |
-| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [Bad](https://vizejs.dev/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [Good](https://vizejs.dev/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | Disallow browser-only globals in SSR context |
-| [`ssr/no-hydration-mismatch`](https://vizejs.dev/rules/ssr.html#ssr-no-hydration-mismatch) | [Bad](https://vizejs.dev/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [Good](https://vizejs.dev/rules/ssr.html#ssr-no-hydration-mismatch-good) | Disallow non-deterministic values that cause hydration mismatch |
+| <span id="ssr-no-browser-globals-in-ssr"></span>[`ssr/no-browser-globals-in-ssr`](./reference/ssr-no-browser-globals-in-ssr.md) | Disallow browser-only globals in SSR context. |  |
+| <span id="ssr-no-hydration-mismatch"></span>[`ssr/no-hydration-mismatch`](./reference/ssr-no-hydration-mismatch.md) | Disallow non-deterministic values that cause hydration mismatch. |  |
 
-[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md) · [Attributes across components](./project/vue-cross-file-attrs-fallthrough.md)
+[Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

@@ -19,8 +19,21 @@ export function sanitizeNuxtDevStylesheetLinks(html: string, buildAssetsDir = "/
     return pathPart.split(/[\\/]/).some((segment) => segment === "..");
   }
 
-  function isAllowedNuxtDevStylesheetPath(pathPart: string): boolean {
+  /** A `<style src>` module: the src stylesheet, with a style query naming its SFC. */
+  function isSfcStyleSrcModule(pathPart: string, query: string): boolean {
+    if (!/\.(?:css|scss|sass|less|styl|stylus)$/i.test(pathPart)) return false;
+    // The query comes from an HTML attribute.
+    const params = new URLSearchParams(query.replaceAll("&amp;", "&"));
     return (
+      params.has("vue") &&
+      params.get("type") === "style" &&
+      (params.get("vize-file")?.endsWith(".vue") ?? false)
+    );
+  }
+
+  function isAllowedNuxtDevStylesheetPath(pathPart: string, query: string): boolean {
+    return (
+      isSfcStyleSrcModule(pathPart, query) ||
       pathPart.startsWith("@fs/") ||
       pathPart.startsWith("@id/") ||
       pathPart.startsWith("assets/") ||
@@ -41,14 +54,15 @@ export function sanitizeNuxtDevStylesheetLinks(html: string, buildAssetsDir = "/
       return true;
     }
 
-    const pathPart = href.slice(normalizedAssetsDir.length).split("?")[0].split("#")[0];
+    const [pathAndQuery] = href.slice(normalizedAssetsDir.length).split("#");
+    const [pathPart, query = ""] = pathAndQuery.split("?", 2);
     const decodedPath = decodePathPart(pathPart);
 
     if (decodedPath.includes("\0") || hasUnsafePathSegment(decodedPath)) {
       return false;
     }
 
-    return isAllowedNuxtDevStylesheetPath(decodedPath);
+    return isAllowedNuxtDevStylesheetPath(decodedPath, query);
   }
 
   return html.replace(

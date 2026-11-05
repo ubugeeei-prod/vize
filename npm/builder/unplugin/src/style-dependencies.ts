@@ -1,5 +1,6 @@
 import { parseCssAst } from "@vizejs/native";
-import type { StyleBlockNapi } from "./types.ts";
+import { isPreprocessorLang } from "./style-scope.ts";
+import type { StyleBlockInfo } from "./types.ts";
 
 function hasImportRule(ast: unknown): boolean {
   if (typeof ast !== "object" || ast === null || !("rules" in ast)) {
@@ -14,28 +15,26 @@ function hasImportRule(ast: unknown): boolean {
   );
 }
 
-/** The inline runtime style path cannot resolve external CSS dependencies. */
-export function assertSupportedStyleDependencies(
-  styles: readonly StyleBlockNapi[],
-  filename: string,
-): void {
+/**
+ * CSS injected at run time is a string in the page: nothing compiles a
+ * preprocessor block or resolves an `@import` there.
+ */
+export function assertInjectableCss(styles: readonly StyleBlockInfo[], filename: string): void {
   for (const style of styles) {
-    // `src` blocks are inlined before compilation; one left here was unreadable.
-    if (style.src !== undefined) {
+    // An external `<style src>` is imported, not injected.
+    if (style.src) continue;
+    if (isPreprocessorLang(style.lang)) {
       throw new Error(
-        `[vize] ${filename}: <style src=${JSON.stringify(style.src)}> could not be inlined by @vizejs/unplugin. Write it as <style src="./file.css"> with a quoted relative path, or use @vizejs/vite-plugin.`,
+        `[vize] ${filename}: <style lang="${style.lang}"> needs a bundler CSS pipeline. @vizejs/unplugin injects CSS at run time under Babel and esbuild without \`bundle\`, where nothing compiles ${style.lang}. Bundle the build, write the block as CSS, or use @vizejs/vite-plugin.`,
       );
     }
-
-    // Modules and preprocessors retain their existing host CSS pipeline. Only
-    // plain inline CSS is injected directly into JavaScript by this plugin.
-    if (style.module || (style.lang && style.lang !== "css") || !style.content.includes("@")) {
+    if (!style.content.includes("@")) {
       continue;
     }
     const parsed: { ast?: unknown } = parseCssAst(style.content, { filename });
     if (hasImportRule(parsed.ast)) {
       throw new Error(
-        `[vize] ${filename}: CSS @import in <style> is not supported by @vizejs/unplugin's inline style output. Inline the imported CSS, or use @vizejs/vite-plugin for stylesheet dependency resolution.`,
+        `[vize] ${filename}: CSS @import in <style> needs a bundler CSS pipeline. @vizejs/unplugin injects CSS at run time under Babel and esbuild without \`bundle\`, where nothing resolves the import. Inline the imported CSS, bundle the build, or use @vizejs/vite-plugin.`,
       );
     }
   }

@@ -1,0 +1,176 @@
+[
+  {
+    "children": [
+      {
+        "kind": 19,
+        "name": "div",
+        "range": {
+          "end": {
+            "character": 20,
+            "line": 9
+          },
+          "start": {
+            "character": 2,
+            "line": 9
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 6,
+            "line": 9
+          },
+          "start": {
+            "character": 3,
+            "line": 9
+          }
+        }
+      }
+    ],
+    "kind": 2,
+    "name": "template",
+    "range": {
+      "end": {
+        "character": 11,
+        "line": 10
+      },
+      "start": {
+        "character": 0,
+        "line": 8
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 9,
+        "line": 8
+      },
+      "start": {
+        "character": 1,
+        "line": 8
+      }
+    }
+  },
+  {
+    "detail": "ts",
+    "kind": 2,
+    "name": "script",
+    "range": {
+      "end": {
+        "character": 9,
+        "line": 2
+      },
+      "start": {
+        "character": 0,
+        "line": 0
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 7,
+        "line": 0
+      },
+      "start": {
+        "character": 1,
+        "line": 0
+      }
+    }
+  },
+  {
+    "children": [
+      {
+        "kind": 14,
+        "name": "x",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 5
+          },
+          "start": {
+            "character": 0,
+            "line": 5
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 7,
+            "line": 5
+          },
+          "start": {
+            "character": 6,
+            "line": 5
+          }
+        }
+      }
+    ],
+    "detail": "ts",
+    "kind": 2,
+    "name": "script setup",
+    "range": {
+      "end": {
+        "character": 9,
+        "line": 6
+      },
+      "start": {
+        "character": 0,
+        "line": 4
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 7,
+        "line": 4
+      },
+      "start": {
+        "character": 1,
+        "line": 4
+      }
+    }
+  },
+  {
+    "kind": 2,
+    "name": "style scoped",
+    "range": {
+      "end": {
+        "character": 8,
+        "line": 16
+      },
+      "start": {
+        "character": 0,
+        "line": 12
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 6,
+        "line": 12
+      },
+      "start": {
+        "character": 1,
+        "line": 12
+      }
+    }
+  },
+  {
+    "kind": 2,
+    "name": "style module=m",
+    "range": {
+      "end": {
+        "character": 8,
+        "line": 22
+      },
+      "start": {
+        "character": 0,
+        "line": 18
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 6,
+        "line": 18
+      },
+      "start": {
+        "character": 1,
+        "line": 18
+      }
+    }
+  }
+]

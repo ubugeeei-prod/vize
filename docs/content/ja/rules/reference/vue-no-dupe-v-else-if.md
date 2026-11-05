@@ -1,18 +1,39 @@
 ---
 title: "vue/no-dupe-v-else-if"
+description: "v-if / v-else-if の条件重複を検出します。"
 ---
 
 # `vue/no-dupe-v-else-if`
 
 v-if / v-else-if の条件重複を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+最初と同じ ready の条件を else-if に書き、後の分岐に到達できません。
+
+```vue annotate="remove:3"
+<template>
+  <p v-if="status === 'ready'">Ready</p>
+  <p v-else-if="status === 'ready'">Still ready</p>
+</template>
+```
+
+## 良い例
+
+二つ目で別の loading の状態を検査し、else-if に到達できる条件にします。
+
+```vue annotate="add:3"
+<template>
+  <p v-if="status === 'ready'">Ready</p>
+  <p v-else-if="status === 'loading'">Loading</p>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-最初と同じ ready の条件を else-if に書き、後の分岐に到達できません。
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'ready'">Still ready</p>
-</template>
-```
-
-## 良い
-
-二つ目で別の loading の状態を検査し、else-if に到達できる条件にします。
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'loading'">Loading</p>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34)

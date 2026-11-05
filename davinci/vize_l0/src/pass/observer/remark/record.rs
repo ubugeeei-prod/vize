@@ -2,7 +2,7 @@
 //!
 //! [`RemarkCollector`] is the one observer that stores remark text; it is
 //! what every serialized form (the `[remarks]` folio page, the JSON
-//! document, the Spolvero feed) is produced from, so they cannot disagree.
+//! document, the stage feed) is produced from, so they cannot disagree.
 //!
 //! # Canonical order
 //!

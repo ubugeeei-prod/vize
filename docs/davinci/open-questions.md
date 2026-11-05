@@ -182,4 +182,4 @@ settles.
 
 ## Completion gates (2026-11-03)
 
-Three definitions in the [completion gates](./completion-gates.md#pending-maintainer-decisions) wait for the maintainer: the stability period before legacy deletion, the framework scope of "complete", and whether `davinci` may stay in paths as the program name.
+Decided: see [maintainer decisions](./completion-gates.md#maintainer-decisions-2026-11-03).

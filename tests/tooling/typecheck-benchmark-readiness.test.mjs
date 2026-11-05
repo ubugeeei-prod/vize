@@ -95,9 +95,9 @@ void test("every ranked lane proves minimal and timed-corpus work before measuri
     assert.equal(lane.correctness.diagnosticCount, 1);
     assert.match(lane.correctness.diagnosticFingerprint, /^[a-f0-9]{64}$/u);
     const callsBeforeMeasurement = calls.length;
-    assert.equal(lane.measure(), 12.5);
+    assert.deepEqual(lane.measure(), { ms: 12.5, cpuMs: null, rssKb: null });
     assert.equal(calls.length, callsBeforeMeasurement + 1);
-    assert.equal(lane.measure(), 12.5);
+    assert.deepEqual(lane.measure(), { ms: 12.5, cpuMs: null, rssKb: null });
     assert.equal(calls.length, callsBeforeMeasurement + 2);
   }
 });
@@ -244,13 +244,14 @@ void test("source messages containing error identifiers are diagnostics, includi
   );
 });
 
-void test("all six lanes check the requested project and native lanes pin their backend", () => {
+void test("every lane checks the requested project and native lanes pin their backend", () => {
   const calls = [];
   const variants = createTypecheckToolVariants({
     fileCount: 20,
     vizeBin: "/bin/vize",
     corsaPath: "/bin/pinned-tsgo",
     resolveWorkspaceBin: (name) => `/bin/${name}`,
+    cpus: 32,
     runCommand: (bin, args, options) => {
       calls.push({ bin, args, options });
       return plain();
@@ -265,6 +266,10 @@ void test("all six lanes check the requested project and native lanes pin their 
       "golar-default",
       "vize-check-1t",
       "vize-check-max",
+      "vize-check-checkers-4",
+      "vize-check-checkers-8",
+      "vize-check-checkers-16",
+      "vize-check-checkers-max",
     ],
   );
   for (const variant of variants) variant.run("/project");
@@ -278,6 +283,15 @@ void test("all six lanes check the requested project and native lanes pin their 
   assert.equal(calls[4].options.env.RAYON_NUM_THREADS, "1");
   assert.ok(calls[4].args.includes("--servers"));
   assert.ok(!calls[5].args.includes("--servers"));
+  assert.deepEqual(
+    calls.slice(6).map((call) => call.args.slice(call.args.indexOf("--checkers"))),
+    [
+      ["--checkers", "4"],
+      ["--checkers", "8"],
+      ["--checkers", "16"],
+      ["--checkers", "32"],
+    ],
+  );
 });
 
 void test("native JSON lanes and path-hashed virtual diagnostics survive the corpus copy", (t) => {
@@ -309,5 +323,5 @@ void test("native JSON lanes and path-hashed virtual diagnostics survive the cor
     gated.correctness.diagnosticFingerprint,
     gated.correctness.corpusBaselineFingerprint,
   );
-  assert.equal(gated.measure(), 12.5);
+  assert.deepEqual(gated.measure(), { ms: 12.5, cpuMs: null, rssKb: null });
 });

@@ -53,10 +53,13 @@ export interface PrecompileCacheEntry {
  * Whether `module` may be persisted.
  *
  * Modules assembled from `src` imports depend on sibling files that this cache
- * does not hash, so they are recompiled on every cold start instead.
+ * does not hash. Project revisions belong to a single native process and cannot
+ * register watches after a restart. Both kinds recompile on every cold start.
  */
 export function isPersistablePrecompileModule(module: CompiledModule): boolean {
-  return !module.dependencies || module.dependencies.length === 0;
+  return (
+    module.typeProject === undefined && (!module.dependencies || module.dependencies.length === 0)
+  );
 }
 
 function isCompiledModule(value: unknown): value is CompiledModule {
@@ -79,7 +82,7 @@ function isCompiledModule(value: unknown): value is CompiledModule {
   if (module.macroArtifacts !== undefined && !Array.isArray(module.macroArtifacts)) {
     return false;
   }
-  // `src`-import modules are never written; reject them if one shows up anyway.
+  // Reject old persisted entries with dependencies or process-local projects.
   return isPersistablePrecompileModule(module as CompiledModule);
 }
 
@@ -122,7 +125,8 @@ function decompressBody(codec: unknown, body: Buffer): Buffer | null {
 
 /** `<meta JSON>\n<code><css>\n` -- the trailing LF marks the record boundary. */
 function encodeRecord(module: CompiledModule): Buffer {
-  const { code, css, ...rest } = module;
+  // The entry's hash already names `source`; restore reattaches the text it read.
+  const { code, css, source: _source, ...rest } = module;
   const codeBytes = Buffer.from(code, "utf8");
   const cssBytes = css === undefined ? null : Buffer.from(css, "utf8");
   const meta = Buffer.from(

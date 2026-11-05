@@ -55,7 +55,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
     pub allocator: &'a Allocator,
     pub root: &'a RootNode<'a>,
-    pub descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
     pub analysis: TemplateAnalysis<'a>,
     pub template_syntax: Option<&'a vize_armature::parser::TemplateSyntaxFacts<'a>>,
 }
@@ -81,6 +81,9 @@ impl Linter {
         template_source: &str,
         sfc_source: Option<&str>,
     ) -> usize {
+        let Some(prefix) = self.registry.ecosystem_template_prefix() else {
+            return self.registry.rules().len();
+        };
         if !matches!(self.preset, Some(LintPreset::Ecosystem))
             || self.enabled_rules.is_some()
             || !self.disabled_rules.is_empty()
@@ -89,34 +92,27 @@ impl Linter {
             return self.registry.rules().len();
         }
 
-        self.registry
-            .rules()
-            .len()
-            .saturating_sub(crate::rules::ecosystem::TEMPLATE_RULE_COUNT)
+        prefix
     }
 
     fn lint_sfc_level<'a>(
         &self,
         source: &'a str,
         filename: &str,
-        shared_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+        shared: Option<(
+            &'a vize_atelier_sfc::SfcDescriptor<'a>,
+            &'a dyn crate::linter::sfc_scripts::ScriptParses,
+        )>,
     ) -> LintResult {
         let capacity = (source.len() * 2).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
-        let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
-        ctx.set_help_level(self.help_level);
-
-        // SFC-level rules are uncommon but expensive when each one reparses the file.
-        // Reuse the descriptor produced by the main lint pipeline whenever available,
-        // and only parse lazily when a caller enters this path without one.
+        let script_allocator = oxc_allocator::Allocator::default();
         let owned_descriptor;
-        let shared_descriptor = if !self.has_active_shared_sfc_descriptor_rules() {
+        let owned_scripts;
+        let shared = if !self.has_active_shared_sfc_descriptor_rules() {
             None
-        } else if let Some(descriptor) = shared_descriptor {
-            Some(descriptor)
+        } else if shared.is_some() {
+            shared
         } else {
             owned_descriptor = profile!(
                 "patina.sfc.level_rules.parse_sfc",
@@ -129,11 +125,26 @@ impl Linter {
                 )
                 .ok()
             );
-            owned_descriptor.as_ref()
+            owned_scripts = owned_descriptor.as_ref().map(|descriptor| {
+                crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor)
+            });
+            owned_descriptor.as_ref().zip(
+                owned_scripts
+                    .as_ref()
+                    .map(|scripts| scripts as &dyn crate::linter::sfc_scripts::ScriptParses),
+            )
         };
+        let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
+        ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
+        ctx.set_help_level(self.help_level);
 
-        if let Some(descriptor) = shared_descriptor {
+        // SFC-level rules reuse the pipeline's descriptor and script parses; a
+        // caller without them gets one parse here.
+        if let Some((descriptor, scripts)) = shared {
             ctx.set_sfc_descriptor(descriptor);
+            ctx.set_sfc_scripts(scripts);
         }
 
         profile!("patina.sfc.rules.run_on_sfc", {

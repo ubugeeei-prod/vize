@@ -120,15 +120,18 @@ fn an_unresolvable_first_party_alias_does_not_force_a_parse() {
 }
 
 #[test]
-fn dependency_probe_supports_javascript_and_does_not_append_to_explicit_extensions() {
+fn dependency_probe_supports_javascript_and_appends_to_a_vue_without_its_sfc() {
     let root = case_dir("javascript-probe");
     std::fs::create_dir_all(&root).unwrap();
     let javascript = root.join("entry.mjs");
     std::fs::write(&javascript, "export {};\n").unwrap();
-    std::fs::write(root.join("missing.vue.ts"), "export {};\n").unwrap();
+    let companion = root.join("missing.vue.ts");
+    std::fs::write(&companion, "export {};\n").unwrap();
 
     assert_eq!(probe_candidates(&javascript), Some(javascript));
-    assert_eq!(probe_candidates(&root.join("missing.vue")), None);
+    // TypeScript resolves `./missing.vue` to `missing.vue.ts` (#11496).
+    assert_eq!(probe_candidates(&root.join("missing.vue")), Some(companion));
+    assert_eq!(probe_candidates(&root.join("absent.vue")), None);
     let _ = std::fs::remove_dir_all(&root);
 }
 

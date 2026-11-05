@@ -24,19 +24,38 @@ const NUXT_VUE_TYPE_GATED_TRANSFORMS = new Set([
   "nuxt:tree-shake-composables:transform",
   "nuxt:vue-async-context",
   "nuxt:prehydrate-transform",
+  "nuxt:navigate-to-early-return",
 ]);
+
+/**
+ * Nuxt transforms of the SFC text, ordered before the compiler, whose gate
+ * admits only the whole file or a template block. `nuxt:components-loader-pre`
+ * and `nuxt:server-only-component-transform` gate on `isVue(id)`, which a Vize
+ * id passes as it is.
+ */
+const NUXT_SFC_SOURCE_TRANSFORMS = new Set(["nuxt:server-devonly:transform"]);
 
 /** The id Vize gives a compiled SFC module (`Foo.vue?vue&vize`). */
 export const VIZE_VUE_MODULE_ID_RE = /\.vue\?vue&vize(?:-ssr)?(?:&|$)/;
 
-/** Give Nuxt's `isVue(type)` gate a script identity while the plugin runs. */
+/**
+ * Give Nuxt's `isVue(type)` gate a script identity while the plugin runs, in
+ * @vitejs/plugin-vue's shape: Nuxt 4.6's gates match `vue&type=script` with the
+ * two keys adjacent (`/[?&]vue&type=script\b/`).
+ */
 export function toNuxtVueTransformId(id: string): string {
   if (!isVizeGeneratedVueModuleId(id)) return id;
 
-  const hasQuery = id.includes("?");
-  const hasVueMarker = /[?&]vue(?:[=&]|$)/.test(id);
-  const suffix = `${hasQuery ? "&" : "?"}${hasVueMarker ? "" : "vue&"}type=script`;
-  return id + suffix;
+  const marker = /([?&])vue=?(?=&|$)/;
+  if (marker.test(id)) return id.replace(marker, "$1vue&type=script");
+  return `${id}${id.includes("?") ? "&" : "?"}vue&type=script`;
+}
+
+/** @vitejs/plugin-vue's id for a transform of the whole SFC text: the file itself. */
+export function toNuxtSfcSourceTransformId(id: string): string {
+  if (!isVizeGeneratedVueModuleId(id)) return id;
+  const queryIndex = id.indexOf("?");
+  return (queryIndex === -1 ? id : id.slice(0, queryIndex)).replace(/\.vue\.tsx?$/, ".vue");
 }
 
 type FilterPattern = string | RegExp;
@@ -73,24 +92,23 @@ export function admitVizeModulesInHookFilter(filter: unknown): unknown {
 
 /**
  * Nuxt's core transforms classify Vue submodules by their `type=` query. Vize
- * owns a single generated JavaScript module for the complete SFC, so expose it
- * as the script submodule only for those transforms and retain its canonical
- * Vite identity everywhere else.
+ * owns a single module for the complete SFC, so expose it as the script
+ * submodule to the transforms after the compiler and as the file itself to
+ * those of the SFC text, and retain its canonical Vite identity everywhere else.
  */
 export function patchNuxtVueTypeGatedTransform(plugin: VitePluginWithTransform | undefined): void {
-  if (
-    !plugin ||
-    plugin.__vizeNuxtVueTransformPatched ||
-    !plugin.name ||
-    !NUXT_VUE_TYPE_GATED_TRANSFORMS.has(plugin.name)
-  ) {
-    return;
-  }
+  if (!plugin || plugin.__vizeNuxtVueTransformPatched || !plugin.name) return;
+  const toHostId = NUXT_VUE_TYPE_GATED_TRANSFORMS.has(plugin.name)
+    ? toNuxtVueTransformId
+    : NUXT_SFC_SOURCE_TRANSFORMS.has(plugin.name)
+      ? toNuxtSfcSourceTransformId
+      : null;
+  if (!toHostId) return;
 
   if (typeof plugin.transform === "function") {
     const original = plugin.transform as ViteTransformFunction;
     plugin.transform = function (this: unknown, code: string, id: string, ...args: unknown[]) {
-      return original.call(this, code, toNuxtVueTransformId(id), ...args);
+      return original.call(this, code, toHostId(id), ...args);
     };
     plugin.__vizeNuxtVueTransformPatched = true;
     return;
@@ -105,7 +123,7 @@ export function patchNuxtVueTypeGatedTransform(plugin: VitePluginWithTransform |
   }
   const original = transform.handler;
   transform.handler = function (this: unknown, code: string, id: string, ...args: unknown[]) {
-    return original.call(this, code, toNuxtVueTransformId(id), ...args);
+    return original.call(this, code, toHostId(id), ...args);
   };
   plugin.__vizeNuxtVueTransformPatched = true;
 }

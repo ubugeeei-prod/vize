@@ -115,6 +115,11 @@ export function applyRuleCloning(
     descriptionData,
     oneOf: [...clonedStyleRules, mainLoaderBranch],
   };
+  // A `<style src>` block's request names the src file, not the SFC.
+  rules.splice(vueRuleIndex + 1, 0, {
+    resourceQuery: /(?=.*\bvue\b)(?=.*type=style)(?=.*&src(?:&|$))/,
+    oneOf: clonedStyleRules.map((rule) => ({ ...rule, use: deepCloneUse(normalizeUse(rule.use)) })),
+  });
 
   // Step 5: exclude vue sub-requests from original CSS rules────
   for (const entry of cssRuleEntries) {

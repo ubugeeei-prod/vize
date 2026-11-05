@@ -127,6 +127,41 @@ const x = 1
 }
 
 #[test]
+fn generic_attribute_value_is_script_setup_code() {
+    let source = r#"<script setup lang="ts" data-generic="U" generic="T extends Item">
+const x = 1
+</script>"#;
+    let descriptor = vize_incremental::parse_descriptor("", source).unwrap();
+    let value = source.find("\"T extends").unwrap() + 1;
+    let end = value + "T extends Item".len();
+    for offset in [value, value + "T extends ".len(), end - 1] {
+        assert_eq!(
+            find_block_at_offset(&descriptor, offset),
+            Some(BlockType::ScriptSetup)
+        );
+        assert_eq!(
+            find_art_block_at_offset(source, offset),
+            Some(BlockType::ScriptSetup)
+        );
+    }
+    assert_eq!(
+        super::find_block_at_completion_offset(&descriptor, end),
+        Some(BlockType::ScriptSetup)
+    );
+    // The quotes, the attribute name and other attributes stay outside.
+    for offset in [
+        end,
+        value - 1,
+        source.find("generic=\"T").unwrap(),
+        source.find("\"ts\"").unwrap() + 1,
+        source.find("\"U\"").unwrap() + 1,
+    ] {
+        assert_eq!(find_block_at_offset(&descriptor, offset), None, "{offset}");
+        assert_eq!(find_art_block_at_offset(source, offset), None, "{offset}");
+    }
+}
+
+#[test]
 fn test_find_block_at_offset_inline_art() {
     let source = r#"<template>
   <div>test</div>

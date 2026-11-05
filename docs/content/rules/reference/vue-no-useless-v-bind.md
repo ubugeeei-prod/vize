@@ -1,18 +1,40 @@
 ---
 title: "vue/no-useless-v-bind"
+description: "Disallow a v-bind whose value is a plain string literal."
 ---
 
 # `vue/no-useless-v-bind`
 
-Disallow a v-bind whose value is a plain string literal
+Disallow a v-bind whose value is a plain string literal.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The foo binding evaluates a constant quoted string or a template string without interpolation.
+
+```vue annotate="remove:2,3"
+<template>
+<div :foo="'bar'"></div>
+<div :foo="`bar`"></div>
+</template>
+```
+
+## Good
+
+The constant value becomes a static attribute; variable and interpolated values retain their binding.
+
+```vue annotate="add:2,3,4"
+<template>
+<div foo="bar"></div>
+<div :foo="bar"></div>
+<div :foo="`pre-${bar}`"></div>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,33 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The foo binding evaluates a constant quoted string or a template string without interpolation.
-
-```vue
-<template>
-<div :foo="'bar'"></div>
-<div :foo="`bar`"></div>
-</template>
-```
-
-## Good
-
-The constant value becomes a static attribute; variable and interpolated values retain their binding.
-
-```vue
-<template>
-<div foo="bar"></div>
-<div :foo="bar"></div>
-<div :foo="`pre-${bar}`"></div>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29)

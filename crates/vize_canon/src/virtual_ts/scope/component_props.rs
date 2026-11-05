@@ -13,7 +13,7 @@ pub(super) use bindings::{
 };
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::{named_dynamic_navigation_reference, named_dynamic_reference};
-use shared_contracts::{SharedComponentContract, shared_component_contracts};
+use shared_contracts::{SharedComponentContract, prop_alias_share, shared_component_contracts};
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
@@ -106,23 +106,30 @@ pub(super) fn generate_component_props(
 
     let shared_contracts = shared_component_contracts(ctx, original_usages);
 
+    // A usage whose component only its scope can see declares it there.
+    let root_declared = |idx: usize, usage: &ComponentUsage| {
+        !root_packets.contains(idx) && !ctx.dynamic_aliases.is_scoped(usage.start)
+    };
     for &(idx, usage) in checkable_usages {
         if let Some(callbacks) = scalar_callbacks.and_then(|rows| rows.get(&usage.start)) {
             legacy_scalars::append_aliases(ts, ctx, idx, usage, callbacks);
-        } else if !root_packets.contains(idx) {
+        } else if root_declared(idx, usage) {
             generate_usage_declarations(ts, mappings, ctx, &shared_contracts, idx, usage);
         }
     }
-    let legacy_usages;
-    let navigation_usages = if root_packets.is_empty() {
+    let root_navigation_usages;
+    let navigation_usages = if original_usages
+        .iter()
+        .all(|&(idx, usage)| root_declared(idx, usage))
+    {
         original_usages
     } else {
-        legacy_usages = original_usages
+        root_navigation_usages = original_usages
             .iter()
             .copied()
-            .filter(|(idx, _)| !root_packets.contains(*idx))
+            .filter(|&(idx, usage)| root_declared(idx, usage))
             .collect::<Vec<_>>();
-        &legacy_usages
+        &root_navigation_usages
     };
 
     component_prop_navigation::emit_references(
@@ -209,6 +216,11 @@ pub(super) fn generate_component_props(
 
     generate_empty_root_checks(ts, mappings, ctx, checkable_usages, &closure_scope_ids);
 
+    let scoped_usage_declarations = ScopedUsageDeclarations {
+        ctx: *ctx,
+        shared_contracts: &shared_contracts,
+        semantic_links: std::cell::RefCell::default(),
+    };
     for scope in summary.scopes.iter() {
         // Only process root closure scopes; nested ones are handled recursively
         if !root_closure_scope_ids.contains(&scope.id.as_u32()) {
@@ -233,12 +245,15 @@ pub(super) fn generate_component_props(
             hoist_shared_preamble: ctx.hoist_shared_preamble,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
+            dynamic_aliases: ctx.dynamic_aliases,
+            scoped_usage_declarations: &scoped_usage_declarations,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
             generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ")
         );
     }
+    semantic_links.extend(scoped_usage_declarations.semantic_links.into_inner());
     for &(idx, usage) in checkable_usages {
         if let Some(mut packet) = root_packets.remove(idx) {
             let packet_ctx = ComponentPropsContext {
@@ -280,6 +295,45 @@ pub(super) fn generate_component_props(
                 ctx.diagnostic_ownership,
             );
         }
+    }
+}
+
+/// What a scoped usage's declarations need inside the replayed scope.
+pub(in crate::virtual_ts::scope) struct ScopedUsageDeclarations<'a, 'template> {
+    ctx: ComponentPropsContext<'a, 'template>,
+    shared_contracts: &'a FxHashMap<usize, SharedComponentContract>,
+    semantic_links: std::cell::RefCell<Vec<VizeSemanticLink>>,
+}
+
+/// Declare the contracts of `usages` whose component only this scope can
+/// see, where their checks run.
+pub(in crate::virtual_ts::scope) fn emit_scoped_usage_declarations(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &VForPropsContext<'_, '_>,
+    usages: &[(usize, &ComponentUsage)],
+) {
+    let declarations = ctx.scoped_usage_declarations;
+    for &(idx, usage) in usages {
+        if !ctx.dynamic_aliases.is_scoped(usage.start) {
+            continue;
+        }
+        generate_usage_declarations(
+            ts,
+            mappings,
+            &declarations.ctx,
+            declarations.shared_contracts,
+            idx,
+            usage,
+        );
+        component_prop_navigation::emit_usage_references(
+            ts,
+            mappings,
+            &mut declarations.semantic_links.borrow_mut(),
+            &declarations.ctx,
+            idx,
+            usage,
+        );
     }
 }
 
@@ -380,7 +434,7 @@ fn generate_usage_declarations(
         usage,
         component_type_name.as_str(),
         idx,
-        ctx.hoist_shared_preamble,
+        prop_alias_share(summary, idx, ctx.hoist_shared_preamble, shared),
     );
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
 }

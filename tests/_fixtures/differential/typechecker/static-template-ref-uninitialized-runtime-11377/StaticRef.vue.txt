@@ -1,0 +1,12 @@
+<script setup lang="ts">
+
+import { useBox } from "./useBox";
+
+let plain: HTMLDivElement;
+const [fromComposable] = useBox();
+</script>
+
+<template>
+  <div ref="plain">a</div>
+  <div ref="fromComposable">b</div>
+</template>

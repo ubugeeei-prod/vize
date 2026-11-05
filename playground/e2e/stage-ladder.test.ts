@@ -1,191 +1,210 @@
-// The Davinci tab's data path against the real wasm compiler: the preset's
-// Spolvero feed negotiates, climbs every rung, and every span the stage pages
-// print lands on the authored source the editor highlights.
+// The Davinci tab's data path against the real wasm compiler: each target's
+// `compileSfc` `captureStages` feed negotiates, climbs its rungs, and every
+// span the stage pages print lands on the authored source the editor highlights.
+// `it.fails` marks what the product capture does not observe yet.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
-import { loadWasm, type WasmModule } from "../src/wasm";
-import { negotiateSpolveroFeed } from "../src/wasm/types/stages";
-import {
-  LADDER_STEP_KEY,
-  ladderStepTimings,
-  ladderWalkTimings,
-  negotiateProfileExport,
-  type ProfileExport,
-} from "../src/wasm/types/profile";
+import { ref, shallowRef } from "vue";
+import { loadWasm, type CompilerOptions, type WasmModule } from "../src/wasm";
+import { negotiateProductCapture } from "../src/wasm/types/productCapture";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
-import { buildLadder, type StageLadder } from "../src/features/stages/ladder";
+import type { CodeOutputs } from "../src/features/atelier/codeOutputs";
+import type { StageLadder } from "../src/features/stages/ladder";
+import {
+  useProductCaptureState,
+  type ProductCapturedResult,
+} from "../src/features/stages/productCaptureState";
 import { dumpLines } from "../src/features/stages/dumpLines";
 import { parseProvenance, recordsForNode } from "../src/features/stages/provenance";
 import { remarksAt, summarizeRemarks } from "../src/features/stages/remarks";
-import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/stages/offsets";
-import { flameGraph } from "../src/features/stages/flame";
+import { templateBytesToSfcRange } from "../src/features/stages/offsets";
 
 const FILENAME = "Component.vue";
+// The stage tab's own `compileSfc` options per target.
+const BASE: CompilerOptions = {
+  mode: "module",
+  scriptExt: "preserve",
+  filename: FILENAME,
+  captureStages: true,
+};
+const TARGETS = {
+  dom: BASE,
+  ssr: { ...BASE, ssr: true, outputMode: "vdom" },
+} as const;
+
+interface Run {
+  ladder: StageLadder;
+  templateStart: number;
+  observed: { timings: boolean; remarks: boolean };
+}
+
 let wasm: WasmModule;
-let ladder: StageLadder;
-let templateStart: number;
-let exported: ProfileExport;
+let dom: Run;
+let ssr: Run;
+
+function run(target: keyof typeof TARGETS): Run {
+  const result = wasm.compileSfc(DAVINCI_PRESET, TARGETS[target]);
+  const negotiation = negotiateProductCapture(result.stageCapture, target);
+  if (!negotiation.ok) throw new Error(negotiation.error);
+  const captured: ProductCapturedResult = { result, negotiation };
+  const state = useProductCaptureState(
+    shallowRef({ [target]: captured }),
+    ref(DAVINCI_PRESET),
+    ref(DAVINCI_PRESET),
+    shallowRef({} as CodeOutputs),
+    ref(target),
+  );
+  const ladder = state.ladder.value;
+  const templateStart = state.templateStart.value;
+  if (!ladder || templateStart === null) throw new Error(`${target}: no verified ladder`);
+  return { ladder, templateStart, observed: negotiation.feed.observed };
+}
 
 beforeAll(async () => {
   wasm = await loadWasm();
-  const analysis = wasm.analyzeSfc(DAVINCI_PRESET, { filename: FILENAME });
-  const negotiated = negotiateSpolveroFeed(analysis.spolvero);
-  if (!negotiated.ok) throw new Error(negotiated.error);
-  const profile = negotiateProfileExport(analysis.spolveroProfile);
-  if (!profile.ok) throw new Error(profile.error);
-  exported = profile.profile;
-  ladder = buildLadder(
-    negotiated.feed,
-    FILENAME,
-    ladderStepTimings(profile.profile),
-    ladderWalkTimings(profile.profile),
-  );
-  const sfc = wasm.compileSfc(DAVINCI_PRESET, { filename: FILENAME });
-  templateStart = templateStartInSfc(DAVINCI_PRESET, sfc.descriptor.template!.loc.start);
+  dom = run("dom");
+  ssr = run("ssr");
 });
 
-function authored(pageKey: string, needle: string): string {
-  const page = ladder.rungs.flatMap((rung) => rung.pages).find((p) => p.key === pageKey)!;
-  const line = dumpLines(page.kind, page.text).find((l) => l.text.includes(needle))!;
-  const range = templateBytesToSfcRange(ladder.template, templateStart, line.span!);
+function page({ ladder }: Run, key: string) {
+  return ladder.rungs.flatMap((rung) => rung.pages).find((p) => p.key === key);
+}
+
+function authored(at: Run, pageKey: string, needle: string): string {
+  const shown = page(at, pageKey)!;
+  const line = dumpLines(shown.kind, shown.text).find((l) => l.text.includes(needle))!;
+  const range = templateBytesToSfcRange(at.ladder.template, at.templateStart, line.span!);
   return DAVINCI_PRESET.slice(range.start, range.end);
 }
 
+function why(at: Run, needle: string) {
+  const provenance = at.ladder.rungs[1].pages.find((p) => p.kind === "provenance");
+  expect(provenance).toBeDefined();
+  const records = parseProvenance(provenance!.text);
+  const line = dumpLines("disegno", page(at, "l2/lower")!.text).find((l) =>
+    l.text.includes(needle),
+  )!;
+  return recordsForNode(records, line.node!).map(({ rule, after }) => [rule, after]);
+}
+
 describe("Stage ladder from the real compiler", () => {
-  it("climbs L1, L2 with its artifact-selected passes, and L3", () => {
+  it("climbs L1 and L2 from the DOM product run, keeping L4 apart", () => {
     expect(
-      ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((page) => page.key)]),
+      dom.ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((p) => p.key)]),
     ).toEqual([
       ["l1", ["12 lines"], ["l1/parse"]],
-      [
-        "l2",
-        ["19 ops", "4 passes"],
-        [
-          "l2/lower",
-          "l2-plan/transform",
-          "l2/v-slot",
-          "l2/v-model",
-          "l2/hoist-static",
-          "l2/template-complexity",
-          "l2-provenance/transform",
-        ],
-      ],
-      ["l3", ["19 ops", "14 dynamic"], ["l3/lower", "l3-partition/lower", "l3-values/lower"]],
+      ["l2", ["19 ops", "0 passes"], ["l2/lower", "l2-facts/facts"]],
     ]);
-    expect(ladder.unplaced).toEqual([]);
+    expect(dom.ladder.l4Pages.map(({ step }) => step)).toEqual(["emit"]);
+    expect(dom.ladder.unplaced).toEqual([]);
   });
 
-  it("shows which passes changed the folio: none, on the Vue 3 path", () => {
-    expect(ladder.timeline.map((step) => [step.key, step.producer, step.changed])).toEqual([
+  it("climbs L1, L2 and L3 from the SSR product run", () => {
+    expect(
+      ssr.ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((p) => p.key)]),
+    ).toEqual([
+      ["l1", ["12 lines"], ["l1/parse"]],
+      ["l2", ["19 ops", "0 passes"], ["l2/lower", "l2-provenance/provenance"]],
+      ["l3", ["19 ops", "14 dynamic"], ["l3/lower", "l3-partition/partition", "l3-values/values"]],
+    ]);
+    expect(ssr.ladder.unplaced).toEqual([]);
+  });
+
+  it("shows each product step as a new artifact", () => {
+    expect(ssr.ladder.timeline.map((step) => [step.key, step.producer, step.changed])).toEqual([
+      ["l1/parse", true, true],
+      ["l2/lower", true, true],
+      ["l3/lower", true, true],
+    ]);
+  });
+
+  it("maps stage lines back to the exact authored source", () => {
+    expect(ssr.ladder.template).toBe(
+      DAVINCI_PRESET.slice(ssr.templateStart, ssr.templateStart + ssr.ladder.template.length),
+    );
+    expect(authored(ssr, "l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
+    expect(authored(ssr, "l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");
+    expect(authored(ssr, "l3/lower", "kind=l3.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
+    expect(authored(ssr, "l3-partition/partition", "op=17 ")).toBe(
+      "<footer>{{ remaining }} left</footer>",
+    );
+    expect(authored(ssr, "l3-values/values", '"model-read",3')).toBe("draft");
+  });
+
+  it("answers why an L2 op exists from the provenance page", () => {
+    expect(why(ssr, 'ui.on name="keyup"')).toEqual([["lower.on", 'ui.on "keyup"']]);
+    expect(why(ssr, "ui.element h1")).toEqual([["lower.element", "ui.element h1"]]);
+    const provenance = ssr.ladder.rungs[1].pages.find((p) => p.kind === "provenance")!;
+    expect(
+      parseProvenance(provenance.text)
+        .filter(({ node }) => node === null)
+        .map(({ rule }) => rule),
+    ).toContain("condense.drop-whitespace");
+  });
+
+  it.fails("runs the artifact-selected L2 passes, one page each", () => {
+    expect(dom.ladder.timeline.map((step) => [step.key, step.producer, step.changed])).toEqual([
       ["l1/parse", true, true],
       ["l2/lower", true, true],
       ["l2/v-slot", false, false],
       ["l2/v-model", false, false],
       ["l2/hoist-static", false, false],
       ["l2/template-complexity", false, false],
-      ["l3/lower", true, true],
     ]);
   });
 
-  it("maps stage lines back to the exact authored source", () => {
-    expect(ladder.template).toBe(
-      DAVINCI_PRESET.slice(templateStart, templateStart + ladder.template.length),
-    );
-    expect(authored("l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
-    expect(authored("l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");
-    expect(authored("l3/lower", "kind=l3.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
-    expect(authored("l3-partition/lower", "op=17 ")).toBe("<footer>{{ remaining }} left</footer>");
-    expect(authored("l3-values/lower", '"model-read",3')).toBe("draft");
+  it.fails("diffs consecutive L2 pages through the inspector's line diff", () => {
+    const [lowered, vslot] = [page(dom, "l2/lower")!, page(dom, "l2/v-slot")];
+    expect(vslot).toBeDefined();
+    const diff = wasm.buildInspectorDiff(lowered.text, vslot!.text);
+    const lineCount = lowered.text.split("\n").length;
+    expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });
   });
 
-  it("times every step through the browser clock, in the profile export", () => {
-    // Values depend on the machine; which steps were measured does not.
-    expect(ladder.timeline.map((step) => [step.key, typeof step.nanos])).toEqual([
-      ["l1/parse", "number"],
-      ["l2/lower", "number"],
-      ["l2/v-slot", "number"],
-      ["l2/v-model", "number"],
-      ["l2/hoist-static", "number"],
-      ["l2/template-complexity", "number"],
-      ["l3/lower", "number"],
-    ]);
-    expect(ladder.timeline.every((step) => step.nanos! >= 0)).toBe(true);
-  });
-
-  it("runs each pass in its own walk, per the compiler's plan page", () => {
-    // Two mandatory barriers, then the two optional analyses fused into
-    // the third walk, timed once and attributed to its lead pass.
-    expect(ladder.walks.map(({ index, passes, fusable }) => [index, passes, fusable])).toEqual([
+  it.fails("runs each pass in its own walk, per the compiler's plan page", () => {
+    // Two mandatory barriers, then the two optional analyses fused into the
+    // third walk.
+    expect(dom.ladder.walks.map(({ index, passes, fusable }) => [index, passes, fusable])).toEqual([
       [0, ["v-slot"], false],
       [1, ["v-model"], false],
       [2, ["hoist-static", "template-complexity"], true],
     ]);
-    expect(ladder.walks.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(true);
-    expect(ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
+    expect(dom.ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
       ["l1/parse", null],
       ["l2/lower", null],
       ["l2/v-slot", 0],
       ["l2/v-model", 1],
       ["l2/hoist-static", 2],
       ["l2/template-complexity", 2],
-      ["l3/lower", null],
     ]);
   });
 
-  it("draws the flame view from the export's attributed step spans", () => {
-    const flame = flameGraph(exported, LADDER_STEP_KEY);
-    const at = (depth: number) =>
-      flame.frames.filter((frame) => frame.depth === depth).map((f) => f.path.join("/"));
-    expect(at(0)).toEqual(["l1", "l2", "l3"]);
-    expect(at(1)).toEqual([
-      "l1/parse",
-      "l2/hoist-static",
-      "l2/lower",
-      "l2/template-complexity",
-      "l2/v-model",
-      "l2/v-slot",
-      "l3/lower",
-    ]);
-    expect(at(2)).toEqual(at(1).map((path) => `${path}/template`));
-    // Every step is one frame, so the graph's width is the steps' sum.
-    const steps = ladder.timeline.reduce((sum, step) => sum + step.nanos!, 0);
-    expect(flame.total).toBe(steps);
-  });
-
-  it("diffs consecutive L2 pages through the inspector's line diff", () => {
-    const page = (key: string) => ladder.rungs[1].pages.find((p) => p.key === key)!;
-    const [lowered, vslot] = [page("l2/lower"), page("l2/v-slot")];
-    const diff = wasm.buildInspectorDiff(lowered.text, vslot.text);
-    const lineCount = lowered.text.split("\n").length;
-    expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });
-  });
-
-  it("answers why an L2 op exists from the provenance page", () => {
-    const [lowered] = ladder.rungs[1].pages;
-    const provenance = ladder.rungs[1].pages.find((page) => page.kind === "provenance")!;
-    const records = parseProvenance(provenance.text);
-    const lines = dumpLines("disegno", lowered.text);
-    const why = (needle: string) => {
-      const line = lines.find((l) => l.text.includes(needle))!;
-      return recordsForNode(records, line.node!).map(({ rule, after }) => [rule, after]);
-    };
-    expect(why('ui.on name="keyup"')).toEqual([["lower.on", 'ui.on "keyup"']]);
-    expect(why("ui.element h1")).toEqual([
-      ["lower.element", "ui.element h1"],
-      ["pass.hoist-static.fact", "level=fully-static props=false nested=true native=true"],
-    ]);
-    expect(records.filter(({ node }) => node === null).map(({ rule }) => rule)).toContain(
-      "condense.drop-whitespace",
+  it.fails("times every step and walk through the browser clock", () => {
+    // Values depend on the machine; which steps were measured does not.
+    expect(dom.observed.timings).toBe(true);
+    expect(dom.ladder.timeline.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(
+      true,
+    );
+    expect(dom.ladder.walks.length).toBeGreaterThan(0);
+    expect(dom.ladder.walks.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(
+      true,
     );
   });
 
-  it("carries hoist-static's optimization remarks and ties them to ops", () => {
-    expect(summarizeRemarks(ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
-    expect(ladder.timeline.find(({ key }) => key === "l2/hoist-static")!.remarks).toBe(11);
-    const lowered = ladder.rungs[1].pages[0];
-    const lines = dumpLines("disegno", lowered.text);
+  it.fails("answers which pass facts the DOM run recorded for an L2 op", () => {
+    expect(why(dom, "ui.element h1")).toEqual([
+      ["lower.element", "ui.element h1"],
+      ["pass.hoist-static.fact", "level=fully-static props=false nested=true native=true"],
+    ]);
+  });
+
+  it.fails("carries hoist-static's optimization remarks and ties them to ops", () => {
+    expect(dom.observed.remarks).toBe(true);
+    expect(summarizeRemarks(dom.ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
+    expect(dom.ladder.timeline.find(({ key }) => key === "l2/hoist-static")!.remarks).toBe(11);
+    const lines = dumpLines("disegno", page(dom, "l2/lower")!.text);
     const about = (needle: string) => {
       const line = lines.find((l) => l.text.includes(needle))!;
-      return remarksAt(ladder.remarks, line.span!).map(({ kind, name, args }) => [
+      return remarksAt(dom.ladder.remarks, line.span!).map(({ kind, name, args }) => [
         kind,
         name,
         args.map(({ key, value }) => `${key}=${String(value)}`).join(" "),

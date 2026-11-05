@@ -34,6 +34,16 @@ export default defineConfig({
 });
 ```
 
+| 設定 | 既定値 | 動作 |
+| --- | --- | --- |
+| `preset` | `happy-path` | 有効にするルールの組み合わせを選びます。 |
+| `crossFile` | `false` | 選択した Vue ファイル間の関係を検査します。 |
+| `crossFileTree` | `false` | provide/inject のツリーを表示し、ファイル間解析を有効にします。 |
+| `crossFileComplexity` | `false` | 複雑度とホットスポットを表示し、ファイル間解析を有効にします。 |
+| `strictReactivity` | `false` | `type/no-reactivity-loss` を有効にします。ルールの個別設定が優先されます。 |
+| `maxWarnings` | 未指定 | 警告数が上限を超えると失敗します。`0` は警告を一つも許可しません。 |
+| `reportUnusedDisableDirectives` | `false` | Vize の診断を抑制しなかったテンプレートの抑制コメントを報告します。 |
+
 CLI とエディタで共有する場合は、これらのキーを `vue.linter` に指定します。
 `crossFileTree` と `crossFileComplexity` は、ファイル間の解析も有効にします。
 ファイル間のチェックは、Vize の CLI 実行で対象に選ばれたファイルに対して行います。

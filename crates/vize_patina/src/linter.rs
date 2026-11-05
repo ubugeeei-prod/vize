@@ -27,6 +27,7 @@ mod restricted_rules;
 mod rule_selection;
 pub(crate) mod script_rules;
 mod severity;
+pub(crate) mod sfc_scripts;
 
 pub use config::{LintResult, Linter};
 #[cfg(not(target_arch = "wasm32"))]

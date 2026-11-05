@@ -1,5 +1,15 @@
 //! Additive include metadata without changing existing no-include packets.
 use super::MacroArtifactNapi;
+pub(crate) fn type_project_to_napi(
+    project: &vize::type_projects::SelectedTypeProject,
+) -> Option<super::TypeProjectContextNapi> {
+    project
+        .info()
+        .map(|(root, revision)| super::TypeProjectContextNapi {
+            root: root.to_string_lossy().into_owned(),
+            revision: revision.to_string(),
+        })
+}
 pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<Vec<String>> {
     (!dependencies.is_empty()).then(|| {
         dependencies

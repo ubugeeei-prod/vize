@@ -199,7 +199,7 @@ impl CorsaProjectClient {
             .collect::<Vec<_>>();
         let result = self.did_open_batch_fast(&documents);
         for (uri, content) in retained {
-            self.document_texts.entry(uri).or_insert(content);
+            self.document_texts.insert_if_absent(uri, content);
         }
         result
     }

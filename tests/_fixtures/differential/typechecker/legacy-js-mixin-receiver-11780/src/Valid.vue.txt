@@ -1,0 +1,10 @@
+<script>
+import { helper } from "./mixin";
+export default {
+  mixins: [helper],
+  methods: {
+    check() { return this.greet("雪😀"); },
+  },
+};
+</script>
+<template><span /></template>

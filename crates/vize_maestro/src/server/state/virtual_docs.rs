@@ -120,6 +120,7 @@ impl ServerState {
             None,
             false,
             0,
+            None,
             &ast,
             0,
             vize_l0::cstr!("{base_uri}.__template.ts").to_string(),
@@ -194,6 +195,9 @@ impl ServerState {
             .as_deref()
             .map(script_projection)
             .unwrap_or((None, false, 0));
+        let generic = descriptor.as_deref().and_then(|descriptor| {
+            vize_canon::virtual_ts::GenericParameters::from_setup(content, descriptor)
+        });
 
         // One checker document per variant, so a non-default variant keeps its own mappings.
         docs.art_templates.resize(art_desc.variants.len(), None);
@@ -215,6 +219,7 @@ impl ServerState {
                 script,
                 script_setup,
                 script_offset,
+                generic.as_ref(),
                 &ast,
                 block_offset,
                 vize_l0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string(),
@@ -245,6 +250,7 @@ impl ServerState {
                     script_setup.loc.start,
                     art_desc.variants.len(),
                     isolate,
+                    generic.as_ref(),
                 );
                 script_doc.uri = vize_l0::cstr!("{base_uri}.__script_setup.ts").to_string();
                 docs.script_setup = Some(script_doc);

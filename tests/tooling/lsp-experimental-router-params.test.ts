@@ -66,7 +66,22 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
   const bytes = fs.readFileSync(path.join(custody, entry.file));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
-  return bytes.toString("utf8");
+  const receipt = fs.readFileSync(path.join(custody, "owned-constructor-20261105.json"));
+  assert.equal(
+    createHash("sha256").update(receipt).digest("hex"),
+    "e1b0adcb4d2b92fc782d08449f6fed6bcd755e6db7f64347ce4c2df938acdc2a",
+  );
+  const successor = JSON.parse(receipt.toString("utf8"));
+  assert.equal(successor.kind, "exact-generated-constructor-successor");
+  assert.equal(successor.qualificationCredit, false);
+  const transition = successor.entries.find((row: { file: string }) => row.file === entry.file);
+  assert.ok(transition);
+  assert.equal(transition.beforeSha256, entry.sha256);
+  const before = bytes.toString("utf8");
+  assert.equal(before.split(successor.edit.before).length, 2);
+  const current = before.replace(successor.edit.before, successor.edit.after);
+  assert.equal(createHash("sha256").update(current).digest("hex"), transition.afterSha256);
+  return current;
 }
 
 function replaceExpected(value: Json, key: "version" | "revision", expected: number): Json {

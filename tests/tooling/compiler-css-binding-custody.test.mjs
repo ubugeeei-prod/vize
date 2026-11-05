@@ -64,7 +64,33 @@ const compilerDialectPromotionIds = new Set([
   "compiler/sfc/scoped-checkout-stability-10067",
 ]);
 
+// Rows whose reference bytes a later compiler fix re-pinned. Only the
+// reference hash may differ; every other field keeps its custody.
+const compilerReferenceRepins = new Map([
+  ["compiler/sfc/vue2-preserve-comment-edges-10065", "#11593 merges slot VNode text runs"],
+  ["compiler/sfc/generic-keyof-operands-skip-check", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/generic-union-skip-check-11466", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/package-import-prop-type-9894", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/plain-script-import-10903", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/root-text-patch-flag-10168", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/scoped-slot-closure-10169", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/sibling-script-import-reads-10616", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-global-prefix-10927", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-host-globals-10927", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-ts-unscanned-erasure", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/tsx-setup-jsx-bindings", "#11698 erases TypeScript per authored piece"],
+]);
+
+function withoutReferenceHash({ reference, ...row }) {
+  const { sha256: _sha256, ...rest } = reference;
+  return { ...row, reference: rest };
+}
+
 function assertPreservedCompilerCase(currentRow, originalRow) {
+  if (compilerReferenceRepins.has(originalRow.id)) {
+    assert.deepEqual(withoutReferenceHash(currentRow), withoutReferenceHash(originalRow));
+    return;
+  }
   if (!compilerDialectPromotionIds.has(originalRow.id)) {
     assert.deepEqual(currentRow, originalRow);
     return;
@@ -94,6 +120,17 @@ await test("binding registration preserves every previous compiler row and pins 
       before.cases.find((row) => row.id === scoped.id),
     ),
   );
+  // A re-pinned row still keeps every field but its reference hash.
+  for (const id of compilerReferenceRepins.keys()) {
+    const repinned = structuredClone(current.cases.find((row) => row.id === id));
+    repinned.reference.path = "foreign/module.expected.txt";
+    assert.throws(() =>
+      assertPreservedCompilerCase(
+        repinned,
+        before.cases.find((row) => row.id === id),
+      ),
+    );
+  }
   for (const pack of before.runtimePacks)
     assert.deepEqual(
       current.runtimePacks.find((candidate) => candidate.path === pack.path),

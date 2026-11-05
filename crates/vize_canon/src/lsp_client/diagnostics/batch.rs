@@ -1,6 +1,9 @@
 //! Complete batch diagnostic transport selection.
 
-use super::{CorsaProjectClient, LspDiagnostic, String, virtual_overlay_diagnostics};
+use super::{
+    CorsaProjectClient, DiagnosticFetch, LspDiagnostic, PhasedDiagnostic, String, lsp_report,
+    virtual_overlay_diagnostics,
+};
 
 impl CorsaProjectClient {
     /// Request diagnostics for multiple URIs in batch.
@@ -42,5 +45,25 @@ impl CorsaProjectClient {
                 Ok((uri.clone(), diagnostics))
             })
             .collect()
+    }
+}
+
+impl CorsaProjectClient {
+    pub(super) fn request_diagnostics_full_via_lsp(
+        &mut self,
+        uri: &str,
+    ) -> Result<Option<DiagnosticFetch>, String> {
+        let Some(mut results) = self.request_diagnostics_batch_via_lsp(&[uri.into()])? else {
+            return Ok(None);
+        };
+        let Some((_, diagnostics)) = results.pop() else {
+            return Ok(None);
+        };
+        let diagnostics = diagnostics
+            .into_iter()
+            .map(lsp_report::lsp_diagnostic_to_native)
+            .map(PhasedDiagnostic::unknown)
+            .collect::<Vec<_>>();
+        Ok(Some(self.store_file_diagnostics(uri, diagnostics)))
     }
 }

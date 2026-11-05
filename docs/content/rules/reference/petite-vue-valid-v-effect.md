@@ -1,18 +1,44 @@
 ---
 title: "petite-vue/valid-v-effect"
+description: "Require v-effect to have a non-empty expression."
 ---
 
 # `petite-vue/valid-v-effect`
 
-Require v-effect to have a non-empty expression
+Require v-effect to have a non-empty expression.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.
+
+## Bad
+
+Each `v-effect` has no executable expression: its value is missing, empty, or only whitespace.
+
+```html annotate="remove:3,4,5"
+<!doctype html>
+<html><body>
+<div v-effect></div>
+<div v-effect=""></div>
+<div v-effect="   "></div>
+<script src="https://unpkg.com/petite-vue" init></script>
+</body></html>
+```
+
+## Good
+
+Both `v-effect` values contain an expression: one updates `el.textContent`, and the other increments `count`. This rule checks for a nonempty expression, not the effect’s business logic.
+
+```html annotate="add:3,4"
+<!doctype html>
+<html><body>
+<div v-effect="el.textContent = count"></div>
+<div v-effect="count++"></div>
+<script src="https://unpkg.com/petite-vue" init></script>
+</body></html>
+```
 
 ## Configuration (Vite+)
 
@@ -31,37 +57,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-Each `v-effect` has no executable expression: its value is missing, empty, or only whitespace.
-
-```html
-<!doctype html>
-<html><body>
-<div v-effect></div>
-<div v-effect=""></div>
-<div v-effect="   "></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-## Good
-
-Both `v-effect` values contain an expression: one updates `el.textContent`, and the other increments `count`. This rule checks for a nonempty expression, not the effect’s business logic.
-
-```html
-<!doctype html>
-<html><body>
-<div v-effect="el.textContent = count"></div>
-<div v-effect="count++"></div>
-<script src="https://unpkg.com/petite-vue" init></script>
-</body></html>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [All rules](../all.md)
+- [petite-vue rules](../petite-vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35)

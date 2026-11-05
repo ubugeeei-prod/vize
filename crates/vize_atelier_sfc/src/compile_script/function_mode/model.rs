@@ -2,17 +2,22 @@
 
 use vize_carton::String;
 
+use crate::compile_script::erasure::Erasure;
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 /// Emit `defineModel` bindings and return their binding names.
 pub(super) fn emit_model_bindings(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
+    mut erasure: Option<&mut Erasure>,
 ) -> Vec<String> {
     let mut binding_names = Vec::new();
     for model_call in &ctx.macros.define_models {
         if let Some(ref binding_name) = model_call.binding_name {
-            let metadata = define_model_metadata(ctx.source.as_str(), model_call);
+            let mut metadata = define_model_metadata(ctx.source.as_str(), model_call);
+            if let Some(erasure) = erasure.as_deref_mut() {
+                erasure.optional_expression(&mut metadata.runtime_options);
+            }
             output.extend_from_slice(b"  const ");
             if let Some(ref modifiers) =
                 model_modifiers_binding_name(ctx.source.as_str(), model_call)

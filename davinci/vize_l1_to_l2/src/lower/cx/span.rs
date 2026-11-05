@@ -9,6 +9,7 @@
 
 use vize_l0::Span;
 use vize_l1::markup::{CloseTag, Element, ElementClose, SurfaceChild};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::Cx;
 
@@ -16,7 +17,7 @@ use super::Cx;
 /// L1 is a contiguous partition of the source, so this is the end of the
 /// element's last present-or-hole token — a `Missing` close contributes
 /// its children's extent (the typed hole is zero-width by policy).
-fn element_end(cx: &Cx<'_>, element: &Element<'_>) -> u32 {
+fn element_end(cx: &Cx<'_, impl ProvenanceSink>, element: &Element<'_>) -> u32 {
     match &element.close {
         ElementClose::Present(CloseTag { gt, .. }) => cx.token_span(gt).end,
         ElementClose::NotExpected => cx.token_span(&element.open.gt).end,
@@ -29,7 +30,7 @@ fn element_end(cx: &Cx<'_>, element: &Element<'_>) -> u32 {
 }
 
 /// End offset of any child's extent.
-fn child_end(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> u32 {
+fn child_end(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> u32 {
     match child {
         SurfaceChild::Element(element) => element_end(cx, element),
         SurfaceChild::Interpolation(node) => cx.token_span(&node.close).end,
@@ -42,7 +43,7 @@ fn child_end(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> u32 {
 }
 
 /// The span of an element's whole extent (open tag through close).
-pub(crate) fn element_span(cx: &Cx<'_>, element: &Element<'_>) -> Span {
+pub(crate) fn element_span(cx: &Cx<'_, impl ProvenanceSink>, element: &Element<'_>) -> Span {
     Span::new(
         cx.offset(element.open.lt_name.text),
         element_end(cx, element),
@@ -51,7 +52,10 @@ pub(crate) fn element_span(cx: &Cx<'_>, element: &Element<'_>) -> Span {
 
 /// The span of one authored attribute: name through the end of its value
 /// (closing quote included when present).
-pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_l1::markup::Attribute<'_>) -> Span {
+pub(crate) fn attr_span(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    attr: &vize_l1::markup::Attribute<'_>,
+) -> Span {
     let start = cx.offset(attr.name.text);
     let end = match &attr.value {
         Some(value) => match &value.close_quote {
@@ -67,7 +71,10 @@ pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_l1::markup::Attribute<'_>) -> S
 }
 
 /// The authored slice an attribute covers (for provenance `before`).
-pub(crate) fn attr_slice<'a>(cx: &Cx<'a>, attr: &vize_l1::markup::Attribute<'a>) -> &'a str {
+pub(crate) fn attr_slice<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    attr: &vize_l1::markup::Attribute<'a>,
+) -> &'a str {
     let span = attr_span(cx, attr);
     cx.source
         .get(span.start as usize..span.end as usize)

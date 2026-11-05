@@ -7,6 +7,7 @@
 
 #[cfg(feature = "native")]
 mod closed;
+mod edits;
 mod structural_navigation;
 mod uri_snapshot;
 
@@ -65,6 +66,8 @@ pub struct Document {
     /// hover, completion, navigation, or rename request.
     text_snapshot: OnceLock<Arc<String>>,
     structural_snapshot: OnceLock<Arc<StructuralSnapshotCell>>,
+    #[cfg(feature = "native")]
+    native: Option<edits::CarriedNative>,
 }
 
 impl Document {
@@ -82,6 +85,8 @@ impl Document {
             petite_vue_detected: OnceLock::new(),
             text_snapshot,
             structural_snapshot: OnceLock::new(),
+            #[cfg(feature = "native")]
+            native: None,
         }
     }
 
@@ -146,39 +151,6 @@ impl Document {
             return None;
         }
         Some(self.content.line(line_idx).to_string())
-    }
-
-    /// Apply an incremental change to the document.
-    pub fn apply_change(&mut self, change: &TextDocumentContentChangeEvent, new_version: i32) {
-        self.version = new_version;
-        self.revision = next_revision();
-        self.petite_vue_detected = OnceLock::new();
-        self.text_snapshot = OnceLock::new();
-        self.structural_snapshot = OnceLock::new();
-
-        if let Some(range) = change.range {
-            // Incremental change
-            let start_offset = position_to_offset(&self.content, range.start);
-            let end_offset = position_to_offset(&self.content, range.end);
-
-            if let (Some(start), Some(end)) = (start_offset, end_offset) {
-                // Convert byte offsets to char indices
-                if let (Ok(start_char), Ok(end_char)) = (
-                    self.content.try_byte_to_char(start),
-                    self.content.try_byte_to_char(end),
-                ) {
-                    if start_char > end_char {
-                        return;
-                    }
-
-                    self.content.replace(start_char..end_char, &change.text);
-                }
-            }
-        } else {
-            // Full content replacement
-            self.content = DocumentText::new(&change.text);
-            let _ = self.text_snapshot.set(Arc::new(change.text.clone()));
-        }
     }
 }
 

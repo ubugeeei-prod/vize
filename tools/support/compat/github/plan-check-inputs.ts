@@ -24,6 +24,10 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       dependencies ||
       matches(
         /^tools\/(?:config|commands|support)\/.*\.(?:[cm]?js|[cm]?ts)$|^tests\/tooling\/(?:node-engine-matrix|package-manifests|bundler-plugin-manifests|dependency-security-compat)\.test\./,
+      ) ||
+      // A declaration change that skips the helper ABI generator must fail PR CI.
+      matches(
+        /^(?:npm\/cli\/(?:virtual-ts|content-mapper-helpers)|crates\/vize_canon\/src\/virtual_ts\/helpers\/)|content-mapper-helper-abi|helper-abi\.json/,
       ),
     apps:
       dependencies ||

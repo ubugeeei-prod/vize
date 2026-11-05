@@ -299,7 +299,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(profileWitness, /json\["schema_version"\]/);
 
   const inspectorWitness = fs.readFileSync(
-    new URL("../../../crates/vize_curator/tests/spolvero_payload.rs", import.meta.url),
+    new URL("../../../crates/vize_curator/tests/stage_feed_payload.rs", import.meta.url),
     "utf8",
   );
   assert.match(inspectorWitness, /schema_version/);

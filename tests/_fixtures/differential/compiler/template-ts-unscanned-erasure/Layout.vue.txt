@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+interface Row {
+  id: number
+  label: string
+}
+
+const rows = ref<Row[]>([{ id: 1, label: 'one' }])
+const count = ref(0)
+function pick(row: Row): void {
+  count.value = row.id
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="(row, index) in rows" :key="row.id" @click="(event): void => pick(row)">
+      {{ index }}: {{ row.label }} {{ rows.map((item): string => item.label).join(',') }}
+    </li>
+  </ul>
+  <p>{{ ((value?: number) => value ?? 0)(count) }}</p>
+</template>

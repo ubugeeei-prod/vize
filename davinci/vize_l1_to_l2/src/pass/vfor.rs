@@ -25,6 +25,6 @@ pub const NAME: &str = "v-for";
 
 /// Mirror lowering-published `ui.for` facts for transform consumers.
 #[must_use]
-pub fn facts_from_lowering(lowered: &Lowered<'_>) -> SideTable<ForFacts> {
+pub fn facts_from_lowering<P>(lowered: &Lowered<'_, P>) -> SideTable<ForFacts> {
     lowered.for_facts.clone()
 }

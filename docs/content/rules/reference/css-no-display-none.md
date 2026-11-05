@@ -1,18 +1,43 @@
 ---
 title: "css/no-display-none"
+description: "Suggest using v-show instead of display: none."
 ---
 
 # `css/no-display-none`
 
-Suggest using v-show instead of display: none
+Suggest using v-show instead of display: none.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.
+
+```vue annotate="remove:2,4,5,6,7,8,9"
+<template>
+  <p class="message">Saved</p>
+</template>
+
+<style scoped>
+.message {
+  display: none;
+}
+</style>
+```
+
+## Good
+
+`v-show="isSaved"` makes the visibility condition explicit on the local paragraph and removes `display: none`.
+
+```vue annotate="add:2"
+<template>
+  <p v-show="isSaved" class="message">Saved</p>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,36 +56,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.
-
-```vue
-<template>
-  <p class="message">Saved</p>
-</template>
-
-<style scoped>
-.message {
-  display: none;
-}
-</style>
-```
-
-## Good
-
-`v-show="isSaved"` makes the visibility condition explicit on the local paragraph and removes `display: none`.
-
-```vue
-<template>
-  <p v-show="isSaved" class="message">Saved</p>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27)

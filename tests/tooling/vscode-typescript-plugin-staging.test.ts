@@ -25,6 +25,7 @@ const pluginFiles = [
   "module-resolution.cjs",
   "package.json",
   "provider.cjs",
+  "source-documents.cjs",
   "virtual-modules.cjs",
 ] as const;
 

@@ -5,6 +5,7 @@ use crate::markup::entity::DecodedEntity;
 use crate::markup::profile::Component;
 use crate::markup::token::{LexErrorCode, QuoteType, Sink};
 
+mod adjacent_attributes;
 mod basic;
 mod entities;
 mod entity_expansion;

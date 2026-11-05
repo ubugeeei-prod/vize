@@ -232,7 +232,16 @@ fn lower_binding<'a>(
     cx: &mut ProjectCx,
 ) -> Result<BindingOp<'a>, L2Refusal> {
     match directive.name {
-        "bind" | "on" => lower_bind_or_on(allocator, directive),
+        "bind" => {
+            let binding = lower_bind_or_on(allocator, directive)?;
+            if matches!(&binding, BindingOp::Bind(bind)
+                if matches!(bind.name, Some(DynamicName::Static("class"))))
+            {
+                cx.observe(OpFamily::JsxClass);
+            }
+            Ok(binding)
+        }
+        "on" => lower_bind_or_on(allocator, directive),
         "model" => lower_model(
             allocator,
             directive,

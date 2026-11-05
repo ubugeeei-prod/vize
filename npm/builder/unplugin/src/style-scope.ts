@@ -13,11 +13,6 @@ export function isPreprocessorLang(lang: string | null | undefined): boolean {
   return lang != null && PREPROCESSOR_LANGS.has(lang);
 }
 
-/** Bundlers whose virtual style module must already be plain CSS. */
-export function preprocessesInPlugin(framework: string): boolean {
-  return framework !== "webpack" && framework !== "rspack";
-}
-
 export function scopeCss(css: string, scoped: string): string {
   return scopeViteCssForPipeline(css, scoped);
 }
@@ -65,7 +60,7 @@ function loadPreprocessor<T>(root: string, names: string[], lang: string): T {
     }
   }
   throw new Error(
-    `[vize] <style scoped lang="${lang}"> needs ${names.join(" or ")} installed in ${root}.`,
+    `[vize] <style lang="${lang}"> needs ${names.join(" or ")} installed in ${root}.`,
   );
 }
 

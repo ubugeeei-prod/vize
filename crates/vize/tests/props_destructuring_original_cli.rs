@@ -92,14 +92,21 @@ fn complete_original_props_styles_match_cli_config_plain_and_json() {
                 if format == "plain" {
                     assert_eq!(
                         String::from_utf8_lossy(&output.stdout),
-                        String::from_utf8_lossy(&expected_plain),
+                        crate::support::current_rule_documentation::plain(
+                            &String::from_utf8_lossy(&expected_plain)
+                        ),
                         "{}: complete plain output",
                         case.id
                     );
                 } else {
                     let actual: serde_json::Value =
                         serde_json::from_slice(&output.stdout).expect("complete CLI JSON result");
-                    assert_eq!(actual, expected_json, "{}: complete JSON output", case.id);
+                    assert_eq!(
+                        actual,
+                        crate::support::current_rule_documentation::packet(expected_json.clone()),
+                        "{}: complete JSON output",
+                        case.id
+                    );
                 }
                 if let Some(previous) = &previous {
                     assert_eq!(&output.stdout, previous, "{}: repeated output", case.id);

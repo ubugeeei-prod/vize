@@ -13,12 +13,13 @@ use std::{
     path::Path,
     process::{Command, Stdio},
 };
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
+use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, VdomCompileOptions, compile_jsx};
 use vize_l0::Allocator;
 
 const CORPUS: &str = include_str!("vue_jsx_vapor_compat/fixtures/corpus.json");
 
-fn compile_case(id: &str, source: &str, mode: JsxOutputMode) -> Value {
+/// `source_map` selects the Relief VDOM codegen route instead of L2.
+fn compile_case(id: &str, source: &str, mode: JsxOutputMode, source_map: bool) -> Value {
     let allocator = Allocator::new();
     let output = compile_jsx(
         &allocator,
@@ -26,6 +27,10 @@ fn compile_case(id: &str, source: &str, mode: JsxOutputMode) -> Value {
         JsxLang::Jsx,
         &JsxCompileConfig {
             default_mode: mode,
+            vdom: VdomCompileOptions {
+                source_map,
+                ..Default::default()
+            },
             ..Default::default()
         },
     );
@@ -47,7 +52,7 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
         .map(|case| {
             let id = case["id"].as_str().expect("case id");
             let source = case["source"].as_str().expect("case source");
-            let vapor = compile_case(id, source, JsxOutputMode::Vapor);
+            let vapor = compile_case(id, source, JsxOutputMode::Vapor, false);
             let mut record = json!({
                 "id": id,
                 "source": source,
@@ -55,7 +60,8 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
                 "functionName": vapor["functionName"],
             });
             if case["babelCorpusId"].is_string() {
-                record["vdom"] = compile_case(id, source, JsxOutputMode::Vdom);
+                record["vdom"] = compile_case(id, source, JsxOutputMode::Vdom, false);
+                record["vdomSourceMapped"] = compile_case(id, source, JsxOutputMode::Vdom, true);
             }
             record
         })
@@ -99,6 +105,6 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
     assert_eq!(receipt["cases"], case_count);
     assert_eq!(receipt["equivalent"], case_count - 1);
     assert_eq!(receipt["divergent"], 1);
-    assert_eq!(receipt["babelCases"], 13);
-    assert_eq!(receipt["babelEquivalent"], 13);
+    assert_eq!(receipt["babelCases"], 18);
+    assert_eq!(receipt["babelEquivalent"], 18);
 }

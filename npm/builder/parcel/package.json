@@ -33,6 +33,10 @@
     "./style": {
       "types": "./dist/style.d.cts",
       "default": "./dist/style.cjs"
+    },
+    "./dev-cache": {
+      "types": "./dist/dev-cache.d.cts",
+      "default": "./dist/dev-cache.cjs"
     }
   },
   "publishConfig": {

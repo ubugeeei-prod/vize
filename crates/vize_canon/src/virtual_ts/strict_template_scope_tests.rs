@@ -118,8 +118,11 @@ fn dynamic_is_before_or_after_same_element_v_for_sees_its_alias() {
             Vec::<String>::new()
         );
         let code = strict_virtual_ts(template, Some(script));
+        let loop_start = code.find("for (const [part]").expect("v-for scope");
+        let mut declarations = code.match_indices("const __vize_dynamic_is_").peekable();
+        assert!(declarations.peek().is_some(), "{code}");
         assert!(
-            !code.contains("const __vize_dynamic_is_"),
+            declarations.all(|(at, _)| at > loop_start),
             "the dynamic target must not escape its v-for scope:\n{code}"
         );
     }

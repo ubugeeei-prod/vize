@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import './polyfill'
+import 'virtual:theme.css'
+
+const label: string = 'one'
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

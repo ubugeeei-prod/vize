@@ -4,8 +4,19 @@
  * Its medians are spread so every assertion is distinguishable: vue-tsc (the
  * published incumbent) is the slowest row, the same-engine native checkers sit
  * between it and Vize, and `vize-check-max` is the fastest. A ratio that picked
- * the wrong baseline therefore cannot coincide with the right one.
+ * the wrong baseline therefore cannot coincide with the right one. The
+ * checker-count and content-mapper lanes follow, each slower than the last.
  */
+
+import { SETTING_LANE_ENGINE_CLASSES } from "../../../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
+
+const SETTING_VARIANTS = Object.keys(SETTING_LANE_ENGINE_CLASSES).map((id, index) => ({
+  id,
+  label: id,
+  medianMs: 3000 + 100 * index,
+  throughput: "n/a",
+  runs: [3000 + 100 * index],
+}));
 
 const CHECK_VARIANTS = [
   { id: "vue-tsc", label: "vue-tsc", medianMs: 8000, throughput: "62.5 files/s", runs: [8000] },
@@ -44,15 +55,17 @@ const CHECK_VARIANTS = [
     throughput: "1.0k files/s",
     runs: [500],
   },
+  ...SETTING_VARIANTS,
 ];
 
-const CHECK_ENGINE_CLASSES = {
+const CHECK_ENGINE_CLASSES: Record<string, string> = {
   "golar-default": "tsgo-native",
   "golar-typecheck": "tsgo-native",
   "verter-tsc": "tsgo-native",
   "vue-tsc": "typescript-js",
   "vize-check-1t": "tsgo-native",
   "vize-check-max": "tsgo-native",
+  ...SETTING_LANE_ENGINE_CLASSES,
 };
 
 function checkSurfaceInput(overrides: Record<string, unknown> = {}) {
@@ -70,4 +83,4 @@ function checkSurfaceInput(overrides: Record<string, unknown> = {}) {
   };
 }
 
-export { CHECK_ENGINE_CLASSES, CHECK_VARIANTS, checkSurfaceInput };
+export { CHECK_ENGINE_CLASSES, CHECK_VARIANTS, SETTING_VARIANTS, checkSurfaceInput };

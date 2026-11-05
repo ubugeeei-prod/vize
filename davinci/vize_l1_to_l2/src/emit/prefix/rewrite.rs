@@ -12,12 +12,12 @@ use oxc_span::SourceType;
 use vize_l0::expression_guard::{expression_exceeds_max_depth, expression_has_balanced_delimiters};
 use vize_l0::{Allocator, String};
 
+use super::Erased;
 use super::collector::IdentifierCollector;
 use super::compat::js_module_compatible;
 use super::globals::{is_generated_filter_helper, is_simple_identifier};
 use super::scope::PrefixScope;
 use super::splice::splice_insertions;
-use super::strip_typescript_from_expression;
 
 mod reparse;
 use reparse::rewrite_reparsed;
@@ -53,29 +53,28 @@ fn ts_module() -> SourceType {
     SourceType::ts().with_module(true)
 }
 
+/// `content` arrives type-erased: the boundary in `prefix.rs` owns that.
 pub(super) fn rewrite_expression(
-    content: &str,
-    retained: Option<Retained<'_, '_>>,
+    erased: &Erased<'_, '_, '_>,
     scope: &PrefixScope<'_>,
     as_params: bool,
 ) -> RewriteResult {
+    let js_content = erased.js();
+    let retained = erased.retained;
+    let content = erased.authored;
     if !as_params
         && let Some(js) = retained
-        && js_module_compatible(js.ast, js.source)
+        && erased.proven_js()
     {
-        if !scope.is_ts() {
-            return project_aliases(rewrite_retained(content, js, scope), scope);
-        }
-        // TS lanes strip first, always: the detection scan can false-positive
-        // on TS-free text (` as ` inside a string literal) and rewrite bytes
-        // through the codegen round-trip. Only the identity outcome keeps the
-        // retained byte proof; changed bytes rejoin the legacy chain.
-        let js_content = strip_typescript_from_expression(content);
-        if js_content.as_str() == content {
+        // The detection scan can false-positive on TS-free text (` as `
+        // inside a string literal) and rewrite bytes through the codegen
+        // round-trip. Only the identity outcome keeps the retained byte
+        // proof; changed bytes rejoin the legacy chain.
+        if !erased.changed() {
             return project_aliases(rewrite_retained(content, js, scope), scope);
         }
         return project_aliases(
-            rewrite_reparsed(js_content, content, retained, scope),
+            rewrite_reparsed(String::from(js_content), content, retained, scope),
             scope,
         );
     }
@@ -89,11 +88,7 @@ pub(super) fn rewrite_expression(
             parse_error: !overflows,
         };
     }
-    let js_content = if scope.is_ts() {
-        strip_typescript_from_expression(content)
-    } else {
-        String::from(content)
-    };
+    let js_content = String::from(js_content);
     if as_params {
         // The original text is re-checked as TypeScript: the official
         // compiler accepts params the stripping fallback could not lower.

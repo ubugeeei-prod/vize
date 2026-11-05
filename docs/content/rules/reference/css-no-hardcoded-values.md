@@ -1,18 +1,43 @@
 ---
 title: "css/no-hardcoded-values"
+description: "Suggest using CSS variables instead of hardcoded values."
 ---
 
 # `css/no-hardcoded-values`
 
-Suggest using CSS variables instead of hardcoded values
+Suggest using CSS variables instead of hardcoded values.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The button embeds spacing numbers and a hexadecimal color directly in the declarations.
+
+```vue annotate="remove:3,4"
+<style scoped>
+.button {
+  padding: 12px 16px;
+  color: #174ea6;
+}
+</style>
+```
+
+## Good
+
+The declarations refer to named spacing and color custom properties, so these values can be maintained as tokens.
+
+```vue annotate="add:3,4"
+<style scoped>
+.button {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-action-text);
+}
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,36 +56,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The button embeds spacing numbers and a hexadecimal color directly in the declarations.
-
-```vue
-<style scoped>
-.button {
-  padding: 12px 16px;
-  color: #174ea6;
-}
-</style>
-```
-
-## Good
-
-The declarations refer to named spacing and color custom properties, so these values can be maintained as tokens.
-
-```vue
-<style scoped>
-.button {
-  padding: var(--space-3) var(--space-4);
-  color: var(--color-action-text);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30)

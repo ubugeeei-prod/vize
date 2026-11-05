@@ -1,18 +1,35 @@
 ---
 title: "vue/no-undefined-refs"
+description: "Disallow undefined variable references in templates."
 ---
 
 # `vue/no-undefined-refs`
 
-Disallow undefined variable references in templates
+Disallow undefined variable references in templates.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The template reads missing, although the script declares only message.
+
+```vue annotate="remove:2"
+<script setup>const message = "Hello";</script>
+<template>{{ missing }}</template>
+```
+
+## Good
+
+The interpolation reads the existing message binding.
+
+```vue annotate="add:2"
+<script setup>const message = "Hello";</script>
+<template>{{ message }}</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,28 +48,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The template reads missing, although the script declares only message.
-
-```vue
-<script setup>const message = "Hello";</script>
-<template>{{ missing }}</template>
-```
-
-## Good
-
-The interpolation reads the existing message binding.
-
-```vue
-<script setup>const message = "Hello";</script>
-<template>{{ message }}</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14)

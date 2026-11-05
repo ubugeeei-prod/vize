@@ -118,7 +118,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
           "file": "src/Button.vue",
           "messages": [{
             "ruleId": "css/no-hardcoded-values",
-            "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+            "ruleDocsPath": "docs/content/rules/reference/css-no-hardcoded-values.md",
             "severity": 2,
             "message": "[vize:css/no-hardcoded-values] Consider using a CSS variable for this color value",
             "line": 2,
@@ -128,7 +128,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
             "help": "Use var(--color-name) for consistent theming"
           }, {
             "ruleId": "css/no-important",
-            "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+            "ruleDocsPath": "docs/content/rules/reference/css-no-important.md",
             "severity": 2,
             "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
             "line": 2,

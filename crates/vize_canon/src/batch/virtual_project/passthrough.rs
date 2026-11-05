@@ -409,8 +409,10 @@ mod passthrough_tests {
         path
     }
 
+    /// The declaration keeps its authored identity (#11496); a mirror copy
+    /// would detach it from its own relative imports.
     #[test]
-    fn collects_declaration_for_explicit_ts_relative_import() {
+    fn explicit_ts_relative_import_of_a_declaration_is_not_copied() {
         let case_dir = unique_case_dir("explicit-ts-declaration");
         let _ = std::fs::remove_dir_all(&case_dir);
         std::fs::create_dir_all(&case_dir).unwrap();
@@ -427,31 +429,23 @@ mod passthrough_tests {
         );
         let virtual_root = crate::batch::project_virtual_root(&root);
 
-        let mut files = collect_passthrough_modules(
+        let files = collect_passthrough_modules(
             &entry,
             &std::fs::read_to_string(&entry).unwrap(),
             &root,
             &virtual_root,
         );
-        files.sort();
 
+        assert_eq!(files, Vec::new());
         assert_eq!(
-            files
-                .into_iter()
-                .map(|(virtual_path, original_path)| {
-                    (
-                        virtual_path
-                            .strip_prefix(&virtual_root)
-                            .unwrap()
-                            .to_path_buf(),
-                        original_path.strip_prefix(&root).unwrap().to_path_buf(),
-                    )
-                })
-                .collect::<Vec<_>>(),
-            vec![(
-                PathBuf::from("node_modules/@nuxtjs/i18n/dist/runtime/types.d.ts"),
-                PathBuf::from("node_modules/@nuxtjs/i18n/dist/runtime/types.d.ts"),
-            )]
+            crate::batch::virtual_project::dependency_scan::resolve_dependency(
+                "../../node_modules/@nuxtjs/i18n/dist/runtime/types.ts",
+                entry.parent().unwrap(),
+                &root,
+                &[],
+            )
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(&path)),
+            Some(root.join("node_modules/@nuxtjs/i18n/dist/runtime/types.d.ts"))
         );
 
         let _ = std::fs::remove_dir_all(&case_dir);

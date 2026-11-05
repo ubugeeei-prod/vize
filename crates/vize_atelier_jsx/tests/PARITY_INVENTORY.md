@@ -65,7 +65,7 @@ Intentional divergences:
 |                  | multiple dynamic keys collected                                                      |      ✅       |       |     |
 |                  | spread `{...props}` → `FULL_PROPS` / `setDynamicProps`                               |      ✅       |  ✅   |     |
 |                  | spread + static → `mergeProps`                                                       |      ✅       |       |     |
-|                  | dynamic class → `normalizeClass` + `CLASS` flag / `setClass`                         |      ✅       |  ✅   |     |
+|                  | dynamic class → `normalizeProps` (`createVNode` rule) + `CLASS` flag / `setClass`    |      ✅       |  ✅   |     |
 |                  | array class binding                                                                  |      ✅       |       |     |
 |                  | dynamic style → `normalizeStyle` + `STYLE` flag / `setStyle`                         |      ✅       |  ✅   |     |
 |                  | namespaced `xlink:href`                                                              |      ✅       |       |     |

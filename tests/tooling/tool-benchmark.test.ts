@@ -159,7 +159,7 @@ test("the Nuxt fairness note states the Vue-compilation share and where the modu
   const nuxtNotes = buildFairnessNotes(500).filter((note) => note.startsWith("Nuxt SPA build"));
 
   assert.deepEqual(nuxtNotes, [
-    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
+    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Nuxt and Vue come from tools/benchmarks/nuxt-app/package-lock.json, resolved the way a user's app resolves them (no workspace overrides), and `@vizejs/nuxt` is this commit's build installed beside them as package files. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
   ]);
 
   const publishedDoc = fs.readFileSync(

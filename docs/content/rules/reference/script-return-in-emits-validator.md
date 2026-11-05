@@ -1,20 +1,39 @@
 ---
 title: "script/return-in-emits-validator"
+description: "Require a return value in every Vue emits validator."
 ---
 
 # `script/return-in-emits-validator`
 
-Require a return value in every Vue emits validator
+Require a return value in every Vue emits validator.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
 Use a block-body arrow for the currently supported SFC filter. The underlying validator also handles method shorthand, but the current SFC prefilter does not reliably dispatch that shape.
+
+## Bad
+
+The `submit` validator logs the payload but does not return a validation result, so its block body yields undefined.
+
+```vue annotate="remove:2"
+<script lang="ts">
+export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
+</script>
+```
+
+## Good
+
+`return payload != null` supplies a boolean validation result for the submitted payload instead of ending without a returned value.
+
+```vue annotate="add:2"
+<script lang="ts">
+export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
+</script>
+```
 
 ## Configuration (Vite+)
 
@@ -33,30 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The `submit` validator logs the payload but does not return a validation result, so its block body yields undefined.
-
-```vue
-<script lang="ts">
-export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
-</script>
-```
-
-## Good
-
-`return payload != null` supplies a boolean validation result for the submitted payload instead of ending without a returned value.
-
-```vue
-<script lang="ts">
-export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
-</script>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61) · [All rules](../all.md)
+- [Type and script rules](../type-and-script.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L61)

@@ -1,18 +1,45 @@
 ---
 title: "vue/use-unique-element-ids"
+description: "Enforce unique element IDs using useId() instead of static literals."
 ---
 
 # `vue/use-unique-element-ids`
 
-Enforce unique element IDs using useId() instead of static literals
+Enforce unique element IDs using useId() instead of static literals.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The literal `email` ID is reused by every instance of this component, which can misdirect its label when several instances are rendered.
+
+```vue annotate="remove:2,3"
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
+```
+
+## Good
+
+`useId()` produces the instance's `emailId`; bind the same value to the label's `for` and the input's `id`.
+
+```vue annotate="add:1,2,3,4,5,6,8,9"
+<script setup>
+import { useId } from "vue";
+
+const emailId = useId();
+</script>
+
+<template>
+  <label :for="emailId">Email</label>
+  <input :id="emailId" />
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,38 +58,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The literal `email` ID is reused by every instance of this component, which can misdirect its label when several instances are rendered.
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-## Good
-
-`useId()` produces the instance's `emailId`; bind the same value to the label's `for` and the input's `id`.
-
-```vue
-<script setup>
-import { useId } from "vue";
-
-const emailId = useId();
-</script>
-
-<template>
-  <label :for="emailId">Email</label>
-  <input :id="emailId" />
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52)

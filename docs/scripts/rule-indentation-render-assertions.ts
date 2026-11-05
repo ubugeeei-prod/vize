@@ -1,15 +1,19 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
 import { ruleIndentationExamples } from "./rules/indentation-examples.ts";
 
-export async function verifyRenderedRuleIndentation(page: Page, locale: string) {
+export async function verifyRenderedRuleIndentation(
+  page: Page,
+  locale: string,
+  headings: { bad: string; good: string },
+) {
   const root = resolve(import.meta.dirname, "../..");
   const inputs = ruleIndentationExamples.map((fixture) => {
+    // The expected sources are compared with the live extraction by
+    // docs-rule-example-indentation.test.ts; the rendered page must match them.
     const source = readFileSync(resolve(root, fixture.sourcePath), "utf8");
-    assert.equal(createHash("sha256").update(source).digest("hex"), fixture.sourceSha256);
     return {
       ...fixture,
       source,
@@ -17,7 +21,7 @@ export async function verifyRenderedRuleIndentation(page: Page, locale: string) 
     };
   });
   const rendered = await page.evaluate(
-    async ({ routes, ja }) => {
+    async ({ routes, headings }) => {
       return Promise.all(
         routes.map(async (route) => {
           const response = await fetch(`${route}/index.html`);
@@ -28,10 +32,16 @@ export async function verifyRenderedRuleIndentation(page: Page, locale: string) 
               !element.closest(".vize-command-tabs") ||
               element.hasAttribute("data-command-tabs-original"),
           );
-          const bad = document.getElementById(ja ? "悪い" : "bad");
-          const good = document.getElementById(ja ? "良い" : "good");
+          const h2 = [...document.querySelectorAll(".content h2")];
+          const bad = h2.find((heading) => heading.textContent?.trim() === headings.bad) ?? null;
+          const good = h2.find((heading) => heading.textContent?.trim() === headings.good) ?? null;
           const follows = (first: Element | null, second: Element | undefined) =>
             Boolean(first && second && (first.compareDocumentPosition(second) & 4) !== 0);
+          // The executed examples are the first code blocks after Bad and Good.
+          const after = (heading: Element | null) =>
+            blocks.find((block) => follows(heading, block));
+          const badCode = after(bad);
+          const goodCode = after(good);
           return {
             route,
             status: response.status,
@@ -44,14 +54,15 @@ export async function verifyRenderedRuleIndentation(page: Page, locale: string) 
               // whole-code oracle does; authored indentation is never normalized.
               return text.replace(/\n$/, "");
             }),
-            badBeforeCode: follows(bad, blocks[2]),
-            badCodeBeforeGood: follows(blocks[2] ?? null, good ?? undefined),
-            goodBeforeCode: follows(good, blocks[3]),
+            examples: [badCode, goodCode].map((block) => block?.textContent?.replace(/\n$/, "")),
+            badBeforeCode: Boolean(badCode),
+            badCodeBeforeGood: follows(badCode ?? null, good ?? undefined),
+            goodBeforeCode: Boolean(goodCode),
           };
         }),
       );
     },
-    { routes: inputs.map((input) => input.route), ja: locale === "ja/" },
+    { routes: inputs.map((input) => input.route), headings },
   );
   for (let index = 0; index < inputs.length; index += 1) {
     const input = inputs[index];
@@ -59,12 +70,11 @@ export async function verifyRenderedRuleIndentation(page: Page, locale: string) 
     assert.equal(actual.route, input.route);
     assert.equal(actual.status, 200, input.route);
     assert.equal(actual.id, input.name);
-    assert.equal(actual.code.length, 4, `${input.route}: all four original code blocks`);
     assert.equal(actual.badBeforeCode, true, `${input.route}: Bad/code order`);
     assert.equal(actual.badCodeBeforeGood, true, `${input.route}: Bad/Good order`);
     assert.equal(actual.goodBeforeCode, true, `${input.route}: Good/code order`);
     assert.deepEqual(
-      actual.code.slice(2),
+      actual.examples,
       [input.expected.bad.source, input.expected.good.source],
       `${input.route}: whole original-source indentation`,
     );

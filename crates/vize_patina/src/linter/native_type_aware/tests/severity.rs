@@ -1,3 +1,4 @@
+use super::assertion::failure_context;
 use super::{
     LintPreset, Linter, RULE_NO_REACTIVITY_LOSS, RULE_REQUIRE_TYPED_PROPS, corsa_available,
     lint_sfc_with_corsa,
@@ -63,7 +64,7 @@ fn type_rule_severity_override_is_an_error() {
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == RULE_REQUIRE_TYPED_PROPS)
         .collect();
-    assert_eq!(typed.len(), 1);
+    assert_eq!(typed.len(), 1, "{}", failure_context(&result));
     assert_eq!(typed[0].severity, crate::Severity::Error);
     assert_eq!(
         result.error_count,
@@ -95,7 +96,7 @@ fn type_rule_category_severity_override_is_an_error() {
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == RULE_NO_REACTIVITY_LOSS)
         .collect();
-    assert_eq!(losses.len(), 1);
+    assert_eq!(losses.len(), 1, "{}", failure_context(&result));
     assert_eq!(losses[0].severity, crate::Severity::Error);
     assert_eq!(
         result.error_count,

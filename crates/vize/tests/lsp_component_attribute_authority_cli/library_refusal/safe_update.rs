@@ -55,16 +55,19 @@ pub(super) fn publish(
     version: i64,
     opening: bool,
     expected_diagnostics: Value,
+    carried: Value,
 ) -> Value {
     let uri = fixture.uri(file);
-    // The unchanged lint+typecheck contract publishes prompt sync feedback
-    // (the lint findings), then the complete native answer. Author both
-    // packets before didChange.
+    // The lint+typecheck contract publishes prompt sync feedback (the lint
+    // findings plus the type errors of the last native answer that the edit
+    // left in place), then the complete native answer. Author both packets
+    // before didChange.
     let lint: Vec<Value> = expected_diagnostics
         .as_array()
         .into_iter()
         .flatten()
         .filter(|diagnostic| diagnostic["source"] == "vize/lint")
+        .chain(carried.as_array().into_iter().flatten())
         .cloned()
         .collect();
     let complete = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
@@ -215,6 +218,7 @@ fn original_config_safe_updates_apply_all_owned_sites_and_validate_independent_r
                         2,
                         name == "src/App.vue" && !parent_open,
                         json!([]),
+                        json!([]),
                     );
                     actual_files.push(json!({"file":name,"text":text,"disk":std::fs::read_to_string(fixture.project.path().join(name)).unwrap(),"diagnostics":diagnostics}));
                 }
@@ -227,7 +231,8 @@ fn original_config_safe_updates_apply_all_owned_sites_and_validate_independent_r
                 }
                 let mut independent = Vec::new();
                 for (name, text) in goldens {
-                    let diagnostics = publish(&mut fixture, name, text, 3, false, json!([]));
+                    let diagnostics =
+                        publish(&mut fixture, name, text, 3, false, json!([]), json!([]));
                     independent.push(json!({"file":name,"text":text,"disk":std::fs::read_to_string(fixture.project.path().join(name)).unwrap(),"version":3,"diagnostics":diagnostics}));
                 }
                 let actual = json!({"references":references,"rename":edit,"applicationErrors":application_errors,"files":actual_files,"independentRepair":independent});

@@ -1,18 +1,39 @@
 ---
 title: "a11y/heading-levels"
+description: "Disallow skipping heading levels."
 ---
 
 # `a11y/heading-levels`
 
-Disallow skipping heading levels
+Disallow skipping heading levels.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The heading sequence jumps directly from `h1` to `h3`, skipping level two.
+
+```vue annotate="remove:3"
+<template>
+  <h1>Account</h1>
+  <h3>Billing</h3>
+</template>
+```
+
+## Good
+
+Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
+
+```vue annotate="add:3"
+<template>
+  <h1>Account</h1>
+  <h2>Billing</h2>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The heading sequence jumps directly from `h1` to `h3`, skipping level two.
-
-```vue
-<template>
-  <h1>Account</h1>
-  <h3>Billing</h3>
-</template>
-```
-
-## Good
-
-Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
-
-```vue
-<template>
-  <h1>Account</h1>
-  <h2>Billing</h2>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34)

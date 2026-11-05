@@ -26,8 +26,3 @@ pub use payload::{
 pub use product_capture::{
     PRODUCT_STAGE_FEED_VERSION, ProductCaptureSource, product_capture_value,
 };
-pub use stages::{
-    LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, StageFeed, StagePage,
-    StageRemark, l1_page, ladder_pages, ladder_profile, ladder_run, spolvero_value,
-    spolvero_value_with_remarks, template_remarks,
-};

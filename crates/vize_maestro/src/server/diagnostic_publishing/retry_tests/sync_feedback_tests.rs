@@ -2,7 +2,8 @@
 
 use super::publication_tests::{diagnostics, drain, notification};
 use super::*;
-use crate::ide::DiagnosticService;
+use crate::ide::{DiagnosticService, diagnostics::NativeFamily};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
 
 const ORIGINAL: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/lsp-regressions/responsive-lint-diagnostics-8002/App.vue.txt"
@@ -271,4 +272,103 @@ fn pending_type_status_refuses_stale_source_environment_closed_and_disabled_worl
             "{control:?} must not publish pending native status"
         );
     }
+}
+
+fn carried_type_error(line: u32) -> Diagnostic {
+    Diagnostic {
+        range: Range::new(Position::new(line, 6), Position::new(line, 11)),
+        severity: Some(DiagnosticSeverity::ERROR),
+        code: Some(NumberOrString::Number(2322)),
+        source: Some("vize/types".into()),
+        message: "Type 'string' is not assignable to type 'number'.".into(),
+        ..Default::default()
+    }
+}
+
+fn carry_type_error(fixture: &Fixture) {
+    let family = NativeFamily {
+        diagnostics: vec![carried_type_error(3).into()],
+        owns_script_syntax: true,
+    };
+    let documents = &fixture.service.inner().state.documents;
+    assert!(documents.carry_native(&fixture.app, 2, family));
+}
+
+fn ranged(start: (u32, u32), end: (u32, u32), text: &str) -> TextDocumentContentChangeEvent {
+    TextDocumentContentChangeEvent {
+        range: Some(Range::new(
+            Position::new(start.0, start.1),
+            Position::new(end.0, end.1),
+        )),
+        range_length: None,
+        text: text.into(),
+    }
+}
+
+#[test]
+fn lint_feedback_keeps_the_latest_type_errors_moved_to_the_edit() {
+    let mut fixture = original_fixture();
+    carry_type_error(&fixture);
+    let server = fixture.service.inner();
+    let native = futures::executor::block_on(server.state.corsa_request_scope());
+    // Dropping `alt` adds a lint warning; a line above moves the type error.
+    let edits = [
+        (
+            3,
+            vec![ranged((7, 22), (7, 29), ""), ranged((1, 0), (1, 0), "\n")],
+        ),
+        // The lint repair clears promptly and still keeps the type error.
+        (4, vec![ranged((8, 22), (8, 22), " alt=\"\"")]),
+    ];
+    for (version, changes) in edits {
+        let change = server.apply_document_changes(&fixture.app, changes, version);
+        assert!(
+            crate::runtime::block_on(crate::runtime::timeout(
+                std::time::Duration::from_secs(5),
+                change,
+            ))
+            .is_ok()
+        );
+        let mut expected = DiagnosticService::collect(&server.state, &fixture.app);
+        let lint = expected
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some("vize/lint"));
+        assert_eq!(lint, version == 3, "{expected:#?}");
+        expected.push(carried_type_error(4));
+        let packet = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"version":version,"diagnostics":expected}});
+        assert_eq!(
+            diagnostics(drain(&mut fixture.socket, async {})),
+            vec![packet]
+        );
+    }
+    // The native pass for the new text replaces the carried result.
+    drop(native);
+    let complete = receive_whole(&mut fixture);
+    assert_eq!(complete["version"], 4);
+    assert!(
+        complete["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|diagnostic| diagnostic["code"] != 2322),
+        "{complete:#}"
+    );
+}
+
+#[test]
+fn pending_type_status_keeps_the_latest_type_errors() {
+    let mut fixture = original_fixture();
+    carry_type_error(&fixture);
+    let server = fixture.service.inner();
+    let stamp = server.state.corsa_request_stamp();
+    let sync = DiagnosticService::collect(&server.state, &fixture.app);
+    let mut expected = sync.clone();
+    expected.push(carried_type_error(3));
+    expected.push(crate::ide::diagnostics::typecheck_pending_hint());
+    let observed = diagnostics(drain(
+        &mut fixture.socket,
+        server.publish_pending_native_diagnostics(&fixture.app, 2, stamp, &sync),
+    ));
+    let packet = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"diagnostics":expected}});
+    assert_eq!(observed, vec![packet]);
 }

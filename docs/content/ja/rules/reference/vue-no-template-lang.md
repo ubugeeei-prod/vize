@@ -1,18 +1,37 @@
 ---
 title: "vue/no-template-lang"
+description: "template の lang 指定を避ける方針を示します。"
 ---
 
 # `vue/no-template-lang`
 
 template の lang 指定を避ける方針を示します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+template の lang に Pug を指定しているため、HTML のみを許可するルールが記述されたブロックを報告します。
+
+```vue annotate="remove:1,2"
+<template lang="pug">
+p Notice
+</template>
+```
+
+## 良い例
+
+lang を指定せず、通常の HTML の p を直接記述します。
+
+```vue annotate="add:1,2"
+<template>
+<p>Notice</p>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-template の lang に Pug を指定しているため、HTML のみを許可するルールが記述されたブロックを報告します。
-
-```vue
-<template lang="pug">
-p Notice
-</template>
-```
-
-## 良い
-
-lang を指定せず、通常の HTML の p を直接記述します。
-
-```vue
-<template>
-<p>Notice</p>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11)

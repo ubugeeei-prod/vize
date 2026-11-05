@@ -1,5 +1,33 @@
 use super::GenericParameters;
 
+/// Anchored rows copy authored bytes onto the same authored bytes, cover
+/// every parameter and stay inside the attribute.
+fn assert_anchored_rows_copy_the_attribute(mut plan: GenericParameters, raw: &str) {
+    let source = vize_carton::cstr!("<x generic=\"{raw}\">");
+    let origin = "<x generic=\"".len();
+    let code = vize_carton::cstr!("__setup<{}>", plan.authored());
+    plan.origin = Some(origin);
+    let rows: Vec<_> = plan.authored_rows("__setup<".len()).collect();
+    assert_eq!(
+        rows.len(),
+        plan.parameters.len()
+            + plan
+                .parameters
+                .iter()
+                .filter(|p| p.default.is_some())
+                .count(),
+        "{raw}"
+    );
+    for row in rows {
+        assert_eq!(
+            code.get(row.gen_range.clone()),
+            source.get(row.src_range.clone()),
+            "{raw}"
+        );
+        assert!(origin <= row.src_range.start && row.src_range.end <= origin + raw.len());
+    }
+}
+
 #[test]
 fn parser_owned_boundaries_preserve_full_variants_and_rows() {
     for (raw, names, defaults, aliases, fallback) in [
@@ -54,15 +82,7 @@ fn parser_owned_boundaries_preserve_full_variants_and_rows() {
             assert_eq!(plan.declaration, defaults, "{raw}");
             assert_eq!(plan.alias_declaration, aliases, "{raw}");
             assert_eq!(plan.fallback, fallback, "{raw}");
-            for (rendered, rows) in plan.declaration_variants() {
-                for (generated, original) in rows {
-                    assert_eq!(
-                        rendered.get(generated.clone()),
-                        raw.get(original.clone()),
-                        "{raw}: {rendered}"
-                    );
-                }
-            }
+            assert_anchored_rows_copy_the_attribute(plan, &raw);
         }
     }
 }
@@ -88,11 +108,7 @@ fn comments_and_authored_defaults_are_not_inferred_from_spelling() {
     assert_eq!(plan.authored(), vize_carton::cstr!("{raw}\n"));
     assert_eq!(plan.fallback, "'a=b,c', unknown");
     assert!(plan.has_repeated_fallback_constraint());
-    for (rendered, rows) in plan.declaration_variants() {
-        for (generated, original) in rows {
-            assert_eq!(rendered.get(generated.clone()), raw.get(original.clone()));
-        }
-    }
+    assert_anchored_rows_copy_the_attribute(plan, raw);
 }
 
 #[test]
@@ -107,10 +123,8 @@ fn malformed_parameters_keep_the_entire_authored_signature() {
         let plan = GenericParameters::parse(raw);
         assert!(!plan.diagnostics.is_empty(), "{raw}");
         assert_eq!(plan.raw(), raw);
-        for (rendered, rows) in plan.declaration_variants() {
-            assert_eq!(rendered, raw);
-            assert_eq!(rows, &[(0..raw.len(), 0..raw.len())]);
-        }
+        assert_eq!(plan.declaration_variants(), [raw; 4]);
+        assert_eq!(plan.raw_rows, vec![(0..raw.len(), 0..raw.len())]);
         for diagnostic in plan.diagnostics {
             assert!(diagnostic.start <= diagnostic.end);
             assert!(diagnostic.end as usize <= raw.len());
@@ -134,10 +148,8 @@ fn a_valid_synthetic_program_cannot_escape_the_parameter_boundary() {
                 end: raw.len() as u32,
             }]
         );
-        for (rendered, rows) in plan.declaration_variants() {
-            assert_eq!(rendered, raw);
-            assert_eq!(rows, &[(0..raw.len(), 0..raw.len())]);
-        }
+        assert_eq!(plan.declaration_variants(), [raw; 4]);
+        assert_eq!(plan.raw_rows, vec![(0..raw.len(), 0..raw.len())]);
     }
 }
 

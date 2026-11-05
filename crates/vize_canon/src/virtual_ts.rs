@@ -20,6 +20,8 @@ pub(crate) mod diagnostic_ownership;
 #[cfg(test)]
 mod dynamic_component_names_tests;
 #[cfg(test)]
+mod dynamic_component_scope_tests;
+#[cfg(test)]
 mod event_handler_tests;
 mod expressions;
 pub(crate) mod generated_names;
@@ -32,13 +34,17 @@ mod reference_paths;
 pub(crate) use generator::generic_recovery;
 pub(crate) use reference_paths::validate_reference_paths;
 pub(crate) mod generic_parameters;
+pub use generic_parameters::{GenericParameters, authored_generic_range};
 mod helpers;
+pub use helpers::shared_types::SHARED_VIRTUAL_TYPE_EXPORTS;
 mod import_meta;
 pub mod incremental;
 #[cfg(test)]
 mod interface_extends_tests;
 #[cfg(test)]
 mod legacy_vue2_vuetify_tests;
+#[cfg(test)]
+mod loose_is_listener_tests;
 mod macro_type_mappings;
 pub mod mapping;
 mod model_types;
@@ -74,9 +80,9 @@ mod unknown_props_tests;
 
 pub use generator::setup_helpers::owned_emit_navigation_source_ranges;
 pub use generator::{
-    entry::generate_virtual_ts_with_split_offsets, generate_virtual_ts,
-    generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_legacy_vue2,
-    generate_virtual_ts_with_offsets_options_api,
+    entry::generate_virtual_ts_with_generic, entry::generate_virtual_ts_with_split_offsets,
+    generate_virtual_ts, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
 #[cfg(feature = "native")]

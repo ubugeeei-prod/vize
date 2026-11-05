@@ -3,8 +3,8 @@ import path from "node:path";
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 import { assembleComponentOutput } from "./component-output.ts";
-import { insertBeforeSfcMainDefaultExport } from "./module-output.ts";
 import type { SourceMapV3 } from "./source-map.ts";
+import { customBlockModuleCode, insertBeforeSfcMainDefaultExport } from "../custom-blocks.ts";
 import { createStyleVirtualId } from "../plugin/style-request.ts";
 
 // Re-export CSS utilities for backward compatibility
@@ -28,26 +28,47 @@ function needsCssPipeline(block: StyleBlockInfo): boolean {
   return block.content.includes("@apply");
 }
 
+/** A production build names modules from the root, so they match across checkouts. */
+function rootRelativePath(
+  file: string,
+  root: string | undefined,
+  isProduction: boolean,
+): string | null {
+  if (!isProduction || !root) return null;
+  const relativePath = path.relative(root, file);
+  if (
+    !relativePath ||
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    return null;
+  }
+  return `/${relativePath.split(path.sep).join("/")}`;
+}
+
 function createStyleImportUrl(
   filePath: string,
   params: URLSearchParams,
   root: string | undefined,
   isProduction: boolean,
+  block: StyleBlockInfo,
 ): string {
-  let styleFilePath = filePath;
-  if (isProduction && root) {
-    const relativePath = path.relative(root, filePath);
-    if (
-      relativePath &&
-      relativePath !== ".." &&
-      !relativePath.startsWith(`..${path.sep}`) &&
-      !path.isAbsolute(relativePath)
-    ) {
-      styleFilePath = `/${relativePath.split(path.sep).join("/")}`;
-      params.set("vize-root-relative", "");
-    }
+  const owner = rootRelativePath(filePath, root, isProduction);
+  if (owner) params.set("vize-root-relative", "");
+  const styleFilePath = owner ?? filePath;
+  if (!block.src) {
+    return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);
   }
-  return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);
+  // A `<style src>` block's module is the src file itself, as in
+  // @vitejs/plugin-vue, so Vite resolves its relative `@import`, `@use` and
+  // `url()` from its own directory. `vize-file` names the owning SFC; the
+  // trailing `lang.<ext>` lets Vite tell a CSS Module from a plain stylesheet.
+  // Nuxt CSS discovery excludes dots in the query, as for createStyleVirtualId.
+  params.set("vize-file", styleFilePath);
+  const src = (owner && rootRelativePath(block.src, root, isProduction)) || block.src;
+  const lang = `${isCssModule(block) ? "module." : ""}${block.lang ?? "css"}`;
+  return `${src}?${params.toString().replaceAll(".", "%2E")}&lang.${lang}`;
 }
 
 /**
@@ -202,7 +223,7 @@ export function generateOutputWithMap(
   const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath, root } =
     options;
 
-  const { emitted, hasExportDefault } = assembleComponentOutput(compiled);
+  const { emitted, hasExportDefault, exportsSfcMain } = assembleComponentOutput(compiled);
 
   // Determine whether to use style imports or inline CSS injection.
   // Import styles through Vite in every mode, including SSR dependency discovery.
@@ -224,24 +245,32 @@ export function generateOutputWithMap(
       if (block.scoped) params.set("scoped", `data-v-${compiled.scopeId}`);
       params.set("lang", lang);
 
-      if (customElement) {
+      if (block.external) {
+        // An external `<style src>` stays an import of that module.
+        if (customElement) {
+          throw new Error(
+            `<style src="${block.src}"> resolved to an external module, so it cannot be inlined into a custom element`,
+          );
+        }
+        styleImports.push(`import ${JSON.stringify(block.src)};`);
+      } else if (customElement) {
         if (isCssModule(block)) {
           throw new Error("<style module> is not supported in custom element mode");
         }
         params.set("inline", "");
         const bindingName = `_style_${block.index}`;
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
         customElementStyleBindings.push(bindingName);
       } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
       } else {
         // Side-effect import: Vite will inject the CSS
-        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction, block);
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
     }
@@ -254,16 +283,14 @@ export function generateOutputWithMap(
       emitted.edit(insertAfterStaticImports(emitted.code, allImports));
     }
 
-    // Inject CSS module bindings into the component
-    if (customElementStyleBindings.length > 0) {
+    // Style bindings are appended to the exported `_sfc_main`: they run after
+    // the module body, before any importer reads the export, so the emitted
+    // code is never parsed again to locate `export default` (#11526).
+    if (exportsSfcMain && customElementStyleBindings.length > 0) {
       emitted.edit(
-        insertBeforeSfcMainDefaultExport(
-          emitted.code,
-          `_sfc_main.styles = [${customElementStyleBindings.join(", ")}];`,
-          { normalizeSemicolon: true },
-        ),
+        `${emitted.code}\n_sfc_main.styles = [${customElementStyleBindings.join(", ")}];`,
       );
-    } else if (cssModuleImports.length > 0) {
+    } else if (exportsSfcMain && cssModuleImports.length > 0) {
       // Extract binding names from the CSS module imports
       const moduleBindings: { name: string; bindingName: string }[] = [];
       for (const block of compiled.styles!) {
@@ -281,15 +308,22 @@ export function generateOutputWithMap(
             `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(m.name)}] = ${m.bindingName};`,
         )
         .join("\n");
-      emitted.edit(
-        insertBeforeSfcMainDefaultExport(emitted.code, cssModuleSetup, {
-          normalizeSemicolon: true,
-        }),
-      );
+      emitted.edit(`${emitted.code}\n${cssModuleSetup}`);
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Fallback for callers without per-block style metadata ---
     emitted.edit(prependInlineStyleInjection(emitted.code, compiled.css, compiled.scopeId));
+  }
+
+  // Custom-block imports call `_sfc_main` before it is exported, so a user
+  // plugin's `export default (component) => { ... }` runs on the first eval.
+  if (filePath && exportsSfcMain && compiled.customBlocks?.length) {
+    emitted.edit(
+      insertBeforeSfcMainDefaultExport(
+        emitted.code,
+        customBlockModuleCode(filePath, compiled.customBlocks),
+      ),
+    );
   }
 
   // Add HMR support in development (skip in production)

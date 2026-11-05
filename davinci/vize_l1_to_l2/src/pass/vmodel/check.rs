@@ -6,12 +6,13 @@ use vize_l0::String;
 use vize_l0::diag::{Diagnostic, Stage};
 use vize_l0::id::NodeId;
 use vize_l2::op::ModelOp;
+use vize_l2::provenance::ProvenanceSink;
 
 use super::{ARG_ON_ELEMENT_MESSAGE, Channels, ModelFacts, ModelFault, ON_SCOPE_MESSAGE};
 
 /// The two legacy checks, in the legacy order, first failure wins.
 pub(super) fn check_model(
-    channels: &mut Channels<'_>,
+    channels: &mut Channels<'_, impl ProvenanceSink>,
     env: &StdVec<String>,
     id: Option<NodeId>,
     model: &ModelOp<'_>,
@@ -45,7 +46,7 @@ pub(super) fn check_model(
     ));
     channels
         .provenance
-        .push(vize_l2::provenance::ProvenanceRecord {
+        .record(|| vize_l2::provenance::ProvenanceRecord {
             rule: String::from(rule),
             node: id,
             before: String::from(read),

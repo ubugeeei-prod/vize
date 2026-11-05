@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const used: keyof __VLS_StyleScopedClasses = "scoped";
+</script>
+<template><div class="scoped plain" /></template>
+<style scoped>
+.scoped { color: red; }
+</style>
+<style>
+.plain { color: blue; }
+</style>

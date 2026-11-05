@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { emptyCompileSourcesForReference } from "./sfc-empty-project-context-source.ts";
 
 // This is the existing empty input's build-only successor. The original source,
 // before packet and all parse modes remain unchanged; no SFC syntax is inferred.
@@ -22,7 +23,7 @@ export const emptyCompileReference = JSON.parse(referenceBytes.toString("utf8"))
 };
 
 export const emptyCompileSourceBlobs = {
-  "crates/vize_atelier_sfc/src/compile.rs": "73dac21158fb72588268f617d9b439554f064fa1",
+  "crates/vize_atelier_sfc/src/compile.rs": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
   "crates/vize_atelier_sfc/src/compile/empty_component.rs":
     "33ee8b8b1f6e8085cccfb609c1781ccecc6877b9",
   "crates/vize_vitrine/src/napi/sfc/compile.rs": "e8a1b34ac5268c71573347506dfdeb6d6fc9ccb0",
@@ -41,11 +42,14 @@ export function validateEmptyCompileSources(sources: Record<string, Uint8Array>)
 }
 
 validateEmptyCompileSources(
-  Object.fromEntries(
-    Object.keys(emptyCompileSourceBlobs).map((file) => [
-      file,
-      readFileSync(new URL(`../../${file}`, import.meta.url)),
-    ]),
+  emptyCompileSourcesForReference(
+    Object.fromEntries(
+      Object.keys(emptyCompileSourceBlobs).map((file) => [
+        file,
+        readFileSync(new URL(`../../${file}`, import.meta.url)),
+      ]),
+    ),
+    emptyCompileSourceBlobs,
   ),
 );
 assert.equal(emptyCompileReference.schema, "vize.sfc-attributes-empty-compile-reference.v1");

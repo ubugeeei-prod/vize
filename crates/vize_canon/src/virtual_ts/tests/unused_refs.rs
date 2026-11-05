@@ -68,7 +68,7 @@ const decoy = null
 
     // The inline renderer reads the raw ref. It must stay outside the
     // unwrapped template scope while genuinely unused locals remain unused.
-    assert!(output.code.contains("void (() => root);"));
+    assert!(output.code.contains("void (() => root!);"));
     assert!(!output.code.contains("type __R_root = typeof root;"));
     assert!(!output.code.contains("var root: __U<__R_root>"));
     assert!(!output.code.contains("void decoy;"));
@@ -226,7 +226,7 @@ fn static_ref_runtime_reads_keep_original_setup_bindings_and_deduplicate() {
             r#"<div ref="plain"></div><div ref="fromComposable"></div><div ref="props"></div><div ref="plain"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => fromComposable);\n  void (() => plain);\n  void (() => props);",
+        "  void (() => fromComposable!);\n  void (() => plain!);\n  void (() => props!);",
     );
     assert_eq!(
         static_ref_read_block(
@@ -258,7 +258,7 @@ fn static_ref_reads_respect_template_shadow_and_do_not_parse_ref_strings() {
             r#"<Comp ref="root" v-slot="{ root }">{{ root }}</Comp><div ref="other"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => other);\n  void (() => root);",
+        "  void (() => other!);\n  void (() => root!);",
     );
     assert_eq!(
         static_ref_read_block(
@@ -266,7 +266,7 @@ fn static_ref_reads_respect_template_shadow_and_do_not_parse_ref_strings() {
             r#"<div v-for="root in []">{{ root }}</div><div ref="root"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => root);",
+        "  void (() => root!);",
     );
 }
 
@@ -280,7 +280,7 @@ fn static_ref_reads_use_import_provenance_and_allow_real_non_vue_factory_results
             r#"<div ref="local"></div><div ref="opaque"></div><div ref="factory"></div><div ref="useTemplateRef"></div><div ref="Component"></div><div ref="Shape"></div><div ref="fakeUseTemplateRef"></div><div ref="plain"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => local);\n  void (() => opaque);",
+        "  void (() => local!);\n  void (() => opaque!);",
     );
     // A named non-Vue value import follows the inline compiler's maybe-ref law.
     assert_eq!(
@@ -289,18 +289,77 @@ fn static_ref_reads_use_import_provenance_and_allow_real_non_vue_factory_results
             r#"<div ref="external"></div><div ref="externalDefault"></div><div ref="namespace"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => external);\n  void (() => externalDefault);"
+        "  void (() => external!);\n  void (() => externalDefault!);"
     );
 }
 
 #[test]
-fn uninitialized_static_ref_reads_are_deferred_like_the_inline_renderer() {
+fn uninitialized_static_ref_usage_witness_does_not_require_assignment() {
     assert_eq!(
         static_ref_read_block(
             "let el: HTMLElement;",
             "<div ref=\"el\"></div>",
             vize_l0::config::VueVersion::V3
         ),
-        "  void (() => el);",
+        "  void (() => el!);",
+    );
+}
+
+#[test]
+fn memo_dependencies_preserve_loop_scope_and_authored_projection() {
+    let script = "import { isHidden } from './util'; defineProps<{ rows: { id: number }[] }>();";
+    let expression = "[row.id, isHidden(), row.missing]";
+    let template = format!(
+        r#"<div v-for="row in rows" :key="row.id" v-memo="{expression}">{{{{ row.id }}}}</div>"#
+    );
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, &template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let dependencies = summary
+        .template_expressions
+        .iter()
+        .filter(|entry| entry.content.as_str() == expression)
+        .map(|entry| {
+            (
+                entry.kind.as_str(),
+                entry.start as usize,
+                entry.end as usize,
+            )
+        })
+        .collect::<Vec<_>>();
+    let start = template.find(expression).unwrap();
+    assert_eq!(dependencies, [("VMemo", start, start + expression.len())]);
+    let output = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        100,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions {
+            preserve_unused_diagnostics: true,
+            ..Default::default()
+        },
+    );
+    let mapped = output
+        .mapping
+        .spans()
+        .iter()
+        .filter(|span| span.src_range == (100 + start..100 + start + expression.len()))
+        .map(|span| output.code.get(span.gen_range.clone()).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(mapped, [expression], "{}", output.code);
+    let checks = output
+        .code
+        .lines()
+        .filter(|line| line.ends_with("// VMemo"))
+        .map(str::trim)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        checks,
+        ["void ([row.id, isHidden(), row.missing]); // VMemo"]
     );
 }

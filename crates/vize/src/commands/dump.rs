@@ -2,15 +2,21 @@
 //!
 //! L1 checks lossless Vue-template source, including recoverable holes.
 //! L2/L3 check canonical Full dump bytes, not semantic IR validity.
+//! L0 is the folio Dump substrate, not a stage page. L4 emission is not a
+//! folio and has no parse/print byte-identity law. Neither is a roundtrip level.
 //! The all-level feed observes the selected product backend's executed levels.
 
 mod all_levels;
 mod roundtrip;
 mod script;
 
+use std::ffi::OsStr;
 use std::path::PathBuf;
 
-use clap::{ArgGroup, Args, ValueEnum};
+use clap::builder::{PossibleValue, TypedValueParser};
+use clap::error::{ContextKind, ContextValue, ErrorKind};
+use clap::{Arg, ArgGroup, Args, Command, Error, ValueEnum};
+use vize_l0::cstr;
 use vize_l1::embed::Lang;
 use vize_l1::embed::syntax::{ProgramGoal, ProgramOptions};
 
@@ -45,11 +51,74 @@ impl ScriptLanguage {
     }
 }
 
-#[derive(Clone, Copy, Debug, ValueEnum)]
+#[derive(Clone, Copy, Debug)]
 pub enum Level {
     L1,
     L2,
     L3,
+}
+
+/// Accepts only the levels that have a parse/print roundtrip.
+///
+/// `l0` and `l4` stay out of the help list. They fail before the file is read,
+/// with the reason each level has no dump.
+#[derive(Clone, Copy)]
+struct DumpLevelParser;
+
+impl TypedValueParser for DumpLevelParser {
+    type Value = Level;
+
+    fn parse_ref(&self, cmd: &Command, arg: Option<&Arg>, value: &OsStr) -> Result<Level, Error> {
+        let Some(raw) = value.to_str() else {
+            return Err(Error::new(ErrorKind::InvalidUtf8).with_cmd(cmd));
+        };
+        match raw {
+            "l1" => Ok(Level::L1),
+            "l2" => Ok(Level::L2),
+            "l3" => Ok(Level::L3),
+            other => Err(reject_level(cmd, arg, other)),
+        }
+    }
+
+    fn possible_values(&self) -> Option<Box<dyn Iterator<Item = PossibleValue> + '_>> {
+        Some(Box::new(
+            ["l1", "l2", "l3"].into_iter().map(PossibleValue::new),
+        ))
+    }
+}
+
+fn reject_level(cmd: &Command, arg: Option<&Arg>, raw: &str) -> Error {
+    let mut err = Error::new(ErrorKind::InvalidValue).with_cmd(cmd);
+    let _ = err.insert(
+        ContextKind::InvalidArg,
+        ContextValue::String(
+            arg.map(|arg| cstr!("{arg}").into_string())
+                .unwrap_or_else(|| "--level <LEVEL>".to_owned()),
+        ),
+    );
+    let _ = err.insert(
+        ContextKind::InvalidValue,
+        ContextValue::String(raw.to_owned()),
+    );
+    let _ = err.insert(
+        ContextKind::ValidValue,
+        ContextValue::Strings(vec!["l1".to_owned(), "l2".to_owned(), "l3".to_owned()]),
+    );
+    if let Some(reason) = level_without_roundtrip(raw) {
+        let _ = err.insert(
+            ContextKind::Suggested,
+            ContextValue::StyledStrs(vec![reason.into()]),
+        );
+    }
+    err
+}
+
+fn level_without_roundtrip(raw: &str) -> Option<&'static str> {
+    match raw {
+        "l0" => Some("L0 is the folio Dump substrate, not a stage page, so it has no roundtrip"),
+        "l4" => Some("L4 emission is not a folio and has no parse/print byte-identity law"),
+        _ => None,
+    }
 }
 
 impl Level {
@@ -74,7 +143,7 @@ pub enum Pipeline {
 #[command(group(ArgGroup::new("mode").required(true).args(["roundtrip", "all_levels"])))]
 pub struct DumpArgs {
     /// L1 Vue-template source fidelity, or L2/L3 canonical Full dump bytes
-    #[arg(long, value_enum, value_name = "LEVEL", requires = "roundtrip")]
+    #[arg(long, value_name = "LEVEL", value_parser = DumpLevelParser, requires = "roundtrip")]
     pub level: Option<Level>,
 
     /// Read FILE and require byte identity after the selected level's roundtrip

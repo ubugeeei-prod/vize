@@ -187,12 +187,18 @@ pub(super) fn build_with_import_facts(
     register_phase.finish();
     let reachable_phase =
         crate::corsa_bridge::preparation_trace::Phase::start("alias_reachable_dependencies", 1);
-    let virtual_file = project.find_by_original(source_path).ok_or_else(|| {
+    let unregistered = || {
         CorsaBridgeError::CommunicationError(vize_carton::cstr!(
             "Canon did not retain registered host {}",
             source_path.display()
         ))
-    })?;
+    };
+    let host_facts = project
+        .editor_source_facts(source_path, facts)
+        .ok_or_else(unregistered)?;
+    let virtual_file = project
+        .find_by_original(source_path)
+        .ok_or_else(unregistered)?;
     let source_type = if virtual_file
         .virtual_path
         .extension()
@@ -342,6 +348,7 @@ pub(super) fn build_with_import_facts(
         package_routes,
         route_inputs,
         refreshed_sources,
+        host_facts,
         mirror,
         virtual_ts_options: environment.virtual_ts_options.clone(),
         configured_global_template_ref,

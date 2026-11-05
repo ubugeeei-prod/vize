@@ -20,6 +20,7 @@ pub(crate) enum InputRole {
     Value,
     Name,
     IndependentRead,
+    DiagnosticPrimary,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -32,6 +33,18 @@ pub(crate) struct InputOwner {
 }
 
 impl InputOwner {
+    /// An actual reference-valued listener read and its deferred typed check
+    /// share the same Croquis expression identity. Callback bodies are excluded.
+    pub(crate) fn for_listener_reference(scope: u32, start: u32, end: u32) -> Self {
+        Self {
+            usage: start,
+            scope,
+            start,
+            end,
+            role: InputRole::Value,
+        }
+    }
+
     pub(crate) fn for_prop(usage: &ComponentUsage, prop: &PassedProp) -> Option<Self> {
         if prop.value.as_ref().is_some_and(|value| {
             crate::virtual_ts::scope::contains_inline_function_prop_value(value.as_str())
@@ -91,6 +104,8 @@ pub(crate) struct DiagnosticOwnership {
     unproven: FxHashSet<InputOwner>,
     callback_primaries: Vec<Range<usize>>,
     independent_reads: vize_carton::FxHashMap<InputOwner, independent_reads::PreparedReads>,
+    /// Owners whose `v-model` write-back was emitted (`strictVModel`).
+    model_write_backs: FxHashSet<InputOwner>,
 }
 
 impl DiagnosticOwnership {
@@ -105,6 +120,40 @@ impl DiagnosticOwnership {
     pub(crate) fn take_callback_primaries(&mut self) -> Vec<Range<usize>> {
         std::mem::take(&mut self.callback_primaries)
     }
+    /// A typed instance check is an emitter-proven primary for this authored occurrence.
+    pub(crate) fn record_diagnostic_primary(
+        &mut self,
+        generated: Range<usize>,
+        authored: Range<usize>,
+    ) {
+        let (Ok(start), Ok(end)) = (u32::try_from(authored.start), u32::try_from(authored.end))
+        else {
+            return;
+        };
+        self.record_projection(
+            InputOwner {
+                usage: start,
+                scope: 0,
+                start,
+                end,
+                role: InputRole::DiagnosticPrimary,
+            },
+            generated,
+            authored,
+            false,
+            false,
+        );
+    }
+
+    /// Unproved edits revoke this selection authority, while retaining diagnostics.
+    pub(crate) fn diagnostic_primaries(&self) -> Vec<Range<usize>> {
+        self.rows
+            .iter()
+            .filter(|row| row.valid && row.owner.role == InputRole::DiagnosticPrimary)
+            .map(|row| row.generated.clone())
+            .collect()
+    }
+
     pub(crate) fn refuse_owner(&mut self, owner: InputOwner) {
         self.unproven.insert(owner.with_role(InputRole::Value));
         self.refuse_independent_reads(owner);
@@ -139,6 +188,26 @@ impl DiagnosticOwnership {
                 valid: true,
             });
         }
+    }
+
+    /// The `strictVModel` write-back assigns to the bound target, so it reports
+    /// the target's own errors as well as the write. It becomes the value's
+    /// primary, and the props literal's copy of the target becomes its echo.
+    pub(crate) fn record_model_write_back(
+        &mut self,
+        owner: InputOwner,
+        generated: Range<usize>,
+        authored: Range<usize>,
+    ) {
+        if self.unproven.contains(&owner.with_role(InputRole::Value)) {
+            return;
+        }
+        self.model_write_backs.insert(owner);
+        self.record_projection(owner, generated, authored, false, true);
+    }
+
+    pub(crate) fn writes_back_model(&self, owner: InputOwner) -> bool {
+        self.model_write_backs.contains(&owner)
     }
 
     pub(crate) fn record_bare_navigation(
@@ -262,6 +331,7 @@ impl DiagnosticOwnership {
     /// Deferred root buffers are rebased with their text, before publication.
     pub(crate) fn append_rebased(&mut self, other: Self, offset: usize) {
         self.unproven.extend(other.unproven);
+        self.model_write_backs.extend(other.model_write_backs);
         self.callback_primaries.extend(
             other
                 .callback_primaries
@@ -343,5 +413,7 @@ impl DiagnosticOwnership {
     }
 }
 
+#[cfg(test)]
+mod listener_tests;
 #[cfg(test)]
 mod tests;

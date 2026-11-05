@@ -1,8 +1,6 @@
 //! Sticky unknown-owner storage follows the existing SessionStorage law.
 
-use super::{
-    EditorMirrorSession, RETAINED_FAILURE, open_existing_session_lock, reap_abandoned_sessions,
-};
+use super::{EditorMirrorSession, GcLock, RETAINED_FAILURE, open_existing_session_lock};
 
 fn generated(session: &EditorMirrorSession) -> std::path::PathBuf {
     let file = session.root().unwrap().join("projects/current/App.vue.ts");
@@ -41,7 +39,9 @@ fn failed_owner_keeps_exact_generated_bytes_through_clear_drop_and_later_sweep()
         "export const generated = 42;\n"
     );
     assert!(root.join(RETAINED_FAILURE).is_file());
-    reap_abandoned_sessions(root.parent().unwrap());
+    GcLock::acquire(root.parent().unwrap())
+        .unwrap()
+        .reap_abandoned_sessions();
     assert_eq!(
         std::fs::read_to_string(&file).unwrap(),
         "export const generated = 42;\n"
@@ -122,4 +122,33 @@ fn reaper_open_respects_the_current_owner_lock_and_never_creates_missing_storage
     assert!(!missing.parent().unwrap().exists());
     drop(session);
     assert!(!root.exists());
+}
+
+/// A sweep racing session creation must never remove a session being born (#11500).
+#[test]
+fn concurrent_sweeps_never_remove_a_session_being_created() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    let base = super::sessions_base();
+    std::fs::create_dir_all(&base).unwrap();
+    let stop = std::sync::Arc::new(AtomicBool::new(false));
+    let sweeper = {
+        let stop = std::sync::Arc::clone(&stop);
+        let base = base.clone();
+        std::thread::spawn(move || {
+            while !stop.load(Ordering::Acquire) {
+                GcLock::acquire(&base).unwrap().reap_abandoned_sessions();
+            }
+        })
+    };
+    let mut failures = 0;
+    for _ in 0..2000 {
+        let session = EditorMirrorSession::new();
+        match session.root() {
+            Ok(root) if root.join(".session.lock").is_file() => {}
+            _ => failures += 1,
+        }
+    }
+    stop.store(true, Ordering::Release);
+    sweeper.join().unwrap();
+    assert_eq!(failures, 0);
 }

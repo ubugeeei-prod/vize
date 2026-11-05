@@ -1,3 +1,4 @@
+use crate::compile_script::erasure::{Erasure, emit_runtime_helper};
 use std::borrow::Cow;
 
 use vize_atelier_core::BindingMetadata;
@@ -51,6 +52,18 @@ fn rewrite_props_aliases(code: String, bindings: &BindingMetadata) -> String {
     rewritten
 }
 
+/// The setup-scope expression of each `v-bind()` in the styles.
+pub(super) fn css_var_values(
+    ctx: &ScriptCompileContext,
+    css_vars: &[Cow<'_, str>],
+    source_is_ts: bool,
+) -> Vec<String> {
+    css_vars
+        .iter()
+        .map(|var_expr| transform_css_var_expression(ctx, var_expr, source_is_ts))
+        .collect()
+}
+
 fn transform_css_var_expression(
     ctx: &ScriptCompileContext,
     var_expr: &str,
@@ -68,20 +81,22 @@ fn transform_css_var_expression(
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_setup_body(
-    output: &mut vize_carton::Vec<u8>,
+    output: &mut Vec<u8>,
     ctx: &ScriptCompileContext,
     model_infos: &[ModelInfo],
     setup_body_lines: &[String],
     source_is_ts: bool,
-    _is_ts: bool,
+    is_ts: bool,
     is_vapor: bool,
     is_async: bool,
     css_vars: &[Cow<'_, str>],
+    css_var_values: &[String],
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
     has_css_vars: bool,
     setup_css_module_names: &[String],
+    mut erasure: Option<&mut Erasure>,
     tracer: &mut Tracer<'_>,
 ) {
     // Emit binding: const emit = __emit
@@ -126,10 +141,11 @@ pub(super) fn emit_setup_body(
             } else {
                 output.extend_from_slice(binding_name.as_bytes());
             }
-            output.extend_from_slice(b" = _useModel");
+            output.extend_from_slice(b" = ");
+            emit_runtime_helper(output, erasure.as_deref_mut(), "_useModel");
             // Thread an explicit `<T>` type argument through to `useModel` so the
             // model ref's type matches @vue/compiler-sfc in TypeScript output.
-            if source_is_ts
+            if is_ts
                 && let Some(type_arg) = type_arg.as_deref().map(str::trim)
                 && !type_arg.is_empty()
             {
@@ -155,23 +171,30 @@ pub(super) fn emit_setup_body(
         tracer.macro_binding(output.len(), slots_macro.start);
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = _useSlots()\n");
+        output.extend_from_slice(b" = ");
+        emit_runtime_helper(output, erasure.as_deref_mut(), "_useSlots");
+        output.extend_from_slice(b"()\n");
     }
 
     // SSR's existing VDOM fallback keeps the VDOM helper.
     if has_css_vars {
-        output.extend_from_slice(if is_vapor {
-            b"_useVaporCssVars(_ctx => ({\n"
-        } else {
-            b"_useCssVars(_ctx => ({\n"
-        });
+        emit_runtime_helper(
+            output,
+            erasure.as_deref_mut(),
+            if is_vapor {
+                "_useVaporCssVars"
+            } else {
+                "_useCssVars"
+            },
+        );
+        output.extend_from_slice(b"(_ctx => ({\n");
         for (i, var_expr) in css_vars.iter().enumerate() {
             let var_name = if is_prod {
                 crate::css::prod_scoped_v_bind_name(css_vars_id, var_expr)
             } else {
                 crate::css::scoped_v_bind_name(scope_id, var_expr)
             };
-            let var_value = transform_css_var_expression(ctx, var_expr, source_is_ts);
+            let var_value = css_var_values.get(i).map_or("", String::as_str);
             let mut quoted_name = String::default();
             crate::vite_plugin::js_string::push_js_string_literal(&mut quoted_name, &var_name);
             output.extend_from_slice(b"  ");
@@ -190,7 +213,9 @@ pub(super) fn emit_setup_body(
     for module_name in setup_css_module_names {
         output.extend_from_slice(b"const ");
         output.extend_from_slice(module_name.as_bytes());
-        output.extend_from_slice(b" = _useCssModule(");
+        output.extend_from_slice(b" = ");
+        emit_runtime_helper(output, erasure.as_deref_mut(), "_useCssModule");
+        output.push(b'(');
         if module_name != "$style" {
             output.extend_from_slice(json_string(module_name).as_bytes());
         }
@@ -203,10 +228,13 @@ pub(super) fn emit_setup_body(
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
     let body_runs = tracer.trace().map(|trace| std::mem::take(&mut trace.body));
     if is_async {
-        let (transformed_async, async_runs) = profile!(
+        let (transformed_async, async_runs, uses_async_context) = profile!(
             "atelier.script_inline.transform_await",
             transform_await_expressions(setup_body_lines, body_runs.as_deref(), source_is_ts)
         );
+        if uses_async_context && let Some(erasure) = erasure.as_mut() {
+            erasure.note("_withAsyncContext");
+        }
         for (index, line) in transformed_async.iter().enumerate() {
             tracer.copy(output.len(), async_runs.get(index));
             output.extend_from_slice(line.as_bytes());

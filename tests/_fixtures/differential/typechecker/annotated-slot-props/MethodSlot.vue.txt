@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineSlots<{ default(props: { data: Record<string, unknown> }): any }>();
+</script>
+<template><div><slot :data="{}" /></div></template>

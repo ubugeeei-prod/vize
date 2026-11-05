@@ -21,7 +21,7 @@ import { generateOutputWithMap } from "../utils/index.ts";
 import { MappedModule, parseSourceMap, shiftMappedLines } from "../utils/source-map.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { toVirtualId } from "../virtual.ts";
-import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { getCompileOptionsForRequest, type VizePluginState } from "./state.ts";
 import type { CompiledModule } from "../types.ts";
 
@@ -272,9 +272,9 @@ assert.equal(
   "an explicit compiler option still wins over build.sourcemap",
 );
 
-const loaded = loadHook(productionState, toVirtualId(sfcPath), { ssr: false });
+const loaded = await loadSfcModule(productionState, toVirtualId(sfcPath), { ssr: false });
 assert.ok(loaded && typeof loaded === "object", "the virtual SFC module should load");
-const loadedMap = loaded.map;
+const loadedMap = loaded.map as SourceMapV3 | null;
 assert.ok(loadedMap, "the plugin must stop returning map: null for SFC modules");
 assert.deepEqual(
   loadedMap.sources,

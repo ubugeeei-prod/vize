@@ -6,6 +6,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createNavigationFixtures, checkNavigation } from "./authored-navigation.ts";
 import { digest, installPackedConsumer, run } from "./packed-install.ts";
+import {
+  createClassificationFixtures,
+  checkPackedClassifications,
+} from "./classification-consumer.ts";
 import { checkProjectMetadata, type NativeProjectApi } from "./project-metadata.ts";
 import {
   startTsserver,
@@ -135,6 +139,7 @@ for (const [file, source] of [
 }
 const navigation = createNavigationFixtures(src, output);
 const inherited = createInheritedConfig(consumer, src, output, typescriptVersion);
+const classificationFixture = createClassificationFixtures(consumer, output);
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
 const results: Record<string, Response> = {};
@@ -166,6 +171,10 @@ try {
   await client.send("open", { file: main, fileContent: mainText }, false);
   await client.send("open", { file: vue, fileContent: vueText, scriptKindName: "TS" }, false);
   await client.send("open", { file: art, fileContent: artText, scriptKindName: "TS" }, false);
+  const classificationQualification = await checkPackedClassifications(
+    client,
+    classificationFixture,
+  );
   const hover = await request<QuickInfo>("hover", "quickinfo", vue, vueText, ["state.count", 7]);
   assert(hover.success, JSON.stringify(hover));
   assert.match(hover.body.displayString, /number/);
@@ -465,6 +474,7 @@ try {
         results: Object.keys(results),
         qualificationRole: "typescript-vue-projection",
         inheritedQualification,
+        classificationQualification,
         passed: true,
       },
       null,

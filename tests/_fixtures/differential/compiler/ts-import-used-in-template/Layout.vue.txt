@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { formatLabel } from './format'
+
+const label: string = 'one'
+</script>
+
+<template>
+  <p>{{ formatLabel(label) }}</p>
+</template>

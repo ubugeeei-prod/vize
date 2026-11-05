@@ -155,14 +155,17 @@ mod tests {
         for file in &FILES {
             let body = current(file.path);
             let prior = source_before(file.path, body.clone());
-            assert_eq!(reapply(&prior, file.edits), body);
+            assert_eq!(
+                reapply(&prior, file.edits),
+                super::super::emit_props_twins::source_before(file.path, body)
+            );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
             preamble_before(preamble).replacen(super::ASSET.0, super::ASSET.1, 1),
             super::super::emit_props_twins::preamble_before(preamble)
         );
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
         retain_provenance(&mut manifest);

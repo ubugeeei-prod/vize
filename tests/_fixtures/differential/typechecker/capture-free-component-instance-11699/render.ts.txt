@@ -1,0 +1,8 @@
+import { h } from "vue";
+import Capture from "./Capture.vue";
+export const valid = h(Capture, { count: 3 });
+declare const instance: InstanceType<typeof Capture>;
+export const member: number = instance.marker.id;
+export const global: string = instance.$typedGlobal(1);
+export const wrongMember: boolean = instance.marker.id;
+export const wrongGlobal = instance.$typedGlobal("wrong");

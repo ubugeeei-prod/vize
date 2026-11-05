@@ -10,11 +10,15 @@ mod bridge;
 pub(crate) mod constructor_vue_proof;
 mod diagnosing_configuration;
 mod editor_session;
+#[cfg(test)]
+mod host_edit_import_tests;
 mod native_vue;
 mod original_program;
 #[cfg(test)]
 mod outside_import_editor_tests;
 pub(crate) mod preparation_trace;
+#[cfg(test)]
+mod retirement_tests;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;
@@ -66,7 +70,8 @@ pub(crate) use worker::retirement as native_operation;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::{
-    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome,
+    InitialApiDiagnosticsProvenanceOutcome, PendingInitialApiDiagnostics,
 };
 pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
@@ -80,11 +85,11 @@ pub use script_document::{
 };
 pub use source_catalog::CorsaSourceCatalog;
 pub use types::{
-    CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
+    CorsaBridgeConfig, CorsaBridgeError, DiagnosticPhase, LspCompletionItem, LspCompletionList,
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
+    LspSignatureInformation, PhasedLspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 pub use vue_document::{
     CorsaInitialVueDocument, CorsaInitialVueProject, CorsaMaterializedMappingKind,

@@ -15,23 +15,23 @@ export const chineseRules4: Record<string, readonly [string, string, string]> = 
     "添加 vapor 会选择 Vapor 编译。这展示预期修复，并不表示当前 linter 会报告此目录规则。",
   ],
   "ecosystem/vue-router-extra-param": [
-    "路由未声明 tab；Vue Router 会丢弃它。",
-    "`user-post` 路径声明 `userId` 和 `postId`，但导航还将未声明的 `tab` 作为路径参数传入。",
+    "报告目标路由未声明的导航参数。",
+    "路由未声明 tab；Vue Router 会丢弃它。`user-post` 路径声明 `userId` 和 `postId`，但导航还将未声明的 `tab` 作为路径参数传入。",
     "从 params 移除 `tab`，只保留路由路径中的键。应用需要选择标签页时，应另行使用 query。",
   ],
   "ecosystem/vue-router-missing-param": [
-    "缺少必需的 postId；依赖当前路由并不稳健。",
-    "导航省略了 `user-post` 路径必需的 `postId`。这是警告，因为 Vue Router 可能从当前路由继承该值。",
+    "报告具名导航省略了必需的路由参数。",
+    "缺少必需的 postId；依赖当前路由并不稳健。导航省略了 `user-post` 路径必需的 `postId`。这是警告，因为 Vue Router 可能从当前路由继承该值。",
     "显式传入 `userId` 和 `postId`，使导航不依赖当前路由的参数状态。",
   ],
   "ecosystem/vue-router-param-type": [
-    "postId 不是可重复参数，因此数组无效。",
-    '`postId` 是标量路径参数，但导航传入了数组 `["2"]`。',
+    "报告路由参数值不被所声明的路径段接受。",
+    'postId 不是可重复参数，因此数组无效。`postId` 是标量路径参数，但导航传入了数组 `["2"]`。',
     '为不可重复的 `postId` 路径段传入标量 `"2"`。',
   ],
   "ecosystem/vue-router-unknown-route": [
-    "名称不在完整且已安装的路由器中。",
-    "可达且已安装的路由器声明了 `user-post`，但导航使用拼写错误的 `user-posts`。",
+    "报告已安装路由器未声明的导航名称。",
+    "名称不在完整且已安装的路由器中。可达且已安装的路由器声明了 `user-post`，但导航使用拼写错误的 `user-posts`。",
     "使用已注册的 `user-post` 名称，并保留两个已声明的路径参数。",
   ],
   "html/cross-component-nesting": [
@@ -120,7 +120,7 @@ export const chineseRules4: Record<string, readonly [string, string, string]> = 
     "从自定义事件监听器移除 `.stop`；需要时在实际 DOM 监听器处理原生传播。",
   ],
   "vize:croquis/cf/hydration-risk": [
-    "此诊断代码归类多种响应性问题，包括将 prop 复制到 ref。它并不表示跨文件分析遍会检测所有 Date.now() 表达式。",
+    "服务器与客户端的渲染结果可能不一致。",
     "子组件仅初始化一次 `ref(props.count)`，因此局部 count 不再跟随后续父组件 prop 变化。这是当前的 prop 到 ref 诊断产生逻辑，不是普遍的不确定 SSR 示例。",
     '`toRef(props, "count")` 指向 prop，不再将初始值复制到独立状态。',
   ],

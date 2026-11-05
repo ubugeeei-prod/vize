@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Foo from "./vendor/Foo.vue";
+// A real error in the consumer. Every run that reads Foo.vue.d.ts reports it.
+const probe: number = Foo;
+</script>
+
+<template>
+  <Foo id="r" />
+</template>

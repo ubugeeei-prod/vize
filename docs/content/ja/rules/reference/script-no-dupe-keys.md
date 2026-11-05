@@ -1,18 +1,56 @@
 ---
 title: "script/no-dupe-keys"
+description: "Options API の props / data / computed などのキー重複を検出します。"
 ---
 
 # `script/no-dupe-keys`
 
 Options API の props / data / computed などのキー重複を検出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上で同じキーの宣言が衝突しています。
+
+```vue annotate="remove:5,8,9,10,11"
+<script lang="ts">
+export default {
+  props: ['foo'],
+  data() {
+    return { foo: 1 } // duplicate of prop `foo`
+  },
+  computed: {
+    bar() { return 2 }
+  },
+  methods: {
+    bar() {} // duplicate of computed `bar`
+  }
+}
+</script>
+```
+
+## 良い例
+
+prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オプション間の重複を取り除きます。
+
+```vue annotate="add:5,8"
+<script lang="ts">
+export default {
+  props: ['foo'],
+  data() {
+    return { bar: 1 }
+  },
+  computed: {
+    baz() { return 2 }
+  }
+}
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,49 +69,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上で同じキーの宣言が衝突しています。
-
-```vue
-<script lang="ts">
-export default {
-  props: ['foo'],
-  data() {
-    return { foo: 1 } // duplicate of prop `foo`
-  },
-  computed: {
-    bar() { return 2 }
-  },
-  methods: {
-    bar() {} // duplicate of computed `bar`
-  }
-}
-</script>
-```
-
-## 良い
-
-prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オプション間の重複を取り除きます。
-
-```vue
-<script lang="ts">
-export default {
-  props: ['foo'],
-  data() {
-    return { bar: 1 }
-  },
-  computed: {
-    baz() { return 2 }
-  }
-}
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55)

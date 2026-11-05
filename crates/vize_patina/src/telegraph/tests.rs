@@ -42,7 +42,7 @@ fn test_format_emitter_transmit_all_renders_single_report() {
 
     assert_eq!(outputs.len(), 1);
     assert_eq!(outputs[0].matches("<!doctype html>").count(), 1);
-    assert!(outputs[0].contains("docs/content/rules/vue.md"));
+    assert!(outputs[0].contains("docs/content/rules/reference/vue-no-v-html.md"));
 }
 
 #[test]

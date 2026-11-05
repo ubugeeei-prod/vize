@@ -60,7 +60,7 @@ fn whole_pinned_uploader_has_one_exact_api_and_cli_packet() {
         serde_json::from_str::<Value>(&output).unwrap(),
         json!([{
             "file":filename,"errorCount":1,"warningCount":0,"messages":[{
-                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":2,
+                "ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-no-mutating-props.md","severity":2,
                 "message":"[vize:vue/no-mutating-props] Unexpected mutation of prop 'options' in <script>",
                 "line":116,"column":7,"endLine":116,"endColumn":51,"help":HELP
             }]

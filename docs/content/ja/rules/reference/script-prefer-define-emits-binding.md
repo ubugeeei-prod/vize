@@ -1,22 +1,39 @@
 ---
 title: "script/prefer-define-emits-binding"
+description: "template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。"
 ---
 
 # `script/prefer-define-emits-binding`
 
 template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | あり | なし |
 
-既定の重大度: `warning`
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
-プリセット: _none_
+## 悪い例
 
-自動修正: 対応している診断で利用できます
+template がコンポーネント専用の `$emit` ヘルパーを呼び出していますが、`<script setup>` では `defineEmits` が返す型付き関数をすでに受け取っています。
 
-適用範囲: Vue SFC の `<script setup>` と、コンパイラーが提供する `defineEmits` の呼び出し。テンプレートの `$emit` 呼び出しを検査します。
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
 
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+## 良い例
+
+template から受け取った `emit` を呼び出し、イベント名と payload をコンポーネントの `defineEmits` 契約に通します。
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
 
 ## 設定（Vite+）
 
@@ -35,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-template がコンポーネント専用の `$emit` ヘルパーを呼び出していますが、`<script setup>` では `defineEmits` が返す型付き関数をすでに受け取っています。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-<template><button @click="$emit('save', 1)">Save</button></template>
-```
-
-## 良い
-
-template から受け取った `emit` を呼び出し、イベント名と payload をコンポーネントの `defineEmits` 契約に通します。
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{ save: [id: number] }>();
-</script>
-<template><button @click="emit('save', 1)">Save</button></template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16)

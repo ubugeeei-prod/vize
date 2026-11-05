@@ -298,16 +298,22 @@ impl ServerState {
     /// failures, and a session that ran long enough to die proves spawning
     /// works.
     pub fn retire_corsa_bridge(&self, failed: &Arc<CorsaBridge>) {
-        let mut slot = self.corsa_bridge.write();
-        if slot
-            .as_ref()
-            .is_some_and(|current| Arc::ptr_eq(current, failed))
-        {
-            let _change = self.corsa_environment_change();
-            *slot = None;
-            tracing::warn!(
-                "corsa bridge retired after a backend failure; a fresh session will be spawned on demand"
-            );
+        let retired = {
+            let mut slot = self.corsa_bridge.write();
+            let current = slot
+                .as_ref()
+                .is_some_and(|current| Arc::ptr_eq(current, failed));
+            if current {
+                let _change = self.corsa_environment_change();
+                *slot = None;
+                tracing::warn!(
+                    "corsa bridge retired after a backend failure; a fresh session will be spawned on demand"
+                );
+            }
+            current
+        };
+        if retired {
+            failed.release_editor_projects();
         }
     }
 
@@ -317,6 +323,7 @@ impl ServerState {
         let previous = self.corsa_bridge.write().take();
         if let Some(bridge) = previous {
             bridge.stop_pending_startup();
+            bridge.release_editor_projects();
         }
         self.corsa_init_failed.store(false, Ordering::SeqCst);
         *self.corsa_init_failure_reason.write() = None;

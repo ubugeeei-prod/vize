@@ -10,6 +10,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepareNuxtSourceBinding } from "../nuxt/source-binding.mjs";
+import { stageSourceNativeEntrypoint } from "../nuxt/source-native-entry.ts";
 
 type Env = Record<string, string | undefined>;
 
@@ -205,8 +206,10 @@ const published = path.join(artifacts, "published-vite-plugin-dist");
 fs.cpSync(vitePlugin, published, { recursive: true });
 fs.rmSync(vitePlugin, { recursive: true });
 fs.cpSync(path.join(root, "npm/builder/vite/dist"), vitePlugin, { recursive: true });
-const binding = prepareNuxtSourceBinding(root, artifacts, { fixtureDirectory });
+let nativeEntry: ReturnType<typeof stageSourceNativeEntrypoint> | undefined;
 try {
+  nativeEntry = stageSourceNativeEntrypoint(root, fixture, artifacts);
+  const binding = prepareNuxtSourceBinding(root, artifacts, { fixtureDirectory });
   // node_modules/.vize would replay earlier compiles instead of calling the source compiler.
   for (const name of ["dist", ".void", ".wrangler", "node_modules/.vize", "node_modules/.vite"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
@@ -241,6 +244,10 @@ try {
   fs.writeFileSync(path.join(artifacts, "proof.json"), JSON.stringify({ native }, null, 2) + "\n");
   console.log("Void + Vue: build, workerd SSR, dev SSR/HMR, check parity, lint and fmt verified");
 } finally {
-  fs.rmSync(vitePlugin, { recursive: true });
-  fs.cpSync(published, vitePlugin, { recursive: true });
+  try {
+    fs.rmSync(vitePlugin, { recursive: true });
+    fs.cpSync(published, vitePlugin, { recursive: true });
+  } finally {
+    nativeEntry?.restore();
+  }
 }

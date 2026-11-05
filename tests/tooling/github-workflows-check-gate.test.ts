@@ -108,7 +108,10 @@ test("source gates cover iteration events while full qualification runs on sched
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
   assert.equal(aggregate["continue-on-error"], undefined);
-  assert.equal(reportSteps.at(-1), aggregate);
+  assert.deepEqual(
+    reportSteps.slice(reportSteps.indexOf(aggregate) + 1).map((step) => step["continue-on-error"]),
+    [true, true],
+  );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];

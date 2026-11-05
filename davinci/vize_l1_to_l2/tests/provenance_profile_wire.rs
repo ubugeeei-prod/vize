@@ -5,7 +5,7 @@ use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, exp
 use vize_l0::Allocator;
 use vize_l0::profiler::global_profiler;
 use vize_l1::markup::parse;
-use vize_l1_to_l2::lower;
+use vize_l1_to_l2::{emit_dom_source, lower};
 use vize_l2::provenance::ProvenanceRecord;
 
 const PREFIX: &str = "l1_to_l2.provenance.";
@@ -108,4 +108,28 @@ fn lowering_exports_the_level_named_provenance_family_only_when_profiled() {
         .filter(|key| OLD_KEYS.iter().any(|old| old == key))
         .collect();
     assert_eq!(old_keys, Vec::<&str>::new());
+
+    // The DOM emitter lowers into a sink that keeps nothing, so it builds no
+    // record for the profile to count.
+    profiler.clear();
+    profiler.enable();
+    let emitted = emit_dom_source(&allocator, "<p v-for=\"i in is\">{{ i }}</p>");
+    profiler.disable();
+    assert_eq!(emitted.map(|emit| emit.code.is_empty()), Ok(false));
+    let report = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "dump",
+            allocation: None,
+            budget: ProfileExportBudget::default(),
+        },
+    );
+    let dom_keys: Vec<_> = report
+        .spans
+        .iter()
+        .map(|span| span.key)
+        .chain(report.counters.iter().map(|counter| counter.key))
+        .filter(|key| key.starts_with(PREFIX))
+        .collect();
+    assert_eq!(dom_keys, Vec::<&str>::new());
 }

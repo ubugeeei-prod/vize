@@ -18,39 +18,42 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 下方本地 Linter、Formatter 和实现分析属于历史测量，并非此快照的结果。记录的环境为 MacBook Pro M2 Max（12 核、96 GB RAM）、macOS 15.3.2、Node v24.14.0、Vite v8.0.0 和 Vue v3.6.0-beta.10。
 
 ## 基准：SFC 编译
 
-文件数: **3,000** (12,302,100 bytes).
+文件数: **15,000** (61,516,500 bytes).
 
 |               | @vue/compiler-sfc | Vize    | 速度比    |
 | ------------- | ----------------- | ------- | --------- |
-| 1T            | 3.57s             | 835.3ms | **4.3x**  |
-| workers / max | 1.61s             | 65.0ms  | **24.7x** |
-| 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
+| 1T            | 16.50s            | 3.74s   | **4.4x**  |
+| workers / max | 6.00s             | 297.9ms | **20.1x** |
+| 1T / max      | 16.50s            | 297.9ms | **55.4x** |
 
 [完整方法与验证结果](./performance-blacksmith.md)
 
 <details class="benchmark-provenance">
 <summary>工具版本与二进制校验和</summary>
 
-| 工具                 | 版本                                 | 二进制 SHA-256                                                                |
-| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
-| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
-| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
-| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
-| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
-| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
-| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
-| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
-| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
-| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
-| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+| 工具                     | 版本                                                                                          | 二进制 SHA-256                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>a3d8a0125ea04664754c8accb2c05b3e6e2e2d739147b7a722590688bf8dd6dd</code> |
+| tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                    | <code>Golar version 0.1.10</code>                                                             | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (mapper host) | <code>Version 7.1.0-beta</code>                                                               | <code>2219f428a7e55aaf1f7ad85b9b0f0cf5078aeb76ccc9a7c6036c92d48f492ffd</code> |
+| tsrs                     | <code>Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)</code> | <code>9d7f26b2c80d4e45576f6e783675c5f624b055a15f94cb4089b9e9cc529722f3</code> |
+| @vue/content-mapper      | <code>4.0.0-alpha.3</code>                                                                    | n/a                                                                           |
+| TypeScript (vue-tsc)     | n/a                                                                                           | n/a                                                                           |
+| Vue                      | <code>3.6.0-beta.10</code>                                                                    | n/a                                                                           |
+| ESLint                   | <code>v10.4.1</code>                                                                          | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
 Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
 
@@ -214,14 +217,14 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-| 项目              | 文件数 | 比较工具 | 比较工具中位数 | Vize 1T | Vize max | 速度比   |
-| ----------------- | ------ | -------- | -------------- | ------- | -------- | -------- |
-| 类型检查          | 500    | vue-tsc  | 6.75s          | 2.03s   | 1.37s    | **4.9x** |
-| 大型 SFC 类型检查 | 1      | vue-tsc  | 1.34s          | 186.4ms | 190.1ms  | **7.0x** |
+| 项目              | 文件数 | 比较工具 | 比较工具中位数 | Vize 1T | Vize max | 速度比    |
+| ----------------- | ------ | -------- | -------------- | ------- | -------- | --------- |
+| 类型检查          | 500    | vue-tsc  | 6.50s          | 1.42s   | 573.5ms  | **11.3x** |
+| 大型 SFC 类型检查 | 1      | vue-tsc  | 2.43s          | 2.00s   | 2.00s    | **1.2x**  |
 
 类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
 
@@ -268,15 +271,15 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 | 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
 | ---------------------------------------- | ------------------------ | -------- | -------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5        | 1        |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
 文件数: **1,000**.
 
 |           | @vitejs/plugin-vue | @vizejs/vite-plugin | 速度比   |
 | --------- | ------------------ | ------------------- | -------- |
-| Vite 构建 | 1.66s              | 889.2ms             | **1.9x** |
+| Vite 构建 | 1.48s              | 448.9ms             | **3.3x** |
 
 [完整方法与验证结果](./performance-blacksmith.md)
 

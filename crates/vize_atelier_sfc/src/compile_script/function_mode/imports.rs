@@ -10,7 +10,42 @@ use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
+use super::super::erasure::{Erasure, elide_generated_imports};
 use super::super::import_utils::process_import_for_types;
+
+/// Write `imports` at byte `at` of `output`. With an erasure, the imports the
+/// rest of the module never uses as values are left out, the compiler's own
+/// ones (before `at`) included.
+pub(super) fn insert_imports(
+    output: &mut Vec<u8>,
+    at: usize,
+    imports: &[String],
+    erasure: Option<Erasure>,
+) {
+    // The module after its imports is JavaScript now: read its names.
+    let erasure = erasure.and_then(|mut erasure| {
+        let body = std::str::from_utf8(output.get(at..)?).ok()?;
+        erasure.javascript(body);
+        erasure.is_complete().then_some(erasure)
+    });
+    let mut text: Vec<u8> = Vec::new();
+    for import in imports {
+        let Some(erasure) = erasure.as_ref() else {
+            text.extend_from_slice(import.as_bytes());
+            continue;
+        };
+        if let Some(kept) = erasure.elide(import) {
+            text.extend_from_slice(kept.as_bytes());
+        }
+    }
+    output.splice(at..at, text);
+    if let Some(erasure) = erasure.as_ref()
+        && let Ok(code) = std::str::from_utf8(output)
+        && let Some((elided, _)) = elide_generated_imports(code, at, erasure)
+    {
+        *output = elided.as_bytes().to_vec();
+    }
+}
 
 /// Deduplicate imports by removing duplicate specifiers from the same source.
 /// This avoids "Identifier has already been declared" errors.

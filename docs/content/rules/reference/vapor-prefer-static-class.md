@@ -1,18 +1,37 @@
 ---
 title: "vapor/prefer-static-class"
+description: "Prefer static class over dynamic class binding for string literals."
 ---
 
 # `vapor/prefer-static-class`
 
-Prefer static class over dynamic class binding for string literals
+Prefer static class over dynamic class binding for string literals.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | Yes | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The class binding evaluates a constant string even though the class does not change.
+
+```vue annotate="remove:2"
+<template>
+  <section :class="'panel panel-primary'">Profile</section>
+</template>
+```
+
+## Good
+
+A static class attribute expresses the same panel classes without a binding.
+
+```vue annotate="add:2"
+<template>
+  <section class="panel panel-primary">Profile</section>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The class binding evaluates a constant string even though the class does not change.
-
-```vue
-<template>
-  <section :class="'panel panel-primary'">Profile</section>
-</template>
-```
-
-## Good
-
-A static class attribute expresses the same panel classes without a binding.
-
-```vue
-<template>
-  <section class="panel panel-primary">Profile</section>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [All rules](../all.md)
+- [Vapor rules](../vapor.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31)

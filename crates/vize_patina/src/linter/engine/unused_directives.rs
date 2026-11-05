@@ -13,6 +13,10 @@ const RULE: &str = "vue/comment-directive";
 /// counts only when it ran in this pass: a name Vize does not run may belong to
 /// another linter.
 pub(super) fn report(linter: &Linter, ctx: &mut LintContext<'_>) {
+    // The catalogue rule owns this diagnostic. An explicit disable retires it.
+    if linter.disabled_rules.contains(RULE) {
+        return;
+    }
     let unused = ctx.unused_disable_directives(|rule| {
         (linter.registry.has_rule(rule) || ctx.has_executed_template_rule(rule))
             && linter.is_rule_enabled(rule)

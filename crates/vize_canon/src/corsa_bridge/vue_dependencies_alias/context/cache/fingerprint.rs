@@ -10,6 +10,9 @@ use crate::batch::ModuleSpecifierFactsCache;
 #[derive(Clone)]
 pub(crate) struct ContextFingerprint {
     host_content: u64,
+    /// Every input but the host's own text: the other buffers and requested
+    /// sources. The host's text reaches the graph only through its imports.
+    dependencies: u64,
     overlays: u64,
     generation_options: u64,
     /// Requested workspace sources are part of this revision.
@@ -21,7 +24,7 @@ impl PartialEq for ContextFingerprint {
     fn eq(&self, other: &Self) -> bool {
         self.host_content == other.host_content
             && self.overlays == other.overlays
-            && self.generation_options == other.generation_options
+            && self.revises(other)
     }
 }
 
@@ -39,17 +42,25 @@ impl ContextFingerprint {
         let mut host = vize_l0::micro_default_hasher!("canon.context.host");
         source_path.hash(&mut host);
         content.hash(&mut host);
+        let host_path = vize_carton::path::canonicalize_non_verbatim(source_path);
         let mut overlay_entries: Vec<_> = overlays.iter().collect();
         overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
         let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
+        let mut dependencies = vize_l0::micro_default_hasher!("canon.context.dependencies");
+        source_path.hash(&mut dependencies);
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
+            if *path != host_path {
+                path.hash(&mut dependencies);
+                text.hash(&mut dependencies);
+            }
         }
         let generation_options =
             editor_namespace_identity(options, virtual_ts_options, project_root, tsconfig_path);
         Self {
             host_content: host.finish(),
+            dependencies: dependencies.finish(),
             overlays: overlay_hash.finish(),
             generation_options,
             workspace: false,
@@ -117,21 +128,44 @@ impl ContextFingerprint {
             .collect();
     }
 
-    pub(crate) fn include_requested_sources(&mut self, sources: &[(PathBuf, &str)]) {
+    /// The build registers the host from its own buffer, never from a
+    /// requested entry, so the host's entry is not a dependency input.
+    pub(crate) fn include_requested_sources(
+        &mut self,
+        source_path: &Path,
+        sources: &[(PathBuf, &str)],
+    ) {
         if sources.is_empty() {
             return;
         }
         use std::hash::{Hash, Hasher};
+        let host_path = vize_carton::path::canonicalize_non_verbatim(source_path);
         let mut hash = vize_l0::micro_default_hasher!("canon.context.requested_sources");
-        self.host_content.hash(&mut hash);
-        let mut sources = sources.iter().collect::<Vec<_>>();
+        self.dependencies.hash(&mut hash);
+        let mut sources = sources
+            .iter()
+            .filter(|(path, _)| path != source_path && *path != host_path)
+            .collect::<Vec<_>>();
         sources.sort_by(|left, right| left.0.cmp(&right.0));
         for (path, source) in sources {
             path.hash(&mut hash);
             source.hash(&mut hash);
         }
-        self.host_content = hash.finish();
+        self.dependencies = hash.finish();
         self.workspace = true;
+    }
+
+    /// Whether `self` can differ from `previous` only in the host's text, so
+    /// the previous revision's graph can take the host's new buffer.
+    pub(super) fn revises(&self, previous: &Self) -> bool {
+        self.dependencies == previous.dependencies
+            && self.generation_options == previous.generation_options
+            && self.workspace == previous.workspace
+    }
+
+    /// Disk inputs do not move with the host's buffer; a revision keeps them.
+    pub(in super::super) fn adopt_stamps(&mut self, previous: &Self) {
+        self.stamps.clone_from(&previous.stamps);
     }
 
     pub(super) fn workspace(&self) -> bool {
@@ -160,7 +194,13 @@ impl ContextFingerprint {
     pub(crate) fn identity(&self) -> u64 {
         use std::hash::{Hash, Hasher};
         let mut hash = vize_l0::micro_default_hasher!("canon.context.identity");
-        (self.host_content, self.overlays, self.generation_options).hash(&mut hash);
+        (
+            self.host_content,
+            self.dependencies,
+            self.overlays,
+            self.generation_options,
+        )
+            .hash(&mut hash);
         hash.finish()
     }
 }

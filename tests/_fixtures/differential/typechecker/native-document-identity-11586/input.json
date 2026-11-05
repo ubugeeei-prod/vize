@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "id": "typechecker/protocol/native-document-identity-11586",
+  "documents": [
+    {
+      "name": "App",
+      "source": "export const value0 = 0;"
+    },
+    {
+      "name": "Child",
+      "source": "export const value1 = 1;"
+    },
+    {
+      "name": "Leaf",
+      "source": "export const value2 = 2;"
+    }
+  ],
+  "methods": [
+    "textDocument/hover",
+    "textDocument/definition",
+    "textDocument/completion",
+    "textDocument/codeAction",
+    "textDocument/inlayHint"
+  ]
+}

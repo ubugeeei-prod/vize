@@ -4,6 +4,7 @@ const { createMappedLanguageService } = require("../../npm/typescript-plugin/lan
 const helper = require("../../npm/native/language-projection.js");
 const { LanguageFeature: F } = helper;
 const ts = require("../node_modules/typescript");
+require("./classifications.test.cjs");
 
 void test("feature dispatch maps Unicode authored spans and keeps edits within exact verbatim text", () => {
   const file = "/src/日本語.vue";
@@ -87,7 +88,7 @@ void test("feature dispatch maps Unicode authored spans and keeps edits within e
   assert.deepEqual(service.getFormattingEditsForDocument(file), []);
 });
 
-void test("projection failures remain diagnostics and generated errors do not disappear", () => {
+void test("projection failures remain diagnostics and unmapped generated errors follow the producer's ignores", () => {
   const file = "/src/Bad.vue";
   const source = '<script>const value: number = "wrong";</script>';
   let document = { source, error: "native projection failed" };
@@ -102,6 +103,21 @@ void test("projection failures remain diagnostics and generated errors do not di
     get: (name) => (name === file ? document : undefined),
   });
   assert.match(service.getSemanticDiagnostics(file)[0].messageText, /native projection failed/);
+  // Canon ignores every unmapped virtual range, as Vue's mapper does (#11472).
+  document = {
+    source,
+    projection: {
+      text: "generated",
+      mappings: [],
+      diagnostics: [],
+      diagnosticDirectives: {
+        unusedExpectDirectiveDiagnostics: [],
+        directives: [[0, 0, 0, "generated".length, 0, 0]],
+      },
+    },
+  };
+  assert.deepEqual(service.getSemanticDiagnostics(file), []);
+  // Without an ignore, an unmappable error still surfaces rather than vanishing.
   document = { source, projection: { text: "generated", mappings: [], diagnostics: [] } };
   const diagnostics = service.getSemanticDiagnostics(file);
   assert.equal(diagnostics.length, 1);

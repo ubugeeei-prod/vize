@@ -1,18 +1,39 @@
 ---
 title: "vue/no-preprocessor-lang"
+description: "Discourage CSS preprocessor usage in favor of modern CSS."
 ---
 
 # `vue/no-preprocessor-lang`
 
-Discourage CSS preprocessor usage in favor of modern CSS
+Discourage CSS preprocessor usage in favor of modern CSS.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `nuxt`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.
+
+```vue annotate="remove:2"
+<template><p>Notice</p></template>
+<style lang="scss">
+.notice { color: red; }
+</style>
+```
+
+## Good
+
+The same declarations use plain CSS without a preprocessor lang.
+
+```vue annotate="add:2"
+<template><p>Notice</p></template>
+<style>
+.notice { color: red; }
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,32 +52,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.
-
-```vue
-<template><p>Notice</p></template>
-<style lang="scss">
-.notice { color: red; }
-</style>
-```
-
-## Good
-
-The same declarations use plain CSS without a preprocessor lang.
-
-```vue
-<template><p>Notice</p></template>
-<style>
-.notice { color: red; }
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11)

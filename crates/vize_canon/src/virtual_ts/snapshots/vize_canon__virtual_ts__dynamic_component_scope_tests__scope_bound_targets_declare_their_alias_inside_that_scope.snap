@@ -1,0 +1,414 @@
+---
+source: crates/vize_canon/src/virtual_ts/dynamic_component_scope_tests.rs
+assertion_line: 90
+expression: template
+---
+;(function __template() {
+    // Vue template context (delegates to ComponentPublicInstance)
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    type __Ctx = import('vue').ComponentPublicInstance;
+    const __ctx = (void 0) as unknown as __Ctx;
+    const $attrs = __ctx.$attrs;
+    const $slots = __ctx.$slots;
+    const $refs = __ctx.$refs;
+    const $emit = __ctx.$emit;
+    void __ctx; void $attrs; void $slots; void $refs; void $emit;
+
+  // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.
+  const __vize_dynamic_is_274 = (map[foo]);
+  const __vize_events_nav_4 = undefined as unknown as $ComponentEvents<typeof __vize_dynamic_is_274> & Record<string, unknown>;
+  void __vize_events_nav_4.pick;
+  void (map[foo]); // VBind
+  // @vize-map: expr -> 290:298
+
+  // v-slot scope: #qux
+  const __vize_slot_host_9 = (undefined as unknown as $SlotHostSelector<typeof Panel>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof Panel>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof Panel>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof Panel>>)({
+  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof Panel>>))), (undefined as unknown as $SlotsFactory<typeof Panel>)(Panel)({
+  }));
+  void __vize_slot_host_9;
+  void function _slot_qux_9({ kind, open }: $SlotPayload<typeof __vize_slot_host_9, "qux", typeof Panel>) {
+    void kind;
+    void open;
+    // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.
+    const __vize_dynamic_is_35 = (map[kind]);
+    // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.
+    const __vize_dynamic_is_104 = ((open)) ? (map[foo]) : (undefined as never);
+    void (map[kind]); // VBind
+    // @vize-map: expr -> 51:60
+    void (1); // VBind
+    // @vize-map: expr -> 66:67
+    if ((open)) {
+      // @vize-map: expr -> 121:125
+      void (map[foo]); // VBind
+      // @vize-map: expr -> 132:140
+    }
+
+    // @pick handler
+    type ____vize_dynamic_is_35_10__library = typeof __vize_dynamic_is_35 extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof __vize_dynamic_is_35 extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+    type ____vize_dynamic_is_35_10__props = typeof __vize_dynamic_is_35 extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof __vize_dynamic_is_35 extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
+    type ____vize_dynamic_is_35_10__emit_props = typeof __vize_dynamic_is_35 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+    type ____vize_dynamic_is_35_10_pick_prop_args = ____vize_dynamic_is_35_10__library extends true ? unknown[] : ____vize_dynamic_is_35_10__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+    // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
+    const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<____vize_dynamic_is_35_10__library, typeof __vize_dynamic_is_35>)(__vize_dynamic_is_35); const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<____vize_dynamic_is_35_10__library, typeof __vize_dynamic_is_35, typeof __vize_emit_factory_0>)({
+      // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
+      "x": 1,
+    });
+    type ____vize_dynamic_is_35_10_pick_inferred_emit_args = ____vize_dynamic_is_35_10__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_0 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+    type ____vize_dynamic_is_35_10_pick_contextless_listener = ____vize_dynamic_is_35_10__library extends true ? false : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
+    type ____vize_dynamic_is_35_10_pick_static_emit_args = ____vize_dynamic_is_35_10__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+    type ____vize_dynamic_is_35_10_pick_emit_args = unknown[] extends ____vize_dynamic_is_35_10_pick_inferred_emit_args ? ____vize_dynamic_is_35_10_pick_static_emit_args : ____vize_dynamic_is_35_10_pick_inferred_emit_args;
+    type ____vize_dynamic_is_35_10_pick_args = ____vize_dynamic_is_35_10_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_35_10_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_35_10_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_35_10_pick_emit_args ? unknown[] : ____vize_dynamic_is_35_10_pick_emit_args) : ____vize_dynamic_is_35_10_pick_prop_args) : ____vize_dynamic_is_35_10_pick_inferred_emit_args;
+    type ____vize_dynamic_is_35_10_pick_event = ____vize_dynamic_is_35_10_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
+    type ____vize_dynamic_is_35_10_pick_return = unknown[] extends ____vize_dynamic_is_35_10_pick_prop_args ? any : ____vize_dynamic_is_35_10__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+    type ____vize_dynamic_is_35_10_pick_listener = unknown[] extends ____vize_dynamic_is_35_10_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_35_10_pick_args) => ____vize_dynamic_is_35_10_pick_return);
+    void ((...__vize_args: Parameters<____vize_dynamic_is_35_10_pick_listener>) => {
+      const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_35_10_pick_event; void __vize_event;
+      const __vize_handler_10_76 = ({ __vize_listener: ((v) => take(v)) } satisfies { __vize_listener: ____vize_dynamic_is_35_10_pick_contextless_listener extends true ? unknown : (____vize_dynamic_is_35_10_pick_listener | null | undefined) }).__vize_listener;
+      const __vize_handler_10_76_callable: ____vize_dynamic_is_35_10_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = __vize_handler_10_76; void __vize_handler_10_76_callable;
+      // @vize-map: handler -> 76:90
+    });
+    // @ts-ignore Listener branch guard; authored v-if checks own diagnostics.
+    if ((open)) {
+
+      // @pick handler
+      type ____vize_dynamic_is_104_11__library = typeof __vize_dynamic_is_104 extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof __vize_dynamic_is_104 extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+      type ____vize_dynamic_is_104_11__props = typeof __vize_dynamic_is_104 extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof __vize_dynamic_is_104 extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
+      type ____vize_dynamic_is_104_11__emit_props = typeof __vize_dynamic_is_104 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+      type ____vize_dynamic_is_104_11_pick_prop_args = ____vize_dynamic_is_104_11__library extends true ? unknown[] : ____vize_dynamic_is_104_11__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+      type ____vize_dynamic_is_104_1_emit_resolver = ____vize_dynamic_is_104_11__library extends true ? (component: typeof __vize_dynamic_is_104) => typeof __vize_dynamic_is_104 : $EmitPropsFactory<typeof __vize_dynamic_is_104>;
+      // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
+      const __vize_emit_props_1 = (undefined as unknown as ____vize_dynamic_is_104_1_emit_resolver)(__vize_dynamic_is_104)({
+      });
+      type ____vize_dynamic_is_104_11_pick_inferred_emit_args = ____vize_dynamic_is_104_11__library extends true ? (typeof __vize_emit_props_1 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_1 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_1 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+      type ____vize_dynamic_is_104_11_pick_contextless_listener = ____vize_dynamic_is_104_11__library extends true ? false : typeof __vize_emit_props_1 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
+      type ____vize_dynamic_is_104_11_pick_static_emit_args = ____vize_dynamic_is_104_11__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+      type ____vize_dynamic_is_104_11_pick_emit_args = unknown[] extends ____vize_dynamic_is_104_11_pick_inferred_emit_args ? ____vize_dynamic_is_104_11_pick_static_emit_args : ____vize_dynamic_is_104_11_pick_inferred_emit_args;
+      type ____vize_dynamic_is_104_11_pick_args = ____vize_dynamic_is_104_11_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_104_11_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_104_11_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_104_11_pick_emit_args ? unknown[] : ____vize_dynamic_is_104_11_pick_emit_args) : ____vize_dynamic_is_104_11_pick_prop_args) : ____vize_dynamic_is_104_11_pick_inferred_emit_args;
+      type ____vize_dynamic_is_104_11_pick_event = ____vize_dynamic_is_104_11_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
+      type ____vize_dynamic_is_104_11_pick_return = unknown[] extends ____vize_dynamic_is_104_11_pick_prop_args ? any : ____vize_dynamic_is_104_11__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+      type ____vize_dynamic_is_104_11_pick_listener = unknown[] extends ____vize_dynamic_is_104_11_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_104_11_pick_args) => ____vize_dynamic_is_104_11_pick_return);
+      void ((...__vize_args: Parameters<____vize_dynamic_is_104_11_pick_listener>) => {
+        const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_104_11_pick_event; void __vize_event;
+        // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
+        if ((open)) {
+          const __vize_handler_11_149 = ({ __vize_listener: ((v) => take(v)) } satisfies { __vize_listener: ____vize_dynamic_is_104_11_pick_contextless_listener extends true ? unknown : (____vize_dynamic_is_104_11_pick_listener | null | undefined) }).__vize_listener;
+          const __vize_handler_11_149_callable: ____vize_dynamic_is_104_11_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = __vize_handler_11_149; void __vize_handler_11_149_callable;
+          // @vize-map: handler -> 149:163
+        }
+      });
+    }
+  };
+
+  // v-for scope: item in items
+  {
+  const __vize_v_for_source_12 = __vForList(items);
+  for (const [item] of __vize_v_for_source_12) {
+    void item;
+    // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.
+    const __vize_dynamic_is_185 = (map[item.kind]);
+    void (map[item.kind]); // VBind
+    // @vize-map: expr -> 223:237
+
+    // @pick handler
+    type ____vize_dynamic_is_185_13__library = typeof __vize_dynamic_is_185 extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof __vize_dynamic_is_185 extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+    type ____vize_dynamic_is_185_13__props = typeof __vize_dynamic_is_185 extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof __vize_dynamic_is_185 extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
+    type ____vize_dynamic_is_185_13__emit_props = typeof __vize_dynamic_is_185 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+    type ____vize_dynamic_is_185_13_pick_prop_args = ____vize_dynamic_is_185_13__library extends true ? unknown[] : ____vize_dynamic_is_185_13__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+    type ____vize_dynamic_is_185_3_emit_resolver = ____vize_dynamic_is_185_13__library extends true ? (component: typeof __vize_dynamic_is_185) => typeof __vize_dynamic_is_185 : $EmitPropsFactory<typeof __vize_dynamic_is_185>;
+    // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
+    const __vize_emit_props_3 = (undefined as unknown as ____vize_dynamic_is_185_3_emit_resolver)(__vize_dynamic_is_185)({
+    });
+    type ____vize_dynamic_is_185_13_pick_inferred_emit_args = ____vize_dynamic_is_185_13__library extends true ? (typeof __vize_emit_props_3 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_3 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_3 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+    type ____vize_dynamic_is_185_13_pick_contextless_listener = ____vize_dynamic_is_185_13__library extends true ? false : typeof __vize_emit_props_3 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
+    type ____vize_dynamic_is_185_13_pick_static_emit_args = ____vize_dynamic_is_185_13__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+    type ____vize_dynamic_is_185_13_pick_emit_args = unknown[] extends ____vize_dynamic_is_185_13_pick_inferred_emit_args ? ____vize_dynamic_is_185_13_pick_static_emit_args : ____vize_dynamic_is_185_13_pick_inferred_emit_args;
+    type ____vize_dynamic_is_185_13_pick_args = ____vize_dynamic_is_185_13_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_185_13_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_185_13_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_185_13_pick_emit_args ? unknown[] : ____vize_dynamic_is_185_13_pick_emit_args) : ____vize_dynamic_is_185_13_pick_prop_args) : ____vize_dynamic_is_185_13_pick_inferred_emit_args;
+    type ____vize_dynamic_is_185_13_pick_event = ____vize_dynamic_is_185_13_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
+    type ____vize_dynamic_is_185_13_pick_return = unknown[] extends ____vize_dynamic_is_185_13_pick_prop_args ? any : ____vize_dynamic_is_185_13__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+    type ____vize_dynamic_is_185_13_pick_listener = unknown[] extends ____vize_dynamic_is_185_13_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_185_13_pick_args) => ____vize_dynamic_is_185_13_pick_return);
+    void ((...__vize_args: Parameters<____vize_dynamic_is_185_13_pick_listener>) => {
+      const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_185_13_pick_event; void __vize_event;
+      const __vize_handler_13_246 = ({ __vize_listener: ((v) => take(v)) } satisfies { __vize_listener: ____vize_dynamic_is_185_13_pick_contextless_listener extends true ? unknown : (____vize_dynamic_is_185_13_pick_listener | null | undefined) }).__vize_listener;
+      const __vize_handler_13_246_callable: ____vize_dynamic_is_185_13_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = __vize_handler_13_246; void __vize_handler_13_246_callable;
+      // @vize-map: handler -> 246:260
+    });
+  }
+  }
+
+  // @pick handler
+  type ____vize_dynamic_is_274_14__library = typeof __vize_dynamic_is_274 extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof __vize_dynamic_is_274 extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+  type ____vize_dynamic_is_274_14__props = typeof __vize_dynamic_is_274 extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof __vize_dynamic_is_274 extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
+  type ____vize_dynamic_is_274_14__emit_props = typeof __vize_dynamic_is_274 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+  type ____vize_dynamic_is_274_14_pick_prop_args = ____vize_dynamic_is_274_14__library extends true ? unknown[] : ____vize_dynamic_is_274_14__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type ____vize_dynamic_is_274_4_emit_resolver = ____vize_dynamic_is_274_14__library extends true ? (component: typeof __vize_dynamic_is_274) => typeof __vize_dynamic_is_274 : $EmitPropsFactory<typeof __vize_dynamic_is_274>;
+  // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
+  const __vize_emit_props_4 = (undefined as unknown as ____vize_dynamic_is_274_4_emit_resolver)(__vize_dynamic_is_274)({
+  });
+  type ____vize_dynamic_is_274_14_pick_inferred_emit_args = ____vize_dynamic_is_274_14__library extends true ? (typeof __vize_emit_props_4 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_4 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_4 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type ____vize_dynamic_is_274_14_pick_contextless_listener = ____vize_dynamic_is_274_14__library extends true ? false : typeof __vize_emit_props_4 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
+  type ____vize_dynamic_is_274_14_pick_static_emit_args = ____vize_dynamic_is_274_14__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+  type ____vize_dynamic_is_274_14_pick_emit_args = unknown[] extends ____vize_dynamic_is_274_14_pick_inferred_emit_args ? ____vize_dynamic_is_274_14_pick_static_emit_args : ____vize_dynamic_is_274_14_pick_inferred_emit_args;
+  type ____vize_dynamic_is_274_14_pick_args = ____vize_dynamic_is_274_14_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_274_14_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_274_14_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_274_14_pick_emit_args ? unknown[] : ____vize_dynamic_is_274_14_pick_emit_args) : ____vize_dynamic_is_274_14_pick_prop_args) : ____vize_dynamic_is_274_14_pick_inferred_emit_args;
+  type ____vize_dynamic_is_274_14_pick_event = ____vize_dynamic_is_274_14_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
+  type ____vize_dynamic_is_274_14_pick_return = unknown[] extends ____vize_dynamic_is_274_14_pick_prop_args ? any : ____vize_dynamic_is_274_14__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type ____vize_dynamic_is_274_14_pick_listener = unknown[] extends ____vize_dynamic_is_274_14_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_274_14_pick_args) => ____vize_dynamic_is_274_14_pick_return);
+  void ((...__vize_args: Parameters<____vize_dynamic_is_274_14_pick_listener>) => {
+    const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_274_14_pick_event; void __vize_event;
+    const __vize_handler_14_307 = ({ __vize_listener: ((v) => take(v)) } satisfies { __vize_listener: ____vize_dynamic_is_274_14_pick_contextless_listener extends true ? unknown : (____vize_dynamic_is_274_14_pick_listener | null | undefined) }).__vize_listener;
+    const __vize_handler_14_307_callable: ____vize_dynamic_is_274_14_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = __vize_handler_14_307; void __vize_handler_14_307_callable;
+    // @vize-map: handler -> 307:321
+  });
+
+  // Component props type declarations
+  type $IsAny<T> = 0 extends (1 & T) ? true : false;
+  type $ComponentNavigationProps<P> = $IsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;
+  type $EmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? $IsAny<__E> extends true ? {} : NonNullable<__E> : {};
+  type $IsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
+  type $HasFallthroughProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
+  type $FallthroughProps<C> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+  type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+  type $VueVNodeProps = import('vue').VNodeProps;
+  type $VueAllowedComponentProps = import('vue').AllowedComponentProps;
+  type $VueComponentCustomProps = import('vue').ComponentCustomProps;
+  interface $PublicComponentAttrs extends $VueVNodeProps, $VueAllowedComponentProps, $VueComponentCustomProps {}
+  type $AllowedFallthroughAttrs<C> = $HasFallthroughProps<C> extends true ? Record<string, unknown> : {};
+  type $ComponentCheckTail<C> = $IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & $ComponentGlobalHtmlAttrs & $AllowedFallthroughAttrs<C> : $PublicComponentAttrs & $ComponentGlobalHtmlAttrs;
+  type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+  type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+  type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
+  type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
+  type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;
+  type $HasStaticRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? false : true : false : false;
+  type $ComponentRawProps<C, __P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;
+  type $HasRawProps<C> = $HasInstanceRawProps<C> extends true ? true : $HasStaticRawProps<C>;
+  type $FallthroughValue<C, K extends PropertyKey> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? unknown : $PropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
+  type $EventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | $KebabCase<Uncapitalize<E>> : never;
+  type $KebabEventAliases<E> = { [K in keyof E & string as $KebabCase<K> extends K ? never : $KebabCase<K>]: E[K] };
+  type $ComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & $KebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as $EventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };
+  type $IsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+  type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;
+  type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+  type $StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
+  type $EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
+  type $NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $IsAny<InstanceType<C>> extends true ? $EmptyVueNavigationSlots<C> : $IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
+  type $NavigationSlots<C> = $IsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $IsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $NativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $NativeNavigationSlots<C>;
+  type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
+  type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
+  type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
+  // @vize-map: component -> 0:35
+  type __Panel_Props_2 = typeof Panel extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Panel> : Record<string, unknown>) : $ComponentRawProps<typeof Panel>;
+  type __Panel_Component_2 = typeof Panel;
+  type __Panel_CheckProps_2 = __Panel_Props_2 & $EmitListeners<__Panel_Component_2> & $RequiredFallthroughProps<__Panel_Component_2>;
+  type __Panel_CheckTail_2 = $ComponentCheckTail<__Panel_Component_2>;
+  type __Panel_Check_2 = $PropChecker<__Panel_Component_2, __Panel_CheckProps_2, __Panel_CheckTail_2>;
+  // @vize-map: component -> 274:323
+  type ____vize_dynamic_is_274_Props_4 = typeof __vize_dynamic_is_274 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_274> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_274>;
+  type ____vize_dynamic_is_274_Component_4 = typeof __vize_dynamic_is_274;
+  type ____vize_dynamic_is_274_CheckProps_4 = ____vize_dynamic_is_274_Props_4 & $EmitListeners<____vize_dynamic_is_274_Component_4> & $RequiredFallthroughProps<____vize_dynamic_is_274_Component_4>;
+  type ____vize_dynamic_is_274_CheckTail_4 = $ComponentCheckTail<____vize_dynamic_is_274_Component_4>;
+  type ____vize_dynamic_is_274_Check_4 = $PropChecker<____vize_dynamic_is_274_Component_4, ____vize_dynamic_is_274_CheckProps_4, ____vize_dynamic_is_274_CheckTail_4>;
+
+  // Component template navigation references
+  void Panel;
+  const { } = undefined as unknown as $ComponentNavigationProps<__Panel_Props_2>;
+  const __vize_slots_nav_2 = undefined as unknown as $NavigationSlots<typeof Panel>;
+  const { qux: __vize_slot_nav_2_0 } = __vize_slots_nav_2;
+  void __vize_slot_nav_2_0;
+  void __vize_dynamic_is_274;
+  const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_274_Props_4>;
+
+  // Component props value checks (template scope)
+  void [
+    () => {
+      (undefined as unknown as __Panel_Check_2)({
+      });
+      type $SlotContract_2 = $StructuralSlots<typeof Panel>;
+      const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, { readonly "qux": true; readonly "default": true; }> = {};
+      void __vize_required_slots_2;
+    },
+    () => {
+      (undefined as unknown as ____vize_dynamic_is_274_Check_4)({
+        ...{} as { "onPick": never },
+      });
+      type $SlotContract_4 = $StructuralSlots<typeof __vize_dynamic_is_274>;
+      const __vize_required_slots_4: $RequiredSlots<$SlotContract_4, {}> = {};
+      void __vize_required_slots_4;
+    },
+  ];
+
+  // Component props in v-slot scope: #qux
+  const __vize_slot_props_host_9 = (undefined as unknown as $SlotHostSelector<typeof Panel>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof Panel>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof Panel>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof Panel>>)({
+  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof Panel>>))), (undefined as unknown as $SlotsFactory<typeof Panel>)(Panel)({
+  }));
+  void __vize_slot_props_host_9;
+  void function _slot_props_qux_9({ kind, open }: $SlotPayload<typeof __vize_slot_props_host_9, "qux", typeof Panel>) {
+    void kind;
+    void open;
+    // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.
+    const __vize_dynamic_is_35 = (map[kind]);
+    // @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.
+    const __vize_dynamic_is_104 = ((open)) ? (map[foo]) : (undefined as never);
+  // @vize-map: component -> 35:92
+  type ____vize_dynamic_is_35_Props_0 = typeof __vize_dynamic_is_35 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_35> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_35>;
+  type ____vize_dynamic_is_35_Component_0 = typeof __vize_dynamic_is_35;
+  type ____vize_dynamic_is_35_CheckProps_0 = ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $RequiredFallthroughProps<____vize_dynamic_is_35_Component_0>;
+  type ____vize_dynamic_is_35_CheckTail_0 = $ComponentCheckTail<____vize_dynamic_is_35_Component_0>;
+  type ____vize_dynamic_is_35_ValueProps_0 = $IsLibraryGenericExport<____vize_dynamic_is_35_Component_0> extends true ? Record<string, any> : ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $PublicComponentAttrs;
+  type ____vize_dynamic_is_35_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<____vize_dynamic_is_35_Component_0, K>;
+  type ____vize_dynamic_is_35_Check_0 = $PropChecker<____vize_dynamic_is_35_Component_0, ____vize_dynamic_is_35_CheckProps_0, ____vize_dynamic_is_35_CheckTail_0>;
+  type ____vize_dynamic_is_35_0_prop_x = $PropValue<____vize_dynamic_is_35_ValueProps_0, 'x', ____vize_dynamic_is_35_FallthroughValue_0<'x'>>;
+  void __vize_dynamic_is_35;
+  const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_35_Props_0>;
+  const __vize_props_nav_0 = undefined as unknown as ____vize_dynamic_is_35_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.x;
+  // @vize-map: component -> 104:165
+  type ____vize_dynamic_is_104_Props_1 = typeof __vize_dynamic_is_104 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_104> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_104>;
+  type ____vize_dynamic_is_104_Component_1 = typeof __vize_dynamic_is_104;
+  type ____vize_dynamic_is_104_CheckProps_1 = ____vize_dynamic_is_104_Props_1 & $EmitListeners<____vize_dynamic_is_104_Component_1> & $RequiredFallthroughProps<____vize_dynamic_is_104_Component_1>;
+  type ____vize_dynamic_is_104_CheckTail_1 = $ComponentCheckTail<____vize_dynamic_is_104_Component_1>;
+  type ____vize_dynamic_is_104_Check_1 = $PropChecker<____vize_dynamic_is_104_Component_1, ____vize_dynamic_is_104_CheckProps_1, ____vize_dynamic_is_104_CheckTail_1>;
+  void __vize_dynamic_is_104;
+  const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_104_Props_1>;
+    const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof __vize_dynamic_is_35> & Record<string, unknown>;
+    void __vize_events_nav_0.pick;
+    // @ts-ignore Navigation-only guard; authored v-if checks own diagnostics.
+    if ((open)) {
+      const __vize_events_nav_1 = undefined as unknown as $ComponentEvents<typeof __vize_dynamic_is_104> & Record<string, unknown>;
+      void __vize_events_nav_1.pick;
+    }
+    // @vize-map: prop -> 62:68
+    const __vize_prop_check_0_x: ____vize_dynamic_is_35_0_prop_x = 1;
+    void __vize_prop_check_0_x;
+    (undefined as unknown as ____vize_dynamic_is_35_Check_0)({
+      ...{} as { "onPick": never },
+      "x": 1,
+    });
+    type $SlotContract_0 = $StructuralSlots<typeof __vize_dynamic_is_35>;
+    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+    void __vize_required_slots_0;
+    void [
+      () => {
+        // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
+        if ((open)) {
+          (undefined as unknown as ____vize_dynamic_is_104_Check_1)({
+            ...{} as { "onPick": never },
+          });
+          type $SlotContract_1 = $StructuralSlots<typeof __vize_dynamic_is_104>;
+          const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, {}> = {};
+          void __vize_required_slots_1;
+        }
+      },
+    ];
+  };
+
+  // Component props in v-for scope: item in items
+  {
+  const __vize_v_for_source_12 = __vForList(items);
+  for (const [item] of __vize_v_for_source_12) {
+    void item;
+    // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.
+    const __vize_dynamic_is_185 = (map[item.kind]);
+  // @vize-map: component -> 185:262
+  type ____vize_dynamic_is_185_Props_3 = typeof __vize_dynamic_is_185 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_185> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_185>;
+  type ____vize_dynamic_is_185_Component_3 = typeof __vize_dynamic_is_185;
+  type ____vize_dynamic_is_185_CheckProps_3 = ____vize_dynamic_is_185_Props_3 & $EmitListeners<____vize_dynamic_is_185_Component_3> & $RequiredFallthroughProps<____vize_dynamic_is_185_Component_3>;
+  type ____vize_dynamic_is_185_CheckTail_3 = $ComponentCheckTail<____vize_dynamic_is_185_Component_3>;
+  type ____vize_dynamic_is_185_Check_3 = $PropChecker<____vize_dynamic_is_185_Component_3, ____vize_dynamic_is_185_CheckProps_3, ____vize_dynamic_is_185_CheckTail_3>;
+  void __vize_dynamic_is_185;
+  const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_185_Props_3>;
+    const __vize_events_nav_3 = undefined as unknown as $ComponentEvents<typeof __vize_dynamic_is_185> & Record<string, unknown>;
+    void __vize_events_nav_3.pick;
+    void [
+      () => {
+        (undefined as unknown as ____vize_dynamic_is_185_Check_3)({
+          ...{} as { "onPick": never },
+        });
+        type $SlotContract_3 = $StructuralSlots<typeof __vize_dynamic_is_185>;
+        const __vize_required_slots_3: $RequiredSlots<$SlotContract_3, {}> = {};
+        void __vize_required_slots_3;
+      },
+    ];
+  }
+  }
+
+  // Mark used components as referenced
+  void Panel;
+
+  // Reference setup bindings (used in template/CSS v-bind)
+  void (null as unknown as keyof typeof Panel); void (null as unknown as keyof typeof Picker); void foo; void items; void map; void take;
+  })();
+}
+
+// Invoke setup to verify types
+__setup();
+
+export type Emits = {};
+type $Slots = {};
+export type { $Slots as Slots };
+
+type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $EmitRequiredFields<T> = T extends unknown ? {} extends T ? Pick<T, never> : Pick<T, $EmitRequiredKeys<T>> : never;
+type $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+type $EmitFallthrough<F> = $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+type $EmitOwnedKeys<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $EmitRequiredFields<P> & $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>> : never : never;
+declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
+type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
+type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
+type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
+type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;
+type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
+type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : $EmitPropsFactory<C>;
+type __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : false : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : false : false) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;
+type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;
+type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<$OverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
+type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
+type $IsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
+type $ParametersToFns<T extends any[]> = string extends T[0] ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any } : { [K in T[0]]: $IsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
+type __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});
+type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;
+type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
+
+// ========== Default Export ==========
+type $ComponentInstance = {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;
+type $VueComponentOptions = {
+  [key: string]: any;
+  name?: string;
+  __name?: string;
+  __file?: string;
+  __vccOpts?: any;
+  props?: any;
+  emits?: any;
+  slots?: any;
+  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;
+  render?: Function;
+  components?: any;
+  directives?: any;
+  inheritAttrs?: boolean;
+  compatConfig?: any;
+  call?: (this: unknown, ...args: unknown[]) => never;
+  __isFragment?: never;
+  __isTeleport?: never;
+  __isSuspense?: never;
+  __defaults?: any;
+  __vapor?: boolean;
+  __multiRoot?: boolean;
+  __isKeepAlive?: boolean;
+  __isBuiltIn?: boolean;
+};
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; } & $ComponentConstructor & $VueComponentOptions;
+export default __vize_component__;

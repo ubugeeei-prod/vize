@@ -1,7 +1,7 @@
 //! Source-built CLI acceptance for the Unicode comment binding regression (#10898).
 #![cfg(test)]
 
-use crate::support::{corsa_path, corsa_requirement};
+use crate::support::{corsa_path, corsa_requirement, current_rule_documentation};
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 
@@ -135,7 +135,7 @@ function check(all: number[], current: number[]): true | string {
     let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
         actual,
-        json!([
+        current_rule_documentation::packet(json!([
             {
                 "file":"src/MyForm.vue",
                 "messages":[{
@@ -152,7 +152,7 @@ function check(all: number[], current: number[]): true | string {
                 "warningCount":1
             },
             {"file":"src/MyInput.vue","messages":[],"errorCount":0,"warningCount":0}
-        ])
+        ]))
     );
     for (name, contents) in files {
         assert_eq!(

@@ -1,0 +1,8 @@
+<script setup>
+const state = { value: 0 }
+</script>
+<template>
+  <!-- Ordinary template :class keeps template normalizeClass semantics. -->
+  <main :class="state.value"></main>
+  <p class="kept" :class="missing"></p>
+</template>

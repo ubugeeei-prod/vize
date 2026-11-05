@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { useRoute } from 'vue-router';
+// 日本 😀
+const identity = <T>(value: T) => value; const asserted = <number>1; const route = useRoute(); const typedId: number = route.params.userId;
+route.params.userId;
+route.params.anyParam;
+route.params.page;
+</script>

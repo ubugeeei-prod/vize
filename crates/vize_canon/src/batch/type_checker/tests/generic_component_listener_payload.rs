@@ -4,6 +4,7 @@ use vize_carton::String;
 mod callback_prop_shorthand;
 mod dynamic_member_component_events;
 mod enum_member_prop;
+mod gated_emit_props;
 mod overload_depth;
 
 #[test]

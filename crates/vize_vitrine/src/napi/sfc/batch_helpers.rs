@@ -28,7 +28,7 @@ impl BatchStats {
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub(super) struct BatchCompileKey {
+pub(super) struct BatchCompileCandidateKey {
     source_hash: u64,
     source_len: usize,
     parent_hash: u64,
@@ -42,6 +42,7 @@ pub(super) struct BatchCompileJob {
     pub(super) source: String,
     pub(super) repeats: usize,
     pub(super) input_bytes: usize,
+    pub(super) remaining: Vec<usize>,
 }
 
 impl BatchCompileJob {
@@ -52,6 +53,7 @@ impl BatchCompileJob {
             source,
             repeats: 1,
             input_bytes,
+            remaining: Vec::new(),
         }
     }
 }
@@ -138,14 +140,14 @@ fn component_name_to_kebab_case(component_name: &str) -> String {
     out
 }
 
-pub(super) fn batch_compile_key(
+pub(super) fn batch_compile_candidate_key(
     path: &Path,
     source: &str,
     component_name: &str,
     option_bits: u16,
-) -> BatchCompileKey {
+) -> BatchCompileCandidateKey {
     let (parent_hash, parent_len) = parent_cache_parts(path);
-    BatchCompileKey {
+    BatchCompileCandidateKey {
         source_hash: hash_str(source),
         source_len: source.len(),
         parent_hash,

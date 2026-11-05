@@ -4,28 +4,15 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
+The render can disagree between the server and the client.
+
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| error | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
+
+Applies to: Analyzed component graph and the supported facts described below
+
 This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.
-
-Default severity: error  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/hydration-risk": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Shared project files
 
@@ -94,7 +81,25 @@ const count = toRef(props, "count");
 <template><p>{{ count }}</p></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/hydration-risk": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

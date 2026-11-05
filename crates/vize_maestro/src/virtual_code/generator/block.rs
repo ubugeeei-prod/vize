@@ -78,6 +78,18 @@ fn is_script_position(
             || (completion && offset == script.loc.end && script.loc.end < script.loc.tag_end))
 }
 
+/// Script setup TypeScript is its body plus its `generic` attribute value.
+fn is_script_setup_position(descriptor: &SfcDescriptor, offset: usize, completion: bool) -> bool {
+    descriptor.script_setup.as_ref().is_some_and(|setup| {
+        is_script_position(setup, offset, completion)
+            || vize_canon::virtual_ts::authored_generic_range(&descriptor.source, descriptor)
+                .is_some_and(|value| {
+                    value.start <= offset
+                        && (offset < value.end || (completion && offset == value.end))
+                })
+    })
+}
+
 fn find_block_at_position(
     descriptor: &SfcDescriptor,
     offset: usize,
@@ -98,10 +110,7 @@ fn find_block_at_position(
         return Some(BlockType::Script);
     }
 
-    // Check script setup
-    if let Some(ref script_setup) = descriptor.script_setup
-        && is_script_position(script_setup, offset, completion)
-    {
+    if is_script_setup_position(descriptor, offset, completion) {
         return Some(BlockType::ScriptSetup);
     }
 
@@ -207,9 +216,7 @@ fn find_art_block_at_position(source: &str, offset: usize, completion: bool) -> 
         {
             return Some(BlockType::Script);
         }
-        if let Some(ref script_setup) = descriptor.script_setup
-            && is_script_position(script_setup, offset, completion)
-        {
+        if is_script_setup_position(&descriptor, offset, completion) {
             return Some(BlockType::ScriptSetup);
         }
         for (i, style) in descriptor.styles.iter().enumerate() {

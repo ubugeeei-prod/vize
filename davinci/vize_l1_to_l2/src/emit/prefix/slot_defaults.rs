@@ -27,6 +27,21 @@ pub(in crate::emit) fn prefix_slot_defaults<'source>(
     source: &'source str,
     scope: &PrefixScope<'_>,
 ) -> RawJs<'source> {
+    let Some(js) = scope
+        .is_ts()
+        .then(|| super::erase_typescript_params(source))
+        .flatten()
+    else {
+        return prefix_defaults(source, scope);
+    };
+    let prefixed = match prefix_defaults(js.as_str(), scope) {
+        RawJs::Borrowed(_) => None,
+        RawJs::Owned(text) | RawJs::TrailingLineComment(text) => Some(text),
+    };
+    RawJs::Owned(prefixed.unwrap_or(js))
+}
+
+fn prefix_defaults<'source>(source: &'source str, scope: &PrefixScope<'_>) -> RawJs<'source> {
     if !source.contains('=') || !expression_is_safe_to_parse(source) {
         return RawJs::Borrowed(source);
     }

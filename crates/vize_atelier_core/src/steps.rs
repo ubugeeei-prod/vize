@@ -31,9 +31,10 @@ pub use element::{
     build_props, resolve_element_type,
 };
 pub use expression::{
-    is_event_handler_reference_expression, is_event_handler_reference_node,
-    is_function_expression_node, is_simple_identifier, prefix_identifiers_in_expression,
-    process_expression, process_inline_handler, strip_typescript_from_expression,
+    erase_typescript, erase_typescript_params, is_event_handler_reference_expression,
+    is_event_handler_reference_node, is_function_expression_node, is_simple_identifier,
+    prefix_identifiers_in_expression, process_expression, process_inline_handler,
+    strip_typescript_from_expression,
 };
 pub use hoist_static::{
     StaticType, count_dynamic_children, get_static_type, hoist_static, is_static_node,

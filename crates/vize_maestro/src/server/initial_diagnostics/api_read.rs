@@ -7,14 +7,18 @@
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::{Diagnostic, Url};
-use vize_canon::corsa_bridge::{InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics};
+use vize_canon::corsa_bridge::{
+    InitialApiDiagnosticsProvenanceOutcome, PendingInitialApiDiagnostics,
+};
 use vize_canon::{CorsaBridge, CorsaBridgeError};
 
 use super::{MaestroServer, RetainedDiagnostics};
 use crate::{
     ide::{
         DiagnosticService,
-        diagnostics::{PreparedInitialApiDiagnostics, with_native_diagnostic_progress},
+        diagnostics::{
+            CombinedDiagnostics, PreparedInitialApiDiagnostics, with_native_diagnostic_progress,
+        },
     },
     server::{
         diagnostic_publishing::CollectedDiagnostics,
@@ -111,14 +115,16 @@ impl MaestroServer {
             || self.publish_pending_native_diagnostics(uri, expected, world.stamp, &sync),
         )
         .await;
-        let Some(diagnostics) = diagnostics else {
+        let Some(combined) = diagnostics else {
             return;
         };
         if !world.is_current(&self.state) {
             return;
         }
+        let (native, diagnostics) = combined.into_parts();
         let collected = CollectedDiagnostics {
             version: expected,
+            native,
             diagnostics,
             stamp: Some(world.stamp),
         };
@@ -134,7 +140,7 @@ impl MaestroServer {
         world: &InitialApiWorld,
         scope: CorsaRequestScope<'_>,
         sync: &[Diagnostic],
-    ) -> Option<Vec<Diagnostic>> {
+    ) -> Option<CombinedDiagnostics> {
         let read = match DiagnosticService::prepare_initial_api_diagnostics(
             &self.state,
             &world.uri,
@@ -210,7 +216,7 @@ impl MaestroServer {
                 let native_owner = Arc::downgrade(&prepared.bridge);
                 let outcome = prepared
                     .bridge
-                    .finish_initial_api_diagnostics(pending, move |commit| {
+                    .finish_initial_api_diagnostics_with_provenance(pending, move |commit| {
                         let Some(bridge) = native_owner.upgrade() else {
                             return false;
                         };
@@ -249,11 +255,11 @@ impl MaestroServer {
                     return None;
                 }
                 match outcome {
-                    Ok(InitialApiDiagnosticsOutcome::Stale) => {
+                    Ok(InitialApiDiagnosticsProvenanceOutcome::Stale) => {
                         trace_initial_api(world, "stale", None);
                         return None;
                     }
-                    Ok(InitialApiDiagnosticsOutcome::Complete(native)) => {
+                    Ok(InitialApiDiagnosticsProvenanceOutcome::Complete(native)) => {
                         trace_initial_api(world, "complete", None);
                         let diagnostics = prepared.complete(native);
                         if prepared.revision != world.revision
@@ -269,7 +275,7 @@ impl MaestroServer {
                         }
                         diagnostics
                     }
-                    Ok(InitialApiDiagnosticsOutcome::Unsupported) => {
+                    Ok(InitialApiDiagnosticsProvenanceOutcome::Unsupported) => {
                         trace_initial_api(world, "legacy_fallback", Some("unsupported"));
                         // Preserve the runtime's existing unsupported policy.
                         DiagnosticService::collect_async_from_sync(
@@ -279,7 +285,7 @@ impl MaestroServer {
                         )
                         .await
                     }
-                    Ok(InitialApiDiagnosticsOutcome::Failed(error)) | Err(error) => {
+                    Ok(InitialApiDiagnosticsProvenanceOutcome::Failed(error)) | Err(error) => {
                         trace_initial_api(world, "recovery", None);
                         DiagnosticService::recover_initial_api_diagnostics(
                             &self.state,

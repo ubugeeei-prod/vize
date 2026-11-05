@@ -29,8 +29,8 @@ mod shard_sizing;
 mod syntax_abort;
 mod union_find;
 
-pub(super) use checkers::checker_count;
 use checkers::rejects_checkers_flag;
+pub(super) use checkers::{checker_count, unsharded_checker_count};
 use diagnostic_paths::CliPathResolver;
 use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
 use global_scope::RecordedBuildInfo;

@@ -3,7 +3,7 @@
 //! The mapped copy keeps the authored tokens and their diagnostics.
 
 use super::super::protocol::DIRECTIVE_POLICY_IGNORE;
-use super::transform;
+use super::published;
 
 const DESTRUCTURED_11451: &str = r#"<script setup lang="ts">
 interface Foo {
@@ -61,7 +61,7 @@ fn edit(source: &str, from: &str, to: &str) -> Box<str> {
 
 /// The resolver copy is wholly ignored, and `authored` is mapped elsewhere.
 fn assert_inert_copy(case: &str, source: &str, authored: &str) {
-    let result = transform(source).with_unmapped_ignores();
+    let result = published(source);
     let text = result.text.as_str();
     let start = text.find("const __vize_resolved_").expect(case);
     let end = start + text[start..].find("}));\n").expect(case) + "}));\n".len();

@@ -1,18 +1,37 @@
 ---
 title: "musea/valid-variant"
+description: "Require name attribute in <variant> blocks."
 ---
 
 # `musea/valid-variant`
 
-Require name attribute in &lt;variant&gt; blocks
+Require name attribute in &lt;variant&gt; blocks.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | None | No | None |
 
-Default severity: `error`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Musea .art.vue art, variant, and style blocks  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Musea .art.vue art, variant, and style blocks.
+
+## Bad
+
+The variant omits the name needed to identify the preview.
+
+```vue annotate="remove:2"
+<art title="Button" component="./Button.vue">
+  <variant />
+</art>
+```
+
+## Good
+
+The primary name identifies that variant.
+
+```vue annotate="add:2"
+<art title="Button" component="./Button.vue">
+  <variant name="primary" />
+</art>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The variant omits the name needed to identify the preview.
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant />
-</art>
-```
-
-## Good
-
-The primary name identifies that variant.
-
-```vue
-<art title="Button" component="./Button.vue">
-  <variant name="primary" />
-</art>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8)

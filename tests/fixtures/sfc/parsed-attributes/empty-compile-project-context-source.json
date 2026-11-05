@@ -1,0 +1,80 @@
+{
+  "schema": "vize.sfc-empty-compile-project-context-source-successor.v1",
+  "reviewedSource": "fa58cf6fc5ca518483caa0cdd0fe8a58e56f4294",
+  "contract": "Reverse only the exact reviewed TypeScript project-context integration back to the retained complete empty-component source law. Empty validation stays the first compiler action; an absent setup script bypasses project discovery. Output packets and historical reference bytes are unchanged.",
+  "sources": [
+    {
+      "path": "crates/vize_atelier_sfc/src/compile.rs",
+      "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
+      "currentBlob": "8bb0c970f7c12e6aabb43a08da3d07385fc4b475",
+      "replacements": [
+        {
+          "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
+          "current": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod script_context;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n"
+        },
+        {
+          "reference": "    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,\n    slice_template_parts, template_parts_full,\n};\nuse crate::script::ScriptCompileContext;\nuse crate::types::{\n    BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,\n    SfcError,\n",
+          "current": "    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,\n    slice_template_parts, template_parts_full,\n};\nuse crate::types::{\n    BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,\n    SfcError,\n"
+        },
+        {
+          "reference": "    script_output: SfcScriptOutputMode,\n    experimental_options: SfcCompileExperimentalOptions,\n    nuxt_page_meta: bool,\n    pug_source_map: Option<&PugSourceMap>,\n    mut capture: Option<&mut StageCapture>,\n) -> Result<SfcCompileResult, SfcError> {\n",
+          "current": "    script_output: SfcScriptOutputMode,\n    experimental_options: SfcCompileExperimentalOptions,\n    nuxt_page_meta: bool,\n    type_project: Option<&crate::script::SfcTypeProject>,\n    pug_source_map: Option<&PugSourceMap>,\n    mut capture: Option<&mut StageCapture>,\n) -> Result<SfcCompileResult, SfcError> {\n"
+        },
+        {
+          "reference": "\n    // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution\n    //    (Croquis doesn't resolve type references like `defineProps<Props>()`)\n    let mut ctx = profile!(\n        \"atelier.sfc.script_context.new\",\n        ScriptCompileContext::new(&script_setup_content)\n    );\n\n    // Merge type definitions from normal <script> block so that\n    // defineProps<TypeRef>() can resolve types defined there.\n    if let Some(script) = descriptor.script.as_ref() {\n        profile!(\n            \"atelier.sfc.script_context.collect_normal_types\",\n            ctx.collect_types_from(&script.content)\n        );\n    }\n    let source_is_ts = is_ts_lang(script_setup.lang.as_deref());\n    profile!(\n        \"atelier.sfc.script_context.collect_setup_import_types\",\n        ctx.collect_imported_types_from_path(&script_setup_content, source_filename, source_is_ts)\n    );\n    if let Some(script) = descriptor.script.as_ref() {\n        profile!(\n            \"atelier.sfc.script_context.collect_normal_import_types\",\n            ctx.collect_imported_types_from_path(\n                &script.content,\n                source_filename,\n                is_ts_lang(script.lang.as_deref()),\n            )\n        );\n    }\n    profile!(\n        \"atelier.sfc.script_context.analyze\",\n        ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)\n    );\n    validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;\n\n    props_rest::merge_props_bindings(&mut script_bindings, &ctx);\n\n",
+          "current": "\n    // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution\n    //    (Croquis doesn't resolve type references like `defineProps<Props>()`)\n    let source_is_ts = is_ts_lang(script_setup.lang.as_deref());\n    let script_context::CollectedContext {\n        context: mut ctx,\n        imports: imported_types,\n        dependencies: type_dependencies,\n    } = script_context::collect(\n        descriptor,\n        &script_setup_content,\n        source_filename,\n        type_project,\n    )?;\n    profile!(\n        \"atelier.sfc.script_context.analyze\",\n        ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)\n    );\n    validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;\n    script_context::validate(&ctx, &imported_types, descriptor)?;\n\n    props_rest::merge_props_bindings(&mut script_bindings, &ctx);\n\n"
+        },
+        {
+          "reference": "        warnings,\n        bindings: script_result.bindings,\n        macro_artifacts,\n        dependencies: Vec::new(),\n    })\n}\n",
+          "current": "        warnings,\n        bindings: script_result.bindings,\n        macro_artifacts,\n        dependencies: type_dependencies,\n    })\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/compile/empty_component.rs",
+      "referenceBlob": "33ee8b8b1f6e8085cccfb609c1781ccecc6877b9",
+      "currentBlob": "33ee8b8b1f6e8085cccfb609c1781ccecc6877b9",
+      "replacements": []
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/sfc/compile.rs",
+      "referenceBlob": "e8a1b34ac5268c71573347506dfdeb6d6fc9ccb0",
+      "currentBlob": "074a7a36ebf219dbfc48f2abed51fc3a1a3a4fcd",
+      "replacements": [
+        {
+          "reference": "    experimentals::ExperimentalTemplateOptions,\n    types::{\n        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, dependencies_to_napi,\n        macro_artifacts_to_napi, style_blocks_to_napi,\n    },\n};\nuse crate::template_syntax::resolve_template_syntax;\n",
+          "current": "    experimentals::ExperimentalTemplateOptions,\n    types::{\n        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, dependencies_to_napi,\n        macro_artifacts_to_napi, style_blocks_to_napi, type_project_to_napi,\n    },\n};\nuse crate::template_syntax::resolve_template_syntax;\n"
+        },
+        {
+          "reference": ") -> Result<SfcCompileResultNapi> {\n    use vize_atelier_sfc::{\n        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,\n        StyleCompileOptions, TemplateCompileOptions,\n        compile_sfc_for_adapter_with_experimental_options,\n        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,\n    };\n\n    let opts = options.unwrap_or_default();\n    let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;\n    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {\n        compile_sfc_for_adapter_with_nuxt_page_meta\n    } else {\n        compile_sfc_for_adapter_with_experimental_options\n    };\n    let filename: vize_l0::CompactString =\n        opts.filename.as_deref().unwrap_or(\"anonymous.vue\").into();\n    let parse_opts = SfcParseOptions {\n",
+          "current": ") -> Result<SfcCompileResultNapi> {\n    use vize_atelier_sfc::{\n        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,\n        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,\n        parse_sfc as sfc_parse,\n    };\n\n    let opts = options.unwrap_or_default();\n    let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;\n    let type_projects = vize::type_projects::ImportedTypeProjects::new(\n        opts.type_resolution_fallback_tsconfig.as_deref(),\n    );\n    let filename: vize_l0::CompactString =\n        opts.filename.as_deref().unwrap_or(\"anonymous.vue\").into();\n    let parse_opts = SfcParseOptions {\n"
+        },
+        {
+          "reference": "                macro_artifacts: vec![],\n                dependencies: None,\n                module_shape: None,\n            });\n        }\n    };\n",
+          "current": "                macro_artifacts: vec![],\n                dependencies: None,\n                module_shape: None,\n                type_project: None,\n            });\n        }\n    };\n"
+        },
+        {
+          "reference": "        scope_id: external_scope_id,\n    };\n\n    let compile_result = whitespace.apply(|| {\n        sfc_compile_for_adapter(\n            &descriptor,\n            compile_opts,\n            template_syntax,\n            custom_elements,\n            // A requested map is the compiler's structured SFC module map.\n            sfc_codegen_options(\n                source_map,\n                opts.runtime_module_name.as_deref(),\n                opts.runtime_global_name.as_deref(),\n            ),\n            if shape.inline_render {\n                SfcScriptOutputMode::InlineTemplate\n            } else {\n                SfcScriptOutputMode::SeparateTemplate\n            },\n            experimentals.sfc_options(),\n        )\n    });\n\n    match compile_result {\n        Ok(result) => {\n            // The emitter is the last stop before the bundler, so the code\n            // crossing this boundary must already be plain JavaScript — the JS\n            // plugin no longer re-strips it. `is_ts` callers opted out: they\n",
+          "current": "        scope_id: external_scope_id,\n    };\n\n    let compile_result = type_projects\n        .for_descriptor(\n            &descriptor,\n            std::path::Path::new(opts.filename.as_deref().unwrap_or(\"anonymous.vue\")),\n        )\n        .and_then(|type_project| {\n            whitespace.apply(|| {\n                compile_sfc_for_adapter_with_project(\n                    &descriptor,\n                    compile_opts,\n                    template_syntax,\n                    custom_elements,\n                    // A requested map is the compiler's structured SFC module map.\n                    sfc_codegen_options(\n                        source_map,\n                        opts.runtime_module_name.as_deref(),\n                        opts.runtime_global_name.as_deref(),\n                    ),\n                    if shape.inline_render {\n                        SfcScriptOutputMode::InlineTemplate\n                    } else {\n                        SfcScriptOutputMode::SeparateTemplate\n                    },\n                    experimentals.sfc_options(),\n                    opts.nuxt_page_meta.unwrap_or(false),\n                    type_project.as_deref(),\n                )\n                .map(|result| {\n                    (\n                        type_project.track(result),\n                        type_project_to_napi(&type_project),\n                    )\n                })\n            })\n        });\n\n    match compile_result {\n        Ok((result, type_project)) => {\n            // The emitter is the last stop before the bundler, so the code\n            // crossing this boundary must already be plain JavaScript — the JS\n            // plugin no longer re-strips it. `is_ts` callers opted out: they\n"
+        },
+        {
+          "reference": "                macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),\n                dependencies: dependencies_to_napi(&result.dependencies),\n                module_shape,\n            })\n        }\n        Err(e) => Ok(SfcCompileResultNapi {\n",
+          "current": "                macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),\n                dependencies: dependencies_to_napi(&result.dependencies),\n                module_shape,\n                type_project,\n            })\n        }\n        Err(e) => Ok(SfcCompileResultNapi {\n"
+        },
+        {
+          "reference": "            macro_artifacts: vec![],\n            dependencies: None,\n            module_shape: None,\n        }),\n    }\n}\n",
+          "current": "            macro_artifacts: vec![],\n            dependencies: None,\n            module_shape: None,\n            type_project: None,\n        }),\n    }\n}\n"
+        }
+      ]
+    }
+  ],
+  "supportingSources": {
+    "crates/vize_atelier_sfc/src/compile/entry.rs": "15e30975603b91fe565acc1e9fdf1cec2412f9db",
+    "crates/vize_atelier_sfc/src/compile/entry/root_match.rs": "7c678c8a0b4a29f173ad67ad298afd1cb92ede8b",
+    "crates/vize_atelier_sfc/src/compile/public.rs": "2558bd4a1bfbe199d90b485459dcaf0a6e1887da",
+    "crates/vize_atelier_sfc/src/compile/script_context.rs": "8f38f6395aeae0941035e84ad436c04a34fbb8cf",
+    "crates/vize/src/type_projects.rs": "96073dbb55954781d825974cb3beff77b3fb9085",
+    "crates/vize_vitrine/src/napi/sfc/types.rs": "f993a06071e5512ccb460067e1a92f3f2f7f6655",
+    "crates/vize_vitrine/src/napi/sfc/types/conversions.rs": "5c313a0057306e74f031e7232f33472e86799e7a"
+  }
+}

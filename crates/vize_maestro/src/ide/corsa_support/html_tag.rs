@@ -22,13 +22,16 @@ pub(crate) fn html_tag_virtual_document(tag_name: &str) -> Option<HtmlTagVirtual
     let info = native_dom_tag_info(tag_name)?;
 
     let type_expression = info.type_expression.as_str();
+    // A module: every SFC's probe stays open in one program, so its
+    // declarations must not be global.
     let content = cstr!(
         "/// <reference lib=\"es2022\" />\n\
          /// <reference lib=\"dom\" />\n\
          /// <reference lib=\"dom.iterable\" />\n\
          type $DomElement = {type_expression};\n\
          declare const __vizeDomElement: $DomElement;\n\
-         __vizeDomElement;\n"
+         __vizeDomElement;\n\
+         export {{}};\n"
     );
     let definition_symbol = dom_definition_symbol(tag_name)?;
     let definition_offset = content.find(definition_symbol)?;

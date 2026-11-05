@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 import { transformSync } from "@babel/core";
 import babelJsx from "@vue/babel-plugin-jsx";
 import {
@@ -253,6 +254,20 @@ function assertInventory(corpus) {
       divergent,
       `${spec.id}: divergent rows pin reference identity`,
     );
+    // Phases where Babel and vue-jsx-vapor disagree with each other; each
+    // backend still matches its own reference there.
+    const conflicts = verdicts.cases[spec.id].referenceConflicts;
+    if (conflicts !== undefined) {
+      assert.ok(spec.babelCorpusId, `${spec.id}: reference conflicts need both references`);
+      assert.ok(conflicts.length > 0, `${spec.id}: empty reference conflict list`);
+      conflicts.forEach((phase, index) => {
+        assert.ok(Number.isInteger(phase) && phase >= 0 && phase <= spec.steps.length, spec.id);
+        assert.ok(index === 0 || conflicts[index - 1] < phase, `${spec.id}: ordered conflicts`);
+      });
+    }
+    for (const key of ["expectedVdomText", "expectedVdomElementIdentities"]) {
+      assert.ok(!(key in spec) || conflicts, `${spec.id}: ${key} needs reference conflicts`);
+    }
   }
   const documented = [
     ...inventory.matchAll(/^\| `([^`]+)`\s+\| (?:equivalent|divergent|deferred)\s+\|/gmu),
@@ -262,11 +277,16 @@ function assertInventory(corpus) {
   assert.deepEqual(documented, ids);
 }
 
-function assertBehavior(spec, phases, expectedElementIdentities = spec.expectedElementIdentities) {
+function assertBehavior(
+  spec,
+  phases,
+  expectedElementIdentities = spec.expectedElementIdentities,
+  expectedText = spec.expectedText,
+) {
   assert.equal(phases.length, spec.steps.length + 1, `${spec.id}: initial render plus updates`);
   assert.deepEqual(
     phases.map(({ text }) => text),
-    spec.expectedText,
+    expectedText,
     `${spec.id}: visible update trace`,
   );
   assert.deepEqual(
@@ -394,8 +414,34 @@ if (process.argv.includes("--reference")) {
         "vdom",
       ));
       assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
-      assert.deepEqual(vdom, actual, `${spec.id}: VDOM/Vapor`);
-      assertBehavior(spec, vdom);
+      // Source maps route VDOM through the Relief codegen; both must agree.
+      assert.deepEqual(Object.keys(compiled.vdomSourceMapped), ["code", "functionName"]);
+      row.vdomSourceMapped = await trace(
+        compiled.vdomSourceMapped.code,
+        compiled.vdomSourceMapped.functionName,
+        spec,
+        "vdom",
+      );
+      assert.deepEqual(row.vdomSourceMapped, vdom, `${spec.id}: source-mapped VDOM`);
+      const conflicts = verdicts.cases[spec.id].referenceConflicts ?? [];
+      assert.deepEqual(
+        vdom.flatMap((phase, index) => (isDeepStrictEqual(phase, actual[index]) ? [] : [index])),
+        conflicts,
+        `${spec.id}: VDOM/Vapor outside recorded reference conflicts`,
+      );
+      for (const phase of conflicts) {
+        assert.notDeepEqual(
+          babel[phase],
+          reference[phase],
+          `${spec.id}: reference conflict ${phase}`,
+        );
+      }
+      assertBehavior(
+        spec,
+        vdom,
+        spec.expectedVdomElementIdentities ?? spec.expectedElementIdentities,
+        spec.expectedVdomText ?? spec.expectedText,
+      );
       receipt.babelEquivalent += 1;
     }
   }

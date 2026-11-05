@@ -9,12 +9,11 @@ use vize_atelier_dom::{
 };
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
-use vize_l0::profiler::{CounterSummary, global_profiler};
+use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn legacy_dialect_stays_on_compatibility_after_flag_deletion() {
     let _env_lock = lock_env();
-    let _profiler_lock = lock_profiler();
     let (result, counters) = compile_with_l2_profiler(
         r#"<button @click.native="go">{{ label | cap }}</button>"#,
         DomCompilerOptions {
@@ -34,7 +33,6 @@ fn legacy_dialect_stays_on_compatibility_after_flag_deletion() {
 fn removed_dom_lane_flag_does_not_disarm_vue3_l2_selection() {
     let _env_lock = lock_env();
     let _flag = ScopedEnvVar::set(removed_dom_lane_flag_name(), "legacy");
-    let _profiler_lock = lock_profiler();
     let (result, counters) = compile_with_l2_profiler(
         r#"<button @click="go">{{ label }}</button>"#,
         DomCompilerOptions::default(),
@@ -79,7 +77,10 @@ fn compile_with_l2_profiler(
     source: &str,
     options: DomCompilerOptions,
 ) -> (Compiled, CounterSummary) {
-    let profiler = ScopedProfiler::enable();
+    let profiler = Profiler::new();
+    profiler.clear();
+    profiler.set_enabled(true);
+    let _scope = ProfilerScope::install(&profiler);
     let result = compile(source, options);
     let counters = profiler.counter_summary();
     (result, counters)
@@ -108,13 +109,6 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
-}
-
-fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
-    static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    PROFILER_TEST_LOCK
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 fn lock_env() -> std::sync::MutexGuard<'static, ()> {
@@ -149,28 +143,5 @@ impl Drop for ScopedEnvVar {
                 None => std::env::remove_var(self.key),
             }
         }
-    }
-}
-
-struct ScopedProfiler;
-
-impl ScopedProfiler {
-    fn enable() -> Self {
-        let profiler = global_profiler();
-        profiler.clear();
-        profiler.enable();
-        Self
-    }
-
-    fn counter_summary(&self) -> CounterSummary {
-        global_profiler().counter_summary()
-    }
-}
-
-impl Drop for ScopedProfiler {
-    fn drop(&mut self) {
-        let profiler = global_profiler();
-        profiler.disable();
-        profiler.clear();
     }
 }

@@ -4,30 +4,15 @@ title: "ecosystem/vue-router-unknown-route"
 
 # `ecosystem/vue-router-unknown-route`
 
-The name is absent from the complete installed router.
+Reports a navigation name that the installed router does not declare.
 
-Default severity: error  
-Applies to: Reachable project declarations and imported components  
-Options: crossFile; rule severity (off/warn/error)  
-Automatic fix: None
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| error | None | crossFile; rule severity (off/warn/error) |
+
+Applies to: Reachable project declarations and imported components
 
 The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-unknown-route": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
 
 ## Shared project files
 
@@ -71,7 +56,7 @@ export const router = createRouter({
 
 ## Bad
 
-The reachable installed router declares `user-post`, but navigation uses the misspelled `user-posts` name.
+The name is absent from the complete installed router. The reachable installed router declares `user-post`, but navigation uses the misspelled `user-posts` name.
 
 `src/UserPost.vue`
 
@@ -99,6 +84,24 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "ecosystem/vue-router-unknown-route": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Cross-file index](../cross-file.md)

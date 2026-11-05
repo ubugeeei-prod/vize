@@ -157,40 +157,55 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 | Runner                                   | Measured                 | Runs | Warmups |
 | ---------------------------------------- | ------------------------ | ---- | ------- |
-| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3    | 1       |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-11-03T16:43:39.549Z | 5    | 1       |
 
-[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/41670901891) · [3d9c82f75c2a](https://github.com/ubugeeei-prod/vize/commit/3d9c82f75c2a2f9693e8f9e055a13ea3c76e8802) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-| Surface     | Files | Existing tool      | Existing | Vize    | Speedup    |
-| ----------- | ----- | ------------------ | -------- | ------- | ---------- |
-| SFC compile | 3,000 | @vue/compiler-sfc  | 3.57s    | 65.0ms  | **54.8×**  |
-| Lint        | 3,000 | eslint-plugin-vue  | 20.75s   | 114.0ms | **182.0×** |
-| Format      | 3,000 | Prettier           | 29.72s   | 351.4ms | **84.6×**  |
-| Type check  | 500   | vue-tsc            | 6.75s    | 1.37s   | **4.9×**   |
-| Vite build  | 1,000 | @vitejs/plugin-vue | 1.66s    | 889.2ms | **1.9×**   |
-| Nuxt build  | 250   | Nuxt compiler      | 3.07s    | 3.21s   | **0.95×**  |
+| Surface     | Files  | Existing tool      | Existing | Vize    | Speedup    |
+| ----------- | ------ | ------------------ | -------- | ------- | ---------- |
+| SFC compile | 15,000 | @vue/compiler-sfc  | 16.50s   | 297.9ms | **55.4×**  |
+| Lint        | 15,000 | eslint-plugin-vue  | 99.32s   | 499.8ms | **198.7×** |
+| Format      | 15,000 | Prettier           | 141.76s  | 844.7ms | **167.8×** |
+| Type check  | 500    | vue-tsc            | 6.50s    | 573.5ms | **11.3×**  |
+| Vite build  | 1,000  | @vitejs/plugin-vue | 1.48s    | 448.9ms | **3.3×**   |
+| Nuxt build  | 500    | Nuxt compiler      | 3.66s    | 3.32s   | **1.1×**   |
+
+Type-check rows on the 500-SFC corpus: each tool at its fastest measured setting (the full checker-count matrix is in the snapshot). Each row reports every planted diagnostic before it is timed. Warm is the median of the measured runs, Cold is the row's first timed run, CPU is user+sys time of the whole process tree (mapper processes included), and Peak RSS is the largest single process.
+
+| Checker            | Setting       | Engine                          | Cold    | Warm    | CPU     | Peak RSS | vs vue-tsc |
+| ------------------ | ------------- | ------------------------------- | ------- | ------- | ------- | -------- | ---------- |
+| vue-tsc            | default       | JS TypeScript engine (tsc)      | 6.49s   | 6.50s   | 10.21s  | 1,254 MB | 1.0×       |
+| verter-tsc         | default       | native TypeScript engine (tsgo) | 2.15s   | 2.13s   | 1.47s   | 254 MB   | 3.1×       |
+| vize check         | --checkers 4  | native TypeScript engine (tsgo) | 514.8ms | 516.8ms | 7.50s   | 412 MB   | 12.6×      |
+| tsc + Vize mapper  | --checkers 16 | native TypeScript engine (tsgo) | 262.6ms | 258.5ms | 2.12s   | 279 MB   | 25.2×      |
+| tsc + Vue mapper   | --checkers 16 | native TypeScript engine (tsgo) | 2.80s   | 2.79s   | 7.78s   | 547 MB   | 2.3×       |
+| tsrs + Vize mapper | --fast        | native TypeScript port (tsrs)   | 217.0ms | 217.6ms | 790.0ms | 196 MB   | 29.9×      |
+| tsrs + Vue mapper  | --fast        | native TypeScript port (tsrs)   | 2.65s   | 2.70s   | 4.88s   | 532 MB   | 2.4×       |
 
 Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
-Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 0.95x; a ratio below 1 means Vize was slower in this run.
+Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 1.1x; a ratio below 1 means Vize was slower in this run.
 
 See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.
 
 <details class="benchmark-provenance">
 <summary>Tool versions and binary checksums</summary>
 
-| Tool                 | Version                              | Binary SHA-256                                                                |
-| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
-| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
-| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
-| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
-| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
-| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
-| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
-| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
-| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
-| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
-| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+| Tool                     | Version                                                                                       | Binary SHA-256                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Vize                     | <code>vize 0.474.0-dev</code>                                                                 | <code>a3d8a0125ea04664754c8accb2c05b3e6e2e2d739147b7a722590688bf8dd6dd</code> |
+| tsgo                     | <code>Version 7.0.2</code>                                                                    | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc                  | <code>Version 6.0.3</code>                                                                    | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc               | <code>verter-tsc 0.0.1-beta.3</code>                                                          | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                    | <code>Golar version 0.1.10</code>                                                             | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (mapper host) | <code>Version 7.1.0-beta</code>                                                               | <code>2219f428a7e55aaf1f7ad85b9b0f0cf5078aeb76ccc9a7c6036c92d48f492ffd</code> |
+| tsrs                     | <code>Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)</code> | <code>9d7f26b2c80d4e45576f6e783675c5f624b055a15f94cb4089b9e9cc529722f3</code> |
+| @vue/content-mapper      | <code>4.0.0-alpha.3</code>                                                                    | n/a                                                                           |
+| TypeScript (vue-tsc)     | n/a                                                                                           | n/a                                                                           |
+| Vue                      | <code>3.6.0-beta.10</code>                                                                    | n/a                                                                           |
+| ESLint                   | <code>v10.4.1</code>                                                                          | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
 Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
 

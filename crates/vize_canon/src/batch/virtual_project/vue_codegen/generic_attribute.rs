@@ -1,122 +1,69 @@
-//! Map `<script setup generic="...">` through its generated copies.
+//! Echoes of `<script setup generic="...">` in generated code.
 //!
-//! One parser-owned parameter plan supplies the exact rendered spellings and
-//! relative mapping rows. The setup signature owns authored diagnostics; the
-//! other generated copies are echoes of that same authored list.
+//! The generator maps the setup signature onto the attribute: that copy is
+//! the authored list's one owner, for diagnostics and navigation alike. Every
+//! other unmapped copy of one of the plan's rendered spellings is an echo.
 
 use std::ops::Range;
 
+use crate::virtual_ts::VizeMapping;
 use crate::virtual_ts::generic_parameters::GenericParameters;
-use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};
 
-/// Generated copies of one authored parameter list. Preparation happens before
-/// mapping the reporting copy, so both mapping and suppression share ownership.
+/// Generated echoes of one authored parameter list.
 pub(in crate::batch::virtual_project) struct GenericCopies {
     pub(in crate::batch::virtual_project) attribute: Range<usize>,
-    copies: Vec<GenericCopy>,
+    echoes: Vec<Range<usize>>,
 }
-
-struct GenericCopy {
-    range: Range<usize>,
-    rows: Option<Vec<Row>>,
-    reporting: bool,
-}
-
-type Row = (Range<usize>, Range<usize>);
 
 impl GenericCopies {
     pub(in crate::batch::virtual_project) fn find(
         code: &str,
         mappings: &[VizeMapping],
         parameters: &GenericParameters,
-        attribute: Range<usize>,
     ) -> Option<Self> {
+        let attribute = parameters.attribute()?;
         let mut covered: Vec<_> = mappings.iter().map(|row| row.gen_range.clone()).collect();
         covered.sort_by_key(|range| range.start);
-        let mut copies = Vec::new();
         // Match complete, already-rendered lists. Quoted commas, nested types,
         // arrows and comments remain opaque here; OXC prepared their ranges.
-        for (rendered, rows) in parameters.declaration_variants() {
-            for list in exact_lists(code, rendered) {
-                if overlaps_mapped(&covered, list.clone()) {
-                    continue;
-                }
-                let start = list.start + 1;
-                copies.push(GenericCopy {
-                    range: instantiation(code, list.start)..list.end,
-                    rows: Some(
-                        rows.iter()
-                            .map(|(generated, authored)| {
-                                (
-                                    start + generated.start..start + generated.end,
-                                    attribute.start + authored.start
-                                        ..attribute.start + authored.end,
-                                )
-                            })
-                            .collect(),
-                    ),
-                    reporting: false,
-                });
-            }
-        }
+        let declarations = parameters.declaration_variants().into_iter();
         // Only a repeated authored constraint can carry an echoed diagnostic.
         // Bare names or unconstrained `unknown`/`any` arguments can occur in
         // unrelated generated helpers and do not establish that ownership.
-        if parameters.has_repeated_fallback_constraint() {
-            for list in exact_lists(code, &parameters.fallback) {
-                if overlaps_mapped(&covered, list.clone()) {
-                    continue;
-                }
-                copies.push(GenericCopy {
-                    range: instantiation(code, list.start)..list.end,
-                    rows: None,
-                    reporting: false,
-                });
-            }
-        }
-        // Prefer declaration rows when spellings coincide. Outer lists own any
-        // matching list nested inside their constraints/defaults, preventing an
-        // inner `Foo<T>` from suppressing the reporting signature around it.
+        let fallback = parameters
+            .has_repeated_fallback_constraint()
+            .then_some(parameters.fallback.as_str());
+        let mut copies: Vec<_> = declarations
+            .chain(fallback)
+            .flat_map(|rendered| exact_lists(code, rendered))
+            .filter(|list| !overlaps_mapped(&covered, list.clone()))
+            .map(|list| instantiation(code, list.start)..list.end)
+            .collect();
+        // Outer lists own any matching list nested inside their
+        // constraints/defaults.
         copies.sort_by(|left, right| {
-            left.range
-                .start
-                .cmp(&right.range.start)
-                .then_with(|| right.range.end.cmp(&left.range.end))
-                .then_with(|| right.rows.is_some().cmp(&left.rows.is_some()))
+            left.start
+                .cmp(&right.start)
+                .then_with(|| right.end.cmp(&left.end))
         });
-        let mut retained: Vec<GenericCopy> = Vec::new();
-        for mut copy in copies {
-            if retained
-                .last()
-                .is_some_and(|last| copy.range.start < last.range.end)
-            {
-                continue;
+        let mut echoes: Vec<Range<usize>> = Vec::new();
+        for copy in copies {
+            if echoes.last().is_none_or(|last| last.end <= copy.start) {
+                echoes.push(copy);
             }
-            copy.reporting = copy.rows.is_some() && is_setup_copy(code, &copy.range);
-            retained.push(copy);
         }
-        (!retained.is_empty()).then_some(Self {
-            attribute,
-            copies: retained,
-        })
+        (!echoes.is_empty()).then_some(Self { attribute, echoes })
     }
 
     /// Generated ranges whose diagnostics repeat the setup signature's.
     pub(in crate::batch::virtual_project) fn echoes(&self) -> impl Iterator<Item = &Range<usize>> {
-        self.copies
-            .iter()
-            .filter(|copy| !copy.reporting)
-            .map(|copy| &copy.range)
+        self.echoes.iter()
     }
 
     pub(in crate::batch::virtual_project) fn shift_generated(&mut self, offset: usize) {
-        for copy in &mut self.copies {
-            copy.range.start += offset;
-            copy.range.end += offset;
-            for (generated, _) in copy.rows.iter_mut().flatten() {
-                generated.start += offset;
-                generated.end += offset;
-            }
+        for echo in &mut self.echoes {
+            echo.start += offset;
+            echo.end += offset;
         }
     }
 
@@ -131,11 +78,8 @@ impl GenericCopies {
             return;
         };
         let old_end = start + old_len;
-        for copy in &mut self.copies {
-            shift_generated_range(&mut copy.range, start, old_end, extra);
-            for (generated, _) in copy.rows.iter_mut().flatten() {
-                shift_generated_range(generated, start, old_end, extra);
-            }
+        for echo in &mut self.echoes {
+            shift_generated_range(echo, start, old_end, extra);
         }
     }
 }
@@ -174,47 +118,6 @@ fn instantiation(code: &str, open: usize) -> usize {
     name.strip_suffix("typeof ").unwrap_or(name).len()
 }
 
-fn is_setup_copy(code: &str, copy: &Range<usize>) -> bool {
-    code.get(..copy.start)
-        .is_some_and(|before| before.ends_with("function "))
-        && code
-            .get(copy.start..)
-            .is_some_and(|after| after.starts_with("__setup<"))
-}
-
-/// Map the setup signature copy back to the attribute, diagnostics only.
-pub(super) fn map_generic_attribute(
-    code: &str,
-    mappings: &mut Vec<VizeMapping>,
-    meta: &mut Vec<ProjectionMeta>,
-    copies: Option<&GenericCopies>,
-) {
-    let Some(rows) = copies.and_then(|copies| {
-        copies.copies.iter().find_map(|copy| {
-            (copy.reporting && is_setup_copy(code, &copy.range))
-                .then_some(copy.rows.as_ref())
-                .flatten()
-        })
-    }) else {
-        return;
-    };
-    meta.resize(mappings.len(), ProjectionMeta::default());
-    for (gen_range, src_range) in rows {
-        mappings.push(VizeMapping {
-            gen_range: gen_range.clone(),
-            src_range: src_range.clone(),
-            sub_spans: Vec::new(),
-        });
-        meta.push(ProjectionMeta {
-            features: ProjectionFeatures::DIAGNOSTICS,
-            ..ProjectionMeta::default()
-        });
-    }
-}
-
-#[cfg(test)]
-pub(crate) use crate::virtual_ts::generic_parameters::attribute_value;
-
 #[cfg(test)]
 mod tests {
     use std::path::Path;
@@ -222,10 +125,12 @@ mod tests {
     use crate::batch::generate_vue_content_mapper_transform;
     use crate::virtual_ts::generic_parameters::GenericParameters;
 
-    use super::{GenericCopies, map_generic_attribute};
+    use super::GenericCopies;
+    use crate::virtual_ts::VizeMapping;
 
     /// One generated copy of `authored` maps onto the attribute and every other
     /// copy is an ignored echo, so each authored error reports once (#9753).
+    /// That copy navigates like setup code (#11503).
     fn assert_one_reporting_copy(generic: &str, authored: &str) {
         let source = vize_l0::cstr!(
             "<script setup lang=\"ts\" generic=\"{generic}\">\nconst props = defineProps<{{ value: T }}>()\n</script>\n<template>\n{{{{ props.value }}}}\n</template>\n"
@@ -239,6 +144,14 @@ mod tests {
             .flat_map(|directives| &directives.directives)
             .map(|directive| directive.0[2]..directive.0[3])
             .collect();
+        let setup = source.find("value: T").expect("setup body");
+        let setup_features = result
+            .mappings
+            .iter()
+            .find(|span| span.0[2] <= setup && setup < span.0[2] + span.0[3])
+            .map(|span| span.0[5])
+            .expect("mapped setup body");
+        assert_ne!(setup_features, 0);
         let mut reporting = 0;
         for copy in result.text.match_indices(authored).map(|(at, _)| at) {
             let span = result
@@ -246,8 +159,11 @@ mod tests {
                 .iter()
                 .map(|span| span.0)
                 .find(|span| span[0] <= copy && copy + authored.len() <= span[0] + span[1]);
-            if let Some([start, _, original_start, _, kind, _]) = span {
-                assert_eq!((kind, original_start + copy - start), (0, original));
+            if let Some([start, _, original_start, _, kind, features]) = span {
+                assert_eq!(
+                    (kind, original_start + copy - start, features),
+                    (0, original, setup_features)
+                );
                 assert!(
                     echoes
                         .iter()
@@ -311,9 +227,20 @@ mod tests {
         }
     }
 
+    /// `raw` anchored at SFC offset `origin`, with the rows the generator
+    /// writes for `function __setup<raw>`.
+    fn anchored(raw: &str, origin: usize, code: &str) -> (GenericParameters, Vec<VizeMapping>) {
+        let mut parameters = GenericParameters::parse(raw);
+        parameters.origin = Some(origin);
+        let list = code.find("function __setup<").expect("setup signature") + 17;
+        let rows = parameters.authored_rows(list).collect();
+        (parameters, rows)
+    }
+
     #[test]
     fn prepared_copies_keep_nested_names_inside_their_outer_owner() {
-        let parameters = GenericParameters::parse("T extends Box<T>, U extends External = 'a,b'");
+        let raw = "T extends Box<T>, U extends External = 'a,b'";
+        let parameters = GenericParameters::parse(raw);
         assert!(parameters.diagnostics.is_empty());
         let code = vize_l0::cstr!(
             "function __setup<{}>() {{}}\ntype Props<{}> = {{}};\ntype Named = Props<{}>;\ntype Fallback = Props<{}>;\n",
@@ -322,9 +249,19 @@ mod tests {
             parameters.names,
             parameters.fallback,
         );
-        let attribute = 100..100 + parameters.raw().len();
-        let copies = GenericCopies::find(&code, &[], &parameters, attribute.clone())
-            .expect("prepared copies");
+        let (parameters, mappings) = anchored(raw, 100, &code);
+        let attribute = parameters.attribute().expect("anchored");
+        assert_eq!(mappings.len(), 3);
+        for mapping in &mappings {
+            let authored =
+                mapping.src_range.start - attribute.start..mapping.src_range.end - attribute.start;
+            assert_eq!(
+                code.get(mapping.gen_range.clone()),
+                parameters.raw().get(authored),
+            );
+        }
+        let copies = GenericCopies::find(&code, &mappings, &parameters).expect("prepared copies");
+        assert_eq!(copies.attribute, attribute);
         let echoes: Vec<_> = copies.echoes().cloned().collect();
         assert_eq!(echoes.len(), 2, "{code}");
         let named = code.find("type Named = ").expect("named argument control");
@@ -334,22 +271,14 @@ mod tests {
                 .iter()
                 .all(|echo| echo.end <= named || fallback <= echo.start)
         );
-        let mut mappings = Vec::new();
-        let mut meta = Vec::new();
-        map_generic_attribute(&code, &mut mappings, &mut meta, Some(&copies));
-        assert_eq!(mappings.len(), 3);
-        assert_eq!(meta.len(), mappings.len());
-        for mapping in &mappings {
-            let authored =
-                mapping.src_range.start - attribute.start..mapping.src_range.end - attribute.start;
-            assert_eq!(
-                code.get(mapping.gen_range.clone()),
-                parameters.raw().get(authored),
-            );
-            assert!(echoes.iter().all(|echo| {
-                mapping.gen_range.end <= echo.start || echo.end <= mapping.gen_range.start
-            }));
-        }
+        assert!(echoes.iter().all(|echo| {
+            mappings
+                .iter()
+                .all(|row| row.gen_range.end <= echo.start || echo.end <= row.gen_range.start)
+        }));
+        // Without the generator's rows the setup signature is just another copy.
+        let unmapped = GenericCopies::find(&code, &[], &parameters).expect("unmapped copies");
+        assert_eq!(unmapped.echoes().count(), 3);
         let mut shifted = copies;
         shifted.shift_generated(17);
         assert_eq!(
@@ -363,35 +292,41 @@ mod tests {
 
     #[test]
     fn invalid_parameters_retain_the_authored_reporting_range() {
-        let parameters = GenericParameters::parse("T extends");
+        let raw = "T extends";
+        let code = vize_l0::cstr!("function __setup<{raw}>() {{}}");
+        let (parameters, mappings) = anchored(raw, 40, &code);
         assert!(!parameters.diagnostics.is_empty());
-        let code = vize_l0::cstr!("function __setup<{}>() {{}}", parameters.raw());
-        let attribute = 40..40 + parameters.raw().len();
-        let copies = GenericCopies::find(&code, &[], &parameters, attribute.clone())
-            .expect("invalid authored signature");
-        let mut mappings = Vec::new();
-        let mut meta = Vec::new();
-        map_generic_attribute(&code, &mut mappings, &mut meta, Some(&copies));
-        assert_eq!(mappings.len(), 1);
         assert_eq!(
-            mappings.first().map(|mapping| &mapping.src_range),
-            Some(&attribute)
+            mappings
+                .iter()
+                .map(|mapping| &mapping.src_range)
+                .collect::<Vec<_>>(),
+            vec![&(40..40 + raw.len())]
         );
-        assert!(copies.echoes().next().is_none());
+        assert!(GenericCopies::find(&code, &mappings, &parameters).is_none());
+    }
+
+    #[test]
+    fn unanchored_plans_have_no_rows_or_copies() {
+        let parameters = GenericParameters::parse("T extends string");
+        let code = vize_l0::cstr!("function __setup<{}>() {{}}", parameters.raw());
+        assert_eq!(parameters.authored_rows(17).count(), 0);
+        assert!(GenericCopies::find(&code, &[], &parameters).is_none());
     }
 
     #[test]
     fn unrelated_bare_names_and_unconstrained_fallbacks_are_not_echoes() {
         for generic in ["T extends 'a,b'", "T = 'a,b'"] {
-            let parameters = GenericParameters::parse(generic);
-            assert!(parameters.diagnostics.is_empty());
             let code = vize_l0::cstr!(
-                "function __setup<{}>() {{}}\ntype UnrelatedName = Other<T>;\ntype UnrelatedFallback = Other<unknown>;\n",
-                parameters.raw(),
+                "function __setup<{generic}>() {{}}\ntype UnrelatedName = Other<T>;\ntype UnrelatedFallback = Other<unknown>;\n",
             );
-            let copies = GenericCopies::find(&code, &[], &parameters, 0..generic.len())
-                .expect("reporting signature");
-            assert!(copies.echoes().next().is_none(), "{code}");
+            let (parameters, mappings) = anchored(generic, 0, &code);
+            assert!(parameters.diagnostics.is_empty());
+            assert!(!mappings.is_empty());
+            assert!(
+                GenericCopies::find(&code, &mappings, &parameters).is_none(),
+                "{code}"
+            );
         }
     }
 }

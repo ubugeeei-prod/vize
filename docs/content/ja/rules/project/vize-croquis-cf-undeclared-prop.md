@@ -6,10 +6,11 @@ title: "vize:croquis/cf/undeclared-prop"
 
 親が、子が宣言していない prop を渡しています。
 
-既定の重大度: warning  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| warning | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
+
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
@@ -32,7 +33,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 親が `typo` を渡しますが、解決した子の宣言は `title` だけです。この解析器の規約は、Vue の属性自動継承の一般的な動作とは別です。
 
@@ -54,7 +55,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-## 良い
+## 良い例
 
 意図しない `typo` のバインドを取り除き、宣言済みの `title` を残します。
 
@@ -76,7 +77,11 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+この診断コードは現在 CLI では出力されないため、有効化する CLI のルール設定はありません。
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

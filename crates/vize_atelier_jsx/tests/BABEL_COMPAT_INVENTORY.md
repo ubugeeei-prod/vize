@@ -164,7 +164,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | `props/dashed_attrs`             | `data-foo` / `aria-label` kept verbatim     | same                                    | no change            | ✅      |
 | `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrites it (#3391)  | ✅      |
 | `props/xlink_colon`              | `"xlink:href"`                              | same                                    | no change            | ✅      |
-| `props/class_dynamic`            | `{class: c}` (runtime normalizes)           | `normalizeClass(c)` + `CLASS`           | no change            | ✅      |
+| `props/class_dynamic`            | `{class: c}` (runtime normalizes)           | `normalizeProps({class: c})` + `CLASS`  | no change            | ✅      |
 | `props/class_static_and_dynamic` | `{class: ["a", c]}`                         | `normalizeClass(["a", c])`              | no change            | ✅      |
 | `props/style_dynamic`            | `{style: s}`                                | `normalizeStyle(s)` + `STYLE`           | no change            | ✅      |
 | `props/style_merge_with_spread`  | `mergeProps` in source order                | same                                    | no change            | ✅      |

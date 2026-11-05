@@ -57,12 +57,37 @@ const onClose = () => undefined
         "each usage should resolve its props once for all of its listeners: {}",
         output.code
     );
+    // One component contract derives the child's props, emit props and
+    // library shape once; each event then reads them for its own key.
+    for alias in [
+        "__library = typeof MyChild ",
+        "__props = typeof MyChild ",
+        "__emit_props = typeof MyChild ",
+    ] {
+        assert_eq!(
+            output.code.matches(alias).count(),
+            1,
+            "{alias} should be declared once for both events: {}",
+            output.code
+        );
+    }
     assert_eq!(
-        output.code.matches("_prop_args_library =").count(),
-        2,
-        "select and close should each resolve their stable listener contract once: {}",
+        output
+            .code
+            .matches("typeof MyChild extends { new (")
+            .count(),
+        1,
+        "the constructor props are inferred once per component contract: {}",
         output.code
     );
+    for event in ["select", "close"] {
+        assert_eq!(
+            output.code.matches(&*cstr!("_{event}_prop_args =")).count(),
+            1,
+            "{event} should resolve its stable listener contract once: {}",
+            output.code
+        );
+    }
 }
 
 #[test]
@@ -177,4 +202,250 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
             }
         }
     }
+}
+
+#[test]
+fn repeated_prop_value_type_is_emitted_once() {
+    let script = "import MyChild from './MyChild.vue'\nconst first = 'first'\nconst second = 'second'\nconst extra = 1\n";
+    let template = "<div><MyChild :label=\"first\" /><MyChild :label=\"second\" /><MyChild :label=\"() => extra\" /></div>";
+    let name_ranges = label_name_ranges(template);
+    let value_ranges = ["first", "second", "() => extra"]
+        .into_iter()
+        .map(|value| {
+            let start = template.find(value).expect("authored prop value");
+            start..start + value.len()
+        })
+        .collect::<Vec<_>>();
+    let mut anchors = Vec::new();
+    for hoist in [false, true] {
+        let output = generated(script, template, hoist);
+        let prop_value = if hoist {
+            "import(\"vize:virtual-ts\").$PropValue"
+        } else {
+            "$PropValue"
+        };
+        let shared_type = cstr!(
+            "{prop_value}<__MyChild_ValueProps_0, 'label', __MyChild_FallthroughValue_0<'label'>>"
+        );
+        assert_eq!(
+            output.code.matches(shared_type.as_str()).count(),
+            1,
+            "one component emits the prop value type once; hoist={hoist}: {}",
+            output.code
+        );
+        assert!(
+            output
+                .code
+                .contains("type __MyChild_1_prop_label = __MyChild_0_prop_label;"),
+            "the second static use aliases the shared prop type; hoist={hoist}: {}",
+            output.code
+        );
+        let callable = if hoist {
+            "import(\"vize:virtual-ts\").$CallableProp<"
+        } else {
+            "$CallableProp<"
+        };
+        assert!(
+            output
+                .code
+                .contains(cstr!("type __MyChild_2_prop_label = {callable}").as_str()),
+            "an inline callback keeps its own wrapper; hoist={hoist}: {}",
+            output.code
+        );
+        assert!(
+            !output
+                .code
+                .contains("type __MyChild_2_prop_label = __MyChild_0_prop_label;"),
+            "a callback must not reuse the static prop type; hoist={hoist}: {}",
+            output.code
+        );
+        let mut found = Vec::new();
+        for (idx, (name_range, value_range)) in name_ranges.iter().zip(&value_ranges).enumerate() {
+            let name_span = output
+                .mapping
+                .spans()
+                .iter()
+                .flat_map(|mapping| &mapping.sub_spans)
+                .find(|span| span.src_range == *name_range)
+                .expect("prop diagnostic anchors at the attribute name");
+            assert_eq!(
+                &output.code[name_span.gen_range.clone()],
+                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                "TS2322 stays on the per-usage check; hoist={hoist}"
+            );
+            assert!(
+                output
+                    .mapping
+                    .spans()
+                    .iter()
+                    .flat_map(|mapping| &mapping.sub_spans)
+                    .any(|span| span.src_range == *value_range),
+                "the value diagnostic keeps its authored anchor; hoist={hoist}: {value_range:?}"
+            );
+            let prop_mapping = output
+                .mapping
+                .spans()
+                .iter()
+                .find(|mapping| {
+                    mapping
+                        .sub_spans
+                        .iter()
+                        .any(|span| span.src_range == *name_range)
+                })
+                .expect("prop mapping");
+            found.push((
+                prop_mapping.src_range.clone(),
+                name_range.clone(),
+                value_range.clone(),
+            ));
+        }
+        if anchors.is_empty() {
+            anchors = found;
+        } else {
+            assert_eq!(anchors, found, "hoisting must not move diagnostic anchors");
+        }
+    }
+}
+
+#[test]
+fn repeated_emit_resolver_is_emitted_once() {
+    let script = "import KeyPad from './KeyPad.vue'\nconst kind = 'k0'\nconst a0 = 'a0'\nconst b0 = 'b0'\nconst a1 = 'a1'\nconst b1 = 'b1'\nconst onPress = (key: string) => key\n";
+    let template = "<div><template v-if=\"kind === 'k0'\"><KeyPad :label=\"a0\" @press=\"onPress\" /><KeyPad :label=\"b0\" @press=\"onPress\" /></template><template v-else-if=\"kind === 'k1'\"><KeyPad :label=\"a1\" @press=\"onPress\" /><KeyPad :label=\"b1\" @press=\"onPress\" /></template></div>";
+    let values = ["a0", "b0", "a1", "b1"];
+    let mut name_ranges = Vec::new();
+    let mut from = 0;
+    while let Some(at) = template[from..].find(":label") {
+        let start = from + at + 1;
+        name_ranges.push(start..start + "label".len());
+        from = start + "label".len();
+    }
+    assert_eq!(name_ranges.len(), 4, "four label anchors");
+    let value_ranges = values
+        .into_iter()
+        .map(|value| {
+            let start = template.find(value).expect("authored prop value");
+            start..start + value.len()
+        })
+        .collect::<Vec<_>>();
+    let mut anchors = Vec::new();
+    for hoist in [false, true] {
+        let output = generated(script, template, hoist);
+        let factory = if hoist {
+            "import(\"vize:virtual-ts\").$EmitPropsFactory<typeof KeyPad>"
+        } else {
+            "$EmitPropsFactory<typeof KeyPad>"
+        };
+        assert_eq!(
+            output.code.matches(factory).count(),
+            1,
+            "one component emits the emit-resolver instance alias once; hoist={hoist}: {}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches("type __KeyPad_emit_resolver = ")
+                .count(),
+            1,
+            "the shared resolver is declared once; hoist={hoist}: {}",
+            output.code
+        );
+        for idx in 0..4 {
+            let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_emit_resolver;");
+            assert!(
+                output.code.contains(alias.as_str()),
+                "use {idx} aliases the first resolver; hoist={hoist}: {}",
+                output.code
+            );
+        }
+        assert_eq!(
+            output.code.matches("const __vize_emit_props_").count(),
+            4,
+            "each use still resolves its own emit props; hoist={hoist}: {}",
+            output.code
+        );
+        let mut found = Vec::new();
+        for (idx, (name_range, value_range)) in name_ranges.iter().zip(&value_ranges).enumerate() {
+            let name_span = output
+                .mapping
+                .spans()
+                .iter()
+                .flat_map(|mapping| &mapping.sub_spans)
+                .find(|span| span.src_range == *name_range)
+                .expect("prop diagnostic anchors at the attribute name");
+            assert_eq!(
+                &output.code[name_span.gen_range.clone()],
+                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                "TS2322 stays on the per-usage check; hoist={hoist}"
+            );
+            assert!(
+                output
+                    .mapping
+                    .spans()
+                    .iter()
+                    .flat_map(|mapping| &mapping.sub_spans)
+                    .any(|span| span.src_range == *value_range),
+                "the value diagnostic keeps its authored anchor; hoist={hoist}: {value_range:?}"
+            );
+            let prop_mapping = output
+                .mapping
+                .spans()
+                .iter()
+                .find(|mapping| {
+                    mapping
+                        .sub_spans
+                        .iter()
+                        .any(|span| span.src_range == *name_range)
+                })
+                .expect("prop mapping");
+            found.push((
+                prop_mapping.src_range.clone(),
+                name_range.clone(),
+                value_range.clone(),
+            ));
+        }
+        if anchors.is_empty() {
+            anchors = found;
+        } else {
+            assert_eq!(anchors, found, "hoisting must not move diagnostic anchors");
+        }
+    }
+}
+
+fn label_name_ranges(template: &str) -> Vec<std::ops::Range<usize>> {
+    let mut ranges = Vec::new();
+    let mut from = 0;
+    while let Some(at) = template[from..].find(":label") {
+        let start = from + at + 1;
+        ranges.push(start..start + "label".len());
+        from = start + "label".len();
+    }
+    assert_eq!(ranges.len(), 3, "three label anchors");
+    ranges
+}
+
+fn generated(
+    script: &str,
+    template: &str,
+    hoist: bool,
+) -> crate::virtual_ts::types::VirtualTsOutput {
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions {
+            hoist_shared_preamble: hoist,
+            ..Default::default()
+        },
+    )
 }

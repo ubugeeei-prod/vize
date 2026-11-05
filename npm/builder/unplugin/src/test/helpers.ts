@@ -27,6 +27,8 @@ export function normalizeSnapshot(value: string): string {
   for (const root of snapshotRoots) {
     normalized = normalized.replaceAll(root, "<WORKSPACE>");
     normalized = normalized.replaceAll(encodeURIComponent(root), "<WORKSPACE>");
+    // webpack names an import binding after its absolute request.
+    normalized = normalized.replaceAll(root.replace(/[^a-zA-Z0-9$]+/g, "_"), "_WORKSPACE_");
   }
   return normalized;
 }

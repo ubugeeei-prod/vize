@@ -6,26 +6,11 @@ title: "vize:croquis/cf/uncaught-error"
 
 A component can throw and no error boundary catches it.
 
-Default severity: info  
-Applies to: Analyzed component graph and the supported facts described below  
-Automatic fix: None; review related files and apply the repair  
-Options: No per-code options; supported CLI findings accept severity overrides
+| Default severity | Automatic fix | Options |
+| --- | --- | --- |
+| info | None; review related files and apply the repair | No per-code options; supported CLI findings accept severity overrides |
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/uncaught-error": "warn" },
-    },
-  },
-});
-```
-
-```sh
-vp run lint
-```
+Applies to: Analyzed component graph and the supported facts described below
 
 The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.
 
@@ -94,7 +79,25 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
+      rules: { "croquis/cf/uncaught-error": "warn" },
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Related
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

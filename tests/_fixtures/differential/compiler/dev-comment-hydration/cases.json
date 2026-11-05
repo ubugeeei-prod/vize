@@ -35,12 +35,12 @@
   "inlineSlots": [
     {
       "fixture": "inline-slot.vue.txt",
-      "ssrCodeSha256": "550381e455c765c93334d51d58559e05822799d6d80380920cc4f6c724cdb0a1",
+      "ssrCodeSha256": "15735679f17081c84c9936b3c116466920e240427cf7221aaaee438244bd7ca6",
       "html": "<div><section>a  b Session</section></div>"
     },
     {
       "fixture": "inline-slot-non-ascii.vue.txt",
-      "ssrCodeSha256": "1a92138754aa9e3850e3578f7de02581e7128116a89116ffe7e351d82bc1569b",
+      "ssrCodeSha256": "ba6418717ac24492cbc4bd3a6c1dd7c6742f1384de83a1e5e8f6a93aea4f539c",
       "html": "<div><section>a <!-- eslint-disable rule --> b Session</section></div>"
     }
   ],

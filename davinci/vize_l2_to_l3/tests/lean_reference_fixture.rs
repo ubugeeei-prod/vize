@@ -125,3 +125,12 @@ fn assert_rust_lowered_fixture(
         expected_vapor.trim_end_matches('\n')
     );
 }
+
+/// C-23: every committed L3 graph, Rust-lowered or hand-written, passes the
+/// independent checker, and its damage witnesses report the expected codes.
+#[test]
+fn committed_graphs_pass_the_independent_checker() {
+    use davinci_test_support::l3_reference::{checker_corpus::check_folios, fixtures};
+    let checked = check_folios(&fixtures()).unwrap();
+    assert!(checked >= 50, "{checked}");
+}

@@ -3,7 +3,7 @@
 use super::analysis::{
     DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
 };
-use super::{SfcCroquisAnalysis, SfcCroquisOptions};
+use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_croquis::binding_occurrences::BindingOccurrences;
@@ -16,21 +16,24 @@ pub fn analyze_sfc_descriptor_with_occurrences(
     root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_and_template_reuse(descriptor, root, options, None)
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    analyze_sfc_descriptor_with_occurrences_and_template_reuse(&scripts, root, options, None)
 }
 
 /// Preserve the same occurrence relation while reusing demanded original
 /// grammar owners. The reuse packet cannot seed or replace editor witnesses.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
-    descriptor: &SfcDescriptor<'_>,
+    scripts: &SfcScriptParses<'_>,
     root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
+    let descriptor = scripts.descriptor();
     let mut packet = None;
     let mut analysis = analyze_sfc_descriptor_resolved_impl::<true>(
-        descriptor,
+        scripts,
         root,
         options,
         DescriptorAnalysisMode {

@@ -10,6 +10,7 @@ impl RuleRegistry {
     pub fn with_happy_path() -> Self {
         let mut registry = Self::with_capacity(Self::HAPPY_PATH_CAPACITY);
         // Vue correctness rules.
+        registry.register(Box::new(crate::rules::vue::CommentDirective));
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
         registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));
@@ -30,6 +31,7 @@ impl RuleRegistry {
         ));
         registry.register(Box::new(crate::rules::vue::ComponentDefinitionNameCasing));
         registry.register(Box::new(crate::rules::vue::HtmlQuotes::default()));
+        registry.register(Box::new(crate::rules::vue::HtmlEndTags));
         registry.register(Box::new(
             crate::rules::vue::MustacheInterpolationSpacing::default(),
         ));

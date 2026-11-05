@@ -49,7 +49,7 @@ impl Default for TimingObserver {
 
 impl TimingObserver {
     /// The default davinci key walks record under. A host that times walks
-    /// with its own clock (Spolvero in the browser) records under the same
+    /// with its own clock (the stage view in the browser) records under the same
     /// key, so a profile reader has one spelling for "a walk".
     pub const WALK_KEY: &'static str = "davinci.pass.walk";
 

@@ -10,6 +10,11 @@ import {
 import { lexicalView } from "../../tools/support/levels/move-host-runtime.ts";
 import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/davinci/lib/consumer-migration-render.ts";
 
+import {
+  hostPathLayoutForOriginalLaw,
+  originalHostPathLayout,
+} from "./support/host-path-project-loader.ts";
+
 const TSV_HEADERS = [
   "consumer_id",
   "consumer",
@@ -400,6 +405,12 @@ function assertContentMapperHostPath(
       `${site.relPath}:${site.line} must be the existing filesystem normalization function`,
     );
   }
+  ({ foundation, host, lowerPathExists } = hostPathLayoutForOriginalLaw({
+    foundation,
+    host,
+    lowerPathExists,
+    ...(lowerPathExists ? { lower: read("davinci/vize_l0/src/path.rs") } : {}),
+  }));
   assert.match(lexicalView(host), /\bpub\s+fn\s+canonicalize_non_verbatim\s*\(/u);
   assert.doesNotMatch(lexicalView(foundation), /\bpub\s+mod\s+path\s*;/u);
   assert.equal(lowerPathExists, false, "filesystem path implementation remains in the host layer");
@@ -447,8 +458,8 @@ void test("content mapper records the exact host path role without admitting leg
     assertContentMapperHostPath(
       mapper,
       readSurfaceSource,
-      foundation,
-      readSurfaceSource("crates/vize_carton/src/path.rs"),
+      originalHostPathLayout.foundation,
+      originalHostPathLayout.host,
       true,
     ),
   );

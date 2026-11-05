@@ -19,8 +19,9 @@ pub(super) fn emit_module_preamble(
             options.external_component_attrs_module,
             Some(ComponentHelperModule::Types)
         ) {
-            // Pulls `declare global` helpers into the host program once.
-            ts.push_str("import type {} from \"vize/virtual-ts\";\n");
+            // Pulls the checker globals and helpers into the host program once.
+            // Declaration emit drops this import, so consumers see only helpers.
+            ts.push_str("import type {} from \"vize/virtual-ts-checker\";\n");
         } else {
             // Program helpers and global augmentation are shared once per project.
             ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
@@ -78,7 +79,11 @@ fn emit_embedded_helpers(
         .iter()
         .any(|scope| scope.kind == ScopeKind::VMatch)
     {
-        ts.push_str(include_str!("../helpers/pattern_matching.d.ts"));
+        crate::virtual_ts::helpers::hygiene::emit_helper_text(
+            ts,
+            summary,
+            include_str!("../helpers/pattern_matching.d.ts"),
+        );
         ts.push('\n');
     }
 }

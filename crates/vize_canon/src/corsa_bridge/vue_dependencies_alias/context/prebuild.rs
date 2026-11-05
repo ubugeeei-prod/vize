@@ -27,7 +27,7 @@ impl AliasContext {
             environment.project_root,
             environment.tsconfig_path,
         );
-        fingerprint.include_requested_sources(requested_sources);
+        fingerprint.include_requested_sources(source_path, requested_sources);
         fingerprint
     }
 
@@ -106,7 +106,16 @@ impl AliasContext {
             "alias_prebuild",
             requested_sources.len(),
         );
-        let context = {
+        let revised = Self::revise_cached(
+            source_path,
+            content,
+            overlays,
+            &mut fingerprint,
+            environment,
+        )?;
+        let context = if let Some(context) = revised {
+            context
+        } else {
             // Keep syntax facts only until the immediately following stamp.
             // Stored prebuilt revisions never retain the source/facts cache.
             let mut facts = ModuleSpecifierFactsCache::default();

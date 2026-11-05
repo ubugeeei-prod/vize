@@ -20,6 +20,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         false,
         true,
         false,
+        false,
     )
     .into_result()
 }
@@ -45,6 +46,7 @@ pub fn generate_with_merge_props(
         false,
         true,
         false,
+        false,
     )
     .into_result()
 }
@@ -65,6 +67,7 @@ pub fn generate_with_vnode_factory(
         CodegenExperimentalOptions::default(),
         false,
         true,
+        false,
         false,
     )
     .into_result()
@@ -93,11 +96,13 @@ pub fn generate_with_vnode_factory_and_merge_props(
         false,
         true,
         false,
+        false,
     )
     .into_result()
 }
 
-/// JSX-owned child values use Vue's complete child patching on every render.
+/// JSX roots: owned child values use complete child patching, and `class`
+/// keeps the `createVNode` contract.
 #[doc(hidden)]
 pub fn generate_with_vnode_factory_and_child_values(
     root: &RootNode<'_>,
@@ -117,6 +122,7 @@ pub fn generate_with_vnode_factory_and_child_values(
         false,
         true,
         untracked_children,
+        true,
     )
     .into_result()
 }
@@ -135,6 +141,7 @@ pub fn generate_with_sections(
         CodegenExperimentalOptions::default(),
         false,
         true,
+        false,
         false,
     )
 }
@@ -156,6 +163,7 @@ pub fn generate_with_experimental_options(
         false,
         true,
         false,
+        false,
     )
     .into_result()
 }
@@ -176,6 +184,7 @@ pub fn generate_with_sections_and_experimental_options(
         experimental_options,
         false,
         true,
+        false,
         false,
     )
 }
@@ -215,6 +224,7 @@ pub fn generate_with_sections_and_experimental_options_slot_scope_and_environmen
         experimental_options,
         no_slotted,
         development,
+        false,
         false,
     )
 }

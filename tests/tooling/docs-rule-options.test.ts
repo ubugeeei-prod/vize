@@ -122,32 +122,35 @@ test("rules overview links to lint rule option references", () => {
   assert.match(jaIndex, /\[ルールのオプション\]\(\.\/options\.md\)/);
 });
 
-test("all rules reference shows which rules accept lint rule options", () => {
-  const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
-
-  assert.match(
-    allRules,
-    /\| Rule \| Examples \| Severity \| Presets \| Fixable \| Options \| Implementation \| Description \| Category \|/,
+test("every configurable rule's page links to its typed options", () => {
+  const reference = (locale: string, rule: string) =>
+    fs.readFileSync(
+      path.join(repoRoot, `docs/content/${locale}rules/reference/${rule.replaceAll("/", "-")}.md`),
+      "utf8",
+    );
+  const facts = (page: string) =>
+    page.split("\n").find((line) => /^\| `(?:error|warning)` \|/.test(line))!;
+  const table = tableRules(
+    fs.readFileSync(path.join(repoRoot, "docs/content/rules/options.md"), "utf8"),
   );
-  assert.match(allRules, /rule-option support/);
-
-  for (const ruleId of configurableRuleOptions) {
-    const row = allRules
-      .split("\n")
-      .find((line) => line.startsWith(`| [\`${ruleId}\`](https://vizejs.dev/rules/all.html#`));
-    assert.ok(row, `${ruleId} must appear in all rules`);
+  for (const ruleId of [...configurableRuleOptions, ...table]) {
     assert.match(
-      row,
-      /\[`ruleOptions`\]\(\.\/options\.md\)/,
-      `${ruleId} must link to lint rule option docs`,
+      facts(reference("", ruleId)),
+      /\| \[Rule options\]\(\.\.\/options\.md\) \|$/,
+      ruleId,
+    );
+    assert.match(
+      facts(reference("ja/", ruleId)),
+      /\| \[ルールのオプション\]\(\.\.\/options\.md\) \|$/,
+      ruleId,
+    );
+    assert.match(
+      facts(reference("fr/", ruleId)),
+      /\| \[Options des règles\]\(\/rules\/options\.md\) \|$/,
+      ruleId,
     );
   }
-
-  const a11yRow = allRules
-    .split("\n")
-    .find((line) => line.startsWith("| [`a11y/img-alt`](https://vizejs.dev/rules/all.html#"));
-  assert.ok(a11yRow, "a sample non-configurable rule must appear in all rules");
-  assert.match(a11yRow, /\| No \| \[source\]/);
+  assert.match(facts(reference("", "a11y/img-alt")), /\| None \|$/, "a rule without options");
 });
 
 function escapeRegExp(value: string): string {
@@ -212,12 +215,17 @@ test("strict boolean rows render within the complete option and type-aware table
       /`\{ modifiers\?: string\[\] \}`/,
     );
   }
-  const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
-  const typeRows = allRules.split("\n").filter((line) => line.startsWith("| [`type/"));
-  assert.equal(typeRows.length, 6);
-  assert.ok(typeRows.every((row) => row.endsWith("| Type Aware |")));
+  const reference = path.join(repoRoot, "docs/content/rules/reference");
+  const typeRules = fs
+    .readdirSync(reference)
+    .filter((file) => file.startsWith("type-"))
+    .map((file) => fs.readFileSync(path.join(reference, file), "utf8"));
+  for (const page of typeRules) {
+    assert.match(page, /"typeAware": true/, "type-aware configuration");
+    assert.match(page, /reads type information from your TypeScript project/);
+  }
   assert.deepEqual(
-    tableRules(allRules).filter((name) => name.startsWith("type/")),
+    typeRules.map((page) => page.match(/^# `([^`]+)`/m)![1]),
     [
       "type/no-floating-promises",
       "type/no-reactivity-loss",

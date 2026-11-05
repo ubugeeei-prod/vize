@@ -33,18 +33,17 @@ pub(in crate::virtual_ts) fn emit_type_helpers(
     imported: bool,
 ) {
     if !authored_binding(summary, "$LiteralKeys") {
-        output.push_str(helpers);
+        emit_helper_text(output, summary, helpers);
         return;
     }
 
     let alias = literal_keys_alias(summary);
-    if imported {
-        output.push_str(
-            &helpers.replace("  $LiteralKeys,\n", &cstr!("  $LiteralKeys as {alias},\n")),
-        );
+    let rewritten = if imported {
+        helpers.replace("  $LiteralKeys,\n", &cstr!("  $LiteralKeys as {alias},\n"))
     } else {
-        output.push_str(&helpers.replace("$LiteralKeys", &alias));
-    }
+        helpers.replace("$LiteralKeys", &alias)
+    };
+    emit_helper_text(output, summary, &rewritten);
 }
 
 /// `PropertyKey` is an authored lexical name too; keyword types cannot capture it.
@@ -54,13 +53,46 @@ pub(in crate::virtual_ts) fn emit_inference_helpers(
     helpers: &str,
 ) {
     if authored_binding(summary, "PropertyKey") {
-        output.push_str(&helpers.replace(
+        let rewritten = helpers.replace(
             "O extends PropertyKey",
             "O extends string | number | symbol",
-        ));
+        );
+        emit_helper_text(output, summary, &rewritten);
     } else {
-        output.push_str(helpers);
+        emit_helper_text(output, summary, helpers);
     }
+}
+
+/// Inline helpers share the SFC module. An authored `Pick` therefore captures
+/// unqualified lib instantiations (`TS2314` when that alias has one parameter).
+/// Lib `Pick` is `{ [P in K]: T[P] }` with `K extends keyof T`, so a fresh
+/// homomorphic alias keeps modifiers, unions, and constructor props. Shared
+/// helper modules are separate scopes and keep the builtin name.
+pub(in crate::virtual_ts) fn emit_helper_text(
+    output: &mut String,
+    summary: &Croquis,
+    helpers: &str,
+) {
+    if !authored_binding(summary, "Pick") || !helpers.contains("Pick<") {
+        output.push_str(helpers);
+        return;
+    }
+    let alias = owned_pick_alias(summary);
+    let declaration = cstr!("type {alias}<T, K extends keyof T> = {{ [P in K]: T[P] }};\n");
+    if !output.contains(declaration.as_str()) {
+        output.push_str(&declaration);
+    }
+    output.push_str(&helpers.replace("Pick<", &cstr!("{alias}<")));
+}
+
+fn owned_pick_alias(summary: &Croquis) -> String {
+    let mut alias = String::from("__vizePick");
+    let mut suffix = 0;
+    while authored_binding(summary, &alias) {
+        suffix += 1;
+        alias = cstr!("__vizePick_{suffix}");
+    }
+    alias
 }
 
 #[cfg(test)]

@@ -55,6 +55,9 @@ pub struct VaporCompilerOptions {
     pub binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
     /// Whether to inline
     pub inline: bool,
+    /// Authored expressions may contain TypeScript. Render code is always
+    /// JavaScript: the generator type-erases each expression it parses.
+    pub is_ts: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.

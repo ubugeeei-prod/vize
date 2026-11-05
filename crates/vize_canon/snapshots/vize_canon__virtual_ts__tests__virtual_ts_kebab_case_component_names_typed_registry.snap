@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -28,7 +27,7 @@ declare global {
 type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __EmitFn<T, __S = __EmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __EmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
-type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V ? V : T extends (...args: any[]) => infer V ? V : never;
+type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;
 type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, any> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
 type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropHasBoolean<T> = T extends BooleanConstructor ? true : T extends readonly (infer U)[] ? __RuntimePropHasBoolean<U> : T extends { type: infer U } ? __RuntimePropHasBoolean<U> : false;
@@ -64,7 +63,7 @@ type $MissingRequiredInputKeys<T, Authored, K extends $RequiredKeys<T> & string 
 type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
 type $IsSinglePropKey<T> = [T] extends [never] ? false : $IsPropKeyUnion<T> extends true ? false : true;
 type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [$MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>; } };
 type $ComponentInputGuard<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? {} : T extends unknown ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
@@ -136,7 +135,7 @@ function __setup() {
     void value
   }
   
-  // @vize-map: 15621:15708 -> 0:76
+  // @vize-map: 15740:15827 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -156,29 +155,21 @@ function __setup() {
   // @vize-map: expr -> 19:24
 
   // @update:model-value handler
-  type __my_widget_7_update_model_value_prop_args_library = typeof my_widget extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof my_widget extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
-  type __my_widget_7_update_model_value_prop_args = __my_widget_7_update_model_value_prop_args_library extends true ? unknown[] : typeof my_widget extends { new (...args: any[]): { $props: infer __P } }
-    ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : __P extends { "onUpdate:modelValue"?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[]
-    : typeof my_widget extends (props: infer __P, ...args: any[]) => any
-      ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : __P extends { "onUpdate:modelValue"?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[]
-      : unknown[];
-  type __my_widget_0_emit_resolver = __my_widget_7_update_model_value_prop_args_library extends true ? (component: typeof my_widget) => typeof my_widget : $EmitPropsFactory<typeof my_widget>;
+  type __my_widget_7__library = typeof my_widget extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof my_widget extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+  type __my_widget_7__props = typeof my_widget extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof my_widget extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
+  type __my_widget_7__emit_props = typeof my_widget extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+  type __my_widget_7_update_model_value_prop_args = __my_widget_7__library extends true ? unknown[] : __my_widget_7__props extends infer __B ? __B extends [infer __P] ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : __P extends { "onUpdate:modelValue"?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+  type __my_widget_0_emit_resolver = __my_widget_7__library extends true ? (component: typeof my_widget) => typeof my_widget : $EmitPropsFactory<typeof my_widget>;
   const __vize_emit_props_0 = (undefined as unknown as __my_widget_0_emit_resolver)(my_widget)({
     // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
     "label": value,
   });
-  type __my_widget_7_update_model_value_inferred_emit_args = (__my_widget_7_update_model_value_prop_args_library extends true ? typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {} : typeof __vize_emit_props_0) extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[];
-  type __my_widget_7_update_model_value_static_emit_args = typeof my_widget extends { __vizeEmitProps?: infer __EP }
-    ? __EP extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
-    : unknown[];
+  type __my_widget_7_update_model_value_inferred_emit_args = __my_widget_7__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_0 extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[];
+  type __my_widget_7_update_model_value_static_emit_args = __my_widget_7__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __my_widget_7_update_model_value_emit_args = unknown[] extends __my_widget_7_update_model_value_inferred_emit_args ? __my_widget_7_update_model_value_static_emit_args : __my_widget_7_update_model_value_inferred_emit_args;
   type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_inferred_emit_args ? (unknown[] extends __my_widget_7_update_model_value_prop_args ? (unknown[] extends __my_widget_7_update_model_value_emit_args ? unknown[] : __my_widget_7_update_model_value_emit_args) : __my_widget_7_update_model_value_prop_args) : __my_widget_7_update_model_value_inferred_emit_args;
   type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-  type __my_widget_7_update_model_value_return = unknown[] extends __my_widget_7_update_model_value_prop_args ? any : typeof my_widget extends { new (...args: any[]): { $props: infer __P } }
-    ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any)
-    : typeof my_widget extends (props: infer __P, ...args: any[]) => any
-      ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any)
-      : any;
+  type __my_widget_7_update_model_value_return = unknown[] extends __my_widget_7_update_model_value_prop_args ? any : __my_widget_7__props extends infer __B ? __B extends [infer __P] ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any) : any : never;
   type __my_widget_7_update_model_value_listener = unknown[] extends __my_widget_7_update_model_value_args ? ((...args: any[]) => any) : ((...args: __my_widget_7_update_model_value_args) => __my_widget_7_update_model_value_return);
   void ((...__vize_args: Parameters<__my_widget_7_update_model_value_listener>) => {
     const __vize_event = (__vize_args as unknown[])[0] as __my_widget_7_update_model_value_event; void __vize_event;
@@ -267,15 +258,18 @@ type $Slots = {};
 export type { $Slots as Slots };
 
 type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type $EmitRequiredFields<T> = T extends unknown ? Pick<T, $EmitRequiredKeys<T>> : never;
+type $EmitRequiredFields<T> = T extends unknown ? {} extends T ? Pick<T, never> : Pick<T, $EmitRequiredKeys<T>> : never;
 type $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
 type $EmitFallthrough<F> = $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
 type $EmitOwnedKeys<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
 type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $EmitRequiredFields<P> & $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
 type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
-type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
-type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
+type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
+type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
+type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;
+type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;
 type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<$OverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
@@ -294,7 +288,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

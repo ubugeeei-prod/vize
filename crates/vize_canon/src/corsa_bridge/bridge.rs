@@ -21,7 +21,8 @@ mod documents;
 mod implementation;
 mod initial_diagnostics;
 pub use initial_diagnostics::{
-    InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+    InitialApiDiagnostics, InitialApiDiagnosticsOutcome, InitialApiDiagnosticsProvenanceOutcome,
+    PendingInitialApiDiagnostics,
 };
 mod inlay_hint;
 mod language_features;

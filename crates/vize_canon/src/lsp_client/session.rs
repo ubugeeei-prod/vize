@@ -3,7 +3,6 @@
 use super::{
     CorsaProjectClient,
     session_paths::{build_materialized_session_document_uri, build_session_document_uri},
-    utils::remap_serialized_uris,
     virtual_overlay,
 };
 use crate::file_uri::file_uri_to_path;
@@ -16,7 +15,6 @@ use corsa::{
     fast::CompactString,
     runtime::block_on,
 };
-use lsp_types::Diagnostic;
 use serde_json::Value;
 use vize_l0::{String, cstr};
 
@@ -186,8 +184,7 @@ impl CorsaProjectClient {
         // A closed disk-backed member still belongs to the materialized
         // project. Preserve its external identity for navigation results.
         if !restored {
-            self.session_document_uris.remove(uri);
-            self.external_document_uris.remove(document_uri.as_str());
+            self.forget_session_document_uri(uri);
         }
         if self.document_texts.remove(uri).is_some() {
             self.editor_lsp_documents_dirty = true;
@@ -254,7 +251,7 @@ impl CorsaProjectClient {
         self.remember_session_document_uri(uri, mapped)
     }
 
-    fn materialized_session_document_uri(&mut self, uri: &str) -> Option<String> {
+    pub(super) fn materialized_session_document_uri(&mut self, uri: &str) -> Option<String> {
         let mapped = build_materialized_session_document_uri(
             uri,
             &self.project_root,
@@ -264,37 +261,70 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn remember_session_document_uri(&mut self, uri: &str, mapped: String) -> String {
+        let identity = crate::file_uri::file_uri_identity(&mapped);
         if let Some(previous) = self
             .session_document_uris
             .insert(uri.into(), mapped.clone())
+            && crate::file_uri::file_uri_identity(&previous) != identity
         {
-            self.external_document_uris.remove(previous.as_str());
+            self.release_external_document_owner(uri, &previous);
         }
-        self.external_document_uris
-            .insert(mapped.clone(), uri.into());
+        self.external_document_uris.insert(identity, uri.into());
         mapped
     }
 
-    pub(super) fn remap_diagnostics(&self, diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
-        remap_serialized_uris(diagnostics.clone(), &self.external_document_uris)
-            .unwrap_or(diagnostics)
+    pub(super) fn forget_session_document_uri(&mut self, uri: &str) -> Option<String> {
+        let native = self.session_document_uris.remove(uri)?;
+        self.release_external_document_owner(uri, &native);
+        Some(native)
+    }
+
+    pub(super) fn release_external_document_owner(&mut self, uri: &str, native: &str) {
+        let identity = crate::file_uri::file_uri_identity(native);
+        if self
+            .external_document_uris
+            .get(identity.as_str())
+            .map(String::as_str)
+            != Some(uri)
+        {
+            return;
+        }
+        let remaining = self
+            .session_document_uris
+            .iter()
+            .filter(|(_, mapped)| crate::file_uri::file_uri_identity(mapped) == identity)
+            .map(|(external, _)| external)
+            .min()
+            .cloned();
+        if let Some(remaining) = remaining {
+            self.external_document_uris.insert(identity, remaining);
+        } else {
+            self.external_document_uris.remove(identity.as_str());
+        }
+    }
+
+    pub(super) fn remap_phased_diagnostics(
+        &self,
+        diagnostics: Vec<super::PhasedDiagnostic>,
+    ) -> Vec<super::PhasedDiagnostic> {
+        super::diagnostic_phase::remap_diagnostics(diagnostics, &self.external_document_uris)
     }
 
     pub(super) fn remap_result_uris(&self, value: &mut Value) {
         super::utils::remap_json_uris(value, &self.external_document_uris);
     }
 
+    pub(super) fn remap_query_uris(&self, value: &mut Value, request: &str) {
+        super::utils::remap_query_uris(
+            value,
+            &self.external_document_uris,
+            request,
+            self.overlay_storage.authored_root(),
+        );
+    }
+
     pub(super) fn remap_reference_result_uris(&self, value: &mut Value) {
-        // The native editor can return the same owned materialized identities
-        // as the API. Only Location.uri is protocol identity here; retain all
-        // coordinates, unknown entries and opaque payloads without rewriting.
-        for location in value.as_array_mut().into_iter().flatten() {
-            if let Some(Value::String(uri)) = location.get_mut("uri")
-                && let Some(mapped) = self.external_document_uris.get(uri.as_str())
-            {
-                *uri = mapped.as_str().into();
-            }
-        }
+        self.remap_result_uris(value);
     }
 }
 

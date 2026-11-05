@@ -3,7 +3,7 @@
 // whichever commit populated the cache: the playground's `src/wasm` directory
 // holds both the wasm-bindgen outputs and tracked TS sources, and a
 // whole-directory cache once restored a pre-#6290 `wasm-transform.ts` onto the
-// #6290 merge, dropping the Spolvero feed on main.
+// #6290 merge, dropping the stage feed on main.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";

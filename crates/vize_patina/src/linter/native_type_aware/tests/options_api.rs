@@ -1,3 +1,4 @@
+use super::assertion::assert_absent_note;
 use super::{RULE_NO_UNSAFE_TEMPLATE_BINDING, corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 
@@ -27,12 +28,9 @@ export default defineComponent({
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "AppDialog.vue");
 
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
-        "Options API props should stay typed in template: {:?}",
-        result.diagnostics
+    assert_absent_note(
+        &result,
+        RULE_NO_UNSAFE_TEMPLATE_BINDING,
+        "Options API props should stay typed in template",
     );
 }

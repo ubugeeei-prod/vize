@@ -2,7 +2,7 @@
 //!
 //! Both are serializations of one [`RemarkLog`] - the canonical-order list a
 //! [`RemarkCollector`](crate::pass::RemarkCollector) finishes into - so the
-//! text a snapshot or a corpus baseline pins and the JSON Spolvero and agents
+//! text a snapshot or a corpus baseline pins and the JSON the stage view and agents
 //! read cannot disagree. The grammar and the per-pass vocabulary are
 //! `docs/davinci/plan/remarks-format.md`; the JSON shape is committed as
 //! `docs/davinci/plan/remarks.schema.json`.
@@ -123,7 +123,7 @@ fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
     out.push('}');
 }
 
-/// A remark's JSON members without the braces, so the Spolvero feed can
+/// A remark's JSON members without the braces, so the stage feed can
 /// prefix its `path` and stay the same shape as the remark document.
 #[doc(hidden)]
 pub fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {

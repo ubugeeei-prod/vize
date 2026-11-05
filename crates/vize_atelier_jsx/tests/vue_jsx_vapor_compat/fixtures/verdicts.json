@@ -38,6 +38,30 @@
       "verdict": "equivalent",
       "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity component visibility updates"
     },
+    "props/dynamic-class-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize backends match their own JSX reference for falsy, array and nested-VNode class updates; Babel keeps falsy values as createVNode passes them while Vapor normalizes every value",
+      "referenceConflicts": [0, 1, 2, 5, 6, 7, 9]
+    },
+    "props/dynamic-style-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize backends match their own JSX reference for falsy, array and nested-VNode style updates; after an empty string, Vue VDOM leaves an empty style attribute that Vapor never writes",
+      "referenceConflicts": [1, 2, 3, 4, 5, 6, 7]
+    },
+    "components/class-value": {
+      "verdict": "equivalent",
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity class fallthrough to a resolved component root"
+    },
+    "directives/v-html-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize backends match their own JSX reference for falsy, array and nested-VNode raw HTML updates; after NaN, Vue VDOM keeps the stale markup for null and undefined while Vapor clears it",
+      "referenceConflicts": [3, 4]
+    },
+    "children/dynamic-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize backends match their own JSX reference for falsy, array and nested-VNode child updates; vue-jsx-vapor stringifies the nested VNode while Babel renders its DOM",
+      "referenceConflicts": [8]
+    },
     "events/click-closure": {
       "verdict": "equivalent",
       "basis": "two real click dispatches retain the button and produce identical closure side effects, DOM, diagnostics, and event receipts"

@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import type { VizePluginState } from "./state.ts";
 
@@ -32,7 +33,7 @@ function createState(root: string, options: StateOptions = {}): VizePluginState 
     root,
     clientViteBase: "/",
     serverViteBase: "/",
-    server: {} as never,
+    server: { watcher: { add() {} } } as never,
     filter: options.filter ?? ((id) => !id.includes("node_modules") && id.endsWith(".vue")),
     scanPatterns: [],
     precompileBatchSize: 128,
@@ -57,12 +58,12 @@ function createState(root: string, options: StateOptions = {}): VizePluginState 
   };
 }
 
-function captureWarnings(callback: () => void): string[] {
+async function captureWarnings(callback: () => Promise<void>): Promise<string[]> {
   const warnings: string[] = [];
   const originalWarn = console.warn;
   console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
   try {
-    callback();
+    await callback();
   } finally {
     console.warn = originalWarn;
   }
@@ -83,8 +84,8 @@ writeFixtureFile(nuxtRootSfc, "<template><div /></template>");
 
 const state = createState(projectRoot);
 
-const warnings = captureWarnings(() => {
-  const componentLoad = loadHook(state, nuxtRootSfc, { ssr: false });
+const warnings = await captureWarnings(async () => {
+  const componentLoad = await loadSfcModule(state, nuxtRootSfc, { ssr: false });
   assert.ok(
     componentLoad && typeof componentLoad === "object",
     "Plain dependency Vue SFC loads should compile before raw SFCs reach Vite define transforms",
@@ -117,8 +118,10 @@ const pnpmNuxtRootSfc = path.join(
 writeFixtureFile(pnpmNuxtRootSfc, "<template><span /></template>");
 
 const filteredDependencyState = createState(projectRoot, { handleNodeModulesVue: true });
-const filteredDependencyWarnings = captureWarnings(() => {
-  const componentLoad = loadHook(filteredDependencyState, pnpmNuxtRootSfc, { ssr: false });
+const filteredDependencyWarnings = await captureWarnings(async () => {
+  const componentLoad = await loadSfcModule(filteredDependencyState, pnpmNuxtRootSfc, {
+    ssr: false,
+  });
   assert.ok(
     componentLoad && typeof componentLoad === "object",
     "Filtered dependency Vue SFC loads should still compile for the Vite transform pipeline",
@@ -140,8 +143,10 @@ const includedDependencyState = createState(projectRoot, {
   filter: (id) => id.endsWith(".vue"),
   handleNodeModulesVue: true,
 });
-const includedDependencyWarnings = captureWarnings(() => {
-  const componentLoad = loadHook(includedDependencyState, pnpmNuxtRootSfc, { ssr: false });
+const includedDependencyWarnings = await captureWarnings(async () => {
+  const componentLoad = await loadSfcModule(includedDependencyState, pnpmNuxtRootSfc, {
+    ssr: false,
+  });
   assert.ok(
     componentLoad && typeof componentLoad === "object",
     "Included dependency Vue SFC loads should compile normally",

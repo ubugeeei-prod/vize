@@ -8,17 +8,15 @@ pub(super) fn prove(fixture: &mut Fixture) {
     let invalid = "<script setup lang=\"ts\">\nconst nativeGuard: number = 'wrong';\n</script>\n<template>{{ nativeGuard }}</template>\n";
     let repaired = "<script setup lang=\"ts\">\nconst nativeGuard: number = 1;\n</script>\n<template>{{ nativeGuard }}</template>\n";
     std::fs::write(fixture.project.path().join("src/NativeGuard.vue"), invalid).unwrap();
-    fixture.open_with_diagnostics(
-        "src/NativeGuard.vue",
-        invalid,
-        1,
-        json!([{
-            "range":{"start":{"line":1,"character":6},"end":{"line":1,"character":17}},
-            "severity":1,"code":2322,"source":"vize/types",
-            "message":"Type 'string' is not assignable to type 'number'."
-        }]),
-    );
-    fixture.change_with_native_completion("src/NativeGuard.vue", repaired, 2, json!([]));
+    let checked = json!([{
+        "range":{"start":{"line":1,"character":6},"end":{"line":1,"character":17}},
+        "severity":1,"code":2322,"source":"vize/types",
+        "message":"Type 'string' is not assignable to type 'number'."
+    }]);
+    fixture.open_with_diagnostics("src/NativeGuard.vue", invalid, 1, checked.clone());
+    // The repair does not touch the error's range, so the prompt keeps the
+    // latest native result until the native pass answers.
+    fixture.change_with_native_completion("src/NativeGuard.vue", repaired, 2, checked, json!([]));
 }
 
 impl Fixture {
@@ -78,12 +76,13 @@ impl Fixture {
         file: &str,
         text: &str,
         version: i64,
+        prompt: Value,
         diagnostics: Value,
     ) {
         let uri = self.uri(file);
         let prompt = json!({
             "jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
-            "params":{"uri":uri,"version":version,"diagnostics":[]}
+            "params":{"uri":uri,"version":version,"diagnostics":prompt}
         });
         let native = json!({
             "jsonrpc":"2.0","method":"textDocument/publishDiagnostics",

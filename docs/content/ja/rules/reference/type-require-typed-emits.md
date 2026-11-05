@@ -1,20 +1,39 @@
 ---
 title: "type/require-typed-emits"
+description: "defineEmits に型定義を指定します。"
 ---
 
 # `type/require-typed-emits`
 
 defineEmits に型定義を指定します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
+このルールは TypeScript プロジェクト（`tsconfig.json`）の型情報を使うため、設定で `typeAware: true` を指定しています。`typeAware` だけでは、個別に有効化するルールは有効になりません。
+
+## 悪い例
+
+配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、ペイロードの型が宣言されていません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineEmits(["save"]);
+</script>
+```
+
+## 良い例
+
+`defineEmits<{ save: [] }>()` で、ペイロードを空のタプル型として宣言します。これにより、`save` イベントがペイロードの引数を受け取らないことを明示します。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+defineEmits<{ save: [] }>();
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -34,30 +53,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、ペイロードの型が宣言されていません。
-
-```vue
-<script setup lang="ts">
-defineEmits(["save"]);
-</script>
-```
-
-## 良い
-
-`defineEmits<{ save: [] }>()` で、ペイロードを空のタプル型として宣言します。これにより、`save` イベントがペイロードの引数を受け取らないことを明示します。
-
-```vue
-<script setup lang="ts">
-defineEmits<{ save: [] }>();
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54)

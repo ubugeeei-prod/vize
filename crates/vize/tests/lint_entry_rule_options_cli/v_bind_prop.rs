@@ -50,7 +50,7 @@ fn expected(row: &Value) -> Value {
                 ),
                 _ => panic!("unknown independent finding"),
             };
-            json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":2,
+            json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/reference/vue-v-bind-style.md","severity":2,
             "message":format!("[vize:{RULE}] {message}"),"help":help,
             "line":finding["line"],"column":scalar_column(source,finding,"line","column"),
             "endLine":finding["endLine"],"endColumn":scalar_column(source,finding,"endLine","endColumn")})

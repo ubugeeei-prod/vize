@@ -1,18 +1,41 @@
 ---
 title: "css/no-important"
+description: "Discourage use of !important in CSS."
 ---
 
 # `css/no-important`
 
-Discourage use of !important in CSS
+Discourage use of !important in CSS.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `opinionated`, `nuxt` | No | None |
 
-Default severity: `warning`  
-Presets: `opinionated`, `nuxt`  
-Automatic fix: None; review the suggested change  
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+
+## Bad
+
+The color declaration overrides normal cascade priority with `!important`.
+
+```vue annotate="remove:3"
+<style scoped>
+.button {
+  color: red !important;
+}
+</style>
+```
+
+## Good
+
+The color comes from a custom property without an important declaration.
+
+```vue annotate="add:3"
+<style scoped>
+.button {
+  color: var(--button-color);
+}
+</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,34 +54,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The color declaration overrides normal cascade priority with `!important`.
-
-```vue
-<style scoped>
-.button {
-  color: red !important;
-}
-</style>
-```
-
-## Good
-
-The color comes from a custom property without an important declaration.
-
-```vue
-<style scoped>
-.button {
-  color: var(--button-color);
-}
-</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [All rules](../all.md)
+- [Musea and CSS rules](../musea-and-css.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14)

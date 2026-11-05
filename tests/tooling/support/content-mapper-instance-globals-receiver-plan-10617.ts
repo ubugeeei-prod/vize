@@ -1,3 +1,4 @@
+import { assertSourceAndPublishedAdmission } from "./helper-abi-source-admission-11809.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +16,6 @@ import {
   type ReceiverProgram,
 } from "./content-mapper-instance-globals-receiver-symbols-10617.ts";
 import {
-  assertProtocolAdmission,
   assertTransformEnvelope,
   decodeFrames,
   frame,
@@ -235,11 +235,7 @@ export function runReceiverPlanControls(
           { status: 0, signal: null, error: null, stderr: "" },
         );
       assert.equal(responses.length, 6);
-      assertProtocolAdmission(responses, path.join(source, "tsconfig.json"));
-      assertProtocolAdmission(
-        decodeFrames(publicPacket.stdout),
-        path.join(published, "tsconfig.json"),
-      );
+      assertSourceAndPublishedAdmission(responses, publicPacket.stdout, source, published);
     },
   });
   const facts: unknown[] = [];

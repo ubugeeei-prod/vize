@@ -1,16 +1,22 @@
 ---
 title: "Règles petite-vue"
+description: "Directives et portées dans les pages HTML qui utilisent petite-vue."
 ---
 
 # Règles petite-vue
 
-Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+Directives et portées dans les pages HTML qui utilisent petite-vue.
 
+Chaque page de règle montre un exemple qui échoue, un exemple qui passe et la configuration qui active la règle.
 
-| Règle | Exemples | Objectif |
+## À activer (3)
+
+Dans aucun préréglage. Activez-les par leur nom dans `vue.linter.rules`.
+
+| Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
-| [`petite-vue/no-unsupported-directive`](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-no-unsupported-directive) | [Mauvais](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-no-unsupported-directive-bad) · [Bon](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-no-unsupported-directive-good) | Interdire les directives non prises en charge par petite-vue |
-| [`petite-vue/valid-v-effect`](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-effect) | [Mauvais](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-effect-bad) · [Bon](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-effect-good) | Exiger une expression non vide pour v-effect |
-| [`petite-vue/valid-v-scope`](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-scope) | [Mauvais](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-scope-bad) · [Bon](https://vizejs.dev/fr/rules/petite-vue.html#petite-vue-valid-v-scope-good) | Exiger que v-scope reçoive un objet littéral |
+| <span id="petite-vue-no-unsupported-directive"></span>[`petite-vue/no-unsupported-directive`](./reference/petite-vue-no-unsupported-directive.md) | Interdire les directives non prises en charge par petite-vue. |  |
+| <span id="petite-vue-valid-v-effect"></span>[`petite-vue/valid-v-effect`](./reference/petite-vue-valid-v-effect.md) | Exiger une expression non vide pour v-effect. |  |
+| <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | Exiger que v-scope reçoive un objet littéral. |  |
 
-[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)
+[Vue d’ensemble des règles](../rules/index.md) · [Options des règles](/rules/options.md) · [Migrer depuis ESLint](/rules/migration.md)

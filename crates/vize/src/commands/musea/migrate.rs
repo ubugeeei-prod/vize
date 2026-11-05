@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::String as CartonString;
 use vize_l0::append;
 
-use crate::commands::fmt::collect_files;
+use super::files::{collect_files, is_default_ignored_story_path, is_story_file};
 use csf::extract_csf;
 use emit::emit_art;
 
@@ -86,32 +86,10 @@ pub fn run(args: MigrateArgs) {
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn collect_story_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
-    collect_files(patterns, None)
+    collect_files(patterns)
         .into_iter()
         .filter(|path| is_story_file(path) && !is_default_ignored_story_path(path))
         .collect()
-}
-
-fn is_story_file(path: &Path) -> bool {
-    let name = match path.file_name().and_then(|name| name.to_str()) {
-        Some(name) => name,
-        None => return false,
-    };
-    matches!(
-        name.rsplit_once('.'),
-        Some((stem, "tsx" | "ts" | "jsx" | "js")) if stem.ends_with(".stories")
-    )
-}
-
-fn is_default_ignored_story_path(path: &Path) -> bool {
-    path.components().any(|component| {
-        component.as_os_str().to_str().is_some_and(|name| {
-            matches!(
-                name,
-                "node_modules" | ".nuxt" | ".output" | "dist" | "storybook-static"
-            )
-        })
-    })
 }
 
 struct FileOutcome {

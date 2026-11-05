@@ -4,14 +4,22 @@
 //! runtime identifier collection, and top-level await detection.
 
 use oxc_allocator::Allocator;
+use oxc_ast::ast::{
+    Class, Function, IdentifierReference, PropertyDefinition, TSClassImplements, TSEnumDeclaration,
+    TSGlobalDeclaration, TSIndexSignature, TSInterfaceDeclaration, TSModuleDeclaration,
+    TSThisParameter, TSType, TSTypeAliasDeclaration, TSTypeAnnotation, TSTypeParameterDeclaration,
+    TSTypeParameterInstantiation, VariableDeclaration,
+};
 use oxc_ast_visit::Visit;
-use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
-use oxc_parser::Parser;
+use oxc_ast_visit::walk::{
+    walk_arrow_function_expression, walk_class, walk_for_of_statement, walk_function,
+    walk_property_definition, walk_ts_enum_declaration, walk_ts_module_declaration,
+    walk_variable_declaration,
+};
+use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{FxHashSet, String, ToCompactString};
-
-use crate::compile_script::typescript::transform_typescript_to_js;
 
 /// Check if an identifier is a JavaScript reserved word (avoid shorthand).
 pub(crate) fn is_reserved_word(name: &str) -> bool {
@@ -66,15 +74,27 @@ pub(crate) fn is_reserved_word(name: &str) -> bool {
     )
 }
 
-/// Collect runtime identifier references from setup code after stripping TypeScript syntax.
-pub(crate) fn collect_runtime_identifier_references(code: &str) -> FxHashSet<String> {
-    let runtime_code = transform_typescript_to_js(code);
+/// Parse a transformed setup body; TS parses a superset of either lang.
+pub(crate) fn parse_setup_body<'a>(allocator: &'a Allocator, code: &'a str) -> ParserReturn<'a> {
+    crate::script::parse_script_text(allocator, code, SourceType::ts())
+}
 
+/// [`collect_runtime_identifier_references`] for a setup body not parsed yet.
+pub(crate) fn runtime_identifier_references(code: &str) -> FxHashSet<String> {
     let allocator = Allocator::default();
-    let parser = Parser::new(&allocator, &runtime_code, SourceType::default());
-    let parse_result = parser.parse();
+    collect_runtime_identifier_references(&parse_setup_body(&allocator, code))
+}
 
-    if !parse_result.diagnostics.is_empty() {
+/// Identifiers the setup code references at runtime.
+///
+/// Reads the setup program as parsed, skipping TypeScript-only syntax: that is
+/// exactly what the emitted JavaScript drops, so no strip, reprint or re-parse
+/// is needed. A program that did not parse cleanly contributes nothing.
+pub(crate) fn collect_runtime_identifier_references(
+    parsed: &ParserReturn<'_>,
+) -> FxHashSet<String> {
+    // The emitted module keeps JSX; its JavaScript re-parse never accepted it.
+    if parsed.panicked || !parsed.diagnostics.is_empty() || parsed.program.source_type.is_jsx() {
         return FxHashSet::default();
     }
 
@@ -84,14 +104,54 @@ pub(crate) fn collect_runtime_identifier_references(code: &str) -> FxHashSet<Str
     }
 
     impl<'a> Visit<'a> for RuntimeIdentifierVisitor {
-        fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
+        fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
             self.identifiers
                 .insert(ident.name.as_str().to_compact_string());
+        }
+        fn visit_ts_type(&mut self, _: &TSType<'a>) {}
+        fn visit_ts_type_annotation(&mut self, _: &TSTypeAnnotation<'a>) {}
+        fn visit_ts_type_parameter_declaration(&mut self, _: &TSTypeParameterDeclaration<'a>) {}
+        fn visit_ts_type_parameter_instantiation(&mut self, _: &TSTypeParameterInstantiation<'a>) {}
+        fn visit_ts_this_parameter(&mut self, _: &TSThisParameter<'a>) {}
+        fn visit_ts_class_implements(&mut self, _: &TSClassImplements<'a>) {}
+        fn visit_ts_index_signature(&mut self, _: &TSIndexSignature<'a>) {}
+        fn visit_ts_interface_declaration(&mut self, _: &TSInterfaceDeclaration<'a>) {}
+        fn visit_ts_type_alias_declaration(&mut self, _: &TSTypeAliasDeclaration<'a>) {}
+        fn visit_ts_global_declaration(&mut self, _: &TSGlobalDeclaration<'a>) {}
+        fn visit_variable_declaration(&mut self, it: &VariableDeclaration<'a>) {
+            if !it.declare {
+                walk_variable_declaration(self, it);
+            }
+        }
+        fn visit_function(&mut self, it: &Function<'a>, flags: ScopeFlags) {
+            if !it.declare {
+                walk_function(self, it, flags);
+            }
+        }
+        fn visit_class(&mut self, it: &Class<'a>) {
+            if !it.declare {
+                walk_class(self, it);
+            }
+        }
+        fn visit_property_definition(&mut self, it: &PropertyDefinition<'a>) {
+            if !it.declare {
+                walk_property_definition(self, it);
+            }
+        }
+        fn visit_ts_enum_declaration(&mut self, it: &TSEnumDeclaration<'a>) {
+            if !it.declare {
+                walk_ts_enum_declaration(self, it);
+            }
+        }
+        fn visit_ts_module_declaration(&mut self, it: &TSModuleDeclaration<'a>) {
+            if !it.declare {
+                walk_ts_module_declaration(self, it);
+            }
         }
     }
 
     let mut visitor = RuntimeIdentifierVisitor::default();
-    visitor.visit_program(&parse_result.program);
+    visitor.visit_program(&parsed.program);
     visitor.identifiers
 }
 

@@ -18,7 +18,7 @@ pub(super) fn build_session_document_uri(
     // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
     // otherwise materialize them under the session overlay root so imports
     // never point at non-existent workspace files.
-    if is_within_project_namespace(&external_path, project_root)
+    if project_relative_path(&external_path, project_root).is_some()
         && (external_path.exists()
             || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
     {
@@ -108,19 +108,7 @@ fn materialized_session_path(
     overlay_root: &Path,
 ) -> PathBuf {
     let mut session_path = overlay_root.to_path_buf();
-    let canonical_external = external_path.parent().and_then(|parent| {
-        let file_name = external_path.file_name()?;
-        parent
-            .canonicalize()
-            .ok()
-            .map(|parent| parent.join(file_name))
-    });
-    let relative = external_path.strip_prefix(project_root).ok().or_else(|| {
-        canonical_external
-            .as_deref()
-            .and_then(|path| path.strip_prefix(project_root).ok())
-    });
-    if let Some(relative) = relative.filter(|path| {
+    if let Some(relative) = project_relative_path(external_path, project_root).filter(|path| {
         path.components()
             .all(|part| matches!(part, Component::Normal(_)))
     }) {
@@ -145,6 +133,19 @@ fn materialized_session_path(
     }
 
     session_path
+}
+
+fn project_relative_path(path: &Path, root: &Path) -> Option<PathBuf> {
+    if let Ok(relative) = path.strip_prefix(root) {
+        return Some(relative.to_path_buf());
+    }
+    let root = root.canonicalize().ok()?;
+    let parent = path.parent()?.canonicalize().ok()?;
+    parent
+        .join(path.file_name()?)
+        .strip_prefix(root)
+        .ok()
+        .map(Path::to_path_buf)
 }
 
 pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {

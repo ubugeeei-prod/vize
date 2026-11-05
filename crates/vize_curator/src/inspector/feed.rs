@@ -1,44 +1,36 @@
-//! The Spolvero feed v1 (P2-18): the observer's folio output as one
+//! The stage feed v1 (P2-18): the observer's folio output as one
 //! consumable, schema-versioned JSON document.
 //!
-//! A [`StageFeed`] is the payload a folio directory (or an inspector
-//! payload) hands to Spolvero consumers: a `schema_version` to negotiate on
+//! A [`StageFeed`] is the payload the inspector hands to stage-view
+//! consumers: a `schema_version` to negotiate on
 //! (`devtool.md`'s data-layer requirement - a consumer refuses a mismatch
 //! loudly instead of misrendering), the producing surface's `command`, and
 //! the folio pages in emission order. The committed schema is
-//! `docs/davinci/plan/spolvero-feed.schema.json`, validated in tests through
+//! `docs/davinci/plan/stage-ladder-feed.schema.json`, validated in tests through
 //! the strict TS-15 subset validator - one producer here, one validator in
 //! the tree.
 //!
-//! # Relation to [`Collector`] (build on, not duplicate)
+//! Producers push [`StagePage`]s, with `pass` naming the producing step
+//! (`parse` for the inspector's L1 pages).
 //!
-//! P2-13's `Collector` already collects everything the feed carries: which
-//! passes emitted a page, in what order, with what canonical text, under the
-//! `--folio-after-change` hash gate. The feed is a *serialization* of that
-//! collection - [`StageFeed::of_dump`] copies the dump's pages verbatim
-//! and never re-decides gating or ordering. Surfaces without a pass pipeline
-//! (the inspector's L1 pages, produced by a parse rather than a pass) push
-//! [`StagePage`]s directly, with `pass` naming the producing step.
-//!
-//! Like the dump, the feed is deliberately IO-free and
-//! transport-agnostic: [`StageFeed::to_json`] returns text, and whether
-//! that text becomes a file in the folio directory, a member of the
-//! inspector payload, or a protocol frame is the caller's decision (the
-//! transport itself is P2-19's open question, not this module's).
+//! The feed is deliberately IO-free and transport-agnostic:
+//! [`StageFeed::to_json`] returns text, and whether that text becomes a
+//! member of the inspector payload or a protocol frame is the caller's
+//! decision (the transport itself is P2-19's open question, not this
+//! module's).
 
 use alloc::vec::Vec;
 use core::fmt::Write as _;
 
 use vize_l0::String;
 
-use vize_l0::dump::collector::Collector;
 use vize_l0::dump::json::push_json_string;
 use vize_l0::dump::remarks::push_remark_fields;
 use vize_l0::pass::observer::RecordedRemark;
 
 /// The feed format version. Incompatible shape changes bump this **and**
 /// the committed schema's `const` together.
-pub const SPOLVERO_FEED_SCHEMA_VERSION: u32 = 1;
+pub const STAGE_FEED_SCHEMA_VERSION: u32 = 1;
 
 /// A consumer-side schema negotiation failure.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -69,7 +61,7 @@ pub struct StagePage {
 /// One optimization remark in the feed (P3-13): the recorded remark plus
 /// the file it was produced for. Spans are byte offsets into the artifact
 /// the pipeline lowered - the same frame as that file's pages (the template
-/// content for the inspector and `analyzeSfc`, or a single typed artifact).
+/// content for the inspector).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageRemark {
     /// Source file, as for [`StagePage::path`].
@@ -78,19 +70,19 @@ pub struct StageRemark {
     pub remark: RecordedRemark,
 }
 
-/// The Spolvero feed v1 payload.
+/// The stage feed v1 payload.
 ///
-/// `schema_version` is not a field: it is [`SPOLVERO_FEED_SCHEMA_VERSION`],
+/// `schema_version` is not a field: it is [`STAGE_FEED_SCHEMA_VERSION`],
 /// emitted by [`to_json`](Self::to_json), so a feed value cannot carry a
 /// version its shape does not have.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageFeed {
-    /// The producing surface (for example `inspector` or `analyze-sfc`).
+    /// The producing surface (for example `inspector`).
     pub command: String,
     /// The pages, in emission order.
     pub pages: Vec<StagePage>,
     /// The optimization remarks (P3-13), per file in canonical order - the
-    /// decision explanations Spolvero renders beside the pages. Additive
+    /// decision explanations the stage view renders beside the pages. Additive
     /// to v1: every producer emits the member (possibly empty), and the
     /// schema keeps it optional so earlier v1 documents stay valid.
     pub remarks: Vec<StageRemark>,
@@ -99,11 +91,11 @@ pub struct StageFeed {
 impl StageFeed {
     /// Negotiate the feed schema before reading any shape-dependent field.
     pub fn negotiate_schema_version(schema_version: u32) -> Result<(), StageFeedSchemaMismatch> {
-        if schema_version == SPOLVERO_FEED_SCHEMA_VERSION {
+        if schema_version == STAGE_FEED_SCHEMA_VERSION {
             Ok(())
         } else {
             Err(StageFeedSchemaMismatch {
-                expected: SPOLVERO_FEED_SCHEMA_VERSION,
+                expected: STAGE_FEED_SCHEMA_VERSION,
                 found: schema_version,
             })
         }
@@ -115,27 +107,6 @@ impl StageFeed {
         Self {
             command: String::from(command),
             pages: Vec::new(),
-            remarks: Vec::new(),
-        }
-    }
-
-    /// The feed of a [`Collector`]: the dump's pages, verbatim and in
-    /// emission order. An empty (fully hash-gated) dump becomes a feed
-    /// with zero pages - "the gate emitted nothing" stays observable.
-    #[must_use]
-    pub fn of_dump(command: &str, dump: &Collector) -> Self {
-        Self {
-            command: String::from(command),
-            pages: dump
-                .pages
-                .iter()
-                .map(|page| StagePage {
-                    path: None,
-                    stage: page.stage.clone(),
-                    pass: page.pass.clone(),
-                    text: page.text.clone(),
-                })
-                .collect(),
             remarks: Vec::new(),
         }
     }
@@ -152,7 +123,7 @@ impl StageFeed {
     pub fn to_json(&self) -> String {
         let mut out = String::default();
         out.push_str("{\"schema_version\":");
-        let _ = write!(out, "{SPOLVERO_FEED_SCHEMA_VERSION}");
+        let _ = write!(out, "{STAGE_FEED_SCHEMA_VERSION}");
         out.push_str(",\"command\":");
         push_json_string(&mut out, self.command.as_str());
         out.push_str(",\"pages\":[");

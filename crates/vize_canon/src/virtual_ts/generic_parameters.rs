@@ -13,6 +13,7 @@ use oxc_span::{GetSpan, SourceType, Span};
 use vize_carton::{String, ToCompactString, cstr, profile};
 
 use crate::script_parse::ScriptParseDiagnostic;
+use crate::virtual_ts::VizeMapping;
 
 pub(crate) type GenericRow = (Range<usize>, Range<usize>);
 
@@ -45,7 +46,7 @@ pub(crate) struct GenericParameter {
 /// Prepared once, then borrowed by every projection consumer. Invalid input
 /// retains its authored spelling so native TypeScript still diagnoses it.
 #[derive(Debug)]
-pub(crate) struct GenericParameters {
+pub struct GenericParameters {
     raw: String,
     trailing_line_comment: bool,
     pub(crate) parameters: Vec<GenericParameter>,
@@ -57,11 +58,10 @@ pub(crate) struct GenericParameters {
     pub(crate) alias_declaration: String,
     pub(crate) alias_authored: String,
     pub(crate) fallback: String,
+    /// SFC offset of the attribute value, when the source spells it exactly.
+    pub(crate) origin: Option<usize>,
     authored: String,
     raw_rows: Vec<GenericRow>,
-    declaration_rows: Vec<GenericRow>,
-    alias_declaration_rows: Vec<GenericRow>,
-    alias_authored_rows: Vec<GenericRow>,
 }
 
 impl GenericParameters {
@@ -72,6 +72,22 @@ impl GenericParameters {
             "canon.virtual_ts.parse_generic_parameters",
             Self::prepare(raw)
         )
+    }
+
+    /// The plan of `<script setup generic="...">`, anchored at its value.
+    pub fn from_setup(
+        source: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Option<Self> {
+        let raw = descriptor.script_setup.as_ref()?.attrs.get("generic")?;
+        if raw.trim().is_empty() {
+            return None;
+        }
+        let mut plan = Self::parse(raw);
+        plan.origin = authored_generic_range(source, descriptor)
+            .filter(|range| source.get(range.clone()) == Some(&**raw))
+            .map(|range| range.start);
+        Some(plan)
     }
 
     fn prepare(raw: &str) -> Self {
@@ -207,11 +223,9 @@ impl GenericParameters {
             alias_declaration: String::default(),
             alias_authored: String::default(),
             fallback: String::default(),
+            origin: None,
             authored: raw.into(),
             raw_rows: Vec::new(),
-            declaration_rows: Vec::new(),
-            alias_declaration_rows: Vec::new(),
-            alias_authored_rows: Vec::new(),
         };
         if plan.parameters.is_empty() {
             // An invalid signature must never become an absent/clean generic.
@@ -250,27 +264,47 @@ impl GenericParameters {
         } else {
             vec![(0..raw.len(), 0..raw.len())]
         };
-        (plan.declaration, plan.declaration_rows) = plan.render(false, true);
-        (plan.alias_declaration, plan.alias_declaration_rows) = plan.render(true, true);
-        (plan.alias_authored, plan.alias_authored_rows) = plan.render(true, false);
+        plan.declaration = plan.render(false, true);
+        plan.alias_declaration = plan.render(true, true);
+        plan.alias_authored = plan.render(true, false);
         plan
     }
 
-    #[cfg(any(feature = "native", test))]
-    pub(crate) fn raw(&self) -> &str {
+    /// The authored attribute value.
+    pub fn raw(&self) -> &str {
         &self.raw
     }
 
-    pub(crate) fn authored(&self) -> &str {
+    /// The list as written into a signature.
+    pub fn authored(&self) -> &str {
         &self.authored
     }
 
-    pub(crate) fn declaration_variants(&self) -> [(&str, &[GenericRow]); 4] {
+    /// The authored attribute value range.
+    pub(crate) fn attribute(&self) -> Option<Range<usize>> {
+        self.origin.map(|origin| origin..origin + self.raw.len())
+    }
+
+    /// Rows of [`Self::authored`] written at generated `start`: the one
+    /// authored owner of the attribute, for diagnostics and navigation alike.
+    pub fn authored_rows(&self, start: usize) -> impl Iterator<Item = VizeMapping> + '_ {
+        self.origin.into_iter().flat_map(move |origin| {
+            self.raw_rows.iter().map(move |(generated, authored)| {
+                VizeMapping::new(
+                    start + generated.start..start + generated.end,
+                    origin + authored.start..origin + authored.end,
+                )
+            })
+        })
+    }
+
+    /// Every rendered spelling of the complete list.
+    pub(crate) fn declaration_variants(&self) -> [&str; 4] {
         [
-            (&self.authored, &self.raw_rows),
-            (&self.declaration, &self.declaration_rows),
-            (&self.alias_declaration, &self.alias_declaration_rows),
-            (&self.alias_authored, &self.alias_authored_rows),
+            &self.authored,
+            &self.declaration,
+            &self.alias_declaration,
+            &self.alias_authored,
         ]
     }
 
@@ -286,12 +320,11 @@ impl GenericParameters {
             .map(|parameter| parameter.name.as_str())
     }
 
-    fn render(&self, drop_const: bool, add_defaults: bool) -> (String, Vec<GenericRow>) {
+    fn render(&self, drop_const: bool, add_defaults: bool) -> String {
         if !self.diagnostics.is_empty() || self.parameters.is_empty() {
-            return (self.authored.clone(), self.raw_rows.clone());
+            return self.authored.clone();
         }
         let mut output = String::default();
-        let mut rows = Vec::new();
         let mut previous = 0;
         for (index, parameter) in self.parameters.iter().enumerate() {
             let gap = self
@@ -313,12 +346,7 @@ impl GenericParameters {
             } else {
                 parameter.span.start
             };
-            let generated = output.len();
             output.push_str(self.raw.get(start..parameter.span.end).unwrap_or_default());
-            for original in std::iter::once(&parameter.core).chain(parameter.default.iter()) {
-                let from = generated + original.start.saturating_sub(start);
-                rows.push((from..from + original.len(), original.clone()));
-            }
             if add_defaults && parameter.default.is_none() {
                 output.push_str(" = any");
             }
@@ -332,7 +360,7 @@ impl GenericParameters {
         if self.trailing_line_comment {
             output.push('\n');
         }
-        (output, rows)
+        output
     }
 }
 
@@ -400,8 +428,9 @@ pub(crate) fn attribute_value(source: &str, tag: Range<usize>, name: &str) -> Op
     None
 }
 
-/// The exact authored attribute range used for generic diagnostics.
-pub(crate) fn authored_generic_range(
+/// The exact authored `generic` attribute value of `<script setup>`: script
+/// setup TypeScript outside the block body, mapped onto the setup signature.
+pub fn authored_generic_range(
     source: &str,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> Option<Range<usize>> {

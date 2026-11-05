@@ -182,20 +182,37 @@ void test("source-built stdio preserves unadvertised originals and explicit vers
     native: { state: "unsupported", reason: NATIVE_REASON },
     comparison: { state: "not-compared", reason: NATIVE_REASON },
   });
+  const plannedIds = loaded.manifest.cases.map((row) => row.id);
+  const unsupportedIds = new Set([
+    MODEL_BINDING_UNIT_ID,
+    LOCAL_RESOLVE_SESSION_ID,
+    NATIVE_CAPACITY_ID,
+  ]);
+  const matchedIds = plannedIds.filter((id) => !unsupportedIds.has(id));
+  assert.deepEqual(
+    report.rows.map((row) => row.id),
+    plannedIds,
+  );
   const earlier = report.rows.filter((row) => row.id !== MODEL_BINDING_UNIT_ID);
-  assert.equal(earlier.length, 82);
+  assert.deepEqual(
+    earlier.map((row) => row.id),
+    plannedIds.filter((id) => id !== MODEL_BINDING_UNIT_ID),
+  );
   assert.deepEqual(
     earlier.filter((row) => row.legacy.state === "unsupported").map((row) => row.id),
     [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID],
   );
-  assert.equal(earlier.filter((row) => row.legacy.verdict === "matched-reference").length, 80);
+  assert.deepEqual(
+    earlier.filter((row) => row.legacy.verdict === "matched-reference").map((row) => row.id),
+    matchedIds,
+  );
   assert.deepEqual(report.summary, {
-    plannedCases: 83,
-    legacyMatches: 80,
+    plannedCases: plannedIds.length,
+    legacyMatches: matchedIds.length,
     legacyFailures: 0,
-    legacyUnsupported: 3,
+    legacyUnsupported: unsupportedIds.size,
     baselineDrift: 0,
-    nativeUnsupported: 83,
+    nativeUnsupported: plannedIds.length,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,

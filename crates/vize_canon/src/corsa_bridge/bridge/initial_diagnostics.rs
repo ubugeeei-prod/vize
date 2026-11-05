@@ -21,13 +21,21 @@ pub struct InitialApiDiagnostics {
 
 pub struct PendingInitialApiDiagnostics {
     pub(super) read: Arc<InitialDiagnosticsRead>,
-    pub(super) result: Result<Option<Vec<lsp_types::Diagnostic>>, CorsaBridgeError>,
+    pub(super) result: Result<Option<Vec<crate::lsp_client::PhasedDiagnostic>>, CorsaBridgeError>,
 }
 
 pub enum InitialApiDiagnosticsOutcome {
     Stale,
     Unsupported,
     Complete(Vec<LspDiagnostic>),
+    Failed(CorsaBridgeError),
+}
+
+/// Initial diagnostics retaining producer-owned phases through publication.
+pub enum InitialApiDiagnosticsProvenanceOutcome {
+    Stale,
+    Unsupported,
+    Complete(Vec<crate::corsa_bridge::PhasedLspDiagnostic>),
     Failed(CorsaBridgeError),
 }
 
@@ -67,7 +75,8 @@ impl CorsaBridge {
                     let _owner = owner;
                     let _mirror = request.mirror;
                     let read = request.read;
-                    read.run().map_err(CorsaBridgeError::CommunicationError)
+                    read.run_with_provenance()
+                        .map_err(CorsaBridgeError::CommunicationError)
                 },
             )
             .await;

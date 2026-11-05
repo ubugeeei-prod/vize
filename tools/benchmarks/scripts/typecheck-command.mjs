@@ -1,13 +1,67 @@
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, realpathSync } from "node:fs";
-import { relative, resolve, sep } from "node:path";
+import { existsSync, readFileSync, realpathSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, relative, resolve, sep } from "node:path";
 import { performance } from "node:perf_hooks";
 import { stripVTControlCharacters } from "node:util";
 
+let clockTicksPerSecond;
+
+/**
+ * User+sys CPU of every reaped descendant (cutime + cstime of this process),
+ * in ms. spawnSync reaps only its own child, and a child's total includes the
+ * mapper or checker processes it waited for, so the delta around one
+ * invocation is that invocation's whole process tree. Linux only; elsewhere
+ * no CPU figure is recorded.
+ */
+export function reapedChildCpuMs() {
+  if (process.platform !== "linux") return null;
+  clockTicksPerSecond ??= Number(execFileSync("getconf", ["CLK_TCK"], { encoding: "utf8" }));
+  const stat = readFileSync("/proc/self/stat", "utf8");
+  const fields = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
+  const ticks = Number(fields[13]) + Number(fields[14]);
+  if (!Number.isFinite(ticks) || !(clockTicksPerSecond > 0)) {
+    throw new Error("type-check runner: cannot read reaped child CPU time from /proc/self/stat");
+  }
+  return (ticks * 1000) / clockTicksPerSecond;
+}
+
+const GNU_TIME = "/usr/bin/time";
+let rssSamples = 0;
+
+/**
+ * On Linux every invocation runs under GNU time for its peak RSS: `%M` is the
+ * largest single process of the tree (KiB), not the sum of the tree.
+ */
+function withPeakRss(binary, args) {
+  if (process.platform !== "linux") return { command: binary, argv: args, rssFile: null };
+  if (!existsSync(GNU_TIME)) {
+    throw new Error(`type-check runner: ${GNU_TIME} (GNU time) is required for peak RSS`);
+  }
+  if (!existsSync(binary)) {
+    throw Object.assign(new Error(`spawnSync ${binary} ENOENT`), { code: "ENOENT" });
+  }
+  const rssFile = join(tmpdir(), `vize-typecheck-rss-${process.pid}-${rssSamples++}`);
+  return { command: GNU_TIME, argv: ["-f", "%M", "-o", rssFile, binary, ...args], rssFile };
+}
+
+function readPeakRssKb(rssFile) {
+  if (rssFile == null) return null;
+  const lines = readFileSync(rssFile, "utf8").trim().split("\n");
+  rmSync(rssFile, { force: true });
+  const kb = Number(lines.at(-1));
+  if (!Number.isInteger(kb) || kb <= 0) {
+    throw new Error(`type-check runner: GNU time reported no peak RSS: ${lines.join(" / ")}`);
+  }
+  return kb;
+}
+
 export function runTypecheckCommand(binary, args, { cwd, env = {} }) {
+  const { command, argv, rssFile } = withPeakRss(binary, args);
+  const cpuBefore = reapedChildCpuMs();
   const start = performance.now();
-  const result = spawnSync(binary, args, {
+  const result = spawnSync(command, argv, {
     cwd,
     env: { ...process.env, NO_COLOR: "1", VIZE_BENCH: "1", ...env },
     encoding: "utf8",
@@ -15,8 +69,16 @@ export function runTypecheckCommand(binary, args, { cwd, env = {} }) {
     timeout: 300_000,
   });
   const ms = performance.now() - start;
+  const cpuAfter = reapedChildCpuMs();
   if (result.error) throw result.error;
-  return { ms, status: result.status, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
+  return {
+    ms,
+    cpuMs: cpuBefore == null ? null : cpuAfter - cpuBefore,
+    rssKb: readPeakRssKb(rssFile),
+    status: result.status,
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
+  };
 }
 
 function sourcePath(file, cwd) {

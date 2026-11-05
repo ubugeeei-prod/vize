@@ -249,7 +249,7 @@ void test("current repository state is explicitly blocked without native product
       ),
     (error) => {
       const output = error.stderr.toString();
-      assert.match(output, /stability-policy/);
+      assert.doesNotMatch(output, /stability-policy/);
       assert.match(output, /product-verifier/);
       assert.equal((output.match(/product-verifier/g) ?? []).length, 4);
       assert.doesNotMatch(output, /deletion blocked \[product-verifier\]: formatter:/);
@@ -262,6 +262,7 @@ void test("current repository state is explicitly blocked without native product
       assert.match(output, /deletion blocked \[evidence\]: No T1\/T2 observations/);
       assert.doesNotMatch(output, /target-policy/);
       assert.doesNotMatch(output, /span at least null days/);
+      assert.match(output, /observations must span at least 30 days/);
       assert.match(output, /deletion readiness failed: 9 blocker\(s\)/);
       return true;
     },

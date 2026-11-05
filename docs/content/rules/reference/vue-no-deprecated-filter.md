@@ -1,18 +1,37 @@
 ---
 title: "vue/no-deprecated-filter"
+description: "Disallow deprecated Vue 2 filter syntax using the pipe operator."
 ---
 
 # `vue/no-deprecated-filter`
 
-Disallow deprecated Vue 2 filter syntax using the pipe operator
+Disallow deprecated Vue 2 filter syntax using the pipe operator.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The pipe uses the removed Vue filter syntax to apply capitalize.
+
+```vue annotate="remove:2"
+<template>
+{{ message | capitalize }}
+</template>
+```
+
+## Good
+
+Calling capitalize(message) applies the transformation as an ordinary expression.
+
+```vue annotate="add:2"
+<template>
+{{ capitalize(message) }}
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The pipe uses the removed Vue filter syntax to apply capitalize.
-
-```vue
-<template>
-{{ message | capitalize }}
-</template>
-```
-
-## Good
-
-Calling capitalize(message) applies the transformation as an ordinary expression.
-
-```vue
-<template>
-{{ capitalize(message) }}
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L56) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L56)

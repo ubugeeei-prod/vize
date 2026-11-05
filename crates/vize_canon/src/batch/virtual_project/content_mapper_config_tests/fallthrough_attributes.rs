@@ -12,12 +12,16 @@ fn load_source(source: &str) -> super::ContentMapperProjectConfiguration {
 fn assert_flags(source: &str, enabled: bool, specified: bool) {
     let configuration = load_source(source);
     assert_eq!(
-        configuration.transform_options.fallthrough_attributes,
+        configuration
+            .transform_options
+            .checks
+            .fallthrough_attributes,
         enabled
     );
     assert_eq!(
         configuration
             .transform_options
+            .checks
             .fallthrough_attributes_specified,
         specified
     );
@@ -62,10 +66,16 @@ fn inherited_child_false_overrides_true_and_remains_specified() {
     )
     .unwrap();
     let configuration = load(&path);
-    assert!(!configuration.transform_options.fallthrough_attributes);
+    assert!(
+        !configuration
+            .transform_options
+            .checks
+            .fallthrough_attributes
+    );
     assert!(
         configuration
             .transform_options
+            .checks
             .fallthrough_attributes_specified
     );
     let checks = configuration.transform_options.virtual_ts_check_options();
@@ -92,10 +102,16 @@ fn omitted_and_explicit_false_have_distinct_configuration_identities() {
 #[test]
 fn inferred_project_retains_omitted_presence() {
     let configuration = load(Path::new(""));
-    assert!(!configuration.transform_options.fallthrough_attributes);
     assert!(
         !configuration
             .transform_options
+            .checks
+            .fallthrough_attributes
+    );
+    assert!(
+        !configuration
+            .transform_options
+            .checks
             .fallthrough_attributes_specified
     );
 }

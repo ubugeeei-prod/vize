@@ -117,6 +117,7 @@ jobs:
           base: ${{ needs.pr-source-plan.outputs.comparison-base }}
           shard: ${{ matrix.index }}
           total: ${{ matrix.total }}
+          job: Affected tooling (${{ matrix.name }})
   affected-tooling-report:
     name: Affected tooling report
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}

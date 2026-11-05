@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-generic-attribute-11575",
+  "provenance": {
+    "fixCommit": "311bea960392769f7ad8df538f60dc2109841aca",
+    "issue": 11575,
+    "witnessPath": "tests/tooling/lsp-art-generic-attribute.test.ts",
+    "inputOrigin": "#11575 Art file whose script setup declares its type parameter in the generic attribute",
+    "contractOrigin": "Complete definition response from a script usage onto the authored attribute declaration"
+  },
+  "files": [
+    {
+      "source": "Generic.art.vue.txt",
+      "runtimePath": "Generic.art.vue",
+      "sha256": "59f619141311989958f2f575de5fe9202ff0156b10871002d277c8326239a092"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "bc8a3b395534eaaf1f7e36d242a0274b432003aa1b3dd4f06bf77107b8d8b179"
+    }
+  ],
+  "entry": "Generic.art.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "4db22360f6ab02535fe267f694b7c4d7f457f89031d076e2c43c11a959f973d5"
+  },
+  "method": "textDocument/definition",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete type-service-backed Art script definition; source-inspected input custody does not establish native whole-product parity"
+}

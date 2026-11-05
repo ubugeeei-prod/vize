@@ -282,7 +282,7 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
   assert.equal(step.uses, "./.github/actions/hydrate-pinned-fixture");
   assert.equal(
     step.if,
-    "${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}",
+    "${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}",
   );
   assert.deepEqual(step.with, { fixture: "tests/_fixtures/_git/element-plus" });
   assert.equal(step["continue-on-error"], undefined);

@@ -1,23 +1,42 @@
 ---
 title: "HTML 规则"
+description: "检查模板中 HTML 的有效性和语义化标记。"
 ---
 
 # HTML 规则
 
-本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+检查模板中 HTML 的有效性和语义化标记。
 
-<span id="html规则"></span>
+每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-| 规则 | 示例 | 用途 |
+## 基础 (1)
+
+`essential` 预设中的正确性规则。
+
+| 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| [`html/deprecated-attr`](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr-good) | 禁止已弃用的 HTML 属性 |
-| [`html/deprecated-element`](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element-good) | 禁止已弃用的 HTML 元素 |
-| [`html/id-duplication`](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication-good) | 禁止重复的元素 ID |
-| [`html/no-consecutive-br`](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br-good) | 禁止连续的 &lt;br&gt; 元素 |
-| [`html/no-dupe-style-properties`](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties-good) | 禁止内联 style 属性中重复的属性声明 |
-| [`html/no-duplicate-class`](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class-good) | 禁止静态 class 属性中重复的类名 |
-| [`html/no-duplicate-dt`](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt-good) | 禁止 &lt;dl&gt; 中重复的 &lt;dt&gt; 名称 |
-| [`html/no-empty-palpable-content`](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content-good) | 禁止预期具有可见内容的空元素 |
-| [`html/require-datetime`](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime-good) | 要求 &lt;time&gt; 元素具有 datetime 属性 |
+| <span id="html-id-duplication"></span>[`html/id-duplication`](./reference/html-id-duplication.md) | 禁止重复的元素 ID。 |  |
 
-[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
+## 默认 (7)
+
+由默认预设 `happy-path` 添加。
+
+| 规则 | 检查内容 | 自动修复 |
+| --- | --- | --- |
+| <span id="html-deprecated-attr"></span>[`html/deprecated-attr`](./reference/html-deprecated-attr.md) | 禁止已弃用的 HTML 属性。 |  |
+| <span id="html-deprecated-element"></span>[`html/deprecated-element`](./reference/html-deprecated-element.md) | 禁止已弃用的 HTML 元素。 |  |
+| <span id="html-no-consecutive-br"></span>[`html/no-consecutive-br`](./reference/html-no-consecutive-br.md) | 禁止连续的 &lt;br&gt; 元素。 |  |
+| <span id="html-no-duplicate-class"></span>[`html/no-duplicate-class`](./reference/html-no-duplicate-class.md) | 禁止静态 class 属性中重复的类名。 |  |
+| <span id="html-no-duplicate-dt"></span>[`html/no-duplicate-dt`](./reference/html-no-duplicate-dt.md) | 禁止 &lt;dl&gt; 中重复的 &lt;dt&gt; 名称。 |  |
+| <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | 禁止预期具有可见内容的空元素。 |  |
+| <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | 要求 &lt;time&gt; 元素具有 datetime 属性。 |  |
+
+## 更严格的预设 (1)
+
+只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。
+
+| 规则 | 检查内容 | 预设 | 自动修复 |
+| --- | --- | --- | --- |
+| <span id="html-no-dupe-style-properties"></span>[`html/no-dupe-style-properties`](./reference/html-no-dupe-style-properties.md) | 禁止内联 style 属性中重复的属性声明。 | `nuxt`, `opinionated` |  |
+
+[规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

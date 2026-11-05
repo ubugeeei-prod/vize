@@ -1,0 +1,11 @@
+{
+  "package": "@vue/runtime-core",
+  "version": "3.5.44",
+  "tarball": "https://registry.npmjs.org/@vue/runtime-core/-/runtime-core-3.5.44.tgz",
+  "integrity": "sha512-uEa/ndwjhrrhnOfb2p+sZy6zeoamJOISqaLSJGk/8R6nABT1ZldpzcJoPzKj+zHVomVBPcmQYyC2r4LtvDV6CQ==",
+  "sourcePath": "dist/runtime-core.d.ts",
+  "sourceSha256": "368c3decd5f404645c6f99623b9c216327a7b73adde1038d9ce1a10019f8ec53",
+  "contractPath": "PropType-3.5.44.ts.txt",
+  "contractSha256": "6ccbaa74c524e0b0c8524ce36fdc07f61423b5d91c36168a63b670fd369a8455",
+  "scope": "Exact upstream type declarations only; production SFC inference is tested separately from the full published-package consumer."
+}

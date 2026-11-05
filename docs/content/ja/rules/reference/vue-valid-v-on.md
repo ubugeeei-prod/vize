@@ -1,18 +1,17 @@
 ---
 title: "vue/valid-v-on"
+description: "v-on のイベント名・式・修飾子を検査します。"
 ---
 
 # `vue/valid-v-on`
 
 v-on のイベント名・式・修飾子を検査します。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
-既定の重大度: `error`  
-プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
-オプション: [型付きオプションと既定値](../options.md)を参照してください。
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
 ## 修飾子の検証
 
@@ -36,6 +35,35 @@ export default defineConfig({}).withVue({
 これにより `@click.custom="handler"` を使えます。名前は大文字と小文字を区別して完全一致で比較し、組み込みの名前に追加します。ルール自体が無効な場合は有効にしません。範囲別の設定では継承した一覧を置き換え、`[]` でリセットできます。
 
 キーの一覧は、MIT ライセンスの [eslint-plugin-vue のキー別名](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json) を元にしています。出典とライセンスは実装とともに保持しています。
+
+## 悪い例
+
+イベント引数または必要なハンドラー・オブジェクト式がありません。
+
+```vue annotate="remove:2,3,4,5,6,7"
+<template>
+  <div v-on></div>
+  <div @></div>
+  <div @click></div>
+  <div @click.sync="handleClick"></div>
+  <div @click.nativeish="handleClick"></div>
+  <div @click.once></div>
+</template>
+```
+
+## 良い例
+
+イベントとハンドラーを指定するか、引数なしの `v-on` にリスナーのオブジェクトを渡します。
+
+```vue annotate="add:2,3,4,5,6"
+<template>
+  <div @click="handleClick"></div>
+  <form @submit.prevent></form>
+  <input @keyup.page-down="handlePageDown" />
+  <input @keyup.あ="handleKey" />
+  <div v-on="{ click: handleClick }"></div>
+</template>
+```
 
 ## 設定（Vite+）
 
@@ -61,39 +89,11 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-イベント引数または必要なハンドラー・オブジェクト式がありません。
-
-```vue
-<template>
-  <div v-on></div>
-  <div @></div>
-  <div @click></div>
-  <div @click.sync="handleClick"></div>
-  <div @click.nativeish="handleClick"></div>
-  <div @click.once></div>
-</template>
-```
-
-## 良い
-
-イベントとハンドラーを指定するか、引数なしの `v-on` にリスナーのオブジェクトを渡します。
-
-```vue
-<template>
-  <div @click="handleClick"></div>
-  <form @submit.prevent></form>
-  <input @keyup.page-down="handlePageDown" />
-  <input @keyup.あ="handleKey" />
-  <div v-on="{ click: handleClick }"></div>
-</template>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [全ルール](../all.md)
+- [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30)

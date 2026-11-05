@@ -6,6 +6,7 @@
 use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline};
 
 use crate::lower::Lowered;
+use vize_l2::provenance::ProvenanceSink;
 
 use super::{L2_STAGE, L2Facts, TransformProfile, hoist, legacy, text, vfor, vif, vmodel, vslot};
 
@@ -22,7 +23,7 @@ const DOM_LEGACY_TRANSFORM: Pipeline = Pipeline::new(L2_STAGE, DOM_LEGACY_PASSES
 /// runs through the pass manager so the observer records that compatibility
 /// walk.
 pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
-    lowered: &mut Lowered<'a>,
+    lowered: &mut Lowered<'a, impl ProvenanceSink>,
     observer: &mut O,
     profile: TransformProfile,
 ) -> L2Facts {
@@ -51,7 +52,7 @@ pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
 }
 
 fn run_dom_legacy_transform<'a, O: PassObserver>(
-    lowered: &mut Lowered<'a>,
+    lowered: &mut Lowered<'a, impl ProvenanceSink>,
     observer: &mut O,
     facts: &mut L2Facts,
 ) {

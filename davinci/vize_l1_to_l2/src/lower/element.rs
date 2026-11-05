@@ -16,6 +16,7 @@ use vize_l0::{Box, String, Vec, cstr, is_native_tag};
 use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
+use vize_l2::provenance::ProvenanceSink;
 
 pub(super) mod identity;
 mod v_pre;
@@ -24,13 +25,13 @@ pub use v_pre::frozen_attribute_name;
 
 use super::binding::{Owner, lower_attr};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::directive::{AttrForm, Head, classify};
+use super::directive::{AttrForm, Head, classify, split_head};
 use super::slot::lower_slot;
 use super::structural::lower_children;
 
 /// Which branch of a `v-if` chain an element opens or continues.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum BranchKind {
+pub enum BranchKind {
     If,
     ElseIf,
     Else,
@@ -67,56 +68,131 @@ pub(crate) struct Analyzed<'a> {
 /// the positional authored-name projection in [`element_core`].
 pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a> {
     let mut forms = StdVec::with_capacity(element.open.attrs.len());
-    let mut branch = None;
-    let mut vfor = None;
     let mut static_is = None;
     for (index, attr) in element.open.attrs.iter().enumerate() {
         let form = classify(attr.name.text);
-        if let AttrForm::Directive(directive) = &form {
-            let kind = match directive.head {
-                Head::If => Some(BranchKind::If),
-                Head::ElseIf => Some(BranchKind::ElseIf),
-                Head::Else => Some(BranchKind::Else),
-                _ => None,
-            };
-            if let Some(kind) = kind
-                && branch.is_none()
-            {
-                branch = Some((index, kind));
-            }
-            if directive.head == Head::For && vfor.is_none() {
-                vfor = Some(index);
-            }
-        }
         if static_is.is_none() && attr.name.text == "is" && matches!(form, AttrForm::Static) {
             static_is = Some(index);
         }
         forms.push(form);
     }
+    let read = structure(element, in_v_pre);
     let mut analyzed = Analyzed {
         forms,
-        branch,
-        vfor,
+        branch: read.branch,
+        vfor: read.vfor,
         static_is,
-        v_pre: None,
-        opens_v_pre: false,
+        v_pre: read.v_pre,
+        opens_v_pre: read.opens_v_pre,
     };
     if in_v_pre {
         // Inside the subtree the tokenizer never split the name, so every
         // attribute is already the plain one it was authored as.
         analyzed.freeze_as_authored();
-    } else if analyzed.has_v_pre() {
+    }
+    analyzed
+}
+
+/// The structural reading the lowering gives one element's attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Structure {
+    /// The first branch directive (attribute index, kind), when present.
+    pub branch: Option<(usize, BranchKind)>,
+    /// The first `v-for` (attribute index), when present.
+    pub vfor: Option<usize>,
+    /// Whether the element opens a `v-pre` subtree.
+    pub opens_v_pre: bool,
+    /// Whether the element carries a `v-slot` / `#` spelling.
+    pub slot_spelling: bool,
+    /// The opening `v-pre` spelling's attribute index.
+    v_pre: Option<usize>,
+}
+
+impl Structure {
+    /// The branch directive's attribute and kind, when one is authored.
+    pub fn branch_attr<'t, 'a>(
+        &self,
+        element: &'t Element<'a>,
+    ) -> Option<(&'t vize_l1::markup::Attribute<'a>, BranchKind)> {
+        let (index, kind) = self.branch?;
+        Some((element.open.attrs.get(index)?, kind))
+    }
+
+    /// Whether the lowering unwraps `element` into its scope's region.
+    /// `v-for` decides first: a loop with a value unwraps its template; a
+    /// blank one builds no loop. Otherwise a chain branch unwraps.
+    pub fn unwraps(&self, element: &Element<'_>, in_chain: bool) -> bool {
+        match self.vfor {
+            Some(index) => {
+                element
+                    .open
+                    .attrs
+                    .get(index)
+                    .and_then(super::forop::v_for_value)
+                    .is_some()
+                    && template_unwraps(element, self.slot_spelling)
+            }
+            None => in_chain && template_unwraps(element, self.slot_spelling),
+        }
+    }
+}
+
+/// Whether a loop or branch carrier lowers into its scope's region: a
+/// `<template>` without a `v-slot` / `#` spelling, which must keep its op
+/// so the slot name survives.
+pub(crate) fn template_unwraps(element: &Element<'_>, slot_spelling: bool) -> bool {
+    element.tag() == "template" && !slot_spelling
+}
+
+/// The structural reading of `element`; `in_v_pre` when an ancestor
+/// carries `v-pre`. Reads only directive heads.
+///
+/// Inside a `v-pre` subtree every attribute is the plain one it was
+/// authored as. On the element that opens the subtree the structural
+/// directives are forgotten while its other spellings stand.
+pub fn structure(element: &Element<'_>, in_v_pre: bool) -> Structure {
+    let none = Structure {
+        branch: None,
+        vfor: None,
+        opens_v_pre: false,
+        slot_spelling: false,
+        v_pre: None,
+    };
+    if in_v_pre {
+        return none;
+    }
+    let mut read = none;
+    for (index, attr) in element.open.attrs.iter().enumerate() {
+        let Some(split) = split_head(attr.name.text) else {
+            continue;
+        };
+        let kind = match split.head {
+            Head::If => Some(BranchKind::If),
+            Head::ElseIf => Some(BranchKind::ElseIf),
+            Head::Else => Some(BranchKind::Else),
+            _ => None,
+        };
+        if let Some(kind) = kind
+            && read.branch.is_none()
+        {
+            read.branch = Some((index, kind));
+        }
+        match split.head {
+            Head::For if read.vfor.is_none() => read.vfor = Some(index),
+            Head::Pre if read.v_pre.is_none() => read.v_pre = Some(index),
+            Head::Slot => read.slot_spelling = true,
+            _ => {}
+        }
+    }
+    if read.v_pre.is_some() {
         // On the opening element the tokenizer had not yet entered
         // `v-pre` when it read these attributes, so they arrive split and
         // the element lowering rebuilds each name from the parts.
-        analyzed.opens_v_pre = true;
-        analyzed.v_pre = analyzed.forms.iter().position(
-            |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Pre),
-        );
-        analyzed.branch = None;
-        analyzed.vfor = None;
+        read.opens_v_pre = true;
+        read.branch = None;
+        read.vfor = None;
     }
-    analyzed
+    read
 }
 
 impl<'a> Analyzed<'a> {
@@ -135,13 +211,6 @@ impl<'a> Analyzed<'a> {
     pub(crate) fn has_slot_spelling(&self) -> bool {
         self.forms.iter().any(
             |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Slot),
-        )
-    }
-
-    /// Whether the element carries a `v-pre` spelling.
-    pub(crate) fn has_v_pre(&self) -> bool {
-        self.forms.iter().any(
-            |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Pre),
         )
     }
 
@@ -178,7 +247,7 @@ pub(crate) fn attr_text<'a>(attr: &vize_l1::markup::Attribute<'a>) -> Option<&'a
 /// Lower one element (its structural directives already consumed by the
 /// caller): `<slot>` outlet, component, or native element.
 pub(crate) fn element_core<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
@@ -210,11 +279,11 @@ pub(crate) fn element_core<'a>(
             "lower.component",
             node,
             open_slice,
-            cstr!("ui.component {tag}"),
+            || cstr!("ui.component {tag}"),
             span,
         );
     } else {
-        let after = match own_ns {
+        let after = || match own_ns {
             Namespace::Html => cstr!("ui.element {tag}"),
             Namespace::Svg => cstr!("ui.element {tag} ns=svg"),
             Namespace::MathMl => cstr!("ui.element {tag} ns=mathml"),
@@ -251,7 +320,7 @@ pub(crate) fn element_core<'a>(
                 "drop.v-pre",
                 None,
                 attr_slice(cx, attr),
-                String::default(),
+                String::default,
                 attr_span(cx, attr),
             );
             continue;

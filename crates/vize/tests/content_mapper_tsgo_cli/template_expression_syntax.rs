@@ -1,6 +1,7 @@
 //! Pin authored template-expression syntax diagnostics against vue-tsc.
 
 mod generic_arrows;
+mod reserved_template_substitutions;
 
 use std::path::PathBuf;
 

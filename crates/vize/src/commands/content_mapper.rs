@@ -16,6 +16,7 @@ use vize_l0::String as CompactString;
 use vize_l0::cstr;
 
 mod dispatch;
+mod helper_abi;
 mod project;
 
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
@@ -148,6 +149,12 @@ mod project_tests;
 
 #[cfg(test)]
 mod shared_helper_tests;
+
+#[cfg(test)]
+mod helper_abi_tests;
+
+#[cfg(test)]
+mod helper_abi_fixture;
 
 #[cfg(test)]
 mod frame_tests;

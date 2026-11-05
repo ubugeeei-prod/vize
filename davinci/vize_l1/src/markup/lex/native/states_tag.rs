@@ -143,7 +143,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
                 self.index,
             );
         } else if !is_whitespace(c) {
-            if self.after_quoted_attr_value {
+            if P::REQUIRE_ATTRIBUTE_WHITESPACE && self.after_quoted_attr_value {
                 self.sink
                     .on_error(LexErrorCode::MissingWhitespaceBetweenAttributes, self.index);
             }

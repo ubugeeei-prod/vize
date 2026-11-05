@@ -1,18 +1,10 @@
 import { extractSfcStyleBlocks, generateSfcScopeId } from "@vizejs/native";
 import { styleRequestId } from "./request.ts";
-import { isPreprocessorLang } from "./style-scope.ts";
-import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
-
-function needsPreprocessor(block: StyleBlockInfo): boolean {
-  return isPreprocessorLang(block.lang);
-}
+import { assertInjectableCss } from "./style-dependencies.ts";
+import type { CompiledModule, HostCss, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
 function isCssModule(block: StyleBlockInfo): boolean {
   return block.module !== false;
-}
-
-export function hasDelegatedStyles(compiled: CompiledModule): boolean {
-  return compiled.styles.some((style) => needsPreprocessor(style) || isCssModule(style));
 }
 
 export function generateScopeId(
@@ -72,17 +64,26 @@ const CSS_MODULE_LOCALS_HELPER = `const ${CSS_MODULE_LOCALS} = (ns) =>
     ? ns.default
     : Object.fromEntries(Object.entries(ns).filter(([key]) => key !== "default")));`;
 
+/** Only an external `<style src>` is left uninlined; it stays an import of that module. */
+function externalStyleImport(src: string): string {
+  return `import ${JSON.stringify(src)};`;
+}
+
 export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
-  extractCss?: boolean;
-  filePath?: string;
+  /**
+   * A host that bundles stylesheets gets every block as a style module and
+   * writes the CSS; with `"none"`, the compiled CSS is injected at run time.
+   */
+  hostCss: HostCss;
+  filePath: string;
   /** Overrides the `?vue&type=style` import specifier (webpack style files). */
   styleRequest?: (block: StyleBlockInfo, scoped: string | null) => string;
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, extractCss, filePath, styleRequest } = options;
+  const { isProduction, isDev, hostCss, filePath, styleRequest } = options;
 
   let output = compiled.code;
   const exportDefaultRegex = /^export default /m;
@@ -110,16 +111,18 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     output += "\nexport default _sfc_main;";
   }
 
-  const useDelegatedStyles = hasDelegatedStyles(compiled) && filePath;
-
-  if (useDelegatedStyles) {
+  if (hostCss !== "none") {
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
 
     for (const block of compiled.styles) {
+      if (block.src) {
+        styleImports.push(externalStyleImport(block.src));
+        continue;
+      }
       const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
       const styleFile = styleRequest?.(block, scoped);
-      const styleId = styleFile ?? styleRequestId(filePath, block, scoped);
+      const styleId = styleFile ?? styleRequestId(filePath, block, scoped, hostCss);
 
       if (isCssModule(block)) {
         const bindingName = typeof block.module === "string" ? block.module : "$style";
@@ -161,8 +164,17 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         `${cssModuleSetup}\nexport default _sfc_main;`,
       );
     }
-  } else if (compiled.css && !(isProduction && extractCss)) {
-    output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
+  } else {
+    // The compiled CSS carries CSS Modules' local names, which the compiled
+    // `__cssModules` maps.
+    assertInjectableCss(compiled.styles, filePath);
+    if (compiled.css) {
+      output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
+    }
+    const imports = compiled.styles.flatMap((block) =>
+      block.src ? [externalStyleImport(block.src)] : [],
+    );
+    if (imports.length > 0) output = `${imports.join("\n")}\n${output}`;
   }
 
   if (!isProduction && isDev && hasExportDefault && supportsTemplateOnlyHmr(output)) {

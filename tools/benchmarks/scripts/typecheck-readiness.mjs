@@ -24,7 +24,9 @@ export function assertMinimalPlant(report, plant) {
         codes.includes(code),
     )
   ) {
-    throw new Error(`missed the ${plant.label} plant`);
+    throw new Error(
+      `missed the ${plant.label} plant (status ${report.status}): ${JSON.stringify(report.diagnostics.slice(0, 3))}`,
+    );
   }
 }
 
@@ -66,7 +68,15 @@ export function checkedMeasurement(variant, cwd, baseline) {
     if (!Number.isFinite(result.ms) || result.ms <= 0) {
       throw new Error(`${variant.id}: invalid measured duration`);
     }
-    return result.ms;
+    const cpuMs = result.cpuMs ?? null;
+    if (cpuMs != null && !(Number.isFinite(cpuMs) && cpuMs >= 0)) {
+      throw new Error(`${variant.id}: invalid measured CPU time`);
+    }
+    const rssKb = result.rssKb ?? null;
+    if (rssKb != null && !(Number.isInteger(rssKb) && rssKb > 0)) {
+      throw new Error(`${variant.id}: invalid measured peak RSS`);
+    }
+    return { ms: result.ms, cpuMs, rssKb };
   };
 }
 
@@ -137,6 +147,8 @@ export function gateTypecheckVariants(variants, checkDir, prepareProject, onReje
 export const OPTIONAL_TYPECHECK_VARIANTS = new Set(["golar-typecheck", "golar-default"]);
 
 export function recordTypecheckRejection(rejected, variant, error, phase) {
-  if (!OPTIONAL_TYPECHECK_VARIANTS.has(variant.id)) throw error;
+  if (!OPTIONAL_TYPECHECK_VARIANTS.has(variant.id)) {
+    throw new Error(`${variant.id}: ${error.message}`, { cause: error });
+  }
   rejected.push({ id: variant.id, label: variant.label, phase, reason: error.message });
 }

@@ -6,7 +6,7 @@ use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_l0::dump::capture::CaptureSink;
-use vize_l0::{Allocator, profile, profiler::global_profiler};
+use vize_l0::{Allocator, profile, profiler::active_profiler_is_enabled};
 use vize_l1_to_l2::{DomEmitOptions, EmitError, LegacyCaps};
 
 pub(in crate::compile) struct SlotEmitPolicy {
@@ -99,7 +99,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         development,
     } = policy;
     if let Some(preflight) = preflight.as_deref_mut() {
-        let observe = global_profiler().is_enabled();
+        let observe = active_profiler_is_enabled();
         let observed = vize_l1_to_l2::emit_dom_source_with_preflight_and_environment(
             allocator,
             source,
@@ -142,8 +142,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         ));
     }
     let caps = LegacyCaps::for_version(dialect);
-    let profiler = global_profiler();
-    let emit = if profiler.is_enabled() {
+    let emit = if active_profiler_is_enabled() {
         let observed =
             vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
                 allocator,

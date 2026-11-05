@@ -8,12 +8,13 @@
 use vize_l0::{Box, Span, Vec, cstr};
 use vize_l1::markup::{Interpolation, SurfaceChild};
 use vize_l2::op::{Attribute, BindingOp, ElementOp, Namespace, Op, Region};
+use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, element_span};
 use super::structural::lower_children;
 
 pub(crate) fn lower_element_children<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     tag: &str,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
@@ -26,7 +27,7 @@ pub(crate) fn lower_element_children<'a>(
 }
 
 fn lower_table_children<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
@@ -38,7 +39,7 @@ fn lower_table_children<'a>(
 }
 
 fn lower_row_group_children<'a>(
-    cx: &mut Cx<'a>,
+    cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
@@ -49,12 +50,12 @@ fn lower_row_group_children<'a>(
     })
 }
 
-fn lower_grouped_children<'a>(
-    cx: &mut Cx<'a>,
+fn lower_grouped_children<'a, P: ProvenanceSink>(
+    cx: &mut Cx<'a, P>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
-    starts_group: fn(&Cx<'_>, &SurfaceChild<'_>) -> bool,
-    mut lower_group: impl FnMut(&mut Cx<'a>, &[SurfaceChild<'a>]) -> Op<'a>,
+    starts_group: fn(&Cx<'_, P>, &SurfaceChild<'_>) -> bool,
+    mut lower_group: impl FnMut(&mut Cx<'a, P>, &[SurfaceChild<'a>]) -> Op<'a>,
 ) -> Vec<'a, Op<'a>> {
     let mut out: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
     let mut rest = children;
@@ -82,10 +83,10 @@ fn lower_grouped_children<'a>(
 
 /// The length of the group opening `children`: through the last child
 /// that starts the group, across table gaps between them.
-fn group_len(
-    cx: &Cx<'_>,
+fn group_len<P: ProvenanceSink>(
+    cx: &Cx<'_, P>,
     children: &[SurfaceChild<'_>],
-    starts_group: fn(&Cx<'_>, &SurfaceChild<'_>) -> bool,
+    starts_group: fn(&Cx<'_, P>, &SurfaceChild<'_>) -> bool,
 ) -> usize {
     let mut end = 1;
     for (index, child) in children.iter().enumerate().skip(1) {
@@ -98,16 +99,16 @@ fn group_len(
     end
 }
 
-fn implicit_element<'a>(
-    cx: &mut Cx<'a>,
+fn implicit_element<'a, P: ProvenanceSink>(
+    cx: &mut Cx<'a, P>,
     tag: &'static str,
     rule: &'static str,
     segment: &[SurfaceChild<'a>],
-    lower_children: impl FnOnce(&mut Cx<'a>) -> Vec<'a, Op<'a>>,
+    lower_children: impl FnOnce(&mut Cx<'a, P>) -> Vec<'a, Op<'a>>,
 ) -> Op<'a> {
     let span = segment_span(cx, segment);
     let node = cx.mint_op();
-    cx.record(rule, node, "", cstr!("ui.element {tag}"), span);
+    cx.record(rule, node, "", || cstr!("ui.element {tag}"), span);
     Op::Element(Box::new_in(
         ElementOp {
             tag,
@@ -129,7 +130,7 @@ fn push_all<'a>(out: &mut Vec<'a, Op<'a>>, ops: Vec<'a, Op<'a>>) {
     }
 }
 
-fn starts_implicit_tbody(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
+fn starts_implicit_tbody(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> bool {
     match child {
         SurfaceChild::Element(element) => {
             matches!(element.tag(), "tr" | "td" | "th")
@@ -139,7 +140,7 @@ fn starts_implicit_tbody(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
     }
 }
 
-fn starts_implicit_tr(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
+fn starts_implicit_tr(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> bool {
     match child {
         SurfaceChild::Element(element) => {
             matches!(element.tag(), "td" | "th")
@@ -157,7 +158,7 @@ fn is_table_gap(child: &SurfaceChild<'_>) -> bool {
     }
 }
 
-fn segment_span(cx: &Cx<'_>, segment: &[SurfaceChild<'_>]) -> Span {
+fn segment_span(cx: &Cx<'_, impl ProvenanceSink>, segment: &[SurfaceChild<'_>]) -> Span {
     match (segment.first(), segment.last()) {
         (Some(first), Some(last)) => {
             Span::new(child_span(cx, first).start, child_span(cx, last).end)
@@ -168,7 +169,7 @@ fn segment_span(cx: &Cx<'_>, segment: &[SurfaceChild<'_>]) -> Span {
     }
 }
 
-fn child_span(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Span {
+fn child_span(cx: &Cx<'_, impl ProvenanceSink>, child: &SurfaceChild<'_>) -> Span {
     match child {
         SurfaceChild::Element(element) => element_span(cx, element),
         SurfaceChild::Text(token)
@@ -180,6 +181,6 @@ fn child_span(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Span {
     }
 }
 
-fn interpolation_span(cx: &Cx<'_>, node: &Interpolation<'_>) -> Span {
+fn interpolation_span(cx: &Cx<'_, impl ProvenanceSink>, node: &Interpolation<'_>) -> Span {
     Span::new(cx.offset(node.open.text), cx.token_span(&node.close).end)
 }

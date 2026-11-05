@@ -1,0 +1,6 @@
+export const helper = {
+  methods: {
+    /** @param {string} name */
+    greet(name) { return name; }
+  }
+};

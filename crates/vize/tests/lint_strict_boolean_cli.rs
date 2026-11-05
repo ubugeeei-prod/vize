@@ -4,6 +4,7 @@
 #![expect(clippy::disallowed_methods, reason = "subprocess fixture strings")]
 use crate::support::corsa_path;
 use crate::support::corsa_requirement;
+use crate::support::current_rule_documentation;
 mod lsp;
 #[cfg(unix)]
 mod project_runtime;
@@ -120,7 +121,9 @@ fn native_boolean_conditions_match_complete_authored_reports() {
         let (status, actual) = lint(project.path());
         assert_eq!(
             actual,
-            serde_json::from_str::<Value>(expected).expect("oracle"),
+            current_rule_documentation::packet(
+                serde_json::from_str::<Value>(expected).expect("oracle"),
+            ),
             "{name}"
         );
         assert_eq!(status, Some(1), "{name}");
@@ -199,9 +202,10 @@ fn warning_severity_is_preserved_and_options_alone_do_not_enable_the_rule() {
         vite_config::source(serde_json::to_vec(&config).expect("warning config")),
     )
     .expect("config");
-    let mut expected: Value =
+    let expected: Value =
         serde_json::from_str(include_str!("fixtures/strict-boolean/DomElement.json"))
             .expect("oracle");
+    let mut expected = current_rule_documentation::packet(expected);
     expected[0]["messages"][0]["severity"] = json!(1);
     expected[0]["errorCount"] = json!(0);
     expected[0]["warningCount"] = json!(1);
@@ -256,10 +260,11 @@ fn every_nullable_allowance_changes_only_its_authored_conditions() {
         let Some(project) = project(source, options) else {
             return;
         };
-        let mut expected: Value = serde_json::from_str(include_str!(
+        let expected: Value = serde_json::from_str(include_str!(
             "fixtures/strict-boolean/TypeClassification.json"
         ))
         .expect("authored oracle");
+        let mut expected = current_rule_documentation::packet(expected);
         let messages = expected[0]["messages"].as_array_mut().expect("messages");
         let original_count = messages.len();
         messages.retain(|message| !allowed_lines.iter().any(|line| message["line"] == *line));

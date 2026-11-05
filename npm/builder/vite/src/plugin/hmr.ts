@@ -6,7 +6,14 @@ import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
 import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
-import { detectHmrUpdateType, hasHmrChanges, hasStyleChanges, type HmrUpdateType } from "../hmr.ts";
+import {
+  detectHmrUpdateType,
+  hasCustomBlockChanges,
+  hasHmrChanges,
+  hasStyleChanges,
+  type HmrUpdateType,
+} from "../hmr.ts";
+import { collectCustomBlockModules } from "./custom-block-hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import {
@@ -17,7 +24,9 @@ import {
   preferAcceptingClientModules,
 } from "./hmr-module-graph.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { prepareSfcSrcRequests, type HostResolve } from "./src-requests.ts";
+import type { HostResolve } from "../../../shared/sfc-src.ts";
+import { prepareSfcSrcRequests } from "./src-requests.ts";
+import { typeProjectDependencyRoots } from "./type-project-watches.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
@@ -47,17 +56,27 @@ type GenerateBundle = Record<string, GenerateBundleItem>;
  * with the number of components in the project; the caches now carry a reverse
  * index that answers it in constant time. See `compiled-module-cache.ts`.
  */
-function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string): string[] {
-  const normalizedDependency = path.resolve(dependencyFile);
+function getVueFilesDependingOn(
+  state: VizePluginState,
+  dependencyFile: string,
+): { owners: string[]; clientOwners: Set<string> } {
+  const dependencies = [
+    path.resolve(dependencyFile),
+    ...typeProjectDependencyRoots(state.cache, dependencyFile),
+  ];
   const owners = new Set<string>();
+  const clientOwners = new Set<string>();
 
   for (const cache of [state.cache, state.ssrCache]) {
-    for (const vueFile of ownersOfDependency(cache, normalizedDependency)) {
-      owners.add(vueFile);
+    for (const dependency of dependencies) {
+      for (const vueFile of ownersOfDependency(cache, dependency)) {
+        owners.add(vueFile);
+        if (cache === state.cache) clientOwners.add(vueFile);
+      }
     }
   }
 
-  return [...owners];
+  return { owners: [...owners], clientOwners };
 }
 
 export async function handleHotUpdateHook(
@@ -73,8 +92,10 @@ export async function handleHotUpdateHook(
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
-  const clientDependencyOwners = new Set(ownersOfDependency(state.cache, path.resolve(file)));
-  const dependencyOwners = getVueFilesDependingOn(state, file);
+  const { owners: dependencyOwners, clientOwners: clientDependencyOwners } = getVueFilesDependingOn(
+    state,
+    file,
+  );
   if (dependencyOwners.length > 0) {
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
 
@@ -214,16 +235,23 @@ export async function handleHotUpdateHook(
       if (modules.size > 0) {
         state.pendingHmrUpdateTypes.set(file, updateType);
         invalidateModules(server, modules);
+        const affected = new Set(modules);
         // A save that changes the template (or script) together with a style
         // reports a non-style update type, but the style modules are separate
         // Vite modules and keep their cached CSS unless they are invalidated
-        // here as well (#7742).
+        // here as well (#7742). Custom-block modules are the same kind of edge:
+        // the user plugin only re-runs when that module is invalidated.
         if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
           const styleModules = await collectStyleModules(server, file, newCompiled);
           invalidateModules(server, styleModules);
-          return [...new Set([...modules, ...styleModules])];
+          for (const module of styleModules) affected.add(module);
         }
-        return [...modules];
+        if (hasCustomBlockChanges(prevCompiled, newCompiled)) {
+          const blockModules = await collectCustomBlockModules(server, file, newCompiled);
+          invalidateModules(server, blockModules);
+          for (const module of blockModules) affected.add(module);
+        }
+        return [...affected];
       }
 
       state.pendingHmrUpdateTypes.delete(file);

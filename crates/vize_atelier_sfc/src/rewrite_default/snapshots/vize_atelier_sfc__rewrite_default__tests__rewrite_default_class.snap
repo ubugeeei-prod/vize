@@ -3,4 +3,4 @@ source: crates/vize_atelier_sfc/src/rewrite_default/tests.rs
 expression: result.as_str()
 ---
 class Foo {}
-const _sfc_main = Foo
+const _sfc_main = Foo;

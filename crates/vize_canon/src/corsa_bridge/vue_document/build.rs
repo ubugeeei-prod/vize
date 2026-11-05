@@ -11,6 +11,9 @@ use super::{
     tsx_vue_import_shim,
 };
 
+mod host_edit;
+pub(in crate::corsa_bridge) use host_edit::retarget_host;
+
 /// Immutable query data belongs to the same bounded, self-validating alias revision.
 /// Native session synchronization is intentionally performed on every open.
 #[expect(

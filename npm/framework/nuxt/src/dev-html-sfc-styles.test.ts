@@ -37,3 +37,20 @@ void test("generated-style names preserve the existing invalid-path rejection", 
   ])
     assert.equal(sanitizeNuxtDevStylesheetLinks(link(href)), "");
 });
+
+void test("#11522 a <style src> module, the src stylesheet with its SFC query, survives", () => {
+  const query =
+    "vue=&type=style&index=0&scoped=data-v-98cff51b&lang=css&vize-file=%2Fapp%2Fcomponents%2Fheading%2FVFHeading%2Evue&lang.css";
+  for (const path of ["components/styles/heading.css", "app/styles/nested/heading.scss"]) {
+    const tag = link(`/_nuxt/${path}?${query}`);
+    assert.equal(sanitizeNuxtDevStylesheetLinks(tag), tag);
+  }
+  // Negative controls: no owning SFC, a non-stylesheet path, or an unsafe path.
+  for (const href of [
+    "/_nuxt/components/styles/heading.css?vue=&type=style&index=0",
+    "/_nuxt/components/styles/heading.css?vue=&type=style&vize-file=%2Fapp%2Fx.js",
+    `/_nuxt/components/styles/heading.js?${query}`,
+    `/_nuxt/components/%2e%2e/heading.css?${query}`,
+  ])
+    assert.equal(sanitizeNuxtDevStylesheetLinks(link(href)), "");
+});

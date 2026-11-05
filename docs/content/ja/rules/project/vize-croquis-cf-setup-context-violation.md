@@ -4,14 +4,17 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-実験的な解析器の例では、インスタンスごとの setup ではなく通常の script のモジュールスコープに `ref(0)` を置いています。Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。CLI はこの個別の診断コードを生成しません。
+Vue が許さない使い方で setup コンテキストを使っています。
 
-既定の重大度: context-dependent  
-適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
-自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
+| 既定の重大度 | 自動修正 | オプション |
+| --- | --- | --- |
+| context-dependent | なし。関連ファイルを確認して修正してください | コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます |
+
+適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
 実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
+
+Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。
 
 ## 共通のプロジェクト ファイル
 
@@ -32,7 +35,7 @@ createApp(Root).mount("#app");
 <script type="module" src="/main.ts"></script>
 ```
 
-## 悪い
+## 悪い例
 
 通常の script ブロックのモジュールスコープで `ref(0)` を作っており、この解析器の例で想定する、インスタンスごとの setup コンテキストには含まれません。
 
@@ -47,7 +50,7 @@ export default {};
 <template><p>Count</p></template>
 ```
 
-## 良い
+## 良い例
 
 script setup に移し、各インスタンスが count を持ち、テンプレートから読み取れる形にします。
 
@@ -61,7 +64,11 @@ const count = ref(0);
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
+## 設定（Vite+）
+
+この診断コードは現在 CLI では出力されないため、有効化する CLI のルール設定はありません。
+
+## 関連ページ
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -9,8 +9,8 @@ mod scan;
 #[cfg(test)]
 mod tests;
 
-/// Maximum simultaneous distinct delimiter runs in the allocation-free hook.
-/// Repeated identical brackets share a counter rather than consuming entries.
+/// Historical delimiter-run bound, retained for published Rust consumers.
+/// Vue directive names are no longer limited by expression nesting.
 pub const MAX_DIRECTIVE_DELIMITER_RUNS: usize = 64;
 
 /// Vue 3 directive-name syntax.
@@ -51,35 +51,17 @@ impl DirectiveSyntax for VueDirectives {
         if prefix == DirectivePrefix::Full && bytes.get(index) == Some(&b':') {
             index += 1;
         }
-        let mut section_start = index;
-        while let Some(&byte) = bytes.get(index) {
-            if byte == b'.' {
-                if section_start < index {
-                    result.arg = Some(ArgSyntax::Static(absolute(offset, section_start, index)));
-                }
-                result.modifiers = absolute(offset, index, name.len());
-                return Ok(Some(result));
-            }
-            if byte == b'[' {
-                if section_start < index {
-                    result.arg = Some(ArgSyntax::Static(absolute(offset, section_start, index)));
-                }
-                let (end, closed) = scan::argument(bytes, index + 1)?;
-                if closed || index + 1 < end {
-                    result.arg = Some(ArgSyntax::Dynamic(absolute(offset, index + 1, end)));
-                }
-                if !closed {
-                    return Ok(Some(result));
-                }
-                index = end + 1;
-                section_start = index;
+        let (end, closed) = scan::argument(bytes, index);
+        if index < end {
+            result.arg = Some(if bytes.get(index) == Some(&b'[') {
+                // Vue classifies the whole argument by its first byte and
+                // drops its last byte only after leaving the dynamic state.
+                ArgSyntax::Dynamic(absolute(offset, index + 1, end - usize::from(closed)))
             } else {
-                index += 1;
-            }
+                ArgSyntax::Static(absolute(offset, index, end))
+            });
         }
-        if section_start < index {
-            result.arg = Some(ArgSyntax::Static(absolute(offset, section_start, index)));
-        }
+        result.modifiers = absolute(offset, end, name.len());
         Ok(Some(result))
     }
 }

@@ -145,9 +145,24 @@ pub(super) fn generate_scope_checks(
     scope_id: u32,
     indent: &str,
 ) {
+    // Everything below, nested slot hosts included, may read these.
+    ctx.dynamic_aliases
+        .emit_scope(ts, scope_id, indent, |ts, start| {
+            if let Some(source) = ctx.source_context.template {
+                ctx.explicit_generics.emit_usage(
+                    ts,
+                    None,
+                    (source, ctx.source_context.offset),
+                    start,
+                    vize_croquis::drawer::dynamic_component_alias(start).as_str(),
+                    indent,
+                );
+            }
+        });
     let Some(usages) = ctx.components_by_scope.get(&scope_id) else {
         return;
     };
+    super::component_props::emit_scoped_usage_declarations(ts, mappings, ctx, usages);
     // Supplemental rows never gain an event/navigation/resolver arm. Keep
     // the ordinary path borrowed, with no filtering allocation.
     let navigation_rows;

@@ -187,7 +187,7 @@ pub(crate) fn panic_reason(payload: Box<dyn core::any::Any + Send>) -> String {
 }
 
 /// Bind parsed segments to runnable plans; every named pass is an optional,
-/// fusable no-op (the `davinci-opt` shape - no catalogue until P2-9). Names
+/// fusable no-op (no catalogue until P2-9). Names
 /// are leaked into the `&'static str` the const-data manager requires; both
 /// callers are one-shot CLI runs.
 fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {

@@ -1,18 +1,37 @@
 ---
 title: "script/no-with-defaults"
+description: "Vue 3.5 以降の props 分割代入の既定値を勧めます。"
 ---
 
 # `script/no-with-defaults`
 
 Vue 3.5 以降の props 分割代入の既定値を勧めます。
 
-[悪い例](#悪い) · [良い例](#良い)
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | `opinionated` | なし | なし |
 
-既定の重大度: `warning`  
-プリセット: `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
+
+## 悪い例
+
+型付きの props 宣言を `withDefaults` で包んで `count` と `name` の既定値を指定しており、ここで推奨する Vue 3.5 以降の分割代入の既定値を使っていません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
+</script>
+```
+
+## 良い例
+
+分割代入の変数に `count = 0` と `name = "Ada"` を直接指定し、`withDefaults` のラッパーを取り除きます。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
+</script>
+```
 
 ## 設定（Vite+）
 
@@ -31,30 +50,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+設定したら `vp run lint` を実行します。
 
-## 悪い
+## 関連ページ
 
-型付きの props 宣言を `withDefaults` で包んで `count` と `name` の既定値を指定しており、ここで推奨する Vue 3.5 以降の分割代入の既定値を使っていません。
-
-```vue
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
-</script>
-```
-
-## 良い
-
-分割代入の変数に `count = 0` と `name = "Ada"` を直接指定し、`withDefaults` のラッパーを取り除きます。
-
-```vue
-<script setup lang="ts">
-const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
-</script>
-```
-
-良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
-
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全ルール](../all.md)
+- [型と script のルール](../type-and-script.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41)

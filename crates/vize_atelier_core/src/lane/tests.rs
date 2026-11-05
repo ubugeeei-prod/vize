@@ -4,7 +4,7 @@ use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::parse;
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, FxHashMap, Span, cstr};
 
 #[test]
 fn test_transform_simple_element() {
@@ -146,7 +146,8 @@ fn typed_v_for_alias_rewrites_runtime_defaults_without_prefixing_types() {
     let Some(crate::ExpressionNode::Simple(alias)) = &for_node.value_alias else {
         panic!("expected value alias")
     };
-    assert_eq!(alias.content, "{ label = _ctx.fallback }: Row");
+    // The annotation is erased where the alias enters the TS lane.
+    assert_eq!(alias.content, "{ label = _ctx.fallback }");
     assert_eq!(alias.retained_parameter_names().unwrap(), ["label"]);
     let crate::ExpressionNode::Simple(iterable) = &for_node.source else {
         panic!("expected simple iterable")
@@ -343,4 +344,76 @@ fn test_codegen_v_if() {
 
     let result = generate(&root, CodegenOptions::default());
     insta::assert_snapshot!(result.code.as_str());
+}
+
+/// The compatibility lane alone (transform + codegen, no L2) under the SFC
+/// shape: TypeScript the detection scan misses still leaves as JavaScript.
+#[test]
+fn compat_lane_erases_typescript_the_scan_misses() {
+    use crate::options::{BindingMetadata, BindingType, CodegenMode};
+    let mut bindings = FxHashMap::default();
+    for (name, kind) in [
+        ("count", BindingType::SetupRef),
+        ("list", BindingType::SetupConst),
+        ("pick", BindingType::SetupConst),
+        ("Card", BindingType::SetupConst),
+    ] {
+        bindings.insert(name.into(), kind);
+    }
+    let metadata = BindingMetadata {
+        bindings,
+        props_aliases: FxHashMap::default(),
+        is_script_setup: true,
+    };
+    let battery = [
+        r#"<div @click="(e): void => pick(e)"></div>"#,
+        r#"<div @click="function (e: Event) { pick(e) }"></div>"#,
+        "<div>{{ pick<Item> }}</div>",
+        "<div>{{ list.map((x): number => x * 2) }}</div>",
+        "<div>{{ <any>count }}</div>",
+        "<div>{{ ((x?: number) => x)(count) }}</div>",
+        r#"<div @click="const n: number = count; pick(n)"></div>"#,
+        r#"<li v-for="(item: Item, i: number) in list" :key="i">{{ item }}</li>"#,
+        r#"<Card #default="{ row }: { row: Row }">{{ row }}</Card>"#,
+    ];
+    for inline in [false, true] {
+        for source in battery {
+            let allocator = Allocator::new();
+            let (mut root, errors) = parse(&allocator, source);
+            assert!(errors.is_empty(), "{source}: {errors:?}");
+            let options = TransformOptions {
+                prefix_identifiers: true,
+                is_ts: true,
+                inline,
+                binding_metadata: Some(metadata.clone()),
+                ..Default::default()
+            };
+            let errors = transform(&allocator, &mut root, options, None);
+            assert!(errors.is_empty(), "{source}: {errors:?}");
+            let result = generate(
+                &root,
+                CodegenOptions {
+                    mode: CodegenMode::Module,
+                    prefix_identifiers: true,
+                    is_ts: true,
+                    inline,
+                    binding_metadata: Some(metadata.clone()),
+                    ..Default::default()
+                },
+            );
+            let code = cstr!("{}\n{}", result.preamble, result.code);
+            let parsed_allocator = oxc_allocator::Allocator::default();
+            let diagnostics = oxc_parser::Parser::new(
+                &parsed_allocator,
+                code.as_str(),
+                oxc_span::SourceType::mjs(),
+            )
+            .parse()
+            .diagnostics;
+            assert!(
+                diagnostics.is_empty(),
+                "{source} (inline: {inline}):\n{code}"
+            );
+        }
+    }
 }

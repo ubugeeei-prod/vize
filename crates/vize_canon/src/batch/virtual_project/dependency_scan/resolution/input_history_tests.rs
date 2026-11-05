@@ -62,7 +62,14 @@ fn alias_fallback_and_vue_fold_preserve_resolution_and_tracking_order() {
         ("@/*".into(), "first/*".into()),
         ("@/*".into(), "second/*".into()),
     ];
-    let expected_inputs = vec![root.join("first/Component.vue"), target.clone()];
+    // A missing SFC consults the companions TypeScript appends to `.vue`.
+    let expected_inputs = vec![
+        root.join("first/Component.vue"),
+        root.join("first/Component.vue.ts"),
+        root.join("first/Component.vue.tsx"),
+        root.join("first/Component.vue.d.ts"),
+        target.clone(),
+    ];
     assert_eq!(
         resolve_dependency_with_inputs("@/Component.vue.ts", root, root, &aliases),
         (Some(target.clone()), expected_inputs)

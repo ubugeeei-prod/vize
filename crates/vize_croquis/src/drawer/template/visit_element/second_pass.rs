@@ -1,12 +1,9 @@
 use super::super::slot_names::slot_argument_is_runtime_dynamic;
 use super::component_reference::expression_identifier;
 use super::dynamic_component_alias::dynamic_component_alias;
-use super::v_for_scope::v_for_scope_bindings;
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
 use crate::drawer::Drawer;
-use crate::drawer::helpers::{
-    extract_identifier_refs_oxc, is_builtin_directive, parse_v_for_scope_expression,
-};
+use crate::drawer::helpers::is_builtin_directive;
 use vize_carton::{CompactString, profile};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 impl Drawer {
@@ -71,6 +68,11 @@ impl Drawer {
                         } else {
                             TemplateExpressionKind::VText
                         },
+                    );
+                } else if dir.name == "memo" {
+                    self.collect_basic_directive_expression(
+                        dir.exp.as_ref(),
+                        TemplateExpressionKind::VMemo,
                     );
                 } else if dir.name == "model" {
                     self.collect_basic_directive_expression(
@@ -218,67 +220,29 @@ impl Drawer {
                 return None;
             }
             let exp = dir.exp.as_ref()?;
-            if let Some(target) = expression_identifier(exp, &self.template_source) {
+            if let Some(target) = expression_identifier(exp, &self.template_source)
+                && !self.template_scope_binds(target.as_str())
+            {
                 // Capture the member once, inside its recorded narrowing
                 // guard when present. The authored :is expression owns errors;
                 // repeated root-level typeof queries must not duplicate them.
-                let owns_scope = !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "scope" | "for")));
-                if target.contains('.') && owns_scope
+                if target.contains('.')
                     && self.in_template_root_scope()
                     && self.dynamic_target_has_script_root(target.as_str())
                     && self.new_dynamic_alias_is_unbound(el.loc.span.start)
-                    && !dynamic_is_captures_same_element_for_alias(el, target.as_str(), &self.template_source)
                 {
-                    return Some(CompactString::new(dynamic_component_alias(el.loc.span.start)));
+                    return Some(CompactString::new(dynamic_component_alias(
+                        el.loc.span.start,
+                    )));
                 }
                 return dynamic_component_target_is_known(self, target.as_str()).then_some(target);
             }
-            // Root-owned script values keep their identity under a slot/loop
-            // which does not capture them; so must the v-if guard the root
-            // alias repeats. Actual lexical bindings, unknown globals and
-            // same-element v-for captures still cannot be hoisted.
-            ((self.in_template_root_scope()
-                || (!el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "scope"))
-                    && self.new_dynamic_alias_is_unbound(el.loc.span.start)
-                    && self.dynamic_is_reads_only_script_values(exp)
-                    && self.vif_guard_reads_only_script_values()))
-                && !dynamic_is_captures_same_element_for_alias(
-                    el,
-                    expression_content(exp, &self.template_source),
-                    &self.template_source,
-                ))
-            .then(|| CompactString::new(dynamic_component_alias(el.loc.span.start)))
+            // Any other target is declared in the scope its `:is` is
+            // evaluated in, which binds every name it reads.
+            self.new_dynamic_alias_is_unbound(el.loc.span.start)
+                .then(|| CompactString::new(dynamic_component_alias(el.loc.span.start)))
         })
     }
-}
-
-fn dynamic_is_captures_same_element_for_alias(
-    el: &ElementNode<'_>,
-    is_expression: &str,
-    template_source: &str,
-) -> bool {
-    let references = extract_identifier_refs_oxc(is_expression);
-    if references.is_empty() {
-        return false;
-    }
-    el.props.iter().any(|prop| {
-        let PropNode::Directive(dir) = prop else {
-            return false;
-        };
-        if dir.name != "for" {
-            return false;
-        }
-        let Some(exp) = dir.exp.as_ref() else {
-            return false;
-        };
-        parse_v_for_scope_expression(expression_content(exp, template_source)).is_some_and(
-            |aliases| {
-                v_for_scope_bindings(&aliases)
-                    .iter()
-                    .any(|alias| references.iter().any(|reference| reference.name == *alias))
-            },
-        )
-    })
 }
 
 fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {

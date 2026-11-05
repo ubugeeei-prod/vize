@@ -1,18 +1,38 @@
 ---
 title: "a11y/no-refer-to-non-existent-id"
+description: "Disallow references to non-existent IDs."
 ---
 
 # `a11y/no-refer-to-non-existent-id`
 
-Disallow references to non-existent IDs
+Disallow references to non-existent IDs.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+`aria-labelledby` points to `save-label`, but no element declares that ID.
+
+```vue
+<template>
+  <button aria-labelledby="save-label">Save</button>
+</template>
+```
+
+## Good
+
+Adding the matching span resolves the reference and provides the button label.
+
+```vue annotate="add:2"
+<template>
+  <span id="save-label">Save changes</span>
+  <button aria-labelledby="save-label">Save</button>
+</template>
+```
 
 ## Configuration (Vite+)
 
@@ -31,31 +51,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-`aria-labelledby` points to `save-label`, but no element declares that ID.
-
-```vue
-<template>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
-
-## Good
-
-Adding the matching span resolves the reference and provides the button label.
-
-```vue
-<template>
-  <span id="save-label">Save changes</span>
-  <button aria-labelledby="save-label">Save</button>
-</template>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [All rules](../all.md)
+- [Accessibility rules](../accessibility.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37)

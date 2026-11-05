@@ -1,18 +1,36 @@
 ---
 title: "vue/no-static-inline-styles"
+description: "Disallow static inline style attributes."
 ---
 
 # `vue/no-static-inline-styles`
 
-Disallow static inline style attributes
+Disallow static inline style attributes.
 
-[Bad](#bad) · [Good](#good)
+| Default severity | Presets | Automatic fix | Options |
+| --- | --- | --- | --- |
+| `warning` | None | No | None |
 
-Default severity: `warning`  
-Presets: _none_  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+## Bad
+
+The paragraph carries the constant color declaration in its style attribute.
+
+```vue annotate="remove:1,2,3"
+<template>
+<p style="color: red">Notice</p>
+</template>
+```
+
+## Good
+
+A notice class and scoped stylesheet hold the constant color outside the template attribute.
+
+```vue annotate="add:1,2"
+<template><p class="notice">Notice</p></template>
+<style scoped>.notice { color: red; }</style>
+```
 
 ## Configuration (Vite+)
 
@@ -31,29 +49,10 @@ export default defineConfig({
 });
 ```
 
-```sh
-vp run lint
-```
+Then run `vp run lint`.
 
-## Bad
+## Related
 
-The paragraph carries the constant color declaration in its style attribute.
-
-```vue
-<template>
-<p style="color: red">Notice</p>
-</template>
-```
-
-## Good
-
-A notice class and scoped stylesheet hold the constant color outside the template attribute.
-
-```vue
-<template><p class="notice">Notice</p></template>
-<style scoped>.notice { color: red; }</style>
-```
-
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
-
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [All rules](../all.md)
+- [Vue rules](../vue.md)
+- [All rules](../all.md)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15)

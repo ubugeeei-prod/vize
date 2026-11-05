@@ -1,0 +1,31 @@
+import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _component_Control = _resolveComponent("Control")
+  const n0 = _createComponentWithFallback(_component_Control, { onClick: () => ($event => (({ Child: _ctx.Child } = _ctx.value))) }, null, true)
+  return n0
+}
+const __vaporRender = render
+import { ref } from 'vue'
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'anonymous',
+  render: __vaporRender,
+  setup(__props, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+  __expose();
+
+const Child = ref(0);
+const value = {};
+
+const __returned__ = { Child, ref, value }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})

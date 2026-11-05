@@ -1,8 +1,8 @@
 //! Module-scope hoisting of template-referenced literal consts.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
-use oxc_span::{GetSpan, SourceType};
+use oxc_parser::ParserReturn;
+use oxc_span::GetSpan;
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{ScriptCompileContext, hoistable_literal_name};
@@ -22,6 +22,7 @@ use crate::script::{ScriptCompileContext, hoistable_literal_name};
 #[expect(clippy::type_complexity, reason = "single-use tuple")]
 pub(super) fn separate_hoisted_consts(
     transformed_setup: &str,
+    parsed: &ParserReturn<'_>,
     ctx: &ScriptCompileContext,
 ) -> (Vec<(String, usize)>, Vec<(String, usize)>) {
     let base = transformed_setup.as_ptr() as usize;
@@ -35,10 +36,6 @@ pub(super) fn separate_hoisted_consts(
         )
     };
 
-    let allocator = Allocator::default();
-    // TS parses a superset of the transformed setup in either lang.
-    let source_type = SourceType::ts();
-    let parsed = crate::script::parse_script_text(&allocator, transformed_setup, source_type);
     // `panicked` alone only covers an unrecoverable abort: oxc also returns a
     // recovered program with diagnostics attached, and the statements it
     // salvaged around a syntax error are not a trustworthy basis for moving

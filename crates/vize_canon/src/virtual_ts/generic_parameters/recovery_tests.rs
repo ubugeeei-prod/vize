@@ -88,11 +88,29 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                         raw_generated - 1 <= row[0] && row[0] <= raw_generated + RAW.len()
                     })
                     .collect();
+                let type_import = exact_mapped_chunk(&source, &result, TYPE_IMPORT);
+                let script_features = result
+                    .mappings
+                    .iter()
+                    .find(|row| {
+                        row.0[0] <= type_import.start && type_import.start < row.0[0] + row.0[1]
+                    })
+                    .map(|row| row.0[5])
+                    .unwrap();
+                assert_ne!(script_features, 0);
+                // The quotes stay diagnostic-only; the list navigates like script.
                 assert_eq!(
                     signature_rows,
                     vec![
                         [raw_generated - 1, 1, raw_authored - 1, 1, 1, 0],
-                        [raw_generated, RAW.len(), raw_authored, RAW.len(), 0, 0],
+                        [
+                            raw_generated,
+                            RAW.len(),
+                            raw_authored,
+                            RAW.len(),
+                            0,
+                            script_features
+                        ],
                         [
                             raw_generated + RAW.len(),
                             1,
@@ -103,17 +121,24 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                         ],
                     ]
                 );
-                let type_import = exact_mapped_chunk(&source, &result, TYPE_IMPORT);
                 let value_import = exact_mapped_chunk(&source, &result, VALUE_IMPORT);
                 let body = exact_mapped_chunk(&source, &result, &BODY.replace('\n', newline));
                 assert!(type_import.end <= signature);
                 assert!(value_import.end <= signature);
                 assert!(raw_generated + RAW.len() < body.start);
+                let mapped = |start: usize, end: usize| {
+                    result.mappings.iter().any(|span| {
+                        let [from, length, ..] = span.0;
+                        start < from + length && from < end
+                    })
+                };
+                // Policy 0 over an unmapped gap is the producer's scaffolding ignore.
                 let echoes: Vec<_> = result
                     .diagnostic_directives
                     .iter()
                     .flat_map(|directives| &directives.directives)
                     .map(|directive| directive.0)
+                    .filter(|[_, _, start, end, policy, _]| *policy != 0 || mapped(*start, *end))
                     .collect();
                 assert_eq!(echoes, Vec::<[usize; 6]>::new());
                 for fabricated in [
@@ -171,7 +196,15 @@ fn unsupported_malformed_generic_shapes_return_one_complete_authored_refusal() {
                 );
                 assert_eq!(result.mappings, Vec::new());
                 assert_eq!(result.semantic_links, Vec::new());
-                assert_eq!(result.diagnostic_directives, None);
+                let ignores = result
+                    .diagnostic_directives
+                    .as_ref()
+                    .expect("the unmapped refusal module is ignored")
+                    .directives
+                    .iter()
+                    .map(|directive| directive.0)
+                    .collect::<Vec<_>>();
+                assert_eq!(ignores, [[0, 0, 0, result.text.len(), 0, 0]]);
             }
         }
     }

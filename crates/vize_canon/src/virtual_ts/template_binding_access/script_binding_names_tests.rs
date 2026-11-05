@@ -20,7 +20,6 @@ fn with_owner<'a>(
             infer_dollar_el: false,
             receiver: String::from("__ctx"),
             cache: RefCell::default(),
-            diagnostic_prefixes: RefCell::default(),
         })),
         ..Default::default()
     }

@@ -100,7 +100,7 @@ pub(super) fn define_component_helper(legacy_vue2: bool, dialect: VueVersion) ->
 }
 
 mod instance;
-pub(super) use instance::{generic_instance_suffix, instance_helper, instance_suffix};
+pub(super) use instance::{generic_instance_suffix, instance_base, instance_helper};
 
 /// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
 pub fn generate_virtual_ts_with_offsets_legacy_vue2(

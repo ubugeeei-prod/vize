@@ -11,7 +11,10 @@ impl CorsaProjectClient {
             self.retain_logical_workspace_revision()?;
             return Ok(true);
         }
-        if !self.authored_workspace
+        // A configured editor attachment already owns the complete project
+        // after Canon activation. Reuse its acknowledged logical revision;
+        // independent API owners still need the materialized fallback.
+        if (!self.authored_workspace && !self.project_session_attached_to_editor)
             || self.materialized_project_session
             || self.project_root.join("__vize_vue_modules.d.ts").is_file()
             || (self.has_project_session()
@@ -84,9 +87,7 @@ impl CorsaProjectClient {
         self.logical_api_reset_pending |= self.has_project_session();
         self.document_texts.remove(uri);
         self.overlay_versions.remove(uri);
-        if let Some(mapped) = self.session_document_uris.remove(uri) {
-            self.external_document_uris.remove(mapped.as_str());
-        }
+        self.forget_session_document_uri(uri);
         // The existing full synchronization sends didClose before the next
         // semantic request. Native readonly fallback then sees the real disk
         // file, or its real absence, without a materialized write or deletion.
@@ -119,6 +120,33 @@ impl CorsaProjectClient {
 mod tests {
     use super::*;
     use crate::file_uri::path_to_file_uri;
+
+    #[test]
+    fn an_independent_non_authored_owner_is_not_promoted_to_logical_authority() {
+        let root = tempfile::tempdir().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        let uri = path_to_file_uri(&root.path().join("source.ts"));
+        client.document_texts.insert(uri, "export {};".into());
+        assert_eq!(client.try_logical_workspace_overlays(), Ok(false));
+        assert!(!client.logical_workspace_overlays);
+        assert!(client.session_document_uris.is_empty());
+    }
+
+    #[test]
+    fn a_missing_attached_snapshot_is_an_error_not_accepted_logical_authority() {
+        let root = tempfile::tempdir().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.project_session_attached_to_editor = true;
+        client.document_texts.insert(
+            path_to_file_uri(&root.path().join("source.ts")),
+            "export {};".into(),
+        );
+        assert_eq!(
+            client.try_logical_workspace_overlays(),
+            Err(cstr!("Attached editor snapshot dialect is unavailable"))
+        );
+        assert!(client.logical_api_reset_pending);
+    }
 
     #[test]
     fn missing_closed_logical_queries_preserve_empty_answers_without_spawning() {

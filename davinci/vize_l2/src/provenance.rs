@@ -22,16 +22,17 @@
 //! - **Per artifact:** every field is owned and `'static` (asserted
 //!   below, the P1-11 contract), so the records outlive the compile arena
 //!   exactly as diagnostics do. On a broken SFC the kept L2 fragments plus
-//!   these records are what the LSP and Spolvero stay live on.
+//!   these records are what the LSP and the stage view stay live on.
 //!
 //! # Materialization policy
 //!
-//! P2-8 materializes provenance **fully** - every decision, owned text.
-//! That is deliberate and deliberately not the last word: the InfoTree
-//! anti-lesson is memory weight, and whether the fused CLI walk runs with
-//! provenance off or ring-buffered is P2-12b's measurement (the P2-3
-//! record already scopes it there). This type is the record's shape, not
-//! its retention policy.
+//! A record is built only for a consumer that reads it. The consumer
+//! chooses the [`ProvenanceSink`] its producers write into: the record
+//! vector keeps every decision with owned text, while [`NoProvenance`]
+//! keeps nothing, so a compile nobody inspects never formats a record.
+//! The choice is a type, so a product cannot read records nobody kept.
+
+use alloc::vec::Vec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
@@ -62,6 +63,38 @@ const _: () = {
     assert_owned::<ProvenanceRecord>();
 };
 
+/// Where producers put their decisions, chosen by the consumer.
+pub trait ProvenanceSink {
+    /// The kept records, or `None` when no consumer asked for any.
+    fn kept(&mut self) -> Option<&mut Vec<ProvenanceRecord>>;
+
+    /// Append one decision. `build` runs only when records are kept.
+    #[inline]
+    fn record(&mut self, build: impl FnOnce() -> ProvenanceRecord) {
+        if let Some(records) = self.kept() {
+            records.push(build());
+        }
+    }
+}
+
+impl ProvenanceSink for Vec<ProvenanceRecord> {
+    #[inline]
+    fn kept(&mut self) -> Option<&mut Vec<ProvenanceRecord>> {
+        Some(self)
+    }
+}
+
+/// The sink of a compile no consumer inspects: it keeps no record.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct NoProvenance;
+
+impl ProvenanceSink for NoProvenance {
+    #[inline]
+    fn kept(&mut self) -> Option<&mut Vec<ProvenanceRecord>> {
+        None
+    }
+}
+
 /// A 64-bit figure of a pointer-containing struct, so it carries the
 /// `vize_relief` guard (see `crate::op`): three owned strings (24 each) +
 /// span (8) + the 4-byte id option, padded.
@@ -70,9 +103,39 @@ const _: () = assert!(core::mem::size_of::<ProvenanceRecord>() == 88);
 
 #[cfg(test)]
 mod tests {
-    use super::ProvenanceRecord;
+    use super::{NoProvenance, ProvenanceRecord, ProvenanceSink};
+    use alloc::vec::Vec;
+    use core::cell::Cell;
     use vize_l0::id::NodeId;
     use vize_l0::{Span, String};
+
+    fn decision(built: &Cell<u32>) -> impl FnOnce() -> ProvenanceRecord + '_ {
+        || {
+            built.set(built.get() + 1);
+            ProvenanceRecord {
+                rule: String::from("lower.text"),
+                node: NodeId::from_index(0),
+                before: String::from("t"),
+                after: String::from("ui.text"),
+                span: Span::new(0, 1),
+            }
+        }
+    }
+
+    #[test]
+    fn only_a_kept_sink_builds_records() {
+        let built = Cell::new(0);
+        let mut none = NoProvenance;
+        none.record(decision(&built));
+        assert_eq!(built.get(), 0);
+        assert_eq!(none.kept(), None);
+
+        let mut kept = Vec::new();
+        kept.record(decision(&built));
+        assert_eq!(built.get(), 1);
+        assert_eq!(kept.len(), 1);
+        assert_eq!(kept[0].after.as_str(), "ui.text");
+    }
 
     #[test]
     fn a_producing_decision_links_its_op() {

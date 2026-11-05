@@ -4,9 +4,9 @@
  *
  * The native compiler returns a map for the module it emitted. `generateOutput`
  * then rewrites that module: it prepends a `<style>` injection, splices style
- * imports in after the last static import, inserts CSS-module wiring before the
- * default export, rewrites `export default` to `const _sfc_main =`, and appends
- * `__scopeId`/HMR code. All of those are whole-line insertions or same-line
+ * imports in after the last static import, rewrites `export default` to
+ * `const _sfc_main =`, and appends `__scopeId`, CSS-module wiring and HMR
+ * code. All of those are whole-line insertions or same-line
  * substitutions, which is exactly the class of edit a v3 `mappings` string can
  * absorb without being decoded:
  *
@@ -90,4 +90,55 @@ export class MappedModule {
     const startsAtLineStart = prefix === 0 || previous.charCodeAt(prefix - 1) === 10;
     this.map = shiftMappedLines(this.map, startsAtLineStart ? editLine : editLine + 1, addedLines);
   }
+
+  /** Replace `code[start, end)`, in UTF-16 indices. */
+  replace(start: number, end: number, text: string): void {
+    this.edit(`${this.code.slice(0, start)}${text}${this.code.slice(end)}`);
+  }
+}
+
+const BASE64_DIGITS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+function vlq(value: number): string {
+  let rest = value < 0 ? (-value << 1) | 1 : value << 1;
+  let encoded = "";
+  do {
+    const digit = rest & 31;
+    rest >>>= 5;
+    encoded += BASE64_DIGITS[rest > 0 ? digit | 32 : digit];
+  } while (rest > 0);
+  return encoded;
+}
+
+/**
+ * The map of a module whose code is `source` as written in `file`.
+ *
+ * A bundler names a module's original after its id unless `load` supplies a
+ * map, and a Vize SFC id carries a query. A segment at every non-blank column
+ * keeps each position a later map traces through it exact.
+ */
+export function identitySourceMap(file: string, source: string): SourceMapV3 {
+  const lines: string[] = [];
+  let previousLine = 0;
+  let previousColumn = 0;
+  for (const [line, text] of source.split("\n").entries()) {
+    let segments = "";
+    let generatedColumn = 0;
+    for (let column = 0; column < text.length; column++) {
+      const code = text.charCodeAt(column);
+      if (code === 32 || code === 9 || code === 13) continue;
+      segments += `${segments ? "," : ""}${vlq(column - generatedColumn)}A${vlq(line - previousLine)}${vlq(column - previousColumn)}`;
+      generatedColumn = column;
+      previousLine = line;
+      previousColumn = column;
+    }
+    lines.push(segments);
+  }
+  return {
+    version: 3,
+    sources: [file],
+    sourcesContent: [source],
+    names: [],
+    mappings: lines.join(";"),
+  };
 }

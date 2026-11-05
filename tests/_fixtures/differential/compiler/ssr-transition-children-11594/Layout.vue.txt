@@ -1,0 +1,11 @@
+<template>
+  <div>
+    <Transition appear>
+      <!-- A comment directly inside the transition -->
+      <p>hello</p>
+    </Transition>
+    <Transition>
+      <template v-if="ok"><p>a</p><p>b</p></template>
+    </Transition>
+  </div>
+</template>

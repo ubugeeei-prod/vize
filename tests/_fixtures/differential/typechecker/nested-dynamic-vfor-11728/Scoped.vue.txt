@@ -1,0 +1,14 @@
+<script setup lang="ts">
+defineProps<{ rows: string[][] }>();
+const requireString = (value: string) => value;
+</script>
+<template>
+  {{ line.toFixed() }} {{ r.toUpperCase() }}
+  <table>
+    <tr v-for="(line, r) in rows" :key="r">
+      <component :is="r === 0 ? 'th' : 'td'" v-for="(cell, c) in line" :key="c">
+        {{ requireString(cell) }} {{ r.toFixed() }} {{ c.toFixed() }}
+      </component>
+    </tr>
+  </table>
+</template>

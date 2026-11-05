@@ -25,16 +25,16 @@ use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, Span, String};
 use vize_l1::markup::{Element, ElementClose, Token};
-use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 
 mod custom_element;
 mod for_parts;
 mod span;
 mod text_parent;
-use text_parent::TextWhitespace;
+use super::text::{Lane, TextLane, TextSource, TextWhitespace};
 
-pub(crate) struct Cx<'a> {
+pub(crate) struct Cx<'a, P> {
     pub allocator: &'a Allocator,
     block: SourceBlock<'a>,
     pub(super) frozen_openings: super::frozen::FrozenOpenings<'a>,
@@ -56,7 +56,8 @@ pub(crate) struct Cx<'a> {
     /// Whether ordinary comments lower to `ui.comment`.
     preserve_comments: bool,
     pub diagnostics: Vec<Diagnostic>,
-    pub provenance: Vec<ProvenanceRecord>,
+    /// Decisions, kept only when the consumer chose a recording sink.
+    pub provenance: P,
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
     pub for_facts: SideTable<super::forop::ForParts>,
@@ -72,7 +73,7 @@ pub(crate) struct Cx<'a> {
     custom_element_predicate: Option<fn(&str) -> bool>,
 }
 
-impl<'a> Cx<'a> {
+impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn with_source_block_and_comment_policy(
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
@@ -80,7 +81,10 @@ impl<'a> Cx<'a> {
         preserve_comments: bool,
         custom_element_patterns: &[String],
         custom_element_predicate: Option<fn(&str) -> bool>,
-    ) -> Self {
+    ) -> Self
+    where
+        P: Default,
+    {
         Self {
             allocator,
             block,
@@ -95,7 +99,7 @@ impl<'a> Cx<'a> {
             v_pre_depth: 0,
             preserve_comments,
             diagnostics: Vec::new(),
-            provenance: Vec::new(),
+            provenance: P::default(),
             scopes: SideTable::new(),
             texts: SideTable::new(),
             for_facts: SideTable::new(),
@@ -123,9 +127,18 @@ impl<'a> Cx<'a> {
         self.features = self.features.observing(family);
     }
 
-    /// Whether the walk is inside a condense-suppressing subtree.
-    pub(crate) fn condense_suppressed(&self) -> bool {
-        self.text_whitespace != TextWhitespace::Normal
+    /// The text rules of the child list being lowered.
+    pub(crate) fn text_lane(&self) -> Lane<'a> {
+        Lane {
+            src: TextSource::new(self.allocator, self.block),
+            rules: TextLane {
+                preserve_comments: self.preserve_comments,
+                whitespace: self.text_whitespace,
+                ignore_newline_at: self.ignore_newline_at,
+                in_pre: self.condense_depth > 0,
+                frozen: self.v_pre_suppressed(),
+            },
+        }
     }
 
     /// Whether the walk is inside a `v-pre` subtree.
@@ -167,16 +180,17 @@ impl<'a> Cx<'a> {
         self.observe(super::features::OpFamily::TextCompound);
         if let Some(id) = node {
             parts.assert_compound_laws(id, span, source);
-            let before = vize_l0::cstr!("parts={}", parts.parts.len());
-            let dynamic = parts.dynamic_count();
-            self.record(
+            self.record_text(
                 "lower.text-fact",
                 node,
-                before.as_str(),
-                vize_l0::cstr!(
-                    "fact static={} dynamic={dynamic}",
-                    parts.parts.len() - dynamic
-                ),
+                || vize_l0::cstr!("parts={}", parts.parts.len()),
+                || {
+                    let dynamic = parts.dynamic_count();
+                    vize_l0::cstr!(
+                        "fact static={} dynamic={dynamic}",
+                        parts.parts.len() - dynamic
+                    )
+                },
                 span,
             );
             self.texts.insert(id, parts);
@@ -252,23 +266,11 @@ impl<'a> Cx<'a> {
     /// is a slice of the one source (`vize_l1`'s P1-10 contract), so
     /// this is pointer arithmetic, never a search.
     pub(crate) fn offset(&self, slice: &str) -> u32 {
-        match self.block.offset_of(slice) {
-            Some(offset) => offset,
-            None => {
-                debug_assert!(
-                    false,
-                    "L1 handed the lowering a string that is not a block slice"
-                );
-                self.block.start()
-            }
-        }
+        super::text::block_offset(self.block, slice)
     }
 
     pub(crate) fn span_of(&self, slice: &str) -> Span {
-        self.block.span_of(slice).unwrap_or_else(|| {
-            let start = self.offset(slice);
-            Span::new(start, start.saturating_add(slice.len() as u32))
-        })
+        super::text::block_span(self.block, slice)
     }
 
     /// The span of a token's own text (`leading` excluded; a `Missing`
@@ -319,25 +321,41 @@ impl<'a> Cx<'a> {
 
     /// One provenance record, in decision order (the survival law:
     /// `node: None` + empty `after` is a decision that produced nothing).
+    /// `after` is formatted only when the sink keeps records.
     pub(crate) fn record(
         &mut self,
         rule: &'static str,
         node: Option<NodeId>,
         before: &str,
-        after: String,
+        after: impl FnOnce() -> String,
         span: Span,
     ) {
-        // Caller-side `after` formatting has already happened: this span only
-        // counts rule/before ownership and record-vector allocation traffic.
-        #[cfg(feature = "davinci-benchmark-profile")]
-        let _guard = super::benchmark::record_guard();
-        self.provenance.push(ProvenanceRecord {
-            rule: String::from(rule),
-            node,
-            before: String::from(before),
-            after,
-            span,
-        });
+        self.record_text(rule, node, || String::from(before), after, span);
+    }
+
+    /// [`Self::record`] for a decision whose `before` is not authored text.
+    fn record_text(
+        &mut self,
+        rule: &'static str,
+        node: Option<NodeId>,
+        before: impl FnOnce() -> String,
+        after: impl FnOnce() -> String,
+        span: Span,
+    ) {
+        if let Some(records) = self.provenance.kept() {
+            let after = after();
+            // The span excludes `after` formatting: it counts rule/before
+            // ownership and record-vector allocation traffic.
+            #[cfg(feature = "davinci-benchmark-profile")]
+            let _guard = super::benchmark::record_guard();
+            records.push(ProvenanceRecord {
+                rule: String::from(rule),
+                node,
+                before: before(),
+                after,
+                span,
+            });
+        }
     }
 }
 

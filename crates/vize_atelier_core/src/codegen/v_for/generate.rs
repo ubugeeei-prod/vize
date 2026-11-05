@@ -132,11 +132,8 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 if gen_is_template {
                     ctx.push(", 64 /* STABLE_FRAGMENT */");
                 } else {
-                    let (patch_flag, dynamic_props) = calculate_element_patch_info(
-                        children_el,
-                        ctx.options.binding_metadata.as_ref(),
-                        ctx.cache_handlers_in_current_scope(),
-                    );
+                    let (patch_flag, dynamic_props) =
+                        calculate_element_patch_info(children_el, ctx);
                     let patch_flag = strip_need_patch_for_v_for_item(patch_flag);
                     if children_el.children.is_empty()
                         && (patch_flag.is_some() || dynamic_props.is_some())
@@ -293,17 +290,9 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Add patch flag
                 if is_component {
                     let (mut patch_flag, dynamic_props) = if is_dynamic {
-                        calculate_element_patch_info_skip_is(
-                            el,
-                            ctx.options.binding_metadata.as_ref(),
-                            ctx.cache_handlers_in_current_scope(),
-                        )
+                        calculate_element_patch_info_skip_is(el, ctx)
                     } else {
-                        calculate_element_patch_info(
-                            el,
-                            ctx.options.binding_metadata.as_ref(),
-                            ctx.cache_handlers_in_current_scope(),
-                        )
+                        calculate_element_patch_info(el, ctx)
                     };
                     // Remove TEXT flag for components with slot children (text is inside slot)
                     if has_slot_children(el)
@@ -356,11 +345,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 } else if !ctx.skip_v_memo {
                     // Skip patch flags for v-memo elements (memo handles reactivity)
                     let flag_el = unwrapped_child.unwrap_or(el);
-                    let (patch_flag, dynamic_props) = calculate_element_patch_info(
-                        flag_el,
-                        ctx.options.binding_metadata.as_ref(),
-                        ctx.cache_handlers_in_current_scope(),
-                    );
+                    let (patch_flag, dynamic_props) = calculate_element_patch_info(flag_el, ctx);
                     let patch_flag = strip_need_patch_for_v_for_item(patch_flag);
                     if flag_el.children.is_empty()
                         && (patch_flag.is_some() || dynamic_props.is_some())

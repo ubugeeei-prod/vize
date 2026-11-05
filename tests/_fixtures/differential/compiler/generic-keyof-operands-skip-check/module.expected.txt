@@ -1,30 +1,26 @@
-import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
-import { mergeProps as _mergeProps } from "vue";
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<span${_ssrRenderAttrs(_mergeProps({ "data-open": $setup.props.open }, _attrs))}>${_ssrInterpolate($setup.props.field)}</span>`);
+  _push(`<span${_ssrRenderAttrs(_mergeProps({ "data-open": $setup.props.open }, _attrs))}>${_ssrInterpolate($setup.props.field)}</span>`)
 }
+
 export default {
-  __name: "Layout",
+  __name: 'Layout',
   props: {
-    open: {
-      type: Boolean,
-      required: false,
-      skipCheck: true
-    },
-    field: {
-      type: null,
-      required: false
-    }
+    open: { type: Boolean, required: false, skipCheck: true },
+    field: { type: null, required: false }
   },
-  ssrRender,
+  ssrRender: ssrRender,
   setup(__props, { expose: __expose }) {
-    __expose();
-    const props = __props;
-    const __returned__ = { props };
-    Object.defineProperty(__returned__, "__isScriptSetup", {
-      enumerable: false,
-      value: true
-    });
-    return __returned__;
-  }
-};
+  __expose();
+
+const props = __props
+
+const __returned__ = { props }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

@@ -150,6 +150,8 @@ pub struct RuleRegistry {
     rules: Vec<Box<dyn Rule>>,
     rule_names: Vec<&'static str>,
     has_exit_element_rules: bool,
+    /// Prefix before the unmodified built-in ecosystem suffix.
+    ecosystem_template_prefix: Option<usize>,
 }
 
 impl RuleRegistry {
@@ -160,6 +162,7 @@ impl RuleRegistry {
             rules: Vec::new(),
             rule_names: Vec::new(),
             has_exit_element_rules: true,
+            ecosystem_template_prefix: None,
         }
     }
 
@@ -169,16 +172,19 @@ impl RuleRegistry {
             rules: Vec::with_capacity(capacity),
             rule_names: Vec::with_capacity(capacity),
             has_exit_element_rules: false,
+            ecosystem_template_prefix: None,
         }
     }
 
     /// Register a rule
     pub fn register(&mut self, rule: Box<dyn Rule>) {
+        self.ecosystem_template_prefix = None;
         self.rule_names.push(rule.meta().name);
         self.rules.push(rule);
     }
 
     pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
+        self.ecosystem_template_prefix = None;
         let rule_name = rule.meta().name;
         if let Some(slot) = self
             .rule_names
@@ -194,6 +200,11 @@ impl RuleRegistry {
 
     pub fn add(&mut self, rule: Box<dyn Rule>) {
         self.register(rule);
+    }
+
+    /// Available only while the constructor-owned ecosystem suffix is intact.
+    pub(crate) fn ecosystem_template_prefix(&self) -> Option<usize> {
+        self.ecosystem_template_prefix
     }
 
     pub fn rules(&self) -> &[Box<dyn Rule>] {
@@ -271,6 +282,7 @@ impl RuleRegistry {
     pub fn with_essential() -> Self {
         let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
         // Vue Essential Rules only
+        registry.register(Box::new(crate::rules::vue::CommentDirective));
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
         registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));
@@ -333,7 +345,9 @@ impl RuleRegistry {
     /// Create registry with broad defaults plus ecosystem integration rules.
     pub fn with_ecosystem() -> Self {
         let mut registry = Self::with_happy_path();
+        let prefix = registry.rules.len();
         crate::rules::ecosystem::register(&mut registry);
+        registry.ecosystem_template_prefix = Some(prefix);
         registry
     }
 

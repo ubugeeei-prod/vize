@@ -9,6 +9,7 @@ import {
   assertPackageOutput,
   checkBuildReceipt,
   digest,
+  pinnedReleaseCandidate,
   providerFiles,
   stageProvider,
   targets,
@@ -95,6 +96,73 @@ void test("source, release, target, physical image and same-build token mismatch
     checkBuildReceipt(receipt, Buffer.from("different physical build"), source, version, target),
   );
   assert.throws(() => checkBuildReceipt(receipt, image, source, version, "unknown"));
+});
+void test("a release rerun accepts the receipt built for the pinned candidate, not a moved HEAD", () => {
+  const target = "x86_64-unknown-linux-gnu";
+  // Run 41638269416: native artifacts were built for babd327; the rerun resolved 5c574b.
+  const pinned = "babd327388128b1f1e96c949453a014fbb4038fd";
+  const moved = "5c574b658a1ace2a2ec209c3974a6969d79b8c56";
+  const foreign = "f".repeat(40);
+  const image = Buffer.from(`controlled test image for ${target}: ${token}`);
+  const receipt: BuildReceipt = {
+    schema: "vize.nativeBuildReceipt.v1",
+    source: pinned,
+    releaseVersion: version,
+    rustTarget: target,
+    nodeFile: targets[target].node,
+    bytes: image.length,
+    sha256: digest(image),
+    nativeBuildToken: token,
+  };
+  checkBuildReceipt(receipt, image, moved, version, target, pinned);
+  for (const changed of [{ source: moved }, { source: foreign }, { sha256: "d".repeat(64) }])
+    assert.throws(() =>
+      checkBuildReceipt(
+        { ...receipt, ...changed } as BuildReceipt,
+        image,
+        moved,
+        version,
+        target,
+        pinned,
+      ),
+    );
+  assert.throws(() => checkBuildReceipt(receipt, image, moved, version, target));
+  assert.throws(() =>
+    checkBuildReceipt(receipt, image, moved, version, target, "refs/release-candidates/moved"),
+  );
+  assert.equal(pinnedReleaseCandidate({ VIZE_RELEASE_CANDIDATE_SHA: pinned }), pinned);
+  assert.equal(pinnedReleaseCandidate({}), undefined);
+  assert.equal(pinnedReleaseCandidate({ VIZE_RELEASE_CANDIDATE_SHA: "" }), undefined);
+  assert.throws(() => pinnedReleaseCandidate({ VIZE_RELEASE_CANDIDATE_SHA: pinned.slice(0, 12) }));
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pinned-receipt-"));
+  try {
+    const artifacts = path.join(temporary, "artifacts");
+    fs.mkdirSync(artifacts);
+    fs.writeFileSync(path.join(artifacts, receipt.nodeFile), image);
+    fs.writeFileSync(path.join(artifacts, `build-receipt.${target}.json`), JSON.stringify(receipt));
+    const provider = stageProvider(
+      root,
+      artifacts,
+      path.join(temporary, "stage"),
+      moved,
+      target,
+      pinned,
+    );
+    assert.equal(provider.source, pinned);
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(temporary, "stage", "build.json"), "utf8")).source,
+      pinned,
+    );
+    fs.writeFileSync(
+      path.join(artifacts, `build-receipt.${target}.json`),
+      JSON.stringify({ ...receipt, source: moved }),
+    );
+    assert.throws(() =>
+      stageProvider(root, artifacts, path.join(temporary, "foreign"), moved, target, pinned),
+    );
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });
 void test("authenticated VSIX layout never executes a workspace nativePath override", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vsix-provider-trust-"));

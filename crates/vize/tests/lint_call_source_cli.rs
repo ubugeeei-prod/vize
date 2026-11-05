@@ -74,7 +74,12 @@ fn original_argv_and_complete_comment_string_real_call_vectors_are_checked() {
             case["id"].as_str().unwrap(),
         );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
-        assert_eq!(actual, case["cli"], "{}: {output:?}", case["id"]);
+        assert_eq!(
+            actual,
+            crate::support::current_rule_documentation::packet(case["cli"].clone()),
+            "{}: {output:?}",
+            case["id"]
+        );
         unchanged(root, filename, source);
         fs::remove_file(root.join(filename)).unwrap();
     }

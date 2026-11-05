@@ -20,10 +20,16 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { renderOutput, run } from "./smoke-process.ts";
+import { runInitFailureChecks } from "./smoke-release-init-failures.ts";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.ts";
 import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
 import { recordPackedInstallReceipt } from "./smoke-release-init-receipt.ts";
+import {
+  packedDownloadBytes,
+  readLspDiagnosticSettle,
+  recordPackedSmokeTiming,
+} from "./smoke-release-init-timing.ts";
 import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.ts";
 import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.ts";
 import {
@@ -173,7 +179,9 @@ function runFreshProjectCell(context, cell) {
   assert.deepEqual(readJson(path.join(projectRoot, "package.json")).scripts, shape.expectedScripts);
   assertNoDedicatedConfig(projectRoot);
 
+  const installStarted = performance.now();
   installPlannedDependencies(context, projectRoot, manager, shape);
+  const installMs = performance.now() - installStarted;
   assertProjectLocalToolchain(context, projectRoot, shape);
   recordPackedInstallReceipt(projectRoot, shape.plannedDependencies, {
     projectShape: shape.id,
@@ -185,7 +193,9 @@ function runFreshProjectCell(context, cell) {
     "the install added dependencies the plan did not name",
   );
 
+  const checkStarted = performance.now();
   const clean = checkReport(projectRoot);
+  const firstCheckMs = performance.now() - checkStarted;
   assert.equal(clean.status, 0, `clean project failed vize:check\n${clean.rendered}`);
   assert.deepEqual(reportedDiagnostics(clean.report, projectRoot), []);
   assert.equal(clean.report.errorCount, 0);
@@ -234,6 +244,22 @@ function runFreshProjectCell(context, cell) {
   assertMissingCorsaGuidance(projectRoot, manager);
   const lspShape = freshProjectLspShape(shape, authored);
   if (lspShape) runProjectLspSession(projectRoot, lspShape);
+  const lsp = lspShape
+    ? readLspDiagnosticSettle(projectRoot)
+    : { notifications: 0, settleMs: null, settled: false, diagnosticQuietMs: null };
+  recordPackedSmokeTiming({
+    projectShape: shape.id,
+    packageManager: manager.id,
+    host: `${process.platform}-${process.arch}`,
+    installMs,
+    firstCheckMs,
+    ...packedDownloadBytes(context.packed, shape.plannedDependencies),
+    lspSession: Boolean(lspShape),
+    lspDiagnosticsNotifications: lsp.notifications,
+    lspDiagnosticsSettled: lsp.settled,
+    lspDiagnosticsSettleMs: lsp.settleMs,
+    diagnosticQuietMs: lsp.diagnosticQuietMs,
+  });
   console.log(`runtime: fresh ${shape.id} project via ${manager.id} (init, install, check triple)`);
 }
 
@@ -244,6 +270,7 @@ function runFreshProjectCell(context, cell) {
  * failed, so the narrower native-only release job stays green.
  */
 export function runFreshProjectInitChecks(context) {
+  runInitFailureChecks(context);
   const freshRootPath = path.join(context.tempDir, "fresh");
   fs.mkdirSync(freshRootPath, { recursive: true });
   const freshRoot = fs.realpathSync.native(freshRootPath);

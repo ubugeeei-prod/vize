@@ -13,49 +13,76 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapp
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
 
+use super::dynamic_component::DynamicComponentAliases;
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
 
+/// Where one component's listener aliases may be declared once and reused.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub(crate) struct EventContractKey {
+pub(crate) struct ComponentContractKey {
     pub(super) component_type_name: String,
     pub(super) component_ref: String,
-    pub(super) event_name: String,
     pub(super) legacy_vue2: bool,
     pub(super) fallthrough_listeners: bool,
     pub(super) native_fallthrough_only: bool,
-    pub(super) needs_typed_handler_assignment: bool,
     pub(super) enclosing_vif_guard: Option<String>,
     pub(super) parent_scope: Option<u32>,
     pub(super) chained_guard_block: Option<u64>,
+}
+
+/// A component's own derivations (`event: None`) or one of its events.
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct EventContractKey {
+    pub(super) component: ComponentContractKey,
+    pub(super) event: Option<EventContract>,
+}
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct EventContract {
+    pub(super) name: String,
+    pub(super) typed_handler: bool,
 }
 
 #[cfg(test)]
 mod event_contract_key_tests {
     use super::*;
 
-    fn key(native_fallthrough_only: bool) -> EventContractKey {
+    fn key(native_fallthrough_only: bool, event: Option<&str>) -> EventContractKey {
         EventContractKey {
-            component_type_name: String::from("Child"),
-            component_ref: String::from("Child"),
-            event_name: String::from("click"),
-            legacy_vue2: false,
-            fallthrough_listeners: true,
-            native_fallthrough_only,
-            needs_typed_handler_assignment: true,
-            enclosing_vif_guard: None,
-            parent_scope: None,
-            chained_guard_block: None,
+            component: ComponentContractKey {
+                component_type_name: String::from("Child"),
+                component_ref: String::from("Child"),
+                legacy_vue2: false,
+                fallthrough_listeners: true,
+                native_fallthrough_only,
+                enclosing_vif_guard: None,
+                parent_scope: None,
+                chained_guard_block: None,
+            },
+            event: event.map(|name| EventContract {
+                name: String::from(name),
+                typed_handler: true,
+            }),
         }
     }
 
     #[test]
     fn native_fallthrough_mode_partitions_contract_deduplication() {
         let mut contracts = FxHashMap::default();
-        assert_eq!(contracts.insert(key(false), 1), None);
-        assert_eq!(contracts.insert(key(false), 2), Some(1));
-        assert_eq!(contracts.insert(key(true), 3), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 2), Some(1));
+        assert_eq!(contracts.insert(key(true, Some("click")), 3), None);
         assert_eq!(contracts.len(), 2);
+    }
+
+    #[test]
+    fn a_component_contract_is_shared_by_its_events() {
+        let mut contracts = FxHashMap::default();
+        assert_eq!(contracts.insert(key(false, None), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("click")), 1), None);
+        assert_eq!(contracts.insert(key(false, Some("close")), 1), None);
+        assert_eq!(contracts.insert(key(false, None), 2), Some(1));
+        assert_eq!(contracts.insert(key(true, None), 3), None);
     }
 }
 
@@ -140,7 +167,11 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
     pub(crate) hoist_shared_preamble: bool,
+    /// The template runs inside the SFC's generic setup signature, so a
+    /// component binding's type may be a type parameter.
+    pub(crate) generic_component: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
     /// Component usages whose props have already been materialized for event
     /// inference. Every listener on one usage reads the same resolved object.
     pub(crate) event_inference_usages: &'a RefCell<FxHashSet<usize>>,
@@ -216,10 +247,16 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) hoist_shared_preamble: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
+    /// Declarations of the usages whose component only their scope can see.
+    pub(super) scoped_usage_declarations:
+        &'a super::component_props::ScopedUsageDeclarations<'a, 'template>,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {
     pub(super) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    pub(super) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) data: &'a EventHandlerScopeData,
     /// Whether handler assignability and payload types should be checked.
     /// When disabled, authored handler bodies are still emitted as statements
@@ -227,6 +264,8 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) check_emits: bool,
     pub(super) event_type: &'a str,
     pub(super) event_handler_type: Option<&'a str>,
+    /// Resolver-owned unknown context; never inferred from an empty argument tuple.
+    pub(super) event_handler_contextless: Option<&'a str>,
     /// For component `@event` handlers, the synthesized listener type
     /// (e.g. `__Child_1_test_listener`) that captures the full emit argument
     /// tuple (or the single `$event` fallback when the emit stays unresolved).
@@ -287,6 +326,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) relaxed_required_usage_starts: &'a FxHashSet<u32>,
     /// `@vue-generic` usages and the instantiated binding each resolves through.
     pub(super) explicit_generics: &'a ExplicitGenerics,
+    pub(super) dynamic_aliases: &'a DynamicComponentAliases,
 }
 
 impl<'a> ComponentPropsContext<'a, '_> {

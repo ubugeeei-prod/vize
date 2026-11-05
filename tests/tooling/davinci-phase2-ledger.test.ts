@@ -296,7 +296,7 @@ test("suite registry debt and the TS-52 transport decision stay resolved", () =>
   assert.equal(maximum, 53);
   assertSuiteRange(text.readme, maximum);
   assert.match(text.suites, /^\| TS-25 \|[^\n]*P2-9[^\n]*P2-11[^\n]*P2-16/mu);
-  assert.match(text.suites, /^\| TS-52 \|[^\n]*Spolvero feed payload/mu);
+  assert.match(text.suites, /^\| TS-52 \|[^\n]*--test stage_feed_payload/mu);
   assert.match(p2Suites, /TS-11 empty for DOM and JSX/);
   assert.match(taskSection(text.tasksLater, "P2-16"), /JSX corpus projects' rows in TS-11 empty/);
   assert.match(text.phase, /\*\*Registry maintenance this phase owes\*\*/);

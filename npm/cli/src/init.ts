@@ -1,10 +1,11 @@
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
 import { atomicWriteFile, requireSharedConfig } from "./setup/config.js";
 import { initHelp, parseInitArgs, type InitArgs } from "./init/args.js";
 import { detectProject, withFramework, type ProjectDetection } from "./init/detect.js";
+import { failedInstallMessage } from "./init/install-failure.js";
 import { planInit, type InitCommand, type InitPlan } from "./init/plan.js";
 import {
   confirm,
@@ -186,5 +187,29 @@ function writePlannedFiles(
 }
 
 function runInitCommand(command: InitCommand): void {
-  execFileSync(command.command, [...command.args], { cwd: command.cwd, stdio: "inherit" });
+  const isWindowsBatch = process.platform === "win32" && /\.(cmd|bat)$/iu.test(command.command);
+  const result = spawnSync(command.command, [...command.args], {
+    cwd: command.cwd,
+    encoding: "utf8",
+    shell: isWindowsBatch,
+  });
+  if (result.error != null) {
+    throw new Error(
+      failedInstallMessage(command.command, command.args, result.error.message, "spawn-error"),
+      { cause: result.error },
+    );
+  }
+  if (result.status === 0 && result.signal === null) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    return;
+  }
+  throw new Error(
+    failedInstallMessage(
+      command.command,
+      command.args,
+      `${result.stderr ?? ""}\n${result.stdout ?? ""}`,
+      result.signal ?? result.status,
+    ),
+  );
 }

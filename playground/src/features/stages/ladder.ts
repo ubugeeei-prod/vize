@@ -1,4 +1,4 @@
-// The Spolvero feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
+// The stage feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
 // L3 Impeto), their pages, a few counts read off the canonical pages, and the
 // pass timeline in feed order. Pure data shaping over the negotiated feed -
 // every fact shown comes from a page the compiler printed.
@@ -123,9 +123,9 @@ function pageLabel(stage: string, pass: string): string {
 }
 
 /**
- * Shape a negotiated feed's pages (for one file) into the ladder; `timings`
- * (from the profile export, keyed `stage/pass`) fills each step's wall time
- * and `walkTimings` (keyed `stage/lead-pass`) each walk's.
+ * Shape one file's pages into the ladder. `timings` (keyed `stage/pass`)
+ * fills each step's wall time and `walkTimings` (keyed `stage/lead-pass`)
+ * each walk's.
  */
 export function buildLadder(
   feed: StageFeed,

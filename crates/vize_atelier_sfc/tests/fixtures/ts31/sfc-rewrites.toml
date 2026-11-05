@@ -28,7 +28,7 @@ const pick = (item: Item): void => {
 [[fixture.anchor]]
 category = "rewritten-statement"
 find = "import { ref } from 'vue'"
-generated = 'import { ref } from "vue"'
+generated = "import { ref } from 'vue'"
 
 [[fixture.anchor]]
 category = "rewritten-statement"
@@ -185,7 +185,7 @@ generated = "export const LIMIT = 3;"
 category = "rewritten-statement"
 find = "const emit = defineEmits"
 token = "const"
-generated = "const emit = __emit;"
+generated = "const emit = __emit"
 
 [[fixture.anchor]]
 category = "rewritten-statement"

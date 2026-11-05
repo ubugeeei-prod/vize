@@ -1,12 +1,13 @@
 use super::{Cx, ExprRef, OpaqueReason, expression};
 use crate::dialect::LegacyCaps;
 use vize_l0::{Allocator, SourceRoot, Span, String};
+use vize_l2::provenance::NoProvenance;
 
 #[test]
 fn detached_and_inconsistent_encoded_sources_have_an_explicit_coordinate_refusal() {
     let a = Allocator::default();
     let source = "'&amp;' && value";
-    let cx = Cx::with_source_block_and_comment_policy(
+    let cx: Cx<'_, NoProvenance> = Cx::with_source_block_and_comment_policy(
         &a,
         SourceRoot::new(source).unwrap().whole_block(),
         LegacyCaps::VUE3,
@@ -34,7 +35,7 @@ fn detached_and_inconsistent_encoded_sources_have_an_explicit_coordinate_refusal
 fn decoded_parse_failures_keep_the_existing_parser_classification_and_text() {
     let a = Allocator::default();
     let source = "a &amp;&amp; broken +";
-    let cx = Cx::with_source_block_and_comment_policy(
+    let cx: Cx<'_, NoProvenance> = Cx::with_source_block_and_comment_policy(
         &a,
         SourceRoot::new(source).unwrap().whole_block(),
         LegacyCaps::VUE3,

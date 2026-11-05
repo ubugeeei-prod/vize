@@ -11,7 +11,7 @@ export function jsInstallFilters(group: string): string[] {
     : group === "fresco-conformance"
       ? ["./npm/fresco-native"]
       : group === "ui-conformance"
-        ? ["./npm/ui"]
+        ? ["./npm/ui", "./npm/cli"]
         : group === "original-project"
           ? ["./npm/oxlint"]
           : [];

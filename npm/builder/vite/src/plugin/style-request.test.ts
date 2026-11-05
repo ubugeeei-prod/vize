@@ -7,6 +7,7 @@ import { compileFile } from "../compiler.ts";
 import { generateOutput } from "../utils/index.ts";
 import { transformScopedPreprocessorCss } from "./compat.ts";
 import { loadHook } from "./load.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { getCompileOptionsForRequest, type VizePluginState } from "./state.ts";
 
@@ -64,8 +65,8 @@ void test("Nuxt emitted CSS entry loads before its SFC with both build caches em
     assert.equal(state.cache.size, 0);
     assert.deepEqual(loadHook(state, resolved as string, { ssr: true }), style);
     assert.equal(state.ssrCache.get(filename), compiled);
-    const component = loadHook(state, `${filename}?vue&vize`, { ssr: true });
-    assert.ok(component && typeof component === "object");
+    const component = await loadSfcModule(state, `${filename}?vue&vize`, { ssr: true });
+    assert.ok(component);
     assert.equal(state.ssrCache.get(filename), compiled);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -176,7 +177,10 @@ void test("Nuxt repeated inline style resolution loads the original scoped SFC b
       assert.equal(params.get("module"), index === 1 ? "theme" : null);
       assert.equal(
         imported.slice(0, imported.indexOf("?")),
-        `${filename}.__vize_style_${index}${index === 1 ? ".module" : ""}.${expectedLang}`,
+        // A `<style src>` module is the src file itself (#11522).
+        index === 3
+          ? path.join(root, "external.css")
+          : `${filename}.__vize_style_${index}${index === 1 ? ".module" : ""}.${expectedLang}`,
       );
       assert.equal(
         /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/.test(imported),

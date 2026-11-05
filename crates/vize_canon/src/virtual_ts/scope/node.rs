@@ -84,10 +84,10 @@ pub(super) fn generate_scope_node(
                 ctx.template_binding_access,
                 capture_slots,
                 |ts, mappings| {
-                    // Recheck positive terms for callback-captured object-property narrowing.
+                    // Restore the complete branch after the callback boundary.
                     let callback_guard = enclosing_guard
                         .filter(|_| capture_slots)
-                        .and_then(callback_vif_guard);
+                        .and_then(|guard| callback_vif_guard(guard, None));
                     let callback_indent = if let Some(guard) = callback_guard.as_deref() {
                         let rewritten =
                             rewrite_reserved_template_binding(guard, ctx.template_binding_access);
@@ -113,6 +113,7 @@ pub(super) fn generate_scope_node(
                     if let Some(ref index) = data.index_alias {
                         append!(*ts, "{callback_indent}void {index};\n");
                     }
+                    emit_scope_usage_bindings(ts, mappings, ctx, scope_id, &callback_indent);
 
                     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                         && ctx.check_options.check_template_bindings
@@ -219,6 +220,7 @@ pub(super) fn generate_scope_contents(
     indent: &str,
 ) {
     let scope_id = scope.id.as_u32();
+    emit_scope_usage_bindings(ts, mappings, ctx, scope_id, indent);
     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
         && ctx.check_options.check_template_bindings
     {
@@ -236,4 +238,28 @@ pub(super) fn generate_scope_contents(
         );
     }
     generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, indent);
+}
+
+/// Declare what the usages evaluated in `scope_id` resolve through, before
+/// anything in its body reads them.
+pub(super) fn emit_scope_usage_bindings(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &ScopeGenContext<'_, '_>,
+    scope_id: u32,
+    indent: &str,
+) {
+    ctx.dynamic_aliases
+        .emit_scope(ts, scope_id, indent, |ts, start| {
+            if let Some(source) = ctx.template_source {
+                ctx.explicit_generics.emit_usage(
+                    ts,
+                    Some(&mut *mappings),
+                    (source, ctx.template_offset),
+                    start,
+                    vize_croquis::drawer::dynamic_component_alias(start).as_str(),
+                    indent,
+                );
+            }
+        });
 }

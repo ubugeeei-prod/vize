@@ -24,11 +24,15 @@ fn complete_sfc_id_selector_ranges_and_public_reports() {
             .expect("whole SFC input");
         assert_eq!(Some(source.len() as u64), case["bytes"].as_u64());
         let filename = case["filename"].as_str().unwrap();
-        let expected: Value = serde_json::from_str(
+        let mut expected: Value = serde_json::from_str(
             &fs::read_to_string(fixture.join(case["expected"].as_str().unwrap()))
                 .expect("complete reviewed output vector"),
         )
         .expect("valid whole output vector");
+        expected["json"] = crate::current_css_documentation::packet(expected["json"].clone());
+        expected["plain"] = json!(crate::current_css_documentation::plain(
+            expected["plain"].as_str().unwrap()
+        ));
         let result = linter.lint_sfc(&source, filename);
         let diagnostics: Vec<_> = result
             .diagnostics

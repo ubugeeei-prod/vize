@@ -1,22 +1,22 @@
 export const portugueseRules4: Record<string, readonly [string, string, string]> = {
   "ecosystem/vue-router-extra-param": [
-    "A rota não declara tab; o Vue Router o descarta.",
-    "O caminho `user-post` declara `userId` e `postId`, mas a navegação também fornece `tab`, que não foi declarado, como parâmetro do caminho.",
+    "Relata parâmetros de navegação que a rota de destino não declara.",
+    "A rota não declara tab; o Vue Router o descarta. O caminho `user-post` declara `userId` e `postId`, mas a navegação também fornece `tab`, que não foi declarado, como parâmetro do caminho.",
     "Remova `tab` de params e mantenha apenas as chaves presentes no caminho da rota. Use query separadamente se a aplicação precisar selecionar uma aba.",
   ],
   "ecosystem/vue-router-missing-param": [
-    "O parâmetro obrigatório postId está ausente; depender da rota atual é frágil.",
-    "A navegação omite o parâmetro obrigatório `postId` do caminho `user-post`. Isso é um aviso porque o Vue Router pode herdar um valor da rota atual.",
+    "Relata uma navegação nomeada que omite um parâmetro obrigatório da rota.",
+    "O parâmetro obrigatório postId está ausente; depender da rota atual é frágil. A navegação omite o parâmetro obrigatório `postId` do caminho `user-post`. Isso é um aviso porque o Vue Router pode herdar um valor da rota atual.",
     "Passe `userId` e `postId` explicitamente para que a navegação não dependa do estado dos parâmetros da rota atual.",
   ],
   "ecosystem/vue-router-param-type": [
-    "postId não é repetível, portanto um array é inválido.",
-    '`postId` é um parâmetro escalar do caminho, mas a navegação fornece a ele o array `["2"]`.',
+    "Relata um valor de parâmetro de rota que o segmento declarado não aceita.",
+    'postId não é repetível, portanto um array é inválido. `postId` é um parâmetro escalar do caminho, mas a navegação fornece a ele o array `["2"]`.',
     'Passe o escalar `"2"` para o segmento `postId`, que não é repetível.',
   ],
   "ecosystem/vue-router-unknown-route": [
-    "O nome está ausente do roteador completo instalado.",
-    "O roteador instalado alcançável declara `user-post`, mas a navegação usa o nome incorreto `user-posts`.",
+    "Relata um nome de navegação que o roteador instalado não declara.",
+    "O nome está ausente do roteador completo instalado. O roteador instalado alcançável declara `user-post`, mas a navegação usa o nome incorreto `user-posts`.",
     "Use o nome registrado `user-post`, mantendo os dois parâmetros de caminho declarados.",
   ],
   "html/cross-component-nesting": [
@@ -105,7 +105,7 @@ export const portugueseRules4: Record<string, readonly [string, string, string]>
     "Remova `.stop` do ouvinte do evento personalizado; trate a propagação nativa no ouvinte real do DOM quando necessário.",
   ],
   "vize:croquis/cf/hydration-risk": [
-    "Este código de diagnóstico agrupa várias ocorrências de reatividade, incluindo uma prop copiada para uma ref. Ele não implica que toda expressão Date.now() seja detectada pela passagem de análise entre arquivos.",
+    "A renderização pode divergir entre o servidor e o cliente.",
     "O filho inicializa `ref(props.count)` uma vez, de modo que sua contagem local deixa de acompanhar mudanças posteriores na prop do pai. Este é o produtor atual prop-to-ref, não um exemplo geral de SSR não determinístico.",
     '`toRef(props, "count")` aponta para a prop em vez de copiar seu valor inicial para um estado independente.',
   ],

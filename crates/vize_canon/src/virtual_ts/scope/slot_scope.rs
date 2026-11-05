@@ -31,7 +31,9 @@ use super::context::{ScopeGenContext, VForPropsContext};
 use super::explicit_generics::ExplicitGenerics;
 use crate::virtual_ts::component_reference::component_binding_reference_with_provider;
 
-use super::emit::emit_slot_function_open;
+use super::emit::{
+    emit_slot_annotation_check, emit_slot_function_open, split_slot_pattern_annotation,
+};
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 
 mod payload;
@@ -55,18 +57,46 @@ struct SlotPayloadContext<'a> {
     explicit_generics: &'a ExplicitGenerics,
 }
 
+/// The slot a `v-slot` scope binds: the payload its parameter is annotated
+/// with, and the declared member an authored annotation is checked against.
+struct SlotTypes {
+    payload: String,
+    member: String,
+}
+
+impl SlotTypes {
+    fn unresolved() -> Self {
+        Self {
+            payload: "any".into(),
+            member: "any".into(),
+        }
+    }
+}
+
+/// The non-nullable slot member `name` (a type) selects from the host
+/// `binding`, under the payload helper's rules for `any` hosts and
+/// `string`-typed names; a missing member is `any`, as the payload is.
+fn slot_member_type(binding: &str, name: &str) -> String {
+    let member = cstr!(
+        "({{ [__K in keyof __H & {name}]-?: NonNullable<__H[__K]> }}[keyof __H & {name}] extends infer __M ? [__M] extends [never] ? any : __M : any)"
+    );
+    cstr!(
+        "typeof {binding} extends infer __H ? 0 extends (1 & __H) ? any : string extends {name} ? (string extends keyof __H ? {member} : any) : {member} : never"
+    )
+}
+
 /// Emit the host binding when the slot sits on a resolvable child, and return
-/// the slot-payload type its scope parameter is annotated with.
+/// the slot types its scope reads.
 fn slot_payload_type(
     ts: &mut String,
     ctx: &SlotPayloadContext<'_>,
     scope: &Scope,
     data: &VSlotScopeData,
-) -> String {
+) -> SlotTypes {
     let summary = ctx.summary;
     let name_is_static = summary.scopes.is_v_slot_name_static(scope.id);
     let Some(component) = data.component.as_deref() else {
-        return "any".into();
+        return SlotTypes::unresolved();
     };
     let host = find_slot_host(summary, scope, component);
     let (resolved, has_provider_value) = component_binding_reference_with_provider(
@@ -126,11 +156,8 @@ fn slot_payload_type(
     } else {
         String::default()
     };
-    if name_is_static {
-        cstr!(
-            "{slot_payload}<typeof {binding}, \"{}\"{provider}>",
-            data.name.as_str()
-        )
+    let name_type = if name_is_static {
+        cstr!("\"{}\"", data.name.as_str())
     } else {
         let name_binding = cstr!("{binding}_name");
         let name = crate::virtual_ts::expressions::rewrite_reserved_template_binding(
@@ -141,7 +168,11 @@ fn slot_payload_type(
         ts.push_str(
             dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
-        cstr!("{slot_payload}<typeof {binding}, typeof {name_binding}.name{provider}>")
+        cstr!("typeof {name_binding}.name")
+    };
+    SlotTypes {
+        payload: cstr!("{slot_payload}<typeof {binding}, {name_type}{provider}>"),
+        member: slot_member_type(binding.as_str(), name_type.as_str()),
     }
 }
 
@@ -166,7 +197,7 @@ pub(super) fn generate_v_slot_scope(
     append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
     let props_pattern = slot_props_pattern(data, scope_id);
     let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-    let props_type = slot_payload_type(
+    let slot_types = slot_payload_type(
         ts,
         &SlotPayloadContext {
             component_binding_check: ctx.component_binding_check,
@@ -196,23 +227,38 @@ pub(super) fn generate_v_slot_scope(
     } else {
         cstr!("_slot_{safe_slot_name}_{scope_id}")
     };
+    let pattern_offset = ctx.summary.scopes.v_slot_pattern_offset(scope.id);
     emit_slot_function_open(
         ts,
         indent,
         function_name.as_str(),
         props_pattern.as_str(),
-        &props_type,
+        &slot_types.payload,
         capture_slots,
         |ts| {
             map_slot_props_pattern(
                 mappings,
                 scope,
-                ctx.summary.scopes.v_slot_pattern_offset(scope.id),
+                pattern_offset,
                 ctx.template_offset,
                 props_pattern.as_str(),
                 function_gen_start,
                 ts,
             );
+            // Only this pass checks the annotation; the props pass replays
+            // the same scope and would report it twice.
+            if let Some((_, annotation)) = split_slot_pattern_annotation(props_pattern.as_str())
+                && let Some(pattern_offset) = pattern_offset
+            {
+                emit_slot_annotation_check(
+                    ts,
+                    mappings.diagnostics,
+                    inner_indent,
+                    slot_types.member.as_str(),
+                    annotation,
+                    (ctx.template_offset + pattern_offset) as usize,
+                );
+            }
             if data.prop_names.is_empty() {
                 // Simple identifier (no destructuring)
                 append!(*ts, "{inner_indent}void {props_pattern};\n");
@@ -222,6 +268,7 @@ pub(super) fn generate_v_slot_scope(
                     append!(*ts, "{inner_indent}void {prop_name};\n");
                 }
             }
+            super::node::emit_scope_usage_bindings(ts, mappings, ctx, scope_id, inner_indent);
 
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
@@ -294,6 +341,7 @@ pub(super) fn generate_v_slot_props_scope(
             scope,
             data,
         )
+        .payload
     };
     let function_gen_start = ts.len();
     emit_slot_function_open(

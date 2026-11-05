@@ -3,14 +3,15 @@
 //! [`super::handler_shape`].
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler_with_identifier};
 
 use crate::virtual_ts::expressions::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
 };
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
-use super::context::EventHandlerExprContext;
+use super::context::{EventHandlerExprContext, ScopeMappings};
+mod contextual_listener;
 use super::handler_shape::is_single_expression_statement;
 use super::vif_guard::append_ignored_vif_guard_open;
 use super::vif_guard::callback_vif_guard;
@@ -18,7 +19,7 @@ use super::vif_guard::callback_vif_guard;
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     scope_id: u32,
     ctx: &EventHandlerExprContext<'_>,
 ) {
@@ -30,10 +31,10 @@ pub(super) fn generate_event_handler_expressions(
             let content = rewritten.as_deref().unwrap_or(authored_content);
             // Croquis already established that an inline body owns `$event`.
             // Classify only the remaining reference/callback shapes, once.
-            let shape = if ctx.data.has_implicit_event {
-                EventHandlerExpression::Inline
+            let (shape, handler_binding) = if ctx.data.has_implicit_event {
+                (EventHandlerExpression::Inline, None)
             } else {
-                classify_event_handler(authored_content)
+                classify_event_handler_with_identifier(authored_content)
             };
             let is_callable_reference = matches!(shape, EventHandlerExpression::Reference);
             let is_reference = ctx.check_emits && is_callable_reference;
@@ -50,16 +51,16 @@ pub(super) fn generate_event_handler_expressions(
             };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
-            let guard = expr.vif_guard.as_ref().map(|guard| {
-                let trimmed_guard = guard.as_str().trim();
-                rewrite_reserved_template_binding(trimmed_guard, &scoped_access)
-                    .unwrap_or_else(|| String::from(guard.as_str()))
+            let guard = expr.vif_guard.as_ref().and_then(|guard| {
+                let guard = match ctx.enclosing_vif_guard {
+                    Some(_) => callback_vif_guard(guard.as_str(), handler_binding.as_deref()),
+                    None => Some(String::from(guard.as_str())),
+                }?;
+                Some(
+                    rewrite_reserved_template_binding(guard.as_str().trim(), &scoped_access)
+                        .unwrap_or(guard),
+                )
             });
-            let guard = match (guard, ctx.enclosing_vif_guard) {
-                (Some(guard), Some(_)) => callback_vif_guard(guard.as_str()),
-                (guard, None) => guard,
-                (None, _) => None,
-            };
             // A handler declared against the listener type returns its lone
             // expression, so its guard is an early exit (`vue-tsc`'s own
             // `if (!cond) throw 0`) rather than a block: a block would add
@@ -117,6 +118,23 @@ pub(super) fn generate_event_handler_expressions(
                 let mapped_end = ts.len();
                 ts.push_str(";  // handler expression (emit checks disabled)\n");
                 mapped_start..mapped_end
+            } else if let (Some(contextless), Some(listener_type)) =
+                (ctx.event_handler_contextless, ctx.event_listener_type)
+                && (is_reference || inline_callback_arg.is_some())
+            {
+                contextual_listener::emit(
+                    ts,
+                    mappings.diagnostics,
+                    contextual_listener::Listener {
+                        name: cstr!("__vize_handler_{scope_id}_{}", expr.start).as_str(),
+                        content,
+                        annotation: ctx.event_handler_type.unwrap_or(listener_type),
+                        contextless,
+                        indent: &handler_indent,
+                        source: src_start..src_end,
+                        event_name: ctx.event_name_src_range.clone(),
+                    },
+                )
             } else if let (Some(handler_type), Some(listener_type)) =
                 (ctx.event_handler_type, ctx.event_listener_type)
                 && (is_reference || inline_callback_arg.is_some())
@@ -207,6 +225,7 @@ pub(super) fn generate_event_handler_expressions(
             // expression is the next best anchor, so the identifier's error
             // still maps back instead of being dropped for want of a sub-span
             // (same fallback as a component prop's name/value ranges).
+            let value_range = gen_range.clone();
             let (gen_range, sub_spans) = match listener_spans {
                 Some((stmt_gen_range, name_gen_range)) => (
                     stmt_gen_range,
@@ -239,6 +258,18 @@ pub(super) fn generate_event_handler_expressions(
                 authored_content,
                 &scoped_access,
             );
+            if is_callable_reference && let Some(ownership) = ctx.diagnostic_ownership {
+                ownership.borrow_mut().record(
+                    crate::virtual_ts::diagnostic_ownership::InputOwner::for_listener_reference(
+                        expr.scope_id.as_u32(),
+                        expr.start,
+                        expr.end,
+                    ),
+                    value_range,
+                    src_start..src_end,
+                    false,
+                );
+            }
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",

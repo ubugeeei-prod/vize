@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -182,7 +183,7 @@ await test("bare instance names use complete explicit prefix-policy successor pa
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: withoutHelp(wholeJson(entry, findings)),
+        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, findings))),
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(observed);
