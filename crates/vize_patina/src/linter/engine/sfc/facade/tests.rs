@@ -95,6 +95,7 @@ const view = <button style="color:red">go</button>;
 
 mod battery;
 mod binding_order;
+mod callback_order;
 mod content_model;
 mod stylesheet;
 mod text_order;

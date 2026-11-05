@@ -1,6 +1,7 @@
 //! Original branch callbacks and child traversal.
 
 use super::{LintVisitor, parse_slot_scope_variables, parse_v_for_variables};
+use crate::context::CallbackSite;
 use vize_l0::{CompactString, profile};
 use vize_relief::{ElementNode, PropNode};
 
@@ -9,6 +10,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     pub(super) fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
         // Run if checks
         let keep_mask = self.keep_mask;
+        self.ctx
+            .record_callback_site(CallbackSite::Conditional(if_node.loc.span.start));
         profile!("patina.rules.check_if", {
             for (index, (rule, rule_name)) in self
                 .rules
@@ -36,6 +39,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     pub(super) fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
         // Run for checks
         let keep_mask = self.keep_mask;
+        self.ctx
+            .record_callback_site(CallbackSite::List(for_node.loc.span.start));
         profile!("patina.rules.check_for", {
             for (index, (rule, rule_name)) in self
                 .rules

@@ -30,7 +30,8 @@ pub(in crate::ide) fn linter_for_uri(
     .with_rule_severity_overrides(lint_options.rule_severity_overrides)
     .with_restricted_globals(lint_options.restricted_globals)
     .with_restricted_members(lint_options.restricted_members)
-    .with_musea_design_tokens(lint_options.musea_design_tokens);
+    .with_musea_design_tokens(lint_options.musea_design_tokens)
+    .with_editor_callback_order();
     linter = linter.with_vue_version(features.vue_version);
     linter = linter_options::apply_rule_options(
         linter,
@@ -68,21 +69,11 @@ impl DiagnosticService {
         let Some(linter) = linter_for_uri(state, uri, ecosystem_enabled) else {
             return vec![];
         };
-        let mut result = if is_standalone_html {
+        let result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())
         } else {
             linter.lint_sfc(content, uri.path())
         };
-        // Preserve configured rule precedence when visitors share a source range.
-        let rule_names = linter.registry().rule_names();
-        result.diagnostics.sort_by_cached_key(|diagnostic| {
-            let rule_index = rule_names
-                .iter()
-                .position(|name| *name == diagnostic.rule_name)
-                .unwrap_or(usize::MAX);
-            (diagnostic.start, diagnostic.end, rule_index)
-        });
-
         result
             .diagnostics
             .into_iter()

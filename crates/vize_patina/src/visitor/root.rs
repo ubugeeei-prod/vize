@@ -1,7 +1,7 @@
 //! Root callbacks and suppression registration in registry order.
 
 use super::{LintVisitor, element_has_directive};
-use crate::context::LintContext;
+use crate::context::{CallbackSite, LintContext};
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::profile;
 use vize_relief::{ElementNode, RootNode, SourceLocation, TemplateChildNode};
@@ -33,6 +33,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // happens for every file, so profiling once around the callback batch is
         // cheaper than creating a span for every individual rule callback.
         let keep_mask = self.keep_mask;
+        self.ctx.record_callback_site(CallbackSite::Template);
         profile!("patina.rules.run_on_template", {
             for (index, (rule, rule_name)) in self
                 .rules

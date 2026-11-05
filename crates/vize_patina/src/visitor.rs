@@ -2,7 +2,7 @@
 //!
 //! High-performance visitor with minimal allocations.
 
-use crate::context::{ElementContext, LintContext};
+use crate::context::{CallbackSite, ElementContext, LintContext};
 use crate::rule::Rule;
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::{CompactString, cstr, profile};
@@ -113,6 +113,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 // the same reason as template-level checks: callback dispatch is
                 // hot and individual rule spans add measurable overhead.
                 let keep_mask = self.keep_mask;
+                self.ctx
+                    .record_callback_site(CallbackSite::Interpolation(interp.loc.span.start));
                 profile!("patina.rules.check_interpolation", {
                     for (index, (rule, rule_name)) in self
                         .rules
@@ -148,10 +150,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             }
             TemplateChildNode::Comment(comment) => {
                 if let Some(kind) = comment.directive {
+                    self.ctx
+                        .record_callback_site(CallbackSite::Comment(comment.loc.span.start));
                     self.process_vize_directive(comment, kind);
                 }
             }
-            TemplateChildNode::Text(_) => {}
+            TemplateChildNode::Text(text) => {
+                self.ctx
+                    .record_callback_site(CallbackSite::Text(text.loc.span.start));
+            }
             _ => {}
         }
     }
@@ -274,6 +281,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // follow the same coalesced-span pattern as root/interpolation checks:
         // one guard around the rule batch, not one guard per rule.
         let keep_mask = self.keep_mask;
+        self.ctx
+            .record_callback_site(CallbackSite::Element(el.loc.span.start));
         profile!("patina.rules.enter_element", {
             for (index, (rule, rule_name)) in self
                 .rules
@@ -289,9 +298,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             }
         });
 
+        self.ctx
+            .record_callback_site(CallbackSite::Attributes(el.loc.span.start));
         // Check directives
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop {
+                self.ctx.record_callback_site(CallbackSite::Directive(
+                    el.loc.span.start,
+                    dir.loc.span.start,
+                ));
                 profile!("patina.rules.check_directive", {
                     for (index, (rule, rule_name)) in self
                         .rules
@@ -315,6 +330,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
 
         if self.run_exit_element_rules {
+            self.ctx
+                .record_callback_site(CallbackSite::ExitElement(el.loc.span.start));
             // Exit element - run rules
             profile!("patina.rules.exit_element", {
                 for (index, (rule, rule_name)) in self

@@ -1,6 +1,7 @@
 //! Arena-backed lint context: traversal, scopes, suppression and diagnostics.
 //! Project policy and semantic facts belong to this lint pass.
 
+mod callback_order;
 mod directives;
 mod eslint_directive;
 mod facts;
@@ -10,6 +11,7 @@ mod reporting;
 mod sfc_directives;
 mod state;
 
+pub(crate) use callback_order::CallbackSite;
 pub use project_directives::ProjectLintDirectives;
 pub(crate) use reporting::{
     SfcSuppression, offset_diagnostic, retain_unless_sfc_suppressed,
@@ -48,6 +50,8 @@ pub struct LintContext<'a> {
     locale: Locale,
     /// Collected diagnostics (pre-allocated capacity).
     pub(crate) diagnostics: Vec<LintDiagnostic>,
+    /// Optional internal editor ordering; ordinary linting keeps its raw stream.
+    callback_order: Option<Box<callback_order::CallbackOrder>>,
     /// Current rule name (set by visitor before calling rule methods).
     pub current_rule: &'static str,
     /// Parent element stack and current static inertness for aria-hidden checks.
@@ -131,6 +135,7 @@ impl<'a> LintContext<'a> {
             filename,
             locale,
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
+            callback_order: None,
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
             aria_hidden_inert: false,
@@ -181,6 +186,7 @@ impl<'a> LintContext<'a> {
             filename,
             locale: Locale::default(),
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
+            callback_order: None,
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
             aria_hidden_inert: false,
