@@ -90,6 +90,34 @@ fn typed_component_method_references_preserve_callable_identity() {
 }
 
 #[test]
+fn component_reference_layout_preserves_authored_typed_syntax() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    for (filename, handler) in [
+        ("component-ref-bare.vue", "foo"),
+        ("component-ref-padded.vue", " foo "),
+        ("component-ref-parenthesized.vue", "(foo)"),
+        ("component-ref-non-null.vue", "foo!"),
+        ("component-ref-as.vue", "foo as Handler"),
+        ("component-ref-satisfies.vue", "foo satisfies Handler"),
+        ("component-ref-assertion.vue", "(<Handler>foo)"),
+        (
+            "component-ref-composite.vue",
+            "(<Handler>foo! as Handler satisfies Handler)",
+        ),
+    ] {
+        let source = format!(
+            r#"<script setup lang="ts">
+declare function Comp(props: {{ onClick?: (event: unknown) => unknown }}): void;
+type Handler = (event: unknown) => unknown;
+declare const foo: unknown;
+</script>
+<template><Comp @click="{handler}" /></template>"#
+        );
+        assert_inline_parity(filename, &source);
+    }
+}
+
+#[test]
 fn typed_options_method_handlers_keep_their_live_cache() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
