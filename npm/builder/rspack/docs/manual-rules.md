@@ -27,14 +27,15 @@ When writing manual rules, you must ensure the main `.vue` loader and the style 
 
 The main loader produces `import './App.vue?vue&type=style&index=0&...'` statements. These style sub-requests must be routed through `@vizejs/rspack-plugin/scope-loader` and `@vizejs/rspack-plugin/style-loader` — **not** back into the main loader. If the main loader receives a `?type=style` query it will emit an explicit error.
 
+An external `<style src="./style.css">` request names the CSS file. Put the `.vue` condition on the main-loader branch so external styles reach the same style pipeline, and exclude Vue queries from ordinary CSS rules.
+
 Use `oneOf` to guarantee mutual exclusion:
 
 ```javascript
 {
-  test: /\.vue$/,
   oneOf: [
-    { resourceQuery: /type=style/, use: [/* style pipeline */] },
-    { use: [/* main vize loader */] },
+    { resourceQuery: /vue&type=style/, use: [/* style pipeline */] },
+    { test: /\.vue$/, use: [/* main vize loader */] },
   ],
 }
 ```
@@ -58,7 +59,6 @@ export default {
   module: {
     rules: [
       {
-        test: /\.vue$/,
         oneOf: [
           // CSS Modules (<style module>)
           {
@@ -93,6 +93,7 @@ export default {
 
           // Main .vue file (compile SFC → JS)
           {
+            test: /\.vue$/,
             use: [
               {
                 loader: "@vizejs/rspack-plugin/loader",
@@ -138,7 +139,6 @@ export default {
   module: {
     rules: [
       {
-        test: /\.vue$/,
         oneOf: [
           // SCSS style blocks
           {
@@ -175,6 +175,7 @@ export default {
 
           // Main .vue file
           {
+            test: /\.vue$/,
             use: [
               {
                 loader: "@vizejs/rspack-plugin/loader",
@@ -187,6 +188,7 @@ export default {
       // Regular CSS files (non-Vue)
       {
         test: /\.css$/,
+        resourceQuery: { not: [/\bvue\b/] },
         type: "javascript/auto",
         use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
       },
@@ -194,6 +196,7 @@ export default {
       // Regular SCSS files (non-Vue)
       {
         test: /\.scss$/,
+        resourceQuery: { not: [/\bvue\b/] },
         type: "javascript/auto",
         use: [
           isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",

@@ -51,4 +51,5 @@ jobs:
           vize-ci-apt-retry node "$runtime/node_modules/playwright/cli.js" install --with-deps chromium
           echo "VIZE_HMR_RUNTIME=$runtime" >> "$GITHUB_ENV"
       - name: Run browser HMR
-        run: vp run --filter @vizejs/rspack-plugin test:hmr
+        # A live browser session needs the selected runtime environment and fresh execution.
+        run: vp run --no-cache --filter @vizejs/rspack-plugin test:hmr
