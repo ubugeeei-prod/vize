@@ -112,6 +112,15 @@ declare module 'vue' {
 
 const SOURCE_CONSUMER: &str = include_str!("public_instance_source.tsx");
 
+const SINGLE_REQUIRED: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/SingleRequired.vue.txt"
+));
+const EXACT_JSX: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/Probe.tsx.txt"
+));
+
 const TEMPLATE_REF_CONSUMER: &str = r#"<script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import Public from './Public.vue'
@@ -243,9 +252,10 @@ pub(super) fn assert_downstream_compiler(compiler: &Path, downstream: &Path) {
         "{} rejected emitted declarations:\n{output}",
         compiler.display()
     );
-    assert!(
-        !output.contains("Unused '@ts-expect-error'") && !output.contains("TS2578"),
-        "{} left a negative oracle unused:\n{output}",
+    assert_eq!(
+        output,
+        "",
+        "{} emitted an unexpected compiler packet",
         compiler.display()
     );
 }
@@ -266,6 +276,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
             .is_file(),
         "the strict JSX oracle requires the installed real Vue runtime"
     );
+    let source_consumer = format!("{SOURCE_CONSUMER}\n{EXACT_JSX}");
     let project_root = with_workspace_node_modules_override(
         Some(
             test_node_modules
@@ -284,9 +295,10 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
                     ("src/Union.vue", UNION),
                     ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
                     ("src/NoEmits.vue", NO_EMITS),
+                    ("src/SingleRequired.vue", SINGLE_REQUIRED),
                     ("src/nested/Nested.vue", NESTED_COMPONENT),
                     ("src/vue.d.ts", AUGMENTATION),
-                    ("src/Consumer.tsx", SOURCE_CONSUMER),
+                    ("src/Consumer.tsx", &source_consumer),
                     ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
                 ],
             )
@@ -385,7 +397,9 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let downstream_dir = project_root.join("downstream");
     std::fs::create_dir_all(&downstream_dir).unwrap();
     let downstream = downstream_dir.join("verify.tsx");
-    std::fs::write(&downstream, DOWNSTREAM).unwrap();
+    let exact_declaration =
+        EXACT_JSX.replacen("./SingleRequired.vue", "../types/SingleRequired.vue", 1);
+    std::fs::write(&downstream, format!("{DOWNSTREAM}\n{exact_declaration}")).unwrap();
     assert_downstream_compiler(&tsgo, &downstream);
     if let Some(tsc) = resolve_javascript_tsc() {
         assert_downstream_compiler(&tsc, &downstream);

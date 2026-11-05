@@ -14,6 +14,10 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     if path != PATH {
         return current;
     }
+    invert(current)
+}
+
+fn invert(current: String) -> String {
     assert_eq!(current.len() + BEFORE.len(), BEFORE_BYTES + AFTER.len());
     assert_eq!(support::hash(current.as_bytes()), AFTER_SHA);
     assert_eq!(current.matches(AFTER).count(), 1);
@@ -61,14 +65,14 @@ mod tests {
 
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
-        let body = current(PATH);
+        let body = super::super::input_channels::source_before(PATH, current(PATH));
         for mutated in [
             body.replacen(AFTER, "", 1),
             format!("{body}{AFTER}"),
             body.replacen(AFTER, BEFORE, 1),
             format!("{body}\n"),
         ] {
-            assert!(std::panic::catch_unwind(|| source_before(PATH, mutated.clone())).is_err());
+            assert!(std::panic::catch_unwind(|| super::invert(mutated.clone())).is_err());
         }
     }
 }

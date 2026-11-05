@@ -9,6 +9,7 @@ mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
 mod input_channels;
+mod jsx_exact_keys;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;

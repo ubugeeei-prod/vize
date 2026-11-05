@@ -109,6 +109,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::jsx_exact_keys::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
             &current,
@@ -122,8 +123,9 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::jsx_exact_keys::preamble_before(current);
     invert(
-        current,
+        &current,
         PREAMBLE_EDITS,
         PREAMBLE_BEFORE_BYTES,
         PREAMBLE_BEFORE_SHA,
@@ -132,6 +134,7 @@ pub(super) fn preamble_before(current: &str) -> String {
 }
 
 pub(super) fn retain_provenance(manifest: &mut Value) {
+    super::jsx_exact_keys::retain_provenance(manifest);
     let files = FILES
         .iter()
         .map(|file| {
@@ -172,13 +175,17 @@ mod tests {
     fn current_assets_preamble_and_sdk_reconstruct_only_the_input_channels_layer() {
         for file in &FILES {
             let body = current(file.path);
+            let layer = super::super::jsx_exact_keys::source_before(file.path, body.clone());
             assert_eq!(
                 redo(source_before(file.path, body.clone()), file.edits),
-                body
+                layer
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(redo(preamble_before(preamble), PREAMBLE_EDITS), preamble);
+        assert_eq!(
+            redo(preamble_before(preamble), PREAMBLE_EDITS),
+            super::super::jsx_exact_keys::preamble_before(preamble)
+        );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
@@ -189,7 +196,7 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            let body = super::super::jsx_exact_keys::source_before(file.path, current(file.path));
             let (before, after) = file.edits[0];
             for mutated in [
                 body.replacen(after, "", 1),
@@ -198,7 +205,14 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| super::invert(
+                        &mutated,
+                        file.edits,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha
+                    ))
+                    .is_err()
                 );
             }
         }

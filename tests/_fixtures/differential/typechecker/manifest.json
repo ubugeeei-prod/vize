@@ -13441,6 +13441,46 @@
       }
     },
     {
+      "id": "typechecker/regression/tsx-single-required-exact-keys",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsx-single-required-exact-keys/SingleRequired.vue.txt",
+          "sha256": "6fb55ef9694e19e539a4e12dbbd4b9c38531f6f092efec1e08a95ee40c67b302",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-single-required-exact-keys/Probe.tsx.txt",
+          "sha256": "cd8b78251133fa84de8d2987db8d06038b38a521738b0695f4f48d99272f4d04",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-single-required-exact-keys/source-transition.json",
+          "sha256": "c647fda7816e1684a864d015efde1fe8a4ada2f447e38f9930fce5e6833c6bcd",
+          "role": "source-transition"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "public_instance_contract_survives_source_and_declaration_consumers; exact empty complete packets with a live TSX negative and valid constructor/owned-attribute controls; input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/unmapped-ignores-entry-points-11472",
       "state": "active",
       "targets": [

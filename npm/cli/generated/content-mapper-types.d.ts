@@ -251,9 +251,9 @@ type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =
         ? I
         : $ReplaceComponentProps<
             I,
-            $AuthoredKeyWitness<Jsx> &
+            Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &
               $ComponentInputProps<T, Declared> &
-              $ComponentInputGuard<T, Declared, Jsx>
+              $ComponentMissingInputGuard<T, Jsx>
           >
       : $ReplaceComponentProps<
           I,
