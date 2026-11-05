@@ -1478,8 +1478,10 @@
       "status": "mapped"
     },
     "vue/require-expose": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/require-expose",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/require-macro-variable-name": {
       "issue": 3223,
@@ -2017,8 +2019,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 146,
-    "unimplemented": 104
+    "mapped": 147,
+    "unimplemented": 103
   },
   "upstream": {
     "package": "eslint-plugin-vue",
