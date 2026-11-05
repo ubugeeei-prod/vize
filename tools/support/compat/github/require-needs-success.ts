@@ -95,8 +95,14 @@ export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): 
   ) {
     // Template interpolation rejects primitive symbols; String otherwise uses
     // the same string-hint coercion without introducing an unknown-value warning.
-    if (typeof eventName === "symbol")
-      throw new TypeError("Cannot convert a Symbol value to a string");
+    let symbolLike = typeof eventName === "symbol";
+    if (!symbolLike && typeof eventName === "object" && eventName !== null) {
+      try {
+        Symbol.prototype.valueOf.call(eventName);
+        symbolLike = true;
+      } catch {}
+    }
+    if (symbolLike) throw new TypeError("Cannot convert a Symbol value to a string");
     throw new Error(`Unsupported Check event: ${String(eventName)}`);
   }
   const queueOnly = ["nuxt-module-qualification"];

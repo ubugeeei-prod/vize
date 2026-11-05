@@ -137,7 +137,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 16248:16277 -> 0:76
+  // @vize-map: 16246:16275 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -171,9 +171,9 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17850:17855 -> 18:23
+  // @vize-map: 17848:17853 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17933:17944 -> 40:51
+  // @vize-map: 17931:17942 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;

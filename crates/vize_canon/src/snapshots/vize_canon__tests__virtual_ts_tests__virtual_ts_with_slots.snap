@@ -133,7 +133,7 @@ function __setup() {
   
   const slots = useSlots()
   
-  // @vize-map: 15666:15702 -> 0:58
+  // @vize-map: 15664:15700 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
   const __vize_template = (function __template() {

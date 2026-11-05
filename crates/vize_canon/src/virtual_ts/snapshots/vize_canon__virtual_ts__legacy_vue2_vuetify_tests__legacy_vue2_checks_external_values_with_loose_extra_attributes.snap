@@ -134,7 +134,7 @@ function __setup() {
   // User setup code
   const width = 320
   
-  // @vize-map: 15757:15780 -> 0:18
+  // @vize-map: 15755:15778 -> 0:18
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

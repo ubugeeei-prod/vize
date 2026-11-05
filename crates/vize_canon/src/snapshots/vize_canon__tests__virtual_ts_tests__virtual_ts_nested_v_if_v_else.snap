@@ -135,7 +135,7 @@ function __setup() {
   const message = ref('')
   const data = ref<string[]>([])
   
-  // @vize-map: 15661:15794 -> 0:146
+  // @vize-map: 15659:15792 -> 0:146
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

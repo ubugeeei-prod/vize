@@ -54,6 +54,19 @@ const buildConstructorSuccessor = JSON.parse(
   buildConstructorReceipt.toString("utf8"),
 ) as ConstructorSuccessor;
 const constructorSuccessors = [constructorSuccessor, buildConstructorSuccessor];
+const integratedTransitionBytes = fs.readFileSync(
+  path.join(
+    repoRoot,
+    "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
+  ),
+);
+assert.equal(
+  createHash("sha256").update(integratedTransitionBytes).digest("hex"),
+  "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518",
+);
+const integratedTransition = JSON.parse(integratedTransitionBytes.toString("utf8")) as {
+  file: { edits: Array<{ before: string; after: string }> };
+};
 const identity = (bytes: Buffer): Identity => ({
   sha256: createHash("sha256").update(bytes).digest("hex"),
   bytes: bytes.length,
@@ -146,6 +159,54 @@ function constructorTransition(
   return changed;
 }
 
+const integratedOutput: Identity = {
+  bytes: 15086,
+  sha256: "aa5a51a5fb0d2127fd8ec91dbd28ce79d6f47bd94aec8ccbe487d85fe599203e",
+};
+const integratedConstructor =
+  "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
+const previousImport =
+  'import type { $ComponentInputProps, $ComponentInputGuard, $ComponentInput, $AuthoredKeyWitness, $UsePublicInstance, $ReplaceComponentProps, $PublicEmit, $PublicSlots, $ComponentPublicBase } from "./__vize_helpers.js";\n';
+const integratedImport =
+  'import type { $ComponentInput, $ComponentInstanceFor, $PublicEmit, $PublicSlots, $ComponentPublicBase } from "./__vize_helpers.js";\n';
+
+function integratedOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [fromIdentity, toIdentity] =
+    direction === "forward"
+      ? [constructorSuccessor.output.after, integratedOutput]
+      : [integratedOutput, constructorSuccessor.output.after];
+  assert.deepEqual(identity(current), fromIdentity);
+  const changes = [
+    {
+      before:
+        'source: crates/vize/tests/check_cli.rs\nexpression: "serde_json::to_string_pretty(&snapshot).unwrap()"\n',
+      after:
+        'source: crates/vize/tests/check_cli.rs\nassertion_line: 2607\nexpression: "serde_json::to_string_pretty(&snapshot).unwrap()"\n',
+    },
+    { before: encoded(previousImport), after: encoded(integratedImport) },
+    { before: encoded(constructorSuccessor.edit.after), after: encoded(integratedConstructor) },
+    ...integratedTransition.file.edits.map((edit) => ({
+      before: encoded(edit.before),
+      after: encoded(edit.after),
+    })),
+    {
+      before: "$ComponentInput, $AuthoredKeyWitness, $IsUnknown",
+      after: "$ComponentInput, $AuthoredKeyWitness, $ComponentInstanceFor, $IsUnknown",
+    },
+  ];
+  let text = current.toString("utf8");
+  for (const edit of direction === "forward" ? changes : [...changes].reverse()) {
+    const [from, to] =
+      direction === "forward" ? [edit.before, edit.after] : [edit.after, edit.before];
+    assert.equal(text.split(from).length - 1, 1);
+    assert.equal(text.split(to).length - 1, 0);
+    text = text.replace(from, to);
+  }
+  const changed = Buffer.from(text);
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
 const overloadSource = fs.readFileSync(
   path.join(
     repoRoot,
@@ -193,10 +254,14 @@ test("the declaration constructor successor authenticates the whole source and b
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const ownedEnvelope = overloadOutputTransition(current, "inverse");
+  const integratedEnvelope = overloadOutputTransition(current, "inverse");
+  const ownedEnvelope = integratedOutputTransition(integratedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
-  assert.deepEqual(overloadOutputTransition(ownedEnvelope, "forward"), current);
+  assert.deepEqual(
+    overloadOutputTransition(integratedOutputTransition(ownedEnvelope, "forward"), "forward"),
+    current,
+  );
   assert.deepEqual(
     constructorTransition(constructorTransition(previous, "forward"), "inverse"),
     previous,
@@ -336,9 +401,13 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
-    const ownedEnvelope = constructor
+    const integratedEnvelope = constructor
       ? overloadOutputTransition(currentSlot, "inverse")
       : currentSlot;
+    const ownedEnvelope =
+      constructor === constructorSuccessor
+        ? integratedOutputTransition(integratedEnvelope, "inverse")
+        : integratedEnvelope;
     const predecessorSlot = constructor
       ? overloadOutputTransition(
           constructorTransition(ownedEnvelope, "inverse", constructor),

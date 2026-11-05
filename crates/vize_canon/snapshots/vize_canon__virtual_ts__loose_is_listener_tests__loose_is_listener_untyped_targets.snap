@@ -1,6 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/loose_is_listener_tests.rs
-assertion_line: 34
+assertion_line: 38
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -64,13 +64,15 @@ type $MissingRequiredInputKeys<T, Authored, K extends $RequiredKeys<T> & string 
 type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
 type $IsSinglePropKey<T> = [T] extends [never] ? false : $IsPropKeyUnion<T> extends true ? false : true;
 type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [$MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>; } };
 type $ComponentInputGuard<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? {} : T extends unknown ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentInputGuardFor<T, Declared, Authored, Allowed>;
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
+type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -134,7 +136,7 @@ function __setup() {
   // User setup code
   const take = (value: unknown) => value
   
-  // @vize-map: 15386:15430 -> 0:272
+  // @vize-map: 15866:15910 -> 0:272
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -190,7 +192,8 @@ function __setup() {
   type __target_7_pick_event = __target_7_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __target_7_pick_return_native_fallthrough = __target_7__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __target_7_pick_return = unknown[] extends __target_7_pick_prop_args ? __target_7_pick_return_native_fallthrough : __target_7__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __target_7_pick_prop_arrays = __target_7__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __target_7__props_members = __target_7__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __target_7_pick_prop_arrays = __target_7__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __target_7_pick_listener = unknown[] extends __target_7_pick_args ? ((...args: any[]) => any) : ((...args: __target_7_pick_args) => __target_7_pick_return);
   type __target_7_pick_handler = unknown[] extends __target_7_pick_args ? ((...args: any[]) => any) : __target_7_pick_listener;
   void ((...__vize_args: Parameters<__target_7_pick_listener>) => {
@@ -219,7 +222,8 @@ function __setup() {
   type __node_8_pick_event = __node_8_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __node_8_pick_return_native_fallthrough = __node_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __node_8_pick_return = unknown[] extends __node_8_pick_prop_args ? __node_8_pick_return_native_fallthrough : __node_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __node_8_pick_prop_arrays = __node_8__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __node_8__props_members = __node_8__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __node_8_pick_prop_arrays = __node_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __node_8_pick_listener = unknown[] extends __node_8_pick_args ? ((...args: any[]) => any) : ((...args: __node_8_pick_args) => __node_8_pick_return);
   type __node_8_pick_handler = unknown[] extends __node_8_pick_args ? ((...args: any[]) => any) : __node_8_pick_listener;
   void ((...__vize_args: Parameters<__node_8_pick_listener>) => {
@@ -248,7 +252,8 @@ function __setup() {
   type __loose_9_pick_event = __loose_9_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __loose_9_pick_return_native_fallthrough = __loose_9__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __loose_9_pick_return = unknown[] extends __loose_9_pick_prop_args ? __loose_9_pick_return_native_fallthrough : __loose_9__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __loose_9_pick_prop_arrays = __loose_9__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __loose_9__props_members = __loose_9__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __loose_9_pick_prop_arrays = __loose_9__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __loose_9_pick_listener = unknown[] extends __loose_9_pick_args ? ((...args: any[]) => any) : ((...args: __loose_9_pick_args) => __loose_9_pick_return);
   type __loose_9_pick_handler = unknown[] extends __loose_9_pick_args ? ((...args: any[]) => any) : __loose_9_pick_listener;
   void ((...__vize_args: Parameters<__loose_9_pick_listener>) => {
@@ -277,7 +282,8 @@ function __setup() {
   type __tag_10_pick_event = __tag_10_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __tag_10_pick_return_native_fallthrough = __tag_10__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onPick?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
   type __tag_10_pick_return = unknown[] extends __tag_10_pick_prop_args ? __tag_10_pick_return_native_fallthrough : __tag_10__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __tag_10_pick_prop_arrays = __tag_10__props extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
+  type __tag_10__props_members = __tag_10__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
+  type __tag_10_pick_prop_arrays = __tag_10__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __tag_10_pick_listener = unknown[] extends __tag_10_pick_args ? ((...args: any[]) => any) : ((...args: __tag_10_pick_args) => __tag_10_pick_return);
   type __tag_10_pick_handler = unknown[] extends __tag_10_pick_args ? ((...args: any[]) => any) : __tag_10_pick_listener;
   void ((...__vize_args: Parameters<__tag_10_pick_listener>) => {
@@ -467,7 +473,7 @@ type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($I
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C>;
 type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
-type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;
+type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never> = TDepth['length'] extends 120 ? TAccumulated : TOverload extends unknown ? TPartialOverload extends TOverload ? TAccumulated : TPartialOverload & TOverload extends { (...args: infer A0): infer R0; (...args: infer A1): infer R1; (...args: infer A2): infer R2; (...args: infer A3): infer R3; (...args: infer A4): infer R4; (...args: infer A5): infer R5; (...args: infer A6): infer R6; (...args: infer A7): infer R7; } ? (<G>() => G extends TAccumulated ? 1 : 2) extends <G>() => G extends | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7) ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TOverload, TPartialOverload & ((...args: A0) => R0) & ((...args: A1) => R1) & ((...args: A2) => R2) & ((...args: A3) => R3) & ((...args: A4) => R4) & ((...args: A5) => R5) & ((...args: A6) => R6) & ((...args: A7) => R7) & $OverloadProps<TOverload>, [...TDepth, unknown], | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7)> : TAccumulated : never;
 type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<$OverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
 type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
 type $IsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
@@ -484,7 +490,7 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

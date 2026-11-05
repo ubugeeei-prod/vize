@@ -30,14 +30,14 @@ pub(super) fn authenticate_join_receipt(
     let qualification = &receipt["qualification"];
     assert_eq!(
         qualification["head"].as_str(),
-        Some("f7a290d0f9b62157283860885e337e340a561dc6")
+        Some("d5e55331c62d304e8bab2d5fcbe2097064512d0e")
     );
-    assert_eq!(qualification["run"].as_u64(), Some(42049907111));
+    assert_eq!(qualification["run"].as_u64(), Some(42089460359));
     let artifact = &qualification["artifact"];
-    assert_eq!(artifact["id"].as_u64(), Some(13426172378));
+    assert_eq!(artifact["id"].as_u64(), Some(13444742138));
     assert_eq!(
         artifact["name"].as_str(),
-        Some("component-input-packets-head-f7a290d0f9b62157283860885e337e340a561dc6-42049907111")
+        Some("component-input-packets-head-d5e55331c62d304e8bab2d5fcbe2097064512d0e-42089460359")
     );
     assert_eq!(artifact["snapshot"].as_str(), Some(expected_snapshot));
     assert_eq!(artifact["sha256"].as_str(), Some(expected_snapshot_sha));

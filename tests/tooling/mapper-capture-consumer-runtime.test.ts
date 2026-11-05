@@ -66,10 +66,21 @@ test("the actual mapper caller installs a byte-identical JS consumer runtime wit
   const manifest = JSON.parse(readFileSync(join(closure.packageRoot, "package.json"), "utf8")) as {
     typescript: { contentMapper: { exec: string[] } };
   };
-  const [command, runtime] = manifest.typescript.contentMapper.exec;
+  const [command, runtime, captureFlag, captureRoot, configuration] =
+    manifest.typescript.contentMapper.exec;
   assert.equal(command, process.execPath);
-  assert.equal(runtime, join(workspace, "node_modules/vize/capture.mjs"));
-  assert.deepEqual(readFileSync(runtime), readFileSync(mapperCaptureAsset));
+  assert.equal(runtime, mapperCaptureAsset);
+  assert.equal(captureFlag, "--capture");
+  assert.equal(captureRoot, capture);
+  assert.equal(configuration, join(capture, "command.json"));
+  assert.deepEqual(JSON.parse(readFileSync(configuration, "utf8")), {
+    command: [
+      process.execPath,
+      "-e",
+      'if (process.argv.at(-1) !== "forwarded") process.exit(9); process.stdin.pipe(process.stdout);',
+    ],
+    packageRoot: closure.packageRoot,
+  });
   const body = Buffer.from(JSON.stringify({ id: 1, text: "日本語", directives: [[0, 1]] }));
   const frame = Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
   const options = {
@@ -78,7 +89,11 @@ test("the actual mapper caller installs a byte-identical JS consumer runtime wit
     input: frame,
     timeout: 5000,
   };
-  const run = spawnSync(command, [runtime, "forwarded"], options);
+  const run = spawnSync(
+    command,
+    [runtime, captureFlag, captureRoot, configuration, "forwarded"],
+    options,
+  );
   assert.equal(run.error, undefined);
   assert.equal(run.status, 0, run.stderr.toString());
   assert.deepEqual(run.stdout, frame);

@@ -132,7 +132,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 15665:15694 -> 0:76
+  // @vize-map: 15663:15692 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -174,13 +174,13 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 17662:17668 -> 8:14
+  // @vize-map: 17660:17666 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17745:17756 -> 21:32
+  // @vize-map: 17743:17754 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 17834:17839 -> 39:44
+  // @vize-map: 17832:17837 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17917:17922 -> 51:56
+  // @vize-map: 17915:17920 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;

@@ -115,6 +115,24 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     read(base + "pattern_matching.d.ts"),
   ].join("");
   assert.deepEqual(identity(current), {
+    bytes: 46534,
+    sha256: "7be160e1798f4368642597b67db232b1a72309dc18eb637a4ec7d868f3457bcb",
+  });
+  const integratedTransition = read(
+    "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
+  );
+  assert.equal(
+    hash(integratedTransition),
+    "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518",
+  );
+  const repair = (
+    JSON.parse(integratedTransition) as {
+      file: { edits: Array<{ before: string; after: string }> };
+    }
+  ).file.edits.at(-1)!;
+  assert.equal(current.split(repair.after).length, 2);
+  const repairedCurrent = current.replace(repair.after, repair.before);
+  assert.deepEqual(identity(repairedCurrent), {
     bytes: 46506,
     sha256: "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
   });
@@ -123,12 +141,12 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   assert.equal(
     hash(integratedSource),
-    "b69ee2c9387acfe02434a0ffd29dfdd249001cda8ff041dc25b7303a9f30f590",
+    "c0a1a85b9820c648bc4293267f8bbdd6417be2784e951a45f7d2e49c8af96642",
   );
-  assert.ok(integratedSource.includes(identity(current).sha256));
+  assert.ok(integratedSource.includes(identity(repairedCurrent).sha256));
   const genericEdit = generic.preamble.edits[0]!;
-  assert.equal(current.split(genericEdit.after).length, 2);
-  const owned = current.replace(genericEdit.after, genericEdit.before);
+  assert.equal(repairedCurrent.split(genericEdit.after).length, 2);
+  const owned = repairedCurrent.replace(genericEdit.after, genericEdit.before);
   assert.deepEqual(identity(owned), {
     bytes: 46322,
     sha256: "aa205818790c5f3c384a3dc57d63b851f970700076c60340499f9f2bdd40f9da",
@@ -150,5 +168,5 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     "31f44873c84434d22f94670e6cb558d5d0aa1408723bf6f6214308e0ad4239cd",
   );
   assert.equal(previous.replace(edit.before, edit.after), owned);
-  assert.equal(owned.replace(genericEdit.before, genericEdit.after), current);
+  assert.equal(owned.replace(genericEdit.before, genericEdit.after), repairedCurrent);
 });

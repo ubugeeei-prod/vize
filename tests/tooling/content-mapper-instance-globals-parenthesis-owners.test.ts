@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   readGlobalsFixture,
@@ -49,9 +50,29 @@ test("10617 current packets add only the independently observed 11675 diagnostic
     files,
     cases,
   )!;
-  const current = selectPacketGoldens(authority, files, cases)!;
-  assert.equal(authority.currentSourcePackets, "source-packets-current-beca9eaf0681.json");
-  const proof = JSON.parse(files.get(current.provenance as string)!);
+  const parenthesisName = "source-packets-current-beca9eaf0681.json";
+  const parenthesisRaw = readFileSync(
+    new URL(
+      `../fixtures/typechecker/undeclared-instance-globals-10617/${parenthesisName}`,
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.equal(
+    sha(parenthesisRaw),
+    "8d388c0430adc0200efd324478c2f59e701a857e381b35988502249f746d4a08",
+  );
+  const current = JSON.parse(parenthesisRaw);
+  assert.equal(authority.currentSourcePackets, "source-packets-current-245bb0b6f1cb.json");
+  const proofRaw = readFileSync(
+    new URL(
+      "../fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681-provenance.json",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.equal(sha(proofRaw), "dcb060691f5181c76c3f8cf5d25e3d5417b8a2f6110e2bc344a062b0c642d319");
+  const proof = JSON.parse(proofRaw);
   assert.equal(proof.previous.sha256, sha(files.get(previousName)!));
   assert.equal(proof.featureCommit, "46b752b95bd8e2b955148866655e01b58a166fe4");
   assert.equal(proof.producer.sourceRevision, "beca9eaf068137e6dffd818c4949b522c4919dd1");

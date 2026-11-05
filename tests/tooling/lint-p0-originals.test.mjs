@@ -27,7 +27,7 @@ function message(source, target, text, help, start = source.indexOf(target)) {
   const to = location(source, start + target.length);
   return {
     ruleId: references,
-    ruleDocsPath: "docs/content/rules/reference/type-no-reactivity-loss.md",
+    ruleDocsPath: "docs/content/rules/type-and-script.md",
     severity: 1,
     message: `[vize:${references}] ${text}`,
     line: from.line,

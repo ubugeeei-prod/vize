@@ -131,7 +131,21 @@ void test("the sole retired WIT clause replays every complete archived Check pac
   const currentClause = 'const queueOnly = ["nuxt-module-qualification"];';
   const previousClause = 'const queueOnly = ["wit-contracts", "nuxt-module-qualification"];';
   assert.equal(source.split(currentClause).length, 2, "one exact retirement clause");
-  const historical = source.replace(currentClause, previousClause);
+  const currentSymbolGuard = `    let symbolLike = typeof eventName === "symbol";
+    if (!symbolLike && typeof eventName === "object" && eventName !== null) {
+      try {
+        Symbol.prototype.valueOf.call(eventName);
+        symbolLike = true;
+      } catch {}
+    }
+    if (symbolLike)
+      throw new TypeError("Cannot convert a Symbol value to a string");`;
+  const previousSymbolGuard = `    if (typeof eventName === "symbol")
+      throw new TypeError("Cannot convert a Symbol value to a string");`;
+  assert.equal(source.split(currentSymbolGuard).length, 2, "one boxed-symbol successor");
+  const historical = source
+    .replace(currentSymbolGuard, previousSymbolGuard)
+    .replace(currentClause, previousClause);
   assert.equal(
     createHash("sha256").update(historical).digest("hex"),
     "2e8d99c057b2a184c16f4af4ee9eacfd8425afeee473bab2f19ccb0cd80456f0",

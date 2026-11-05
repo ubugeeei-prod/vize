@@ -140,7 +140,7 @@ function __setup() {
     emit('update', 42)
   }
   
-  // @vize-map: 15713:15815 -> 0:163
+  // @vize-map: 15711:15813 -> 0:163
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

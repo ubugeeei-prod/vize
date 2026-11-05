@@ -138,7 +138,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
 void (null! as $TemplateRefs["btn"]);   const buttonEl = __vizeInferRef('btn')
   
-  // @vize-map: 16163:16305 -> 0:135
+  // @vize-map: 16161:16303 -> 0:135
 
   // Runtime reads for static template refs
   void (() => inputRef!);

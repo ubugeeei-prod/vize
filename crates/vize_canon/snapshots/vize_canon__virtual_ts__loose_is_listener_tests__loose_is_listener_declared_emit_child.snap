@@ -130,7 +130,7 @@ function __setup() {
   // User setup code
   const emit = defineEmits<{ pick: [value: string] }>()
   
-  // @vize-map: 15635:15694 -> 0:54
+  // @vize-map: 15633:15692 -> 0:54
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

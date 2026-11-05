@@ -383,8 +383,13 @@ export function assertPreservedCallbackPacket(
           { requireComplete: true },
         )
       : before;
-  const expected = structuredClone(comparisonBefore);
-  expected.text = after.text;
+  const expected = structuredClone(comparisonBefore) as Record<string, unknown> & {
+    text: string;
+    mappings: number[][];
+    semanticLinks?: Record<string, number>[];
+    diagnosticDirectives?: { directives: number[][] };
+  };
+  expected.text = after.text as string;
   assert.ok(Array.isArray(comparisonBefore.mappings));
   expected.mappings = (comparisonBefore.mappings as number[][]).map((tuple) => {
     assert.equal(tuple.length, 6);

@@ -190,12 +190,12 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-integrated-11964/receipt.json"
         ),
-        "c2dcb07e2b3dc084cf5acca81cfaca9f8c6c3d35b414bc979af93957479f540b",
+        "65b6114fdac3d69eae77f696bde48d9dd17fa33aac894e2326526c6f62eae013",
         owned_constructor,
         jsx_witness_successor,
         integrated_successor,
         "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
-        "f413a33a59aa5fb2413245d65367b2ac557730ca058ddddedf4260ad25698608",
+        "fb29a6ea745462c954eb0e7b0b4c008b4c1d5ec8379ec99400ddacaf075e779f",
     );
     let non_text_fields = |record: &str| {
         record
@@ -375,12 +375,12 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "fixtures/public-instance-mixed-vue2/successor-integrated-11964/receipt.json"
             ),
-            "58ec8d5ac4f80b2048b4b7126bdaf522a699f142244129ca42709c6b0d7eac49",
+            "fb360f0ff44b0c2086dc2844ed368b231dfc2e499a82c056f2f4f074fd075795",
             owned_constructor,
             jsx_witness_successor,
             integrated_successor,
             "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
-            "6c1502a4b441dc132190963c0c5c22c87384263d7c06a43635162252022c2f86",
+            "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281",
         );
         let non_text_fields = |record: &str| {
             record

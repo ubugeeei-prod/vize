@@ -233,16 +233,21 @@ export function currentCallbackSourceEdits(
       "computed component targets need a separate certificate",
     );
     for (const match of matches) {
-      const replacement = render(newTemplate, {
-        ...match.groups!,
-        loose_args: match.groups!.loose_marker === "unknown[]" ? "unknown[]" : "__L",
-      });
+      const replacements = ["unknown[]", "__L"]
+        .map((loose_args) =>
+          render(newTemplate, {
+            ...match.groups!,
+            loose_args,
+          }),
+        )
+        .filter((replacement, index, all) => all.indexOf(replacement) === index)
+        .filter((replacement) => after.split(replacement).length === 2);
       assert.equal(
-        after.split(replacement).length,
-        2,
-        "current static inference declaration is unique",
+        replacements.length,
+        1,
+        "exactly one current static inference declaration is present",
       );
-      add(match.index, match[0].length, replacement);
+      add(match.index, match[0].length, replacements[0]!);
     }
   }
   return { edits, addedMappings };

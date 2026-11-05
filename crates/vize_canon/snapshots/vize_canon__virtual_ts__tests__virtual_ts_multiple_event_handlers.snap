@@ -133,7 +133,7 @@ function __setup() {
   function handleClick() { count.value++ }
   function handleHover() {}
   
-  // @vize-map: 15661:15758 -> 0:114
+  // @vize-map: 15659:15756 -> 0:114
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

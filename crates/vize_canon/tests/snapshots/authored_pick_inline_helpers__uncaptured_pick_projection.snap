@@ -134,7 +134,7 @@ function __setup() {
   const named = (value: string) => value
   const handler = ref(named)
   
-  // @vize-map: 15686:15762 -> 0:118
+  // @vize-map: 15684:15760 -> 0:118
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
