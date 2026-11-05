@@ -245,19 +245,36 @@ await test("the complete original pinned ThemeIcon no longer leaks processor con
   }
 });
 
-await test("the processor does not enable new default rules or alter the default vector", async () => {
-  assert.equal(Object.hasOwn(defaults, "vue/comment-directive"), false);
-  assert.equal(Object.hasOwn(defaults, "vue/jsx-uses-vars"), false);
-  assert.equal(baselineConfig(runtime, defaults)[0].rules, defaults);
+await test("the processor does not add public base rules to the caller's vector", async () => {
+  // Processor installation must not add rules the caller did not select. Keep
+  // this vector explicit: native preset coverage is an independent policy.
+  const selected = { "vue/no-v-html": "warn" };
+  const original = structuredClone(selected);
+  assert.equal(Object.hasOwn(selected, "vue/comment-directive"), false);
+  assert.equal(Object.hasOwn(selected, "vue/jsx-uses-vars"), false);
+  assert.equal(baselineConfig(runtime, selected)[0].rules, selected);
   const input = fixture("default.vue", controls.nextLine);
   try {
-    for (const packet of await paired(input, defaults)) {
+    for (const packet of await paired(input, selected)) {
       assert.equal(
         packet.results[0].messages.filter((message) => message.ruleId === "vue/no-v-html").length,
         2,
-        "keep the original caller-selected default rules; do not spread public base rules",
+        "keep the complete caller-selected rules; do not spread public base rules",
       );
     }
+    assert.deepEqual(selected, original, "the complete caller-selected vector remains unchanged");
+  } finally {
+    input.clean();
+  }
+});
+
+await test("the processor preserves the complete current ecosystem default vector", async () => {
+  const original = structuredClone(defaults);
+  assert.equal(baselineConfig(runtime, defaults)[0].rules, defaults);
+  const input = fixture("current-default.vue", controls.nextLine);
+  try {
+    await paired(input, defaults);
+    assert.deepEqual(defaults, original, "the complete current default vector remains unchanged");
   } finally {
     input.clean();
   }

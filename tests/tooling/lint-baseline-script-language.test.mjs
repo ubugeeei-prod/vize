@@ -47,7 +47,7 @@ function execute(script, cwd, filename, selected = rules) {
   return JSON.parse(result.stdout).results;
 }
 
-async function publicReference(cwd, filename, jsx) {
+async function publicReference(cwd, filename, jsx, selected = rules) {
   // Independently configure the pinned public provider's documented JSX mode.
   const eslint = new runtime.ESLint({
     cwd,
@@ -68,19 +68,19 @@ async function publicReference(cwd, filename, jsx) {
         linterOptions: { reportUnusedDisableDirectives: "off" },
         plugins: { vue: runtime.plugin },
         processor: "vue/vue",
-        rules,
+        rules: selected,
       },
     ],
   });
   return transport(await eslint.lintFiles([filename]));
 }
 
-function strictVerdict(results, cwd) {
+function strictVerdict(results, cwd, selected = rules) {
   const classified = collectBaselineFindings(results, cwd);
   const budget = evaluateBudget({
     project: "script-language-control",
     files: { comparedCount: 1 },
-    baseline: { comparedRuleCount: Object.keys(rules).length },
+    baseline: { comparedRuleCount: Object.keys(selected).length },
     divergence: {
       summary: {
         falsePositiveCount: 0,
@@ -111,13 +111,40 @@ for (const original of originals.inputs) {
         })),
         "complete replayed fatal packet, source, and provider metadata",
       );
-      assert.equal(strictVerdict(before, cwd).verdict, "unusable");
-      const expected = await publicReference(cwd, filename, !original.expectedRepaired);
+      assert.equal(strictVerdict(before, cwd, originals.originalRules).verdict, "unusable");
+      // Hold the complete caller configuration fixed when comparing historical
+      // packets. Native rule coverage can change independently of parser behavior.
+      const selected = originals.originalRules;
+      const expected = await publicReference(cwd, filename, !original.expectedRepaired, selected);
       const measured = [
-        execute(candidate, cwd, filename),
-        transport((await runBaseline(runtime, cwd, [filename], rules)).results),
+        execute(candidate, cwd, filename, selected),
+        transport((await runBaseline(runtime, cwd, [filename], selected)).results),
       ];
       for (const results of measured) {
+        assert.deepEqual(results, expected, "complete independent public ESLint result");
+        const budget = strictVerdict(results, cwd, selected);
+        assert.equal(budget.verdict, original.expectedRepaired ? "passed" : "unusable");
+        assert.equal(budget.passed, original.expectedRepaired);
+        if (!original.expectedRepaired)
+          assert.deepEqual(results, before, "unsupported source remains an exact strict refusal");
+      }
+    } finally {
+      fs.rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  await test(`current rule vector preserves complete ${original.project}/${original.path} provider parity`, async () => {
+    assert.equal(digest(original.source), original.sourceSha256);
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-current-rules-"));
+    const filename = "Original.vue";
+    try {
+      fs.writeFileSync(path.join(cwd, filename), original.source);
+      const expected = await publicReference(cwd, filename, !original.expectedRepaired);
+      const before = execute(frozen, cwd, filename);
+      for (const results of [
+        execute(candidate, cwd, filename),
+        transport((await runBaseline(runtime, cwd, [filename], rules)).results),
+      ]) {
         assert.deepEqual(results, expected, "complete independent public ESLint result");
         const budget = strictVerdict(results, cwd);
         assert.equal(budget.verdict, original.expectedRepaired ? "passed" : "unusable");
