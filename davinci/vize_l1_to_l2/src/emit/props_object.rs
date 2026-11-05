@@ -280,6 +280,12 @@ fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
     };
     let content = erased.as_deref().unwrap_or(content);
     on::is_inline_handler_source(content)
+        // The transform wraps non-reference values in `$event => (...)`.
+        // The shipped scan sees that wrapper, including for a tagged template
+        // or a typed object whose erased spelling has no inline punctuation.
+        || (cx.prefixing()
+            && !super::prefix::is_simple_identifier(content)
+            && !super::prefix::handler_text_is_callable(content))
 }
 
 pub(super) fn pieces_have_vue_text(pieces: &[Piece<'_>]) -> bool {
