@@ -79,7 +79,7 @@ pub(super) fn resolve(
     let mut wildcard = None;
     let target = match &manifest.exports {
         Target::Object(entries) if entries.iter().any(|(key, _)| key.starts_with('.')) => {
-            if let Some((_, target)) = entries.iter().find(|(entry, _)| entry == &key) {
+            if let Some((_, target)) = entries.iter().find(|(entry, _)| entry == key) {
                 target
             } else {
                 let mut matched = None;

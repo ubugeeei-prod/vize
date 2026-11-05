@@ -152,12 +152,11 @@ fn condition_edits_replace_an_existing_cached_target_and_empty_override_disables
         r#"{"extends":"./config/shared.json","compilerOptions":{"moduleResolution":"bundler","customConditions":[]}}"#,
     );
     unresolved(project.path(), COMPONENT, "lib");
-    assert_eq!(
+    assert!(
         project
             .path()
             .join("node_modules/lib/src/index.ts")
-            .is_file(),
-        true
+            .is_file()
     );
 }
 
