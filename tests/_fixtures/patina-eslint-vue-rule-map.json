@@ -1220,8 +1220,10 @@
       "status": "mapped"
     },
     "vue/no-v-for-template-key": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-v-for-template-key",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-v-for-template-key-on-child": {
       "patinaPresets": [
@@ -2001,8 +2003,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 141,
-    "unimplemented": 109
+    "mapped": 142,
+    "unimplemented": 108
   },
   "upstream": {
     "package": "eslint-plugin-vue",
