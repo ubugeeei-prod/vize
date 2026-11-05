@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { compileFunction } from "node:vm";
 import { gunzipSync } from "node:zlib";
+import { Window } from "happy-dom";
 
 const capture = process.env.VIZE_NESTED_BRANCH_CAPTURE;
 
@@ -11,6 +12,22 @@ await test(
   "nested conditional SSR fragments keep parent attributes on the actual root",
   { skip: !capture && "source-built SSR modules execute in the scoped SSR action" },
   async () => {
+    const window = new Window();
+    for (const key of [
+      "window",
+      "document",
+      "Node",
+      "Element",
+      "HTMLElement",
+      "SVGElement",
+      "Text",
+      "Comment",
+    ])
+      Object.defineProperty(globalThis, key, {
+        value: key === "window" ? window : window[key],
+        configurable: true,
+        writable: true,
+      });
     const fromTests = createRequire(new URL("../package.json", import.meta.url));
     const vue = fromTests("vue");
     const fromVue = createRequire(fromTests.resolve("vue/package.json"));
@@ -19,10 +36,10 @@ await test(
     assert.equal(vue.version, "3.6.0-beta.10");
     assert.equal(compiler.version, vue.version);
     const modules = JSON.parse(readFileSync(capture, "utf8"));
-    assert.equal(modules.length, 40);
+    assert.equal(modules.length, 52);
 
-    function load(preamble, body) {
-      const imports = preamble.replace(
+    function load(preamble, body, functionName = "ssrRender") {
+      const source = `${preamble}\n${body}`.replace(
         /import \{([^}]+)\} from ["']([^"']+)["'];?/g,
         (_, bindings, name) => {
           assert.ok(["vue", "@vue/server-renderer", "vue/server-renderer"].includes(name));
@@ -30,9 +47,39 @@ await test(
         },
       );
       return compileFunction(
-        `${imports}\n${body.replace("export function ssrRender", "function ssrRender")}\nreturn ssrRender;`,
+        `${source.replace(`export function ${functionName}`, `function ${functionName}`)}\nreturn ${functionName};`,
         ["require"],
       )((name) => (name === "vue" ? vue : server));
+    }
+
+    async function hydrate(html, renderFunction, outer, inner) {
+      const root = window.document.createElement("div");
+      root.innerHTML = html;
+      window.document.body.appendChild(root);
+      const originalNodes = [...root.childNodes];
+      const warnings = [];
+      const originalWarn = console.warn;
+      const originalError = console.error;
+      const record = (...parts) => warnings.push(parts.map(String).join(" "));
+      console.warn = record;
+      console.error = record;
+      const app = vue.createSSRApp(
+        { props: ["outer", "inner"], render: renderFunction },
+        { outer, inner, "data-owner": "parent" },
+      );
+      try {
+        app.mount(root);
+        await vue.nextTick();
+        assert.deepEqual(warnings, [], "native client hydrates without warnings");
+        assert.equal(root.innerHTML, html, "hydration retains the entire server DOM");
+        assert.deepEqual([...root.childNodes], originalNodes, "hydration reuses the server nodes");
+        return { html: root.innerHTML, warnings };
+      } finally {
+        console.warn = originalWarn;
+        console.error = originalError;
+        app.unmount();
+        root.remove();
+      }
     }
 
     async function render(renderFunction, outer, inner, itemKeys) {
@@ -133,7 +180,26 @@ await test(
             if (entry.name === "loop-single-element") {
               assert.equal(html, "<!--[--><button>1</button><button>2</button><!--]-->");
             }
-            lanes[lane] = { html, itemKeys };
+            const wrapFragment = (content) => `<!--[-->${content}<!--]-->`;
+            const box = (content) => `<div class="box" data-owner="parent">${content}</div>`;
+            const expectedTextBranches = {
+              "text-template-root": outer ? wrapFragment("hi") : "<!---->",
+              "text-template-nested": box(outer ? wrapFragment("hi") : "<!---->"),
+              "interpolation-template-nested": box(outer ? wrapFragment(String(inner)) : "<!---->"),
+              "text-template-else": box(outer ? "<b>on</b>" : wrapFragment("hi")),
+              "text-template-mixed": box(outer ? wrapFragment("hi<i>!</i>") : "<!---->"),
+              "single-element-template-nested": box(outer ? "<b>hi</b>" : "<!---->"),
+            };
+            if (entry.name in expectedTextBranches)
+              assert.equal(
+                html,
+                expectedTextBranches[entry.name],
+                `${entry.name}: entire branch HTML`,
+              );
+            const hydration = entry.client
+              ? await hydrate(html, load("", entry.client.code, "render"), outer, inner)
+              : null;
+            lanes[lane] = { html, itemKeys, hydration };
           }
           observations.push({
             name: entry.name,
@@ -203,5 +269,6 @@ await test(
         publishedObservations,
       }),
     );
+    await window.happyDOM.close();
   },
 );

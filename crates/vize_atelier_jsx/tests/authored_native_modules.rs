@@ -208,7 +208,68 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
         "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.child-values-6890.inert-template.json"
     ))
     .expect("frozen admission packet");
-    assert_eq!(actual, expected);
+    assert_eq!(actual, ssr_text_fragment_admission_successor(expected));
+}
+
+fn ssr_text_fragment_admission_successor(mut frozen: serde_json::Value) -> serde_json::Value {
+    // Keep the historical packet intact. Only this original SSR conditional's
+    // null text branch gains the hydration anchors required by issue 11920.
+    let packet = frozen.get_mut(15).expect("original SSR conditional packet");
+    let source = "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;";
+    assert_eq!(packet["source"], source);
+    assert_eq!(packet["ssr"], true);
+    let original_module = packet["module"].as_str().expect("whole module").to_owned();
+    let original_map_json = packet["moduleMap"].to_string();
+    let original_map =
+        SourceMap::from_json_string(&original_map_json).expect("historical composed map");
+    let original_null = position(
+        &original_module,
+        original_module.find("null").expect("generated null"),
+    );
+    let source_null = position(source, source.find("null").expect("authored null"));
+    for pointer in ["/components/0/code", "/module"] {
+        let field = packet.pointer_mut(pointer).expect("whole compiler field");
+        let original = field.as_str().expect("compiler code");
+        let previous = "_push(`${_ssrInterpolate(null)}`)";
+        assert_eq!(original.matches(previous).count(), 1);
+        *field = json!(original.replacen(
+            previous,
+            "_push(`<!--[-->${_ssrInterpolate(null)}<!--]-->`)",
+            1,
+        ));
+    }
+    let mappings = packet["moduleMap"]["mappings"]
+        .as_str()
+        .expect("historical mapping vector");
+    // The opening anchor moves the sole null token eight generated columns;
+    // every authored source position and every other token stays unchanged.
+    assert_eq!(mappings.matches(";6BAAA;").count(), 1);
+    packet["moduleMap"]["mappings"] = json!(mappings.replacen(";6BAAA;", ";qCAAA;", 1));
+    let successor_map_json = packet["moduleMap"].to_string();
+    let successor_map =
+        SourceMap::from_json_string(&successor_map_json).expect("anchored composed map");
+    let tokens = |map: &SourceMap| {
+        map.get_source_view_tokens()
+            .map(|token| {
+                (
+                    (token.get_dst_line(), token.get_dst_col()),
+                    (token.get_src_line(), token.get_src_col()),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    let mut expected_tokens = tokens(&original_map);
+    let mut shifted = 0;
+    for (generated, authored) in &mut expected_tokens {
+        if *generated == original_null {
+            assert_eq!(*authored, source_null);
+            generated.1 += "<!--[-->".len() as u32;
+            shifted += 1;
+        }
+    }
+    assert_eq!(shifted, 1);
+    assert_eq!(tokens(&successor_map), expected_tokens);
+    frozen
 }
 
 #[test]
