@@ -6067,51 +6067,6 @@
       "diagnostics": []
     },
     {
-      "id": "typechecker/generic-component-cast-11966",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "test": "content_mapper_tsgo_cli::generic_component_cast_11966::standard_tsgo_accepts_generic_slots_and_emits_component_cast",
-      "inputs": [
-        {
-          "file": "List.vue",
-          "path": "generic-component-cast-11966/List.vue.txt",
-          "sha256": "a2f562f2e2e4af379e0d9503e883139a639eaf1d1de28a23430d0aee3676de43"
-        },
-        {
-          "file": "use.ts",
-          "path": "generic-component-cast-11966/use.ts.txt",
-          "sha256": "5f94ba6bcfa5129735c9df33aeb7d66b0c47b2f473f74f6d94be51bfb1e3c5f5"
-        },
-        {
-          "file": "tsconfig.json",
-          "path": "generic-component-cast-11966/tsconfig.json.txt",
-          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b"
-        },
-        {
-          "file": "cases.json",
-          "path": "generic-component-cast-11966/cases.json",
-          "sha256": "4d1a83a4e3f825cde6b7fad731747e6cb06d2d82ec0e1de2645605daa16cc182"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "Required actual source CLI beta content-mapper protocol; generic props, emits and slots remain castable to Vue's public Component union."
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/generic-constructor-slots-10416/props-infer-plain-and-covariant-slots",
       "state": "active",
       "targets": [
@@ -11808,6 +11763,51 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::template_expression_syntax::generic_arrows::copied_generic_arrows_keep_native_syntax_and_authored_error_positions; input-only registration, source/native/public qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/generic-component-cast-11966",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::generic_component_cast_11966::standard_tsgo_accepts_generic_slots_and_emits_component_cast",
+      "inputs": [
+        {
+          "file": "List.vue",
+          "path": "generic-component-cast-11966/List.vue.txt",
+          "sha256": "a2f562f2e2e4af379e0d9503e883139a639eaf1d1de28a23430d0aee3676de43"
+        },
+        {
+          "file": "use.ts",
+          "path": "generic-component-cast-11966/use.ts.txt",
+          "sha256": "5f94ba6bcfa5129735c9df33aeb7d66b0c47b2f473f74f6d94be51bfb1e3c5f5"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "generic-component-cast-11966/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b"
+        },
+        {
+          "file": "cases.json",
+          "path": "generic-component-cast-11966/cases.json",
+          "sha256": "4d1a83a4e3f825cde6b7fad731747e6cb06d2d82ec0e1de2645605daa16cc182"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required actual source CLI beta content-mapper protocol; generic props, emits and slots remain castable to Vue's public Component union."
           }
         ]
       }
