@@ -406,8 +406,10 @@
       "status": "unimplemented"
     },
     "vue/no-custom-modifiers-on-v-model": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-custom-modifiers-on-v-model",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-deprecated-data-object-declaration": {
       "patinaPresets": [
@@ -2019,8 +2021,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 147,
-    "unimplemented": 103
+    "mapped": 148,
+    "unimplemented": 102
   },
   "upstream": {
     "package": "eslint-plugin-vue",

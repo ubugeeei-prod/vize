@@ -16,6 +16,7 @@ mod comment_directive;
 mod if_chain;
 mod no_bare_strings_in_template;
 mod no_child_content;
+mod no_custom_modifiers_on_v_model;
 mod no_deprecated_filter;
 mod no_deprecated_functional_template;
 mod no_deprecated_html_element_is;
@@ -109,6 +110,7 @@ pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
 pub use no_bare_strings_in_template::NoBareStringsInTemplate;
 pub use no_child_content::NoChildContent;
+pub use no_custom_modifiers_on_v_model::NoCustomModifiersOnVModel;
 pub use no_deprecated_filter::NoDeprecatedFilter;
 pub use no_deprecated_functional_template::NoDeprecatedFunctionalTemplate;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
@@ -280,6 +282,9 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-v-for-template-key") {
         registry.register(Box::new(NoVForTemplateKey));
+    }
+    if !registry.has_rule("vue/no-custom-modifiers-on-v-model") {
+        registry.register(Box::new(NoCustomModifiersOnVModel));
     }
     if !registry.has_rule("vue/no-use-v-else-with-v-for") {
         registry.register(Box::new(NoUseVElseWithVFor));
