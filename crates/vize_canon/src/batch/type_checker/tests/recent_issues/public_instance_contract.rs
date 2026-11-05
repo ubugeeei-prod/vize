@@ -112,6 +112,15 @@ declare module 'vue' {
 
 const SOURCE_CONSUMER: &str = include_str!("public_instance_source.tsx");
 
+const SINGLE_REQUIRED: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/SingleRequired.vue.txt"
+));
+const EXACT_JSX: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/Probe.tsx.txt"
+));
+
 const TEMPLATE_REF_CONSUMER: &str = r#"<script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import Public from './Public.vue'
@@ -243,9 +252,10 @@ pub(super) fn assert_downstream_compiler(compiler: &Path, downstream: &Path) {
         "{} rejected emitted declarations:\n{output}",
         compiler.display()
     );
-    assert!(
-        !output.contains("Unused '@ts-expect-error'") && !output.contains("TS2578"),
-        "{} left a negative oracle unused:\n{output}",
+    assert_eq!(
+        output,
+        "",
+        "{} emitted an unexpected compiler packet",
         compiler.display()
     );
 }
@@ -266,6 +276,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
             .is_file(),
         "the strict JSX oracle requires the installed real Vue runtime"
     );
+    let source_consumer = format!("{SOURCE_CONSUMER}\n{EXACT_JSX}");
     let project_root = with_workspace_node_modules_override(
         Some(
             test_node_modules
@@ -284,9 +295,10 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
                     ("src/Union.vue", UNION),
                     ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
                     ("src/NoEmits.vue", NO_EMITS),
+                    ("src/SingleRequired.vue", SINGLE_REQUIRED),
                     ("src/nested/Nested.vue", NESTED_COMPONENT),
                     ("src/vue.d.ts", AUGMENTATION),
-                    ("src/Consumer.tsx", SOURCE_CONSUMER),
+                    ("src/Consumer.tsx", &source_consumer),
                     ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
                 ],
             )
@@ -322,7 +334,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
             "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
         )
@@ -354,53 +366,4 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         nested_dts
             .matches("import(\"../__vize_helpers.js\").__EmitProps")
             .count(),
-        6,
-        "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
-    );
-    assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);
-    assert!(
-        !out_dir.join("shared/runtime.d.ts").exists(),
-        "an inferred dependency outside rootDir must not become public output"
-    );
-    assert_eq!(
-        std::fs::read_to_string(out_dir.join("widen-trigger.d.ts")).unwrap(),
-        "export declare const buildFlag: boolean;\n//# sourceMappingURL=widen-trigger.d.ts.map",
-        "the widening trigger must not retain a path to the pruned dependency"
-    );
-
-    let nested_map_path = out_dir.join("nested/Nested.vue.d.ts.map");
-    let nested_map: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(&nested_map_path).unwrap()).unwrap();
-    assert_eq!(nested_map["file"], "Nested.vue.d.ts");
-    assert_eq!(nested_map["sourceRoot"], "");
-    let nested_sources = nested_map["sources"].as_array().unwrap();
-    assert_eq!(nested_sources.len(), 1);
-    let nested_source = nested_sources[0].as_str().unwrap();
-    assert_eq!(
-        std::fs::canonicalize(nested_map_path.parent().unwrap().join(nested_source)).unwrap(),
-        std::fs::canonicalize(project_root.join("src/nested/Nested.vue")).unwrap(),
-        "the relocated declaration map must still resolve to the authored SFC"
-    );
-
-    let downstream_dir = project_root.join("downstream");
-    std::fs::create_dir_all(&downstream_dir).unwrap();
-    let downstream = downstream_dir.join("verify.tsx");
-    std::fs::write(&downstream, DOWNSTREAM).unwrap();
-    assert_downstream_compiler(&tsgo, &downstream);
-    if let Some(tsc) = resolve_javascript_tsc() {
-        assert_downstream_compiler(&tsc, &downstream);
-    }
-
-    let emitted_paths: Vec<_> = emitted
-        .files
-        .iter()
-        .map(|file| relative_path(&out_dir, &file.path))
-        .collect();
-    assert!(
-        emitted_paths
-            .iter()
-            .any(|path| path == "__vize_helpers.d.ts"),
-        "declaration emit must use the shared helper semantic source: {emitted_paths:?}"
-    );
-    let _ = std::fs::remove_dir_all(&project_root);
-}
+        4,

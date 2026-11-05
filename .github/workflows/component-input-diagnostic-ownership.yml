@@ -53,6 +53,8 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts"
+      - "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/**"
       - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/tooling/constructor-projection-emit-overload.test.ts"
       - "tests/tooling/emit-overload-transition-fixture.ts"

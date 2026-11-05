@@ -10,6 +10,8 @@ mod emit_overload_window;
 mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
+mod input_channels;
+mod jsx_exact_keys;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
@@ -164,6 +166,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     runtime_prop_call::retain_provenance(manifest);
     emit_overload_window::retain_provenance(manifest);
     current_loose_emit::retain_provenance(manifest);
+    input_channels::retain_provenance(manifest);
 }
 
 #[cfg(test)]

@@ -21,9 +21,6 @@ declare global {
   // vue-tsc generic library components accept unknown attrs through this
   // fallback, which vue-tsc itself declares unless `checkUnknownProps` is set.
   var __VLS_PROPS_FALLBACK: Record<string, unknown>;
-  // vize checks these templates itself, so component input guards serve only
-  // TS and TSX callers and keep extra keys exact.
-  var __vizeTemplateChecker: true;
 }
 
 export {};

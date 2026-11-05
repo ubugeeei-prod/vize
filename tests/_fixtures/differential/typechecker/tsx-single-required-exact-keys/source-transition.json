@@ -1,0 +1,59 @@
+{
+  "schema": "vize.tsx-exact-keys-source-transition.v1",
+  "sourceBefore": "727db3b16a8eb5151d326c73725d275498f9d54d",
+  "nativeAcceptanceCredit": false,
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      "beforeBytes": 5763,
+      "afterBytes": 5819,
+      "beforeSha256": "19a4efd540f8f23954f5eaaf2a42a8ea73c8ae05077bee6f17ef7db532e6f8e0",
+      "afterSha256": "5a2b00dd75e8e6ade9a79db43b84b20532d3125514f0d1a4c5c6314f97591d76",
+      "edits": [
+        {
+          "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, $AuthoredKeyWitness<Jsx> & $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\n",
+          "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "beforeBytes": 19405,
+      "afterBytes": 19461,
+      "beforeSha256": "b2eada86a579cce97cdf1caec84c8329c746603bbaa4e8709b9ba2ad7b5fa890",
+      "afterSha256": "60e061311d56cd9cbd7fbdc1b48cf27962706de5d2ccdfba628bd76f2eeaf6e2",
+      "edits": [
+        {
+          "before": "  type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =\n    $IsAny<Authored> extends true\n      ? I\n      : $IsUnknown<Authored> extends true\n        ? $UsePublicInstance<Jsx> extends true\n          ? I\n          : $ReplaceComponentProps<\n              I,\n              $AuthoredKeyWitness<Jsx> &\n                $ComponentInputProps<T, Declared> &\n                $ComponentInputGuard<T, Declared, Jsx>\n            >\n        : $ReplaceComponentProps<\n            I,\n            $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n          >;\n",
+          "after": "  type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =\n    $IsAny<Authored> extends true\n      ? I\n      : $IsUnknown<Authored> extends true\n        ? $UsePublicInstance<Jsx> extends true\n          ? I\n          : $ReplaceComponentProps<\n              I,\n              Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &\n                $ComponentInputProps<T, Declared> &\n                $ComponentMissingInputGuard<T, Jsx>\n            >\n        : $ReplaceComponentProps<\n            I,\n            $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n          >;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "beforeBytes": 11949,
+      "afterBytes": 12005,
+      "beforeSha256": "f9f530ba3b0471c39512f9f7b503658ebec642c01dc63552d9778ef7aa974219",
+      "afterSha256": "3e909125efa36962ea1f77e8b9b1147df202e6e5bda1b200b5badff58b59cbfa",
+      "edits": [
+        {
+          "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =\n  $IsAny<Authored> extends true\n    ? I\n    : $IsUnknown<Authored> extends true\n      ? $UsePublicInstance<Jsx> extends true\n        ? I\n        : $ReplaceComponentProps<\n            I,\n            $AuthoredKeyWitness<Jsx> &\n              $ComponentInputProps<T, Declared> &\n              $ComponentInputGuard<T, Declared, Jsx>\n          >\n      : $ReplaceComponentProps<\n          I,\n          $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n        >;\n",
+          "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =\n  $IsAny<Authored> extends true\n    ? I\n    : $IsUnknown<Authored> extends true\n      ? $UsePublicInstance<Jsx> extends true\n        ? I\n        : $ReplaceComponentProps<\n            I,\n            Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &\n              $ComponentInputProps<T, Declared> &\n              $ComponentMissingInputGuard<T, Jsx>\n          >\n      : $ReplaceComponentProps<\n          I,\n          $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n        >;\n"
+        }
+      ]
+    }
+  ],
+  "preamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "beforeBytes": 44978,
+    "afterBytes": 45034,
+    "beforeSha256": "6deae073a61ccf9fd622bb398200aa33afe890d3bd0e68b77023e550dc4995e7",
+    "afterSha256": "99eab3d88bea68199efa66a2feffeaad3b4a6e5c99cd85f0001f73f7dac267d5",
+    "edits": [
+      {
+        "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, $AuthoredKeyWitness<Jsx> & $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\n",
+        "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\n"
+      }
+    ]
+  }
+}

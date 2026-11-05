@@ -1,0 +1,7 @@
+import SingleRequired from "./SingleRequired.vue";
+
+export const exactValid = <SingleRequired bar={1} />;
+export const exactOwned = <SingleRequired bar={1} class="r" />;
+// @ts-expect-error undeclared string props stay exact with one required prop and no emits
+export const exactInvalid = <SingleRequired bar={1} id="r" />;
+export const constructorInput = new SingleRequired({ bar: 1, id: "r" });

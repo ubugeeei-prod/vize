@@ -201,12 +201,7 @@ type $ExtraInputKeys<
   Declared,
   Authored,
   Allowed,
-  K extends keyof Authored = Exclude<
-    Exclude<keyof Authored, keyof Allowed>,
-    typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never }
-      ? keyof P
-      : never
-  >,
+  K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,
 > = K extends unknown
   ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
     ? never
@@ -247,6 +242,23 @@ type $ComponentInput<T, Declared, Authored> =
       ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>>
       : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
+type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =
+  $IsAny<Authored> extends true
+    ? I
+    : $IsUnknown<Authored> extends true
+      ? $UsePublicInstance<Jsx> extends true
+        ? I
+        : $ReplaceComponentProps<
+            I,
+            Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &
+              $ComponentInputProps<T, Declared> &
+              $ComponentMissingInputGuard<T, Jsx>
+          >
+      : $ReplaceComponentProps<
+          I,
+          $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>
+        >;
 type $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof {
@@ -331,6 +343,7 @@ export type {
   $ComponentInputFor,
   $ComponentInput,
   $AuthoredKeyWitness,
+  $ComponentInstanceFor,
   $IsUnknown,
   $UsePublicInstance,
   $LiteralKeys,

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "pullRequest": 11629,
+  "predecessor": {
+    "path": "successor-11591/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "8af2a7df287fda7ec93192c08b6c8668e0478da3c0efda2dc3615d58d41c735c"
+  },
+  "successor": {
+    "path": "successor-11629/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "34974e2b86797eedd3077a7eee28c8582574f9042a5e561eda1bb15bd9450b5e"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 262,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "Issue #11629 lets constructor arguments and TSX bind separate component input channels, so each projection's generated helper and constructor text changes by {\"canonGeneratedTextBytes\":262,\"contentMapperGeneratedTextBytes\":262,\"maestroGeneratedTextBytes\":262} bytes. Only generated coordinates and their derived hashes moved; mapping, diagnostic and authored-hit counts are unchanged."
+}
