@@ -1097,8 +1097,10 @@
       "status": "mapped"
     },
     "vue/no-this-in-before-route-enter": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-this-in-before-route-enter",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-undef-components": {
       "issue": 3223,
@@ -2015,8 +2017,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 145,
-    "unimplemented": 105
+    "mapped": 146,
+    "unimplemented": 104
   },
   "upstream": {
     "package": "eslint-plugin-vue",
