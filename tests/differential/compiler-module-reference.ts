@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import ts from "typescript";
+import { createRequire } from "node:module";
+import type * as TypeScript from "typescript";
+
+// The CLI owns this declared test parser; keep it out of ambient project discovery.
+const ts = createRequire(new URL("../../npm/cli/package.json", import.meta.url))(
+  "typescript",
+) as typeof TypeScript;
 
 // These three archived references use a formatted module representation. Keep
 // those bytes and bind their raw native-emitter successors independently.
@@ -56,7 +62,7 @@ const presentation = new Set([
   "multiLine",
 ]);
 
-function shape(node: ts.Node): Shape {
+function shape(node: TypeScript.Node): Shape {
   if (ts.isSourceFile(node)) {
     return { kind: node.kind, flags: node.flags, fields: {}, children: node.statements.map(shape) };
   }

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import ts from "typescript";
+import { createRequire } from "node:module";
+import type * as TypeScript from "typescript";
 import {
   assertCompilerPatchSuccessor,
   compilerPatchSuccessor,
@@ -13,6 +14,11 @@ import {
   importedRouterProps,
   routerImportedPropsSuccessor,
 } from "./vue-router-imported-props-successor.ts";
+
+// The CLI owns this declared test parser; keep it out of ambient project discovery.
+const ts = createRequire(new URL("../../npm/cli/package.json", import.meta.url))(
+  "typescript",
+) as typeof TypeScript;
 
 export type AuthoredPieceCompilerCase = CompilerPatchCase | "create-vue-formatted";
 type OriginalPins = Parameters<typeof assertCompilerPatchSuccessor>[2];
@@ -38,7 +44,7 @@ const serialize = (value: CompilerOutput) => JSON.stringify(value, null, 2);
 // quotes, parentheses, patch comments and layout now survive whole-module
 // output. The exact packet checks below remain separate from this proof that
 // the reviewed transition preserves every JavaScript syntax node and value.
-function syntax(node: ts.Node): unknown {
+function syntax(node: TypeScript.Node): unknown {
   if (ts.isParenthesizedExpression(node)) return syntax(node.expression);
   const children: unknown[] = [];
   ts.forEachChild(node, (child) => {

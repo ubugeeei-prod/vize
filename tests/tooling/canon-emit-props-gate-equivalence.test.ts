@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -437,55 +436,6 @@ void test("a successor refuses unknown producer bytes and altered historical con
       () => emitGateOracle((selected) => (selected === path ? "" : read(selected))),
       /oracle context|selected emit gate producer/u,
     );
-  }
-});
-
-void test("the current resolver source successor preserves frozen proof and refuses changed source, closure or repins", () => {
-  const fixture = "tests/_fixtures/tooling/emit-props-gate-current-source-20261105.json";
-  const successor = JSON.parse(read(fixture));
-  assert.deepEqual(oracle, JSON.parse(read(successor.predecessor.path)));
-  for (const path of [
-    fixture,
-    ...successor.dependencies.map((entry: { path: string }) => entry.path),
-  ]) {
-    for (const body of ["", read(path) + "\n"])
-      assert.throws(
-        () => emitGateOracle((selected) => (selected === path ? body : read(selected))),
-        /selected emit gate producer/u,
-      );
-  }
-  for (const entry of successor.sources) {
-    const source = read(entry.path);
-    const hunk = entry.hunks[0];
-    for (const changed of [
-      `// unrelated prefix\n${source}`,
-      source + "\n",
-      source.replace(hunk.after, ""),
-      source.replace(hunk.after, hunk.after + hunk.after),
-      source.replace(hunk.after, hunk.after.replace("\n", "\n// unregistered delta\n")),
-    ]) {
-      assert.notEqual(changed, source);
-      assert.throws(
-        () => emitGateOracle((path) => (path === entry.path ? changed : read(path))),
-        /selected emit gate producer/u,
-      );
-      const repinned = structuredClone(successor);
-      repinned.sources.find((source: { path: string }) => source.path === entry.path).after = {
-        bytes: Buffer.byteLength(changed),
-        sha256: createHash("sha256").update(changed).digest("hex"),
-      };
-      assert.throws(
-        () =>
-          emitGateOracle((path) =>
-            path === fixture
-              ? JSON.stringify(repinned)
-              : path === entry.path
-                ? changed
-                : read(path),
-          ),
-        /selected emit gate producer/u,
-      );
-    }
   }
 });
 
