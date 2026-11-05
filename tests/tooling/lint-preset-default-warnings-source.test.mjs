@@ -11,17 +11,46 @@ const directory = "tests/_fixtures/lint-preset-default-warnings";
 // Later preset-default changes are finite successor rows, newest last. Each
 // row pins both byte identities and is undone before the audits below, so they
 // keep judging the tree they reviewed while presets grow.
-const presetSuccessors = JSON.parse(
-  fs.readFileSync(path.join(root, directory, "preset-successors.json"), "utf8"),
+const presetSuccessorBytes = fs.readFileSync(path.join(root, directory, "preset-successors.json"));
+const presetSuccessors = JSON.parse(presetSuccessorBytes);
+const currentSourceBytes = fs.readFileSync(
+  path.join(root, directory, "current-source-successors-20261105.json"),
 );
+assert.equal(
+  sha(currentSourceBytes),
+  "88fd2253b4a5627a642c05de90faa2659b86ad25aee95dea257216489fdbf01b",
+);
+const currentSources = JSON.parse(currentSourceBytes);
+assert.equal(currentSources.schema, "vize.lint.preset-warning-current-source-successors.v1");
+assert.deepEqual(currentSources.credit, { compiled: false, native: false, performance: false });
+assert.equal(currentSources.predecessor.path, `${directory}/preset-successors.json`);
+identity(presetSuccessorBytes, currentSources.predecessor);
+assert.deepEqual(
+  currentSources.sources.map((row) => row.path),
+  [
+    "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "crates/vize_patina/src/rule/happy_path.rs",
+    "crates/vize_patina/src/rules/script/define_macros_order.rs",
+  ],
+);
+for (const row of currentSources.sources)
+  assert.deepEqual(
+    row.before,
+    presetSuccessors.filter((previous) => previous.path === row.path).at(-1).after,
+  );
 // The audit judges the nextest.toml it reviewed; CI keeps editing the live file.
 const liveNextest = ".config/nextest.toml";
 const reviewedNextest = `${directory}/reviewed-nextest.toml`;
-const read = (name) =>
-  presetSuccessors.reduceRight(
+const read = (name) => {
+  const body = fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name));
+  const current = currentSources.sources.find((row) => row.path === name);
+  return presetSuccessors.reduceRight(
     (body, row) => (row.path === name ? inverse(row, body) : body),
-    fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name)),
+    current ? inverseCurrentSource(current, body) : body,
   );
+};
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
@@ -44,6 +73,42 @@ const {
 function identity(body, expected) {
   assert.equal(body.length, expected.bytes);
   assert.equal(sha(body), expected.sha256);
+}
+
+function replaceBytes(body, offset, expected, replacement) {
+  assert(Number.isSafeInteger(offset) && offset >= 0 && offset + expected.length <= body.length);
+  assert.deepEqual(body.subarray(offset, offset + expected.length), expected);
+  return Buffer.concat([
+    body.subarray(0, offset),
+    replacement,
+    body.subarray(offset + expected.length),
+  ]);
+}
+
+// Later additions are source-only history. Both byte directions must recover
+// complete authenticated bodies before the original finite audits run.
+function inverseCurrentSource(row, current) {
+  assert(Buffer.isBuffer(current), "the current source body is required");
+  identity(current, row.after);
+  let before = current;
+  for (const hunk of [...row.hunks].reverse())
+    before = replaceBytes(
+      before,
+      hunk.afterOffset,
+      Buffer.from(hunk.after),
+      Buffer.from(hunk.before),
+    );
+  identity(before, row.before);
+  let forward = before;
+  for (const hunk of [...row.hunks].reverse())
+    forward = replaceBytes(
+      forward,
+      hunk.beforeOffset,
+      Buffer.from(hunk.before),
+      Buffer.from(hunk.after),
+    );
+  assert.deepEqual(forward, current);
+  return before;
 }
 
 // This inverse is an audit of these exact edits. It is never installed as an
@@ -163,6 +228,43 @@ function inverseCurrent(row, body) {
       : originalEssentialSource(row, originalStaticClassSource(row.path, body)),
   );
 }
+
+void test("current source successors preserve whole histories and reject missing, partial, duplicate and unrelated bytes", () => {
+  for (const row of currentSources.sources) {
+    const current = fs.readFileSync(path.join(root, row.path));
+    identity(inverseCurrentSource(row, current), row.before);
+    const hunk = row.hunks.find((hunk) => hunk.after.length > 0);
+    const changedByte = Buffer.from(current);
+    changedByte[0] ^= 1;
+    for (const changed of [
+      null,
+      current.subarray(0, current.length - 1),
+      Buffer.concat([Buffer.from("// unrelated prefix\n"), current]),
+      Buffer.concat([current, Buffer.from("\n// unrelated suffix\n")]),
+      replaceBytes(current, hunk.afterOffset, Buffer.from(hunk.after), Buffer.from(hunk.before)),
+      replaceBytes(
+        current,
+        hunk.afterOffset,
+        Buffer.from(hunk.after),
+        Buffer.from(hunk.after + hunk.after),
+      ),
+      changedByte,
+    ]) {
+      assert.notDeepEqual(changed, current);
+      assert.throws(() => inverseCurrentSource(row, changed));
+      if (changed)
+        assert.throws(() =>
+          inverseCurrentSource(
+            { ...row, after: { bytes: changed.length, sha256: sha(changed) } },
+            changed,
+          ),
+        );
+    }
+    const shifted = structuredClone(row);
+    shifted.hunks[0].afterOffset++;
+    assert.throws(() => inverseCurrentSource(shifted, current));
+  }
+});
 
 void test("class-default successors reject missing, duplicate and unrelated edits", () => {
   for (const row of [staticClassRegistration, staticClassMembership]) {
