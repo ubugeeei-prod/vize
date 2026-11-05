@@ -87,6 +87,7 @@ impl CorsaProjectClient {
         let editor_result = self.retire_editor_lsp();
         self.document_texts.clear();
         self.canon_file_cache.clear();
+        self.canon_batches.clear();
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;

@@ -90,8 +90,32 @@ impl FileIdentity {
 }
 
 impl CanonFileCache {
+    #[cfg(test)]
+    pub(super) fn exact_reads_for_test(&self) -> usize {
+        self.reads
+    }
+
+    /// Only an unchanged immutable batch and retained-text checkpoint may
+    /// supply its previously captured desired digest without scanning text.
+    pub(super) fn observation_is_current(
+        &self,
+        path: &Path,
+        desired: [u8; 32],
+        now: SystemTime,
+    ) -> bool {
+        self.files.get(path).is_some_and(|old| {
+            old.desired == desired
+                && FileIdentity::capture(path)
+                    .is_some_and(|identity| identity.settled(now) && old.identity == identity)
+        })
+    }
+
     pub(super) fn clear(&mut self) {
         self.files.clear();
+    }
+
+    pub(super) fn forget(&mut self, path: &Path) {
+        self.files.remove(path);
     }
 
     pub(super) fn synchronize_with_digest(

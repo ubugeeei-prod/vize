@@ -52,6 +52,13 @@ impl From<FxHashMap<String, String>> for TrackedDocumentTexts {
 }
 
 impl TrackedDocumentTexts {
+    pub(super) fn checkpoint(&self) -> DocumentCheckpoint {
+        DocumentCheckpoint {
+            owner: self.owner,
+            revision: self.revision,
+        }
+    }
+
     pub(super) fn is_dirty(&self) -> bool {
         self.pending
             .as_ref()

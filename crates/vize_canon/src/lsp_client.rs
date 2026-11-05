@@ -13,6 +13,8 @@ use vize_l0::{FxHashMap, String};
 
 mod bootstrap;
 mod canon_file_cache;
+mod immutable_batch;
+pub(crate) use immutable_batch::CorsaNativeDocumentBatch;
 mod completion_order;
 mod diagnostic_phase;
 mod diagnostics;
@@ -76,6 +78,7 @@ pub struct CorsaProjectClient {
     /// Current in-memory contents for virtual overlays and offset mapping.
     document_texts: tracked_documents::TrackedDocumentTexts,
     canon_file_cache: canon_file_cache::CanonFileCache,
+    canon_batches: immutable_batch::CanonBatchCache,
     /// Mapping from caller-facing URIs to the session-local URIs Corsa sees.
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
@@ -148,6 +151,7 @@ impl CorsaProjectClient {
             overlay_versions: Default::default(),
             document_texts: Default::default(),
             canon_file_cache: Default::default(),
+            canon_batches: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             editor_lsp: None,

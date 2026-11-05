@@ -88,9 +88,31 @@ impl CorsaProjectClient {
             "canon_document_observations",
             documents.len(),
         );
+        let mut private = Vec::with_capacity(paths.len());
+        for ((_, content), path) in documents.iter().zip(&paths) {
+            let owned = crate::lsp_client::session_paths::is_within_physical_project_namespace(
+                path,
+                &self.project_root,
+            );
+            if !owned {
+                // Linked authored/package sources can be observed, never
+                // rewritten through Canon's logical namespace. Keep this
+                // guard on the ordinary writer too, including retries after
+                // an immutable-batch certificate was rejected.
+                self.canon_file_cache.forget(path);
+                if std::fs::read_to_string(path).ok().as_deref() != Some(*content) {
+                    return Err(cstr!("Canon document left its private physical namespace"));
+                }
+            }
+            private.push(owned);
+        }
         let mut summary = FileChangeSummary::default();
-        for ((uri, content), path) in documents.iter().zip(paths) {
+        for (((uri, content), path), owned) in documents.iter().zip(paths).zip(private) {
             self.clear_document_state(uri);
+            if !owned {
+                self.remember_session_document_uri(uri, (*uri).into());
+                continue;
+            }
             if self
                 .canon_file_cache
                 .synchronize_with_digest(&path, content, || {
@@ -111,7 +133,16 @@ impl CorsaProjectClient {
         if !summary.changed.is_empty() {
             self.refresh_materialized_overlay_snapshot(Some(FileChanges::Summary(summary)))?;
         }
+        self.canon_batches.observed_canonical_sync();
         Ok(true)
+    }
+
+    #[cfg(test)]
+    pub(in crate::lsp_client) fn synchronize_canon_documents_for_test(
+        &mut self,
+        documents: &[(&str, &str)],
+    ) -> Result<bool, String> {
+        self.synchronize_existing_canon_project_documents(documents)
     }
 
     pub(in crate::lsp_client) fn refresh_materialized_overlay_snapshot(

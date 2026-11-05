@@ -88,12 +88,8 @@ impl CorsaBridge {
     ) -> Result<(), CorsaBridgeError> {
         let cache_len = self
             .with_client(move |client| {
-                let documents = owned
-                    .iter()
-                    .map(|(uri, content)| (uri.as_str(), content.as_str()))
-                    .collect::<Vec<_>>();
                 client
-                    .did_open_batch_fast(&documents)
+                    .did_open_immutable_batch(&owned)
                     .map_err(CorsaBridgeError::CommunicationError)?;
                 Ok(client.diagnostics_cache_len())
             })
