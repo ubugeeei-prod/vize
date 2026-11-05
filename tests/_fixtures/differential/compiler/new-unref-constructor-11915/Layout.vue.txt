@@ -1,0 +1,4 @@
+<script setup>
+import { Vector3 } from "./vector3.mjs";
+</script>
+<template><Cam :look-at="new Vector3(0, 0.75, 0)" /></template>

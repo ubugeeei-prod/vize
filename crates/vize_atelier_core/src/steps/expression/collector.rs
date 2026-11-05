@@ -7,10 +7,11 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_assignment_target, walk_object_property,
-        walk_update_expression,
+        walk_assignment_expression, walk_assignment_target, walk_new_expression,
+        walk_object_property, walk_update_expression,
     },
 };
+use oxc_span::GetSpan;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::FxHashSet;
 use vize_l0::String;
@@ -44,6 +45,9 @@ pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) suffix_rewrites: Vec<(usize, String)>,
     /// Assignment target identifier positions (for .value on LHS)
     pub(crate) assignment_targets: FxHashSet<usize>,
+    /// Start of the current constructor callee: an inserted call here needs parentheses
+    /// so `new` constructs the unwrapped value rather than the unref helper.
+    constructor_callee_start: Option<usize>,
     /// Whether _unref helper was used
     pub(crate) used_unref: bool,
     pub(crate) used_is_ref: bool,
@@ -68,6 +72,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             rewrites: FxHashSet::default(),
             suffix_rewrites: Vec::new(),
             assignment_targets: FxHashSet::default(),
+            constructor_callee_start: None,
             used_unref: false,
             used_is_ref: false,
             has_identifiers: false,
@@ -173,6 +178,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
 
         let needs_unref = self.needs_unref(name);
+        let constructor = self.constructor_callee_start == Some(ident.span.start as usize);
         let is_assignment_target = self
             .assignment_targets
             .contains(&(ident.span.start as usize));
@@ -204,10 +210,18 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
 
         if let Some(prefix) = get_identifier_prefix(name, self.ctx) {
             if needs_unref && prefix == "$setup." {
-                self.rewrites
-                    .insert((ident.span.start as usize, String::new("_unref($setup.")));
-                self.suffix_rewrites
-                    .push((ident.span.end as usize, String::new(")")));
+                self.rewrites.insert((
+                    ident.span.start as usize,
+                    String::new(if constructor {
+                        "(_unref($setup."
+                    } else {
+                        "_unref($setup."
+                    }),
+                ));
+                self.suffix_rewrites.push((
+                    ident.span.end as usize,
+                    String::new(if constructor { "))" } else { ")" }),
+                ));
                 self.used_unref = true;
             } else {
                 self.rewrites
@@ -219,16 +233,31 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 .push((ident.span.end as usize, String::new(".value")));
         } else if needs_unref {
             // Wrap with _unref() for let/var bindings (inline mode)
-            self.rewrites
-                .insert((ident.span.start as usize, String::new("_unref(")));
-            self.suffix_rewrites
-                .push((ident.span.end as usize, String::new(")")));
+            self.rewrites.insert((
+                ident.span.start as usize,
+                String::new(if constructor { "(_unref(" } else { "_unref(" }),
+            ));
+            self.suffix_rewrites.push((
+                ident.span.end as usize,
+                String::new(if constructor { "))" } else { ")" }),
+            ));
             self.used_unref = true;
         }
     }
 
     fn visit_binding_identifier(&mut self, _ident: &oxc_ast_types::BindingIdentifier<'_>) {
         self.has_identifiers = true;
+    }
+
+    fn visit_new_expression(&mut self, expr: &oxc_ast_types::NewExpression<'_>) {
+        // A member callee starts at its receiver (`new Foo.Bar`), while
+        // computed keys and constructor arguments have different spans.
+        // Authored parenthesized callees already protect the inserted call.
+        let previous = self
+            .constructor_callee_start
+            .replace(expr.callee.span().start as usize);
+        walk_new_expression(self, expr);
+        self.constructor_callee_start = previous;
     }
 
     fn visit_member_expression(&mut self, expr: &oxc_ast_types::MemberExpression<'_>) {
