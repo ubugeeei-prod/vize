@@ -140,6 +140,10 @@ impl CorsaProjectClient {
         }
 
         if !self.has_project_session() {
+            let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+                "native_batch_without_api",
+                documents.len(),
+            );
             for (uri, content) in documents {
                 self.clear_document_state(uri);
                 if self.materialized_project_session {
@@ -152,6 +156,7 @@ impl CorsaProjectClient {
                 }
             }
             self.try_logical_workspace_overlays()?;
+            phase.finish();
             return Ok(());
         }
 
@@ -171,6 +176,10 @@ impl CorsaProjectClient {
         let mut summary = FileChangeSummary::default();
         let mut overlay_upserts = Vec::new();
         let mut changed = false;
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "native_batch_api_overlays",
+            documents.len(),
+        );
         for (uri, content) in documents {
             self.clear_document_state(uri);
             let previous = self.retain_document_text(uri, content);
@@ -214,6 +223,7 @@ impl CorsaProjectClient {
                 });
             }
         }
+        phase.finish();
 
         if !changed {
             return Ok(());

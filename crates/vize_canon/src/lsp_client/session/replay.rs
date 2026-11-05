@@ -15,12 +15,17 @@ impl CorsaProjectClient {
     ) -> Result<(), String> {
         // Startup must see the complete batch, including a typed overlay API
         // fallback while replay temporarily owns the retained document map.
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "native_batch_materialized_retain",
+            documents.len(),
+        );
         for (uri, content) in documents {
             let previous = self.retain_document_text(uri, content);
             if previous.changed() {
                 self.editor_lsp_documents_dirty = true;
             }
         }
+        phase.finish();
         if self.synchronize_existing_canon_project_documents(documents)? {
             return Ok(());
         }
@@ -68,12 +73,21 @@ impl CorsaProjectClient {
         else {
             return Ok(false);
         };
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "canon_document_namespace",
+            paths.len(),
+        );
         if !paths.iter().all(|path| {
             crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
                 && path.is_file()
         }) {
             return Ok(false);
         }
+        phase.finish();
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "canon_document_observations",
+            documents.len(),
+        );
         let mut summary = FileChangeSummary::default();
         for ((uri, content), path) in documents.iter().zip(paths) {
             self.clear_document_state(uri);
@@ -91,6 +105,7 @@ impl CorsaProjectClient {
             }
             self.remember_session_document_uri(uri, (*uri).into());
         }
+        phase.finish();
         if !summary.changed.is_empty() {
             self.refresh_materialized_overlay_snapshot(Some(FileChanges::Summary(summary)))?;
         }
