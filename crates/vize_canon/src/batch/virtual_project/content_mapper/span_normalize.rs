@@ -24,6 +24,14 @@ pub(super) fn normalize(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate
         let overlaps = original
             .overlapping(&candidate.original)
             .collect::<Vec<_>>();
+        // An unsplit candidate already has its final shape. Keep it in the output
+        // instead of allocating and immediately dropping a singleton Vec.
+        if overlaps.is_empty() || overlaps.iter().all(|span| *span == candidate.original) {
+            generated.insert(&candidate.generated);
+            original.insert(&candidate.original);
+            accepted.push(candidate);
+            continue;
+        }
         for piece in split_original_overlaps(candidate, &overlaps) {
             generated.insert(&piece.generated);
             original.insert(&piece.original);
@@ -145,6 +153,37 @@ mod tests {
             accepted.extend(split_original_overlaps(candidate, &overlaps));
         }
         accepted
+    }
+
+    #[test]
+    fn non_splitting_spans_preserve_duplicate_originals_and_split_neighbors() {
+        let span = |generated, original, kind| SpanCandidate {
+            generated,
+            original,
+            kind,
+        };
+        let spans = normalize(vec![
+            span(50..60, 8..18, ContentMapperSpanKind::Verbatim),
+            span(40..45, 12..17, ContentMapperSpanKind::Atom),
+            span(20..24, 30..34, ContentMapperSpanKind::Verbatim),
+            span(0..4, 100..104, ContentMapperSpanKind::Verbatim),
+            span(10..13, 10..13, ContentMapperSpanKind::Alias),
+            span(0..3, 10..13, ContentMapperSpanKind::Atom),
+        ]);
+        assert_eq!(
+            spans
+                .into_iter()
+                .map(|span| (span.generated, span.original, span.kind))
+                .collect::<Vec<_>>(),
+            vec![
+                (0..3, 10..13, ContentMapperSpanKind::Atom),
+                (10..13, 10..13, ContentMapperSpanKind::Alias),
+                (20..24, 30..34, ContentMapperSpanKind::Verbatim),
+                (50..52, 8..10, ContentMapperSpanKind::Verbatim),
+                (52..55, 10..13, ContentMapperSpanKind::Verbatim),
+                (55..60, 13..18, ContentMapperSpanKind::Verbatim),
+            ],
+        );
     }
 
     #[test]

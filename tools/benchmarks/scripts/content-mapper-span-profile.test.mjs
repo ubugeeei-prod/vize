@@ -1,0 +1,83 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { counts, families, summarize } from "./content-mapper-span-profile.mjs";
+
+const binaries = { base: { source: "a".repeat(40) }, head: { source: "b".repeat(40) } };
+function samples() {
+  const rows = [];
+  for (const family of families)
+    for (const count of counts)
+      for (const role of ["base", "head"])
+        for (const mode of ["runtime-off", "allocation"])
+          for (let round = 1; round <= 5; round++) {
+            rows.push({
+              schema: "vize.content-mapper-span-profile.v1",
+              family,
+              count,
+              role,
+              mode,
+              round,
+              sourceRevision: binaries[role].source,
+              source: "日本 🧭\r\n",
+              packet: JSON.stringify({
+                text: "generated",
+                extension: ".tsx",
+                mappings: [[1, 2, 3, 4, 0, 63]],
+                semanticLinks: [{ sourceStart: 1, targetStart: 2 }],
+                diagnosticDirectives: { directives: [[1, 2, 3, 4, 0, 0]] },
+                diagnostics: [
+                  { code: 100001, start: 1, length: 2, messageText: "whole diagnostic" },
+                ],
+              }),
+              elapsedNanoseconds: round,
+              peakRssKiB: 1024 + round,
+              allocation: {
+                calls: mode === "allocation" ? 4 : 0,
+                requestedBytes: mode === "allocation" ? 160 : 0,
+                releasedBytes: 0,
+                failures: 0,
+              },
+              cold: { generationCalls: 1, warmups: 0, persistentCache: false },
+            });
+          }
+  return rows;
+}
+test("whole matrix preserves every family and median", () => {
+  const result = summarize(samples(), binaries);
+  assert.deepEqual(
+    result.map((row) => [row.family, row.count]),
+    families.flatMap((family) => counts.map((count) => [family, count])),
+  );
+  assert.deepEqual(result[0].base, {
+    generationNs: 3,
+    processPeakRssKiB: 1027,
+    allocationCalls: 4,
+    requestedBytes: 160,
+  });
+});
+for (const field of [
+  "text",
+  "extension",
+  "mappings",
+  "semanticLinks",
+  "diagnosticDirectives",
+  "diagnostics",
+])
+  test(`reject changed complete ${field}`, () => {
+    const rows = samples(),
+      packet = JSON.parse(rows[0].packet);
+    delete packet[field];
+    rows[0].packet = JSON.stringify(packet);
+    assert.throws(() => summarize(rows, binaries));
+  });
+for (const mutation of [
+  (rows) => rows.pop(),
+  (rows) => (rows[1] = rows[0]),
+  (rows) => (rows[0].source += "x"),
+  (rows) => (rows[0].allocation.calls = 1),
+])
+  test("reject incomplete, duplicated or contaminated evidence", () => {
+    const rows = samples();
+    mutation(rows);
+    assert.throws(() => summarize(rows, binaries));
+  });
