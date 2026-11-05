@@ -44,7 +44,7 @@ fn source(family: &str, count: usize) -> String {
             "components" => text.push_str(&format!("<Child :item=\"values[0]\" :count=\"{index}\" @select=\"pick\" @update:value=\"value => pick(value)\" />\r\n")),
             "loop-if" => text.push_str("<section v-for=\"(value, i) in values\" :key=\"i\"><div v-if=\"value.id\">{{ value.label }}</div><span v-else>{{ i }}</span></section>\r\n"),
             "slot-ref" => text.push_str("<Child ref=\"child\"><template #default=\"{ item }\"><span>{{ item.id }}</span></template></Child>\r\n"),
-            _ => panic!("unknown fixture family"),
+            _ => assert_eq!(family, "script-only", "unknown fixture family"),
         }
     }
     text.push_str("</main></template>\r\n");

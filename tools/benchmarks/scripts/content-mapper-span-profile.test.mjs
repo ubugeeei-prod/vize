@@ -42,7 +42,7 @@ function samples() {
           }
   return rows;
 }
-test("whole matrix preserves every family and median", () => {
+void test("whole matrix preserves every family and median", () => {
   const result = summarize(samples(), binaries);
   assert.deepEqual(
     result.map((row) => [row.family, row.count]),
@@ -63,7 +63,7 @@ for (const field of [
   "diagnosticDirectives",
   "diagnostics",
 ])
-  test(`reject changed complete ${field}`, () => {
+  void test(`reject changed complete ${field}`, () => {
     const rows = samples(),
       packet = JSON.parse(rows[0].packet);
     delete packet[field];
@@ -80,7 +80,7 @@ for (const mutation of [
     row.allocation = { calls: 0, requestedBytes: 0, releasedBytes: 0, failures: 0 };
   },
 ])
-  test("reject incomplete, duplicated or contaminated evidence", () => {
+  void test("reject incomplete, duplicated or contaminated evidence", () => {
     const rows = samples();
     mutation(rows);
     assert.throws(() => summarize(rows, binaries));
