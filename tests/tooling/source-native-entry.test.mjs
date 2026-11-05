@@ -95,3 +95,17 @@ await test("entrypoint drift is reported while the published bytes are still res
     fs.rmSync(f.root, { recursive: true, force: true });
   }
 });
+
+await test("an external linked native package is refused without changing it or the artifacts", () => {
+  const f = fixture();
+  try {
+    const external = path.join(f.root, "shared-native");
+    fs.renameSync(f.installed, external);
+    fs.symlinkSync(external, f.installed, "dir");
+    assert.throws(() => stageSourceNativeEntrypoint(f.root, f.app, f.artifacts));
+    assert.equal(fs.readFileSync(path.join(external, "index.js"), "utf8"), published);
+    assert.deepEqual(fs.readdirSync(f.artifacts), []);
+  } finally {
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});

@@ -14,6 +14,10 @@ export function stageSourceNativeEntrypoint(root: string, fixture: string, artif
     path.join(fixture, "node_modules/@vizejs/vite-plugin/package.json"),
   );
   const installedEntry = fs.realpathSync(requirePlugin.resolve("@vizejs/native"));
+  assert.ok(
+    installedEntry.startsWith(path.join(fs.realpathSync(fixture), "node_modules") + path.sep),
+    "the fixture native entrypoint must remain in its own node_modules",
+  );
   const sourceEntry = fs.realpathSync(path.join(source, "index.js"));
   assert.notEqual(installedEntry, sourceEntry, "the fixture must own its published entrypoint");
   const installed = path.dirname(installedEntry);
