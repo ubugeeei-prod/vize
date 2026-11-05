@@ -34,7 +34,7 @@ function fixture() {
   return { root, app, installed, artifacts };
 }
 
-function importShape(entry) {
+function importShape(entry: string) {
   const script = `import * as api from ${JSON.stringify(pathToFileURL(entry).href)};
     console.log(JSON.stringify({ cjs: typeof api.default.typeProjectInputs,
       esm: typeof api.typeProjectInputs,
