@@ -492,3 +492,5 @@ mod native_union;
 mod windows_overlays;
 
 mod shared_payload;
+
+mod host_overlay;
