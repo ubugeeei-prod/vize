@@ -45,6 +45,7 @@ import { registerSourceGalleryDependencies } from "../gallery-dependencies.js";
 import { resolveMuseaGalleryUrls } from "./gallery-url.js";
 import { transformPreprocessedArtStyle } from "../art-style-module.js";
 import { createRawArtInputOwner } from "./raw-input-owner.js";
+import { loadInlineArtCustomBlock } from "./inline-art-query.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -314,6 +315,9 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       });
     },
     async transform(code, id) {
+      // Vize or the host Vue plugin may load the raw custom block before us.
+      const inlineArtBlock = loadInlineArtCustomBlock(virtualState, id);
+      if (inlineArtBlock !== null) return { code: inlineArtBlock, map: null };
       if (!id.includes("?musea-virtual")) {
         return null;
       }

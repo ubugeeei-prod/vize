@@ -165,6 +165,11 @@ export async function processMuseaArtFile(
       styleBlockDetails: styles.blocks,
       isInline,
       componentPath: isInline ? filePath : undefined,
+      inlineArtBlockIndex: isInline
+        ? binding
+            .parseSfc(source, { filename: filePath })
+            .customBlocks.findIndex((block) => block.type === "art")
+        : undefined,
     };
   } catch (error) {
     const message = formatArtProcessingError(ctx.root, filePath, error);

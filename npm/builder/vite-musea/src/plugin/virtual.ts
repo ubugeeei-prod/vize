@@ -21,6 +21,7 @@ import { generateSharedSetupModule, sharedBindingNames } from "../art-shared-set
 import { parseScriptSetupForArt } from "../art-module.js";
 import { variantComponentNames } from "../variant-bindings.js";
 import { loadArtStyle, parseArtStyleRequest } from "../art-style-module.js";
+import { loadInlineArtCustomBlock } from "./inline-art-query.js";
 
 // Virtual module prefixes
 const VIRTUAL_MUSEA_PREFIX = "\0musea:";
@@ -121,6 +122,8 @@ export function createResolveId(state: VirtualModuleState) {
 
 export function createLoad(state: VirtualModuleState) {
   return function load(id: string): string | null {
+    const inlineArtBlock = loadInlineArtCustomBlock(state, id);
+    if (inlineArtBlock !== null) return inlineArtBlock;
     const styleRequest = parseArtStyleRequest(id);
     if (styleRequest) {
       return loadArtStyle(state.artFiles.get(styleRequest.filePath), styleRequest);
