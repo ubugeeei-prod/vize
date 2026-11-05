@@ -1,0 +1,1 @@
+<div role="switch"></div><input type="text" role="switch" /><input :type="kind" role="switch" />

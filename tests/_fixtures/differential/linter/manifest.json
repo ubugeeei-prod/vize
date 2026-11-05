@@ -60,7 +60,9 @@
     {
       "id": "linter/a11y-dynamic-role-10926",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "a11y-dynamic-role-10926",
         "files": [
@@ -82,7 +84,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -91,7 +97,9 @@
     {
       "id": "linter/a11y-embedded-jsx-controls-11714",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "a11y-embedded-jsx-controls-11714",
         "files": [
@@ -123,7 +131,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["jsx", "tsx"],
+            "dialects": [
+              "jsx",
+              "tsx"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -132,7 +143,9 @@
     {
       "id": "linter/a11y-listbox-focus-10925",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "a11y-listbox-focus-10925",
         "files": [
@@ -169,7 +182,13 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts", "jsx", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "jsx",
+              "tsx"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -178,7 +197,9 @@
     {
       "id": "linter/ambient-macro-declarations-10656",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "ambient-macro-declarations-10656",
         "files": [
@@ -205,7 +226,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -324,7 +350,9 @@
     {
       "id": "linter/attribute-hyphenation-range",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "attribute-hyphenation-range",
         "files": [
@@ -351,7 +379,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -360,7 +393,9 @@
     {
       "id": "linter/complexity-coordinates-10465",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "complexity-coordinates-10465",
         "files": [
@@ -382,7 +417,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -391,7 +430,9 @@
     {
       "id": "linter/complexity-decoded-coordinates-10473",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "complexity-decoded-coordinates-10473",
         "files": [
@@ -423,7 +464,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -432,7 +476,9 @@
     {
       "id": "linter/component-document-isolation-10444",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "component-document-isolation-10444",
         "files": [
@@ -474,7 +520,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -483,14 +534,18 @@
     {
       "id": "linter/component-name/invalid-dotted-name",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -499,14 +554,18 @@
     {
       "id": "linter/component-name/invalid-doubled-hyphen",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -515,14 +574,18 @@
     {
       "id": "linter/component-name/invalid-leading-hyphen",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -531,14 +594,18 @@
     {
       "id": "linter/component-name/invalid-mixed-kebab-and-pascal",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -547,14 +614,18 @@
     {
       "id": "linter/component-name/invalid-trailing-hyphen",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -563,14 +634,18 @@
     {
       "id": "linter/component-name/valid-kebab-case",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -579,14 +654,18 @@
     {
       "id": "linter/component-name/valid-kebab-case-with-digits",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -595,14 +674,18 @@
     {
       "id": "linter/component-name/valid-kebab-case-with-path",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "component-name pinned authored sources"
           }
         ]
@@ -611,7 +694,9 @@
     {
       "id": "linter/contextual-function-return-type-11103",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "contextual-function-return-type-11103",
         "files": [
@@ -628,7 +713,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -637,7 +726,9 @@
     {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "corsa-session-waiters-10393",
         "files": [
@@ -659,7 +750,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -668,7 +762,9 @@
     {
       "id": "linter/cross-file-directives-10912",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "cross-file-directives-10912",
         "files": [
@@ -695,7 +791,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -704,15 +804,28 @@
     {
       "id": "linter/current-api/anchor-bound-image-alt",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-anchor-bound-image-alt",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "52e689e0321c5019d7f4f85eb932180339a294ec20d08f26615685a3a31b6433"
           }
         ]
       }
@@ -720,15 +833,28 @@
     {
       "id": "linter/current-api/anchor-empty-image-alt",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-anchor-empty-image-alt",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "94414dcd750e86a3895526e7da14e84b51930c836c739bf92111da7d70dea454"
           }
         ]
       }
@@ -736,14 +862,18 @@
     {
       "id": "linter/current-api/attribute-hyphenation-aria-data-camel-props",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -752,14 +882,18 @@
     {
       "id": "linter/current-api/attribute-hyphenation-aria-data-native-attributes",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -768,7 +902,9 @@
     {
       "id": "linter/current-api/cli-preset-validation-9853",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "cli-preset-validation-9853",
         "files": [
@@ -784,7 +920,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -793,15 +933,28 @@
     {
       "id": "linter/current-api/click-presentation-opt-out",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-click-presentation-opt-out",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "93567217a7e8df72f318d8a24f26c6f3651641ad4e8d29efbe01a1715f7cf303"
           }
         ]
       }
@@ -809,14 +962,18 @@
     {
       "id": "linter/current-api/combobox-bound-ids-exempt-listbox-9750",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -825,14 +982,18 @@
     {
       "id": "linter/current-api/combobox-mismatched-bound-id-reports-9750",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -841,7 +1002,9 @@
     {
       "id": "linter/current-api/conditional-plain-types-10517",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "conditional-plain-types-10517",
         "files": [
@@ -918,7 +1081,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts", "jsx", "tsx"],
+            "dialects": [
+              "ts",
+              "jsx",
+              "tsx"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -927,7 +1094,9 @@
     {
       "id": "linter/current-api/custom-event-name-casing-9879",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "custom-event-name-casing-9879",
         "files": [
@@ -944,7 +1113,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -953,7 +1124,9 @@
     {
       "id": "linter/current-api/dotted-slot-name-9865",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "dotted-slot-9865",
         "files": [
@@ -975,7 +1148,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -984,7 +1161,9 @@
     {
       "id": "linter/current-api/dynamic-slot-v-for-component-bodies",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "dynamic-slot-v-for-9924",
         "files": [
@@ -1001,7 +1180,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1010,14 +1193,18 @@
     {
       "id": "linter/current-api/form-label-bound-hidden-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1026,14 +1213,18 @@
     {
       "id": "linter/current-api/form-label-hidden-input-report-9751",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1042,14 +1233,18 @@
     {
       "id": "linter/current-api/form-label-hidden-select-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1058,14 +1253,18 @@
     {
       "id": "linter/current-api/form-label-hidden-textarea-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1074,14 +1273,18 @@
     {
       "id": "linter/current-api/form-label-until-found-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1090,14 +1293,18 @@
     {
       "id": "linter/current-api/form-label-visible-input-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1106,7 +1313,9 @@
     {
       "id": "linter/current-api/html-quotes-options-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "html-quotes-options-6097",
         "files": [
@@ -1133,7 +1342,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1142,15 +1355,28 @@
     {
       "id": "linter/current-api/id-reference-component-anchor",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-id-reference-component-anchor",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "99c5b0a0c4df19a569b849a681d305f196236fd1eb3bd7abede9a88556859bb0"
           }
         ]
       }
@@ -1158,7 +1384,9 @@
     {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "incomplete-type-project-10005",
         "files": [
@@ -1200,7 +1428,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1209,15 +1441,28 @@
     {
       "id": "linter/current-api/label-spread-8961",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-label-spread-8961",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "b472838d41dfb8eef29352527a2a01b5174860e06f07c6ada8b80d8c34adb9f8"
           }
         ]
       }
@@ -1225,7 +1470,9 @@
     {
       "id": "linter/current-api/multiline-v-for-source-9880",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "multiline-v-for-source-9880",
         "files": [
@@ -1242,7 +1489,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1251,7 +1502,9 @@
     {
       "id": "linter/current-api/mustache-spacing-options-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "mustache-spacing-options-6097",
         "files": [
@@ -1278,7 +1531,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1287,14 +1544,20 @@
     {
       "id": "linter/current-api/next-tick-disabled",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1303,14 +1566,20 @@
     {
       "id": "linter/current-api/next-tick-unspecified",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1319,7 +1588,9 @@
     {
       "id": "linter/current-api/nuxt-builtins-9866",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "nuxt-builtins-9866",
         "files": [
@@ -1346,7 +1617,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1355,7 +1629,9 @@
     {
       "id": "linter/current-api/optional-inject-default-10918",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "optional-inject-default-10918",
         "files": [
@@ -1387,7 +1663,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1396,7 +1676,9 @@
     {
       "id": "linter/current-api/patina-output-policy-9869-9874",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "patina-output-policy-9869-9874",
         "files": [
@@ -1418,7 +1700,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1427,7 +1713,9 @@
     {
       "id": "linter/current-api/patina-rule-guards-9870-9871",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "patina-rule-guards-9870-9871",
         "files": [
@@ -1449,7 +1737,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1458,14 +1750,18 @@
     {
       "id": "linter/current-api/placeholder-label-optgroup-report",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1474,14 +1770,18 @@
     {
       "id": "linter/current-api/placeholder-label-required-empty-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1490,14 +1790,18 @@
     {
       "id": "linter/current-api/placeholder-label-required-nonempty-report",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1506,14 +1810,18 @@
     {
       "id": "linter/current-api/placeholder-label-unrequired-empty-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1522,7 +1830,9 @@
     {
       "id": "linter/current-api/prefer-use-id-context-9837",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "prefer-use-id-context-9837",
         "files": [
@@ -1554,7 +1864,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1563,14 +1875,20 @@
     {
       "id": "linter/current-api/ref-call-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1579,14 +1897,20 @@
     {
       "id": "linter/current-api/ref-string-typed",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1595,14 +1919,20 @@
     {
       "id": "linter/current-api/ref-string-untyped",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1611,7 +1941,9 @@
     {
       "id": "linter/current-api/require-scoped-style-module-10165",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "require-scoped-style-module-10165",
         "files": [
@@ -1643,7 +1975,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1652,7 +1988,9 @@
     {
       "id": "linter/current-api/require-symbol-provide-range-9882",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "require-symbol-provide-range-9882",
         "files": [
@@ -1669,7 +2007,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1678,15 +2018,28 @@
     {
       "id": "linter/current-api/role-native-checked-inputs",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-role-native-checked-inputs",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "b094d20a43608587846f27d420b3a935c90ef399ef4bcf74e8fca7aee183547c"
           }
         ]
       }
@@ -1694,15 +2047,28 @@
     {
       "id": "linter/current-api/role-non-native-checked",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-role-non-native-checked",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "1cccd7ac5d136d67db072363522560213fce02090b6f7d6c74bf3f80cff05fe8"
           }
         ]
       }
@@ -1710,15 +2076,28 @@
     {
       "id": "linter/current-api/separator-focus-7066",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-separator-focus-7066",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "8674eda3a7ced020356adbd4d0c31296bdb4f115f696c209c977d6ee522c9f6b"
           }
         ]
       }
@@ -1726,7 +2105,9 @@
     {
       "id": "linter/current-api/shared-rule-options-9876",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "shared-rule-options-9876",
         "files": [
@@ -1748,7 +2129,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1757,14 +2140,19 @@
     {
       "id": "linter/current-api/shorthand-compat-vue2",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue2-sfc", "html-template"],
+            "dialects": [
+              "vue2-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1773,14 +2161,19 @@
     {
       "id": "linter/current-api/shorthand-compat-vue3",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1789,14 +2182,19 @@
     {
       "id": "linter/current-api/slot-compat-vue2",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue2-sfc", "html-template"],
+            "dialects": [
+              "vue2-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1805,14 +2203,19 @@
     {
       "id": "linter/current-api/slot-compat-vue3",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1821,7 +2224,9 @@
     {
       "id": "linter/current-api/solution-tsconfig-type-aware-10176",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "solution-tsconfig-type-aware-10176",
         "files": [
@@ -1868,7 +2273,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1877,7 +2286,9 @@
     {
       "id": "linter/current-api/split-script-component-read-10228",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "split-script-component-read-10228",
         "files": [
@@ -1894,7 +2305,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1903,14 +2318,18 @@
     {
       "id": "linter/current-api/static-class-empty-expression",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1919,14 +2338,19 @@
     {
       "id": "linter/current-api/static-class-utf8-fix-corrected",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1935,15 +2359,28 @@
     {
       "id": "linter/current-api/static-composite-widgets",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-static-composite-widgets",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "8709e89c396791fff130c008bbf1577a421f0d81d8c04d6884007e33c55f299a"
           }
         ]
       }
@@ -1951,15 +2388,28 @@
     {
       "id": "linter/current-api/static-presentation-opt-out",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      },
+      "inputs": {
+        "root": "current-api-static-presentation-opt-out",
+        "files": [
+          {
+            "path": "History.vue.txt",
+            "sha256": "89405698cecf1f857b35263572083546fe02d6108de4061982c785bc9cde7181"
           }
         ]
       }
@@ -1967,14 +2417,18 @@
     {
       "id": "linter/current-api/target-blank-bound-href-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1983,14 +2437,18 @@
     {
       "id": "linter/current-api/target-blank-complete-rel-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -1999,14 +2457,18 @@
     {
       "id": "linter/current-api/target-blank-external-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2015,14 +2477,18 @@
     {
       "id": "linter/current-api/target-blank-noopener-only",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2031,14 +2497,18 @@
     {
       "id": "linter/current-api/target-blank-noreferrer-only",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2047,14 +2517,18 @@
     {
       "id": "linter/current-api/target-blank-relative-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2063,7 +2537,9 @@
     {
       "id": "linter/current-api/type-aware-slot-outlet-9834",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "type-aware-slot-outlet-9834",
         "files": [
@@ -2079,7 +2555,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2088,7 +2568,9 @@
     {
       "id": "linter/current-api/unsafe-template-bindings-10166-10167",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "unsafe-template-bindings-10166-10167",
         "files": [
@@ -2110,7 +2592,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2119,14 +2605,18 @@
     {
       "id": "linter/current-api/v-for-no-separator",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2135,14 +2625,18 @@
     {
       "id": "linter/current-api/v-for-separator-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2151,7 +2645,9 @@
     {
       "id": "linter/current-api/v-slot-style-options-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "v-slot-style-options-6097",
         "files": [
@@ -2178,7 +2674,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2187,7 +2687,9 @@
     {
       "id": "linter/current-api/valid-v-else-autofix-preserves-directive",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "valid-v-else-autofix-9863",
         "files": [
@@ -2204,7 +2706,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2213,7 +2719,9 @@
     {
       "id": "linter/current-api/vue-path-alias-types-9864",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "vue-alias-types-9864",
         "files": [
@@ -2255,7 +2763,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "current-api pinned authored sources"
           }
         ]
@@ -2264,7 +2776,9 @@
     {
       "id": "linter/define-expose-last-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "define-expose-last-6097",
         "files": [
@@ -2296,7 +2810,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2305,7 +2824,9 @@
     {
       "id": "linter/dynamic-event-owner-11728",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "dynamic-event-owner-11728",
         "files": [
@@ -2327,7 +2848,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2336,7 +2860,9 @@
     {
       "id": "linter/ecosystem-host-rules-11772",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "ecosystem-host-rules-11772",
         "files": [
@@ -2373,7 +2899,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2382,7 +2911,9 @@
     {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "explicit-type-rule-preset-10717",
         "files": [
@@ -2409,7 +2940,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2564,7 +3098,9 @@
     {
       "id": "linter/macro-order-config-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "macro-order-config-6097",
         "files": [
@@ -2591,7 +3127,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2600,7 +3141,9 @@
     {
       "id": "linter/mdi-remix-icons-10928",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "mdi-remix-icons-10928",
         "files": [
@@ -2617,7 +3160,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2626,7 +3172,9 @@
     {
       "id": "linter/native-boolean-tsrs-11147",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "native-boolean-tsrs-11147",
         "files": [
@@ -2658,7 +3206,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2667,7 +3219,9 @@
     {
       "id": "linter/native-canonical-image-alt-10563",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "native-canonical-image-alt-10563",
         "files": [
@@ -2699,7 +3253,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "jsx", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "jsx",
+              "tsx"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2775,7 +3334,9 @@
     {
       "id": "linter/native-inline-template-6848",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "native-inline-template-6848",
         "files": [
@@ -2792,7 +3353,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2801,7 +3364,9 @@
     {
       "id": "linter/native-input-label-history-6881",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "native-input-label-history-6881",
         "files": [
@@ -2818,7 +3383,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2885,7 +3452,9 @@
     {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "next-tick-vapor-gating-10784",
         "files": [
@@ -2912,7 +3481,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2921,14 +3495,18 @@
     {
       "id": "linter/next-tick/invalid-arrow-block-bare-call-script",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -2937,14 +3515,20 @@
     {
       "id": "linter/next-tick/invalid-arrow-block-bare-call-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -2953,14 +3537,18 @@
     {
       "id": "linter/next-tick/invalid-arrow-expression-void-call-script",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -2969,14 +3557,20 @@
     {
       "id": "linter/next-tick/invalid-arrow-expression-void-call-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -2985,14 +3579,18 @@
     {
       "id": "linter/next-tick/nested-arrow-restores-statement-context-script",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3001,14 +3599,20 @@
     {
       "id": "linter/next-tick/nested-arrow-restores-statement-context-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3017,14 +3621,18 @@
     {
       "id": "linter/next-tick/valid-arrow-expression-return-script",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3033,14 +3641,20 @@
     {
       "id": "linter/next-tick/valid-arrow-expression-return-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3049,14 +3663,18 @@
     {
       "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-script",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": [
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3065,14 +3683,20 @@
     {
       "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "next-tick pinned authored sources"
           }
         ]
@@ -3174,7 +3798,9 @@
     {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "patina-rule-fixes-9872-9873",
         "files": [
@@ -3201,7 +3827,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3210,7 +3841,9 @@
     {
       "id": "linter/prop-name-casing-options-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "prop-name-casing-options-6097",
         "files": [
@@ -3237,7 +3870,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3246,7 +3883,9 @@
     {
       "id": "linter/pug-refusal-10428",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "pug-refusal-10428",
         "files": [
@@ -3268,7 +3907,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3307,7 +3949,9 @@
     {
       "id": "linter/repeated-macro-groups-10610",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "repeated-macro-groups-10610",
         "files": [
@@ -3339,7 +3983,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3348,14 +3997,19 @@
     {
       "id": "linter/report/no-findings-output-control",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "report pinned authored sources"
           }
         ]
@@ -3364,14 +4018,20 @@
     {
       "id": "linter/report/original-line-columns",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "report pinned authored sources"
           }
         ]
@@ -3380,14 +4040,19 @@
     {
       "id": "linter/report/source-map-order-and-missing",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "report pinned authored sources"
           }
         ]
@@ -3396,14 +4061,19 @@
     {
       "id": "linter/report/unicode-crlf-columns",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "report pinned authored sources"
           }
         ]
@@ -3412,7 +4082,9 @@
     {
       "id": "linter/require-explicit-emits-parity-10822",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "require-explicit-emits-parity-10822",
         "files": [
@@ -3449,7 +4121,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3458,7 +4135,9 @@
     {
       "id": "linter/retained-projection-10440",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "retained-projection-10440",
         "files": [
@@ -3515,7 +4194,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3524,7 +4208,9 @@
     {
       "id": "linter/runtime/project-native-runtime-authority-10694",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "project-native-runtime-authority-10694",
         "files": [
@@ -3546,7 +4232,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3555,7 +4245,9 @@
     {
       "id": "linter/sibling-script-import-reads-10616",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "sibling-script-import-reads-10616",
         "files": [
@@ -3587,7 +4279,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -3778,14 +4475,18 @@
     {
       "id": "linter/static-class/adjacent-attribute",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3794,14 +4495,18 @@
     {
       "id": "linter/static-class/dynamic-expression",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3810,14 +4515,18 @@
     {
       "id": "linter/static-class/empty-expression",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3826,14 +4535,18 @@
     {
       "id": "linter/static-class/existing-static-class",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3842,14 +4555,18 @@
     {
       "id": "linter/static-class/long-binding",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3858,14 +4575,18 @@
     {
       "id": "linter/static-class/outer-single-quote",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3874,14 +4595,18 @@
     {
       "id": "linter/static-class/self-closing",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3890,14 +4615,18 @@
     {
       "id": "linter/static-class/short-binding",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["html-template"],
+            "dialects": [
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3906,14 +4635,19 @@
     {
       "id": "linter/static-class/utf8-crlf-sfc",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "static-class pinned authored sources"
           }
         ]
@@ -3922,7 +4656,9 @@
     {
       "id": "linter/symbol-owner-probes-11267",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "symbol-owner-probes-11267",
         "files": [
@@ -3994,7 +4730,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4003,7 +4743,9 @@
     {
       "id": "linter/template-script-shadow-10822",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "template-script-shadow-10822",
         "files": [
@@ -4025,7 +4767,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4034,7 +4780,9 @@
     {
       "id": "linter/type-aware-runtime-initialization-11147",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "type-aware-runtime-initialization-11147",
         "files": [
@@ -4056,7 +4804,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4065,7 +4817,9 @@
     {
       "id": "linter/unsafe-template-binding-unicode-comment-10898",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "unsafe-template-binding-unicode-comment-10898",
         "files": [
@@ -4082,7 +4836,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4147,7 +4905,9 @@
     {
       "id": "linter/v-on-event-autofix-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "v-on-event-autofix-6097",
         "files": [
@@ -4294,7 +5054,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4303,7 +5068,9 @@
     {
       "id": "linter/v-on-event-ignore-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "v-on-event-ignore-6097",
         "files": [
@@ -4445,7 +5212,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4454,7 +5226,9 @@
     {
       "id": "linter/v-on-hyphenation-custom-tags-10822",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "v-on-hyphenation-custom-tags-10822",
         "files": [
@@ -4471,7 +5245,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4480,7 +5258,9 @@
     {
       "id": "linter/v-on-hyphenation-suggestion-10822",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "v-on-hyphenation-suggestion-10822",
         "files": [
@@ -4502,7 +5282,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -4511,7 +5295,9 @@
     {
       "id": "linter/vize-script-suppressions-11150",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "vize-script-suppressions-11150",
         "files": [
@@ -4538,7 +5324,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]

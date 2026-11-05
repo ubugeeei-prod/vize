@@ -1,0 +1,1 @@
+<input type="checkbox" role="switch" /><input type="checkbox" role="menuitemcheckbox" /><input :type="'checkbox'" role="switch" /><input type="radio" role="menuitemradio" />
