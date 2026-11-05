@@ -5,6 +5,7 @@ use serde_json::Value;
 use std::path::Path;
 
 mod inert_callbacks;
+mod model_values;
 
 const MIN: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),

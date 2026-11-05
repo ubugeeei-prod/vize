@@ -9678,6 +9678,45 @@
       }
     },
     {
+      "id": "typechecker/regression/component-v-model-once-11655",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-v-model-once-11655/Component.vue.txt",
+          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/Native.vue.txt",
+          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/SlotContent.vue.txt",
+          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/strict-v-model-mapper-11643",
       "state": "active",
       "targets": [
