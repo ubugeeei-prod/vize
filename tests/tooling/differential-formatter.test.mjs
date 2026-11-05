@@ -101,12 +101,20 @@ void test("formatter differential manifest preserves captured baselines and vers
           "formatter/sfc/directive-prefix-print-width",
           "formatter/sfc/directive-expression-indent-width",
           "formatter/sfc/l1-directive-classification",
+          "formatter/sfc/qualification-20261105",
         ].includes(fixture.id)
         ? "pending"
         : "captured",
     );
     assert.equal(fixture.adapters.native, null);
-    assert.equal(fixture.input.at(-1), 10);
+    if (fixture.id === "formatter/sfc/qualification-20261105") {
+      assert.deepEqual(
+        fixture.input,
+        Buffer.from("<template><p v-bind:[one][two]='value'/></template>"),
+      );
+    } else {
+      assert.equal(fixture.input.at(-1), 10);
+    }
     assert.equal(fixture.expected.at(-1), fixture.id === "formatter/sfc/auto-cr" ? 13 : 10);
   }
   assert.equal(

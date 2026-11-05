@@ -208,8 +208,14 @@ pub(crate) fn find_art_block_at_completion_offset(
 }
 
 fn find_art_block_at_position(source: &str, offset: usize, completion: bool) -> Option<BlockType> {
-    // First check SFC blocks (script, style)
+    // Ordinary SFC blocks remain navigable beside Art metadata and variants.
     if let Some(descriptor) = vize_incremental::parse_descriptor("", source) {
+        if let Some(ref template) = descriptor.template
+            && offset >= template.loc.start
+            && offset < template.loc.end
+        {
+            return Some(BlockType::Template);
+        }
         // Check script/script_setup/style blocks
         if let Some(ref script) = descriptor.script
             && is_script_position(script, offset, completion)
