@@ -27,7 +27,7 @@ pub enum MarkupTraversal {
     /// Keep every traversal callback.
     #[default]
     Full,
-    /// Visit element entries without projecting bindings, directives or text.
+    /// Call element entries while omitting other empty traversal callbacks.
     Elements,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
@@ -55,7 +55,8 @@ pub trait MarkupRule {
         MarkupLevel::L1
     }
 
-    /// The traversal hooks this rule needs. Existing rules keep every hook.
+    /// The hooks this rule needs, read once per document before `enter_document`.
+    /// Existing rules keep every hook.
     fn traversal(&self) -> MarkupTraversal {
         MarkupTraversal::Full
     }

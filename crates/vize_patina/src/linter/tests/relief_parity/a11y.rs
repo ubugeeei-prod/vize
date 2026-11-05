@@ -9,6 +9,9 @@ use crate::rules::a11y::{
     NoReferToNonExistentId, NoRolePresentationOnFocusable, NoStaticElementInteractions,
     RoleHasRequiredAriaProps, TabindexNoPositive,
 };
+use crate::rules::html::{
+    DeprecatedAttr, DeprecatedElement, NoConsecutiveBr, NoDuplicateDt, RequireDatetime,
+};
 
 fn family() -> Vec<Box<dyn Rule>> {
     vec![
@@ -48,7 +51,22 @@ fn existing_family() -> Vec<Box<dyn Rule>> {
     ]
 }
 
+fn html_family() -> Vec<Box<dyn Rule>> {
+    vec![
+        Box::new(DeprecatedAttr),
+        Box::new(DeprecatedElement),
+        Box::new(NoConsecutiveBr),
+        Box::new(NoDuplicateDt),
+        Box::new(RequireDatetime),
+    ]
+}
+
 const TEMPLATES: &[&str] = &[
+    // The HTML facade's element-only rules use the same traversal contract.
+    r#"<div align="center">Text</div><div style="text-align:center">Text</div><font>Old</font><span>New</span>"#,
+    r#"<div><br><br></div><div><br><span>Text</span><br></div>"#,
+    r#"<dl><dt>Term</dt><dt>Term</dt><dd>Definition</dd></dl><dl><dt>One</dt><dt>Two</dt><dd>Definition</dd></dl>"#,
+    r#"<time>2026</time><time datetime="2026-11-05">2026</time>"#,
     // Existing facade rules keep their complete diagnostics with narrower hooks.
     r#"<iframe></iframe><iframe title="Map"></iframe><h1></h1><h1>Title</h1>"#,
     r#"<label for="known">Name</label><input id="known"><input id="missing"><label><input></label>"#,
@@ -124,6 +142,10 @@ const TEMPLATES: &[&str] = &[
 ];
 
 const JSX: &[&str] = &[
+    r#"const A = () => <div><div align="center">Text</div><div style={{textAlign: 'center'}}>Text</div><font>Old</font><span>New</span></div>;"#,
+    r#"const A = () => <div><div><br /><br /></div><div><br /><span>Text</span><br /></div></div>;"#,
+    r#"const A = () => <div><dl><dt>Term</dt><dt>Term</dt><dd>Definition</dd></dl><dl><dt>One</dt><dt>Two</dt><dd>Definition</dd></dl></div>;"#,
+    r#"const A = () => <div><time>2026</time><time dateTime="2026-11-05">2026</time></div>;"#,
     r#"const A = () => <div><iframe /><iframe title="Map" /><h1 /><h1>Title</h1></div>;"#,
     r#"const A = () => <div><label htmlFor="known">Name</label><input id="known" /><input id="missing" /><label><input /></label></div>;"#,
     r#"const A = () => <div><a href="">Empty</a><a href="/">Home</a><img src="a" /><img src="a" alt="Photo" /></div>;"#,
@@ -162,6 +184,11 @@ fn a11y_rules_match_their_relief_hooks() {
 #[test]
 fn existing_a11y_traversals_preserve_complete_diagnostics() {
     super::assert_traversal_parity(existing_family, TEMPLATES, JSX);
+}
+
+#[test]
+fn existing_html_traversals_preserve_complete_diagnostics() {
+    super::assert_traversal_parity(html_family, TEMPLATES, JSX);
 }
 
 /// An ignored nested form and a self-closing nested a keep their v-pre
