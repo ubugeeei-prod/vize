@@ -31,6 +31,8 @@ mod empty_required_props;
 mod exact_optional_props;
 mod external_esm_module_augmentation;
 mod external_slot_payloads;
+mod generic_component_cast;
+mod guarded_arrow_listener;
 mod generic_constructor_slots;
 mod generic_inherit_attrs_open_tail;
 mod global_component_callbacks;

@@ -6,7 +6,7 @@ use vize_carton::{String, append, cstr};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler_with_identifier};
 
 use crate::virtual_ts::expressions::{
-    map_rewritten_template_binding, rewrite_reserved_template_binding,
+    guarded_callback_reads, map_rewritten_template_binding, rewrite_reserved_template_binding,
 };
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
@@ -26,6 +26,7 @@ pub(super) fn generate_event_handler_expressions(
     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
             let authored_content = expr.content.as_str();
+            let callback_reads = guarded_callback_reads(expr);
             let scoped_access = ctx.template_binding_access.for_scope(expr.scope_id);
             let rewritten = rewrite_reserved_template_binding(authored_content, &scoped_access);
             let content = rewritten.as_deref().unwrap_or(authored_content);
@@ -36,7 +37,9 @@ pub(super) fn generate_event_handler_expressions(
             } else {
                 classify_event_handler_with_identifier(authored_content)
             };
-            let is_callable_reference = matches!(shape, EventHandlerExpression::Reference);
+            let is_callable_reference = matches!(&shape, EventHandlerExpression::Reference);
+            let is_callback = matches!(&shape, EventHandlerExpression::Callback { .. });
+            let has_listener_value = !matches!(&shape, EventHandlerExpression::Inline);
             let is_reference = ctx.check_emits && is_callable_reference;
             let inline_callback_arg = match shape {
                 EventHandlerExpression::Callback { accepts_event, .. } => {
@@ -51,16 +54,19 @@ pub(super) fn generate_event_handler_expressions(
             };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
-            let guard = expr.vif_guard.as_ref().and_then(|guard| {
-                let guard = match ctx.enclosing_vif_guard {
-                    Some(_) => callback_vif_guard(guard.as_str(), handler_binding.as_deref()),
-                    None => Some(String::from(guard.as_str())),
-                }?;
-                Some(
-                    rewrite_reserved_template_binding(guard.as_str().trim(), &scoped_access)
-                        .unwrap_or(guard),
-                )
-            });
+            let guard = (!is_callback)
+                .then_some(expr.vif_guard.as_ref())
+                .flatten()
+                .and_then(|guard| {
+                    let guard = match ctx.enclosing_vif_guard {
+                        Some(_) => callback_vif_guard(guard.as_str(), handler_binding.as_deref()),
+                        None => Some(String::from(guard.as_str())),
+                    }?;
+                    Some(
+                        rewrite_reserved_template_binding(guard.as_str().trim(), &scoped_access)
+                            .unwrap_or(guard),
+                    )
+                });
             // A handler declared against the listener type returns its lone
             // expression, so its guard is an early exit (`vue-tsc`'s own
             // `if (!cond) throw 0`) rather than a block: a block would add
@@ -258,7 +264,7 @@ pub(super) fn generate_event_handler_expressions(
                 authored_content,
                 &scoped_access,
             );
-            if is_callable_reference && let Some(ownership) = ctx.diagnostic_ownership {
+            if has_listener_value && let Some(ownership) = ctx.diagnostic_ownership {
                 ownership.borrow_mut().record(
                     crate::virtual_ts::diagnostic_ownership::InputOwner::for_listener_reference(
                         expr.scope_id.as_u32(),
@@ -268,6 +274,18 @@ pub(super) fn generate_event_handler_expressions(
                     value_range,
                     src_start..src_end,
                     false,
+                );
+            }
+            // Arrow-body captures are not direct uses in this generated event
+            // closure. Mirror only guarded free variables after the typed
+            // listener check so repeated v-if terms retain the same liveness
+            // behavior as a bare listener reference (#11965).
+            for capture in callback_reads {
+                let rewritten = rewrite_reserved_template_binding(capture.as_str(), &scoped_access);
+                let capture = rewritten.as_deref().unwrap_or(capture.as_str());
+                append!(
+                    *ts,
+                    "{handler_indent}void ({capture}); // Listener capture liveness\n"
                 );
             }
             append!(

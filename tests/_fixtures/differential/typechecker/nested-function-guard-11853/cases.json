@@ -1,6 +1,7 @@
 {
   "version": 1,
   "issue": 11853,
+  "followUpIssue": 11965,
   "reportedVersion": "0.680.0",
   "reporter": "makarasty",
   "inputs": [
@@ -9,6 +10,7 @@
     "NoFollowingChain.vue",
     "DivChain.vue",
     "NoOuterGuard.vue",
+    "ArrowFallback.vue",
     "UnusedHandler.vue",
     "WrongPayload.vue",
     "MissingMember.vue",
@@ -33,6 +35,11 @@
     {
       "file": "NoOuterGuard.vue",
       "contract": "no outer narrowing control",
+      "expectedCodes": []
+    },
+    {
+      "file": "ArrowFallback.vue",
+      "contract": "guarded prop captured by an arrow listener with a callable fallback",
       "expectedCodes": []
     },
     {

@@ -70,6 +70,7 @@ pub(crate) use reserved_props::{
 };
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
+    guarded_callback_reads,
 };
 pub(crate) use ts_suppression_comments::{
     CallbackParameterRewrite, callback_parameters_on_ignored_line,

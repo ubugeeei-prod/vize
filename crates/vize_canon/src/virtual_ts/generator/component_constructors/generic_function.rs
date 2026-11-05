@@ -59,7 +59,8 @@ pub(super) fn emit(
         GenericSignature {
             role: SignatureRole::Component,
             parameters: &authored_parameters,
-            arguments: &arguments
+            arguments: &arguments,
+            vue_component_context: aliases.has_emits_for_props && aliases.slots_is_generic,
         }
     );
     // Template-ref probing repeats the authored props only to instantiate this
@@ -71,7 +72,8 @@ pub(super) fn emit(
         GenericSignature {
             role: SignatureRole::TemplateRefResolver,
             parameters: &authored_parameters,
-            arguments: &arguments
+            arguments: &arguments,
+            vue_component_context: false,
         }
     );
 }

@@ -14,6 +14,7 @@ use crate::virtual_ts::expressions::{
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{String, append, cstr, profile};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 use vize_croquis::{Scope, ScopeData};
 
 pub(super) fn generate_scope_node(
@@ -171,18 +172,36 @@ pub(super) fn generate_scope_node(
                 .slot_outlets
                 .covers_event_handler_scope(scope.span.start, scope.span.end) => {}
         ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
-            let enclosing_guard = data.target_component.as_ref().and_then(|_| {
+            // Callback bodies execute after the render branch has finished and
+            // must not inherit its narrowing. Vue's checker likewise reports a
+            // possibly-undefined capture inside `(event) => handler(event)`.
+            // Bare listener values still retain the render guard (#11965).
+            let has_deferred_callback =
                 ctx.expressions_by_scope
                     .get(&scope_id)
-                    .and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs))
-                    .map(|guard| {
-                        rewrite_reserved_template_binding(
-                            guard.as_str(),
-                            ctx.template_binding_access,
-                        )
-                        .unwrap_or(guard)
-                    })
-            });
+                    .is_some_and(|expressions| {
+                        expressions.iter().any(|expression| {
+                            matches!(
+                                classify_event_handler(expression.content.as_str()),
+                                EventHandlerExpression::Callback { .. }
+                            )
+                        })
+                    });
+            let enclosing_guard = (!has_deferred_callback)
+                .then_some(data.target_component.as_ref())
+                .flatten()
+                .and_then(|_| {
+                    ctx.expressions_by_scope
+                        .get(&scope_id)
+                        .and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs))
+                        .map(|guard| {
+                            rewrite_reserved_template_binding(
+                                guard.as_str(),
+                                ctx.template_binding_access,
+                            )
+                            .unwrap_or(guard)
+                        })
+                });
             let handler_indent = if let Some(guard) = enclosing_guard.as_deref() {
                 super::append_chained_vif_guard_open(ts, indent, guard, "Listener branch guard");
                 inner_indent.clone()

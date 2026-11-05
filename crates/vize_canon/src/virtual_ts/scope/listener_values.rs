@@ -1,4 +1,5 @@
-//! Listener references are evaluated in the render scope, not their callback.
+//! Listener values are created in the render scope, while callback bodies run
+//! only when the event fires.
 
 use vize_carton::FxHashMap;
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
@@ -46,7 +47,7 @@ fn project_listener_values<'a>(summary: &Croquis, expressions: &mut Expressions<
                 && expression.vif_guard.is_some()
                 && matches!(
                     classify_event_handler(expression.content.as_str()),
-                    EventHandlerExpression::Reference
+                    EventHandlerExpression::Reference | EventHandlerExpression::Callback { .. }
                 )
             {
                 values.entry(parent.as_u32()).or_default().push(expression);

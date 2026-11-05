@@ -59,8 +59,12 @@ fn actual_reference_read_retains_its_expression_identity_in_render_order() {
 }
 
 #[test]
-fn callback_bodies_and_shadowed_parameters_do_not_become_render_reads() {
-    for handler in ["() => {}", "(handler) => handler", "handler('pick')"] {
+fn callback_values_but_not_inline_invocations_are_created_during_render() {
+    for (handler, projected) in [
+        ("() => {}", true),
+        ("(handler) => handler", true),
+        ("handler('pick')", false),
+    ] {
         let summary = analyze(handler);
         let grouped = group_expressions(&summary, true);
         let expression = summary
@@ -74,10 +78,11 @@ fn callback_bodies_and_shadowed_parameters_do_not_become_render_reads() {
             .unwrap()
             .parent()
             .unwrap();
-        assert!(
-            !grouped[&parent.as_u32()]
+        assert_eq!(
+            grouped[&parent.as_u32()]
                 .iter()
                 .any(|row| std::ptr::eq(*row, expression)),
+            projected,
             "{handler}"
         );
     }

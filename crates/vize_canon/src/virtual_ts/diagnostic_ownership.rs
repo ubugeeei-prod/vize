@@ -33,8 +33,9 @@ pub(crate) struct InputOwner {
 }
 
 impl InputOwner {
-    /// An actual reference-valued listener read and its deferred typed check
-    /// share the same Croquis expression identity. Callback bodies are excluded.
+    /// An actual listener value and its deferred typed check share the same
+    /// Croquis expression identity. A projected callback is created during
+    /// render; its body remains diagnostic-owned by the typed event scope.
     pub(crate) fn for_listener_reference(scope: u32, start: u32, end: u32) -> Self {
         Self {
             usage: start,

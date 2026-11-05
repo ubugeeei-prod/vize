@@ -1,0 +1,9 @@
+<script setup lang="ts" generic="R extends { id: string }">
+defineProps<{ rows: R[] }>();
+defineEmits<{ visible: [ids: string[]] }>();
+defineSlots<{ cell(props: { row: R }): unknown }>();
+</script>
+
+<template>
+  <ul><li v-for="row in rows" :key="row.id"><slot name="cell" :row="row" /></li></ul>
+</template>

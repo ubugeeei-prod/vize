@@ -22,7 +22,38 @@ use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::borrow::Cow;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
 use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::drawer::strip_js_comments_with_offsets;
+use vize_croquis::drawer::{
+    EventHandlerExpression, classify_event_handler, extract_identifier_refs_checked,
+    strip_js_comments_with_offsets,
+};
+
+pub(crate) fn guarded_callback_reads(expr: &TemplateExpression) -> Vec<CompactString> {
+    let Some(guard) = expr.vif_guard.as_deref() else {
+        return Vec::new();
+    };
+    if expr.kind != TemplateExpressionKind::VOn
+        || !matches!(
+            classify_event_handler(expr.content.as_str()),
+            EventHandlerExpression::Callback { .. }
+        )
+    {
+        return Vec::new();
+    }
+    let Some(callback_reads) = extract_identifier_refs_checked(expr.content.as_str()) else {
+        return Vec::new();
+    };
+    let Some(guard_reads) = extract_identifier_refs_checked(guard) else {
+        return Vec::new();
+    };
+    let guarded: FxHashSet<_> = guard_reads.into_iter().map(|read| read.name).collect();
+    let mut emitted = FxHashSet::default();
+    callback_reads
+        .into_iter()
+        .filter_map(|read| {
+            (guarded.contains(&read.name) && emitted.insert(read.name.clone())).then_some(read.name)
+        })
+        .collect()
+}
 
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.
@@ -365,16 +396,87 @@ fn emit_expression_statement(
         return;
     }
     let gen_stmt_start = ts.len();
-    append!(
-        *ts,
-        "{indent}void ({generated_expression}); // {}\n",
-        expr.kind.as_str()
-    );
-    let gen_expr_start = gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0;
+    let projected_listener_callback = expr.kind == TemplateExpressionKind::VOn
+        && matches!(
+            classify_event_handler(expr.content.as_str()),
+            EventHandlerExpression::Callback { .. }
+        );
+    let gen_expr_start = if projected_listener_callback {
+        // This render-time copy owns only listener construction and usage.
+        // Contextual `any` prevents the inference copy from introducing
+        // TS7006; the typed event-scope primary still checks every parameter
+        // and callback-body diagnostic (#11965).
+        append!(*ts, "{indent}void ((");
+        let start = ts.len() + mapped_bounds.0;
+        ts.push_str(generated_expression);
+        append!(
+            *ts,
+            ") as ((...__vize_args: any[]) => unknown)); // {}\n",
+            expr.kind.as_str()
+        );
+        // An arrow value itself does not read its captures. End the render
+        // projection with guarded free-variable reads so they remain the last
+        // uses after the arrow closure; otherwise TypeScript still treats the
+        // repeated inner guard as an always-true final condition (#11965).
+        // These are liveness-only copies: the typed event-scope primary owns
+        // every authored diagnostic.
+        for capture in guarded_callback_reads(expr) {
+            let rewritten =
+                rewrite_reserved_template_binding(capture.as_str(), template_binding_access);
+            let capture = rewritten.as_deref().unwrap_or(capture.as_str());
+            append!(
+                *ts,
+                "{indent}void ({capture}); // Listener capture liveness\n"
+            );
+        }
+        start
+    } else {
+        append!(
+            *ts,
+            "{indent}void ({generated_expression}); // {}\n",
+            expr.kind.as_str()
+        );
+        gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0
+    };
     mappings.push(VizeMapping {
         gen_range: gen_expr_start..gen_expr_start + mapped_bounds.1,
         src_range: src_start..src_end,
         sub_spans: Vec::new(),
     });
     append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::guarded_callback_reads;
+    use vize_carton::CompactString;
+    use vize_croquis::{ScopeId, TemplateExpression, TemplateExpressionKind};
+
+    fn expression(content: &str, guard: Option<&str>) -> TemplateExpression {
+        TemplateExpression {
+            content: CompactString::new(content),
+            kind: TemplateExpressionKind::VOn,
+            start: 0,
+            end: content.len() as u32,
+            scope_id: ScopeId::new(0),
+            vif_guard: guard.map(CompactString::new),
+        }
+    }
+
+    #[test]
+    fn projected_callbacks_read_only_free_names_also_used_by_the_guard() {
+        let reads = guarded_callback_reads(&expression(
+            "(event) => (handler || (() => fallback))(event, actions)",
+            Some("actions && handler && actions.size"),
+        ));
+        assert_eq!(
+            reads.iter().map(CompactString::as_str).collect::<Vec<_>>(),
+            ["actions", "handler"]
+        );
+        assert!(
+            guarded_callback_reads(&expression("(handler) => handler", Some("handler"))).is_empty()
+        );
+        assert!(guarded_callback_reads(&expression("handler", Some("handler"))).is_empty());
+        assert!(guarded_callback_reads(&expression("() => handler", None)).is_empty());
+    }
 }
