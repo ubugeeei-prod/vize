@@ -15,7 +15,7 @@ fn literal_receipts_capture_actual_header_entry_before_interactive_recovery() {
         let receipt = inner.lint_tag().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());
-        assert!(!inner.surface().open.is_verbatim());
+        assert!(inner.surface().open.is_verbatim());
         assert_eq!(
             inner.attributes().next().unwrap().surface().name.text,
             ":role"

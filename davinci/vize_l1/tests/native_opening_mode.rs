@@ -67,21 +67,69 @@ fn native_opening_facts_include_own_inherited_void_and_self_closing_modes() {
 }
 
 #[test]
-fn recovery_fact_follows_live_owner_for_both_projections() {
+fn recovery_keeps_authored_lexical_owner_for_both_projections() {
     let source = "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a><p>{{end}}</p>";
     let allocator = Allocator::new();
     let parsed = parse_component_with_authored(&allocator, source).unwrap();
     assert_eq!(
         modes(&parsed.tree.children),
-        [("a", true), ("span", true), ("a", false), ("p", false)]
+        [("a", true), ("span", true), ("a", true), ("p", false)]
     );
     assert_eq!(check_fidelity(&parsed.tree), Ok(()));
     let authored = parsed.authored.as_ref().unwrap();
     assert_eq!(
         modes(&authored.children),
-        [("a", true), ("span", true), ("a", false), ("p", false)]
+        [("a", true), ("span", true), ("a", true), ("p", false)]
     );
     assert_eq!(check_fidelity(authored), Ok(()));
+}
+
+#[test]
+fn authored_v_pre_scope_survives_html_implied_end_tags() {
+    for (source, expected) in [
+        (
+            "<p v-pre><div><meta :role='x'/></div></p><meta :role='x'/>",
+            vec![("p", true), ("div", true), ("meta", true), ("meta", false)],
+        ),
+        (
+            "<select><option v-pre><option><meta :role='x'/></option></option></select><meta :role='x'/>",
+            vec![
+                ("select", false),
+                ("option", true),
+                ("option", true),
+                ("meta", true),
+                ("meta", false),
+            ],
+        ),
+        (
+            "<select><optgroup v-pre><optgroup><meta :role='x'/></optgroup></optgroup></select><meta :role='x'/>",
+            vec![
+                ("select", false),
+                ("optgroup", true),
+                ("optgroup", true),
+                ("meta", true),
+                ("meta", false),
+            ],
+        ),
+        (
+            "<p><div><meta :role='x'/></div></p><meta :role='x'/>",
+            vec![
+                ("p", false),
+                ("div", false),
+                ("meta", false),
+                ("meta", false),
+            ],
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let parsed = parse_component_with_authored(&allocator, source).unwrap();
+        assert_eq!(modes(&parsed.tree.children), expected, "{source}");
+        assert_eq!(check_fidelity(&parsed.tree), Ok(()));
+        if let Some(authored) = &parsed.authored {
+            assert_eq!(modes(&authored.children), expected, "{source}");
+            assert_eq!(check_fidelity(authored), Ok(()));
+        }
+    }
 }
 
 #[test]

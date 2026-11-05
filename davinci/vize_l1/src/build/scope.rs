@@ -101,9 +101,7 @@ impl<'a> Recovery<'a> {
     /// Matching an ancestor also ends descendants; stray and redundant
     /// implicitly closed tags leave the caller's live scope intact.
     pub(crate) fn close<F: Frame<'a>>(&mut self, stack: &[F], tag: &str) -> Option<usize> {
-        let matched = stack
-            .iter()
-            .rposition(|frame| frame.tag().eq_ignore_ascii_case(tag));
+        let matched = authored_close(stack, tag);
         if self.closed.last().is_some_and(|closed| {
             closed.tag.eq_ignore_ascii_case(tag) && matched.is_none_or(|depth| depth < closed.depth)
         }) {
@@ -226,7 +224,13 @@ fn mark(tag: &str) -> Option<Mark> {
     })
 }
 
-fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
+pub(crate) fn authored_close<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Option<usize> {
+    stack
+        .iter()
+        .rposition(|frame| frame.tag().eq_ignore_ascii_case(tag))
+}
+
+pub(crate) fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
     if is_svg_tag(tag) {
         Namespace::Svg
     } else if is_math_ml_tag(tag) {

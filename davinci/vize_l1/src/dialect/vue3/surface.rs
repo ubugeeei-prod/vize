@@ -8,7 +8,7 @@ use crate::markup::surface::{LintTagFact, SurfaceTree};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
 use super::{VueDirectives, is_lint_component};
-use crate::dialect::vue::surface::{HeaderPolicy, SurfacePolicy, sink::VueSink};
+use crate::dialect::vue::surface::{HeaderPolicy, LexicalScope, SurfacePolicy, sink::VueSink};
 use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
 
 struct Vue3Policy<const LINT: bool>;
@@ -16,6 +16,7 @@ struct Vue3Policy<const LINT: bool>;
 impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
     type Boundary = DirectiveAdmission;
     const LINT_TAGS: bool = LINT;
+    const LEXICAL_SCOPE: LexicalScope = LexicalScope::Authored;
 
     fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary> {
         VueDirectives
