@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import "../typescript-plugin/virtual-modules.test.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
@@ -34,19 +35,20 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
 
 test("TypeScript Vue plugin exposes generated SFC component types", () => {
   const project = createProject();
+  let service: import("typescript").LanguageService | undefined;
   try {
-    const { bumpProjectVersion, host, getScriptInfo } = createHost(project.root, [
+    const { bumpProjectVersion, host, getScriptInfo, serverHost } = createHost(project.root, [
       project.mainTs,
       project.ambientDts,
     ]);
     const originalOptions = host.getCompilationSettings();
     const configFile = ts.parseJsonText("tsconfig.json", "{}");
     Object.defineProperty(originalOptions, "configFile", { value: configFile });
-    const service = initVuePlugin({ typescript: ts }).create({
+    service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
       project: { getCurrentDirectory: () => project.root, projectService: { getScriptInfo } },
-      serverHost: ts.sys,
+      serverHost,
       config: { nativePath: project.nativeDir },
     });
     assert.equal(host.getCompilationSettings().configFile, configFile);
@@ -145,7 +147,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       project.appVue,
       '<script setup lang="ts">\ndefineProps<{ count: number }>();\n</script>\n',
     );
-    bumpProjectVersion();
+    bumpProjectVersion(project.appVue);
 
     const refreshedInfo = service.getQuickInfoAtPosition(
       project.mainTs,
@@ -164,6 +166,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       "expected one additional native generation after the SFC edit",
     );
   } finally {
+    service?.dispose();
     fs.rmSync(project.root, { force: true, recursive: true });
   }
 });
@@ -292,6 +295,7 @@ function createHost(rootDir: string, rootFiles: string[]) {
   };
 
   let projectVersion = 0;
+  const watchers = new Map<string, import("typescript").FileWatcherCallback>();
   const mixedInfos = new Set<string>();
   const host: import("typescript").LanguageServiceHost = {
     directoryExists: (directoryName) => ts.sys.directoryExists(directoryName),
@@ -317,7 +321,21 @@ function createHost(rootDir: string, rootFiles: string[]) {
     useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
   };
   return {
-    bumpProjectVersion: () => projectVersion++,
+    bumpProjectVersion: (name: string) => {
+      projectVersion++;
+      watchers.get(name)?.(name, ts.FileWatcherEventKind.Changed);
+    },
+    serverHost: {
+      ...ts.sys,
+      watchFile(name: string, callback: import("typescript").FileWatcherCallback) {
+        watchers.set(name, callback);
+        return {
+          close() {
+            watchers.delete(name);
+          },
+        };
+      },
+    },
     host,
     getScriptInfo: (file: string) =>
       mixedInfos.has(file) ? { hasMixedContent: true, isScriptOpen: () => false } : undefined,
