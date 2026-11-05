@@ -11,9 +11,8 @@ use std::{
 };
 
 use vize_tool_support::common;
+use vize_tool_support::fixtures::typechecker_qualification;
 mod corpus_paths;
-#[path = "../fixtures/typechecker_qualification.rs"]
-mod typechecker_qualification;
 
 pub const SCHEMA: &str = "vize.davinciCorpusBaseline";
 pub const SCHEMA_VERSION: u64 = 1;

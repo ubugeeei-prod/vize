@@ -15,9 +15,9 @@
 //! ```
 
 use vize_tool_support::common;
+use vize_tool_support::fixtures::typechecker_qualification;
 mod fixture_inputs;
 mod fixture_programs;
-mod typechecker_qualification;
 #[cfg(test)]
 mod typechecker_qualification_tests;
 

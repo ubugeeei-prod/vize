@@ -2,7 +2,7 @@
 
 use serde_json::Value;
 
-pub(super) fn typechecker_run_status(exit_code: i64, parsed: &Value) -> &'static str {
+pub fn typechecker_run_status(exit_code: i64, parsed: &Value) -> &'static str {
     if exit_code == 0 {
         return "ok";
     }

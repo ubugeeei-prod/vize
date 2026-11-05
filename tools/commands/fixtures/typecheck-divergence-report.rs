@@ -25,8 +25,8 @@ use std::{
 };
 
 mod baseline_usability;
-mod typechecker_qualification;
-use vize_tool_support::common as common;
+use vize_tool_support::common;
+use vize_tool_support::fixtures::typechecker_qualification;
 mod project_deadline;
 use project_deadline::ProjectContext;
 
