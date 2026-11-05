@@ -136,7 +136,7 @@ function __setup() {
   // User setup code
   const take = (value: unknown) => value
   
-  // @vize-map: 15866:15910 -> 0:272
+  // @vize-map: 15889:15933 -> 0:272
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
