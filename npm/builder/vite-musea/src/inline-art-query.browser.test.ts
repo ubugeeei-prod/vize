@@ -167,3 +167,44 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
     }
   },
 );
+
+void test(
+  "malformed inline Art updates revoke the prior custom-block registration",
+  { skip: process.env.VIZE_MUSEA_NATIVE_BROWSER_TESTS !== "1" },
+  async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "musea-inline-query-invalid-"));
+    const file = path.join(root, "src/Card.vue");
+    const source = `<template><div /></template>
+<art title="Registered"><variant name="Default"><Self /></variant></art>`;
+    await mkdir(path.dirname(file));
+    await writeFile(file, source);
+    const [plugin] = musea({ include: ["src/**/*.vue"], inlineArt: true });
+    const load = plugin!.load;
+    const update = plugin!.handleHotUpdate;
+    const transform = plugin!.transform;
+    assert.ok(typeof load === "function");
+    assert.ok(typeof update === "function");
+    assert.ok(typeof transform === "function");
+    const server = await createServer({
+      root,
+      configFile: false,
+      logLevel: "warn",
+      plugins: [plugin!],
+      server: { host: "127.0.0.1", port: 0 },
+    });
+    try {
+      await server.listen();
+      const request = `${file}?vue&type=art&index=0`;
+      assert.equal(await load.call({} as never, request), "export default {};\n");
+      const malformed = source.replace('name="Default"', 'invalid="Default"');
+      await writeFile(file, malformed);
+      await update.call({} as never, { file, modules: [] } as never);
+      assert.equal(await load.call({} as never, request), null);
+      assert.equal(await load.call({} as never, "\0musea-manifest"), "export const arts = [];");
+      assert.equal(await transform.call({} as never, "<variant><Self /></variant>", request), null);
+    } finally {
+      await server.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);

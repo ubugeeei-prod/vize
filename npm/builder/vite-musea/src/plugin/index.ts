@@ -346,6 +346,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       command: config.command,
     });
     if (info) artFiles.set(filePath, info);
+    else if (artFiles.get(filePath)?.isInline) artFiles.delete(filePath);
   }
 
   const artStylePostTransform: Plugin = {
