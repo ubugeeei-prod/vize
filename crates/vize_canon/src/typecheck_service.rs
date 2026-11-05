@@ -427,7 +427,6 @@ fn fallback_position_to_sfc(
 }
 
 #[cfg(test)]
-#[path = "typecheck_service/sfc_grammar_tests.rs"]
 mod sfc_grammar_tests;
 
 #[cfg(test)]
