@@ -44,7 +44,7 @@ impl AuthoredUriResolver {
         if let Some(uri) = &source_uri
             && let Ok(index) = self.open_uris.binary_search(uri)
         {
-            return Some(self.open_uris[index].clone());
+            return self.open_uris.get(index).cloned();
         }
         if let Some(uri) = self.open_by_source_path.get(source_path) {
             return Some(uri.clone());

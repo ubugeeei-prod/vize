@@ -1,6 +1,8 @@
 //! Dev-only legacy AST oracle; explicit coordinate goldens live separately.
 
-use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse};
+use vize_armature::{
+    ExpressionNode, ParseMode, ParserOptions, PropNode, TemplateChildNode, parse_with_options,
+};
 use vize_l0::{Allocator, cstr};
 use vize_l1::markup::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
 
@@ -39,7 +41,14 @@ fn admitted_directive_heads_match_the_legacy_parser_ast() {
                 let offset = source.find(raw.as_str()).unwrap() as u32;
                 let native = VueDirectives.decompose(&raw, offset).unwrap().unwrap();
                 let allocator = Allocator::new();
-                let (root, errors) = parse(&allocator, &source);
+                let (root, errors) = parse_with_options(
+                    &allocator,
+                    &source,
+                    ParserOptions {
+                        mode: ParseMode::Sfc,
+                        ..Default::default()
+                    },
+                );
                 assert!(errors.is_empty(), "{source}: {errors:?}");
                 let TemplateChildNode::Element(element) = root.children.last().unwrap() else {
                     panic!("expected component: {source}");
@@ -100,7 +109,14 @@ fn malformed_argument_recovery_preserves_the_legacy_argument_evidence() {
         let source = cstr!("<Child {raw}=\"value\" id=\"tail\"/>");
         let native = VueDirectives.decompose(raw, 7).unwrap().unwrap();
         let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, &source);
+        let (root, _) = parse_with_options(
+            &allocator,
+            &source,
+            ParserOptions {
+                mode: ParseMode::Sfc,
+                ..Default::default()
+            },
+        );
         let TemplateChildNode::Element(element) = &root.children[0] else {
             panic!("expected recovered component: {source}");
         };
@@ -139,7 +155,14 @@ fn parsed_pre_name_matches_legacy_verbatim_policy_for_recovered_heads() {
         assert_eq!(native.prefix, DirectivePrefix::Full, "{source}");
         assert_eq!(native.name.slice(&source), "pre", "{source}");
         let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, &source);
+        let (root, _) = parse_with_options(
+            &allocator,
+            &source,
+            ParserOptions {
+                mode: ParseMode::Sfc,
+                ..Default::default()
+            },
+        );
         let TemplateChildNode::Element(div) = &root.children[0] else {
             panic!("expected verbatim div: {source}");
         };

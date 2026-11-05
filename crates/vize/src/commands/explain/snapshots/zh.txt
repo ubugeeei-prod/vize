@@ -4061,6 +4061,16 @@ Require end tags on HTML elements that may omit them
 类别: strongly-recommended
 自动修复: 支持
 文档: docs/content/rules/reference/vue-html-end-tags.md
+
+错误示例:
+  <ul><li>a</ul>
+  <p>hello
+
+正确示例:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint 规则
 强制HTML属性引号风格
@@ -4116,6 +4126,19 @@ Treat variables used in JSX element names as used
 类别: script
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+错误示例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+正确示例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
 === vue/match-component-file-name
 vue/match-component-file-name · lint 规则
 Require a component name to match its file name
@@ -5419,6 +5442,16 @@ Disallow `key` on `<template v-for>`
 类别: essential
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+错误示例:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+正确示例:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint 规则
 禁止在`<template v-for>`的子元素上使用`key`

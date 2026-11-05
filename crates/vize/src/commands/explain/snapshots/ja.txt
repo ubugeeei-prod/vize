@@ -3901,6 +3901,16 @@ Require end tags on HTML elements that may omit them
 カテゴリー: strongly-recommended
 自動修正: あり
 ドキュメント: docs/content/rules/reference/vue-html-end-tags.md
+
+不正な例:
+  <ul><li>a</ul>
+  <p>hello
+
+正しい例:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint ルール
 HTML属性の引用符スタイルを強制する
@@ -3956,6 +3966,19 @@ Treat variables used in JSX element names as used
 カテゴリー: script
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+不正な例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+正しい例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
 === vue/match-component-file-name
 vue/match-component-file-name · lint ルール
 Require a component name to match its file name
@@ -5163,6 +5186,16 @@ Disallow `key` on `<template v-for>`
 カテゴリー: essential
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+不正な例:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+正しい例:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint ルール
 `<template v-for>`の子要素への`key`を禁止する

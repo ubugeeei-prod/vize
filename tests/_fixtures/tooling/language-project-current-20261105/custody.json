@@ -1,0 +1,83 @@
+{
+  "schema": "vize.languageProjectCurrentSources.v1",
+  "qualificationCredit": false,
+  "transitions": [
+    {
+      "path": "tools/support/compat/github/language-project-fixtures.ts",
+      "before": {
+        "bytes": 10808,
+        "sha256": "b49d25d1e017734afc0af4326405e5a1017f191403d24e2b68959b9f55012244"
+      },
+      "after": {
+        "bytes": 10883,
+        "sha256": "2cac735af395f227853ea0c7aa122d828c40ed39531e36d3f63edfa93215f8a5"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/0.before.gz",
+        "bytes": 3817,
+        "sha256": "0444aa20e06423b5a7475b01cccdd2732c5c33e642ea8c675812b1c7582b985f"
+      },
+      "beforeRevision": "3d858dc509acc1cc14c6531b67c8e9decca8b98c"
+    },
+    {
+      "path": "npm/typescript-plugin/language-service.cjs",
+      "before": {
+        "bytes": 16960,
+        "sha256": "b2ae3cd04fb0d71ab6f1f1ec05490f058f3e620c9f5e647f95654bfa407966af"
+      },
+      "after": {
+        "bytes": 17072,
+        "sha256": "b708919c50259a5e66758fc7f4b9b3c16e0c68e02b100e4768f27286e623da75"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/1.before.gz",
+        "bytes": 4510,
+        "sha256": "a3e21543365b757de04ccce585e3ad54cf63ab35d65e233118ab7f4b0b499329"
+      },
+      "beforeRevision": "3d858dc509acc1cc14c6531b67c8e9decca8b98c"
+    },
+    {
+      "path": "npm/typescript-plugin/virtual-modules.cjs",
+      "before": {
+        "bytes": 18682,
+        "sha256": "2be3ed0da856b064f9319ea66510810de2734181652452eec92540d77deb8d63"
+      },
+      "after": {
+        "bytes": 18953,
+        "sha256": "74f82990fb1da4c17f80a0b51058b584f3f7a7991600501b48d5e19d5f8e0f8f"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/2.before.gz",
+        "bytes": 5314,
+        "sha256": "624b3b2f67b16b102cffe34d9fc127a98262210d44a21d635985be806d818d5c"
+      },
+      "beforeRevision": "54f65beec9"
+    },
+    {
+      "path": "tools/support/compat/github/language-project-classification-successor.ts",
+      "before": {
+        "bytes": 5309,
+        "sha256": "2262cebdcfb4dd7f8019017527d19447c40b81cedcb892424c8c471d19c9bdd6"
+      },
+      "after": {
+        "bytes": 5464,
+        "sha256": "f2cf0f5aa4b79a4b65df9a2d166f524c4ccb0c2673e3cc8351a726e2359ebc07"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-current-20261105/3.before.gz",
+        "bytes": 1857,
+        "sha256": "bd3c86c1b40803b2326d31b09b7e9da2f90ee68c7795113fdea177b515576aef"
+      },
+      "beforeRevision": "9deea2e9dc"
+    }
+  ],
+  "registration": {
+    "beforeSha256": "16ca0a01852dc6036b707425e9e242553d5669062a2980f056328d18888a3793",
+    "afterSha256": "0ef670074ced17b07b43882c43ddbacb75aace2488b85856f7f1c84975f56e49",
+    "archive": {
+      "path": "tests/_fixtures/tooling/language-project-current-20261105/registration.before.json",
+      "sha256": "16ca0a01852dc6036b707425e9e242553d5669062a2980f056328d18888a3793",
+      "bytes": 4614
+    }
+  }
+}

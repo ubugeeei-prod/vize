@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
+import { historicalCurrentLanguageProjectSources } from "./language-project-current-20261105.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const CLASSIFICATION_RUNTIME_ROOT =
@@ -69,9 +70,10 @@ export function authenticateClassificationRuntime(read: ReadFile): Map<string, B
 
 /** Schema and body checks after authenticateClassificationRuntime verifies exact custody bytes. */
 export function validateClassificationRuntimeRecord(
-  read: ReadFile,
+  rawRead: ReadFile,
   value: unknown,
 ): Map<string, Buffer> {
+  const read = historicalCurrentLanguageProjectSources(rawRead);
   const record = object(value, [
     "schema",
     "id",
@@ -118,7 +120,8 @@ export function validateClassificationRuntimeRecord(
 }
 
 /** Base reads remain actual; only seven exact, authenticated head transitions have a historical view. */
-export function historicalClassificationConsumers(read: ReadFile): ReadFile {
+export function historicalClassificationConsumers(rawRead: ReadFile): ReadFile {
+  const read = historicalCurrentLanguageProjectSources(rawRead);
   let originals: Map<string, Buffer> | undefined;
   return (side, path) => {
     const body = read(side, path);

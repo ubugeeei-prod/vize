@@ -66,10 +66,18 @@ pub(super) fn find_in_surface(
                         tree.source.get(span.start as usize..span.end as usize)?,
                         false,
                     )),
-                    Some(ArgSyntax::Dynamic(span)) => Some((
-                        tree.source.get(span.start as usize..span.end as usize)?,
-                        true,
-                    )),
+                    Some(ArgSyntax::Dynamic(span)) => {
+                        // The retained callback has a different recovery policy
+                        // for a closed bracket followed by an authored suffix.
+                        // Keep its complete result rather than certify parity.
+                        if tree.source.as_bytes().get(span.end as usize) != Some(&b']') {
+                            return None;
+                        }
+                        Some((
+                            tree.source.get(span.start as usize..span.end as usize)?,
+                            true,
+                        ))
+                    }
                     None => None,
                 };
                 let modifiers = tree

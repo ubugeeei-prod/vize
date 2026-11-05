@@ -77,7 +77,7 @@ fn actual_dom_dispatch_observes_native_parse_or_original_compatibility_once() {
     };
     for (source, native, retained) in [
         ("<div></div>", 1, 0),
-        ("<div v-x:[a]foo='x' v-x:foo='y'></div>", 1, 0),
+        ("<div v-x:[a]foo='x' v-x:foo='y'></div>", 1, 1),
         ("<div/>", 0, 1),
         ("<div @[event].stop='handler'></div>", 1, 0),
         ("<div id='a' id='b'></div>", 0, 1),
