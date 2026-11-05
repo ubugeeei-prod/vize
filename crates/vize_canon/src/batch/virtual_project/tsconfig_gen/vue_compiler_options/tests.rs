@@ -1,5 +1,5 @@
 use super::super::super::VirtualProject;
-use super::extends::check_unknown_props_enabled;
+use crate::virtual_ts::VirtualTsCheckOptions;
 use serde_json::{Map, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -19,6 +19,13 @@ fn bool_map(pairs: &[(&str, bool)]) -> Map<std::string::String, Value> {
         .iter()
         .map(|(key, value)| ((*key).to_owned(), Value::Bool(*value)))
         .collect()
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+fn check_unknown_props_enabled(options: &Map<std::string::String, Value>) -> bool {
+    let mut checks = VirtualTsCheckOptions::default();
+    super::super::super::vue_check_options::resolve(&mut checks, Some(options));
+    checks.check_unknown_props
 }
 
 #[test]

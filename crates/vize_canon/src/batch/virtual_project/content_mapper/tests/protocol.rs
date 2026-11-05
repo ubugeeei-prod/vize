@@ -21,7 +21,7 @@ fn same_name_shorthand_maps_the_binding_onto_the_attribute() {
         "../../../../../../../tests/_fixtures/differential/typechecker/shorthand-binding-diagnostic-10920/src/App.vue.txt"
     );
     let mut options = super::super::ContentMapperTransformOptions::default();
-    options.vue_compiler_target = Some(vize_l0::config::VueVersion::V3);
+    options.checks.vue_compiler_target = Some(vize_l0::config::VueVersion::V3);
     let result = super::super::generate_vue_content_mapper_transform_with_options(
         Path::new("App.vue"),
         source,

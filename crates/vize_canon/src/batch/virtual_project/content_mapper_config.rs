@@ -106,7 +106,7 @@ impl ContentMapperProjectConfiguration {
             serde_json::to_vec(&(
                 &options,
                 &watched_files,
-                resolved_target_tag(transform_options.vue_compiler_target),
+                resolved_target_tag(transform_options.checks.vue_compiler_target),
             ))?
         } else {
             serde_json::to_vec(&(&options, &watched_files))?
@@ -142,35 +142,7 @@ impl ContentMapperTransformOptions {
         options: &Map<std::string::String, Value>,
         dependencies: &mut Vec<std::path::PathBuf>,
     ) -> CorsaResult<(Self, Option<std::path::PathBuf>)> {
-        let strict_templates = options.get("strictTemplates").and_then(Value::as_bool);
-        self.check_unknown_components = options
-            .get("checkUnknownComponents")
-            .and_then(Value::as_bool)
-            .or(strict_templates)
-            .unwrap_or(false);
-        let explicit = options.get("checkUnknownProps").and_then(Value::as_bool);
-        self.check_unknown_props = explicit.or(strict_templates).unwrap_or(false);
-        self.check_unknown_fallthrough_props = explicit == Some(true);
-        let fallthrough_attributes = options.get("fallthroughAttributes");
-        self.fallthrough_attributes_specified = fallthrough_attributes.is_some();
-        self.fallthrough_attributes = fallthrough_attributes
-            .and_then(Value::as_bool)
-            .unwrap_or(false);
-        self.check_unknown_directives = options
-            .get("checkUnknownDirectives")
-            .and_then(Value::as_bool)
-            .or(strict_templates)
-            .unwrap_or(false);
-        // `vize check` reads the same pair in `tsconfig_gen::vue_compiler_options`.
-        self.strict_v_model = options
-            .get("strictVModel")
-            .and_then(Value::as_bool)
-            .or(strict_templates)
-            .unwrap_or(false);
-        self.strict_css_modules = options
-            .get("strictCssModules")
-            .and_then(Value::as_bool)
-            .unwrap_or(false);
+        super::vue_check_options::resolve(&mut self.checks, Some(options));
         self.configured_global_template_ref =
             super::tsconfig_gen::vue_compiler_options::configures_global_template_ref(options);
         let (target, manifest) =
@@ -180,27 +152,12 @@ impl ContentMapperTransformOptions {
                 options,
                 dependencies,
             )?;
-        self.vue_compiler_target = target;
+        self.checks.vue_compiler_target = target;
         Ok((self, manifest))
     }
 
-    pub(super) fn virtual_ts_check_options(self) -> crate::virtual_ts::VirtualTsCheckOptions {
-        let mut checks = crate::virtual_ts::VirtualTsCheckOptions {
-            check_unknown_components: self.check_unknown_components,
-            check_unknown_props: self.check_unknown_props,
-            check_unknown_fallthrough_props: self.check_unknown_fallthrough_props,
-            fallthrough_attributes: self.fallthrough_attributes,
-            fallthrough_attributes_specified: self.fallthrough_attributes_specified,
-            check_unknown_directives: self.check_unknown_directives,
-            strict_v_model: self.strict_v_model,
-            vue_compiler_target: self.vue_compiler_target,
-            ..Default::default()
-        };
-        #[cfg(feature = "native")]
-        {
-            checks.strict_css_modules = self.strict_css_modules;
-        }
-        checks
+    pub(super) const fn virtual_ts_check_options(self) -> crate::virtual_ts::VirtualTsCheckOptions {
+        self.checks
     }
 }
 
@@ -217,3 +174,5 @@ fn resolved_target_tag(target: Option<VueVersion>) -> &'static str {
 mod strict_v_model_tests;
 #[cfg(test)]
 pub(super) mod typed_router_tests;
+#[cfg(test)]
+mod vue_options_projection_tests;

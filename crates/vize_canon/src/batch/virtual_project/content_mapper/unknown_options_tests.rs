@@ -17,8 +17,11 @@ fn unknown_component_and_directive_options_reach_the_mapper_projection() {
         Path::new("App.vue"),
         SOURCE,
         ContentMapperTransformOptions {
-            check_unknown_components: true,
-            check_unknown_directives: true,
+            checks: crate::virtual_ts::VirtualTsCheckOptions {
+                check_unknown_components: true,
+                check_unknown_directives: true,
+                ..Default::default()
+            },
             ..Default::default()
         },
     )
@@ -27,8 +30,11 @@ fn unknown_component_and_directive_options_reach_the_mapper_projection() {
         Path::new("App.vue"),
         SOURCE,
         ContentMapperTransformOptions {
-            check_unknown_components: false,
-            check_unknown_directives: false,
+            checks: crate::virtual_ts::VirtualTsCheckOptions {
+                check_unknown_components: false,
+                check_unknown_directives: false,
+                ..Default::default()
+            },
             ..Default::default()
         },
     )
