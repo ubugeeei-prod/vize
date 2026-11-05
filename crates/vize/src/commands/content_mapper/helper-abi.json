@@ -86,7 +86,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "1077ed40b76672245658ad66ded95531ccfbe41405b713b44126c1704f6c1cd2"
+          "sha256": "b75a5ae2d5e020e819088ebc68eaf0a8cd9a5b57de900b700cd3759b936a9fb0"
         },
         {
           "path": "virtual-ts-patterns.d.ts",
@@ -122,11 +122,11 @@
         },
         {
           "path": "virtual-ts-checker.d.ts",
-          "sha256": "bdf4ed246fbe4ad9894115ed72043dbda29bc56e9f053cbd7c4d68ba7eb81e78"
+          "sha256": "4f2e1a0782ea535d0f7126a48da5bf39d662a2e27ce6c36cb7f9d00db9c8aa88"
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "1077ed40b76672245658ad66ded95531ccfbe41405b713b44126c1704f6c1cd2"
+          "sha256": "b75a5ae2d5e020e819088ebc68eaf0a8cd9a5b57de900b700cd3759b936a9fb0"
         },
         {
           "path": "virtual-ts-patterns.d.ts",
